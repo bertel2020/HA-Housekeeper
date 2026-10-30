@@ -13,7 +13,6 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
@@ -30,17 +29,18 @@ from .const import (
     SIGNAL_SCAN_STARTED,
 )
 from .outage_levels import is_quiet
+from .runtime import HousekeeperConfigEntry
 from .scan_coverage import gaps
 from .scan_health import STATES
 
 COUNT_KEYS = (
-    ("findings", "mdi:alert-outline"),
-    ("orphaned_entities", "mdi:ghost-outline"),
-    ("unavailable_entities", "mdi:lan-disconnect"),
-    ("broken_references", "mdi:link-off"),
-    ("possible_duplicates", "mdi:content-duplicate"),
-    ("unused_automations", "mdi:robot-off-outline"),
-    ("low_batteries", "mdi:battery-alert-variant-outline"),
+    "findings",
+    "orphaned_entities",
+    "unavailable_entities",
+    "broken_references",
+    "possible_duplicates",
+    "unused_automations",
+    "low_batteries",
 )
 
 
@@ -69,10 +69,9 @@ DESCRIPTIONS = (
         SensorEntityDescription(
             key=key,
             translation_key=key,
-            icon=icon,
             state_class=SensorStateClass.MEASUREMENT,
         )
-        for key, icon in COUNT_KEYS
+        for key in COUNT_KEYS
     ),
     SensorEntityDescription(
         key="last_scan", translation_key="last_scan", device_class=SensorDeviceClass.TIMESTAMP
@@ -83,7 +82,6 @@ DESCRIPTIONS = (
 HEALTH_DESCRIPTION = SensorEntityDescription(
     key="scan_health",
     translation_key="scan_health",
-    icon="mdi:heart-pulse",
     device_class=SensorDeviceClass.ENUM,
     options=list(STATES),
     entity_category=EntityCategory.DIAGNOSTIC,
@@ -93,7 +91,6 @@ HEALTH_DESCRIPTION = SensorEntityDescription(
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
-    icon="mdi:progress-clock",
     device_class=SensorDeviceClass.ENUM,
     options=["idle", "scanning", "cleanup", "starting"],
 )
@@ -112,8 +109,12 @@ def activity(scanner: Any) -> str | None:
     return "idle"
 
 
+# Push only: Home Assistant never polls these entities, so updates need no limit.
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant, entry: HousekeeperConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Create the Housekeeper sensors."""
     async_add_entities(
@@ -123,7 +124,7 @@ async def async_setup_entry(
             ActivitySensor(entry, ACTIVITY_DESCRIPTION),
         ]
     )
-    scanner = hass.data[DOMAIN]["scanner"]
+    scanner = entry.runtime_data
     known: set[str] = set()
 
     @callback
@@ -145,8 +146,9 @@ class HousekeeperSensor(SensorEntity):
     _attr_has_entity_name = True
     _attr_should_poll = False
 
-    def __init__(self, entry: ConfigEntry, description: SensorEntityDescription) -> None:
+    def __init__(self, entry: HousekeeperConfigEntry, description: SensorEntityDescription) -> None:
         self.entity_description = description
+        self.scanner = entry.runtime_data
         self._attr_unique_id = f"{entry.entry_id}_{description.key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)}, name=NAME, entry_type=DeviceEntryType.SERVICE
@@ -165,7 +167,7 @@ class HousekeeperSensor(SensorEntity):
         self.async_write_ha_state()
 
     def _update(self) -> None:
-        scanner = self.hass.data.get(DOMAIN, {}).get("scanner")
+        scanner = self.scanner
         values = compute_values(scanner.snapshot if scanner else None)
         self._attr_native_value = values.get(self.entity_description.key)
         if self.entity_description.key == "findings":
@@ -187,7 +189,7 @@ class ScanHealthSensor(HousekeeperSensor):
     """Whether the scans run. Unlike the counts it also speaks when the last scan failed or is old."""
 
     def _update(self) -> None:
-        scanner = self.hass.data.get(DOMAIN, {}).get("scanner")
+        scanner = self.scanner
         report = scanner.health_report() if scanner else None
         meta = ((scanner.snapshot if scanner else None) or {}).get("meta") or {}
         unread = gaps(meta.get("coverage") or [])
@@ -217,7 +219,7 @@ class ActivitySensor(HousekeeperSensor):
             self.async_on_remove(async_dispatcher_connect(self.hass, signal, self._handle_update))
 
     def _update(self) -> None:
-        self._attr_native_value = activity(self.hass.data.get(DOMAIN, {}).get("scanner"))
+        self._attr_native_value = activity(self.scanner)
 
 
 class MonitorSensor(SensorEntity):
@@ -227,14 +229,18 @@ class MonitorSensor(SensorEntity):
     _attr_should_poll = False
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_options = ["ok", "problem", "unverified", "disabled"]
+    _attr_translation_key = "monitor"
 
-    def __init__(self, entry: ConfigEntry, function_id: str) -> None:
+    def __init__(self, entry: HousekeeperConfigEntry, function_id: str) -> None:
         self.function_id = function_id
+        self.scanner = entry.runtime_data
         self._attr_unique_id = f"{entry.entry_id}_monitor_{function_id}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)}, name=NAME, entry_type=DeviceEntryType.SERVICE
         )
         self._attr_native_value = "unverified"
+        # The name is part of the translated entity name, so it is there before the entity is added.
+        self._attr_translation_placeholders = {"name": self._definition_name()}
         self._removed = False
 
     async def async_added_to_hass(self) -> None:
@@ -245,7 +251,7 @@ class MonitorSensor(SensorEntity):
 
     @callback
     def _handle_update(self) -> None:
-        scanner = self.hass.data.get(DOMAIN, {}).get("scanner")
+        scanner = self.scanner
         if scanner and not any(item["id"] == self.function_id for item in scanner.monitor.items):
             if not self._removed:
                 self._removed = True
@@ -258,19 +264,21 @@ class MonitorSensor(SensorEntity):
         self._update()
         self.async_write_ha_state()
 
-    def _update(self) -> None:
-        scanner = self.hass.data.get(DOMAIN, {}).get("scanner")
-        definition = (
-            next((item for item in scanner.monitor.items if item["id"] == self.function_id), None)
-            if scanner
-            else None
+    def _definition_name(self) -> str:
+        """The name the user gave the function; its id until the definition is there."""
+        definition = next(
+            (item for item in self.scanner.monitor.items if item["id"] == self.function_id), None
         )
+        return definition["name"] if definition else self.function_id
+
+    def _update(self) -> None:
+        scanner = self.scanner
         result = (
             next((item for item in scanner.monitor.results if item["id"] == self.function_id), None)
             if scanner
             else None
         )
-        self._attr_name = f"Hausfunktion {definition['name']}" if definition else "Hausfunktionen"
+        self._attr_translation_placeholders = {"name": self._definition_name()}
         self._attr_native_value = result["state"] if result else "unverified"
         self._attr_extra_state_attributes = (
             {

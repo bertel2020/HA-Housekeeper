@@ -23,7 +23,7 @@ class OverviewMixin {
     let seen = false;
     try { seen = globalThis.localStorage?.getItem("ha_housekeeper.levels_hint") === "1"; } catch (_) { seen = false; }
     if (seen || this.data?.meta?.preliminary) return "";
-    return `<div class="panel u-mb14" data-levels-hint><div class="row"><span class="tile mute"><ha-icon icon="mdi:stairs-up"></ha-icon></span><span class="row-text"><strong>${this.t("levelsHintTitle")}</strong><small>${this.t("levelsHintText")}</small></span><button class="btn" data-levels-go>${this.t("levelsHintSettings")}</button><button class="btn quiet" data-levels-ok>${this.t("levelsHintOk")}</button></div></div>`;
+    return `<div class="panel u-mb14" data-levels-hint><div class="row levelsrow"><span class="tile mute"><ha-icon icon="mdi:stairs-up"></ha-icon></span><span class="row-text"><strong>${this.t("levelsHintTitle")}</strong><small>${this.t("levelsHintText")}</small></span><button class="btn" data-levels-go>${this.t("levelsHintSettings")}</button><button class="btn quiet" data-levels-ok>${this.t("levelsHintOk")}</button></div></div>`;
   }
 
   // A scan that failed, or none that succeeded for a long time: the counts shown then come from an older scan.
@@ -50,21 +50,28 @@ class OverviewMixin {
     const steps = ["warmupS1", "warmupS2", "warmupS3", "warmupS4"].map((k, n) => `<li class="${n < at ? "done" : n === at ? "on" : ""}"><i>${n < at ? "✓" : ""}</i>${this.t(k)}</li>`).join("");
     const total = w.total || 0, done = Math.min(w.done || 0, total);
     let body = "", line = "";
-    if (w.booting) { body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span></div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine"); }
+    if (w.booting) {
+      // The server says how long Home Assistant has been loading; the clock runs on from there between two answers.
+      const since = Number.isFinite(w.bootSeconds) ? `<span>${this.esc(this.t("warmupSince", { x: clock(w.bootSeconds + Math.round((Date.now() - w.bootAt) / 1000)) }))}</span>` : "";
+      body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span>${since}</div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine");
+    }
     else if (scanning) {
       const order = ["registries", "devices", "automations", "finalizing"], phase = st?.running ? order.indexOf(st.phase) : -1;
       const percent = st?.running ? st.progress : 0;
       body = `<div class="wduo">${pair(`${this.t(phase >= 0 ? `warmupPhase_${order[phase]}` : "warmupPhase_start")}${phase >= 0 ? ` <b>${phase + 1}/${order.length}</b>` : ""}`, `${percent} %`, percent / 100)}<div></div></div>`;
       line = this.t("warmupAfter");
     } else {
-      const names = (w.names || []).map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
-      const more = (w.pending || 0) > (w.names || []).length ? ` +${w.pending - w.names.length}` : "";
+      // The first few names; a click unfolds the rest (the box is redrawn every second, so the click is caught on the box, see 90-panel.js).
+      const all = w.names || [], shown = this._warmAll ? all : all.slice(0, WARMUP_NAMES_SHOWN);
+      const names = shown.map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
+      const toggle = all.length > WARMUP_NAMES_SHOWN ? ` <button type="button" class="link" data-warm-all>${this.esc(this._warmAll ? this.t("warmupFewer") : `+${all.length - WARMUP_NAMES_SHOWN}`)}</button>` : "";
+      const more = toggle + ((w.pending || 0) > all.length ? ` +${w.pending - all.length}` : "");
       // Once nothing is loading any more, what is still not set up will not be (it fails or waits for something else): the bar is full.
       const loaded = w.settling ? this.t("warmupLoadedAll", { done: this.formatNumber(done) }) : this.t("warmupLoaded", { done: this.formatNumber(done), total: this.formatNumber(total) });
       body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.total_s || 300))}</div>`;
       line = w.settling
         ? ((w.pending || 0) > 0 ? this.t("warmupBlip", { name: this.esc((w.names || [])[0] || "") }) : this.t("warmupLocked"))
-        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")}`;
+        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")} ${this.t("warmupEarly")}`;
     }
     // The notice is redrawn every second; the offset keeps the animations in step with the clock instead of restarting.
     return `<div class="wph" style="--wt:-${Date.now() % 2000}ms">${head}<ol class="wtr">${steps}</ol>${body}<div class="wline">${line}</div></div>`;
@@ -83,10 +90,10 @@ class OverviewMixin {
         const s = await this._hass.callWS({ type: "ha_housekeeper/status" });
         this.scanStatus = s;
         const w = s.warmup || {};
-        this._warm = { ...this._warm, booting: Boolean(w.booting), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
+        this._warm = { ...this._warm, booting: Boolean(w.booting), bootSeconds: Number.isFinite(w.boot_seconds) ? w.boot_seconds : null, bootAt: Date.now(), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
         draw();
         // The final scan is in: take it at once, the notice goes away by itself.
-        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(this.t("warmupDoneToast")); }
+        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(`${this.t("warmupDoneToast")}${await this.startToastNote()}`, false, 30000); }
       } catch (_) { /* the next tick asks again */ } finally { asking = false; }
     };
     ask();
@@ -97,10 +104,24 @@ class OverviewMixin {
     }, 1000);
   }
 
+  // What the start took, for the toast that ends the notice: the whole start and the slowest integration; empty when it is not known.
+  async startToastNote() {
+    try {
+      const result = await this._hass.callWS({ type: "ha_housekeeper/starts" });
+      this.sysState("starts").data = result;
+      const last = result?.starts?.[0];
+      if (!last || !Number.isFinite(last.boot_s) || Date.now() - Date.parse(last.at) > 15 * 60 * 1000) return "";
+      const slow = this.startSlowest(last);
+      const parts = [this.t("warmupDoneTook", { x: this.startClock(last.boot_s) }), slow ? this.t("warmupDoneSlow", { name: this.startName(slow), s: this.startSeconds(slow.seconds) }) : ""];
+      return ` ${parts.filter(Boolean).join(", ")}.`;
+    } catch (_) { return ""; }
+  }
+
   stopWarmupTicker() {
     if (this._warmTick) window.clearInterval(this._warmTick);
     this._warmTick = null;
     this._warm = null;
+    this._warmAll = false;
   }
 
   // What to do now, most urgent first: outages (integrations and devices that are down) and new critical findings, then an
@@ -113,30 +134,34 @@ class OverviewMixin {
     if (impaired.length) {
       const first = impaired[0], key = first.state === "unverified" ? first.last_problem_key : first.reason_key, object = key ? this.findObject(key) : null;
       const uncovered = impaired.some(item => !(this.data.findings || []).some(f => !f.ignored && this.findingKey(f) === (item.state === "unverified" ? item.last_problem_key : item.reason_key)));
-      items.push({ key: "monitor_problem", area: uncovered ? "state" : "findings", tone: "red", icon: "mdi:home-alert-outline", text: this.t("monitorOverviewProblem", { n: impaired.length }), hintText: `${first.name} · ${first.incident_open && first.state === "unverified" ? `${this.t("monitorOverviewUnresolved")}: ${this.monitorReason(first.last_problem_reason)}` : [object?.name || key, this.monitorReason(first.reason)].filter(Boolean).join(" · ")} · ${this.t("monitorFindingAt", { date: this.formatDate(first.scanned_at) })}`, view: "monitor", filter: "problem" });
+      items.push({ key: "monitor_problem", area: uncovered ? "state" : "findings", tone: "red", icon: "mdi:home-alert-outline", text: this.t("monitorOverviewProblem", { n: impaired.length }), hintText: `${first.name} · ${first.incident_open && first.state === "unverified" ? `${this.t("monitorOverviewUnresolved")}: ${this.monitorReason(first.last_problem_reason)}` : [object?.name || key, this.apMonitorReason(first.reason_key, first.reason)].filter(Boolean).join(" · ")} · ${this.t("monitorFindingAt", { date: this.formatDate(first.scanned_at) })}`, view: "monitor", filter: "problem" });
     }
     if (uncertain.length) items.push({ key: "monitor_unknown", area: "state", tone: "warn", icon: "mdi:home-question-outline", text: this.t("monitorOverviewUnknown", { n: uncertain.length }), hintText: uncertain[0].last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(uncertain[0].last_verified_at) }) : this.t("monitorNeverVerified"), view: "monitor", filter: "unverified" });
     const reauth = this.reauthFindings();
     if (reauth.length) {
       const names = reauth.map(f => this.findObject(`config_entry:${f.object_id}`)?.name || f.object_id);
-      const followers = this.causeList().filter(c => c.kind === "integration_down" && reauth.some(f => f.object_id === c.object_id)).reduce((sum, c) => sum + (c.follower_count || 0), 0);
-      items.push({ key: "reauth", area: "findings", tone: "red", icon: "mdi:key-alert-outline", text: reauth.length === 1 ? this.t("todoReauthOne", { name: names[0] }) : this.t("todoReauthMany", { n: reauth.length }), hintText: [reauth.length > 1 ? names.slice(0, 3).join(", ") + (names.length > 3 ? ", …" : "") : "", followers ? this.t("todoReauthFollowers", { n: this.formatNumber(followers) }) : ""].filter(Boolean).join(" · ") || this.t("secSumReauthSub"), pill: this.t("todoReauthPill"), view: "findingsNav", filter: "config_entry.reauth" });
+      // The follow-ups are not named: the jump shows the requests for a login, not what hangs below them.
+      items.push({ key: "reauth", area: "findings", tone: "red", icon: "mdi:key-alert-outline", text: reauth.length === 1 ? this.t("todoReauthOne", { name: names[0] }) : this.t("todoReauthMany", { n: reauth.length }), hintText: reauth.length > 1 ? names.slice(0, 3).join(", ") + (names.length > 3 ? ", …" : "") : this.t("secSumReauthSub"), pill: this.t("todoReauthPill"), view: "findingsNav", filter: "config_entry.reauth" });
     }
     const hacsGone = this.data.meta?.hacs_removed || [];
     if (hacsGone.length) items.push({ key: "hacs_removed", area: "care", tone: "warn", icon: "mdi:store-alert-outline", text: hacsGone.length === 1 ? this.t("hacsTodoOne", { name: hacsGone[0].name || hacsGone[0].id }) : this.t("hacsTodoMany", { n: hacsGone.length }), hintText: [hacsGone.length > 1 ? hacsGone.slice(0, 3).map(r => r.name || r.id).join(", ") + (hacsGone.length > 3 ? ", …" : "") : hacsGone[0].reason, this.t("hacsTodoHint")].filter(Boolean).join(" · "), pill: this.t("hacsTodoPill"), jump: 'data-jump="components" data-jump-tab="hacs" data-jump-lf="hacsrepos|state|removed"' });
     this.ensurePreflight();
     const updates = this.preflight?.state?.updates || [];
     if (updates.length) items.push({ key: "updates", area: "care", tone: "warn", icon: "mdi:package-up", text: this.t(updates.length === 1 ? "todoUpdates_1" : "todoUpdates_n", { n: this.formatNumber(updates.length) }), hintText: updates.slice(0, 3).map(u => u.name).join(", ") + (updates.length > 3 ? ", …" : ""), jump: 'data-jump="maintenance" data-jump-tab="updates"' });
-    const outages = this.causeList().filter(c => !this.quietCause(c));
-    if (outages.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(outages), count: outages.length, view: "findingsNav", filter: "" });
-    const regressions = (this.data.regressions || []).length;
-    if (regressions) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "journal" });
+    // Urgent is an outage at the level high (long, or at something critical); the others the overview counts are open.
+    const urgent = this.countedOutages("high"), other = this.countedOutages("medium");
+    if (urgent.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(urgent), count: urgent.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="high"' });
+    if (other.length) items.push({ key: "outages_open", area: "findings", tone: "warn", icon: "mdi:source-branch", label: "actOutagesOpen", hintText: this.outagesHint(other), count: other.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="medium"' });
+    // Each row lands on what it counts: one plan with a setback opens itself, several the journal filtered to them.
+    const regressions = this.data.regressions || [];
+    if (regressions.length) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions.length, jump: regressions.length === 1 ? `data-plan-open="${this.esc(regressions[0].plan_id)}"` : 'data-jump="journal" data-jump-tab="plans" data-jump-lf="journal|follow|regression"' });
     const due = (this.data.reminders || []).filter(r => r.state === "due").length;
-    if (due) items.push({ key: "reminders", area: "care", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, view: "reminders" });
-    const missed = (this.data.criteria_alerts || []).length;
-    if (missed) items.push({ key: "criteria", area: "care", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, view: "runs" });
-    const fresh = (this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).length;
-    if (fresh) items.push({ key: "critical", area: "findings", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, view: "findingsNav", filter: "" });
+    if (due) items.push({ key: "reminders", area: "care", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, jump: 'data-jump="reminders" data-jump-lf="reminders|state|due"' });
+    // A missed criterion is a finding of its automation: counted and shown as those findings, hidden ones left out.
+    const missed = (this.data.findings || []).filter(f => f.rule_id === "automation.goal_missed" && !f.ignored).length;
+    if (missed) items.push({ key: "criteria", area: "care", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, jump: 'data-jump="findingsNav" data-filter="automation.goal_missed"' });
+    const fresh = this.scanNewKeys().size;
+    if (fresh) items.push({ key: "critical", area: "findings", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, jump: 'data-jump="findingsNav" data-filter="" data-jump-scan-new' });
     // A nearly full disk, from the light read of the overview; red from 90 % takes points off the ring like any urgent topic.
     this.ensureSysLight();
     const disk = this.sysLight?.disk;
@@ -153,15 +178,17 @@ class OverviewMixin {
     const problems = this.backup?.available && this.backup.overall === "problem" ? this.backup.checks.filter(c => c.level === "problem") : [];
     const dbProblems = this.dbHealth?.available ? this.dbHealth.findings.filter(f => f.level === "problem") : [];
     if (dbProblems.length) items.push({ key: "db", area: "state", tone: "red", icon: "mdi:database-alert-outline", label: "todoDbProblem", hintText: dbProblems.map(f => this.t(`dbKind_${f.kind}`)).join(", "), view: "recorder" });
-    if (problems.length) items.push({ key: "backup", area: "state", tone: "red", icon: "mdi:backup-restore", label: "todoBackupProblem", count: problems.length, hintText: problems.map(c => this.t(`bh_${c.id}`)).join(", "), view: "maintenance" });
+    if (problems.length) items.push({ key: "backup", area: "state", tone: "red", icon: "mdi:backup-restore", label: "todoBackupProblem", count: problems.length, hintText: problems.map(c => this.t(`bh_${c.id}`)).join(", "), jump: 'data-jump="maintenance" data-jump-tab="backup"' });
     const limit = m.quarantine_days ?? 14;
     const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
-    if (ready) items.push({ key: "quarantine", area: "care", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, view: "cleanup" });
+    if (ready) items.push({ key: "quarantine", area: "care", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, jump: 'data-jump="cleanup" data-jump-tab="quarantine" data-jump-lf="cleanup|readiness|ready"' });
     this.ensureGoals();
     this.ensurePolicies(); // the menu counts need both
     for (const g of (this.goals?.goals || []).filter(x => x.state === "missed")) {
       items.push({ key: `goal_${g.id}`, area: "care", tone: "warn", icon: "mdi:target", text: this.t(`goal_${g.id}`), hintText: `${this.goalNow(g)} · ${g.limit === 0 && g.unit === "count" ? this.t("goalAllowedNone") : this.t("goalAllowed", { limit: this.goalAmount(g, g.limit) })}`, pill: this.t("goalMissedPill"), view: GOAL_JUMPS[g.id].view, jump: this.goalJump(g.id) });
     }
+    this.ensureAutoPause();
+    items.push(...this.apTodoItems());
     return items;
   }
 
@@ -190,19 +217,35 @@ class OverviewMixin {
     return last ? `<small>${this.t("monitorLastProblemLine")}: <button class="link" data-monitor-last="${this.esc(last.id)}">${this.esc(last.name)}</button> · ${this.agoText(last.last_problem_at)}</small>` : "";
   }
 
-  // "1 topic urgent, 4 more open": what the headline counts are topics (rows of the list), not objects.
-  statusHeadline(health) {
-    const urgent = health.red === 1 ? this.t("statusUrgentOne") : this.t("statusUrgent", { n: this.formatNumber(health.red) });
-    if (health.red && health.later) return `${urgent}, ${this.t("statusMoreOpen", { n: this.formatNumber(health.later) })}`;
-    if (health.red) return urgent;
-    return health.later === 1 ? this.t("statusOpenOne") : this.t("statusOpen", { n: this.formatNumber(health.later) });
+  // The rows of the to-do card in the three groups the headline names: urgent (red), open (the rest outside maintenance)
+  // and maintenance. Every row is counted once, so the headline and the card add up.
+  todoGroups(items = this.todoItems()) {
+    const red = items.filter(i => i.tone === "red").sort((a, b) => (b.key === "monitor_problem") - (a.key === "monitor_problem"));
+    return { red, open: items.filter(i => i.tone !== "red" && i.area !== "care"), care: items.filter(i => i.tone !== "red" && i.area === "care") };
   }
 
-  statusSubline(health) {
-    return `${this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t("statusHealth", { percent: this.formatNumber(health.percent) })}`;
+  todoName(it) { return `${it.text || this.t(it.label)}${it.count !== undefined ? ` (${this.formatNumber(it.count)})` : ""}`; }
+
+  // The headline names what is urgent instead of counting topics: one or two by name, more as the first and a number.
+  // With `link` each name is a button to its row of the to-do card.
+  statusHeadline(groups = this.todoGroups(), link = false) {
+    const name = it => (link ? `<button type="button" class="headlink" data-todo-go="${this.esc(it.key)}" title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.todoName(it))}</button>` : this.esc(this.todoName(it)));
+    const red = groups.red;
+    if (red.length === 1) return name(red[0]);
+    if (red.length === 2) return this.t("statusAnd", { a: name(red[0]), b: name(red[1]) });
+    if (red.length > 2) return this.t("statusMoreUrgent", { first: name(red[0]), n: this.formatNumber(red.length - 1) });
+    return this.esc(this.t(groups.open.length ? "statusNothingUrgent" : "statusAllGood"));
   }
 
-  // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level.
+  // Below the headline: what is open besides the urgent rows and the objects with a finding.
+  statusSubline(health, groups = this.todoGroups()) {
+    const rest = [groups.open.length ? this.t("statusPartOpen", { n: this.formatNumber(groups.open.length) }) : "", groups.care.length ? this.t("statusPartCare", { n: this.formatNumber(groups.care.length) }) : ""].filter(Boolean);
+    const restText = rest.length ? (groups.red.length ? this.t("statusAlso", { what: rest.join(this.t("statusJoin")) }) : rest.join(this.t("statusJoin"))) : "";
+    return [restText, this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })].filter(Boolean).map(x => this.esc(x)).join(" · ");
+  }
+
+  // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level,
+  // scaled to 100 points.
   healthWhyCard(health) {
     const row = (label, value, cls = "") => `<div class="row ${cls}"><span>${label}</span><span>${value}</span></div>`;
     const lines = [row(this.t("whyStart"), this.formatNumber(health.base))];
@@ -211,8 +254,9 @@ class OverviewMixin {
       lines.push(row(label, l.points ? `− ${this.formatNumber(l.points)}` : "0", l.points ? "minus" : "minus mute"));
     }
     lines.push(row(this.t("whyTotal"), this.formatNumber(health.ok), "total"));
-    lines.push(row(this.t("whyShare"), `${this.formatNumber(health.percent)} %`));
-    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}">${lines.join("")}<small>${this.t("whyNote", { green: HEALTH_GREEN, yellow: HEALTH_YELLOW })}</small></div>`;
+    lines.push(row(this.t("whyShare"), this.t("pointsOf100", { n: this.formatNumber(health.percent) })));
+    const groups = ["red", "open", "care"].map(g => `<p><b class="why-${g}">${this.t(`group_${g}`)}</b> ${this.t(`whyGroup_${g}`)}</p>`).join("");
+    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}"><div class="whygroups"><strong>${this.t("whyHeadTitle")}</strong>${groups}</div><strong>${this.t("whyRingTitle")}</strong>${lines.join("")}<small>${this.t("whyNote")}</small></div>`;
   }
 
   // A number with its noun, so that the rows count what they say: "8 integrations".
@@ -233,18 +277,23 @@ class OverviewMixin {
       const pill = it.count !== undefined ? this.todoCount(it) : it.pill;
       return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${pill ? `<span class="pill ${it.tone}">${this.esc(pill)}</span>` : ""}</button>`;
     };
-    const inArea = area => items.filter(i => i.area === area && i.key !== "outages"); // the outages are entries of the list itself
+    const groups = this.todoGroups(items);
     const pinned = new Set(this.reauthFindings().map(f => f.object_id));
-    const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)));
+    const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)) && !(e.finding?.rule_id === "config_entry.not_loaded" && this.apPausedItem(e.finding.object_id)));
     const entryRow = e => (e.cause ? this.overviewCause(e.cause) : this.overviewFinding(e.finding));
-    const findingRows = [...inArea("findings").filter(i => i.key === "monitor_problem").map(row), ...inArea("findings").filter(i => i.key !== "monitor_problem").map(row), ...entries.slice(0, LIMIT).map(entryRow)];
     const all = `<button class="link" data-jump="findingsNav">${this.t("allFindings")} (${this.formatNumber(this.findingTotal())}) <ha-icon icon="mdi:chevron-right"></ha-icon></button>`;
-    const state = [...inArea("state")].sort((x, y) => (y.tone === "red") - (x.tone === "red"));
-    const care = inArea("care");
+    const head = (g, n) => `<h3 class="foldhd todogrp ${g}">${this.t(`group_${g}`)} <span class="pill ${g === "red" ? "red" : "warn"}">${this.formatNumber(n)}</span></h3>`;
     const sections = [];
-    if (findingRows.length) sections.push(`<h3 class="foldhd">${this.t("areaFindings")}</h3>${findingRows.join("")}`);
-    if (state.length) sections.push(`<h3 class="foldhd">${this.t("areaState")}</h3>${state.map(row).join("")}`);
-    if (care.length) sections.push(this.fold("todo_care", { tone: "warn", title: this.t("areaCare"), sub: this.t("areaCareSub"), pill: this.formatNumber(care.length) }, care.map(row).join(""), !sections.length));
+    if (groups.red.length) sections.push(`${head("red", groups.red.length)}${groups.red.map(row).join("")}`);
+    if (groups.open.length) sections.push(`${head("open", groups.open.length)}${groups.open.map(row).join("")}`);
+    // Maintenance is a group of its own with a head like the others, folded while something else is open.
+    if (groups.care.length) {
+      const open = this.foldOpen("todo_care", !sections.length);
+      sections.push(`<h3 class="foldhd todogrp care"><button type="button" class="todofold" data-fold="todo_care" aria-expanded="${open}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon>${this.t("areaCare")} <span class="pill warn">${this.formatNumber(groups.care.length)}</span><small>${this.t("areaCareSub")}</small></button></h3>${open ? groups.care.map(row).join("") : ""}`);
+    }
+    // The first entries of the findings list: a look at what matters most, not counted as rows of the headline.
+    const top = entries.slice(0, LIMIT).map(entryRow);
+    if (top.length) sections.push(`<h3 class="foldhd">${this.t("topFindings")} <small class="muted">${this.t("topFindingsSub")}</small></h3>${top.join("")}`);
     const body = sections.length ? sections.join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
     return `<section class="panel u-mb14" aria-labelledby="hk-todo" id="hk-todo-card" tabindex="-1"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div>${all}</div>${body}${this.todoFoot()}</section>`;
   }
@@ -270,13 +319,13 @@ class OverviewMixin {
     if (!c?.available) return "";
     const date = this.formatDate(c.baseline_at);
     const rows = [
-      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+"],
-      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−"],
-      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", ""],
-      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+"],
+      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+", "newFindings"],
+      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−", "resolvedFindings"],
+      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", "", "statusChanges"],
+      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+", "newObjects"],
     ].filter(([, n]) => n);
     const body = rows.length
-      ? rows.map(([label, n, icon, tone, sign]) => `<button class="row" data-jump="changes"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
+      ? rows.map(([label, n, icon, tone, sign, section]) => `<button class="row" data-jump="changes" data-jump-changes="${section}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
       : `<div class="emptymsg">${this.esc(this.t("trendNone", { date }))}</div>`;
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("trendTitle")}</h2><p>${this.esc(this.t("trendSince", { date }))}</p></div></div>${body}</div>`;
   }
@@ -311,15 +360,15 @@ class OverviewMixin {
     this.ensureSeries();
     this.ensureBackup();
     const quiet = this.quietCount();
-    // As on the findings page: everything open with this reason, the follow-ups of an outage counted in and named beside it.
-    const down = (this.data.findings || []).filter(f => !f.ignored && this.findingReason(f) === "unavailable");
-    const downFollows = down.filter(f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id)).length;
-    const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-filter="${filter}"` : ""}><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
-    const headline = health.tasks ? `<button type="button" class="headlink" data-todo-jump title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.statusHeadline(health))}</button>` : this.t("statusAllGood");
+    // The two groups of the findings page: faults (red reasons) and tidying up; the follow-ups of an outage are counted in.
+    const faults = (this.data.findings || []).filter(f => !f.ignored && this.findingTileGroup(f) === "red"), tidy = total - faults.length;
+    const faultFollows = faults.filter(f => this.isFollowUp(f)).length;
+    const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-${view === "inventory" ? "type" : "filter"}="${filter}"` : ""}><small class="kpilabel">${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small class="kpisub">${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
+    const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
-    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(this.t("healthWhy"))}"><b>${Math.floor(health.percent)}<small>%</small></b></button>
-      <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
-      <div class="kpis">${[["objects", m.object_count, "", "inventory", "", "objects"], ["openFindings", total - quiet, total - quiet ? "warn" : "", "findingsNav", "", "findings", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
+    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
+      <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
+      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["sumGroupUrgent", faults.length, faults.length ? "red" : "", "findingsNav", "", "group:red", "bad", faultFollows ? this.t("findingsOfFollow", { n: this.formatNumber(faultFollows) }) : "", "group:red"], ["sumGroupTidy", tidy, tidy ? "warn" : "", "findingsNav", "", "group:tidy", "bad", "", "group:tidy"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
   }
@@ -329,13 +378,13 @@ class OverviewMixin {
     const b = this.backup;
     if (!b?.available) return "";
     const checks = b.checks || [], by = id => checks.find(c => c.id === id);
-    const newest = by("newest"), run = by("last_run");
+    const newest = by("newest"), run = by("last_run"), external = by("external");
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
     const tone = level => ({ ok: "ok", note: "warn", problem: "red" })[level] || "mute";
     const fact = (label, value, level) => `<div class="fact"><span>${this.t(label)}</span><b>${value}${level ? ` <span class="pill ${tone(level)}">${this.t(`bhLevel_${level}`)}</span>` : ""}</b></div>`;
     const age = newest?.values?.age_hours;
     const rows = [
-      fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age) })), newest?.level),
+      external ? fact("bh_newest", this.t("bhExternalShort"), "") : fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), newest?.level),
       run ? fact("bh_last_run", run.values?.completed ? this.esc(this.formatDate(run.values.completed)) : this.t("bhNever"), run.level) : "",
       fact("bhResult", problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), ""),
     ].join("");
@@ -407,19 +456,19 @@ class OverviewMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("sysOvTitle")}</h2><p>${this.t("sysOvHint")}</p></div><button class="link" data-jump="storage">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows}</div></div>`;
   }
 
-  // Size of the recorder database from two file stats taken during the scan; the table queries stay in the Recorder view.
+  // Size of the recorder database from two file stats (SQLite) or one size query to the server taken during the scan; the table queries stay in the Recorder view.
   databaseCard() {
     const d = this.data.meta.database;
     if (!d) return "";
     this.ensureDbFirst();
     const measured = d.db_bytes !== null && d.db_bytes !== undefined;
     const rows = measured ? [
-      [this.t("dbOvSize"), this.formatBytes(d.db_bytes)],
-      [this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)],
+      [this.t("dbOvSize"), d.estimated ? this.t("dbAbout", { size: this.formatBytes(d.db_bytes) }) : this.formatBytes(d.db_bytes)],
+      ...(d.dialect === "sqlite" ? [[this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)]] : []),
       ...(d.keep_days ? [[this.t("dbOvKeep"), this.t("dbOvKeepDays", { n: this.formatNumber(d.keep_days) })]] : []),
       ...(this.dbFirst ? [[this.t("dbOvFirst"), `${this.esc(this.formatDate(new Date(this.dbFirst * 1000).toISOString()))}<small>${this.esc(this.relTime(new Date(this.dbFirst * 1000).toISOString()))}</small>`]] : []),
-      [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, d.per_day)) }) : this.t("dbOvObserving")],
-    ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(d.dialect || "?") })]];
+      [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.dbGrowthSize(d.per_day) }) : this.t("dbOvObserving")],
+    ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(this.dbDialect(d.dialect)) })]];
     const purgeOff = d.auto_purge === false ? `<p class="factnote">${this.t("dbOvPurgeOff")}</p>` : "";
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbOvTitle")}</h2><p>${this.t("dbOvHint")}</p></div><button class="link" data-jump="recorder">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${purgeOff}</div>`;
   }
@@ -439,7 +488,13 @@ class OverviewMixin {
       ["quarantine", "mdi:archive-clock-outline", "cleanup", (this.data.quarantine || []).length, undefined],
       ...(this.policies?.available ? [["polOverviewViolations", "mdi:clipboard-alert-outline", "policies", policyViolations, undefined, activeRules.length === 1 ? this.t("polOverviewRuleOne") : this.t("polOverviewRules", { n: this.formatNumber(activeRules.length) })]] : []),
     ];
-    const rows = items.map(([label, icon, view, count, filter, hint]) => `<button class="row" data-jump="${view}"${label === "unreferenced" ? ' data-jump-tab="unused"' : ""}${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong>${hint ? `<small>${this.esc(hint)}</small>` : ""}</span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
+    // Each row lands where it counted: the low batteries, the unused tab and the quarantine tab, with their lists cleared.
+    const land = { batteries: ' data-jump-battery="low" data-jump-clear="batteries"', unreferenced: ' data-jump-tab="unused" data-jump-clear="unreferenced"', quarantine: ' data-jump-tab="quarantine" data-jump-clear="cleanup"' };
+    // A row with nothing to show is a quiet line that leads nowhere, like a tile with 0 on the findings page.
+    const rows = items.map(([label, icon, view, count, filter, hint]) => {
+      const inner = `<span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong>${hint ? `<small>${this.esc(hint)}</small>` : ""}</span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span>`;
+      return count ? `<button class="row" data-jump="${view}"${land[label] || ""}${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}>${inner}</button>` : `<div class="row zero">${inner}</div>`;
+    }).join("");
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("hintsTitle")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
   }
 }

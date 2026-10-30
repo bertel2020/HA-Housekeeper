@@ -8,7 +8,7 @@ const BATTERY_GROUP_DAYS = 14;
 
 Object.assign(TEXT.de, {
   btColName: "Gerät", btColArea: "Bereich", btColType: "Typ", btColLevel: "Stand", btColSlope: "Verbrauch", btColLeft: "Leer in", btColAct: "Aktion", btColDate: "Datum", btTypeChange: "Typ ändern", btLevelOk: "in Ordnung",
-  btSlopeDay: "{n} %/Tag", btVoltDay: "{n} V/Tag", btSlopeStable: "stabil", btLeftLow: "unter Grenze", btLeftDays: "{n} Tage", btLeftFar: "> {n} Tage", btLeftStable: "nicht absehbar",
+  btSlopeDay: "{n} %/Tag", btVoltDay: "{n} V/Tag", btSlopeStable: "stabil", btLeftLow: "jetzt", btLeftLowHint: "Schon unter der Grenze", btLeftDays: "{n} Tage", btLeftFar: "> {n} Tage", btLeftStable: "nicht absehbar",
   btFilterSoon: "Bald leer", btFilterUntyped: "Ohne Typ", btAllTypes: "Alle Typen",
   needNone: "Keine Batterie ist unter ihrer Grenze oder erreicht sie laut Prognose in den nächsten 30 Tagen.", needUntyped: "ohne Typ", needUntypedHint: "Typ in der Tabelle setzen", needNow: "Jetzt niedrig",
   btTableNote: "Prognose nur bis 90 Tage, aus den letzten fünf Wochen: eine Schätzung, keine Zusage. Ohne Prognose: {unknown} (zu wenige Tage oder stabil). Nach einem Wechsel zählt nur der Verlauf danach.",
@@ -18,7 +18,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   btColName: "Device", btColArea: "Area", btColType: "Type", btColLevel: "Level", btColSlope: "Drain", btColLeft: "Empty in", btColAct: "Action", btColDate: "Date", btTypeChange: "Change type", btLevelOk: "ok",
-  btSlopeDay: "{n} %/day", btVoltDay: "{n} V/day", btSlopeStable: "stable", btLeftLow: "below limit", btLeftDays: "{n} days", btLeftFar: "> {n} days", btLeftStable: "no forecast",
+  btSlopeDay: "{n} %/day", btVoltDay: "{n} V/day", btSlopeStable: "stable", btLeftLow: "now", btLeftLowHint: "Already below the limit", btLeftDays: "{n} days", btLeftFar: "> {n} days", btLeftStable: "no forecast",
   btFilterSoon: "Empty soon", btFilterUntyped: "No type", btAllTypes: "All types",
   needNone: "No battery is below its limit or forecast to reach it within 30 days.", needUntyped: "no type", needUntypedHint: "set the type in the table", needNow: "Low now",
   btTableNote: "Forecast only up to 90 days, from the last five weeks: an estimate, not a promise. No forecast for {unknown} (too few days or stable). After a change only the time since counts.",
@@ -60,6 +60,7 @@ class BatteryTableMixin {
 
   batteryLevelCell(row, limit) {
     const { item, level, low, volt } = row;
+    if (row.unavailable) return `<span class="pill warn" title="${this.esc(this.t("batteryUnavailableSub"))}">${this.t("batteryUnavailableShort")}</span>`;
     if (volt && volt.percent !== undefined) {
       const tone = low ? (volt.percent <= limit / 2 ? "red" : "amber") : volt.percent <= limit * 2 ? "amber" : "green";
       return `<div class="lvl"><div class="bar"><i style="width:${Math.max(2, Math.min(100, volt.percent))}%;background:var(--hk-${tone})"></i></div><span class="lvlnum ${low ? "red" : ""}">${volt.percent} %<small>${this.esc(this.voltNum(level))}</small></span></div>`;
@@ -81,7 +82,8 @@ class BatteryTableMixin {
 
   batteryLeftCell(row) {
     const fc = row.fc;
-    if (row.low) return `<b class="red">${this.t("btLeftLow")}</b>`;
+    // Already below the limit: it is empty for the purpose of the list now; the tooltip says why.
+    if (row.low) return `<b class="red" title="${this.esc(this.t("btLeftLowHint"))}">${this.t("btLeftLow")}</b>`;
     if (!fc) return `<span class="muted">—</span>`;
     if (fc.state === "falling") return `<b class="${fc.days <= BATTERY_SOON_DAYS ? "red" : fc.days <= BATTERY_NEED_DAYS ? "amber" : ""}">${this.t("btLeftDays", { n: fc.days })}</b>`;
     if (fc.state === "far") return `<span class="muted">${this.t("btLeftFar", { n: BATTERY_FAR_DAYS })}</span>`;
@@ -156,8 +158,9 @@ class BatteryTableMixin {
     }
     const byDays = (x, y) => x.days - y.days || this.batteryName(x.item).title.localeCompare(this.batteryName(y.item).title);
     const windows = [];
-    const now = rows.filter(r => r.low).sort(byDays);
-    if (now.length) windows.push({ id: "bt_now", tone: "red", title: this.t("needNow"), list: now });
+    // The batteries that are low now come first, in a fold of their own like the windows after them.
+    const now = rows.filter(r => r.low).sort((x, y) => this.batteryName(x.item).title.localeCompare(this.batteryName(y.item).title));
+    if (now.length) windows.push({ id: "bt_now", tone: "red", title: this.t("needNow"), sub: "", list: now });
     for (const [slot, list] of [...slots].sort((x, y) => x[0] - y[0])) {
       const from = slot * BATTERY_GROUP_DAYS, to = Math.min(from + BATTERY_GROUP_DAYS - 1, BATTERY_FAR_DAYS);
       windows.push({ id: `bt_${from}`, tone: from <= BATTERY_SOON_DAYS - 1 ? "red" : from <= 41 ? "warn" : "ok", title: this.t("fcWindow", { from, to }), sub: list.length > 1 ? this.t("fcTogether") : "", list: list.sort(byDays) });
@@ -166,7 +169,7 @@ class BatteryTableMixin {
     const columns = [
       { key: "name", label: "btColName", sortable: false, cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
       { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item) || "—") },
-      { key: "type", label: "btColType", sortable: false, cell: r => (r.type ? `<span class="pill">${this.esc(r.type)}</span>` : `<span class="muted">${this.t("btTypeNone")}</span>`) },
+      { key: "type", label: "btColType", sortable: false, cell: r => this.batteryTypeCell(r) }, // the same cell as in the list: a missing type is a button
       { key: "level", label: "btColLevel", sortable: false, cell: r => this.batteryLevelCell(r, this.data.meta.low_battery_percent ?? 20) },
       { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDate(new Date(Date.now() + r.days * 86400000).toISOString()).split(",")[0])) },
       { key: "left", label: "btColLeft", sortable: false, cell: r => this.batteryLeftCell(r) },

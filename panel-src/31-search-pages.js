@@ -32,7 +32,7 @@ const SEARCH_WORDS = {
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
   goals: "ziele wartungsziele grenzen goals",
   backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
-  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs firmware check before",
+  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs marketplace firmware check before",
   blueprints: "blueprints vorlagen fehlend defekt ungenutzt missing broken unused",
   info: "info version speichert daten diagnose prüfung quellen dauer about stored diagnostics coverage timing",
   compare: "scan-vergleich verlauf vergleich scans history compare",
@@ -106,11 +106,14 @@ class SearchPagesMixin {
     this.view = view; this.pages = {}; this.selected = null; this.trail = []; this.graphTrail = []; this.graphOrigin = null;
     if (entry.settingsTab) this.settingsTab = entry.settingsTab;
     if (entry.viewTab) (this.viewTab ||= {})[view] = entry.viewTab;
-    if (entry.kind === "filter" && entry.objectStatus) { this.statusFilter = entry.objectStatus; this.typeFilter = ""; this.originFilter = ""; }
+    // A filter from the search shows what its count said: the list starts without the search and filters kept before.
+    if (entry.kind === "filter" && entry.objectStatus) {
+      const st = this.invState(); st.q = ""; st.f = {}; // type, origin, label and status live in the filters of the list
+      this.statusFilter = entry.objectStatus;
+    }
     if (entry.kind === "filter" && !entry.objectStatus) {
-      const fresh = FRESH_STATES.includes(entry.findingStatus);
-      this.findingStatus = fresh ? "" : entry.findingStatus;
-      if (fresh) this.lvState("findings", "impact", "desc").f.fresh = entry.findingStatus;
+      this.clearFindingFilters();
+      this.findingStatus = entry.findingStatus; // new and in work are chips of the status row like the others
     }
     this.render();
     if (view === "changes" && !this.compare) this.loadCompare();

@@ -50,7 +50,7 @@ const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 17
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", inventory: "view=inventory", changes: "view=changes", monitor_editor: "view=monitor&editor=1",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
-  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -119,6 +119,10 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
     backups: [70, 94, 118].map((h, i) => ({ date: ago(h), size: (900 - i * 10) * MB, agents: ["hassio.local"], protected: false, automatic: true, failed_agents: [] })),
     attest: { emergency_kit: null, restore_test: ago(24 * 37) } };
   const data = await (await fetch("/data.json")).json(), trend = await (await fetch("/trend.json")).json();
+  // Two marks for the page of exceptions and marks: one current, one whose review date has passed.
+  const devices = data.objects.filter(o => o.object_type === "device");
+  if (devices[0]) devices[0].mark = { kind: "expected_offline", reason: "nachts aus", until: null, window: { mode: "time", from: "22:00", to: "07:00" }, at: ago(240) };
+  if (devices[1]) Object.assign(devices[1], { mark: { kind: "seasonal", reason: "", until: ago(48), at: ago(2400) }, mark_due: true });
   const el = document.createElement("ha-housekeeper-panel");
   el.narrow = innerWidth <= 870; // as Home Assistant hands it to a panel when its sidebar becomes a drawer
   document.body.appendChild(el);
@@ -127,6 +131,7 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
     callWS: async msg => { const t = msg.type;
       if (t.endsWith("/inventory") || t.endsWith("/scan")) return data;
       if (t.endsWith("/status")) return { running: false };
+      if (t.endsWith("/exceptions")) return { rules: [{ id: "r1", kind: "area", targets: ["garten"], action: "delay", days: 3, scope: "always", enabled: true, note: "", effect: { hold: 5, due: 0 } }], areas: [{ id: "garten", name: "Garten" }], labels: [], integrations: [], domains: [], devices: [], entities: [], vacation: {}, days_max: 365 };
       if (t.endsWith("/plan_list")) return { plans: [] };
       if (t.endsWith("/compare")) return trend;
       if (t.endsWith("/detail")) return { attributes: { friendly_name: "Beispiel", unit_of_measurement: "W" } };
@@ -141,7 +146,17 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
         findings: [
           { kind: "duplicates", level: "problem", groups: 7, capped: false, series: [{ statistic_id: "sensor.a", name: "Energie Haus", groups: 5 }] },
           { kind: "recorder_gap", level: "problem", gaps: 2, longest_seconds: 7200, latest: [{ start: 1790000000, end: 1790007200, seconds: 7200, cause: "recorder" }] },
-          { kind: "wal_large", level: "hint", wal_bytes: 3221225472, db_bytes: 11811160064 }] };
+          { kind: "wal_large", level: "hint", wal_bytes: 3221225472, db_bytes: 11811160064 }],
+        tables: [{ name: "states", bytes: 5.1 * GB }, { name: "state_attributes", bytes: 2.4 * GB }, { name: "statistics", bytes: 1.2 * GB }, { name: "events", bytes: 0.4 * GB }], tables_total: 4, tables_at: Date.now() / 1000 - 600 };
+      if (t.endsWith("/entity_space")) {
+        const ents = [["sensor.laut", 1.4, 0.2, 72000, 3], ["sensor.attr", 0.3, 1.1, 9000, 8800], ["sensor.beispiel_7", 0.6, 0.05, 41000, 12]].map(([entity_id, s, a, rows, variants]) => ({ entity_id, rows, states_bytes: s * GB, variants, shared: 0, attrs_bytes: a * GB, bytes: (s + a) * GB }));
+        const ranking = { entities: ents, entities_total: 412, loose_states_bytes: 0, loose_attrs_bytes: 12 * MB, loose_attrs_rows: 830, states_table: 5.1 * GB, attrs_table: 2.4 * GB, scaled: true, estimated: false };
+        if (q.get("space") === "running") return { available: true, running: true, result: null, progress: { share: 0.6, phase: "attrs", stopping: false, elapsed: 80, left: 55 }, interim: ranking };
+        return { available: true, running: false, result: { ...ranking, computed_at: Date.now() / 1000 - 300, took_ms: 94000, state: "done", read_share: 1 } };
+      }
+      if (t.endsWith("/entity_attributes")) return { available: true, busy: false, entity_id: msg.entity_id, found: true, total: 8800, read: 2000, chars: 4.1e7,
+        keys: [{ key: "forecast", chars: 3.6e7, share: 0.878, rows: 2000, changes: 1990, alone: 1500, driver: true }, { key: "source_list", chars: 3.1e6, share: 0.076, rows: 2000, changes: 0, alone: 0, driver: false }, { key: "media_title", chars: 1.2e6, share: 0.029, rows: 2000, changes: 1200, alone: 300, driver: true }, { key: "friendly_name", chars: 4e5, share: 0.01, rows: 2000, changes: 0, alone: 0, driver: false }],
+        rest: { keys: 6, chars: 3e5 } };
       if (t.endsWith("/statistics_last")) { const now = Date.now() / 1000; return { available: true, busy: false, last: { "sensor.e2m_proxon_fwt_meter_energy": now - 1038 * 86400, "sensor.fritz_box_7530_download_geschwindigkeit": now - 1033 * 86400, "sensor.fritz_box_7530_upload_geschwindigkeit_2": now - 30 * 86400, "sensor.eltako_gw1_weather_station_illuminance": null } }; }
       if (t.endsWith("/policies")) return { available: true, schema: 1, enabled: 2, violations: 3, rules: [
         { id: "entity_area", enabled: true, count: 2, ignored: 1, items: [{ object_type: "entity", object_id: "light.flur", name: "Flurlicht", key: "policy.entity_area|light.flur|", ignored: false, by: null }, { object_type: "entity", object_id: "sensor.keller", name: "Keller Temperatur", key: "policy.entity_area|sensor.keller|", ignored: false, by: null }, { object_type: "entity", object_id: "switch.alt", name: "Alter Schalter", key: "policy.entity_area|switch.alt|", ignored: true, by: "user" }] },
@@ -173,6 +188,17 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
         apps_memory: 21 * MB, cards_total: 100 * MB,
         cards: [{ id: "1", type: "module", url: "/hacsfiles/button-card/button-card.js?hacstag=1", bytes: 1.2 * MB, scope: "folder" }, { id: "2", type: "module", url: "/local/my-card.js", bytes: 40 * 1024, scope: "file" }, { id: "3", type: "module", url: "https://cdn.example.org/x.js", bytes: null, scope: null }],
         blueprints: [{ domain: "automation", path: "homeassistant/motion_light.yaml", name: "Motion-activated Light", author: "Home Assistant", bytes: 1800 }, { domain: "script", path: "homeassistant/confirmable_notification.yaml", name: "Confirmable Notification", author: "Home Assistant", bytes: 2400 }] };
+      // Storage use of the Recorder and the overview of the automations read commands of their own as well.
+      if (t.endsWith("/recorder_costs")) return { available: true, busy: false, cached: false, took_ms: 2100, computed_at: Date.now() / 1000, age_seconds: 0, keep_days: 10, rows: 412000, size_bytes: 11 * GB, total_states: 412000, statistics: [{ statistic_id: "sensor.energie", rows: 9000 }, { statistic_id: "sensor.temperatur", rows: 4200 }], statistics_total: 140, entities: [
+        { entity_id: "sensor.laut", name: "${language === "en" ? "Noisy sensor" : "Lauter Sensor"}", states: 72000, share: 17.5, per_day: 72000, per_day_avg: 70000, used: false, excluded: false, suggest_exclude: true },
+        { entity_id: "sensor.attr", name: "${language === "en" ? "Attributes only" : "Nur Attribute"}", states: 9000, share: 2.2, per_day: 9000, per_day_avg: 8800, used: true, excluded: false, suggest_exclude: false }] };
+      if (t.endsWith("/automation_quality")) { const dim = (level, key = "runs") => ({ level, reasons: [{ key, count: 3 }] }); return { items: [
+        { entity_id: "automation.flurlicht", name: "${language === "en" ? "Hall light" : "Flurlicht"}", status: "active", worst: "red", dimensions: { integrity: dim("ok"), reliability: dim("red", "failing"), effectiveness: dim("unknown", "no_criteria"), maintainability: dim("info", "no_description"), restart_safety: dim("warn", "long_wait"), efficiency: dim("ok"), conflicts: dim("ok") } },
+        { entity_id: "automation.heizung", name: "${language === "en" ? "Night heating" : "Heizung Nacht"}", status: "active", worst: "ok", dimensions: { integrity: dim("ok"), reliability: dim("ok"), effectiveness: dim("ok"), maintainability: dim("ok"), restart_safety: dim("ok"), efficiency: dim("ok"), conflicts: dim("ok") } }], scripts: [] }; }
+      // The Blueprints tab of Maintenance reads its own command: one unused blueprint and one an automation misses.
+      if (t.endsWith("/blueprints")) return { available: true, schema: 1, unused: 1, missing: 1, broken: 0, domains: [
+        { domain: "automation", unused: [{ path: "homeassistant/motion_light.yaml", name: "Motion-activated Light", bytes: 1800 }], missing: [{ path: "custom/old_light.yaml", count: 1, users: [{ id: "automation.a1", name: "Automation 1" }] }], broken: [] },
+        { domain: "script", unused: [], missing: [], broken: [] }] };
       if (t.endsWith("/sensitive_fields")) return { schema: 1, entries: [
         { entry_id: "c1", domain: "alexa_media", title: "Alexa", disabled: false, fields: [{ source: "data", key: "password", kind: "password", set: true }, { source: "data", key: "token.refresh_token", kind: "token", set: true }] },
         { entry_id: "c2", domain: "tado", title: "Tado", disabled: false, fields: [{ source: "data", key: "api_key", kind: "api_key", set: false }, { source: "data", key: "webhook_id", kind: "webhook", set: true }] },
@@ -188,7 +214,7 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
           { slug: "a0d7b954_ssh", name: "Advanced SSH & Web Terminal", state: "started", version: "21.0.0", checked: true, risk: "high", access: [{ kind: "full_access", detail: null, level: "high" }, { kind: "privileged", detail: "SYS_ADMIN, NET_ADMIN", level: "high" }, { kind: "supervisor_api", detail: "manager", level: "high" }, { kind: "host_network", detail: null, level: "medium" }, { kind: "apparmor_off", detail: null, level: "medium" }] },
           { slug: "core_mosquitto", name: "Mosquitto broker", state: "started", version: "6.5.1", checked: true, risk: "medium", access: [{ kind: "supervisor_api", detail: "default", level: "medium" }, { kind: "auth_api", detail: null, level: "medium" }] },
           { slug: "core_zwave_js", name: "Z-Wave JS", state: "stopped", version: "0.9.0", checked: true, risk: "low", access: [{ kind: "devices", detail: "/dev/ttyUSB0", level: "low" }] }] };
-      if (t.endsWith("/preflight")) return { state: { ha_version: "2026.10.0", backup: { available: true, configured: true, newest: "x", age_hours: 5 }, repairs: [], failed_entries: [], broken: [], pending_updates: [] }, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "ok", count: 0 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
+      if (t.endsWith("/preflight")) return { state: { ha_version: "2026.10.0", backup: { available: true, configured: true, newest: "x", age_hours: 70 }, repairs: [], failed_entries: [], broken: [], pending_updates: [] }, checks: [{ check: "backup", level: "ok" }, { check: "repairs", level: "ok", count: 0 }, { check: "failed_entries", level: "ok", count: 0 }, { check: "broken", level: "ok", count: 0 }], record: null, after: null };
       return {}; } };
   for (let i = 0; i < 50 && !el.data; i++) await wait(100);
   const plan = q.get("plan");

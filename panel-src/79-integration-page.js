@@ -113,8 +113,10 @@ class IntegrationPageMixin {
     const docs = /^https:\/\//.test(item.documentation || "") ? `<a class="btn" href="${this.esc(item.documentation)}" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:book-open-variant"></ha-icon>${this.t("intDocs")}</a>` : "";
     const folder = item.custom ? `<section class="panel"><div class="panelhead"><h2>${this.t("intFolder")}</h2></div><div class="facts">${fact("intFolder", this.esc(item.integration_dir || `custom_components/${item.domain}`))}${size ? fact("intFolderSize", this.esc(this.formatBytes(size.bytes))) : ""}</div></section>` : "";
     const hacs = item.hacs ? this.intHacsCard(item.hacs) : "";
-    const rows = this.objectTable(`intentries-${item.object_id}`, this.intEntries(item).map(e => ({ key: `config_entry:${e.object_id}`, type: "config_entry", name: e.name || e.object_id, sub: "", tone: this.tone(e.status), state: e.status, stateLabel: this.statusLabel(e.status), pill: this.pill(e.status), entities: e.entity_count || 0, devices: e.device_count || 0 })), {
-      min: 8, extras: [
+    const rows = this.objectTable(`intentries-${item.object_id}`, this.intEntries(item).map(e => ({ key: `config_entry:${e.object_id}`, type: "config_entry", name: e.name || e.object_id, sub: "", tone: this.tone(e.status), state: e.status, stateLabel: this.statusLabel(e.status), pill: this.pill(e.status), pause: this.apCanPause(e.object_id, e.state) ? e.object_id : "", entities: e.entity_count || 0, devices: e.device_count || 0 })), {
+      min: 8, sort: "status", statusFirst: true, stripe: true,
+      menu: r => [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(this.haPath({ object_type: "config_entry", domain: item.domain }))}"`], ...(r.pause ? [null, ["mdi:pause-circle-outline", "apSend", `data-ap-send="${this.esc(r.pause)}"`]] : [])],
+      extras: [
         { key: "entities", label: "objColEntities", dir: "desc", get: r => r.entities, cell: r => this.formatNumber(r.entities) },
         { key: "devices", label: "objColDevices", dir: "desc", get: r => r.devices, cell: r => this.formatNumber(r.devices) },
       ],
@@ -149,7 +151,7 @@ class IntegrationPageMixin {
 
   intUsedCard(item) {
     const used = this.intUsedBy(item);
-    const rows = this.objectTable(`intused-${item.object_id}`, used.map(o => ({ key: this.objectKey(o), type: o.object_type, name: o.name || o.object_id, sub: o.object_id, tone: this.tone(o.status), state: o.status, stateLabel: this.statusLabel(o.status), pill: this.pill(o.status) })), { empty: this.t("intNoUsed") });
+    const rows = this.objectTable(`intused-${item.object_id}`, used.map(o => ({ key: this.objectKey(o), type: o.object_type, name: o.name || o.object_id, sub: o.object_id, tone: this.tone(o.status), state: o.status, stateLabel: this.statusLabel(o.status), pill: this.pill(o.status) })), { empty: this.t("intNoUsed"), menu: true, stripe: true, sort: "status" });
     return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("intUsedTitle")}</h2></div>${rows}</section></div>`;
   }
 

@@ -3,8 +3,10 @@ class UnusedMixin {
   batteryRows() {
     const rows = [];
     for (const o of this.data.objects) {
-      if (o.object_type !== "entity" || o.device_class !== "battery" || o.status !== "active" || this.batteryExcluded(o)) continue;
+      if (o.object_type !== "entity" || o.device_class !== "battery" || !["active", "unavailable"].includes(o.status) || this.batteryExcluded(o)) continue;
       const domain = o.object_id.split(".")[0];
+      // A battery that reports nothing is often an empty one: it stays in the list, without a level.
+      if (o.status === "unavailable") { if (["sensor", "binary_sensor"].includes(domain)) rows.push({ item: o, level: null, low: false, unavailable: true }); continue; }
       if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
       else if (domain === "sensor" && (!o.unit || o.unit === "%") && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
     }
@@ -146,7 +148,7 @@ class UnusedMixin {
       { key: "first", label: "utFirst", dir: "asc", cell: firstCell },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
       { key: "rows", label: "utRows", dir: "desc", cell: rowsCell },
-      { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
+      { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn" title="${this.esc(this.t("inEnergyLocked"))}">${this.t("inEnergy")}</span>` : "") },
     ];
     const empty = this.data.meta.recorder_available ? (all.length ? this.noMatches("orphanstats") : this.t("noOrphanStats")) : this.t("noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
@@ -154,8 +156,10 @@ class UnusedMixin {
   }
 
   // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
+  // A statistic of the Energy dashboard cannot be picked: a greyed box that says why, so the rows stay in line.
   purgeBox(o) {
-    if (!this.data.meta.recorder_available || o.in_energy) return "";
+    if (!this.data.meta.recorder_available) return "";
+    if (o.in_energy) return `<input type="checkbox" class="selbox" disabled title="${this.esc(this.t("inEnergyLocked"))}" aria-label="${this.esc(`${o.statistic_id}: ${this.t("inEnergyLocked")}`)}">`;
     return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""} aria-label="${this.esc(o.statistic_id)}">`;
   }
 
@@ -171,7 +175,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = n > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar"><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("orphanstats", n)}<span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span><button class="btn dangersoft" data-purge-run ${n && !this.purgeBusy ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button>${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span><button class="btn dangersoft" data-purge-run ${n && !this.purgeBusy ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button>${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   async purgeRun() {
@@ -233,6 +237,7 @@ class UnusedMixin {
       { key: "reported", label: "utReported", dir: "desc", cell: o => this.ageCell(o.last_reported || o.last_updated) },
       { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: o => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(o) })) },
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div></div>`;
@@ -267,15 +272,18 @@ class UnusedMixin {
       { name: "type", all: this.t("btAllTypes"), options: types.map(x => [x, x]) },
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
     ] });
-    const list = this.refine("batteries", this.batteryFilter === "low" ? low : all, {
+    const gone = all.filter(r => r.unavailable);
+    const list = this.refine("batteries", this.batteryFilter === "low" ? low : this.batteryFilter === "unavailable" ? gone : all, {
       text: r => [this.batteryName(r.item).title, r.item.name, r.item.object_id, this.areaName(r.item), r.type].join(" "),
       filters: { area: (r, v) => this.areaName(r.item) === v, type: (r, v) => r.type === v, soon: (r, v) => (v === "soon" ? r.low || (r.days !== null && r.days <= 30) : !r.type) },
       sorts: this.batteryTableSorts(), tie: r => r.item.object_id,
     });
     const lowest = all.filter(r => !r.volt && r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
     const chips = this.sumTiles([
-      { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
+      // "All" clears the filter; it is not marked itself, only a filter that is on is (as on the findings page).
+      { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: false },
       { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: need }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
+      gone.length ? { label: this.t("batteryUnavailable"), value: this.formatNumber(gone.length), sub: this.t("batteryUnavailableSub"), tone: "warn", attr: ["data-battery-filter", "unavailable"], active: this.batteryFilter === "unavailable" } : null,
       lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc([this.batteryName(lowest.item).title, this.areaName(lowest.item)].filter(Boolean).join(" · ")), tone: lowest.low ? "warn" : "mute", attr: ["data-object", this.objectKey(lowest.item)] } : null,
     ]);
     const unknown = this.batteryTrend?.unknown;
@@ -285,6 +293,6 @@ class UnusedMixin {
     this.ensureBatteryTrend();
     const bar2 = this.pageBar({ at: this.loadedAt("batteries"), loading: this.batteryTrendLoading, attr: "data-bt-refresh" });
     // One column: when which battery runs out (need and forecast together), the list, then the kinds that need a look.
-    return `<div class="stack">${bar2}${chips}${this.batteryNeed(all)}<div class="panel">${head}${this.filterNote(this.batteryFilter === "low" ? [this.t("batteryLow")] : [], 'data-battery-filter="all"')}${bar}${body}${notes}</div>${this.batteryCustomTypes()}${this.batteryKindCard()}</div>`;
+    return `<div class="stack">${bar2}${chips}${this.batteryNeed(all)}<div class="panel">${head}${this.filterNote(this.batteryFilter === "low" ? [this.t("batteryLow")] : this.batteryFilter === "unavailable" ? [this.t("batteryUnavailable")] : [], 'data-battery-filter="all"')}${bar}${body}${notes}</div>${this.batteryCustomTypes()}${this.batteryKindCard()}</div>`;
   }
 }

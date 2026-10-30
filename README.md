@@ -30,10 +30,12 @@ The goal is not aggressive automatic cleanup. Housekeeper helps you understand w
 
 > Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan. Plans cover quarantine and removal, repairs, replacing references, renaming entities, assigning areas, deleting unused automations, trimming recorder history and other maintenance tasks. Depending on the action, Housekeeper requires a quarantine period, an additional confirmation and a successful backup. Reversible changes can be undone while their targets remain unchanged; irreversible recorder and backup deletions are clearly marked. Integrations and hubs are never modified, and Housekeeper changes only what a confirmed plan names.
 
+> **Beta of 2.0:** the pre-release [2.0.0-beta.1](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.1) is there to try: findings by topic with a page of its own, "Fix", a guided tour for cleaning up, the view "Simple" or "Full" and new names for the outcomes. In HACS (from Home Assistant 2026.11: Marketplace) it shows under "Redownload" with beta versions switched on. A normal update stays on 1.x.
+
 ## Screenshots
 
 <p align="center">
-  <img src="screenshots/showcase-en/overview-desktop-light.png" alt="Housekeeping overview" width="100%">
+  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeper/main/screenshots/showcase-en/overview-desktop-light.png" alt="Housekeeping overview" width="100%">
 </p>
 
 | Findings | Repair |
@@ -60,7 +62,8 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 - **Findings with impact**: broken references, orphaned and long-unavailable entities, possible duplicates, unused automations and low batteries, ranked by how much depends on them.
 - **Dependencies**: see what an entity, device or automation is connected to, and what would break if you removed it.
 - **Guided cleanup**: preview, explicit confirmation, backup, verification and undo, step by step. Nothing runs on its own.
-- **Maintenance views**: batteries, reliability of integrations, recorder load and database, backup protection, automation runs and more.
+- **Maintenance views**: batteries, reliability of integrations, recorder load and database, backup protection, automation runs, start times of Home Assistant and more.
+- **Auto-pause**: an integration that keeps failing to set up is paused and tried again later (3 × 1 h, 3 × 3 h, 12 × 6 h, then daily, up to 7 days), so a service that is down is not asked a thousand times a day. Off by default; once switched on it covers every data provider that is not excluded, and you can send any integration in by hand.
 - **Home functions**: put together important functions of your home (heating, alarm, photovoltaics) from your own objects and keep an eye on them, with history, availability and sensors. A mark such as “Offline on purpose” can apply only at night or at fixed times.
 - **Exception rules and vacation mode**: leave out objects by area, label, integration or type, or only while a vacation entity or calendar says you are away, so that expected outages stay quiet.
 - **AI access**: programs and AI agents that can call Home Assistant services (for example ha-mcp) read the findings and, if you allow it, mark them in Housekeeper's own list, never in Home Assistant. Off by default, with limits, an automatic switch-off, a log of every call and an undo.
@@ -68,7 +71,7 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 
 ## Quick start
 
-1. Open HA Housekeeper in HACS with the button below, download it and restart Home Assistant.
+1. Open HA Housekeeper in HACS with the button below, download it and restart Home Assistant. From Home Assistant 2026.11 HACS is built in as the **Marketplace**; the steps are the same there.
 
    [![Open the HACS repository in My Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeper&category=integration)
 

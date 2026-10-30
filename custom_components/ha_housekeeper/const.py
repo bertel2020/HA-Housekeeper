@@ -33,17 +33,20 @@ REFACTOR_STORAGE_KEY: Final = f"{DOMAIN}.refactor"
 PROTECTION_STORAGE_KEY: Final = f"{DOMAIN}.protection"
 SIGNALS_STORAGE_KEY: Final = f"{DOMAIN}.signals"
 ENTRY_STATES_STORAGE_KEY: Final = f"{DOMAIN}.entry_states"
+AUTO_PAUSE_STORAGE_KEY: Final = f"{DOMAIN}.auto_pause"
 REMINDERS_STORAGE_KEY: Final = f"{DOMAIN}.reminders"
 NOTES_STORAGE_KEY: Final = f"{DOMAIN}.notes"
 BATTERY_STORAGE_KEY: Final = f"{DOMAIN}.batteries"
 WINDOW_STORAGE_KEY: Final = f"{DOMAIN}.window"  # removed feature: the file is deleted on start
 NOTIFY_STORAGE_KEY: Final = f"{DOMAIN}.notify"
+HINTS_STORAGE_KEY: Final = f"{DOMAIN}.hints"
 MCP_STORAGE_KEY: Final = f"{DOMAIN}.mcp"
 STALE_STORAGE_KEY: Final = f"{DOMAIN}.stale"
 SCAN_HEALTH_STORAGE_KEY: Final = f"{DOMAIN}.scan_health"
 MONITOR_STORAGE_KEY: Final = f"{DOMAIN}.monitor"
 LOAD_STORAGE_KEY: Final = f"{DOMAIN}.load"
 WATCH_STORAGE_KEY: Final = f"{DOMAIN}.watch"
+STARTS_STORAGE_KEY: Final = f"{DOMAIN}.starts"
 STORAGE_VERSION: Final = 1
 
 CONF_MIN_UNAVAILABLE_DAYS: Final = (
@@ -96,8 +99,8 @@ WARMUP_SECONDS: Final = 300
 WARMUP_SETTLE_SECONDS: Final = 60
 # An integration that is loading for less than this long does not restart the buffer (late, short set-ups are common).
 WARMUP_BLIP_SECONDS: Final = 15
-# How many titles of loading integrations the start notice names.
-WARMUP_NAMES: Final = 4
+# How many titles of loading integrations the start notice can list (it shows the first few and unfolds the rest).
+WARMUP_NAMES: Final = 60
 # Version of the WebSocket reply contract; raise it when a field is renamed or removed.
 API_SCHEMA: Final = 1
 SIGNAL_SCAN_COMPLETE: Final = f"{DOMAIN}_scan_complete"

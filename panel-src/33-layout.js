@@ -3,7 +3,13 @@ class LayoutMixin {
   // A row of key figures. tile: { label, value, sub, tone ("ok"|"warn"|"red"|"mute"), tab, filter, lf } where tab ("view|id") makes it a button; lf ([list id, filter name, value]) sets that list filter, an empty name clears them all.
   // `cls` adds a class to the grid, e.g. "even" for tiles of one size in rows of three.
   sumTiles(tiles, cls = "") {
-    const cells = tiles.filter(Boolean).map(t => {
+    const cells = this.sumTileCells(tiles);
+    return cells ? `<div class="sumtiles${cls ? ` ${cls}` : ""}" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
+  }
+
+  // The tiles alone, for a page that lays them out in a grid of its own.
+  sumTileCells(tiles) {
+    return tiles.filter(Boolean).map(t => {
       const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}${t.spark ? `<span class="spark-row">${t.spark}</span>` : ""}`;
       const hint = t.hint ? ` title="${this.esc(t.hint)}"` : "";
       // Three kinds, told apart by a cue in the corner: a figure only (flat), a filter of the list below (funnel, marked when on), a link to another page (arrow).
@@ -11,7 +17,8 @@ class LayoutMixin {
       if (t.filter !== undefined) return filter(`data-finding-filter="${this.esc(t.filter)}"`, t.active);
       if (t.lf) {
         const [id, name, value] = t.lf, f = this.lv[id]?.f || {};
-        return filter(`data-lf-set="${this.esc(t.lf.join("|"))}"`, name ? f[name] === value : !Object.values(f).some(Boolean));
+        // A tile without a filter of its own ("All") clears the filters; it is not marked itself, only a filter that is on is.
+        return filter(`data-lf-set="${this.esc(t.lf.join("|"))}"`, name ? f[name] === value : false);
       }
       if (t.attr && t.attr[0] !== "data-object") return filter(`${t.attr[0]}="${this.esc(t.attr[1])}"`, t.active);
       if (t.inv !== undefined) return filter(`data-inv-filter="${this.esc(t.inv)}"`, t.active);
@@ -20,7 +27,6 @@ class LayoutMixin {
       if (t.unref) return go(`data-unref-tab="${t.unref}"`);
       return t.tab ? go(`data-view-tab="${this.esc(t.tab)}"`) : `<div class="sumtile ${t.tone || "mute"}"${hint}>${inner}</div>`;
     }).join("");
-    return cells ? `<div class="sumtiles${cls ? ` ${cls}` : ""}" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
   }
 
   // When the data of a page was read last (for its "as of"), and a time given in seconds as ISO text.
@@ -30,19 +36,20 @@ class LayoutMixin {
 
   // The slim row under a page title: the page's own controls and facts on the left, "as of" and the refresh button on the
   // right. { left, at (ISO time or null), loading, error, attr (the data-… attribute of the refresh button), exportId (a page exporter) }.
-  pageBar({ left = "", at = null, loading = false, attr = "", refresh = true, exportId = "" }) {
+  pageBar({ left = "", at = null, loading = false, attr = "", refresh = true, exportId = "", actions = "" }) {
     const stand = loading ? this.t("sysReading") : at ? this.t("sysAsOf", { time: this.formatDate(at) }) : "";
-    return `<div class="pagebar"><div class="pb-left">${left}</div><div class="pb-right">${stand ? `<span class="scanago">${this.esc(stand)}</span>` : ""}${exportId ? this.exportMenu(exportId) : ""}${refresh ? `<button class="btn" ${attr} title="${this.esc(this.t("sysRefreshHint"))}" ${loading ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:refresh" class="${loading ? "spin" : ""}"></ha-icon>${this.t("sysRefresh")}</button>` : ""}</div></div>`;
+    return `<div class="pagebar"><div class="pb-left">${left}</div><div class="pb-right">${stand ? `<span class="scanago">${this.esc(stand)}</span>` : ""}${actions}${exportId ? this.exportMenu(exportId) : ""}${refresh ? `<button class="btn" ${attr} title="${this.esc(this.t("sysRefreshHint"))}" ${loading ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:refresh" class="${loading ? "spin" : ""}"></ha-icon>${this.t("sysRefresh")}</button>` : ""}</div></div>`;
   }
 
   // Tiles that switch between the areas of one view: icon, title, number and a short hint; the open one is marked.
-  // tab: { id, icon, label, hint, count, tone, pill, pillTone, disabled }.
+  // tab: { id, icon, label, hint, count, tone, pill, pillTone, disabled, status }; status keeps the place of the pill while
+  // the numbers load, so the hints of a row of status tiles stay on one line.
   navTiles(view, tabs, open, label, compact = false) {
     const fixed = compact && tabs.some(t => t.facts);
     const cells = tabs.map(t => {
       const tone = t.tone || "mute", has = t.count !== undefined && t.count !== null;
-      const pills = `${has ? `<span class="pill ${tone}">${this.esc(this.formatNumber(t.count))}</span>` : ""}${t.pill ? `<span class="pill ${t.pillTone || tone}">${this.esc(t.pill)}</span>` : ""}`;
-      const inner = `<ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill">${pills}</span><small title="${this.esc(t.hint || "")}">${this.esc(t.hint || "")}</small>${t.facts ? `<span class="navfacts">${t.facts.map(f => `<span class="pill ${f.tone}">${this.esc(f.text)}</span>`).join("")}</span>` : ""}`;
+      const pills = `${has ? `<span class="pill ${tone}">${this.esc(this.formatNumber(t.count))}</span>` : ""}${t.pill ? `<span class="pill ${t.pillTone || tone}">${this.esc(t.pill)}</span>` : ""}${(t.extra || []).map(f => `<span class="pill ${f.tone}">${this.esc(f.text)}</span>`).join("")}`;
+      const inner = `<ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill${t.status ? " slot" : ""}">${pills}</span><small title="${this.esc(t.hint || "")}">${this.esc(t.hint || "")}</small>${t.facts ? `<span class="navfacts">${t.facts.map(f => `<span class="pill ${f.tone}">${this.esc(f.text)}</span>`).join("")}</span>` : ""}`;
       if (t.disabled) return `<div class="taskcard t-mute off" aria-disabled="true">${inner}</div>`;
       return `<button class="taskcard t-${tone}${t.id === open ? " on" : ""}" aria-pressed="${t.id === open}" data-view-tab="${this.esc(`${view}|${t.id}`)}">${inner}</button>`;
     }).join("");

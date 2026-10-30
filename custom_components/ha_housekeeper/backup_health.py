@@ -1,8 +1,8 @@
 """Backup protection: is the backup strategy sound, not only does a backup exist.
 
 Everything here only reads Home Assistant's backup manager. The one thing Housekeeper writes is a
-small record of two facts only the person can know: the emergency kit is stored safely, and a
-restore was tried. Housekeeper never restores, creates or deletes a backup here.
+small record of facts only the person can know: the emergency kit is stored safely, a restore
+was tried, and the backups are made outside Home Assistant (e.g. of a Docker volume or the host). Housekeeper never restores, creates or deletes a backup here.
 
 ``collect`` reads the manager; ``evaluate`` judges the result and needs no manager, so every
 threshold can be tested with plain data. Levels are ``ok``, ``note``, ``problem`` and ``unknown``;
@@ -35,7 +35,7 @@ SPACE_FACTOR = 1.5  # a guess: the next backup needs about this much room, measu
 OWN_BACKUPS_NOTE = 10  # Housekeeper's own backups: this many ...
 OWN_BACKUPS_BYTES = 5 * 1024**3  # ... or this much space in total is a hint to clean up
 PLAN_BACKUP_WINDOW_SECONDS = 2 * 3600  # the backup started up to this long before it was recorded
-ATTEST_KINDS = ("targets", "emergency_kit", "restore_test", "encryption")
+ATTEST_KINDS = ("targets", "emergency_kit", "restore_test", "encryption", "external")
 _SEVERITY = {"ok": 0, "unknown": 1, "note": 2, "problem": 3}
 
 
@@ -85,6 +85,16 @@ async def collect(hass: HomeAssistant) -> dict[str, Any]:
     except Exception:
         return {"available": False}
     state: dict[str, Any] = {"available": True, "backups": [], "agent_errors": []}
+    try:
+        # A backup in progress has its start recorded but not yet its end; that is no failure.
+        manager_state = getattr(manager, "state", None)
+        state["running"] = (
+            None
+            if manager_state is None
+            else str(getattr(manager_state, "value", manager_state)) != "idle"
+        )
+    except Exception:  # noqa: BLE001 - without the figure an unfinished attempt counts as before
+        state["running"] = None
     try:
         data = manager.config.data
         create = data.create_backup
@@ -199,14 +209,19 @@ def _newest_check(
 
 
 def _last_run_check(
-    config: dict[str, Any] | None, newest: dict[str, Any] | None, agent_errors: list[str]
+    config: dict[str, Any] | None,
+    newest: dict[str, Any] | None,
+    agent_errors: list[str],
+    running: bool | None = None,
 ) -> dict[str, Any]:
     if config is None:
         return _check("last_run", "unknown")
     attempted, completed = _parse(config["last_attempted"]), _parse(config["last_completed"])
     failed_agents = sorted(set(newest["failed_agents"] if newest else []) | set(agent_errors))
-    failed_attempt = attempted is not None and (
-        completed is None or (attempted - completed).total_seconds() > ATTEMPT_GRACE_SECONDS
+    failed_attempt = (
+        not running
+        and attempted is not None
+        and (completed is None or (attempted - completed).total_seconds() > ATTEMPT_GRACE_SECONDS)
     )
     values = {
         "attempted": config["last_attempted"],
@@ -403,21 +418,38 @@ def evaluate(
         if backups is not None
         else None
     )
-    checks = [_setup_check(config, selected)]
+    # Housekeeper's own safety copies before a plan say nothing about the backup strategy, whatever
+    # they hold: they count for space, the plans and the clean-up only.
+    strategy = [item for item in selected if not item.get("own")] if selected is not None else None
+    # Backups made outside Home Assistant are out of sight: everything about Home Assistant's own
+    # backups is left out, only what concerns Housekeeper's safety copies and the restore stays.
+    external = _iso(attest.get("external"))
+    checks = [_check("external", "ok", at=external) if external else _setup_check(config, strategy)]
     if selected is None:
-        checks.append(_check("newest", "unknown"))
+        if not external:
+            checks.append(_check("newest", "unknown"))
         listing: list[dict[str, Any]] = []
         everything: list[dict[str, Any]] = []
+    elif external:
+        everything = sorted(selected, key=lambda item: item["date"] or "", reverse=True)
+        listing = [item for item in everything if not item.get("own")]
+        if (
+            space_check := _space_check(
+                everything[0] if everything else None, state.get("disk_free")
+            )
+        ) is not None:
+            checks.append(space_check)
     else:
         # HA marks its scheduled backups True and its manual backups False; backups made by other
         # tools (e.g. Google Drive Backup) have None and count too. The Supervisor's app-update
         # backups hold no Home Assistant (``ha_included`` False) and are left out.
         everything = sorted(selected, key=lambda item: item["date"] or "", reverse=True)
-        # The safety copies before a plan say nothing about the backup strategy.
-        listing = [item for item in everything if not item.get("partial")]
+        listing = [item for item in everything if not item.get("own")]
         newest = listing[0] if listing and listing[0]["date"] else None
         checks.append(_newest_check(config, listing, now))
-        checks.append(_last_run_check(config, newest, state.get("agent_errors") or []))
+        checks.append(
+            _last_run_check(config, newest, state.get("agent_errors") or [], state.get("running"))
+        )
         checks.append(_targets_check(newest, attest.get("targets")))
         checks.append(_size_check(listing))
         checks.append(_retention_check(config, listing, now))
@@ -427,7 +459,8 @@ def evaluate(
             checks.append(remote_check)
         if (space_check := _space_check(newest, state.get("disk_free"))) is not None:
             checks.append(space_check)
-    checks.append(_attest_check("emergency_kit", attest.get("emergency_kit"), now, None))
+    if not external:
+        checks.append(_attest_check("emergency_kit", attest.get("emergency_kit"), now, None))
     checks.append(_attest_check("restore_test", attest.get("restore_test"), now, RESTORE_TEST_DAYS))
     if selected is not None and (plan_check := _plans_check(plans, everything)):
         checks.append(plan_check)
@@ -464,6 +497,7 @@ def evaluate(
             for item in everything[:BACKUP_LIST_MAX]
         ],
         "backup_count": len(listing),
+        "own_count": sum(1 for item in everything if item.get("own")),
         "attest": {kind: attest.get(kind) for kind in ATTEST_KINDS},
     }
 

@@ -63,7 +63,7 @@ class MarksMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("markTitle")}</h2><p>${this.t("markHint")}</p></div></div>`;
     if (f && f.key === key) return `<section class="panel">${head}${this.markFormHtml(f, key)}</section>`;
     const body = mark
-      ? `<div class="row"><span class="tile ${item.mark_due ? "warn" : "mute"}"><ha-icon icon="mdi:bookmark-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t(`mark_${mark.kind}`))}</strong><small>${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}</small></span><button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}">${this.t("markClear")}</button></div>`
+      ? `<div class="row"><span class="tile ${item.mark_due ? "warn" : "mute"}"><ha-icon icon="mdi:bookmark-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t(`mark_${mark.kind}`))}</strong><small>${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}</small></span><button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button>${this.rowMenuHtml([["mdi:bookmark-remove-outline", "markClear", `data-mark-clear="${this.esc(key)}"`]])}</div>`
       : `<div class="pad"><p class="factnote">${this.t("markNone")}</p><button class="btn" data-mark-open="${this.esc(key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("markSet")}</button></div>`;
     return `<section class="panel">${head}${body}</section>`;
   }
@@ -74,7 +74,7 @@ class MarksMixin {
     const f = this.markForm, key = this.objectKey(item), mark = item.mark;
     if (f && f.key === key) return [this.actRow(this.t("markTitle"), this.t("markHint"), ""), `<div class="actblock">${this.markFormHtml(f, key)}</div>`];
     if (!mark) return [...this.oftenRows(item), this.actRow(this.t("markTitle"), `${this.t("markNone")} ${this.t("markHint")}`, `<button class="btn" data-mark-open="${this.esc(key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("markSet")}</button>`)];
-    return [this.actRow(`${this.esc(this.t("markTitle"))}: ${this.esc(this.t(`mark_${mark.kind}`))}`, `${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}`, `<button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}">${this.t("markClear")}</button>`)];
+    return [this.actRow(`${this.esc(this.t("markTitle"))}: ${this.esc(this.t(`mark_${mark.kind}`))}`, `${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}`, `<button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button>${this.rowMenuHtml([["mdi:bookmark-remove-outline", "markClear", `data-mark-clear="${this.esc(key)}"`]])}`)];
   }
 
   openMark(key) {
@@ -85,9 +85,26 @@ class MarksMixin {
   }
 
   // The backend refreshes its cached snapshot; the panel fetches that copy, so no new scan is needed.
+  // Days an object with a hiding mark (offline on purpose, spare) has run without a gap, from MARK_QUIET_DAYS on;
+  // null below that, while something of it is off, or when it is not known. A device counts from its entities: the
+  // shortest run of the ones not disabled. Seasonal marks stay out: a season is long on purpose.
+  markQuietDays(o) {
+    if (!["expected_offline", "spare"].includes(o.mark?.kind)) return null;
+    const run = since => (since ? Math.floor((Date.now() - Date.parse(since)) / 864e5) : null);
+    let days;
+    if (o.object_type === "device") {
+      const ents = (this.data?.objects || []).filter(e => e.object_type === "entity" && e.device_id === o.object_id && e.status !== "disabled");
+      if (!ents.length || ents.some(e => e.status !== "active" || !e.status_since)) return null;
+      days = Math.min(...ents.map(e => run(e.status_since)));
+    } else days = o.status === "active" ? run(o.status_since) : null;
+    return Number.isFinite(days) && days >= MARK_QUIET_DAYS ? days : null;
+  }
+
   async refreshData() {
     const key = this.selected ? this.objectKey(this.selected) : null;
-    this.data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    const data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    if (!Array.isArray(data?.findings)) return; // an answer without a scan keeps what is on screen
+    this.data = data;
     this._rev++;
     if (key) this.selected = this.findObject(key) || null;
   }

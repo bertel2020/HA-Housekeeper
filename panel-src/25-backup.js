@@ -17,7 +17,8 @@ class BackupMixin {
     setTimeout(() => this.loadBackup(), 0);
   }
 
-  bhAge(hours) { return hours >= 48 ? this.t("bhAgeDays", { n: Math.round(hours / 24) }) : this.t("bhAgeHours", { n: Math.max(1, Math.round(hours)) }); }
+  // A span of hours or days. `ago` gives the form after "vor" ("vor 3 Tagen"); without it a plain span ("3 Tage").
+  bhAge(hours, ago = false) { return hours >= 48 ? this.t(ago ? "bhAgeDaysAgo" : "bhAgeDays", { n: Math.round(hours / 24) }) : this.t("bhAgeHours", { n: Math.max(1, Math.round(hours)) }); }
 
   bhDay(iso) {
     if (!iso) return "—";
@@ -52,7 +53,7 @@ class BackupMixin {
         if (c.level === "note") return t("bhSetupNote");
         return t("bhSetupOk", { agents: this.bhAgents(v.agents), recurrence: t(`bhRec_${v.recurrence}`) });
       case "newest":
-        return v.age_hours === null || v.age_hours === undefined ? t("bhNewestNone") : t("bhNewestText", { age: this.bhAge(v.age_hours), limit: this.bhAge(v.limit_hours) });
+        return v.age_hours === null || v.age_hours === undefined ? t("bhNewestNone") : t("bhNewestText", { age: this.bhAge(v.age_hours, true), limit: this.bhAge(v.limit_hours) });
       case "last_run": {
         if (c.level === "unknown") return t("bhRunUnknown");
         const parts = [];
@@ -63,7 +64,13 @@ class BackupMixin {
       case "targets":
         if (v.at && !v.remote?.length) return t("bhTargetsConfirmed", { local: this.bhAgents(v.local), date: this.bhDay(v.at) });
         if (v.at) return t("bhTargetsOkConfirmed", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote), date: this.bhDay(v.at) });
-        return c.level === "ok" ? t("bhTargetsOk", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote) }) : c.level === "note" ? t("bhTargetsNote", { local: this.bhAgents(v.local) }) : "";
+        if (c.level === "note") {
+          // A remote target is set up, but the newest backup did not reach it: say so instead of "local only".
+          const set = (this.backup?.checks || []).find(x => x.id === "setup")?.values?.agents || [];
+          const missed = set.filter(a => !this.bhAgent(a).local);
+          return missed.length ? t("bhTargetsMissed", { remote: this.bhAgents(missed), local: this.bhAgents(v.local) }) : t("bhTargetsNote", { local: this.bhAgents(v.local) });
+        }
+        return c.level === "ok" ? t("bhTargetsOk", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote) }) : "";
       case "size":
         if (c.level === "unknown") return t("bhSizeUnknown");
         return t(c.level === "ok" ? "bhSizeOk" : "bhSizeNote", { size: this.formatBytes(v.size), expected: this.formatBytes(v.expected), percent: Math.round(v.ratio * 100) });
@@ -87,7 +94,7 @@ class BackupMixin {
         if (c.level === "note") return t(v.scheduled === false ? "bhContentNoDbSet" : "bhContentNoDb");
         return t("bhContentOk", { apps: this.formatNumber(v.apps ?? 0), folders: this.formatNumber(v.folders ?? 0) });
       case "remote_age": {
-        const row = a => `${this.esc(this.bhAgent(a.agent).label)}: ${this.bhAge(a.age_hours)}`;
+        const row = a => `${this.esc(this.bhAgent(a.agent).label)}: ${this.esc(this.t("backupAgo", { age: this.bhAge(a.age_hours, true) }))}`;
         return c.level === "note"
           ? t("bhRemoteStale", { items: (v.agents || []).filter(a => (v.stale || []).includes(a.agent)).map(row).join(", "), limit: this.bhAge(v.limit_hours) })
           : t("bhRemoteOk", { items: (v.agents || []).map(row).join(", ") });
@@ -95,6 +102,8 @@ class BackupMixin {
       case "space":
         if (c.level === "unknown") return t("bhSpaceUnknown");
         return t({ ok: "bhSpaceOk", note: "bhSpaceNote", problem: "bhSpaceProblem" }[c.level], { free: this.formatBytes(v.free), size: this.formatBytes(v.size), need: this.formatBytes(v.need) });
+      case "external":
+        return t("bhExternalText", { date: this.bhDay(v.at) });
       case "own_backups":
         return t("bhOwnNote", { count: v.count, size: this.formatBytes(v.size) });
       case "plan_backups":
@@ -104,14 +113,28 @@ class BackupMixin {
     }
   }
 
+  // Backups made outside Home Assistant can be stated where the setup or the newest backup is not in order.
+  bhOffersExternal(c) {
+    if (c.id !== "setup") return false;
+    return (this.backup?.checks || []).some(x => (x.id === "setup" || x.id === "newest") && (x.level === "problem" || x.level === "note"));
+  }
+
+  bhExternalRow(c) {
+    return `<div class="row rel bh"><span class="tile mute"><ha-icon icon="mdi:export"></ha-icon></span><span class="row-text"><strong>${this.t("bh_external")}</strong><small>${this.bhText(c)}</small></span><span class="bhactions"><button class="bhopen" data-bh-clear="external">${this.t("bhExternalClear")}</button><span class="pill mute">${this.t("bhExternalPill")}</span></span></div>`;
+  }
+
   bhRow(c) {
+    if (c.id === "external") return this.bhExternalRow(c);
     const tone = { ok: "ok", note: "warn", problem: "red", unknown: "mute" }[c.level] || "mute";
     const icon = { ok: "mdi:check", note: "mdi:alert-outline", problem: "mdi:close-octagon-outline", unknown: "mdi:help-circle-outline" }[c.level] || "mdi:help-circle-outline";
     const attest = c.id === "targets" || c.id === "emergency_kit" || c.id === "restore_test" || c.id === "encryption";
     const tidy = c.id === "own_backups" ? `<button class="bhopen" data-bkc-open>${this.t("bhOwnOpen")}</button>` : "";
+    const offer = this.bhOffersExternal(c), offerOpen = offer && this.bhForm === "external";
+    const external = offer ? `<button class="bhopen" data-bh-open="external" aria-expanded="${offerOpen}">${this.t("bhExternalOpen")}</button>` : "";
     const open = attest && c.level !== "unknown" && this.bhForm === c.id;
     const opener = attest && c.level !== "unknown" ? `<button class="bhopen" data-bh-open="${c.id}" aria-expanded="${open}">${this.t(c.values?.at ? "bhAttestAgain" : c.id === "targets" ? "bhAttestTargets" : c.id === "encryption" ? "bhAttestEnc" : "bhAttestMark")}</button>` : "";
-    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}</small></span><span class="bhactions">${opener}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}${offer ? ` ${this.t("bhExternalAsk")}` : ""}</small></span><span class="bhactions">${opener}${external}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    if (offerOpen) return `${row}<div class="bhattest"><span class="factnote">${this.t("bhExternalForm")}</span><button class="btn small primary" data-bh-save="external">${this.t("bhExternalSave")}</button><button class="bhcancel" data-bh-cancel>${this.t("bhAttestCancel")}</button></div>`;
     if (!open) return row;
     const today = new Date().toISOString().slice(0, 10);
     const clear = c.values?.at ? `<button class="bhtake" data-bh-clear="${c.id}">${this.t("bhAttestClear")}</button>` : "";
@@ -182,14 +205,18 @@ class BackupMixin {
     if (rows.length < 3) return "";
     const max = Math.max(...rows.map(x => x.size)), last = rows[rows.length - 1], first = rows[0];
     const tone = b.checks.find(c => c.id === "size")?.level === "note" ? " warn" : "";
-    const bars = rows.map((x, i) => `<i class="${i === rows.length - 1 ? `last${tone}` : ""}" style="height:${Math.max(4, Math.round((x.size / max) * 100))}%" title="${this.esc(`${this.formatDate(x.date)} · ${this.formatBytes(x.size)}`)}"></i>`).join("");
-    return `<div class="panel"><div class="sectionlabel">${this.t("bhSizesTitle")}</div><div class="bhsizes" role="img" aria-label="${this.esc(this.t("bhSizesLabel", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) }))}">${bars}</div><p class="factnote pad">${this.t("bhSizesNote", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) })}</p></div>`;
+    // Columns from zero, one per backup, each with its date, size and change to the one before as a tooltip.
+    const tip = (x, i) => { const d = i ? x.size - rows[i - 1].size : 0; return [this.formatDate(x.date), this.formatBytes(x.size), i ? `${d >= 0 ? "+" : "−"}${this.formatBytes(Math.abs(d))}` : ""].filter(Boolean).join(" · "); };
+    const bars = rows.map((x, i) => `<i class="${i === rows.length - 1 ? `last${tone}` : ""}" style="height:${Math.max(3, Math.round((x.size / max) * 100))}%" title="${this.esc(tip(x, i))}"><span class="sr-only">${this.esc(tip(x, i))}</span></i>`).join("");
+    const label = this.t("bhSizesLabel", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) });
+    return `<div class="panel"><div class="sectionlabel">${this.t("bhSizesTitle")}</div><div class="bhchart"><span class="bhaxis"><b>${this.esc(this.formatBytes(max))}</b><b>0</b></span><div class="bhsizes" role="img" aria-label="${this.esc(label)}">${bars}</div><span class="bhdates"><b>${this.esc(this.bhDay(first.date))}</b><b>${this.esc(this.bhDay(last.date))}</b></span></div><p class="factnote pad">${this.t("bhSizesNote", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) })}</p></div>`;
   }
+
 
   // The checks in the order a person thinks in: does it run, where is it kept and what is in it, can it be restored, what Housekeeper adds.
   bhGroups(checks) {
     const groups = [
-      ["running", ["setup", "newest", "last_run"]],
+      ["running", ["external", "setup", "newest", "last_run"]],
       ["storage", ["targets", "remote_age", "content", "size", "retention", "space"]],
       ["restore", ["encryption", "emergency_kit", "restore_test"]],
       ["house", ["plan_backups", "own_backups"]],
@@ -216,11 +243,19 @@ class BackupMixin {
     const by = Object.fromEntries(b.checks.map(c => [c.id, c.values || {}]));
     const age = by.newest?.age_hours, remote = by.targets?.remote?.length || by.targets?.at;
     const open = (b.counts?.note || 0) + (b.counts?.problem || 0);
+    const external = Boolean(by.external), free = by.space?.free;
     return this.sumTiles([
-      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.bhAge(age)), tone: "mute" },
+      ...(external ? [
+        { label: this.t("bhTileBackup"), value: this.t("bhExternalPill"), tone: "mute" },
+        { label: this.t("bhTileOwn"), value: this.formatNumber(b.own_count ?? 0), tone: "mute" },
+        { label: this.t("bhTileFree"), value: free === null || free === undefined ? "–" : this.esc(this.formatBytes(free)), tone: "mute" },
+      ] : [
+      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), tone: "mute" },
       { label: this.t("bhTileCount"), value: this.formatNumber(b.backup_count ?? 0), tone: "mute" },
       { label: this.t("bhTileRemote"), value: this.t(remote ? "bhYes" : "bhNo"), tone: remote ? "ok" : "warn" },
-      { label: this.t("bhTileOpen"), value: this.formatNumber(open), tone: open ? "warn" : "ok" },
+      ]),
+      // The number counts problems and hints together; below it, how many of each, so it matches "2 problems" above.
+      { label: this.t("bhTileOpen"), value: this.formatNumber(open), sub: open ? this.esc([b.counts?.problem ? this.t(b.counts.problem === 1 ? "bhTileProblems1" : "bhTileProblems", { n: this.formatNumber(b.counts.problem) }) : "", b.counts?.note ? this.t(b.counts.note === 1 ? "bhTileNotes1" : "bhTileNotes", { n: this.formatNumber(b.counts.note) }) : ""].filter(Boolean).join(", ")) : "", tone: b.counts?.problem ? "red" : open ? "warn" : "ok" },
     ]);
   }
 }

@@ -44,7 +44,7 @@ class CleanupMixin {
 
   // The tiles of the Cleanup view: one job each, with the number of things to do; the chosen one is marked.
   cleanupTiles(tabs, open) {
-    return this.navTiles("cleanup", tabs.map(t => ({ ...t, tone: t.count ? t.tone : "mute" })), open, this.t("cleanup"), true);
+    return this.navTiles("cleanup", tabs, open, this.t("cleanup"), true);
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them. Marked, labelled or excepted ones stay out.
@@ -706,7 +706,7 @@ class CleanupMixin {
       { key: "since", label: "recurringColSince", dir: "desc", get: r => r.since, cell: r => this.esc(this.formatDate(r.since)) },
       { key: "domains", label: "recurringColDomains", dir: "asc", get: r => r.domains, cell: r => this.esc(r.domains || "–") },
     ];
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("recurringTitle")} (${entries.length})</h2><p>${this.t("recurringHint")}</p></div></div>${this.objectTable("recurring", rows, { extras })}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("recurringTitle")} (${entries.length})</h2><p>${this.t("recurringHint")}</p></div></div>${this.objectTable("recurring", rows, { extras, menu: true, stripe: true })}</div>`;
   }
 
   cleanupView() {
@@ -717,19 +717,16 @@ class CleanupMixin {
     const unusedCount = this.unreferencedRows().length, statsCount = (this.data.orphaned_statistics || []).length;
     const count = kind => this.cleanupCandidates(kind).length;
     const unusedRows = this.unreferencedRows();
-    const topDomain = (() => { const counts = new Map(); unusedRows.forEach(o => { const d = o.object_id.split(".")[0]; counts.set(d, (counts.get(d) || 0) + 1); }); return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]; })();
-    const unusedFacts = [
-      this.data.meta.recorder_available && unusedRows.length ? { text: this.t("unrefFactStats", { n: this.formatNumber(unusedRows.filter(o => o.has_statistics).length) }), tone: "mute" } : null,
-      topDomain ? { text: this.t("unrefFactDomain", { name: topDomain[0] }), tone: "mute" } : null,
-    ].filter(Boolean);
-    const nothing = n => (n ? [] : [{ text: this.t("cleanupNothing"), tone: "ok" }]);
+    const unusedExtra = this.data.meta.recorder_available && unusedRows.length ? [{ text: this.t("unrefFactStats", { n: this.formatNumber(unusedRows.filter(o => o.has_statistics).length) }), tone: "mute" }] : [];
+    // One status pill per tile, as on Maintenance: how many with their noun, or "Nothing to do" in green.
+    const status = (n, unit, tone) => (n ? { pill: this.tCount(unit, n), tone } : { pill: this.t("cleanupNothing"), tone: "ok" });
     // The tiles are the navigation: each one is one job, with how much there is to do.
     const tabs = [
-      { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), count: count("disable_entity"), facts: nothing(count("disable_entity")), tone: "warn" },
-      { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), count: count("disable_device"), facts: nothing(count("disable_device")), tone: "warn" },
-      { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), count: held.length, facts: [], pill: heldReady ? this.t("cleanupReadyCount", { count: heldReady }) : "", tone: heldReady ? "ok" : "mute" },
-      { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), count: statsCount, facts: [], tone: "mute" },
-      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, facts: unusedFacts, tone: "mute" },
+      { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), ...status(count("disable_entity"), "cuEntities", "warn") },
+      { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), ...status(count("disable_device"), "cuDevices", "warn") },
+      { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), ...(held.length ? { pill: heldReady ? this.t("cuHeldReady", { n: this.formatNumber(held.length), ready: this.formatNumber(heldReady) }) : this.tCount("cuHeld", held.length), tone: heldReady ? "ok" : "mute" } : status(0)) },
+      { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), ...status(statsCount, "cuStats", "mute") },
+      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), ...status(unusedCount, "cuUnused", "mute"), extra: unusedExtra },
     ];
     const open = this.viewTabOf("cleanup", tabs, "entities");
     const tiles = this.cleanupTiles(tabs, open);
@@ -778,16 +775,18 @@ class CleanupMixin {
       { key: "name", label: "sortName", dir: "asc", sortKeys: ["id"],
         headSuffix: () => `<button type="button" class="thbtn th-alt" data-lsort="cleanup|id|asc">${this.t("sortId")}${this.lv.cleanup.sort === "id" ? ` <span aria-hidden="true">${this.lv.cleanup.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`,
         cell: r => `<div class="statcell">${this.tile(r.item.object_type, "")}<div>${this.nameCell(r.item.name, r.item.object_type === "device" ? [r.item.manufacturer, r.item.model].filter(Boolean).join(" ") || r.item.object_id : r.item.object_id)}</div></div>` },
-      { key: "status", label: "sortStatus", dir: "asc", cell: badge },
-      { key: "since", label: "sortSince", dir: "desc", cell: r => { const v = r.quarantine ? r.quarantine.since : r.finding?.first_detected_at; return v ? this.esc(this.formatDate(v)) : "–"; } },
+      // Entities and devices show the reason of their finding, as the findings page names it; the quarantine its state.
+      { key: "status", label: open === "quarantine" ? "sortStatus" : "cleanupColReason", dir: "asc", cell: badge },
+      // Since when, as on the findings page: how long ago, the date below. In the quarantine it is the day it went in.
+      { key: "since", label: open === "quarantine" ? "cleanupColHeld" : "sortSince", dir: "desc", cell: r => { const v = r.quarantine ? r.quarantine.since : r.finding?.first_detected_at; return v ? this.ageCell(v) : "–"; } },
       ...(all.some(r => r.finding) ? [{ key: "certainty", label: "sortCertainty", dir: "desc", cell: r => (r.finding?.confidence == null ? "–" : `${Math.round(r.finding.confidence * 100)} %`) }] : []),
       ...(recorderCol ? [{ key: "recorder", label: "cleanupColRecorder", sortable: false, cell: r => this.recorderOwn(r.item) || "–" }] : []),
-      ...(open === "quarantine" ? [{ key: "release", label: "releaseAction", sortable: false, cell: r => (r.quarantine ? this.releaseControl(r.quarantine) : "") }] : []),
+      ...(open === "quarantine" ? [{ key: "release", label: "cleanupColAction", sortable: false, cell: r => (r.quarantine ? this.releaseControl(r.quarantine) : "") }] : []),
     ];
     const table = shownList.length ? this.listTable("cleanup", columns, pg.rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(`${r.item.object_type}:${r.item.object_id}`)}" tabindex="0" role="button" aria-label="${this.esc(r.item.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("cleanup") : this.t("cleanupNone")}</div>`;
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
-      <div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("cleanup", n)}<span class="selcount" aria-live="polite">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
+      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("cleanup", n, "data-sel-clear")}<span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
       <button class="btn ${REMOVAL_KINDS.includes(this.cleanupKind) ? "dangersoft" : "primary"}" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t(REMOVAL_KINDS.includes(this.cleanupKind) ? "prepareDelete" : "createPlan", { count: n })}</button>${this.viewCount(shownList.length)}</div>
       ${bar}${table}${pg.footer}</div>`;
     const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
@@ -906,7 +905,7 @@ class CleanupMixin {
       { key: "status", label: "sortStatus", dir: "asc", cell: plan => `<span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${statusOf(plan)}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}` },
       ...(this.isDenseList("journal") ? [] : [{ key: "total", label: "journalColActions", dir: "desc", cell: plan => `<span class="jsum">${this.esc(summary(plan))}</span>` }]),
       { key: "follow", label: "journalColFollow", sortable: false, cell: plan => (fuState(plan) ? `<span class="pill ${this.followupTone(fuState(plan))}">${this.t(`fu_${fuState(plan)}`)}</span>` : "–") },
-      { key: "act", label: "journalColAct", sortable: false, cell: plan => `<span class="jbtns">${this.planStale(plan) ? `<button type="button" class="btn small" data-plan-renew="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : ""}${plan.executed || plan.run ? "" : this.deleteButton(`data-plan-delete="${this.esc(plan.plan_id)}"`, this.t("deletePlan"))}</span>` },
+      { key: "act", label: "journalColAct", sortable: false, cell: plan => `<span class="jbtns">${this.planStale(plan) ? `<button type="button" class="btn small" data-plan-renew="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : ""}${plan.executed || plan.run ? "" : this.rowMenuHtml([["mdi:delete-outline", "deletePlan", `data-plan-delete="${this.esc(plan.plan_id)}"`]])}</span>` },
     ];
     const table = plans.length ? this.sysList("journal", plans, {
       sort: "date", dir: "desc", columns, cls: "journal", empty: "journalEmpty",

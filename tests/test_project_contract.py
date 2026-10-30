@@ -122,8 +122,8 @@ def test_every_fixed_refusal_text_has_a_panel_translation() -> None:
 
 def test_every_websocket_command_uses_current_admin_decorator() -> None:
     source = _websocket_source()
-    assert source.count("@websocket_api.websocket_command") == 92
-    assert source.count("@websocket_api.require_admin") == 92
+    assert source.count("@websocket_api.websocket_command") == 97
+    assert source.count("@websocket_api.require_admin") == 97
     assert "connection.require_admin" not in source
 
 
@@ -168,9 +168,20 @@ def test_every_optional_component_that_is_imported_is_an_after_dependency() -> N
         used |= set(
             re.findall(r"homeassistant\.components\.(\w+)", path.read_text(encoding="utf-8"))
         )
-    # homeassistant is the core component, sensor, button and event are entity platforms and http/websocket_api/frontend are core; Hassfest accepts them
+    # homeassistant is the core component, sensor, button, switch, number and event are entity platforms and http/websocket_api/frontend are core; Hassfest accepts them
     assert (
-        used - {"websocket_api", "frontend", "http", "sensor", "button", "event", "homeassistant"}
+        used
+        - {
+            "websocket_api",
+            "frontend",
+            "http",
+            "sensor",
+            "button",
+            "switch",
+            "number",
+            "event",
+            "homeassistant",
+        }
         <= declared
     ), used - declared
 

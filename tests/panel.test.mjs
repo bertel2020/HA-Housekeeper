@@ -159,6 +159,7 @@ test("home functions editor keeps required members and offers only direct invent
   assert.doesNotMatch(html, /data-monitor-pick="entity:sensor.b"/);
   assert.match(html, /class="row monitor-choice"/);
   assert.match(el.styles(), /\.row\.monitor-choice\{grid-template-columns:auto minmax\(0,1fr\) auto\}/);
+  assert.match(html, /class="chip active" type="button" data-monitor-type=""/, "the type of the results is a row of chips");
   assert.match(html, /data-monitor-type="scene"/);
   el.monitorQuery = "home";
   assert.match(el.monitorEditor(), /data-monitor-pick="scene:scene.home"/);
@@ -612,7 +613,7 @@ test("the status counts affected objects once, only of the base types, and not h
   const finding = (rule, id, extra = {}) => ({ rule_id: rule, object_id: id, classification: "orphaned", confidence: 0.9, evidence: [], impact: "medium", ...extra });
   const base = { ...DATA, objects };
   el.data = { ...base, findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.duplicate", "sensor.s0"), finding("entity.unavailable", "sensor.s0")] };
-  assert.deepEqual([el.health().affected, el.health().base, el.health().percent, el.health().load], [1, 8, 93.7, 0.5]); // one object counts once, with its worst level: medium weighs a half
+  assert.deepEqual([el.health().affected, el.health().base, el.health().percent, el.health().load], [1, 8, 87.5, 1]); // one object counts once, with its worst level: medium takes off one
   el.data = { ...base, findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.state_missing", "sensor.s1", { ignored: true })] };
   assert.equal(el.health().affected, 1); // hidden findings do not count
   el.data = { ...base, findings: [finding("dashboard.missing_entity", "dash")] };
@@ -624,7 +625,9 @@ test("the status counts affected objects once, only of the base types, and not h
   assert.equal(el.health().percent, 99.9, "one object takes its weight off the number of all objects");
   el.dbHealth = { available: true, findings: [{ level: "problem", kind: "gaps" }] };
   assert.equal(el.health().percent, 99.9, "the database check only runs in Maintenance, so it never moves the number");
-  assert.ok(el.t("healthTip", { affected: 2, base: 8 }).includes("2") && el.t("healthHint").includes("objects in order"));
+  assert.ok(el.t("healthTip", { affected: 2, base: 8 }).includes("2") && el.t("healthHint").includes("points out of 100"));
+  el.data = { ...base, causes: [], findings: [finding("entity.state_missing", "sensor.s0"), finding("entity.state_missing", "sensor.s1", { cause_id: "device:x" }), finding("entity.state_missing", "sensor.s2", { cause_id: "device:x" })] };
+  assert.deepEqual([el.health().affected, el.health().base, el.health().load], [3, 8, 3], "the follow-ups of a cause count like any other object, with their own level");
 });
 
 test("hidden findings are excluded from counts, lists and export unless shown", () => {
@@ -665,12 +668,12 @@ test("battery view lists the lowest levels first and counts low ones", () => {
     battery("sensor.gone", "3", { status: "unavailable" }), { ...battery("sensor.temp", "1"), device_class: "temperature" },
   ] };
   assert.equal(el.lowBatteries().length, 3);
-  assert.equal(JSON.stringify(Array.from(el.batteryRows().map(r => r.item.object_id))), JSON.stringify(["binary_sensor.flag", "sensor.low", "sensor.edge", "binary_sensor.fine", "sensor.full"]));
+  assert.equal(JSON.stringify(Array.from(el.batteryRows().map(r => r.item.object_id))), JSON.stringify(["binary_sensor.flag", "sensor.low", "sensor.edge", "binary_sensor.fine", "sensor.gone", "sensor.full"]), "an unavailable battery stays in the list");
   assert.equal(el.batteryFilter, "all", "the table opens with every battery");
   el.batteryFilter = "low";
   el.view = "batteries";
   el.render();
-  assert.ok(shadow.innerHTML.includes("sumvalue\">3<") && shadow.innerHTML.includes("sumvalue\">5<"));
+  assert.ok(shadow.innerHTML.includes("sumvalue\">3<") && shadow.innerHTML.includes("sumvalue\">6<"));
   assert.ok(!shadow.innerHTML.includes("sensor.full"));
   el.batteryFilter = "all";
   el.render();
@@ -683,9 +686,11 @@ test("deep links select view, filter and object once", () => {
   const { el } = panel("en", { window });
   el.isConnected = true;
   el._basePath = "/ha-housekeeper";
+  el.findingStatus = "hidden"; el.lvState("findings", "impact", "desc").f.area = "Kitchen";
   el.applyUrl();
   assert.equal(el.view, "findingsNav");
   assert.equal(el.findingFilter, "orphaned");
+  assert.equal(`${el.findingStatus}|${Object.keys(el.lv.findings.f).length}`, "|0", "a link starts from the plain open list, without kept filters");
   el.view = "overview";
   el.applyUrl();
   assert.equal(el.view, "overview", "applied only once");
@@ -735,16 +740,16 @@ test("long lists are paged with a default of 20 and a page-size choice", () => {
   el.view = "unreferenced";
   assert.equal(el.pageSize, 20);
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 20);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 20);
   assert.ok(shadow.innerHTML.includes("1–20 of 45") && shadow.innerHTML.includes("Page 1 of 3"));
   el.pages.unreferenced = 3;
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 5);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 5);
   assert.ok(shadow.innerHTML.includes("41–45 of 45"));
   el.pageSize = 50;
   el.pages = {};
   el.render();
-  assert.equal((shadow.innerHTML.match(/data-object="entity:light\.l/g) || []).length, 45);
+  assert.equal((shadow.innerHTML.match(/<tr data-object="entity:light\.l/g) || []).length, 45);
   assert.ok(!shadow.innerHTML.includes("Page 1 of"));
 });
 
@@ -803,24 +808,24 @@ test("cause and dashboard groups use the findings table columns in both densitie
   const { el } = panel("en");
   const cause = { id: "outage-z", kind: "integration_down", object_type: "config_entry", object_id: "z", name: "Cloud", follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high" };
   const follower = { key: "follower", rule_id: "entity.state_unavailable", object_id: "sensor.b", classification: "unavailable", confidence: 0.9, impact: "medium", cause_id: cause.id, ignored: false };
-  el.data = { ...DATA, causes: [cause], findings: [follower] };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "config_entry", object_id: "z", name: "Cloud" }], causes: [cause], findings: [follower] };
   let html = el.findingsView();
-  assert.match(html, /class="finding-data finding-cause"/);
-  assert.match(html, /data-fold="cause_outage-z"/);
-  assert.match(html, /<button[^>]*class="finding-fold"[^>]*data-fold="cause_outage-z"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="config_entry:z"/, "the arrow folds while the cause name opens its details");
+  assert.match(html, /class="finding-data finding-cause og lvl0"/);
+  assert.match(html, /data-fold="og:config_entry:z"/);
+  assert.match(html, /<button[^>]*class="finding-fold"[^>]*data-fold="og:config_entry:z"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="config_entry:z"/, "the arrow folds while the cause name opens its details");
   assert.doesNotMatch(html, /class="finding-group"/);
-  el.folds = { "cause_outage-z": true };
+  el.folds = { "og:config_entry:z": true };
   el.denseLists().findings = true;
   html = el.findingsView();
   assert.match(html, /class="tablewrap lt findings-table dense-list"/);
-  assert.match(html, /class="finding-detail"/);
+  assert.match(html, /class="finding-data og lvl1"/, "the single finding below the cause is indented as a row of its own");
   const place = { view: "Archive", card: "Card", card_path: "views/0/cards/0", card_refs: 3, card_missing: 2 };
   const broken = i => ({ key: `broken-${i}`, rule_id: "dashboard.missing_entity", object_id: "dash", classification: "broken_reference", confidence: 0.9, impact: "low", affected_object: `sensor.${i}`, evidence: [{ location: `views/0/cards/0/${i}`, place }] });
-  el.data = { ...DATA, causes: [], findings: [broken(1), broken(2)] };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "dashboard", object_id: "dash", name: "Dash" }], causes: [], findings: [broken(1), broken(2)] };
+  el.folds = { "og:dashboard:dash": true };
   html = el.findingsView();
-  assert.match(html, /class="finding-data finding-cause"/);
-  assert.match(html, /data-fsel-group="dash\|views\/0\/cards\/0"/);
-  assert.match(html, /class="finding-fold"[^>]*data-fold="bg:dash\|views\/0\/cards\/0"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="dashboard:dash"/, "dashboard groups also keep separate fold and detail buttons");
+  assert.match(html, /<button[^>]*class="finding-fold"[^>]*data-fold="og:dashboard:dash"[^>]*><ha-icon[^>]*><\/ha-icon><\/button><button[^>]*class="finding-link"[^>]*data-object="dashboard:dash"/, "the dashboard is the head");
+  assert.match(html, /data-fsel-group="bg:dash\|views\/0\/cards\/0"/, "a card with several references is a head below it");
 });
 
 test("grouped causes and single findings obey the same table sort", () => {
@@ -1022,8 +1027,9 @@ test("orphaned statistics have their own tab with search, kind filter and energy
   el.unrefTab = "statistics";
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("Developer tools"));
-  assert.equal((html.match(/In the Energy dashboard/g) || []).length, 1);
+  assert.ok(html.includes("sensor.old_energy") && html.includes("In the Energy dashboard") && html.includes("create a plan"));
+  assert.equal((html.match(/>In the Energy dashboard</g) || []).length, 1);
+  assert.ok(html.includes("so it cannot be deleted"), "the greyed box says why");
   el.lv.orphanstats.f.kind = "kindMean";
   el.render();
   html = shadow.innerHTML;
@@ -1176,8 +1182,8 @@ test("policies: rules switch, violations list with hide buttons, hidden ones are
   el.viewTab = {}; el.policyShowHidden = true; el.render(); html = shadow.innerHTML;
   assert.ok(html.includes("light.c") && html.includes("hidden by label") && html.includes(">Show<"));
   assert.equal((html.match(/data-policy-ignore=/g) || []).length, 1, "only the user's own decision can be undone");
-  assert.equal((html.match(/data-decide-open=/g) || []).length, 0, "a row with a fix offers it; hiding sits in the folded-open part");
-  assert.ok(html.includes(">Assign area<"));
+  assert.equal((html.match(/data-decide-open=/g) || []).length, 2, "a row offers its fix and hiding in its menu");
+  assert.ok(html.includes("</ha-icon>Assign area<"));
   el.polOpen = ["policy.entity_area|light.a|", "policy.entity_area|light.b|"]; el.render(); html = shadow.innerHTML;
   assert.equal((html.match(/data-decide-open=/g) || []).length, 2, "folded open: the others ask what to do; the label hides one");
   await el.changePolicy({ type: "ha_housekeeper/set_policy", rule: "device_area", enabled: true });
@@ -1630,7 +1636,7 @@ test("the maintenance view loads the preflight; the recorder view offers the cos
   assert.ok(html.includes("12,000 stored states") && html.includes("5 MB") && html.includes("kept 10 days"));
   assert.ok(html.includes("&lt;b&gt;Noisy&lt;/b&gt;") && !html.includes("<b>Noisy</b>"), "names are escaped");
   assert.ok(html.includes("Recommended") && html.includes("already excluded") && html.includes("3 uses"));
-  assert.ok(html.includes("Nothing selected · ") && html.includes("Select all suggested") && !html.includes("Copy YAML"), "without a pick there is only the bar");
+  assert.ok(!html.includes("Nothing selected") && / suggestions</.test(html) && html.includes("Select all suggested") && !html.includes("Copy YAML"), "without a pick there is only the bar");
   el.excludeSel.add("sensor.noisy");
   assert.equal(el.excludeSnippet(), "recorder:\n  exclude:\n    entities:\n      - sensor.noisy\n");
   el.render();
@@ -1690,12 +1696,29 @@ test("the backup card puts text and a word next to every level and escapes what 
   await el.loadBackup();
   const html = shadow.innerHTML;
   for (const text of ["Targets and schedule", "Targets: Local, Nabu Casa · schedule: daily", "3 days ago · limit for the schedule: 36 h",
-    "The last attempt", "no backup; last success", "Targets with errors: &lt;b&gt;", "Local only (Local)", "500 MB instead of about 1,000 MB (50 %)",
+    "The last attempt", "no backup; last success", "Targets with errors: &lt;b&gt;", "Nabu Casa is set up as well, but the newest backup is only local (Local)", "500 MB instead of about 1,000 MB (50 %)",
     "Retention: 3 backups · present: 2, the oldest 6 days old", "No backup password set.", "Not confirmed yet", "Last on", "37 days ago",
     "not found any more", "Latest backups", "How to test a restore", "Housekeeper never performs a restore itself"]) assert.ok(html.includes(text), text);
   for (const word of [">OK<", ">Note<", ">Problem<"]) assert.ok(html.includes(word), word);
   assert.ok(!html.includes("<b>>") && !html.includes("cloud.<b>"));
   assert.ok(html.indexOf("Backups") < html.indexOf("Updates"), "the card comes first");
+});
+
+test("backups made outside Home Assistant can be stated where none is in order, and replace its checks", async () => {
+  const { el, shadow } = panel("en");
+  const docker = { available: true, overall: "problem", counts: { ok: 0, note: 0, problem: 2, unknown: 0 }, backup_count: 0, own_count: 0, backups: [], attest: {},
+    checks: [{ id: "setup", level: "problem", values: { agents: [], recurrence: "never" } }, { id: "newest", level: "problem", values: { age_hours: null } }] };
+  const external = { ...docker, overall: "ok", counts: { ok: 2, note: 0, problem: 0, unknown: 0 }, own_count: 2,
+    checks: [{ id: "external", level: "ok", values: { at: "2026-10-18T00:00:00+00:00" } }, { id: "space", level: "ok", values: { free: 41e9, size: 1e8, need: 1.5e8 } }] };
+  el._hass = { language: "en", callWS: async msg => (msg.kind === "external" ? external : docker) };
+  el.view = "maintenance"; await el.loadBackup();
+  assert.ok(shadow.innerHTML.includes('data-bh-open="external"') && shadow.innerHTML.includes("the Docker volume or the host"));
+  el.bhForm = "external"; el.render();
+  assert.ok(shadow.innerHTML.includes('data-bh-save="external"') && shadow.innerHTML.includes("the checks of schedule, age, location"));
+  await el.loadBackup({ type: "ha_housekeeper/backup_attest", kind: "external" });
+  const html = shadow.innerHTML;
+  for (const text of ["Outside Home Assistant", "Housekeeper does not see these backups", 'data-bh-clear="external"', "Housekeeper backups", ">External<"]) assert.ok(html.includes(text), text);
+  assert.ok(!html.includes("Targets and schedule") && !html.includes('data-bh-open="external"'));
 });
 
 test("the backup card says when the component is missing or the call fails", async () => {
@@ -1938,7 +1961,7 @@ test("the overview starts with what needs doing, most urgent first", () => {
     meta: { ...DATA.meta, scanned_at: new Date(Date.now() - 80 * 3.6e6).toISOString(), scan_interval_hours: 24, quarantine_days: 14 },
     objects: [...DATA.objects, { object_type: "config_entry", object_id: "e1", name: "Hub", status: "problem", domain: "hue", state: "setup_error" }],
     quarantine: [{ object_id: "sensor.old", object_type: "entity", since: new Date(Date.now() - 20 * 864e5).toISOString() }, { object_id: "sensor.fresh", object_type: "entity", since: now }],
-    causes: [{ id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hub", follower_count: 0, consumers: {}, impact: "none", state: "setup_error" }],
+    causes: [{ id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hub", follower_count: 0, consumers: {}, impact: "high", state: "setup_error" }],
   };
   el.trend = TREND;
   el.backup = { available: true, overall: "problem", checks: [{ id: "newest", level: "problem" }, { id: "emergency_kit", level: "note" }, { id: "last_run", level: "problem" }] };
@@ -1946,7 +1969,7 @@ test("the overview starts with what needs doing, most urgent first", () => {
   assert.equal(JSON.stringify(keys), JSON.stringify(["outages", "critical", "stale", "backup", "quarantine"]));
   const byKey = Object.fromEntries(el.todoItems().map(i => [i.key, i]));
   assert.equal(byKey.outages.count, 1);
-  assert.equal(byKey.outages.hintText, "1 integrations", "an outage without any affected entity still counts");
+  assert.equal(byKey.outages.hintText, "1 integration", "an outage without any affected entity still counts");
   assert.equal(byKey.critical.count, 2, "hidden findings and other classes do not count");
   assert.equal(byKey.quarantine.count, 1, "only entries past the quarantine period");
   assert.equal(byKey.backup.tone, "red");
@@ -2194,7 +2217,8 @@ test("the sort and filter of a list come back, the search text does not; finding
   el.data = { ...DATA, findings: [{ ...DATA.findings[0], key: "k1" }] };
   el.view = "findingsNav"; el.findSel = new Set(["k1"]);
   el.render();
-  assert.ok(shadow.innerHTML.includes('data-fsel="k1" checked') && shadow.innerHTML.includes("data-fsel-hide"));
+  assert.ok(shadow.innerHTML.includes('data-fsel-state="status"'), "the selection bar is shown");
+  assert.ok(!/data-fsel-group="og:/.test(shadow.innerHTML), "the head of its object has no box of its own, so it is not ticked with it");
   assert.equal(el.exportRows().length, 1);
 });
 
@@ -2519,8 +2543,11 @@ test("the reliability view lists the worst integration first with numbers, words
   for (const text of [el.t("relTabIntegrations"), "Cloud &lt;b&gt;Hub&lt;/b&gt;", "93.4 %", "12 entities", "2 h", "probably the cloud or its API", "Re-authentication open", "setup_retry", "No disruption", "calculated in 2.8 s", "24 hours", "7 days", "30 days"]) assert.ok(html.includes(text), text);
   assert.ok(html.indexOf("Dead Gate") < html.indexOf("Cloud &lt;b&gt;") && html.indexOf("Cloud &lt;b&gt;") < html.indexOf("Local Box"), "the dead one first");
   assert.ok(!html.includes("<b>Hub</b>"));
-  assert.ok(html.includes("Down all the time") && html.includes("6 entities, the whole window") && html.includes("Avg per integration"));
-  assert.ok(!html.includes("Re-authentication open</button>") && html.includes('data-jump="findingsNav" data-filter="config_entry.reauth"'));
+  assert.ok(html.includes("Down all the time") && html.includes("6 entities, the whole window") && !html.includes("Avg per integration"), "the average stands in the area tile only");
+  assert.ok(!html.includes("Re-authentication open</button>") && html.includes('data-jump="findingsNav" data-filter="config_entry.reauth"'), "without the integration in the inventory: the findings asking for a login");
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "config_entry", object_id: "e1", name: "Cloud Hub", domain: "hue", status: "problem" }] };
+  el.render();
+  assert.ok(shadow.innerHTML.includes('role="link" tabindex="0" data-object="config_entry:e1"'), "the pill of an integration opens that integration, not every login");
 });
 
 test("reliability rows open the integration, and its detail page shows the numbers with the affected entities", async () => {
@@ -2569,11 +2596,71 @@ test("an old reliability reply is shown at once and renewed once in the backgrou
   assert.ok(el.reliabilityView().includes("As of "), "the age is named");
 });
 
+const AUTO_PAUSE = {
+  settings: { enabled: false, attempts: 20, hours: 6, house_functions: false }, exclude: [], log: [["2026-10-23T12:00:00+00:00", "paused", "Ravensburg"]],
+  schedule: { offsets: [1, 2, 3], end_hours: 168 },
+  paused: [{ entry_id: "e1", title: "Ravensburg", domain: "waste_collection_schedule", since: "2026-10-23T10:00:00+00:00", next: "2026-10-23T13:00:00+00:00", reason: "auto", failures: 41, done: 1, exhausted: false }],
+  candidates: [{ entry_id: "e2", title: "Strompreise", domain: "tibber", state: "loaded", attempts: 3, excluded: false, house_function: false }],
+  pausable: [{ entry_id: "e2", title: "Strompreise", domain: "tibber", state: "loaded", warn: [] }],
+};
+
+test("the Auto-Pause tab shows without the recorder numbers and offers pause, try and exclusion", () => {
+  const { el } = panel("en");
+  el._hass.callWS = async () => AUTO_PAUSE;
+  el.data = DATA; el.view = "reliability"; el.autoPause = AUTO_PAUSE; el._apRequested = true; el._apKey = ""; (el.viewTab ||= {}).reliability = "autopause";
+  const html = el.autoPauseView();
+  assert.ok(html.includes("Ravensburg") && html.includes("data-ap-try") && html.includes("data-ap-never") && html.includes("Try 2 of 3"));
+  assert.ok(!html.includes("Under observation"));
+  el.autoPause = { ...AUTO_PAUSE, candidates: [{ ...AUTO_PAUSE.candidates[0], window: 5, state: "setup_retry" }] };
+  const watching = el.autoPauseView();
+  assert.ok(watching.includes("Under observation") && watching.includes("5 of 20 failed attempts in 6 h") && watching.includes("would be paused at 20") && watching.includes("width:25%"));
+  el.autoPause = AUTO_PAUSE;
+  assert.ok(el.autoPauseTile().count === 1 && el.apPageParts("e2", "loaded").menu.some(e => e[2].includes("data-ap-send")) && el.apPageParts("e2", "setup_retry").primary.includes("data-ap-send"));
+});
+
+test("a running pause is a maintenance row of the overview, a used-up one an open row, and a failing integration offers the pause", () => {
+  const { el } = panel("en");
+  el.data = DATA; el._apRequested = true; el._apKey = DATA.meta?.scanned_at || "";
+  el.autoPause = { ...AUTO_PAUSE, paused: [AUTO_PAUSE.paused[0], { ...AUTO_PAUSE.paused[0], entry_id: "e9", title: "Old", exhausted: true }] };
+  const items = el.apTodoItems();
+  assert.equal(JSON.stringify(items.map(i => [i.key, i.area, i.tone])), JSON.stringify([["autopause_exhausted", "state", "warn"], ["autopause", "care", "warn"]]));
+  assert.ok(items[1].text === "Ravensburg is paused" && items[1].hintText.startsWith("Try 2 of 3") && items[0].text.includes("7 days"));
+  assert.ok(el.apRowMenu("e2", "setup_retry").includes('data-ap-send="e2"') && el.apRowMenu("e2", "loaded") === "" && el.apRowAction("e2") === "" && el.apRowAction("e1").includes("Paused") && el.apRowMenu("e1", "x") === "");
+  assert.ok(el.apWouldPause("e2") && !el.apWouldPause("e1"));
+});
+
+test("a monitored function of a paused integration says paused instead of Disabled", () => {
+  const { el } = panel("en");
+  el.data = DATA; el._apRequested = true; el._apKey = DATA.meta?.scanned_at || ""; el.autoPause = AUTO_PAUSE;
+  assert.equal(el.apMonitorReason("config_entry:e1", "disabled"), "paused by auto-pause");
+  assert.equal(el.apMonitorReason("config_entry:e2", "disabled"), "Disabled");
+});
+
+test("the manual pause is picked from the search field of the panel and asks before it pauses", () => {
+  const { el } = panel("en");
+  const objects = [{ object_type: "config_entry", object_id: "e2", name: "Strompreise", domain: "tibber" }, { object_type: "config_entry", object_id: "e1", name: "Ravensburg", domain: "waste_collection_schedule" }, { object_type: "config_entry", object_id: "e3", name: "Strompreis Nord", domain: "x" }];
+  el.data = { ...DATA, objects }; el._apRequested = true; el._apKey = DATA.meta?.scanned_at || ""; el.autoPause = AUTO_PAUSE;
+  el.apPickText = "Strom";
+  assert.equal(el.pickerResults("autopause").map(o => o.object_id).join(), "e2");
+  el.data.objects.push({ object_type: "config_entry", object_id: "e1", name: "Ravensburg" });
+  el.autoPause = { ...AUTO_PAUSE, candidates: [{ ...AUTO_PAUSE.candidates[0], entry_id: "e1" }] };
+  el.folds = { ap_watched: true };
+  assert.ok(el.autoPauseView().split('data-object="config_entry:e1"').length >= 3);
+  el.autoPause = AUTO_PAUSE;
+  el.folds = { ap_manual: true };
+  assert.ok(el.autoPauseView().includes('data-picker="autopause"'));
+  assert.ok(!el.autoPauseView().includes("ovvis"));
+  el._picker = { name: "autopause", open: true, index: 0 };
+  assert.ok(el.autoPauseView().includes("ovvis"));
+  const page = el.autoPauseView();
+  assert.ok(page.indexOf('data-fold="ap_settings"') < page.indexOf('data-fold="ap_watched"') && page.indexOf("Pause automatically") < page.indexOf('data-fold="ap_settings"'));
+});
+
 test("the reliability window switch and refresh ask the backend with the right arguments, once per window", async () => {
   const queue = [];
   const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
   const calls = [];
-  el._hass.callWS = async msg => { calls.push(msg); return RELIABILITY; };
+  el._hass.callWS = async msg => { if (msg.type === "ha_housekeeper/auto_pause") return AUTO_PAUSE; calls.push(msg); return RELIABILITY; };
   const drain = async () => { while (queue.length) await queue.shift()(); };
   el.data = DATA; el.view = "reliability";
   el.ensureReliability(); el.ensureReliability(); el.render();
@@ -2813,9 +2900,10 @@ test("exposure findings fold: all closed at first, the head toggles and the open
 
 test("polish: the to-do list groups by urgency, the cleanup view has tabs, the quality list filters", () => {
   const { el } = panel("en");
-  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: new Date().toISOString() }, regressions: [{ plan_id: "p", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], criteria_alerts: [{ entity_id: "automation.a", ok: 0, missed: 3 }] };
+  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: new Date().toISOString() }, regressions: [{ plan_id: "p", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], criteria_alerts: [{ entity_id: "automation.a", ok: 0, missed: 3 }],
+    findings: [...DATA.findings, { key: "g1", rule_id: "automation.goal_missed", object_id: "automation.a", classification: "problem", confidence: 0.8, ignored: false }] };
   const card = el.todoCard();
-  assert.ok(card.includes(">Findings<") && card.includes('data-fold="todo_care"') && !card.includes(">State<"), "areas without rows are left out, maintenance folds while something else is open");
+  assert.ok(card.includes("todogrp red") && card.includes('data-fold="todo_care"') && !card.includes("todogrp open"), "groups without rows are left out, maintenance folds while something else is open");
   el.view = "cleanup"; el.journal = []; el._journalRequested = true; el.purges = [{ at: "2026-10-01T10:00:00+00:00", removed: ["sensor.a"], skipped: [], states: false }];
   const html = el.cleanupView();
   assert.ok(html.includes('data-view-tab="cleanup|entities"') && html.includes('data-view-tab="cleanup|devices"') && html.includes('data-view-tab="cleanup|unused"') && html.includes('data-view-tab="cleanup|stats"') && !html.includes('data-view-tab="cleanup|purges"'), "old purges are noted in the Journal, no tab here");
@@ -2838,7 +2926,9 @@ test("open previews can be selected and merged into one plan; a ran plan cannot"
   const { el, shadow } = panel("en");
   el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
   el.view = "journal";
-  const short = (id, extra = {}) => ({ plan_id: id, created_at: new Date().toISOString(), status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
+  // One time for all: the journal sorts by date, so a clock tick between a and b would turn the page box into "b,a".
+  const at = new Date().toISOString();
+  const short = (id, extra = {}) => ({ plan_id: id, created_at: at, status: "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 }, ...extra });
   el.journal = [short("a"), short("b"), short("c", { executed: true, status: "verified" })];
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan: { ...short("n"), actions: [] }, merged: msg.plan_ids, conflicts: [{ object_id: "sensor.x", kinds: ["remove_entity", "replace_references"] }], dropped: 0 }; } };
@@ -2962,7 +3052,7 @@ test("an orphaned statistic names likely successors by domain, unit and name, an
   assert.ok(!html.includes("energie_zaehler") && !html.includes("energie_alt2") && !html.includes('data-object="entity:light.'), "other unit, disabled and other domain are not suggested");
   assert.equal(html.split('<small class="statsucc">Possible successors:').length - 1, 1, "no suggestion without a similar name");
   assert.ok(html.includes('data-tip-sub="Possible successors: sensor.wohnzimmer_energie_neu"'), "the tooltip of the name holds them for the compact rows");
-  assert.ok(html.includes("Meter change (continue statistics)") && html.includes("Developer tools → Statistics"));
+  assert.ok(html.includes("Repair → Replace a meter") && html.includes("makes a backup first"));
 });
 
 const STORMS = {
@@ -3227,6 +3317,17 @@ test("the Recorder view holds the load, the costs and the database, and starts t
   assert.ok(el.maintenanceView && !el.maintenanceView().includes("Storage use"));
 });
 
+test("the database tab opened directly checks the database first and the load after it", async () => {
+  const queue = [];
+  const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
+  el.data = { ...DATA }; el.view = "recorder"; el.viewTab = { recorder: "db" };
+  el._hass = { language: "en", callWS: async msg => (msg.type.endsWith("/storms") ? STORMS : DBH) };
+  el.render();
+  assert.ok(el._dbRequested && el._stormsRequested === null, "the database query starts, the load waits");
+  await el.loadDbHealth();
+  assert.equal(el._stormsRequested, el.stormsWindow, "the load follows once the database is there");
+});
+
 test("the old load link opens the Recorder view", () => {
   const window = { location: { search: "?view=storms", pathname: "/ha-housekeeper" }, history: { replaceState() {} } };
   const { el } = panel("en", { window });
@@ -3299,11 +3400,16 @@ test("findings that began with an update get a line, a tile and a filter", () =>
   assert.deepEqual(el.visibleFindings().length, 2);
   el.findingAfter = true;
   assert.deepEqual(el.visibleFindings().map(f => f.key), ["k1"]);
-  assert.ok(el.findingsView().includes('data-finding-after="1"') && el.findingsView().includes('data-fold="corr"'));
+  assert.ok(el.findingsView().includes('data-fold="corr"') && !el.findingsView().includes('data-finding-after="1"'), "the hint row opens the card; the filter is in it");
+  assert.ok(el.findingsView().includes('data-fclear="after"'), "an active filter from the card stays visible as a note");
   assert.ok(!el.corrGroupsCard().includes("Update of hue"));
   el.folds = { corr: true, "corr_g": true };
   const card = el.corrGroupsCard();
-  assert.ok(card.includes("Update of hue 1 → 2") && card.includes("1× ") && card.includes('data-object="entity:light.a"'));
+  assert.ok(card.includes("Update of hue 1 → 2") && card.includes("1× ") && card.includes('data-inc-row="corr_g"') && card.includes('data-corr-show="g"'), "a row of the list, its details below it");
+  assert.ok(!card.includes('data-object="entity:light.a"'), "the findings are not listed again in the card");
+  el.findingAfter = false; el.findingCorr = "g";
+  assert.deepEqual(el.visibleFindings().map(f => f.key), ["k1"]);
+  assert.ok(el.findingsView().includes('data-fclear="corr"') && el.findingsView().includes("Update of hue 1 → 2 (1)"), "the button narrows the list and the note names the incident");
 });
 
 test("the findings page has an info button that opens the help with every number named", () => {
@@ -3316,17 +3422,19 @@ test("the findings page has an info button that opens the help with every number
   assert.ok(help.includes("helpcard") && help.includes("Certainty") && help.includes("n incidents"));
 });
 
-test("the follow-ups of a chain sit indented in one block, and one button opens or closes all chains", () => {
+test("the follow-ups of a chain sit indented below it, and one button opens or closes all heads", () => {
   const { el } = panel("en");
   const cause = { id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Keypad", follower_count: 2, total_followers: 2, consumers: {}, impact: "high", parent_id: null, child_ids: [], finding_key: "own" };
   const f = (key, extra = {}) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "high", impact_facts: [], first_detected_at: new Date().toISOString(), ...extra });
   el.data = { ...DATA, objects: [], edges: [], causes: [cause], findings: [f("own", { rule_id: "device.down", cause_id: "device_down:d1" }), f("x", { cause_id: "device_down:d1" }), f("y", { cause_id: "device_down:d1" })] };
-  assert.ok(!el.causeTableRow(cause).includes('class="kids"') && el.causeTableRow(cause).includes("mdi:chevron-right"));
+  el.render = () => {};
+  const closed = el.findingsView();
+  assert.ok(!closed.includes("og lvl1") && closed.includes("mdi:chevron-right") && closed.includes('data-fold-all="open"'));
   el.foldAllFindings(true);
-  const open = el.causeTableRow(cause);
-  assert.ok(open.includes("mdi:chevron-down") && /class="kids"/.test(open));
+  const open = el.findingsView();
+  assert.ok(open.includes("mdi:chevron-down") && /og lvl1/.test(open) && open.includes('data-fold-all="close"'), "one button, it closes once a head is open");
   el.foldAllFindings(false);
-  assert.ok(!el.causeTableRow(cause).includes('class="kids"'));
+  assert.ok(!el.findingsView().includes("og lvl1"));
 });
 
 test("labels are always a row: the own ones, or a note that none are assigned", () => {
@@ -3344,29 +3452,31 @@ test("the selection row of the findings list names the size of the view at its r
   const f = key => ({ key, rule_id: "entity.stale", object_id: key, classification: "unused", confidence: 0.7, ignored: false, impact: "info", impact_facts: [] });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c")] };
   el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
-  assert.ok(/viewcount" role="status">3 in this view/.test(el.findingsView()));
+  assert.ok(/viewcount" role="status">3 findings on 3 objects/.test(el.findingsView()));
   el.findSel = new Set(["a"]);
-  assert.ok(/1 selected.*viewcount" role="status">3 in this view/s.test(el.findingsView()));
+  assert.ok(/1 selected.*viewcount" role="status">3 findings on 3 objects/s.test(el.findingsView()));
+  el.showFollowers = true;
+  assert.ok(/viewcount" role="status">3 findings on 3 objects/.test(el.findingsView()), "the flat list counts the same way");
 });
 
-test("a reason tile counts everything under it and names the follow-ups in it", () => {
+test("a reason tile counts every finding of its reason and names the follow-ups below it", () => {
   const { el } = panel("en");
   const f = (key, cause) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "low", cause_id: cause });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x"), f("d", "device:x")] };
   el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
   const html = el.findingsView();
-  assert.ok(html.includes("Unavailable") && /sumvalue">4<\/b><small>of which 2 follow-ups/.test(html));
+  assert.ok(html.includes("Unavailable") && /sumvalue">4<\/b><small>2 of them follow-ups/.test(html));
 });
 
-test("the button for findings after an update counts what the list shows and names the follow-ups beside it", () => {
+test("the button for findings after an update counts every finding and names the follow-ups among them", () => {
   const { el } = panel("en");
   const f = (key, cause) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: false, impact: "low", impact_facts: [], cause_id: cause });
   el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a"), f("b"), f("c", "device:x")] };
   el.corr = { groups: [{ id: "g", kind: "entry_version", at: "2026-10-01T10:05:00+00:00", domain: "hue", from: "1", to: "2", total: 3, keys: ["a", "b", "c"], only_group: false }], by_key: { a: "g", b: "g", c: "g" } };
   el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || ""; el.series = null; el._seriesFor = el.data;
-  el.findingAfter = true;
+  el.findingAfter = true; el.folds = { corr: true };
   const html = el.findingsView();
-  assert.ok(html.includes("2 findings began together with an update") && html.includes("plus 1 follow-ups") && html.includes("2 in this view"));
+  assert.ok(html.includes("3 findings began together with an update") && html.includes("1 of them follow-ups") && html.includes("3 findings on 3 objects"));
 });
 
 test("the detail page rates a finding: level with reasons, certainty, and what the next level takes", () => {
@@ -3423,7 +3533,7 @@ test("a watch joins the incident that holds the same update, and ending it asks 
   assert.equal(el.incidentFoldId("w1"), "corr_g1");
   el.folds = { corr: true, corr_g1: true };
   const card = el.corrGroupsCard();
-  assert.ok(card.includes("3 findings") && card.includes("Running") && card.includes("data-watch-end") && card.includes("incsec obs"));
+  assert.ok(card.includes("began with it · 3") && card.includes("Running") && card.includes("data-watch-end") && card.includes("incsec obs"));
   el.askEndWatch();
   assert.ok(el.confirmState && el.confirmState.text.includes("judged now"));
 });
@@ -3539,7 +3649,7 @@ test("follow-up findings of a cause stay folded until asked for, and the export 
   assert.equal(el.exportRows().length, 3);
   const html = el.findingsView();
   assert.ok(html.includes("Integration Cloud is not loaded") && html.includes("2 follow-ups") && html.includes("explains 2 more findings") && html.includes("data-toggle-followers"));
-  assert.ok(entriesOf(el).includes("1 automations affected") && !entriesOf(el).includes("timeout"));
+  assert.ok(entriesOf(el).includes("1 automation affected") && !entriesOf(el).includes("timeout"));
   el.showFollowers = true;
   assert.equal(el.collapseFollowers(el.visibleFindings()).length, 3);
   assert.equal(el.todoItems().some(i => i.key === "outages"), true);
@@ -3553,16 +3663,17 @@ test("the findings list is one list: a chain is one entry with a counter and ope
   const app = { id: "app_down:a", kind: "app_down", object_type: "app", object_id: "a", name: "Zigbee2MQTT", follower_count: 0, total_followers: 2, child_ids: ["integration_down:e1"], parent_id: null, consumers: {}, impact: "high" };
   const integ = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "MQTT", follower_count: 2, total_followers: 2, child_ids: [], parent_id: app.id, consumers: {}, impact: "high" };
   el.data = { ...DATA, findings: [f("sensor.a", integ.id), f("sensor.b", integ.id), f("sensor.c")], causes: [app, integ] };
-  assert.equal(el.findingTotal(), 2, "the chain is one entry, the single finding another");
-  el.folds = { [`cause_${app.id}`]: true, [`cause_${integ.id}`]: true };
+  assert.equal(el.findingTotal(), 3, "every open finding counts, the follow-ups of the chain too");
+  el.folds = { "og:app:a": true, "og:config_entry:e1": true };
   const html = el.findingsView();
   assert.ok(html.includes("App Zigbee2MQTT is stopped") && html.includes("2 follow-ups") && html.includes("Integration MQTT is not loaded") && html.includes("sensor.a") && html.includes("sensor.c"));
   assert.ok(!html.includes("Single findings"), "no separate groups");
   el.data = { ...el.data, findings: [...el.data.findings, { ...f("x", "integration_down:e1"), rule_id: "config_entry.not_loaded", key: "own1" }], causes: [app, { ...integ, finding_key: "own1" }] };
-  assert.ok(el.findingsView().includes('data-fsel="own1"'), "an outage with a finding of its own can be picked");
-  el.findingWithFollowers = true;
-  assert.ok(!el.findingsView().includes("sensor.c"), "the filter keeps only entries with follow-ups");
-  el.findingWithFollowers = false; el.showFollowers = true;
+  el.findingsView();
+  assert.ok(el._findGroups["og:app:a"].includes("own1"), "an outage with a finding of its own is picked with its head");
+  el.findingFollowers = true;
+  assert.ok(!el.findingsView().includes("sensor.c"), "the follow-ups of the total tile keep only the chains");
+  el.findingFollowers = false; el.showFollowers = true;
   assert.ok(el.findingsView().includes("Follow-up of MQTT"));
 });
 
@@ -3575,10 +3686,30 @@ test("Done lists what a plan fixed and what ended by itself; objects removed or 
   el.render = () => {};
   await el.loadEnded();
   assert.equal(el.doneCount(), 2, "the plan and the one that came back; the plan's own object is not counted twice");
+  assert.ok(!el.fixedList().includes("Entity disabled"), "every group starts folded");
+  el.folds = { ...el.folds, done_plan: true, done_back: true };
   const html = el.fixedList();
   assert.ok(html.includes("Fixed by a plan") && html.includes("Entity disabled") && html.includes("400 objects") && html.includes("can be undone: yes"));
   assert.ok(html.includes("Back in order by itself") && html.includes("sensor.back") && !html.includes("sensor.z</strong>"));
   assert.ok(html.includes("Object removed (not fixed)"));
+});
+
+test("the selection bar can mark a device that is down once instead of each of its entities", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  const f = id => ({ rule_id: "entity.state_unknown", object_id: id, classification: "unknown", confidence: 0.9, key: `u|${id}`, ignored: false, evidence: [] });
+  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unknown", device_id: "tv" });
+  el.data = { ...DATA, objects: [ent("sensor.a"), ent("sensor.b"), { object_type: "device", object_id: "tv", name: "TV", status: "active" }], findings: [f("sensor.a"), f("sensor.b")], causes: [] };
+  el.findSel = new Set(["u|sensor.a", "u|sensor.b"]);
+  assert.equal(el.markDeviceCount(), 0, "a device that still works is never marked as a whole");
+  el.data.findings.push({ rule_id: "device.down", object_id: "tv", classification: "problem", key: "d|tv", ignored: false, evidence: [] });
+  assert.equal(el.markDeviceCount(), 1);
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
+  el.bulk = { kind: "mark", reason: "", days: 0, markKind: "", error: "", onDevice: true };
+  assert.ok(el.bulkForm().includes("data-bulk-ondevice") && el.bulkForm().includes("(1)"));
+  await el.commitBulk();
+  assert.deepEqual(calls.filter(c => c.type === "ha_housekeeper/mark_set").map(c => `${c.object_type}:${c.object_id}`), ["device:tv"]);
+  assert.equal(el.findSel.size, 0);
 });
 
 test("the selection bar sets a mark on every picked object that can carry one", async () => {
@@ -3781,8 +3912,8 @@ test("automation diagnostics: quality dimensions, criteria, coverage, comparison
   assert.deepEqual(calls.at(-1).states, { "binary_sensor.door": "on" });
   const dry = el.dryResult(el.diag.dry.result);
   assert.ok(dry.includes("lock.unlock") && dry.includes("critical") && dry.includes("uncertain") && dry.includes("fires"));
-  el.data = { ...DATA, criteria_alerts: [{ entity_id: "automation.hall", ok: 1, missed: 4 }] };
-  assert.ok(el.todoItems().some(item => item.key === "criteria" && item.count === 1));
+  el.data = { ...DATA, criteria_alerts: [{ entity_id: "automation.hall", ok: 1, missed: 4 }], findings: [{ key: "g1", rule_id: "automation.goal_missed", object_id: "automation.hall", classification: "problem", confidence: 0.8, ignored: false }] };
+  assert.ok(el.todoItems().some(item => item.key === "criteria" && item.count === 1 && item.jump.includes('data-filter="automation.goal_missed"')), "a missed criterion is counted and shown as its finding");
 });
 
 test("the health card names the score and the count; the safety line shows backup, last change, undo and follow-ups; a cause folds its follow-ups", () => {
@@ -3795,11 +3926,11 @@ test("the health card names the score and the count; the safety line shows backu
   ];
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.includes("class=\"statushead\"") && /topics? (urgent|open)|All good/.test(html));
+  assert.ok(html.includes("class=\"statushead\"") && /data-todo-go=|Nothing urgent|All good/.test(html));
   assert.ok(/of \d+ objects with a finding/.test(html));
-  assert.ok(html.includes("Last backup: 5 h ago") && html.includes("Undo available") && html.includes("1 plan is being watched") && html.includes("1 regression after a change"));
+  assert.ok(html.includes("Last backup: 5 h ago") && html.includes("undo available") && html.includes("1 plan is being watched") && html.includes("1 regression after a change"));
   el.journal = [{ plan_id: "c", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false }];
-  assert.ok(el.safetyBar().includes("backup restore only"));
+  assert.ok(el.safetyBar().includes("Last plan: ") && el.safetyBar().includes("no longer undoable"));
   el.data = { ...DATA, causes: [{ id: "integration_down:x", kind: "integration_down", object_type: "config_entry", object_id: "x", name: "Zigbee", follower_count: 47, consumers: { automation: 12, dashboard: 2 } }] };
   assert.ok(entriesOf(el).includes("47 entities, 12 automations, 2 dashboards affected"));
 });
@@ -3848,6 +3979,7 @@ test("the History tab holds the logbook, the plans of the journal that named the
   assert.equal(el.historyCount(ent), 2, "one entry and one plan");
   const html = el.historyTab(ent);
   assert.ok(html.includes("Stick replaced") && html.includes('data-plan-open="p1"') && !html.includes('data-plan-open="p2"') && html.includes("data-note-add-for"));
+  assert.ok(/<tr data-plan-open="p1" tabindex="0" role="button"/.test(html), "the plans are a table like the Journal; a row opens its plan");
   assert.ok(el.detailTabs(ent, "entity:sensor.h").some(([id, , n]) => id === "history" && n === 2));
   const seen = { ...ent, status_since: "2026-10-01T10:00:00+00:00", last_changed: "2026-10-10T10:00:00+00:00", created_at: "2025-08-05T12:16:00+00:00" };
   const lines = el.noticedLines(seen, "entity:sensor.h");
@@ -3894,7 +4026,7 @@ test("the protection mode shows in the safety line and the settings, and is set 
   await el.setProtection("full");
   assert.equal(JSON.stringify(calls.find(c => c.type === "ha_housekeeper/protection_set")), JSON.stringify({ type: "ha_housekeeper/protection_set", mode: "full" }));
   assert.equal(el.data.meta.protection, "full");
-  assert.ok(el.safetyBar().includes("Protection mode: everything allowed"));
+  assert.ok(el.safetyBar().includes("Protection mode: standard"));
   void shadow;
 });
 
@@ -3928,7 +4060,9 @@ test("the batteries view shows the forecast with groups and the reminders, which
   assert.ok(el.remindersView().includes("data-rem-new") && !el.remindersView().includes("data-rem-form"));
   const row = el.relRowBody({ title: "Hue", domain: "hue", entities: 3, availability: 99, setup: { count: 2, days: 7, last: "2026-10-08T10:00:00+00:00", state: "setup_retry" } });
   assert.ok(row.includes("Setup failures: 2 in 7 days") && row.includes("Currently in state setup_retry"));
+  assert.ok(el.relRowBody({ title: "Hue", domain: "hue", entities: 3, availability: 99, setup: { count: 2, days: 7, attempts: 1200, attempts_since: "2026-10-20T10:00:00+00:00" } }).includes("About 1"));
   assert.equal(el.relSetupHint({ availability: 90, setup: { count: 3, days: 7 } }), "relHintOffline");
+  assert.equal(el.relSetupHint({ availability: 90, layer: "cloud", setup: { count: 3, days: 7 } }), "relHintCloud");
   assert.equal(el.relSetupHint({ availability: 99.9, setup: { count: 3, days: 7 } }), "relHintEarly");
   assert.equal(el.relSetupHint({ availability: 99, setup: { count: 1, days: 7, state: "setup_error" } }), "relHintError");
   assert.equal(el.relSetupHint({ availability: 99 }), null);
@@ -4111,7 +4245,7 @@ test("the overview of an object offers its actions: decide a finding, replace a 
     { ...DATA.findings[0], key: "k1", ignored: false },
   ] };
   const auto = el.actionsCard(el.findObject("automation:automation.c"), "automation:automation.c");
-  assert.ok(auto.includes('data-act-replace="sensor.gone"') && auto.includes('data-decide-preset="snooze"') && !auto.includes("data-act-label-plan") && auto.includes("edit it there"));
+  assert.ok(auto.includes('data-act-replace="sensor.gone"') && auto.includes('data-decide-open=') && !auto.includes("data-act-label-plan") && auto.includes("edit it there"));
   assert.ok(!auto.includes("data-act-disable"));
   const entity = el.actionsCard(el.findObject("entity:sensor.a"), "entity:sensor.a");
   assert.ok(entity.includes('data-act-disable="sensor.a"'));
@@ -4181,6 +4315,7 @@ test("the overview has no tile card; a missed goal is a to-do row, not a card of
   assert.ok(!html.includes("hk-tiles"));
   assert.ok(html.includes("Broken references") && html.includes("Goal missed") && html.includes("allowed: none") && html.includes("Maintenance goals: 3 of 3 met".replace("3 of 3", "2 of 3")) && html.includes("data-goals-settings"));
   assert.ok(!html.includes('aria-labelledby="hk-goals"') && html.includes("with a finding"));
+  el.staleScan = () => null; // an old scan is a state topic and would colour the ring yellow
   assert.ok(el.health().tasks >= 1 && el.health().tone === "ok"); // a missed goal is an open task, but maintenance never colours the status
   el.data = { ...DATA, objects: [], findings: [], regressions: [], criteria_alerts: [] };
   el.goals = { met: 3, missed: 0, goals: [] };
@@ -4594,7 +4729,7 @@ test("the mark is a row of the Actions tab and a line of what is known, no longe
   assert.ok(el.markRows({ object_type: "automation", object_id: "automation.x" }).length === 0);
 });
 
-test("the status is the share of objects in order: each object once by its worst level, urgent state topics keep the ring from green; the ring explains it", () => {
+test("the status is a state in points: each object once by its worst level, weighed 2, 1 and a half; the colour comes from what is open; the ring explains it", () => {
   const { el, shadow } = panel("en");
   const f = (id, impact, extra = {}) => ({ rule_id: "entity.state_missing", object_id: id, classification: "orphaned", confidence: 0.9, evidence: [], impact, key: id, ...extra });
   const objects = Array.from({ length: 20 }, (_, i) => ({ object_type: "entity", object_id: `x.${i}`, name: `x.${i}`, status: "active" }));
@@ -4603,23 +4738,31 @@ test("the status is the share of objects in order: each object once by its worst
   const items = [{ tone: "warn", key: "quarantine", area: "care", count: 2 }];
   el.todoItems = () => items;
   let h = el.health();
-  assert.equal(h.load, 1.7, "the chain counts once at its cause, an object with two findings once, the follower, the hidden finding and info not at all");
-  assert.equal(h.percent, 91.5);
-  assert.equal(h.tone, "warn", "a high object is at least yellow");
-  assert.equal(el.statusHeadline(h), "1 topic open");
+  assert.equal(h.load, 3.5, "the chain counts once at its cause, an object with two findings once, the hidden finding and info not at all");
+  assert.equal(h.percent, 82.5);
+  assert.equal(h.affected, 3, "the objects with a finding are the rows of the calculation, without info");
+  assert.equal(h.tone, "warn", "an object with high impact is yellow while no urgent topic is open");
+  assert.equal(el.statusHeadline(), "All good", "maintenance alone is nothing to name in the headline");
+  assert.ok(el.statusSubline(h).includes("1 in maintenance"));
   el.data = { ...el.data, causes: [], findings: Array.from({ length: 9 }, (_, i) => f(`x.${i}`, "high")) };
   items.push({ tone: "red", key: "disk", area: "state" }, { tone: "red", key: "backup", area: "state" });
   h = el.health();
-  assert.equal([h.percent, h.tone, h.red].join(), "55,red,2");
-  el.data = { ...el.data, findings: [] };
-  items.splice(0, 3, { tone: "red", key: "disk", area: "state" });
+  assert.equal([h.percent, h.tone, h.red].join(), "10,red,2");
+  el.data = { ...el.data, findings: Array.from({ length: 15 }, (_, i) => f(`x.${i}`, "high")) };
+  assert.equal(el.health().percent, 0, "the state never falls below 0");
+  el.data = { ...el.data, findings: [f("x.1", "low")] };
+  items.splice(1, 2);
   h = el.health();
-  assert.equal([h.percent, h.tone].join(), "100,warn", "an urgent state topic is never green, and takes nothing off");
+  assert.equal([h.percent, h.tone].join(), "97.5,ok", "low findings and maintenance alone leave the ring green");
+  el.data = { ...el.data, findings: [] };
+  items.splice(0, items.length, { tone: "red", key: "disk", area: "state" });
+  h = el.health();
+  assert.equal([h.percent, h.tone].join(), "100,red", "an urgent state topic makes the ring red, and takes nothing off");
   // the calculation opens from the ring
   el.view = "overview"; el.render();
   assert.ok(shadow.innerHTML.includes("data-health-why") && !shadow.innerHTML.includes('class="healthwhy"'));
   el.healthWhy = true; el.render();
-  assert.ok(shadow.innerHTML.includes('class="healthwhy"') && shadow.innerHTML.includes("In order"));
+  assert.ok(shadow.innerHTML.includes('class="healthwhy"') && shadow.innerHTML.includes("Remaining") && shadow.innerHTML.includes("100 of 100") && shadow.innerHTML.includes("Urgent"));
   // the rows say what they count
   assert.equal(el.todoCount({ key: "outages", count: 8 }), "8 outages"); assert.equal(el.todoCount({ key: "quarantine", count: 1 }), "1 object");
 });
@@ -4652,9 +4795,9 @@ test("the journal names the end of a follow-up and the safety line counts the wa
 test("the sparkline shows the change over the whole period, and a hint while there are too few points", () => {
   const { el } = panel("en");
   const day = n => new Date(Date.UTC(2026, 9, n)).toISOString();
-  el.series = { points: [{ at: day(1), findings: 58, objects: 10 }, { at: day(11), findings: 50, objects: 10 }, { at: day(31), findings: 38, objects: 10 }] };
+  el.series = { points: [{ at: day(25), findings: 58, objects: 10 }, { at: day(28), findings: 50, objects: 10 }, { at: day(31), findings: 38, objects: 10 }] };
   const html = el.sparkline("findings", "bad");
-  assert.ok(html.includes("<svg") && html.includes("−20 in 30 days") && html.includes('spark-end ok'), "fewer findings is good");
+  assert.ok(html.includes("<svg") && html.includes("−20 in 6 days") && html.includes('spark-end ok'), "fewer findings is good");
   assert.ok(el.sparkline("findings", "bad") !== el.sparkline("objects") && !el.sparkline("objects").includes("spark-end ok"), "without a direction the end point stays neutral");
   el.series = { points: [{ at: day(1), findings: 5 }, { at: day(2), findings: 6 }] };
   assert.ok(el.sparkline("findings", "bad").includes("appears after a few scans") && !el.sparkline("findings", "bad").includes("<svg"));
@@ -4729,11 +4872,11 @@ test("battery shopping list includes current low levels without a forecast and l
   assert.equal(rows.length, 3);
   assert.equal(rows.filter(r => r.state === "low").map(r => r.entity_id).join(), "sensor.empty,sensor.volt");
   const html = el.batteryNeed();
-  assert.ok(html.includes("Low now") && html.includes("In 0 to 13 days") && html.includes("data-fold=\"bt_now\""));
+  assert.ok(html.includes("Low now") && html.includes("In 0 to 13 days") && html.includes('data-fold="bt_now"'), "the low ones are a fold of their own");
   assert.ok(html.includes("2×") && html.includes("AAA") && html.includes("CR2450"));
-  assert.ok(html.includes("0 %") && html.includes("2.37 V"));
+  assert.ok(html.includes("sensor.empty") && html.includes("sensor.volt") && !html.includes("sensor.future"), "the low fold is open first, the window after it closed");
   el.batteryTrend = { available: false, busy: false, rows: [], types: {} };
-  assert.ok(el.batteryNeed().includes("sensor.empty") && el.batteryNeed().includes("no forecast without a recorder"));
+  assert.ok(el.batteryNeed().includes("Low now") && el.batteryNeed().includes("no forecast without a recorder"));
 });
 
 test("housekeeper backups: the list marks protected ones, the rule picks the rest, the plan has no undo; an automation finding offers deleting", async () => {
@@ -4809,9 +4952,10 @@ test("a violation row folds open to a rename that checks the name and plans one 
   assert.equal(el.polCheckText(item, "Bad Id").tone, "bad");
   assert.equal(el.polCheckText(item, "hall_wall").tone, "ok");
   el.polOpen = ["kb"];
-  const html = el.polDetail(item, '<button data-decide-open="k">Hide</button>');
+  const html = el.polDetail(item);
   assert.ok(html.includes("data-pol-id") && html.includes("data-pol-rename-go") && html.includes("disabled"), "taken: the plan button stays off");
-  assert.ok(/data-object=[^>]*>Open object<\/button><button data-decide-open/.test(html), "open object and hide side by side");
+  const { act } = el.polItemParts(item);
+  assert.ok(act.includes("data-object=") && act.includes("data-decide-open") && !act.includes("data-pol-open"), "open object and hide sit in the row menu, the fix is not offered twice");
   el.polDraft(item).value = "hall_wall";
   await el.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: `light.${el.polDraft(item).value}` });
   assert.equal(calls[0].actions[0].target, "light.hall_wall");
@@ -4841,7 +4985,7 @@ test("the overview counts batteries that report volts as low too", () => {
 
 test("the findings tiles carry a sparkline for the total and each class, the status line of the overview the one for the score", () => {
   const { el } = panel("en");
-  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused } });
+  const day = (n, share, open, unused) => ({ at: `2026-10-0${n}T08:00:00+00:00`, objects: 10, findings: open, open, share, classes: { unused }, lead: open, lead_classes: { unused }, reasons: { unused } });
   el.series = { points: [day(1, 90, 4, 2), day(2, 80, 6, 3), day(3, 70, 8, 5)] };
   const html = el.findingsView();
   assert.ok((html.match(/class="spark"/g) || []).length >= 2);
@@ -4849,6 +4993,7 @@ test("the findings tiles carry a sparkline for the total and each class, the sta
   assert.ok(el.sparkline("class:missing", "bad").includes("±0"));
   assert.ok(el.sparkline("lead:unused", "bad").includes("+3"));
   assert.ok(el.sparkline("lead:unused", "bad").includes("spark-hint") === false);
+  assert.ok(el.sparkline("reason:unused", "bad").includes("+3"), "the tiles read the open findings by reason");
   assert.ok(!html.includes(`${el.health().percent} %`), "the score is not a tile of this page any more");
   el.view = "overview"; el.render();
   assert.ok(el.shadowRoot.innerHTML.includes("statustext") && /statustext[\s\S]*?class="spark"/.test(el.shadowRoot.innerHTML), "the score history sits under the headline");
@@ -4902,6 +5047,7 @@ test("battery sensors that are no replaceable battery leave the list, wait in a 
   assert.ok(ids.includes("sensor.door_battery") && ids.includes("sensor.back_battery") && !ids.includes("sensor.bank_battery") && !ids.includes("sensor.car_battery"));
   const card = el.batteryKindCard();
   assert.ok(card.includes("Probably not a replaceable battery") && card.includes("Device also reports power, storage") && card.includes('data-bk-accept="sensor.bank_battery"'));
+  assert.ok(card.includes('data-bk-sel="sensor.bank_battery"') && card.includes("data-bk-take") && card.includes('class="menuitem" data-bk-back="sensor.bank_battery"'), "boxes and a selection bar; It is a battery sits in the menu");
   await el.batterySetKinds([{ entity_id: "sensor.bank_battery", kind: "storage" }, { entity_id: "sensor.door_battery", kind: "" }]);
   assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/battery_kind_set", items: [{ entity_id: "sensor.bank_battery", kind: "storage" }, { entity_id: "sensor.door_battery", kind: "" }] }));
 });
@@ -4919,11 +5065,13 @@ test("broken references of one dashboard card form one row with a readable place
   const rows = el.groupBroken(list);
   assert.equal(rows.length, 1);
   assert.equal(el.groupBroken([list[0]])[0], list[0], "a card with one broken reference stays a plain row");
-  el.folds = { [`bg:technik|${place.card_path}`]: true };
-  const html = el.findingGroup(rows[0]);
-  assert.ok(html.includes("Technik › Archiv") && html.includes("Card custom:charger-card (Section 2) · 3 broken references"));
+  // The grouped findings list: the dashboard is the head, the card a head below it, its references the rows.
+  el.view = "findingsNav";
+  el.folds = { "og:dashboard:technik": true, [`bg:technik|${place.card_path}`]: true };
+  const html = el.findingsView();
+  assert.ok(html.includes(`data-fold="bg:technik|${place.card_path}"`) && html.includes("Card custom:charger-card (Section 2)") && html.includes("3 broken references"));
   assert.ok(html.includes("looks abandoned: 3 of 4") && html.includes("Maybe: sensor.b_new") && html.includes("details/b"));
-  assert.ok(html.includes("<small>sensor.a · details/a"), "inside the group only the part below the card shows");
+  assert.ok(html.includes("sensor.a · details/a"), "inside the card only the part below it shows");
   assert.equal(el.placeText(list[0]), 'Tab “Archiv” · Card custom:charger-card (Section 2)');
   const diag = el.diagnose(el.data.objects[0]);
   assert.equal(diag.rows.filter(r => r.tone === "red").length, 1, "one diagnosis row per card");
@@ -5136,8 +5284,8 @@ test("storage shows the key figures, a red disk at 96 % and the Supervisor categ
   assert.ok(html.includes("&lt;b&gt;apps&lt;/b&gt;") && !html.includes("<b>apps</b>"), "Supervisor labels are escaped");
   el.viewTab = { storage: "misc" };
   el.render();
-  assert.ok(shadow.innerHTML.includes('data-fold="sysmisc_0"') && shadow.innerHTML.includes('data-fold="sysmisc_2"') && !shadow.innerHTML.includes("Motion light"), "the three lists are folds, the first one open");
-  el.folds = { sysmisc_1: true, sysmisc_2: true }; el.render();
+  assert.ok(shadow.innerHTML.includes('data-fold="sysmisc_0"') && shadow.innerHTML.includes('data-fold="sysmisc_2"') && !shadow.innerHTML.includes("Motion light"), "the three lists are folds, all folded");
+  el.folds = { sysmisc_0: true, sysmisc_1: true, sysmisc_2: true }; el.render();
   assert.ok(shadow.innerHTML.includes("card.js") && shadow.innerHTML.includes("Ordner") && shadow.innerHTML.includes("Motion light") && shadow.innerHTML.includes(".storage"), "cards, blueprints and the other entries share one tab");
 });
 
@@ -5206,8 +5354,10 @@ test("the credential page shows the accounts with role and two-factor, and its t
   assert.ok(html.includes("Admins ohne Zwei-Faktor") && html.includes("von 2 Admins") && html.includes('data-sec-show="nomfa"'));
   assert.equal((html.match(/class="sumtiles even"/g) || []).length, 2, "two even rows of tiles");
   const tile = { dataset: { secShow: "nomfa" } };
+  const kept = el.lvState("secusers", "name", "asc"); kept.q = "zzz"; kept.f = { role: "user" };
   el.bindSystem({ querySelectorAll: selector => (selector === "[data-sec-show]" ? [tile] : []), querySelector: () => null });
   tile.onclick();
+  assert.equal(`${kept.q}|${Object.keys(kept.f).join()}`, "|state", "the tile starts without the search and other filters kept before");
   html = shadow.innerHTML;
   assert.ok(html.includes("&lt;b&gt;Partner&lt;/b&gt;") && !html.includes("Roberto</strong>") && !html.includes("Gast</strong>"), "only the admin without two-factor, escaped");
   assert.ok(html.includes('data-ha-path="/config/users"'), "a row opens the users in Home Assistant");
@@ -5369,7 +5519,7 @@ test("the findings of the load view are a sortable table with the numbers in col
   el.storms = STORMS;
   const html = el.stormsView();
   assert.ok(html.includes('data-lf-set="stormfind||"') && html.includes('data-lf-set="stormfind|kind|storm"'));
-  assert.ok(html.includes("Rows/day") && html.includes("72,000") && html.includes('data-object="entity:sensor.laut"') && html.includes('data-exsel="sensor.laut"') && html.includes("Nothing selected"));
+  assert.ok(html.includes("Rows/day") && html.includes("72,000") && html.includes('data-object="entity:sensor.laut"') && html.includes('data-exsel="sensor.laut"') && !html.includes("Nothing selected"));
   assert.ok(!html.includes("stormgroup"));
 });
 
@@ -5410,12 +5560,15 @@ test("the settings list every file Housekeeper keeps with size and purpose, grou
   assert.ok(html.includes("<table") && html.includes("Audit trail") && el._exporters.storedfiles.rows()[0].length === 5, "the files are a table with an export");
 });
 
-test("the settings list the hidden findings as rows with a filter by kind, and the event list has no inline style", () => {
+test("the settings list the findings with a status and every mark, each in its own card, and the event list has no inline style", () => {
   const { el } = panel("en");
-  el.data = { ...DATA, findings: [{ key: "h1", rule_id: "r", object_id: "sensor.a", ignored: true, ignored_by: "label" }, { key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true }] };
-  const html = el.hiddenCard();
-  assert.ok(!html.includes("<table") && html.includes('class="row"') && html.includes('data-ignore="h2" data-ignore-value="0"') && !html.includes('data-ignore="h1"'), "only a manual decision can be shown again");
-  assert.ok(el._exporters.hidden && html.includes("Hidden findings (2)"));
+  const mark = { kind: "seasonal", reason: "", until: "2026-01-01T00:00:00+00:00", at: "2025-10-01T00:00:00+00:00" };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "device", object_id: "d1", name: "Tree lights", mark, mark_due: true }], findings: [{ key: "h1", rule_id: "r", object_id: "sensor.a", ignored: true, ignored_by: "label" }, { key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true, ignored_by: "user", ignore_info: { kind: "ignore", reason: "", until: null } }, { key: "h3", rule_id: "r", object_id: "sensor.c", ignored: false, resurfaced: true }] };
+  const html = el.statusCard();
+  assert.ok(html.includes('data-ignore="h2" data-ignore-value="0"') && !html.includes('data-ignore="h1"') && html.indexOf('data-decide-open="h3"') < html.indexOf('data-decide-open="h2"'), "own status only, a run-out one first; label, mark and rule have their own cards");
+  assert.ok(el._exporters.decided && html.includes("(2)"));
+  const marks = el.marksCard();
+  assert.ok(marks.includes('data-mark-clear="device:d1"') && marks.includes("review date reached"), "a mark is listed even when it hides nothing");
   assert.ok(el.eventsCard().includes('class="evtable"') && !el.eventsCard().includes("style="));
 });
 
@@ -5472,7 +5625,7 @@ test("the coverage of a scan shows in the overview as one line, lists each sourc
   const cov = (extra = []) => [{ source: "registry", state: "checked", reason: null }, { source: "apps", state: "absent", reason: "no_supervisor" }, ...extra];
   el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: "2026-10-12T20:22:00+00:00", coverage: cov([{ source: "dashboards", state: "checked", reason: null }]) } };
   assert.equal(el.scanCoverageLine(), "", "no bar in the overview while all is read");
-  assert.ok(el.scanCoverageComplete() && el.safetyItems().some(i => i[0] === "coverage" && i[2] === "Check complete"), "absent sources do not count; one item in the bar under the menu");
+  assert.ok(el.scanCoverageComplete() && el.safetyItems().some(i => i[0] === "coverage" && i[2] === "Scan complete"), "absent sources do not count; one item in the bar under the menu");
   el.data.meta.coverage = cov([{ source: "dashboards", state: "partial", reason: "unreadable", read: 3, failed: 1 }, { source: "statistics", state: "skipped", reason: "not_ready" }]);
   const line = el.scanCoverageLine();
   assert.ok(line.includes("Check: 1 of 3 sources") && line.includes("Dashboards, Long-term statistics") && line.includes("data-cov-details") && line.includes('class="tile warn"'));
@@ -5570,8 +5723,10 @@ test("the search finds pages, settings tabs and finding filters, puts the better
   el.quickQuery = "known"; el.quickOpen = true;
   const html = el.quickSearchBox();
   assert.ok(html.includes('class="grp"') && html.includes("Filters") && html.includes("data-quick-entry=\"0\""));
+  el.findingFilter = "unused"; el.lvState("findings", "impact", "desc").q = "old";
   el.quickGo(el.quickEntries()[0]);
-  assert.equal(el.view, "findingsNav"); assert.equal(el.findingStatus, "known"); assert.equal(el.quickQuery, ""); assert.equal(el.quickOpen, false);
+  assert.equal(el.view, "findingsNav"); assert.equal(el.findingStatus, "known");
+  assert.equal(`${el.findingFilter}|${el.lv.findings.q}`, "|", "the filter from the search starts without what was kept before"); assert.equal(el.quickQuery, ""); assert.equal(el.quickOpen, false);
   el.quickQuery = "appearance"; el.quickGo(el.quickEntries().find(e => e.settingsTab === "look"));
   assert.equal(el.view, "settings"); assert.equal(el.settingsTab, "look");
   el.quickQuery = "unavailable"; el.quickGo(el.quickEntries().find(e => e.objectStatus === "unavailable"));
@@ -5585,19 +5740,19 @@ test("the bar shows what the scan counted for the security and runs views, and n
   const { el } = panel("en");
   el.data = { ...el.data, meta: { ...el.data.meta, view_counts: { exposure: 2, secrets: 3, runs: 4 } } };
   const bar = el.topbar();
-  const num = view => (bar.match(new RegExp(`data-view="${view}"[^>]*>.*?(?:<em>(\\d+)</em>)?</button>`)) || [])[1];
+  const num = view => (bar.match(new RegExp(`data-view="${view}"[^>]*>.*?(?:<em[^>]*>(\\d+)</em>)?</button>`)) || [])[1];
   assert.equal(num("exposure"), "2"); assert.equal(num("secrets"), "3"); assert.equal(num("runs"), "4");
   assert.equal(num("dataflow"), undefined, "a view left out has no number");
   assert.equal(num("inventory"), undefined, "the stock has none");
 });
 
-test("a finding row ends in an impact chip and a menu with the decisions; a hidden one has no menu", () => {
+test("a finding row ends in an impact chip and a menu with the status; a hidden one offers the way back", () => {
   const { el } = panel("en");
   const f = { key: "k1", rule_id: "automation.stale", object_id: "automation.a", impact: "info" };
   assert.ok(el.impactChip("info").includes("Info") && el.impactChip("none") === "");
   const menu = el.rowMenu(f);
-  assert.ok(["keep", "snooze"].every(p => menu.includes(`data-decide-preset="${p}"`)) && menu.includes('data-decide-open="k1"') && menu.includes('data-auto-delete="automation.a"'));
-  assert.equal(el.rowMenu({ ...f, ignored: true }), "");
+  assert.ok(menu.includes('data-decide-open="k1"') && menu.includes('data-auto-delete="automation.a"'));
+  assert.ok(el.rowMenu({ ...f, ignored: true, ignored_by: "user" }).includes('data-ignore-value="0"'), "a finding hidden by its own status can be opened again");
   assert.equal(el.rowDecide(f), "");
   assert.ok(el.rowMenu({ key: "k2", rule_id: "entity.possible_duplicate", object_id: "sensor.a_2", affected_object: "sensor.a" }).includes('data-object="entity:sensor.a"'), "a duplicate row opens its working twin from the menu");
 });
@@ -5610,24 +5765,27 @@ test("an integration outage is a reason of its own, with a tile and a filter of 
   assert.equal(el.findingReason(el.data.findings[1]), "orphaned");
   const html = el.findingsView();
   assert.ok(html.includes("Outage") && html.includes("All findings") && !html.includes("All reasons"), "the reason is set by the tiles only");
-  assert.ok(html.includes('data-lf="findings|fresh"') && !html.includes('data-fstatus="new"'), "new and in work are a filter of the list bar, not chips");
+  assert.ok(!html.includes('data-lf="findings|fresh"'), "new and in work are chips of the status row, not a filter of the list bar");
   el.findingFilter = "outage";
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
   el.findingFilter = "";
   el.data.findings[1].first_detected_at = "2020-01-01T00:00:00Z";
   el.data.findings[0].first_detected_at = new Date().toISOString();
-  el.lvState("findings", "impact", "desc").f.fresh = "new";
+  el.findingStatus = "new";
+  assert.ok(el.findingsView().includes('data-fstatus="new"'), "the chip appears while there is something new");
   assert.equal(el.visibleFindings().map(x => x.object_id).join(), "e1");
 });
 
-test("the finding of an outage is a row of its own as soon as a status or a filter is set", () => {
+test("the finding of an outage is the head of its integration, with a filter too, and a row of its own in the flat list", () => {
   const { el } = panel("en");
   const own = { rule_id: "config_entry.not_loaded", object_id: "e1", classification: "problem", confidence: 0.9, key: "config_entry.not_loaded|e1", ignored: false, evidence: [], impact: "low", cause_id: "integration_down:e1" };
   const c = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hue", finding_key: own.key, follower_count: 0, total_followers: 0, child_ids: [], consumers: {}, impact: "low", parent_id: null };
   el.data = { ...DATA, objects: [], causes: [c], findings: [own] };
-  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "once in the grouped list");
+  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "the head of its integration in the grouped list selects its own finding");
   el.findingFilter = "outage";
-  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "and once under a filter");
+  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "and under a filter too");
+  el.showFollowers = true;
+  assert.equal((el.findingsView().match(/data-fsel="config_entry.not_loaded\|e1"/g) || []).length, 1, "a row of its own in the flat list");
 });
 
 test("object lists share one table: device entities, integration entries, reminders and backups sort, filter and show the state", () => {
@@ -5647,6 +5805,21 @@ test("object lists share one table: device entities, integration entries, remind
   assert.ok(rem.includes('data-rem-row="r1"') && rem.includes('role="button"'), "the row opens the history");
   assert.ok(rem.includes('data-lf-set="reminders|state|soon"') && rem.includes('data-lf-set="reminders||"'), "the key figures set the state filter");
   assert.ok(rem.includes('data-exp-menu="reminders"') && !rem.includes("data-export-list") && el._exporters.reminders.rows()[0][0] === "Filter", "the list exports to CSV");
+});
+
+test("an object table can carry a row menu, put the problems on top and mark them at the edge", () => {
+  const { el } = panel("en");
+  const rows = [
+    { key: "config_entry:a", type: "config_entry", name: "Alpha", sub: "", tone: "ok", state: "active", stateLabel: "Active", pill: "<b>ok</b>" },
+    { key: "config_entry:z", type: "config_entry", name: "Zeta", sub: "", tone: "red", state: "problem", stateLabel: "Problem", pill: "<b>bad</b>" },
+  ];
+  const html = el.objectTable("t-menu", rows, { min: 1, sort: "status", stripe: true, statusFirst: true, menu: r => [["mdi:open-in-new", "polOpenObject", `data-object="${r.key}"`]] });
+  assert.ok(html.indexOf("Zeta") < html.indexOf("Alpha"), "the problem row comes first");
+  assert.ok(html.includes('data-rowtone="red"') && (html.match(/class="rowmenu"/g) || []).length === 2, "a stripe on the red row, a menu on each");
+  assert.ok(!el.objectTable("t-nomenu", rows, { min: 1 }).includes("rowmenu"), "without the option the table stays as it was");
+  assert.equal(el.objectRowMenu({ key: "entity:light.nowhere" }).length, 0, "a row of an object that is not known has no menu");
+  const menu = el.rowMenuHtml([["mdi:text-box-outline", "updNotes", 'href="https://example.org/n"'], null, ["mdi:delete-outline", "deletePlan", 'data-plan-delete="p1"']]);
+  assert.ok(menu.includes('<a class="menuitem" href="https://example.org/n" target="_blank" rel="noopener noreferrer">') && menu.includes("menusep") && menu.includes('data-plan-delete="p1"'), "a link entry, a line, a button entry");
 });
 
 test("the changes page counts what a filter shows, says so, and lists objects as tables", () => {
@@ -5748,7 +5921,7 @@ test("the watch lists an object that is a finding like the findings list does, a
   el.data = { ...DATA, objects: [object, { object_type: "entity", object_id: "light.b", name: "Porch", status: "unknown" }], edges: [], findings: [finding] };
   const html = el.watchRows(["entity:light.a", "entity:light.b"], "warn");
   assert.ok(html.includes("data-decide-open=") && !html.includes("data-fsel=") && html.includes('data-watch-mark="entity:light.b"'));
-  assert.equal(html.includes('data-watch-mark="entity:light.a"'), false);
+  assert.equal(html.includes('data-watch-mark="entity:light.a"'), true, "the menu of a finding row offers the mark on its object, like the selection bar");
   const past = el.watchRows(["entity:light.a"], "mute", true);
   assert.ok(past.includes("Disturbed again now") && !past.includes("data-decide-open"), "a group about the past shows no finding row, only a note");
 });
@@ -5772,6 +5945,31 @@ test("an entity that fails regularly gets a hint with a mark prepared for the ti
   el.skipOften("entity:sensor.inverter");
   assert.equal(el.oftenChip(finding), "");
   assert.equal(el.oftenRows(object).length, 0);
+});
+
+test("the suggestions gather the entities of a device that fail together; the mark goes on each of them, the rest stays watched", async () => {
+  const { el } = panel("en");
+  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unknown", device_id: "tv" });
+  const f = id => ({ rule_id: "entity.state_unknown", classification: "unknown", key: `u|${id}`, object_id: id, confidence: 0.75, impact: "low", ignored: false });
+  const ids = ["sensor.a", "sensor.b", "sensor.c"];
+  el.data = { ...DATA, objects: [...ids.map(ent), { ...ent("sensor.d"), status: "active" }, { object_type: "device", object_id: "tv", name: "TV", status: "active" }], edges: [], findings: ids.map(f) };
+  const info = { level: "unstable", episodes: 7, per_day: 1, total_seconds: 9000, mean_seconds: 1200, pattern_hour: 23 };
+  el.reliability = { available: true, window_days: 7, unstable: { entities: Object.fromEntries(ids.map(id => [id, info])) } };
+  const items = el.oftenSuggestions();
+  assert.equal(items.map(s => `${s.key}:${s.hides}`).join(), "group:tv:3");
+  el.folds = { ...(el.folds || {}), often: true };
+  const card = el.oftenCard();
+  assert.ok(card.includes('data-often-sel="group:tv"') && card.includes("data-often-page") && card.includes("data-often-picked"), "a box per row, one for the page and the selection bar");
+  assert.ok(card.includes('class="menuitem" data-often-take="group:tv"') && card.includes('class="menuitem" data-often-skip="group:tv"'), "one row alone through its menu");
+  assert.ok(card.includes("TV: 3 entities") && card.includes("the other entity stays watched") && card.includes('data-object="device:tv"'), card);
+  assert.ok(el.oftenFindings(1) === "1 finding" && el.oftenFindings(3) === "3 findings", "singular and plural");
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
+  el.render = () => {};
+  await el.takeOften(["group:tv"]);
+  const sets = calls.filter(c => c.type === "ha_housekeeper/mark_set");
+  assert.equal(sets.map(c => `${c.object_type}:${c.object_id}`).join(), "entity:sensor.a,entity:sensor.b,entity:sensor.c");
+  assert.equal(`${sets[0].kind}:${sets[0].days}:${sets[0].window.from}`, "expected_offline:90:23:00");
 });
 
 test("a newer scan found in the background reloads the panel; the same scan or a running one does not", async () => {
@@ -5816,7 +6014,7 @@ test("an open request for a new login is a pinned row of the to-do card", () => 
   el.findObject = key => (key === "config_entry:e1" ? { name: "Tibber" } : null);
   const row = el.todoItems().find(i => i.key === "reauth");
   assert.equal(row.text, "Anmeldung nötig: Tibber");
-  assert.equal(row.hintText, "14 Entitäten fallen aus");
+  assert.equal(row.hintText, el.t("secSumReauthSub"), "the follow-ups are not named: the jump does not show them");
   assert.equal(row.filter, "config_entry.reauth");
   el.data = { ...el.data, findings: [finding("e1"), finding("e2")] };
   assert.equal(el.todoItems().find(i => i.key === "reauth").text, "Anmeldung nötig: 2 Integrationen");
@@ -5849,11 +6047,60 @@ test("the database tab shows size, growth, retention and purge as tiles and keep
   el.data = DATA; el._dbRequested = true;
   el.dbHealth = { ...DBH, keep_days: 10, auto_purge: false };
   let html = el.dbCard();
-  assert.ok(html.includes("Size") && html.includes("11 GB") && html.includes("WAL 3 GB") && html.includes("Growth per day") && html.includes("+80 MB") && html.includes("10 days") && html.includes("Purge automatically") && html.includes("Off"));
+  assert.ok(html.includes("Size") && html.includes("11 GB") && html.includes("WAL 3 GB") && html.includes("Growth per day") && html.includes("+80 MB") && html.includes("0.7 % of the size a day") && html.includes("10 days") && html.includes("Purge automatically") && html.includes("Off"));
   assert.ok(html.includes("Automatic purging is off") && html.includes("2 gaps from restarts (normal)"), "the sentences stay as notes");
+  assert.ok(html.includes('data-exp-menu="recdb"'), "the export button is there on the first render");
+  el.dbHealth = { ...DBH, computed_at: Date.now() / 1000 - 600, age_seconds: 600 };
+  assert.equal((el.dbCard().match(/As of/g) || []).length, 1, "an older result has one time only, in the bar");
+  el.dbHealth = { ...DBH, integrity: { state: "damaged", at: "2026-10-01T10:00:00+00:00" } };
+  html = el.dbCard();
+  assert.ok(html.includes("Integrity") && html.includes("Damaged") && html.includes("data-db-check"), "the check is a tile, its button in the page bar");
+  el.dbHealth = { ...DBH, growth: { known: true, per_day: -50 * 1024 ** 2 } };
+  assert.ok(el.dbCard().includes("−50 MB"), "a database that shrank shows minus, not +0 B");
   el.dbHealth = { ...DBH, supported: false, dialect: "mysql", db_bytes: null, growth: { known: false } };
   html = el.dbCard();
-  assert.ok(!html.includes("Growth per day") && html.includes("Size not measurable (database: mysql)") && html.includes("Growth is being observed"));
+  assert.ok(!html.includes("Growth per day") && html.includes("Size not measurable (database: MariaDB/MySQL)") && html.includes("Growth is being observed"));
+  el.dbHealth = { ...DBH, dialect: "mysql", estimated: true, db_bytes: 11 * 1024 ** 3, wal_bytes: null, findings: [] };
+  html = el.dbCard();
+  assert.ok(html.includes("11 GB") && html.includes("estimated (MariaDB/MySQL)") && !html.includes("WAL"), "a server database has a size but no WAL file");
+  el.dbHealth = { ...el.dbHealth, tables: [{ name: "states", bytes: 8 * 1024 ** 3 }], tables_total: 3 };
+  html = el.dbCard();
+  assert.ok(html.includes("Largest tables") && html.includes("states") && html.includes("73 %") && html.includes("2 more tables"));
+});
+
+test("a series named in a database finding opens its entity on the page and stays plain text in the export", () => {
+  const { el } = panel("en");
+  el.findObject = key => (key === "entity:sensor.a" ? { object_type: "entity" } : null);
+  const f = { kind: "duplicates", level: "problem", groups: 2, capped: false, series: [{ statistic_id: "sensor.a", name: "Energy" }, { statistic_id: "sensor.gone", name: "Gone" }] };
+  assert.ok(el.dbFindingRow(f).includes('data-object="entity:sensor.a"') && !el.dbFindingRow(f).includes("entity:sensor.gone"));
+  assert.ok(!el.dbFindingText(f).includes("<button"));
+});
+
+test("while the full database check runs, the page looks again quietly and only while the Recorder is open", async () => {
+  const queue = [];
+  const { el } = panel("en", { setTimeout: fn => { queue.push(fn); return 0; } });
+  let calls = 0;
+  el._hass = { language: "en", callWS: async () => { calls += 1; return { ...DBH, integrity: { running: true } }; } };
+  let loading = false;
+  el.render = () => { loading ||= el.dbLoading; };
+  el.view = "overview";
+  await el.loadDbHealth(false, true);
+  assert.equal(queue.length, 1);
+  loading = false;
+  queue.shift()();
+  assert.equal(calls, 1, "elsewhere the timer only waits");
+  el.view = "recorder";
+  await queue.shift()();
+  assert.equal(calls, 2); assert.ok(!loading, "no flash of reading");
+});
+
+test("a database finding of a kind the panel does not know shows its name and level, and the export lists the figures", () => {
+  const { el } = panel("en");
+  const row = el.dbFindingRow({ kind: "future_kind", level: "hint" });
+  assert.ok(row.includes("future_kind") && row.includes("Hint") && !row.includes("What to do?"));
+  el.dbExporter({ ...DBH, findings: [] });
+  const facts = el._exporters.recdb.sections.find(sec => sec.name === "facts").rows().map(x => x[0]);
+  assert.ok(facts.includes("Size: 11 GB (WAL 3 GB)") && facts.includes("2 gaps from restarts (normal)"));
 });
 
 test("every tab of Maintenance can be found by search, and the goals tab says why it is empty", () => {
@@ -5947,9 +6194,14 @@ test("the AI access tab shows the two switches and the log with an undo for a ch
   assert.ok(html.includes("data-set-tab=\"mcp\""));
   assert.ok(html.includes("data-mcp-row") && html.includes("×3") && html.includes("mcplog") && html.includes('data-exp-menu="mcplog"'));
   assert.ok(html.includes("data-mcp-undoall") && html.includes("data-mcp-undoall-hours"));
+  el.journal = [{ plan_id: "r", status: "verified", finished_at: "2026-10-08T10:00:00+00:00", undoable: false, followup: "regression" }];
+  const keys = el.safetyItems().map(i => i[0]);
+  assert.ok(keys[0] === "regress" && keys.includes("ai") && el.safetyBar().includes("AI access: read-only"), "AI access is an item of the safety line; red comes first");
+  el.data.meta.mcp = { enabled: true, write: true };
+  assert.equal(el.safetyItems().find(i => i[0] === "ai")[1], "warn", "yellow while the AI may change the list");
   assert.ok(html.includes("data-mcp-autooff") && html.includes("after 8 hours") && html.includes("data-mcp-writelimit") && html.includes("data-mcp-readlimit") && html.includes("data-mcp-hide") && html.includes("data-mcp-prompt"));
   el.settingsTab = "look"; el.render();
-  assert.ok(shadow.innerHTML.includes("data-ai-go") && shadow.innerHTML.includes("AI access on"));
+  assert.ok(shadow.innerHTML.includes('data-safe-key="ai"') && shadow.innerHTML.includes("AI access: with changes to the list") && !shadow.innerHTML.includes("aibar"), "no strip of its own any more");
 });
 
 test("the exceptions card builds the editor with chips for areas and the shared search for entities", () => {
@@ -5983,7 +6235,659 @@ test("the inventory filters by label and the labels block counts what carries ea
   el.labelFilter = "housekeeper_keep";
   assert.equal(JSON.stringify(Array.from(el.filtered().map(o => o.object_id))), JSON.stringify(["sensor.a", "d1"]));
   const html = el.labelsCard();
-  assert.ok(html.includes("housekeeper_keep") && html.includes("Device: 1") && html.includes("Entity: 1"));
+  assert.ok(html.includes("housekeeper_keep") && html.includes("on 1 device, 1 entity") && html.includes("How to create a missing label"), "counted in words; the how-to once while a label is missing");
   assert.ok(html.includes("data-jump-lf=\"inventory|label|housekeeper_keep\""));
   assert.ok(html.includes("not created"), "the other two labels are not created yet");
+});
+
+test("the grouped findings list indents the rows below a head, offers the device mark in the menu and counts every open finding", () => {
+  const { el } = panel("en");
+  const device = { object_type: "device", object_id: "d1", name: "Echo", status: "active" };
+  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unavailable", device_id: id === "sensor.c" ? null : "d1" });
+  const f = (id, extra = {}) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence: 0.9, evidence: [], impact: "high", key: `k:${id}`, ...extra });
+  el.data = { ...DATA, objects: [device, ent("sensor.a"), ent("sensor.b"), ent("sensor.c")], causes: [{ id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Echo", impact: "high", follower_count: 2 }],
+    findings: [f("sensor.a", { cause_id: "device_down:d1" }), f("sensor.b", { cause_id: "device_down:d1" }), f("sensor.c")] };
+  el.lvState("findings", "impact", "desc");
+  el.folds = { "og:device:d1": true };
+  const html = el.findingsView();
+  assert.ok(/og lvl1[^]*finding-fold-gap/.test(html), "a row below a head keeps the room of the arrow");
+  assert.ok(html.includes('class="menuitem" data-watch-mark="device:d1"') && !html.includes('class="btn" data-watch-mark'), "the mark on the device is an item of the row menu");
+  assert.ok(!el.findingsTable([el.data.findings[2]]).includes("finding-fold-gap"), "without a fold no room is kept");
+  el.findingStatus = ""; el.statusCount = () => 1;
+  assert.ok(el.statusChips().includes(`Open (${el.findingTotal()})`) && el.findingTotal() === 3, "open counts every finding, the follow-ups too, as the list head does");
+});
+
+test("every finding stands below its object: a device gathers all kinds of its entities, one finding is named in the head", () => {
+  const { el } = panel("en");
+  const ent = (id, status = "unavailable") => ({ object_type: "entity", object_id: id, name: id, status, device_id: "avr" });
+  const f = (id, extra = {}) => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence: 0.75, ignored: false, impact: "medium", key: `k:${id}`, first_detected_at: "2026-10-01T00:00:00+00:00", ...extra });
+  el.data = { ...DATA, causes: [], edges: [], objects: [{ object_type: "device", object_id: "avr", name: "Receiver" }, { object_type: "device", object_id: "car", name: "Audi" }, ent("sensor.a"), ent("sensor.b"), ent("sensor.on", "active"), ent("select.old", "orphaned"), { object_type: "entity", object_id: "lock.car", name: "Lock", device_id: "car", status: "orphaned" }],
+    findings: [f("sensor.a"), f("sensor.b", { impact: "high", first_detected_at: "2026-10-10T00:00:00+00:00" }), f("select.old", { rule_id: "entity.not_provided", classification: "orphaned", confidence: 0.98, impact: "info" }), f("lock.car", { rule_id: "entity.not_provided", classification: "orphaned", confidence: 0.98, impact: "info" })] };
+  el.lvState("findings", "impact", "desc");
+  const html = el.findingsView();
+  assert.ok(html.includes("2 of 3 entities without a value · Orphaned (1)") && html.includes("75–98 %") && html.includes("latest: "), "summary, span of certainty, the newest beside the oldest");
+  assert.ok(html.includes("Audi</strong><small>Lock: "), "a single finding is named in the head");
+  assert.ok(html.indexOf("Receiver") < html.indexOf("Audi"), "the worst impact first");
+  el.lv.findings.f.type = "entity"; el.lv.findings.q = "select.old";
+  assert.ok(el.findingsView().includes("1 of 3 findings match the filter"));
+});
+
+test("an exception is added from the menu of a finding or the selection bar, with its object picked, above the findings list", async () => {
+  const { el } = panel("en");
+  const object = { object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" };
+  const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "entity.state_unavailable|light.a|", object_id: "light.a", confidence: 0.75, impact: "medium", ignored: false };
+  el.data = { ...DATA, objects: [object], edges: [], findings: [finding] };
+  el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] };
+  const menu = el.rowMenu(finding);
+  assert.ok(["fselStatus", "markSet", "excCreate", "fselLabel"].map(k => menu.indexOf(el.t(k))).every((at, i, all) => at > (i ? all[i - 1] : -1)), "the actions in the order of the bar");
+  await el.openExceptionFor(["entity:light.a"]);
+  assert.equal(el.excForm.picks.map(p => `${p.kind}:${p.id}`).join(), "entity:light.a");
+  el.view = "findingsNav";
+  assert.ok(el.findingsView().includes("data-exc-form"));
+  assert.ok(el.findingsView().includes('data-exp-menu="findings"') && !el.findingsView().includes("data-export="), "the shared export button, no CSV and JSON chips");
+});
+
+test("the status of the selection is set in one form; an exception from a finding offers its device, area and integration", async () => {
+  const { el } = panel("en");
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return {}; } };
+  const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "k1", object_id: "light.a", confidence: 0.75, impact: "medium", ignored: false };
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "Hall lamp", device_id: "d1", platform: "hue" }, { object_type: "device", object_id: "d1", name: "Hue bridge", area_id: "hall", config_entry_ids: [] }], edges: [], findings: [finding] };
+  el.findSel = new Set(["k1"]);
+  el.bulk = { kind: "status", state: "ignore", reason: "", days: 90, markKind: "", error: "" };
+  assert.ok(el.bulkForm().includes("data-bulk-kind"));
+  await el.commitBulk();
+  assert.equal(`${sent[0].kind}|${sent[0].days}`, "ignore|90");
+  assert.ok(el.findingRowContent(el.data.findings[0]).subtitle.includes("Own status"), "the row says why it is hidden");
+  el.exc = { rules: [], areas: [{ id: "hall", name: "Hall" }], labels: [], integrations: [{ id: "hue", name: "Philips Hue" }], domains: [], devices: [], entities: [] };
+  await el.openExceptionFor(["entity:light.a"]);
+  assert.equal(el.excForm.scopes.map(s => `${s.id}:${s.picks.map(p => p.id).join()}`).join(" "), "objects:light.a devices:d1 areas:hall integrations:hue");
+});
+
+test("the headline names what is urgent, the to-do card has the same groups, and both add up", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, regressions: [], criteria_alerts: [] };
+  const items = [{ key: "outages", tone: "red", area: "findings", label: "actOutages", count: 5 }, { key: "critical", tone: "red", area: "findings", label: "actNewCritical", count: 6 }, { key: "stale", tone: "warn", area: "state", text: "Old scan", scan: true }, { key: "updates", tone: "warn", area: "care", text: "Updates" }];
+  el.todoItems = () => items;
+  assert.equal(el.statusHeadline(), "Outages (5) and New critical findings (6)");
+  assert.ok(el.statusSubline(el.health()).includes("Plus 1 open and 1 in maintenance"));
+  const card = el.todoCard();
+  assert.ok(card.includes('data-todo="outages"') && card.includes("todogrp red") && card.includes("todogrp open") && card.includes('data-fold="todo_care"'), "every counted item is a row of its group");
+  items.push({ key: "disk", tone: "red", area: "state", text: "Disk" });
+  assert.equal(el.statusHeadline(), "Outages (5) and 2 more urgent items");
+});
+
+test("the reason tiles are grouped by their colour: orphaned is tidying up, not a fault", () => {
+  const { el } = panel("en");
+  const f = (key, classification) => ({ key, rule_id: "entity.x", object_id: key, classification, confidence: 0.9, ignored: false, impact: "low" });
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [f("a", "orphaned"), f("b", "unavailable")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  const html = el.findingsView(), tidy = html.indexOf(">Tidying up · 1<"), faults = html.indexOf(">Faults · 1<"), orphaned = html.indexOf(`>${el.statusLabel("orphaned")}<`);
+  assert.ok(faults > 0 && tidy > faults && orphaned > tidy, "orphaned sits under tidying up, which follows the faults");
+});
+
+test("the findings page: outages are one reason, stale is a fault, a tile starts from a plain list and the head counts within it", () => {
+  const { el } = panel("en");
+  const f = (key, rule, classification, extra = {}) => ({ key, rule_id: rule, object_id: key, classification, confidence: 0.9, ignored: false, impact: "low", ...extra });
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "s1", name: "Kitchen sensor", device_id: "d1", status: "unavailable" }, { object_type: "device", object_id: "d1", name: "Hub" }], edges: [], causes: [],
+    findings: [f("d1", "device.down", "problem"), f("s1", "entity.state_unavailable", "unavailable"), f("s2", "entity.stale", "stale"), f("a1", "automation.blocked", "problem"), f("s3", "entity.state_unavailable", "unavailable")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  assert.equal(el.findingReason(el.data.findings[0]), "outage", "a device that is down is an outage, not a problem");
+  assert.equal(`${el.reasonTone("stale")}|${el.reasonLabel("problem")}`, "red|Automation impaired");
+  el.lvState("findings", "impact", "desc").q = "kitchen";
+  el.clearFindingFilters(); el.findingFilter = "unavailable";
+  assert.equal(el.lv.findings.q, "", "a tile clears the search before it filters");
+  el.lv.findings.q = "kitchen";
+  assert.ok(el.findingsView().includes("1 of 2 findings"), "narrowed further, the head names the number of the active tile");
+  el.lv.findings.q = "";
+  el.journal = [{ plan_id: "p", status: "dry_run", created_at: new Date().toISOString(), objects: ["d1"] }];
+  assert.ok(el.inWork(el.data.findings[1]), "a plan for a device puts the findings of its entities in work");
+  el.journal = [{ plan_id: "p", status: "dry_run", created_at: new Date(Date.now() - 2 * 864e5).toISOString(), objects: ["d1"] }];
+  assert.ok(!el.inWork(el.data.findings[0]), "a preview older than a day does not count");
+});
+
+test("the jump to new critical findings is a filter: outage heads without a matching finding stay away", () => {
+  const { el } = panel("en");
+  const f = (key, rule, classification, extra = {}) => ({ key, rule_id: rule, object_id: key.split("|")[1], classification, confidence: 0.9, ignored: false, impact: "high", ...extra });
+  const down = f("device.down|d1|", "device.down", "problem", { cause_id: "device_down:d1" });
+  const follower = f("entity.state_unavailable|s1|", "entity.state_unavailable", "unavailable", { cause_id: "device_down:d1" });
+  const fresh = f("entity.missing_entity|a1|", "entity.missing_entity", "broken_reference");
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d1", name: "Echo Office" }, { object_type: "entity", object_id: "s1", name: "Alarm", device_id: "d1" }], edges: [],
+    causes: [{ id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Echo Office", impact: "high", follower_count: 1, total_followers: 1, finding_key: down.key, child_ids: [], consumers: {} }], findings: [down, follower, fresh] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  el.trend = { new_findings: { items: [{ ...fresh }] } };
+  el.findingScanNew = true;
+  const html = el.findingsView();
+  assert.ok(!html.includes("Echo Office is down completely") && !html.includes("match the filter"), "no head of an outage that has nothing new");
+  assert.ok(html.includes("1 finding on 1 object") && !html.includes("1 of 3 findings") && html.includes("New critical findings (1)"), "counted as the overview row, named like it");
+});
+
+test("the vacation bar says why nothing is held back and offers no empty list", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, vacation: { entity: "input_boolean.away", active: true, held: 0, rules: 2 } } };
+  let bar = el.vacationBar();
+  assert.ok(bar.includes("holds nothing back right now") && !bar.includes('data-vac-go="hidden"') && bar.includes('data-vac-go="rules"'));
+  el.data.meta.vacation.rules = 0;
+  bar = el.vacationBar();
+  assert.ok(bar.includes("no rule for it") && bar.includes('data-vac-go="new"'));
+  el.data.meta.vacation = { entity: "input_boolean.away", active: true, held: 3, rules: 1 };
+  assert.ok(el.vacationBar().includes("3 findings held back") && el.vacationBar().includes('data-vac-go="hidden"'));
+});
+
+test("the outages row of the overview jumps to exactly the chains it counts, quiet outages left out", () => {
+  const { el } = panel("en");
+  const f = (key, rule, classification, extra = {}) => ({ key, rule_id: rule, object_id: key, classification, confidence: 0.9, ignored: false, impact: "high", ...extra });
+  const cause = (id, impact) => ({ id: `device_down:${id}`, kind: "device_down", object_type: "device", object_id: id, name: id, impact, follower_count: 1, total_followers: 1, finding_key: `own_${id}`, child_ids: [], consumers: {} });
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "loud", name: "Loud" }, { object_type: "device", object_id: "calm", name: "Calm" }], edges: [], causes: [cause("loud", "high"), cause("calm", "low")],
+    findings: [f("own_loud", "device.down", "problem", { cause_id: "device_down:loud" }), f("s1", "entity.state_unavailable", "unavailable", { cause_id: "device_down:loud" }),
+      f("own_calm", "device.down", "problem", { cause_id: "device_down:calm", impact: "low" }), f("s2", "entity.state_unavailable", "unavailable", { cause_id: "device_down:calm", impact: "low" }), f("x", "entity.stale", "stale")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  assert.ok(el.todoCard().includes("data-jump-outages"), "the row carries its own filter, not an empty one");
+  el.findingOutages = true;
+  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "own_loud,s1");
+  assert.ok(el.findingsView().includes("Outages from the overview (1)"));
+  el.findingOutages = "high";
+  const view = el.findingsView();
+  assert.ok(view.includes("Outages (1)") && view.includes("1 outage with 2 findings") && view.includes("1 follow-up"), "named after its row, counted like the overview, in the singular");
+});
+
+test("a jump from the overview into the findings starts from the plain open list, then sets its own filter", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, findings: [{ key: "u1", rule_id: "automation.never_triggered", object_id: "automation.a", classification: "unused", confidence: 0.8, ignored: false }] };
+  el.view = "overview"; el.render();
+  el.findingStatus = "hidden"; el.findingAfter = true;
+  const st = el.lvState("findings", "impact", "desc"); st.q = "kitchen"; st.f.area = "Kitchen";
+  assert.ok(shadow.innerHTML.includes('data-jump="findingsNav" data-filter="unused"'), "the overview offers the jump");
+  const jump = { dataset: { jump: "findingsNav", filter: "unused" } };
+  shadow.querySelectorAll = selector => (selector === "[data-jump]" ? [jump] : []);
+  el.bind();
+  jump.onclick();
+  assert.equal(`${el.view}|${el.findingStatus}|${el.findingAfter}|${el.findingFilter}|${el.lv.findings.q}|${Object.keys(el.lv.findings.f).length}`, "findingsNav||false|unused||0");
+});
+
+test("the rows of the overview land where they counted: low batteries, the quarantine tab, the backup tab", () => {
+  const { el, shadow } = panel("en");
+  const low = { object_type: "entity", object_id: "sensor.low_battery", name: "Low", status: "active", device_class: "battery", state: "5", unit: "%" };
+  el.data = { ...DATA, meta: { ...DATA.meta, low_battery_percent: 20 }, objects: [...DATA.objects, low], quarantine: [{ object_id: "sensor.q", object_type: "entity", since: "2020-01-01T00:00:00+00:00" }] };
+  const card = el.cleanupCard();
+  assert.ok(card.includes('data-jump-battery="low" data-jump-clear="batteries"') && card.includes('data-jump-tab="quarantine" data-jump-clear="cleanup"') && card.includes('data-jump-tab="unused" data-jump-clear="unreferenced"'));
+  assert.ok(el.todoItems().find(i => i.key === "quarantine").jump.includes('data-jump-tab="quarantine" data-jump-lf="cleanup|readiness|ready"'), "ready for removal opens the quarantine filtered to the ready ones");
+  el.backup = { available: true, overall: "problem", checks: [{ id: "newest", level: "problem" }] };
+  assert.ok(el.todoItems().find(i => i.key === "backup").jump.includes('data-jump-tab="backup"'));
+  el.lvState("batteries", "name", "asc").q = "old";
+  const jump = { dataset: { jump: "batteries", jumpBattery: "low", jumpClear: "batteries" } };
+  shadow.querySelectorAll = selector => (selector === "[data-jump]" ? [jump] : []);
+  el.bind();
+  jump.onclick();
+  assert.equal(`${el.view}|${el.batteryFilter}|${el.lv.batteries.q}`, "batteries|low|");
+});
+
+test("setbacks and due reminders land on their filtered lists, one setback on its plan", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, regressions: [{ plan_id: "p1", at: "2026-10-08T10:00:00+00:00", new_count: 1 }], reminders: [{ id: "r", name: "Filter", state: "due" }] };
+  const item = key => el.todoItems().find(i => i.key === key);
+  assert.equal(item("followup").jump, 'data-plan-open="p1"');
+  el.data.regressions.push({ plan_id: "p2", at: "2026-10-09T10:00:00+00:00", new_count: 2 });
+  assert.ok(item("followup").jump.includes('data-jump-lf="journal|follow|regression"'));
+  assert.ok(item("reminders").jump.includes('data-jump-lf="reminders|state|due"'));
+});
+
+test("the vacation bar shows exactly the findings it holds back, not every finding hidden by a rule", () => {
+  const { el, shadow } = panel("en");
+  const f = (key, phase) => ({ key, rule_id: "entity.state_unavailable", object_id: key, classification: "unavailable", confidence: 0.9, ignored: true, ignored_by: "rule", ignore_rule: { id: "r", kind: "area", targets: ["x"], action: "hide", phase } });
+  el.data = { ...DATA, meta: { ...DATA.meta, vacation: { entity: "input_boolean.away", active: true, held: 1, rules: 1 } }, findings: [f("held", "vacation"), f("always", undefined)] };
+  el.lvState("findings", "impact", "desc").q = "old";
+  const go = { dataset: { vacGo: "hidden" } };
+  shadow.querySelectorAll = selector => (selector === "[data-vac-go]" ? [go] : []);
+  el.bindExceptions(shadow);
+  go.onclick({ preventDefault() {} });
+  assert.equal(`${el.view}|${el.findingStatus}|${el.lv.findings.q}`, "findingsNav|hidden|");
+  assert.equal(el.visibleFindings().map(x => x.key).join(), "held");
+  assert.ok(el.findingsView().includes("Held back for the vacation (1)"));
+});
+
+test("a row of since the last scan opens its own section against the last scan", () => {
+  const { el, shadow } = panel("en");
+  el.trend = { available: true, baseline_at: "2026-10-19T08:00:00+00:00", new_findings: { total: 2, items: [] }, resolved_findings: { total: 0 }, status_changes: { total: 0 }, new_objects: { total: 0 } };
+  assert.ok(el.trendCard().includes('data-jump="changes" data-jump-changes="newFindings"'));
+  el.compareBaseline = "2026-10-01T08:00:00+00:00"; el.compare = { available: true };
+  el._hass = { language: "en", callWS: async () => ({ available: false }) };
+  const jump = { dataset: { jump: "changes", jumpChanges: "newFindings" } };
+  shadow.querySelectorAll = selector => (selector === "[data-jump]" ? [jump] : []);
+  el.bind();
+  jump.onclick();
+  assert.equal(`${el.view}|${el.compareBaseline}|${el.changesCat}|${el.folds.chg_newFindings}`, "changes|previous|newFindings|true");
+});
+
+test("checked objects count what the inventory shows under its filter, an automation once", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "automation", object_id: "automation.a", name: "A", status: "active" }, { object_type: "entity", object_id: "automation.a", name: "A", status: "active" }, { object_type: "entity", object_id: "light.b", name: "B", status: "active" }, { object_type: "area", object_id: "kitchen", name: "Kitchen", status: "active" }], findings: [], causes: [] };
+  assert.equal(el.health().base, 2, "the registry entity of an automation is not rated a second time, an area not at all");
+  assert.ok(el.overview().includes('data-jump="inventory" data-status="" data-type="_rated"'));
+  el.typeFilter = "_rated";
+  assert.equal(el.filtered().length, el.health().base);
+});
+
+test("a number in the menu says what it counts", () => {
+  const { el } = panel("en");
+  assert.equal(el.navCountHint("batteries", 3), "3 low batteries");
+  assert.equal(el.navCountHint("secrets", 2), "2 items to look at");
+  assert.ok(el.topbar().includes(`title="${el.navCountHint("findingsNav", el.findingTotal())}"`));
+});
+
+test("a missing target in the overview opens the findings filtered to it and what it explains", () => {
+  const { el } = panel("en");
+  const cause = { id: "service_missing:notify.phone", kind: "service_missing", object_type: "service", object_id: "notify.phone", name: "notify.phone", virtual: true, impact: "medium", follower_count: 2, total_followers: 2, child_ids: [], consumers: {} };
+  const f = (key, cid) => ({ key, rule_id: "automation.missing_service", object_id: key, classification: "broken_reference", confidence: 0.9, ignored: false, impact: "medium", affected_object: "notify.phone", cause_id: cid });
+  el.data = { ...DATA, objects: [], edges: [], causes: [cause], findings: [f("automation.a", cause.id), f("automation.b", cause.id), f("automation.c")] };
+  el.series = null; el._seriesFor = el.data; el._corrRequested = true; el._corrKey = el.data.meta.scanned_at || "";
+  assert.ok(el.overviewCause(cause).includes(`data-jump-cause="${cause.id}"`));
+  el.findingCause = cause.id;
+  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "automation.a,automation.b");
+  assert.ok(el.findingsView().includes('data-fclear="cause"'));
+});
+
+test("the goals of batteries and statistics land on their lists without filters kept from before", () => {
+  const { el } = panel("en");
+  assert.ok(el.goalJump("weak_batteries").includes('data-jump-battery="low" data-jump-clear="batteries"'));
+  assert.ok(el.goalJump("orphaned_statistics").includes('data-jump-tab="stats" data-jump-clear="orphanstats"'));
+  assert.ok(el.goalJump("recurring_devices").includes('data-jump-clear="cleanup"'));
+});
+
+test("a type in the inventory table shows every object of it, without a search left over", () => {
+  const { el, shadow } = panel("en", { requestAnimationFrame: () => {} });
+  el.view = "inventory"; el.render();
+  el.invState().q = "zzz"; el.labelFilter = "old";
+  const pick = { dataset: { invFilter: "entity|" } };
+  shadow.querySelectorAll = selector => (selector === "[data-inv-filter]" ? [pick] : []);
+  el.bind();
+  pick.onclick();
+  assert.equal(`${el.typeFilter}|${el.query}|${el.labelFilter}`, "entity||");
+  assert.equal(el.filtered().length, DATA.objects.filter(o => o.object_type === "entity").length);
+});
+
+test("a battery tile shows the batteries it counts, without a search left over", () => {
+  const { el, shadow } = panel("en", { requestAnimationFrame: () => {} });
+  const st = el.lvState("batteries", "left", "asc"); st.q = "kitchen"; st.f = { area: "Kitchen" };
+  const tile = { dataset: { batteryFilter: "low" } };
+  shadow.querySelectorAll = selector => (selector === "[data-battery-filter]" ? [tile] : []);
+  el.bind();
+  tile.onclick();
+  assert.equal(`${el.batteryFilter}|${el.lv.batteries.q}|${Object.keys(el.lv.batteries.f).length}`, "low||0");
+});
+
+test("the group heads of the findings page filter the list to all faults or all tidying up", () => {
+  const { el } = panel("en");
+  const f = (key, classification, rule_id = "entity.x") => ({ key, rule_id, object_id: `sensor.${key}`, classification, confidence: 0.9, ignored: false });
+  el.data = { ...DATA, findings: [f("a", "unavailable"), f("b", "broken_reference"), f("c", "orphaned"), f("d", "unused")] };
+  el.view = "findingsNav";
+  assert.ok(el.findingsView().includes('data-finding-filter="group:red"'));
+  el.findingFilter = "group:red";
+  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "a,b");
+  el.findingFilter = "group:tidy";
+  assert.equal(el.visibleFindings().map(x => x.key).sort().join(), "c,d");
+  assert.ok(el.findingNote().includes("Tidying up"));
+});
+
+test("the overview tiles count every finding, the faults and the tidying up, and jump to their group", () => {
+  const { el, shadow } = panel("en");
+  const f = (key, classification, extra = {}) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification, confidence: 0.9, ignored: false, impact: "medium", ...extra });
+  el.data = { ...DATA, findings: [f("a", "unavailable"), f("b", "stale"), f("c", "orphaned"), f("d", "unused")] };
+  el.series = { points: [{ at: "2026-10-18T00:00:00+00:00", reasons: { unavailable: 1, orphaned: 3 } }, { at: "2026-10-19T00:00:00+00:00", reasons: { unavailable: 2, orphaned: 2 } }, { at: "2026-10-20T00:00:00+00:00", reasons: { unavailable: 1, stale: 1, unused: 1, orphaned: 1 } }] };
+  el._seriesFor = el.data; el.view = "overview"; el.render();
+  const html = shadow.innerHTML, tile = id => html.slice(html.indexOf(`data-filter="group:${id}"`), html.indexOf("</button>", html.indexOf(`data-filter="group:${id}"`)));
+  assert.ok(html.includes(">Findings</small><strong>4</strong>"), "Findings counts all four");
+  assert.ok(tile("red").includes("Faults") && tile("red").includes("<strong>2</strong>") && tile("red").includes("+1 in 2 days"));
+  assert.ok(tile("tidy").includes("Tidying up") && tile("tidy").includes("<strong>2</strong>") && tile("tidy").includes("−1 in 2 days"));
+});
+
+test("a sparkline shows at most the last seven days", () => {
+  const { el } = panel("en");
+  el.series = { points: Array.from({ length: 10 }, (_, i) => ({ at: new Date(Date.UTC(2026, 9, 11 + i)).toISOString(), open: i })) };
+  assert.ok(el.sparkline("open", "bad").includes("+7 in 7 days"));
+});
+
+test("the findings tiles are fixed: they count the open findings whatever the status, show every reason, and a click opens the open list", () => {
+  const { el, shadow } = panel("en", { requestAnimationFrame: () => {} });
+  const f = (key, classification, ignored = false) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification, confidence: 0.9, ignored, ignored_by: ignored ? "user" : null });
+  el.data = { ...DATA, findings: [f("a", "unavailable"), f("b", "orphaned"), f("c", "orphaned", true)] };
+  el.view = "findingsNav"; el.findingStatus = "hidden";
+  const html = el.findingsView();
+  assert.ok(html.includes('class="sumtile zero"') && !html.includes('data-finding-filter="unused"'), "a reason without open findings is a quiet 0");
+  const orphaned = html.slice(html.indexOf('data-finding-filter="orphaned"'), html.indexOf("</button>", html.indexOf('data-finding-filter="orphaned"')));
+  assert.ok(orphaned.includes(">1<"), "the hidden one does not count");
+  const tile = { dataset: { findingFilter: "orphaned" } };
+  shadow.querySelectorAll = selector => (selector === "[data-finding-filter]" ? [tile] : []);
+  el.bind();
+  tile.onclick();
+  assert.equal(`${el.findingStatus}|${el.findingFilter}`, "|orphaned");
+});
+
+test("All findings stands over both rows of reason tiles and names the follow-ups inside the tile", () => {
+  const { el } = panel("en");
+  const f = (key, classification, extra = {}) => ({ key, rule_id: "entity.x", object_id: `sensor.${key}`, classification, confidence: 0.9, ignored: false, ...extra });
+  el.data = { ...DATA, findings: [f("a", "unavailable", { cause_id: "c1" }), f("b", "orphaned")] };
+  el.view = "findingsNav";
+  const html = el.findingsView(), all = html.slice(html.indexOf('class="sumall"'), html.indexOf('class="sumhead"'));
+  assert.ok(all.includes("data-finding-followers") && all.includes('data-finding-filter=""'), "the follow-ups link sits in the tile");
+  assert.ok(html.includes('style="--r:2"') && html.includes('style="--r:4"'), "faults in the first row, tidying up in the second");
+});
+
+test("another status than open puts a note above the list: the tiles count the open findings, one button goes back", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el.view = "findingsNav";
+  assert.ok(!el.findingsView().includes("statusnote"));
+  el.findingStatus = "hidden";
+  const html = el.findingsView();
+  assert.ok(html.includes("statusnote") && html.includes("“Hidden”") && html.includes('data-fstatus="open"'));
+});
+
+test("a missing reference reads as what the finding refers to", () => {
+  const { el } = panel("en");
+  assert.equal(el.findingTitle({ rule_id: "automation.missing_entity", affected_object: "sensor.gone" }), "Refers to entity sensor.gone");
+});
+
+test("an object with a single finding of its own is one row, without a head to open", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [{ key: "k1", rule_id: "automation.missing_entity", object_id: "automation.a1", classification: "broken_reference", confidence: 0.95, ignored: false, affected_object: "sensor.gone" }] };
+  el.view = "findingsNav";
+  const html = el.findingsView();
+  assert.ok(!html.includes('data-fold="og:automation:automation.a1"') && html.includes('data-fsel="k1"'));
+});
+
+test("the head of an object selects all its findings, the head of an outage only its own", () => {
+  const { el } = panel("en");
+  const f = (key, rule_id) => ({ key, rule_id, object_id: "automation.a1", classification: "orphaned", confidence: 0.9, ignored: false });
+  el.data = { ...DATA, findings: [f("a", "automation.x"), f("b", "automation.y")] };
+  el.view = "findingsNav";
+  const html = el.findingsView();
+  assert.ok(html.includes('data-fsel-group="og:automation:automation.a1"'));
+  assert.equal(el._findGroups["og:automation:automation.a1"].sort().join(), "a,b");
+});
+
+test("a grouped findings list pages its heads at the top; an open head keeps everything below it on its page", () => {
+  const { el } = panel("en");
+  const causes = [], findings = [];
+  for (let i = 0; i < 25; i++) causes.push({ id: `c${i}`, kind: "device_down", object_type: "device", object_id: `d${i}`, name: `Dev ${i}`, follower_count: 6, total_followers: 6, child_ids: [], consumers: {}, impact: "medium", finding_key: `f${i}` });
+  causes.forEach(c => { findings.push({ key: c.finding_key, rule_id: "device.down", object_id: c.object_id, classification: "unavailable", confidence: 0.9, impact: "medium", ignored: false, cause_id: c.id }); for (let k = 0; k < 6; k++) findings.push({ key: `${c.id}-${k}`, rule_id: "entity.state_unavailable", object_id: `sensor.${c.id}_${k}`, classification: "unavailable", confidence: 0.9, impact: "medium", ignored: false, cause_id: c.id }); });
+  el.data = { ...DATA, causes, findings };
+  el.view = "findingsNav";
+  let html = el.findingsView();
+  assert.ok(html.includes("tablefoot") && html.includes("Page 1 of 2") && html.includes("1–20 of 25"), "25 heads: twenty on the first page");
+  assert.equal((html.match(/finding-cause og lvl0/g) || []).length, 20);
+  assert.ok(html.includes('<option value="250"'), "250 is a page size");
+  el.folds = Object.fromEntries(causes.map(c => [`og:device:${c.object_id}`, true]));
+  html = el.findingsView();
+  assert.equal((html.match(/finding-cause og lvl0/g) || []).length, 20, "open heads do not push others to the next page");
+  assert.equal((html.match(/<tr class="finding-data/g) || []).length, 20 * 7, "each open head shows its rows on the same page");
+});
+
+test("a database finding is a fold with its level and count; the periods and sensors of missing hours are inside, closed at first", () => {
+  const { el } = panel("en");
+  el.data = DATA; el._dbRequested = true;
+  el.dbHealth = { ...DBH, tables: [{ name: "states", bytes: 1024 }], findings: [{ kind: "missing_hours", level: "hint", series_total: 2, own_series: 2, gap_hours: 0, gaps_total: 0, series: [{ statistic_id: "sensor.c", name: "C", own: 9, missing: 9 }] }] };
+  let html = el.dbCard();
+  assert.ok(html.includes('data-fold="db_missing_hours"') && html.indexOf("Missing hours in statistics") < html.indexOf("Largest tables"), "the finding is a fold above the tables");
+  assert.ok(!html.includes("sensor.c"), "closed at first");
+  el.folds = { db_missing_hours: true };
+  assert.ok(el.dbCard().includes("sensor.c"));
+});
+
+test("the overview counts an outage chain once, at its top: a device below an integration that is down is not counted again", () => {
+  const { el } = panel("en");
+  const cause = (id, kind, extra = {}) => ({ id, kind, object_type: kind === "device_down" ? "device" : "config_entry", object_id: id, name: id, follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high", ...extra });
+  el.data = { ...DATA, causes: [cause("int", "integration_down"), cause("dev", "device_down", { parent_id: "int" }), cause("solo", "device_down")], findings: [] };
+  const row = el.todoItems().find(i => i.key === "outages");
+  assert.equal(row.count, 2);
+  assert.equal(row.hintText, "1 integration, 1 device");
+  el.data = { ...el.data, causes: [cause("int", "integration_down", { impact: "medium" }), cause("solo", "device_down")] };
+  const items = el.todoItems(), groups = el.todoGroups(items);
+  assert.ok(groups.red.some(i => i.key === "outages" && i.count === 1) && groups.open.some(i => i.key === "outages_open" && i.count === 1), "only high is urgent, medium is open");
+});
+
+test("maintenance on the to-do card is a group of its own with a head that folds it", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const html = el.todoCard();
+  if (el.todoGroups().care.length) assert.ok(html.includes('class="foldhd todogrp care"') && html.includes('data-fold="todo_care"'));
+});
+
+test("a top finding of the overview says what it is and since when, without the place in the config", () => {
+  const { el } = panel("en");
+  const f = { key: "k", rule_id: "automation.missing_entity", object_id: "automation.a1", classification: "broken_reference", confidence: 0.95, impact: "high", ignored: false, affected_object: "sensor.gone", first_detected_at: new Date(Date.now() - 3 * 864e5).toISOString(), evidence: [{ location: "actions[2]" }] };
+  el.data = { ...DATA, findings: [f] };
+  const row = el.overviewFinding(f);
+  assert.ok(row.includes("Refers to entity sensor.gone") && row.includes("found ") && !row.includes("actions[2]") && row.includes("High"));
+});
+
+test("a hint row with nothing to show is a quiet line without a jump", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [] };
+  const html = el.cleanupCard();
+  const dup = html.slice(html.lastIndexOf("<", html.indexOf("Possible duplicate")) - 400, html.indexOf("Possible duplicate"));
+  assert.ok(dup.includes('class="row zero"') && !dup.slice(dup.lastIndexOf('class="row')).includes("data-jump"));
+});
+
+test("the cleanup list offers its selection tools only with the first tick", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA }; el.view = "cleanup";
+  assert.ok(!el.cleanupView().includes("data-sel-clear"));
+  el.cleanupSel = new Set(["x"]);
+  assert.ok(el.cleanupView().includes("data-sel-clear") && el.cleanupView().includes("1 selected"));
+});
+
+test("a backup age reads vor 3 Tagen after vor and 3 Tage as a plain span", () => {
+  const { el } = panel("de");
+  assert.equal(el.t("backupAgo", { age: el.bhAge(72, true) }), "vor 3 Tagen");
+  assert.equal(el.bhAge(72), "3 Tage");
+});
+
+test("a remote target that the newest backup did not reach is named instead of local only", () => {
+  const { el } = panel("en");
+  el.backup = { available: true, checks: [{ id: "setup", level: "ok", values: { agents: ["backup.local", "cloud.cloud"] } }] };
+  assert.ok(el.bhText({ id: "targets", level: "note", values: { local: ["backup.local"], remote: [] } }).includes("Nabu Casa is set up as well"));
+  el.backup.checks[0].values.agents = ["backup.local"];
+  assert.ok(el.bhText({ id: "targets", level: "note", values: { local: ["backup.local"], remote: [] } }).startsWith("Local only"));
+});
+
+test("the To check tile of the backups says how many problems and hints it adds up", () => {
+  const { el } = panel("en");
+  const html = el.bhTiles({ checks: [], counts: { problem: 2, note: 1 }, backup_count: 3 });
+  assert.ok(html.includes(">3<") && html.includes("2 problems, 1 hint"));
+});
+
+test("the sizes of the last backups are columns from zero with date, size and change as tooltip", () => {
+  const { el } = panel("en");
+  const MB = 1024 ** 2, b = n => ({ date: `2026-10-1${n}T10:00:00+00:00`, size: (800 + n * 10) * MB, own: false, partial: false });
+  const html = el.bhSizes({ backups: [b(3), b(2), b(1)], checks: [] });
+  assert.ok(html.includes('class="bhaxis"') && html.includes("+10 MB") && /height:\d+%/.test(html));
+});
+
+test("a battery entity that is unavailable stays in the battery list, counted, with a tile of its own", () => {
+  const { el } = panel("en");
+  const b = (id, state, status = "active") => ({ object_type: "entity", object_id: id, name: id, status, device_class: "battery", state, unit: "%" });
+  el.data = { ...DATA, meta: { ...DATA.meta, low_battery_percent: 20 }, objects: [b("sensor.a", "50"), b("sensor.gone", "unavailable", "unavailable")] };
+  el.batteryVoltRows = () => [];
+  assert.equal(el.batteryRows().length, 2);
+  const html = el.batteriesView();
+  assert.ok(html.includes('data-battery-filter="unavailable"') && html.includes("reports nothing"));
+});
+
+test("the policies list shows its note and status columns only while a row has something for them, and switches hidden rows below the list", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  el.policies = { available: true, enabled: 1, violations: 1, rules: [{ id: "entity_area", enabled: true, count: 1, ignored: 1, items: [
+    { object_type: "entity", object_id: "light.a", name: "A", key: "k1", ignored: false, by: null },
+    { object_type: "entity", object_id: "light.b", name: "B", key: "k2", ignored: true, by: "user" }] }] };
+  const heads = html => (html.match(/<th[^>]*>.*?<\/th>/g) || []).map(x => x.replace(/<[^>]+>/g, "").replace(/[↑↓]/g, "").trim());
+  let html = el.policiesView();
+  assert.ok(!heads(html).includes("Status") && !heads(html).includes("Note"), "nothing to show, no column");
+  assert.ok(html.indexOf("data-policy-hidden") > html.indexOf("<table"), "the switch for hidden rows sits below the list");
+  el.policyShowHidden = true;
+  assert.ok(heads(el.policiesView()).includes("Status"));
+});
+
+test("a policy row that cannot be ticked has a greyed box that says why", () => {
+  const { el } = panel("en");
+  const box = el.polSelBox({ object_type: "automation", object_id: "automation.a", name: "A", key: "k", ignored: false });
+  assert.ok(box.includes("disabled") && box.includes("Only entities and devices"));
+});
+
+test("a run finding keeps its figure and its hint apart", () => {
+  const { el } = panel("en");
+  const line = el.runsFindingLines({ findings: [{ kind: "failing", level: "warn", errors: 2, runs: 4, step: "action/1", step_count: 2 }] });
+  assert.ok(/<\/span> <span class="fnote">/.test(line));
+});
+
+test("the state of an integration in the reliability view is named in words", () => {
+  const { el } = panel("en");
+  assert.equal(el.entryStateLabel("setup_retry"), "Retrying setup");
+  assert.equal(el.entryStateLabel("something_new"), "something_new");
+});
+
+test("All of the unstable entities counts every one, and the list says it shows the most noticeable", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const item = { entity_id: "sensor.a", name: "A", level: "flapping", episodes: 3, per_day: 1, total_seconds: 60, mean_seconds: 20, pattern_hour: null, used: 0 };
+  const html = el.unstableCard({ window_days: 7, unstable: { items: [item], total: 31, excluded: 0 } });
+  assert.ok(html.includes(">31<") && html.includes("the 1 most noticeable in the list") && html.includes("The 1 most noticeable of 31"));
+});
+
+test("a storage category is named in words with the system's name below, and its share is against the space in use", () => {
+  const { el } = panel("en");
+  const html = el.sysCategories([{ id: "addons_data", label: "apps_data", bytes: 25 }, { id: "media", label: "media", bytes: 75 }], 100);
+  assert.ok(html.includes("App data") && html.includes("apps_data") && html.includes("25 %") && html.includes("75 %"));
+});
+
+test("the home functions have tiles per state, a plain description and no second title", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, monitor: [{ id: "a", name: "Door", description: "Opens the door", state: "problem", members: [], incident_open: true }, { id: "b", name: "Water", description: "", state: "ok", members: [], incident_open: false }] };
+  const html = el.monitorView();
+  assert.ok(html.includes('data-lf-set="monitor|state|problem"') && html.includes('<small class="muted u-block">Opens the door</small>'));
+  assert.ok(!html.includes(el.t("monitorSubtitle")), "the explanation stands in the page head only");
+});
+
+test("a tile that clears the filters of a list is never marked itself", () => {
+  const { el } = panel("en");
+  el.lvState("x", "name", "asc");
+  const html = el.sumTiles([{ label: "All", value: "3", lf: ["x", "", ""] }, { label: "Low", value: "1", lf: ["x", "level", "low"] }]);
+  assert.ok(!html.includes('aria-pressed="true"'));
+});
+
+test("an integration row of the write load has a greyed box that says only its entities can be excluded", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA };
+  const html = el.stormGroupsList([{ key: "integrations:Hub", type: "integrations", items: [{ kind: "integration_share", title: "Hub", entry_id: "e1", load_share: 40, per_day: 10 }] }]);
+  assert.ok(html.includes("disabled") && html.includes("An integration cannot be excluded"));
+});
+
+test("the tiles of Maintenance and Clean up keep one status pill each: what is open with its noun, or Nothing to do", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [], quarantine: [] };
+  el.preflight = { counts: { total: 2 }, state: { updates: [] }, checks: [] }; el._pfFor = el.data;
+  el.blueprints = { missing: 0, broken: 0 };
+  const html = el.maintenanceView();
+  assert.ok(html.includes(">2 updates<") && html.includes(">Nothing to do<") && html.includes("setpill slot"), "a noun on the number, Nothing to do in the pill, the slot kept");
+  assert.ok(!html.includes("navfacts"), "no extra line below the hint");
+  const tiles = el.cleanupView();
+  assert.ok((tiles.match(/>Nothing to do</g) || []).length >= 3, "an empty job says so in its pill");
+});
+
+test("after a decision the list reads the findings again, so a device marked as known is no outage any more", async () => {
+  const { el } = panel("en");
+  const own = { key: "device.down|d1|", rule_id: "device.down", object_id: "d1", classification: "problem", confidence: 0.9, ignored: false, cause_id: "device_down:d1" };
+  el.data = { ...DATA, findings: [own], causes: [{ id: "device_down:d1", kind: "device_down", object_type: "device", object_id: "d1", name: "Hub", finding_key: own.key, child_ids: [], consumers: {} }] };
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg.type); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [{ ...own, ignored: true, cause_id: undefined }], causes: [] } : {}; } };
+  el.render = () => {};
+  el.decide = { key: own.key, kind: "keep", days: 0, reason: "known", error: "" };
+  await el.commitDecide();
+  assert.deepEqual(calls, ["ha_housekeeper/ignore", "ha_housekeeper/inventory"]);
+  assert.equal(el.data.causes.length, 0, "the outages come from the server again");
+});
+
+test("a decided finding has the same row menu as an open one; only its top block offers the way back", () => {
+  const { el } = panel("en");
+  const device = { object_type: "device", object_id: "d1", name: "Hub", status: "active" };
+  el.data = { ...DATA, objects: [device], findings: [] };
+  const f = { key: "device.down|d1|", rule_id: "device.down", object_id: "d1", classification: "problem", confidence: 0.9, ignored: false };
+  el.findingKey = () => "device:d1";
+  const open = el.rowMenu(f), known = el.rowMenu({ ...f, ignored: true, ignored_by: "user", ignore_info: { kind: "keep" } });
+  assert.ok(open.includes("Set status …") && !open.includes("Show again"));
+  assert.ok(known.includes("Show again") && known.includes("Change status …") && !known.includes("Set status …"));
+  for (const part of ["data-watch-mark", "data-finding-note"]) assert.ok(open.includes(part) && known.includes(part), part);
+});
+
+test("a status on an outage says that its entities then count one by one and offers the mark instead", () => {
+  const { el } = panel("en");
+  const own = { key: "device.down|d1|", rule_id: "device.down", object_id: "d1", classification: "problem", confidence: 0.9, ignored: false };
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d1", name: "Hub", status: "active" }], findings: [own], causes: [{ id: "c", kind: "device_down", object_type: "device", object_id: "d1", name: "Hub", finding_key: own.key, follower_count: 5, child_ids: [], consumers: {} }] };
+  el.findingKey = () => "device:d1";
+  el.decide = { key: own.key, kind: "keep", days: 0, reason: "", error: "" };
+  const form = el.decideForm(own);
+  assert.ok(form.includes("5 entities behind it") && form.includes('data-watch-mark="device:d1"'));
+  el.data.objects[0].mark = { kind: "expected_offline" };
+  assert.ok(!el.decideForm(own).includes("data-watch-mark"), "an object with a mark is not offered one again");
+});
+
+test("a mark on an object that has run without a gap for a month asks whether it is still needed", () => {
+  const { el } = panel("en");
+  const old = new Date(Date.now() - 40 * 864e5).toISOString(), fresh = new Date(Date.now() - 2 * 864e5).toISOString();
+  const dev = id => ({ object_type: "device", object_id: id, name: id, status: "active", mark: { kind: "expected_offline" } });
+  const ent = (id, device, since) => ({ object_type: "entity", object_id: id, name: id, status: "active", status_since: since, device_id: device });
+  el.data = { ...DATA, objects: [dev("calm"), dev("busy"), ent("sensor.a", "calm", old), ent("sensor.b", "busy", fresh)], findings: [] };
+  assert.equal(el.markQuietDays(el.data.objects[0]), 40);
+  assert.equal(el.markQuietDays(el.data.objects[1]), null, "a short run asks nothing");
+  assert.ok(el.marksCard().includes("no outage for 40 days – still needed?"));
+});
+
+test("a decision whose finding is away rests in the list of statuses, says how long it has been away and can be removed", () => {
+  const { el } = panel("en");
+  const long = new Date(Date.now() - 41 * 864e5).toISOString(), short = new Date(Date.now() - 3 * 864e5).toISOString();
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "cloud", name: "Cloud", status: "active" }, { object_type: "device", object_id: "hue", name: "Hue", status: "active" }],
+    findings: [{ key: "h2", rule_id: "r", object_id: "sensor.b", ignored: true, ignored_by: "user", ignore_info: { kind: "keep", reason: "", until: null } }],
+    resting_decisions: [{ key: "device.down|cloud|", kind: "keep", reason: "cancelled", until: null, seen: long }, { key: "device.down|hue|", kind: "keep", reason: "", until: null, seen: short }, { key: "entity.state_unavailable|sensor.gone|", kind: "ignore", reason: "", until: null, seen: long }] };
+  const html = el.statusCard();
+  assert.ok(html.includes("(4)") && html.includes("Resting · finding away right now (3)"), "the resting ones count and stand under a head");
+  assert.ok(html.indexOf('data-dec-sel="h2"') < html.indexOf("Resting ·"), "the ones that hide come first");
+  assert.ok(html.includes("not seen for 41 days – still needed?") && html.includes(">rests<") && html.includes("object is gone"));
+  assert.ok(html.includes('data-ignore="device.down|cloud|" data-ignore-value="0"') && html.includes("Remove decision"), "a resting one is removed from its menu");
+});
+
+test("a reminder keeps Done in its row, changes and deletes through its menu, and several are done at once from the selection", async () => {
+  const { el } = panel("en");
+  const r = (id, name) => ({ id, name, interval_days: 30, last_done: "", history: [], due: "2026-11-01", days_left: 5, state: "soon", note: "" });
+  el.data = { ...DATA, reminders: [r("r1", "Filter"), r("r2", "Descale")] };
+  const html = el.remindersCard();
+  assert.ok(html.includes('data-rem-done="r1"') && html.includes('class="menuitem" data-rem-edit="r1"') && html.includes('class="menuitem" data-rem-del="r1"') && html.includes('data-rem-sel="r2"'));
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg.reminder_id); return { reminders: el.data.reminders }; } };
+  el.render = () => {};
+  el.remSel = new Set(["r1", "r2"]);
+  await el.remDonePicked();
+  assert.deepEqual(calls, ["r1", "r2"]);
+  assert.equal(el.remSel.size, 0);
+});
+
+test("the texts say Marketplace instead of HACS only when the store is the Marketplace", () => {
+  const { el } = panel("de");
+  assert.equal(el.t("hkUpdateLatest"), "Bei HACS verfügbar");
+  el.data = { ...DATA, meta: { ...DATA.meta, hacs_store: "marketplace" } };
+  assert.equal(el.t("hkUpdateLatest"), "Im Marketplace verfügbar");
+  assert.equal(el.t("compTabHacs"), "Marketplace");
+  el._hass = { language: "en" };
+  assert.equal(el.t("hkUpdateHacsInstalled"), "Installed by the Marketplace");
+});
+
+test("a start compares each integration with its usual time and links to the ones the scan knows", () => {
+  const { el } = panel("en");
+  const item = (seconds, extra = {}) => ({ domain: "alexa_devices", title: "rrm", seconds, state: "loaded", entries: 1, ...extra });
+  const starts = [item(75), item(20), item(22), item(21)].map((i, n) => ({ at: `2026-10-2${3 - n}T10:00:00Z`, items: [i] }));
+  el.sysState("starts").data = { starts };
+  assert.match(el.startCompare(starts[0], starts[0].items[0]), /pill warn[^>]*>54 s slower than usual/);
+  assert.match(el.startCompare(starts[1], starts[1].items[0]), /muted[^>]*>as usual</, "close to the average");
+  assert.match(el.startCompare(starts[3], starts[3].items[0]), /class="muted"/, "no earlier starts to compare with");
+  const row = el.startRow(starts[0], starts[0].items[0], 75, new Map([["alexa_devices", { custom: true }]]));
+  assert.match(row, /data-object="integration:alexa_devices"/);
+  assert.match(row, />custom</);
 });

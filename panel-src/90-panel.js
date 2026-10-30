@@ -5,7 +5,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.findingWithFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -55,7 +55,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar, wasLanguage = this._hass?.language;
     this._hass = value;
     if (first) { this.load(false); this.loadUserPrefs(); }
-    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar || wasLanguage !== value?.language) this.render();
+    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar || (this.prefs.language === "auto" && wasLanguage !== value?.language)) this.render();
   }
 
   get hass() { return this._hass; }
@@ -173,7 +173,7 @@ class HAHousekeeperPanel extends HTMLElement {
     return Object.hasOwn(TEXT, detected) ? detected : "en";
   }
 
-  // Plural forms are optional; language dictionaries may also use ordinary strings.
+  // Some languages have several plural forms; English is the fallback.
   t(key, vars) {
     const value = TEXT[this.lang]?.[key] ?? TEXT.en[key] ?? key;
     let output = value;
@@ -182,7 +182,9 @@ class HAHousekeeperPanel extends HTMLElement {
       const category = Number.isFinite(count) ? new Intl.PluralRules(this.lang).select(count) : "other";
       output = value[category] ?? value.other ?? TEXT.en[key] ?? key;
     }
-    return vars ? String(output).replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : String(output);
+    let text = String(output);
+    if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, this.lang);
+    return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
   }
 
   esc(value) {
@@ -592,7 +594,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
     try { page = this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
-    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}${this.aiBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     let swapped = false;
@@ -639,10 +641,14 @@ class HAHousekeeperPanel extends HTMLElement {
     const view = params.get("view") === "storms" ? "recorder" : params.get("view"); // the load view moved into "Recorder"
     if (view && (view === "unreferenced" || NAV.some(([name]) => name === view))) this.view = view;
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
+    // A link into the findings (a notification, a repair issue) starts from the plain open list, like a jump in the panel:
+    // the filters this browser kept from before would change what the link promised.
+    if (this.view === "findingsNav") { this.clearFindingFilters(); this.findingStatus = ""; }
     if (params.get("filter")) { if (this.view === "monitor") this.monitorFilter = params.get("filter"); else this.findingFilter = params.get("filter"); }
     if (this.view === "monitor" && this.monitorFunctions().some(item => item.id === params.get("function"))) this.monitorSelected = params.get("function");
     this._pendingTab = params.get("tab");
     if (view && params.get("tab") && !params.get("object")) (this.viewTab ||= {})[this.view] = params.get("tab");
+    if (this.view === "settings" && params.get("tab")) this.settingsTab = params.get("tab"); // the settings keep their tab apart
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -672,12 +678,18 @@ class HAHousekeeperPanel extends HTMLElement {
     return Object.fromEntries(["exposure", "dataflow", "secrets", "runs"].map(v => [v, found[v] || undefined]));
   }
 
+  // What the number beside a page in the menu counts: the page opens as it was left, the number names its part.
+  navCountHint(view, n) {
+    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "maintenance", "policies"].includes(view) ? `navCount_${view}` : "navCount_other";
+    return this.t(key, { n: this.formatNumber(n) });
+  }
+
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
     const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, ...this.viewCounts() } : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
-    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
+    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
@@ -822,7 +834,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -833,6 +845,12 @@ class HAHousekeeperPanel extends HTMLElement {
         this.menuOpen = null; this.render();
       });
       root.addEventListener("click", ev => { this._shift = ev.shiftKey; }, true);
+      // Only one row menu (⋮) is open at a time: opening one closes the others. "toggle" does not bubble, so it is caught on the way down.
+      root.addEventListener("toggle", ev => {
+        const menu = ev.target;
+        if (!menu?.matches?.("details.rowmenu") || !menu.open) return;
+        root.querySelectorAll("details.rowmenu[open]").forEach(other => { if (other !== menu) other.open = false; });
+      }, true);
       // The column and export pop-ups close on a click elsewhere and on Escape.
       root.addEventListener("click", ev => {
         if (!this._colOpen && !this._expOpen) return;
@@ -910,6 +928,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
       if (el.dataset.safeKey === "coverage") this.settingsTab = "info";
+      if (el.dataset.safeKey === "ai") this.settingsTab = "mcp";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
       this.render();
     });
@@ -918,12 +937,30 @@ class HAHousekeeperPanel extends HTMLElement {
       ev?.stopPropagation(); // a jump inside a row that opens something else leaves that row alone
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
+      // A jump into the findings starts from the plain list of open findings, then sets its own filter: what was
+      // left from before (a status, a search, a filter of the list bar) would change the number the row said.
+      if (this.view === "findingsNav") { this.clearFindingFilters(); this.findingStatus = ""; }
+      this.findingScanNew = el.dataset.jumpScanNew !== undefined;
+      // The outages of one level ("high", "medium") or all of them.
+      this.findingOutages = el.dataset.jumpOutages !== undefined ? el.dataset.jumpOutages || true : false;
+      if (el.dataset.jumpCause) this.findingCause = el.dataset.jumpCause;
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
-      if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingDue = false; }
+      // A list the jump counts starts without the search and filters kept from before; its own filter comes after.
+      for (const id of [el.dataset.jumpClear, el.dataset.jumpLf?.split("|")[0]].filter(Boolean)) {
+        if (this.lv?.[id]) { this.lv[id].q = ""; this.lv[id].f = {}; this.persistLv(id); } else (this._lfPending ||= {})[id] = {}; // not opened yet: the kept filters are not loaded
+      }
+      // The quarantine tab shows one kind at a time: the one that has something, entities first.
+      if (el.dataset.jumpTab === "quarantine") { this.quarantineType = this.quarantineRows("entity").length || !this.quarantineRows("device").length ? "entity" : "device"; this.cleanupKind = this.quarantineType === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
       if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
+      // A row of "since the last scan" shows its own section against the last scan, whatever base was chosen there before.
+      if (el.dataset.jumpChanges) {
+        if (this.compareBaseline !== "previous") { this.compareBaseline = "previous"; this.compare = null; }
+        this.changesCat = el.dataset.jumpChanges; this.folds = { ...this.folds, [`chg_${el.dataset.jumpChanges}`]: true };
+        const st = this.lvState("changes", "", "asc"); st.q = ""; st.f = {}; this.persistLv("changes");
+      }
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
-      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
+      if (el.dataset.jump === "inventory") { if (!el.dataset.jumpLf) this.invState().q = ""; this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
       this.render();
       if (this.view === "changes" && !this.compare) this.loadCompare();
     });
@@ -941,26 +978,38 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-exp-menu]").forEach(el => el.onclick = () => { this._expOpen = this._expOpen === el.dataset.expMenu ? "" : el.dataset.expMenu; this._colOpen = ""; this.render(); });
     root.querySelectorAll("[data-exp-fmt]").forEach(el => el.onclick = () => { const [id, fmt] = el.dataset.expFmt.split("|"); this._expOpen = ""; this.exportList(id, fmt); this.render(); });
     root.querySelectorAll("[data-exp-guided]").forEach(el => el.onclick = () => { this._expOpen = ""; this.xpOpen(); });
-    root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status, origin = ""] = el.dataset.invFilter.split("|"), same = (type || status) && this.typeFilter === type && this.statusFilter === status && this.originFilter === origin; this.typeFilter = same ? "" : type; this.statusFilter = same ? "" : status; this.originFilter = same ? "" : origin; this.pages = {}; (this.folds ||= {}).inv_types = !(this.typeFilter || this.statusFilter); this.render(); this.showList(); });
+    root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status, origin = ""] = el.dataset.invFilter.split("|"), same = (type || status) && this.typeFilter === type && this.statusFilter === status && this.originFilter === origin;
+      // The numbers of the type table count every object of a type: the list starts without a search or label left over.
+      const st = this.invState(); st.q = ""; st.f = {}; this.persistLv("inventory");
+      this.typeFilter = same ? "" : type; this.statusFilter = same ? "" : status; this.originFilter = same ? "" : origin; this.pages = {}; (this.folds ||= {}).inv_types = !(this.typeFilter || this.statusFilter); this.render(); this.showList(); });
     root.querySelectorAll("[data-inv-more]").forEach(el => el.onclick = () => { this.invAllTypes = !this.invAllTypes; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.originFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
-    root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
     this.bindFindingStatus(root);
     this.bindDetailActions(root);
-    root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter; this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
+    // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
+    root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter, st = this.lvState("batteries", "left", "asc"); st.q = ""; st.f = {}; this.persistLv("batteries"); this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
     root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
       const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
       try {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
         const finding = this.data.findings.find(f => f.key === key);
         if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
+        this.render();
+        await this.reloadAfterDecision();
+        return;
       } catch (err) { this.failed(err); }
       this.render();
     });
     root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
-    root.querySelector("[data-with-followers]")?.addEventListener("click", () => { this.findingWithFollowers = !this.findingWithFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
-    root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
+    root.querySelector("[data-finding-followers]")?.addEventListener("click", () => { const on = !this.findingFollowers; this.clearFindingFilters(); this.findingStatus = ""; this.findingFollowers = on; this.pages = {}; this.render(); this.showList(); });
+    // One note of the filters above the list: its ✕ takes off just that filter.
+    root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
+      const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
+      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false; else if (key === "outages") this.findingOutages = false; else if (key === "held") this.findingHeld = false; else if (key === "cause") this.findingCause = ""; else if (key === "corr") this.findingCorr = "";
+      else if (key === "q") st.q = ""; else if (key.startsWith("lf:")) { delete st.f[key.slice(3)]; this.persistLv("findings"); }
+      this.pages = {}; this.render();
+    });
     this.bindMarks(root);
     this.bindExceptions(root);
     this.bindMcp(root);
@@ -968,11 +1017,13 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindNotes(root);
     this.bindConfirm(root);
     root.querySelectorAll("[data-health-why]").forEach(el => el.onclick = () => { this.healthWhy = !this.healthWhy; this.render(); });
-    root.querySelector("[data-todo-jump]")?.addEventListener("click", () => { const card = root.querySelector("#hk-todo-card"); card?.scrollIntoView?.({ block: "start", behavior: "smooth" }); card?.focus?.({ preventScroll: true }); });
+    // A name in the headline: its row of the to-do card, in view and focused.
+    root.querySelectorAll("[data-todo-go]").forEach(el => el.onclick = () => { const target = root.querySelector(`#hk-todo-card [data-todo="${el.dataset.todoGo}"]`) || root.querySelector("#hk-todo-card"); target?.scrollIntoView?.({ block: "center", behavior: "smooth" }); target?.focus?.({ preventScroll: true }); });
     this.bindExport(root);
     this.bindPlanWizard(root);
     this.bindExclude(root);
     this.bindEntityRecorder(root);
+    this.bindSpace(root);
     this.bindEntityTrim(root);
     this.bindScanPoints(root);
     this.bindKnown(root);
@@ -995,7 +1046,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
-      form.querySelector("[data-decide-kind]").onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; if (this.decide.kind === "snooze" && !Number(this.decide.days)) this.decide.days = 30; this.render(); };
+      form.querySelectorAll("[data-decide-kind]").forEach(el => el.onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; this.decide.days = this.decide.kind === "snooze" ? 30 : 0; this.render(); });
       form.querySelector("[data-decide-reason]").oninput = ev => { this.decide.reason = ev.target.value; };
       form.querySelector("[data-decide-days]").onchange = ev => { this.decide.days = Number(ev.target.value); };
       form.onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); this.decide = null; this.render(); } };
@@ -1010,8 +1061,10 @@ class HAHousekeeperPanel extends HTMLElement {
       this.pages = {}; this.persistLv(id); this.render(); this.showList();
     });
     root.querySelectorAll("[data-changes-cat]").forEach(el => el.onclick = () => { const v = el.dataset.changesCat; this.changesCat = this.changesCat === v ? "" : v; this.render(); this.showList(); });
-    root.querySelectorAll("[data-finding-reset]").forEach(el => el.onclick = () => { this.findingFilter = ""; this.findingAfter = false; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { const v = el.dataset.findingFilter; this.findingFilter = v && this.findingFilter === v ? "" : v; this.pages = {}; this.render(); this.showList(); });
+    root.querySelectorAll("[data-finding-reset]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.pages = {}; this.render(); });
+    // A tile starts from the plain list of its status, so a click on it always shows the number it says.
+    // The tiles count the open findings, so a tile always shows the open list.
+    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { const v = el.dataset.findingFilter, same = v && this.findingFilter === v; this.clearFindingFilters(); this.findingStatus = ""; this.findingFilter = same ? "" : v; this.pages = {}; this.render(); this.showList(); });
     const searchField = (selector, setter) => {
       const input = root.querySelector(selector);
       if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };
@@ -1027,7 +1080,8 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.click) el.click(); else el.onclick?.();
     };
     root.querySelectorAll("tr[data-object], g[data-graph]").forEach(openByKey);
-    root.querySelectorAll("tr[data-plan-open], tr[data-rem-row], tr[data-note-edit]").forEach(openByKey);
+    root.querySelectorAll("div.startint[data-object]").forEach(openByKey);
+    root.querySelectorAll("tr[data-plan-open], tr[data-rem-row], tr[data-note-edit], tr[data-inc-row], tr[data-bh-row]").forEach(openByKey);
     root.querySelectorAll("g[data-graph-group]").forEach(openByKey);
     root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });
     root.querySelector("[data-graph-impact]")?.addEventListener("click", () => { this.graphImpact = !this.graphImpact; this.render(); });
@@ -1090,7 +1144,6 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-meter-pick]").forEach(el => el.onclick = () => { this.meterNew = el.dataset.meterPick; this.render(); });
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRows("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
-    root.querySelector("[data-purge-page]")?.addEventListener("click", () => { (this._purgePage || []).forEach(id => this.purgeSel.add(id)); this.render(); });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
     root.querySelectorAll("[data-meter-mode]").forEach(el => el.onclick = () => { this.meterMode = el.dataset.meterMode; this.render(); });
@@ -1100,6 +1153,12 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
     root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));
     root.querySelectorAll("[data-release-no]").forEach(el => el.onclick = () => { this.releaseConfirm = null; this.render(); });
+    root.querySelectorAll("[data-conflict-key]").forEach(el => el.onclick = async () => {
+      try {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: el.dataset.conflictKey, ignored: el.dataset.conflictValue === "1" });
+        await this.loadRuns();
+      } catch (err) { this.failed(err); this.render(); }
+    });
     root.querySelector("[data-runs-refresh]")?.addEventListener("click", () => this.loadRuns());
     root.querySelector("[data-rel-compare]")?.addEventListener("click", () => { this.relCompare = !this.relCompare; this.reliability = null; this.loadReliability(); });
     root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.pages.relentries = 1; this.pages.relunstable = 1; this.loadReliability(); });
@@ -1108,6 +1167,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-storm-window]").forEach(el => el.onclick = () => { this.stormsWindow = Number(el.dataset.stormWindow); this.storms = null; this.pages.stormfind = 1; this.pages.stormentities = 1; this.loadStorms(); });
     root.querySelector("[data-storm-refresh]")?.addEventListener("click", () => this.loadStorms(true));
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
+    root.querySelector("[data-ap-refresh]")?.addEventListener("click", () => this.loadAutoPause());
+    this.bindAutoPause(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
@@ -1129,9 +1190,30 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-levels-ok]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.render(); });
     root.querySelector("[data-levels-go]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.noteJump("settings"); this.settingsTab = "scan"; this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
     this.bindOften(root);
-    root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.findingFilter = ""; this.findingAfter = false; this._impactOnce = el.dataset.whyLevel; this.render(); });
+    root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); const obj = this.findObject(el.dataset.watchMark); if (!obj) return; this._pendingTab = "actions"; await this.openObject(obj); this.openMark(el.dataset.watchMark); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
+    // The list of decisions: pick rows, then take the picked decisions away; a resting one makes nothing visible.
+    const decSel = () => (this.decSel ||= new Set());
+    root.querySelectorAll("[data-dec-sel]").forEach(el => el.onchange = () => { this.pickRows("decided", el.dataset.decSel, el.checked, decSel(), [...root.querySelectorAll("[data-dec-sel]")].map(x => x.dataset.decSel)); this.render(); });
+    const decPage = root.querySelector("[data-dec-page]");
+    if (decPage) { decPage.indeterminate = decPage.hasAttribute("data-partial"); decPage.onchange = ev => { root.querySelectorAll("[data-dec-sel]").forEach(x => (ev.target.checked ? decSel().add(x.dataset.decSel) : decSel().delete(x.dataset.decSel))); this.render(); }; }
+    root.querySelector("[data-dec-clear]")?.addEventListener("click", () => { decSel().clear(); this.render(); });
+    root.querySelector("[data-dec-remove]")?.addEventListener("click", async () => {
+      await this.runBulk([...decSel()], async key => { await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false }); decSel().delete(key); });
+      this.render();
+      await this.reloadAfterDecision();
+    });
+    // An incident row opens its details below it; a click on its menu or a link inside does not.
+    root.querySelectorAll("[data-inc-more], [data-inc-row]").forEach(el => el.addEventListener("click", ev => {
+      const inner = ev.target?.closest?.("button, select, input, a, label, summary, .menupop");
+      if (el.dataset.incRow !== undefined && inner && inner !== el && el.contains(inner)) return;
+      if (el.dataset.incMore !== undefined) ev.stopPropagation();
+      const id = el.dataset.incMore ?? el.dataset.incRow;
+      this.folds = { ...this.folds, [id]: !this.foldOpen(id, false) }; this.render();
+    }));
+    // The findings of one incident: the list below narrowed to them, from the plain open list.
+    root.querySelectorAll("[data-corr-show]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.findingStatus = ""; this.findingCorr = el.dataset.corrShow; this.pages = {}; this.render(); this.showList(); });
     root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });
     root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { if (el.dataset.fold.startsWith("chg_")) this.changesCat = ""; this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));
@@ -1213,6 +1295,11 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.persistLv(el.dataset.ld); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); this.focusListPage(id); });
     root.querySelectorAll("[data-lpagesize]").forEach(el => el.onchange = () => { (this.listSizes ||= {})[el.dataset.lpagesize] = Number(el.value); this.pages[el.dataset.lpagesize] = 1; this.render(); });
+    root.querySelectorAll("[data-warmup]").forEach(box => box.addEventListener("click", ev => {
+      if (!ev.target?.closest?.("[data-warm-all]")) return;
+      this._warmAll = !this._warmAll;
+      box.innerHTML = this.warmupInner();
+    }));
     root.querySelectorAll("[data-bh-more], [data-bh-row]").forEach(el => el.addEventListener("click", ev => {
       const inner = ev.target?.closest?.("button, select, input, a, label");
       if (el.dataset.bhRow !== undefined && inner && inner !== el && el.contains(inner)) return;

@@ -1,15 +1,15 @@
 // Maintenance goals: what "in order" means for this house and whether it is so (see goals.py); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt", goalsNone: "Es gibt noch keine Wartungsziele.",
+  tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsTab: "Ziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt", goalsNone: "Es gibt noch keine Wartungsziele.",
   goal_broken_references: "Defekte Referenzen", goal_unavailable: "Nicht verfügbare Entitäten", goal_backup_age: "Alter des letzten Backups", goal_restore_test_age: "Alter des Wiederherstellungstests", goal_recorder_growth: "Datenbankwachstum", goal_weak_batteries: "Schwache Batterien", goal_devices_without_area: "Geräte ohne Bereich", goal_stale_sensors: "Sensoren ohne neue Meldung", goal_recurring_devices: "Wiederkehrende Ausfälle (Geräte)", goal_automation_errors: "Automationen mit Fehlern (30 Tage)", goal_blocked_automations: "Blockierte Automationen", goal_orphaned_statistics: "Verwaiste Statistiken",
-  goalLimit: "höchstens {limit}", goalAllowed: "erlaubt: {limit}", goalAllowedNone: "erlaubt: keine", goalMissedPill: "Ziel verfehlt", areaFindings: "Befunde", areaState: "Zustand", areaCare: "Wartung", areaCareSub: "nichts dringend", goalNow: "jetzt {value}", goalNever: "nie", goalNoBackup: "kein Backup", goalUnknownHint: "noch nicht messbar",
+  goalLimit: "höchstens {limit}", goalAllowed: "erlaubt: {limit}", goalAllowedNone: "erlaubt: keine", goalMissedPill: "Ziel verfehlt", areaFindings: "Befunde", areaState: "Zustand", areaCare: "Wartung", areaCareSub: "nichts dringend", goalNow: "jetzt {value}", goalNever: "nie", goalNoBackup: "kein Backup", goalUnknownHint: "noch nicht messbar", goalExternal: "außerhalb von Home Assistant gesichert",
   goalState_met: "Erfüllt", goalState_missed: "Verfehlt", goalState_unknown: "Unbekannt", goalState_off: "Aus",
   goalUnit_mb_per_day: "{n} MB pro Tag", goalEdit: "Anpassen", goalLimitLabel: "Grenze", goalEnabled: "Ziel beachten", goalDefault: "Standard: {n}", goalFailed: "Nicht gespeichert: {reason}", goalSave: "Speichern", goalsAdjust: "Grenzen anpassen", goalsAllMet: "Alle {n} beachteten Ziele sind erreicht.",
 });
 Object.assign(TEXT.en, {
-  tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed", goalsNone: "There are no maintenance goals yet.",
+  tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsTab: "Goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed", goalsNone: "There are no maintenance goals yet.",
   goal_broken_references: "Broken references", goal_unavailable: "Unavailable entities", goal_backup_age: "Age of the latest backup", goal_restore_test_age: "Age of the restore test", goal_recorder_growth: "Database growth", goal_weak_batteries: "Weak batteries", goal_devices_without_area: "Devices without an area", goal_stale_sensors: "Sensors without a new report", goal_recurring_devices: "Recurring outages (devices)", goal_automation_errors: "Automations with errors (30 days)", goal_blocked_automations: "Blocked automations", goal_orphaned_statistics: "Orphaned statistics",
-  goalLimit: "at most {limit}", goalAllowed: "allowed: {limit}", goalAllowedNone: "allowed: none", goalMissedPill: "Goal missed", areaFindings: "Findings", areaState: "State", areaCare: "Maintenance", areaCareSub: "nothing urgent", goalNow: "now {value}", goalNever: "never", goalNoBackup: "no backup", goalUnknownHint: "cannot be measured yet",
+  goalLimit: "at most {limit}", goalAllowed: "allowed: {limit}", goalAllowedNone: "allowed: none", goalMissedPill: "Goal missed", areaFindings: "Findings", areaState: "State", areaCare: "Maintenance", areaCareSub: "nothing urgent", goalNow: "now {value}", goalNever: "never", goalNoBackup: "no backup", goalUnknownHint: "cannot be measured yet", goalExternal: "backed up outside Home Assistant",
   goalState_met: "Met", goalState_missed: "Missed", goalState_unknown: "Unknown", goalState_off: "Off",
   goalUnit_mb_per_day: "{n} MB per day", goalEdit: "Adjust", goalLimitLabel: "Limit", goalEnabled: "Watch this goal", goalDefault: "Default: {n}", goalFailed: "Not saved: {reason}", goalSave: "Save", goalsAdjust: "Adjust limits", goalsAllMet: "All {n} watched goals are met.",
 });
@@ -23,10 +23,10 @@ const GOAL_JUMPS = {
   backup_age: { view: "maintenance", tab: "backup" },
   restore_test_age: { view: "maintenance", tab: "backup" },
   recorder_growth: { view: "recorder", tab: "db" },
-  weak_batteries: { view: "batteries", battery: "low" },
+  weak_batteries: { view: "batteries", battery: "low", clear: "batteries" },
   devices_without_area: { view: "policies", tab: "violations", lf: "polviol|rule|device_area" },
-  recurring_devices: { view: "cleanup", tab: "devices" },
-  orphaned_statistics: { view: "cleanup", tab: "stats" },
+  recurring_devices: { view: "cleanup", tab: "devices", clear: "cleanup" },
+  orphaned_statistics: { view: "cleanup", tab: "stats", clear: "orphanstats" },
   automation_errors: { view: "runs", tab: "overview", lf: "overview|runs|errors" },
 };
 const GOAL_TONES = { met: "ok", missed: "red", unknown: "mute", off: "mute" };
@@ -55,13 +55,14 @@ class GoalsMixin {
   }
 
   goalNow(g) {
+    if (g.external) return this.t("goalExternal");
     if (g.never) return this.t(g.id === "backup_age" ? "goalNoBackup" : "goalNever");
     return g.value === null ? this.t("goalUnknownHint") : this.t("goalNow", { value: this.goalAmount(g, g.value) });
   }
 
   goalJump(id) {
     const j = GOAL_JUMPS[id];
-    return `data-jump="${j.view}"${j.tab ? ` data-jump-tab="${j.tab}"` : ""}${j.filter ? ` data-filter="${j.filter}" data-jump-fresh` : ""}${j.lf ? ` data-jump-lf="${j.lf}"` : ""}${j.battery ? ` data-jump-battery="${j.battery}"` : ""}`;
+    return `data-jump="${j.view}"${j.tab ? ` data-jump-tab="${j.tab}"` : ""}${j.filter ? ` data-filter="${j.filter}"` : ""}${j.lf ? ` data-jump-lf="${j.lf}"` : ""}${j.battery ? ` data-jump-battery="${j.battery}"` : ""}${j.clear ? ` data-jump-clear="${j.clear}"` : ""}`;
   }
 
   goalRow(g, editable = true) {

@@ -1,3 +1,4 @@
+const WARMUP_NAMES_SHOWN = 4; // names of loading integrations the start notice shows before it unfolds the rest
 const ICONS = {
   service: "mdi:cog-off-outline", entity: "mdi:shape-outline", device: "mdi:devices", config_entry: "mdi:puzzle-outline", integration: "mdi:puzzle",
   area: "mdi:floor-plan", automation: "mdi:robot-outline", floor: "mdi:layers-outline",
@@ -26,6 +27,10 @@ const DONE_RESULTS = Object.fromEntries([
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
 const PREFS_KEY = "ha_housekeeper.prefs";
+// A mark on an object that has run this many days without a gap asks whether it is still needed.
+const MARK_QUIET_DAYS = 30;
+// The page sizes every paged list offers, unless it has its own.
+const PAGE_SIZES = [20, 50, 100, 250];
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
@@ -112,16 +117,19 @@ const MARK_TYPES = ["entity", "device", "config_entry", "app"];
 const ACTION_TYPES = ["entity", "device", "config_entry", "automation", "script", "scene"];
 // Objects whose overview sums up what is known in groups ("Known about …"); scenes keep the facts card.
 const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"];
-// The ring of the status: points off for each urgent topic, and the most that can come off.
-// The status is a score from 100: each entry of the findings list takes points off by its impact (points each, at most),
-// each urgent topic of the state area takes 10 off (at most 30). Green from 90, yellow from 70.
 // The reasons on the findings page: what needs a look first, and what is tidying up. Anything else counts as urgent.
-const FINDING_URGENT = ["problem", "unavailable", "outage", "broken_reference", "run_error", "recurring"];
-const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate"];
-const HEALTH_WEIGHTS = { high: 1, medium: 0.5, low: 0.2, info: 0 };
-const HEALTH_GREEN = 95;
-const HEALTH_YELLOW = 85;
+// The fixed order of the reason tiles, from the cause to what it does: faults first, then tidying up. Which group a
+// tile is in comes from its colour (see FAULT_REASONS), not from this list; a reason it does not name comes last.
+const FINDING_ORDER = ["outage", "unavailable", "stale", "broken_reference", "problem", "unknown", "orphaned", "unused", "possible_duplicate"];
+// Reasons shown red, as faults, besides the classes that are red anyway: a sensor that stopped reporting is mostly broken.
+const FAULT_REASONS = ["outage", "stale"];
+// A filter that leaves at most this many findings opens the heads of the grouped list by itself.
+// The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
+const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
+const HK_LABELS = ["housekeeper_keep", "housekeeper_ignore", "housekeeper_critical"];
+// One icon per action, the same in the selection bar and in the menu of a row.
+const FSEL_ICONS = { status: "mdi:checkbox-marked-circle-outline", mark: "mdi:bookmark-plus-outline", exc: "mdi:filter-remove-outline", label: "mdi:label-outline" };
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
@@ -189,6 +197,8 @@ const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
 
 // Object types the housekeeping status is calculated from.
 const HEALTH_TYPES = ["entity", "automation", "script", "scene", "config_entry", "device"];
+// The type filter of the inventory that shows the objects the state of the house rates (the KPI of the overview).
+const RATED_TYPE = "_rated";
 
 // One CSV cell, quoted. Text a spreadsheet would run as a formula (leading =, +, -, @) gets a leading
 // apostrophe; numbers, also negative ones as text such as "-3.5", stay numbers.
@@ -201,3 +211,20 @@ const csvCell = v => {
 // Pages whose subtitle stays visible under the title; the long text sits behind the (i).
 const VIEW_HINT = { storage: "sysHint", dataflow: "accHint", secrets: "secHint", reliability: "relHint", exposure: "expoHint", policies: "polHint", maintenance: "maintHint", recorder: "recorderHint" };
 const INFO_SUB_VIEWS = ["exposure", "maintenance", "repair", "policies", "recorder", "reliability", "storage", "dataflow", "secrets", "components"];
+
+// From Home Assistant 2026.11 HACS is built in as "Marketplace"; the texts say HACS and are reworded for it.
+const MARKETPLACE_RULES = {
+  de: [
+    [/→ HACS/g, "→ Marketplace"], [/HACS (nicht verfügbar|zuletzt)/g, "Marketplace $1"],
+    [/\b([Vv])on HACS/g, "$1om Marketplace"], [/\bBei HACS/g, "Im Marketplace"], [/\bbei HACS/g, "im Marketplace"],
+    [/\b([Ii])n HACS/g, "$1m Marketplace"], [/\b([Aa])us HACS/g, "$1us dem Marketplace"], [/\b([Mm])it HACS/g, "$1it dem Marketplace"],
+    [/([Üü])ber HACS/g, "$1ber den Marketplace"], [/\b([Dd])urch HACS/g, "$1urch den Marketplace"],
+    [/HACS-/g, "Marketplace-"], [/^HACS$/, "Marketplace"],
+    [/(^|[.!?:] |“|„)HACS/g, "$1Der Marketplace"], [/HACS/g, "der Marketplace"],
+  ],
+  en: [
+    [/^HACS$/, "Marketplace"], [/→ HACS/g, "→ Marketplace"], [/^HACS (not available)/, "Marketplace $1"], [/HACS (repositor|items?|entries|entry)/g, "Marketplace $1"],
+    [/(^|[.!?:] |“)HACS/g, "$1The Marketplace"], [/HACS/g, "the Marketplace"],
+  ],
+};
+const forMarketplace = (text, lang) => (MARKETPLACE_RULES[lang] || MARKETPLACE_RULES.en).reduce((out, [from, to]) => out.replace(from, to), text);

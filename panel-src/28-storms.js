@@ -59,7 +59,7 @@ class StormsMixin {
     const kindsOf = g => g.items.map(f => f.kind);
     const present = ["storm", "attribute_flood", "no_new_state", "integration_share", "event_burst"].filter(k => groups.some(g => kindsOf(g).includes(k)));
     const columns = [
-      { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.filter(g => g.type === "entities").map(g => g.items[0].entity_id)), cell: g => (g.type === "entities" ? this.excludeBox(g.items[0].entity_id) : "") },
+      { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.filter(g => g.type === "entities").map(g => g.items[0].entity_id)), cell: g => (g.type === "entities" ? this.excludeBox(g.items[0].entity_id) : `<input type="checkbox" class="selbox" disabled title="${this.esc(this.t(g.type === "integrations" ? "stormSelIntegration" : "stormSelEvent", { button: this.t("stormShowEntities") }))}" aria-label="${this.esc(this.t(g.type === "integrations" ? "stormSelIntegration" : "stormSelEvent", { button: this.t("stormShowEntities") }))}">`) }, // only entities can be excluded; a greyed box says why
       { key: "name", label: "utName", cell: g => { const chain = g.items.map(f => this.stormFollowers(f.followers)).find(Boolean); return `${this.nameCell(title(g), g.type === "entities" && g.items[0].entity_id !== title(g) ? g.items[0].entity_id : "")}${chain ? `<small class="muted">${this.esc(chain)}</small>` : ""}`; } },
       { key: "kinds", label: "stormColKinds", sortable: false, cell: g => g.items.map(f => `<span class="pill ${tone(f)}">${this.t(`stormKind_${f.kind}`)}</span>`).join(" ") },
       { key: "perDay", label: "stormColPerDay", dir: "desc", cell: g => num(perDay(g)) },
@@ -106,11 +106,11 @@ class StormsMixin {
   stormEntitiesList(entities) {
     const num = v => (v === null || v === undefined ? "–" : this.esc(this.formatNumber(v)));
     const kb = item => (item.attr_bytes === null || item.attr_bytes === undefined ? null : Math.round(item.attr_bytes / 102.4) / 10);
-    const info = item => this.excludeInfo(item);
+    const info = item => this.excludeInfo(item), flood = this.storms?.thresholds?.flood_attr_bytes ?? 4096;
     const columns = [
       { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.map(item => item.entity_id)), cell: item => this.excludeBox(item.entity_id) },
       { key: "name", label: "utName", cell: item => this.nameCell(item.name || item.entity_id, item.name ? item.entity_id : "") },
-      { key: "hint", label: "stormColHint", sortable: false, cell: item => { const i = info(item); return `<span class="extags" ${i.why ? `title="${this.esc(i.why)}"` : ""}>${i.tags}</span>`; } },
+      { key: "hint", label: "stormColHint", sortable: false, cell: item => { const i = info(item); return `<span class="extags" ${i.why ? `title="${this.esc(i.why)}"` : ""}>${i.tags}</span>${(item.attr_bytes ?? 0) >= flood ? `<button type="button" class="btn quiet" data-space-look="${this.esc(item.entity_id)}">${this.t("spaceLook")}</button>` : ""}`; } },
       { key: "rows", label: "stormColRows", dir: "desc", cell: item => num(item.rows) },
       { key: "perDay", label: "stormColPerDay", dir: "desc", cell: item => num(item.per_day) },
       { key: "noNew", label: "stormColNoNew", dir: "desc", cell: item => (item.no_new_state === null || item.no_new_state === undefined ? "–" : `${this.esc(this.formatNumber(Math.round(item.no_new_state * 100)))} %`) },
@@ -178,10 +178,8 @@ class StormsMixin {
   }
 
   // Operation > Recorder: what writes the most, what fills the database, and how healthy it is.
-  // The two recorder queries run one after the other: the second starts when the first is done.
+  // The two recorder queries run one after the other: the open tab's query first, the other when it is done.
   recorderView() {
-    const stormsDone = this.storms || this.stormsError;
-    if (stormsDone) this.ensureDbHealth();
     const st = this.storms?.available && !this.storms.busy ? this.storms : null;
     const db = this.dbHealth?.available && !this.dbHealth.busy ? this.dbHealth : null;
     const meta = this.data?.meta?.database;
@@ -200,7 +198,7 @@ class StormsMixin {
     const dbFacts = [
       purge === false ? { text: this.t("recSumPurgeOff"), tone: "warn" } : null,
       bytes !== null && bytes !== undefined ? { text: this.formatBytes(bytes), tone: "mute" } : null,
-      perDay !== null && perDay !== undefined ? { text: this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }), tone: "mute" } : null,
+      perDay !== null && perDay !== undefined ? { text: this.t("dbOvPerDay", { size: this.dbGrowthSize(perDay) }), tone: "mute" } : null,
     ].filter(Boolean);
     const tabs = [
       { id: "load", icon: "mdi:chart-timeline-variant", label: this.t("stormTitle"), hint: this.t("recTileLoadHint"), count: st ? stormFindings : null, facts: loadFacts, tone: stormTone },
@@ -208,6 +206,8 @@ class StormsMixin {
       { id: "db", icon: "mdi:database-outline", label: this.t("dbTitle"), hint: this.t("recTileDbHint"), count: db ? dbFindings : null, facts: dbFacts, tone: dbTone },
     ];
     const open = this.viewTabOf("recorder", tabs, "load");
+    if (open === "db") { this.ensureDbHealth(); if (this.dbHealth || this.dbError) this.ensureStorms(); }
+    else if (this.storms || this.stormsError) this.ensureDbHealth();
     const body = open === "costs" ? this.recorderCard() : open === "db" ? this.dbCard() : this.stormsView();
     return `<div class="stack">${this.navTiles("recorder", tabs, open, this.t("recorder"), true)}${body}</div>`;
   }

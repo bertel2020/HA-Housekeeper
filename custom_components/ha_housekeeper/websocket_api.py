@@ -107,6 +107,10 @@ async def _send_inventory_result(
         **result,
         "meta": {**result["meta"], "scan_health": scanner.health_report()},
         "monitor": scanner.monitor.report(),
+        # Decisions whose finding is away right now: they rest and hold again when it comes back.
+        "resting_decisions": scanner.ignored.resting(
+            {f["key"] for f in result.get("findings", [])}
+        ),
     }
     send_sendable(connection, msg["id"], _versioned(result))
 
@@ -149,6 +153,7 @@ def websocket_status(
     scanner.check_warmup()
     warmup = {
         "booting": scanner.booting,
+        "boot_seconds": scanner.boot_seconds,
         "seconds_left": scanner.warmup_seconds_left,
         "pending": scanner.integrations_pending,
         "names": scanner.integrations_loading,

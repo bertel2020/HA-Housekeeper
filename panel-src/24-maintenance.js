@@ -105,6 +105,7 @@ class MaintenanceMixin {
       backup: () => {
         const b = state.backup || {};
         if (!b.available) return this.t("pf_backup_unavailable");
+        if (b.level === "external") return this.t("pf_backup_external");
         if (b.age_hours === null || b.age_hours === undefined) return this.t("pf_backup_none");
         return this.t(b.level === "ok" ? "pf_backup_ok" : "pf_backup_old", { hours: Math.round(b.age_hours) });
       },
@@ -115,7 +116,7 @@ class MaintenanceMixin {
       const names = (items || []).slice(0, 5).map(i => i.title || i.name || i.issue_id || i.object_id).filter(Boolean).map(n => this.esc(n)).join(", ");
       const text = detail[c.check] ? detail[c.check]() : c.count ? `${c.count}${names ? ` · ${names}` : ""}` : this.t("pf_count_none");
       const tone = { ok: "ok", warn: "warn", red: "red" }[c.level] || "mute";
-      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : "mdi:alert-outline";
+      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : c.level === "info" ? "mdi:export" : "mdi:alert-outline";
       return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`pf_${c.check}`)}</strong><small>${text}</small></span>${c.check === "backup" ? `<button class="btn quiet" data-jump="maintenance" data-jump-tab="backup">${this.t("pfOpenBackup")}</button>` : ""}</div>`;
     }).join("");
   }
@@ -192,7 +193,7 @@ class MaintenanceMixin {
       { key: "version", label: "updColVersion", sortable: false, cell: u => `<span class="verchip">${this.esc(u.installed ?? "–")} → ${this.esc(u.latest ?? "–")}</span>` },
       { key: "group", label: "updColGroup", cell: u => `<span class="pill mute">${this.t(`updGroup_${u.group}`)}</span>` },
       { key: "state", label: "updColState", sortable: false, cell: u => pills(u) || "–" },
-      { key: "actions", label: "updColActions", sortable: false, cell: u => `<span class="updact">${typeof u.release_url === "string" && u.release_url.startsWith("https://") ? `<a class="btn quiet" href="${this.esc(u.release_url)}" target="_blank" rel="noopener noreferrer">${this.t("updNotes")}</a>` : ""}<button class="btn quiet" data-ha-path="/config/updates" title="${this.esc(this.t("updOpenHa"))}">${this.t("updOpen")}</button></span>` },
+      { key: "actions", label: "updColActions", sortable: false, menu: true, narrow: true, cell: u => this.rowMenuHtml([typeof u.release_url === "string" && u.release_url.startsWith("https://") ? ["mdi:text-box-outline", "updNotes", `href="${this.esc(u.release_url)}"`] : null, ["mdi:open-in-new", "updOpenHa", 'data-ha-path="/config/updates"']]) },
     ];
     const table = rows.length ? this.listTable(id, columns, pg.rows, { cls: "upds", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     const current = groups.filter(g => !updates.some(u => u.group === g)).map(g => `<div class="row rel"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.t(`updCurrent_${g}`)}</strong></span></div>`).join("");
@@ -232,21 +233,24 @@ class MaintenanceMixin {
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
     const pf = this.preflight;
     const updates = pf?.counts?.total ?? pf?.state?.updates?.length ?? 0;
-    const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
+    const external = checks.some(c => c.id === "external");
+    const backupTone = !this.backup?.available || (external && !problems && !notes) ? "mute" : problems ? "red" : notes ? "warn" : "ok";
     const pfTone = !pf ? "mute" : !updates ? "ok" : { stop: "red", look: "warn" }[pf.verdict] || "ok";
     const goalsMissed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     this.ensureGoals();
     this.ensureBlueprints(); // the pill of the tab needs the numbers before the tab is opened
     const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
-      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
-      { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.formatNumber(updates) : "", tone: pfTone },
+      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : external ? this.t("bhExternalPill") : "", tone: backupTone },
+      { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.t(updates === 1 ? "mtUpdates_1" : "mtUpdates_n", { n: this.formatNumber(updates) }) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
-      { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), tone: tab.pill ? tab.tone : "ok" })), open, this.t("maintenance"), true);
+    // One status pill per tile: what is open, or "Nothing to do" once the numbers are there; while they load the place stays empty.
+    const loaded = { backup: Boolean(this.backup?.available), updates: Boolean(pf), blueprints: Boolean(bp), goals: Boolean(this.goals) };
+    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), status: true, tone: tab.pill ? tab.tone : "ok", pill: tab.pill || (loaded[tab.id] ? this.t("cleanupNothing") : "") })), open, this.t("maintenance"), true);
     return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "updates" ? this.updatesCard() : open === "blueprints" ? this.blueprintsCard() : this.backupCard()}</div>`;
   }
 }

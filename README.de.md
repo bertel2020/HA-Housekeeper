@@ -30,10 +30,12 @@ Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunäc
 
 > Housekeeper liest und analysiert zunächst. Änderungen gibt es ausschließlich nach ausdrücklicher Bestätigung eines Plans. Pläne umfassen Quarantäne und Entfernen, Reparaturen, das Ersetzen von Verweisen, das Umbenennen von Entitäten, das Zuweisen von Bereichen, das Löschen ungenutzter Automationen, das Kürzen des Recorder-Verlaufs und weitere Wartungsaufgaben. Je nach Aktion verlangt Housekeeper eine Quarantänezeit, eine zusätzliche Bestätigung und ein erfolgreiches Backup. Umkehrbare Änderungen lassen sich zurücksetzen, solange ihre Ziele unverändert sind; endgültige Recorder- und Backup-Löschungen werden deutlich gekennzeichnet. Integrationen und Hubs werden nie verändert, und Housekeeper ändert nur, was ein bestätigter Plan nennt.
 
+> **Beta von 2.0:** Die Vorabversion [2.0.0-beta.1](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.1) ist zum Ausprobieren da: Befunde nach Themen mit einer eigenen Seite „Beheben“, ein geführter Rundgang beim Aufräumen, die Ansicht „Einfach“ oder „Vollständig“ und neue Namen für die Ausgänge. In HACS (ab Home Assistant 2026.11: Marketplace) erscheint sie unter „Neu herunterladen“ mit eingeschalteten Beta-Versionen. Ein normales Update bleibt auf 1.x.
+
 ## Einblicke
 
 <p align="center">
-  <img src="screenshots/showcase/overview-desktop-light.png" alt="Housekeeping-Übersicht" width="100%">
+  <img src="https://raw.githubusercontent.com/bertel2020/HA-Housekeeper/main/screenshots/showcase/overview-desktop-light.png" alt="Housekeeping-Übersicht" width="100%">
 </p>
 
 | Befunde | Reparieren |
@@ -62,6 +64,7 @@ Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz un
 - **Abhängigkeiten**: sehen, womit eine Entität, ein Gerät oder eine Automation zusammenhängt und was beim Entfernen kaputtginge.
 - **Geführtes Aufräumen**: Vorschau, ausdrückliche Bestätigung, Backup, Prüfung und Rückgängig, Schritt für Schritt. Nichts läuft von allein.
 - **Wartungsansichten**: Batterien, Zuverlässigkeit der Integrationen, Recorder-Last und Datenbank, Backup-Schutz, Automationsläufe und mehr.
+- **Auto-Pause**: Eine Integration, die dauernd an der Einrichtung scheitert, wird pausiert und später wieder versucht (3 × 1 Std., 3 × 3 Std., 12 × 6 Std., dann täglich, höchstens 7 Tage), damit ein ausgefallener Dienst nicht tausendmal am Tag gefragt wird. Standardmäßig aus; einmal eingeschaltet gilt es für jeden Datenlieferanten, den du nicht ausgenommen hast, und eine Integration kannst du jederzeit von Hand hineinschicken.
 - **Hausfunktionen**: wichtige Funktionen des Hauses (Heizung, Alarm, Photovoltaik) aus eigenen Objekten zusammenstellen und im Blick behalten, mit Verlauf, Verfügbarkeit und Sensoren. Ein Vermerk wie „Absichtlich offline“ gilt auf Wunsch nur nachts oder zu festen Zeiten.
 - **Ausnahmeregeln und Urlaubsmodus**: nimm Objekte nach Bereich, Label, Integration oder Typ aus, oder nur solange eine Urlaubs-Entität oder ein Kalender Abwesenheit meldet, damit erwartete Ausfälle ruhig bleiben.
 - **KI-Zugriff**: Programme und KI-Agenten, die Home-Assistant-Dienste aufrufen können (zum Beispiel ha-mcp), lesen die Befunde und markieren sie auf Wunsch in Housekeepers eigener Merkliste, nie in Home Assistant. Standardmäßig aus, mit Grenzen, automatischem Ausschalten, einem Protokoll jedes Aufrufs und Zurücknehmen.
@@ -69,7 +72,7 @@ Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz un
 
 ## Schnellstart
 
-1. HA Housekeeper über den Button in HACS öffnen, herunterladen und Home Assistant neu starten.
+1. HA Housekeeper über den Button in HACS öffnen, herunterladen und Home Assistant neu starten. Ab Home Assistant 2026.11 ist HACS als **Marketplace** eingebaut; die Schritte sind dieselben.
 
    [![HACS-Repository in My Home Assistant öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=bertel2020&repository=HA-Housekeeper&category=integration)
 

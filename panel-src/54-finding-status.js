@@ -2,8 +2,8 @@
 // snoozed, hidden), some follow from what Housekeeper sees (new, in work, fixed). Nothing here stores anything:
 // the decisions are the ones of the ignore list, the rest is derived from the scan and the journal of plans.
 const NEW_FINDING_DAYS = 7, DONE_PERIODS = [7, 30, 90], ACTIVE_PLAN = ["dry_run", "backup", "running"];
-// The chips of the list are states that exclude each other; "new" and "in work" are subsets of the open ones and live in the list bar as one filter.
-const FINDING_STATES = ["known", "snoozed", "hidden"], FRESH_STATES = ["new", "inwork"];
+// The chips of the list are states that exclude each other; "new", "in work" and "due" are parts of the open ones.
+const FINDING_STATES = ["known", "snoozed", "hidden"];
 
 Object.assign(TEXT.de, {
   bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ausgeblendet", bandMark: "Markiert: {kind}", bandRemoveMark: "Entfernen",
@@ -33,10 +33,15 @@ class FindingStatusMixin {
 
   // The objects of drafted or running plans; rebuilt when the journal changes.
   planSets() {
-    if (this._planSets?.journal === this.journal) return this._planSets;
+    const hour = Math.floor(Date.now() / 3600000); // a preview runs out with time, not only with a new journal
+    if (this._planSets?.journal === this.journal && this._planSets.data === this.data && this._planSets.hour === hour) return this._planSets;
     const active = new Set();
-    for (const plan of this.journal || []) if (ACTIVE_PLAN.includes(plan.status)) (plan.objects || []).forEach(id => active.add(id));
-    this._planSets = { journal: this.journal, active };
+    // A preview older than a day can no longer be confirmed: it is dropped by the backend and does not count here.
+    // A plan for a device puts the findings of its entities in work as well.
+    const devices = new Set();
+    for (const plan of this.journal || []) if (ACTIVE_PLAN.includes(plan.status) && !this.planStale(plan)) (plan.objects || []).forEach(id => { active.add(id); devices.add(id); });
+    for (const o of this.data?.objects || []) if (o.object_type === "entity" && o.device_id && devices.has(o.device_id)) active.add(o.object_id);
+    this._planSets = { journal: this.journal, data: this.data, hour, active };
     return this._planSets;
   }
 
@@ -50,6 +55,34 @@ class FindingStatusMixin {
 
   isNewFinding(f) { return !f.ignored && f.first_detected_at && Date.parse(f.first_detected_at) >= Date.now() - NEW_FINDING_DAYS * 864e5; }
 
+  // The critical findings that came up since the last scan: what the overview counts and its jump shows.
+  scanNewKeys() {
+    return new Set((this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).map(f => `${f.rule_id}|${f.object_id}|${f.affected_object || ""}`));
+  }
+
+  // The outages the overview counts (every cause from medium on) with everything they explain: the jump of its row.
+  // A finding belongs when its cause or one above it counts; quiet outages stay out, missing services are in.
+  // The outages the overview counts: chains at their top, a device below an integration that is down is part of that
+  // integration's chain, not an outage of its own; quiet ones (info, low) stay away.
+  // level "high" keeps the urgent ones, "medium" the others; without a level all of them.
+  countedOutages(level = "") { return this.causeEntries().filter(c => !this.quietCause(c) && (level === "high" ? c.impact === "high" : level === "medium" ? c.impact !== "high" : true)); }
+
+  // The findings of the counted outages (of one level): every open finding whose chain ends at the top in one of them.
+  outageKeys(level = "") {
+    const tops = new Set(this.countedOutages(level).map(c => c.id));
+    const top = f => { let c = this.causeById(f.cause_id), n = 0; while (c?.parent_id && n < 20) { c = this.causeById(c.parent_id); n++; } return c; };
+    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && tops.has(top(f)?.id)).map(f => f.key));
+  }
+
+  // The findings below one cause, at any depth: the jump of a cause that has no page of its own.
+  causeKeys(id) {
+    const below = f => { for (let c = this.causeById(f.cause_id), n = 0; c && n < 20; c = this.causeById(c.parent_id), n++) if (c.id === id) return true; return false; };
+    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && below(f)).map(f => f.key));
+  }
+
+  // The findings the vacation mode holds back right now or until its grace ends: what the vacation bar counts.
+  heldKeys() { return new Set((this.data?.findings || []).filter(f => f.ignored_by === "rule" && ["vacation", "after"].includes(f.ignore_rule?.phase)).map(f => f.key)); }
+
   inWork(f) { return !f.ignored && this.planSets().active.has(f.object_id); }
 
   // Does a finding belong to the chosen status? "" is the default: everything not decided.
@@ -59,6 +92,7 @@ class FindingStatusMixin {
       case "all": return true;
       case "new": return this.isNewFinding(f);
       case "inwork": return this.inWork(f);
+      case "due": return !f.ignored && Boolean(f.resurfaced);
       default: return this.decidedState(f) === this.findingStatus;
     }
   }
@@ -66,7 +100,7 @@ class FindingStatusMixin {
   statusCount(state) {
     const list = this.data.findings;
     if (state === "") return list.filter(f => !f.ignored).length;
-    return list.filter(f => (state === "new" ? this.isNewFinding(f) : state === "inwork" ? this.inWork(f) : this.decidedState(f) === state)).length;
+    return list.filter(f => (state === "new" ? this.isNewFinding(f) : state === "inwork" ? this.inWork(f) : state === "due" ? !f.ignored && f.resurfaced : this.decidedState(f) === state)).length;
   }
 
   // "New", "In work" next to a row's other facts.
@@ -74,18 +108,14 @@ class FindingStatusMixin {
     return [this.isNewFinding(f) ? this.t("stateNew") : "", this.inWork(f) ? this.t("stateInwork") : ""].filter(Boolean).map(x => ` · ${x}`).join("");
   }
 
-  // The filter of the list bar: findings first seen in the last days, or touched by a plan that is running.
-  freshFilter() {
-    return { name: "fresh", all: this.t("freshAll"), options: [["new", this.t("freshNew", { days: NEW_FINDING_DAYS })], ["inwork", this.t("freshInwork")]] };
-  }
-
-  freshMatch(f, value) { return value === "new" ? this.isNewFinding(f) : this.inWork(f); }
-
+  // One row for the state of a finding: open with its parts (new in the last days, in work, due again), then what was
+  // decided and what was done. The tiles count within the chosen chip.
   statusChips() {
-    const chip = (state, label, count) => `<button class="chip ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}">${label} (${this.formatNumber(count)})</button>`;
+    const chip = (state, label, count, sub = false) => `<button class="chip${sub ? " sub" : ""} ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}" aria-pressed="${(this.findingStatus || "") === state}">${label} (${this.formatNumber(count)})</button>`;
+    const parts = [["new", this.t("freshNew", { days: NEW_FINDING_DAYS })], ["inwork", this.t("freshInwork")], ["due", this.t("stateDue")]].map(([s, label]) => [s, label, this.statusCount(s)]).filter(([, , n]) => n);
     const decided = FINDING_STATES.filter(s => this.statusCount(s)), fixed = this.doneCount();
-    if (!decided.length && !fixed) return "";
-    return [chip("", this.t("stateOpen"), this.findingTotal() + this.followerCount()), ...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])].join("");
+    const rest = [...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])];
+    return [chip("", this.t("stateOpen"), this.findingTotal()), ...parts.map(([s, label, n]) => chip(s, label, n, true)), ...(rest.length ? ['<span class="chipsep" aria-hidden="true"></span>', ...rest] : [])].join("");
   }
 
   doneDays() { return this.doneDaysSel || 30; }
@@ -129,6 +159,7 @@ class FindingStatusMixin {
   }
 
   // "Done": what a plan fixed, and what ended by itself, in the chosen period. Only the first two groups count as fixed.
+  // Every group starts folded; its head names the count.
   fixedList() {
     this.loadEnded();
     const days = this.doneDays(), e = this.endedNow(), self = this.endedSelf();
@@ -146,8 +177,8 @@ class FindingStatusMixin {
     };
     const row = (f, tone) => `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:${tone === "ok" ? "check" : "help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(this.findObject(`${f.rule_id.split(".")[0]}:${f.object_id}`)?.name || f.object_id)}</strong><small>${this.esc(this.findingTitle(f))}</small></span></div>`;
     const groups = [
-      group("plan", "doneByPlan", "ok", planRows, true),
-      group("back", "doneBack", "ok", self.back.map(f => row(f, "ok")), true),
+      group("plan", "doneByPlan", "ok", planRows, false),
+      group("back", "doneBack", "ok", self.back.map(f => row(f, "ok")), false),
       group("removed", "doneRemoved", "mute", self.removed.map(f => row(f, "mute")), false),
       group("unread", "doneUnread", "mute", self.unread.map(f => row(f, "mute")), false),
       group("other", "doneOther", "mute", self.other.map(f => row(f, "mute")), false),
@@ -157,14 +188,24 @@ class FindingStatusMixin {
   }
 
   // The selected rows whose object can carry a mark (entity, device, integration, app): selection key -> object key.
-  markTargets() {
+  markTargets(onDevice = false) {
     const out = new Map();
     for (const key of this.findSel) {
       const finding = this.data.findings.find(f => f.key === key);
-      const objectKey = finding && this.findingKey(finding);
+      let objectKey = finding && this.findingKey(finding);
+      // "On the device": only a device that is down completely, so the mark covers no entity that still works.
+      const device = onDevice && objectKey?.startsWith("entity:") && this.findObject(objectKey)?.device_id;
+      if (device && this.findObject(`device:${device}`) && this.deviceDown(device)) objectKey = `device:${device}`;
       if (objectKey && MARK_TYPES.includes(objectKey.split(":")[0])) out.set(key, objectKey);
     }
     return out;
+  }
+
+  deviceDown(id) { return this.data.findings.some(f => f.rule_id === "device.down" && f.object_id === id); }
+
+  // How many selected entities have a device that is down: only then the form offers to mark the devices instead.
+  markDeviceCount() {
+    return new Set([...this.markTargets(true).values()].filter(k => k.startsWith("device:"))).size - new Set([...this.markTargets().values()].filter(k => k.startsWith("device:"))).size;
   }
 
   // The kinds every selected object accepts: integrations and apps take fewer than entities and devices.
@@ -174,12 +215,15 @@ class FindingStatusMixin {
   }
 
   async commitMarkBulk() {
-    const b = this.bulk, targets = this.markTargets();
-    const failed = await this.runBulk([...targets.keys()], async key => {
-      const [object_type, ...rest] = targets.get(key).split(":");
+    const b = this.bulk, targets = this.markTargets(b.onDevice);
+    // One mark per object: several findings of the same device need it once.
+    const objects = [...new Set(targets.values())];
+    const failed = await this.runBulk(objects, async objectKey => {
+      const [object_type, ...rest] = objectKey.split(":");
       const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: b.markKind || this.markKindsFor(targets)[0], reason: b.reason.trim() };
       if (Number(b.days)) msg.days = Number(b.days);
       await this._hass.callWS(msg);
+      targets.forEach((k, key) => { if (k === objectKey) this.findSel.delete(key); });
     });
     await this.refreshData();
     if (!failed) this.bulk = null;
@@ -191,15 +235,22 @@ class FindingStatusMixin {
     const b = this.bulk;
     if (!b) return "";
     if (b.kind === "mark") {
-      const targets = this.markTargets(), kinds = this.markKindsFor(targets);
+      const targets = this.markTargets(b.onDevice), kinds = this.markKindsFor(targets), devices = this.markDeviceCount();
+      const objects = new Set(targets.values()).size;
       const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
-      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(targets.size)})</strong>
+      const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
+      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(objects)})</strong>${onDevice}
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
         <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></form>`;
     }
     if (b.kind === "area") return this.areaForm();
+    if (b.kind === "status") {
+      return `<form class="polform bulkform statusform" data-bulk-form><strong>${this.t("statusTitle", { n: this.formatNumber(this.findSel.size) })}</strong>${this.statusFields(b, "bulk", b.state)}
+        <div class="mbtns"><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
+        ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}</form>`;
+    }
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="polform bulkform"><small>${this.t("labelNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
@@ -236,11 +287,14 @@ class FindingStatusMixin {
     if (b.kind === "label") return this.makeLabelPlan();
     if (b.kind === "area") return this.makeAreaPlan();
     if (b.kind === "mark") return this.commitMarkBulk();
-    if (b.kind === "known" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
+    // "known" and "snoozed" are the older shortcuts of the same form.
+    const kind = b.kind === "status" ? b.state : b.kind === "known" ? "keep" : "snooze";
+    if (kind === "keep" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
     const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && !f.ignored));
     const failed = await this.runBulk(keys, async key => {
-      const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: b.kind === "known" ? "keep" : "snooze", reason: b.reason.trim() };
-      if (b.kind === "snoozed") msg.days = Number(b.days);
+      const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind, reason: b.reason.trim() };
+      if (kind === "snooze") msg.days = Number(b.days) || 30;
+      else if (b.kind === "status" && Number(b.days)) msg.days = Number(b.days);
       await this._hass.callWS(msg);
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) {
@@ -249,6 +303,15 @@ class FindingStatusMixin {
       }
     });
     if (!failed) this.bulk = null;
+    this.render();
+    if (failed < keys.length) await this.reloadAfterDecision();
+  }
+
+  // After a decision the server works the outages out again: a device marked as known is no outage any more, and its
+  // entities stand on their own. The list reads the findings again, so it shows what the server now counts.
+  async reloadAfterDecision() {
+    if (!this.data || !this._hass) return;
+    try { await this.refreshData(); } catch (_) { return; } // the local change stays on screen until the next load
     this.render();
   }
 
@@ -273,13 +336,20 @@ class FindingStatusMixin {
       await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("notDuplicateReason") });
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false; finding.ignore_info = { kind: "keep", reason: this.t("notDuplicateReason"), until: null, at: new Date().toISOString() }; this._rev++; }
+      this.render();
+      await this.reloadAfterDecision();
+      return;
     } catch (err) { this.failed(err); }
     this.render();
   }
 
   bindFindingStatus(root) {
+    root.querySelector("[data-fsel-exc]")?.addEventListener("click", () => this.openExceptionFor([...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean).map(f => this.findingKey(f))));
+    root.querySelectorAll("[data-exc-for]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openExceptionFor([el.dataset.excFor]); });
+    // A label from the menu of a row: that finding alone, in the same form as the selection bar.
+    root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { this.bulk = { kind: el.dataset.fselState, reason: "", days: el.dataset.fselState === "mark" ? 0 : 30, markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.bulk = { kind, state: "keep", reason: "", days: ["mark", "status"].includes(kind) ? 0 : 30, markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     const form = root.querySelector("[data-bulk-form]");
     if (form) {
@@ -290,8 +360,11 @@ class FindingStatusMixin {
       if (label) label.onchange = ev => { this.bulk.label = ev.target.value; };
       const area = form.querySelector("[data-bulk-area]");
       if (area) area.onchange = ev => { this.bulk.area = ev.target.value; };
+      const onDevice = form.querySelector("[data-bulk-ondevice]");
+      if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
       const markKind = form.querySelector("[data-bulk-markkind]");
       if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; };
+      form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = b.state === "snooze" ? 30 : 0; this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
       form.querySelector("[data-bulk-cancel]").onclick = () => { this.bulk = null; this.render(); };
@@ -299,12 +372,20 @@ class FindingStatusMixin {
   }
 }
 Object.assign(TEXT.de, {
-  stateOpen: "Offen", freshAll: "Neu und in Arbeit", freshNew: "Neu (letzte {days} Tage)", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
-  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", fselKnown: "Als bekannt markieren", fselSnooze: "Zurückstellen", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
-  notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen", markKnown: "Als bekannt markieren",
+  stateOpen: "Offen", freshNew: "Neu ({days} Tage)", stateDue: "Fällig", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
+  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", excCreate: "Ausnahme anlegen", fselStatus: "Status setzen …", fselStatusChange: "Status ändern …", outageStatusHint: "Ein Status beendet den Ausfall: Die {n} Entitäten dahinter zählen dann einzeln als nicht verfügbar. Ist das Objekt absichtlich aus, passt ein Vermerk besser; er blendet den Ausfall samt Folgen aus und greift auch beim nächsten Mal.", outageStatusHint1: "Ein Status beendet den Ausfall: Die Entität dahinter zählt dann einzeln als nicht verfügbar. Ist das Objekt absichtlich aus, passt ein Vermerk besser; er blendet den Ausfall samt Folge aus und greift auch beim nächsten Mal.", outageMarkInstead: "Stattdessen Vermerk setzen", statusTitle: "Status setzen · {n} Befunde",
+  decideKindHint_keep: "Ist so gewollt. Bleibt still, bis du es änderst. Begründung nötig.", decideKindHint_snooze: "Kümmere ich mich später drum. Kommt nach der Frist als „fällig“ zurück.", decideKindHint_ignore: "Interessiert mich nicht. Begründung freiwillig.",
+  statusScopeHint: "Gilt nur für diese Befunde; ein neuer Befund am selben Objekt ist wieder offen. Für das ganze Objekt: Vermerk oder Ausnahme.",
+  markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Eigener Status", hiddenBy_mark: "Vermerk", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
+  hiddenMarkOpen: "Vermerk ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
+  notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
 });
 Object.assign(TEXT.en, {
-  stateOpen: "Open", freshAll: "New and in work", freshNew: "New (last {days} days)", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
-  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", fselKnown: "Mark as known", fselSnooze: "Snooze", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
-  notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity", markKnown: "Mark as known",
+  stateOpen: "Open", freshNew: "New ({days} days)", stateDue: "Due", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
+  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", excCreate: "Add exception", fselStatus: "Set status …", fselStatusChange: "Change status …", outageStatusHint: "A status ends the outage: the {n} entities behind it then count one by one as unavailable. If the object is off on purpose, a mark fits better; it hides the outage with what follows from it, also the next time.", outageStatusHint1: "A status ends the outage: the entity behind it then counts on its own as unavailable. If the object is off on purpose, a mark fits better; it hides the outage with what follows from it, also the next time.", outageMarkInstead: "Set a mark instead", statusTitle: "Set status · {n} findings",
+  decideKindHint_keep: "Meant to be this way. Stays quiet until you change it. Needs a reason.", decideKindHint_snooze: "I will see to it later. Comes back as “due” after the time.", decideKindHint_ignore: "Not of interest to me. Reason optional.",
+  statusScopeHint: "Applies to these findings only; a new finding on the same object is open again. For the whole object: a mark or an exception.",
+  markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Own status", hiddenBy_mark: "Mark", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
+  hiddenMarkOpen: "View mark", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
+  notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
 });

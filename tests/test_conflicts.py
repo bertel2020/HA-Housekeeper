@@ -63,6 +63,28 @@ def test_opposing_commands_need_a_shared_trigger_or_window_and_gain_evidence_fro
     )
     item = find([night, comfort], [], {}, TODAY)["items"][0]
     assert (item["reason"], item["detail"]) == ("window", "22:00–23:00")
+    assert item["key"] == "conflict.opposing|climate.hall|automation.comfort|automation.night"
+    split_on = auto(
+        "split_on", [state("input_boolean.s", "on")], [call("light.turn_on", "light.hall")]
+    )
+    split_off = auto(
+        "split_off", [state("input_boolean.s", "off")], [call("light.turn_off", "light.hall")]
+    )
+    assert find([split_on, split_off], [], {}, TODAY)["items"] == []
+
+    def level(name, service, **bounds):
+        trigger = {"trigger": "numeric_state", "entity_id": "sensor.power", **bounds}
+        return auto(name, [trigger], [call(service, "switch.washer")])
+
+    below = level("below", "switch.turn_off", below=5)
+    assert find([level("above", "switch.turn_on", above=5), below], [], {}, TODAY)["items"] == []
+    assert len(find([level("wide", "switch.turn_on", above=2), below], [], {}, TODAY)["items"]) == 1
+    mixed = auto(
+        "mixed",
+        [state("input_boolean.s", "on"), state("input_boolean.s")],
+        [call("light.turn_on", "light.hall")],
+    )
+    assert len(find([mixed, split_off], [], {}, TODAY)["items"]) == 1
 
 
 def test_loops_follow_groups_and_other_automations_but_not_filtered_self_triggers() -> None:
@@ -84,3 +106,26 @@ def test_loops_follow_groups_and_other_automations_but_not_filtered_self_trigger
     ]
     quiet = auto("q", [state("light.hall", "on")], [call("light.turn_off", "light.hall")])
     assert find([quiet], [], {}, TODAY)["total"] == 0
+
+
+def test_commands_that_cannot_make_the_trigger_fire_are_no_loop_and_unknown_ones_stay_static() -> (
+    None
+):
+    snap = auto(
+        "snap", [state("camera.drive", "recording")], [call("camera.snapshot", "camera.drive")]
+    )
+    play = auto(
+        "play",
+        [state("media_player.roon", "on")],
+        [call("media_player.media_play", "media_player.roon")],
+    )
+    assert find([snap, play], [], {}, TODAY)["total"] == 0
+    paused = auto(
+        "paused",
+        [{"trigger": "state", "entity_id": "media_player.roon", "to": ["paused"]}],
+        [call("media_player.turn_off", "media_player.roon")],
+    )
+    assert find([paused], [], {}, TODAY)["total"] == 0
+    odd = auto("odd", [state("vacuum.rob", "cleaning")], [call("vacuum.clean_spot", "vacuum.rob")])
+    busy = runs("automation.odd", [30])
+    assert [i["stage"] for i in find([odd], [], busy, TODAY)["items"]] == ["static"]

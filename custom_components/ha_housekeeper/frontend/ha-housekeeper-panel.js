@@ -5,7 +5,7 @@ const TEXT = {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
     overview: "Übersicht", inventory: "Inventar", graph: "Abhängigkeiten", findingsNav: "Befunde",
     sumLabel: "Kennzahlen", findSumAffected: "{n} von {m} Objekten betroffen", cleanupSumSelected: "Ausgewählt", colsLabel: "Spalten ein- und ausblenden", batterySumLimit: "unter {n} %", batterySumLowest: "Niedrigster Stand", recSumCosts: "Größter Platzbedarf", unrefSumStats: "Mit Statistik", unrefSumStatsHint: "stehen im Recorder", unrefSumDomain: "Häufigste Domain", unrefSumPlatform: "Häufigste Integration", unrefSumEnergy: "Energie", unrefSumEnergyHint: "noch in der Energie-Konfiguration", navMain: "Hauptnavigation", navMenu: "Menü", howCounted: "Wie wird das gezählt?", enabled: "aktiviert", agoNow: "gerade eben", agoMinutes: "vor {n} Min.", agoHours: "vor {n} Std.", agoDays: "vor {n} Tagen", navGroupOverview: "Überblick", navGroupOperation: "Betrieb", navGroupExplore: "Bestand", navGroupClean: "Bereinigen", navGroupMaintain: "Pflegen",
-    scan: "Neu scannen", scanHint: "Liest das ganze Inventar neu: Entitäten, Automationen, Dashboards und Befunde.", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Befunde exportieren", scanning: "Scan läuft …", all: "Alle Typen",
+    scan: "Neu scannen", scanHint: "Liest das ganze Inventar neu: Entitäten, Automationen, Dashboards und Befunde.", scanning: "Scan läuft …", all: "Alle Typen",
     allStatus: "Alle Zustände", search: "Name, ID, Integration …",
     name: "Name", type: "Typ", status: "Zustand", reason: "Begründung",
     tabsLabel: "Abschnitte des Objekts", tabOverview: "Übersicht", tabRelations: "Abhängigkeiten", tabTechnical: "Technische Daten", tabAttributes: "Attribute",
@@ -41,11 +41,11 @@ const TEXT = {
     loading: "Inventar wird geladen …", loadError: "Inventar konnte nicht geladen werden", actionFailed: "Das hat nicht geklappt: {detail}", renderError: "Diese Ansicht konnte nicht angezeigt werden.",
     total: "Gesamt",
     recentFindings: "Aktuelle Befunde", affected: "Betroffenes Objekt",
-    systemState: "Systemzustand", health: "Housekeeping-Status", healthGood: "Gut", healthCheck: "Prüfen",
-    healthBad: "Problematisch", healthHint: "Anteil der Objekte in Ordnung, nach den Befunden", healthTip: "Anteil in Ordnung. Betroffen: {affected} von {base} Objekten.",
-    openFindings: "Offene Befunde",
+    systemState: "Systemzustand", health: "Housekeeping-Status", healthGood: "In Ordnung", healthCheck: "Offen",
+    healthBad: "Dringend", healthHint: "Zustand in Punkten von 100, nach den Befunden der Objekte", healthTip: "Zustand in Punkten. Betroffen: {affected} von {base} Objekten.",
+    openFindings: "Befunde",
     actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
-    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem",
+    actNewCritical: "Neue kritische Befunde", actNewCriticalHint: "Seit dem letzten Scan: nicht verfügbar, defekte Referenz oder Problem", scanNewFilter: "Neue kritische Befunde ({n})", outagesFilter: "Ausfälle aus der Übersicht ({n})", outagesFilterHigh: "Ausfälle ({n})", outagesFilterMedium: "Weitere Ausfälle ({n})", heldFilter: "Im Urlaub zurückgehalten ({n})",
    
     actQuarantine: "Quarantäne abgelaufen", actQuarantineHint: "Bereit zur Entfernung nach deiner Bestätigung",
     trendTitle: "Seit dem letzten Scan", trendSince: "Vergleich mit dem Scan vom {date}", trendNewFindings: "Neue Befunde", trendResolved: "Behoben", trendChanged: "Statuswechsel", trendNewObjects: "Neue Objekte", trendNone: "Keine Änderungen seit dem Scan vom {date}.",
@@ -55,7 +55,7 @@ const TEXT = {
     certain: "Bestätigt", probable: "Wahrscheinlich", confidence: "Sicherheit", origin: "Herkunft",
     usage: "Verwendung", pathTitle: "Abhängigkeitspfad", pathSubtitle: "Herkunft und Verwendung eines Objekts prüfen.",
     searchObject: "Objekt suchen …", noRelations: "Keine Beziehungen gefunden.", firstSeenNote: "seit erster Beobachtung",
-    findingsSubtitle: "Alle Diagnosen mit Verweis auf das betroffene Objekt.", inventorySubtitle: "Alle erfassten Objekte der Installation.",
+    findingsSubtitle: "Was Housekeeper gefunden hat.", inventorySubtitle: "Alle erfassten Objekte der Installation.",
     scanDone: "Scan aktuell", of_total: "von", shown: "angezeigt", integration: "Integration",
     PROVIDES: "stellt bereit", CONNECTED: "Verbindung (vermutet)", OWNS: "besitzt", CONTAINS: "enthält", VIA_DEVICE: "über Gerät",
     TRIGGERS_ON: "löst aus durch", USES_AS_CONDITION: "prüft als Bedingung", TARGETS: "steuert", REFERENCES: "verweist auf",
@@ -71,7 +71,7 @@ const TEXT = {
     noChanges: "Keine Änderungen seit diesem Scan.",
     statusChanges: "Statuswechsel", newFindings: "Neue Befunde", resolvedFindings: "Behobene Befunde", newObjects: "Neue Objekte", removedObjects: "Entfernte Objekte",
     worsened: "Verschlechtert", changedLabel: "Geändert", improved: "Verbessert", gone: "Nicht mehr vorhanden", comparedWith: "Vergleich mit dem Scan vom",
-    possible_duplicate: "Mögliches Duplikat", unused: "Ungenutzt", duplicateOf: "Mögliches Duplikat von", lastTriggered: "Zuletzt ausgelöst", never: "Nie",
+    possible_duplicate: "Mögliches Duplikat", unused: "Ungenutzte Automation", duplicateOf: "Mögliches Duplikat von", lastTriggered: "Zuletzt ausgelöst", never: "Nie",
     "automation.never_triggered": "Wurde nie ausgelöst", "automation.stale": "Lange nicht ausgelöst", "automation.disabled_long": "Lange ausgeschaltet",
     cause_never_triggered: "Die Automation ist eingeschaltet, wurde aber seit mindestens {days} Tagen nie ausgelöst. Vielleicht passt ein Trigger nicht mehr oder sie wird nicht mehr gebraucht.",
     cause_stale: "Die Automation wurde seit {days} Tagen nicht mehr ausgelöst. Vielleicht passt ein Trigger nicht mehr oder sie wird nicht mehr gebraucht.",
@@ -83,16 +83,16 @@ const TEXT = {
     INCLUDES: "hat als Mitglied", missing_member: "Gruppenmitglied",
     cause_group_broken: "Die Gruppe enthält {count} Mitglied(er), die nicht mehr existieren.", hint_group_broken: "Die Gruppe bearbeiten und die fehlenden Mitglieder entfernen.",
     cause_helper_broken: "Dieser Helfer baut auf {count} Entität/Entitäten auf, die nicht mehr existieren.", hint_helper_broken: "Den Helfer bearbeiten und die fehlenden Quellen ersetzen.",
-    hideFinding: "Befund ausblenden", showFinding: "Wieder einblenden", ignoredLabel: "Ausgeblendet", showIgnored: "Ausgeblendete anzeigen",
+    showFinding: "Wieder einblenden", ignoredLabel: "Ausgeblendet", showIgnored: "Ausgeblendete anzeigen",
     ignoredByLabel: "Ausgeblendet durch das Label housekeeper_ignore", findingsOfObject: "Befunde zu diesem Objekt",
-    batteries: "Batterien", batteriesSubtitle: "Stand, Bedarf und Prognose deiner Batterien.", batteryLow: "Niedrig", batteryAll: "Alle",
+    batteries: "Batterien", batteriesSubtitle: "Stand, Bedarf und Prognose deiner Batterien.", batteryLow: "Niedrig", batteryUnavailable: "Nicht verfügbar", batteryUnavailableShort: "nicht verfügbar", batteryUnavailableSub: "meldet nichts, oft ist die Batterie leer", batteryAll: "Alle",
     settings: "Einstellungen", settingsSubtitle: "Infos zu Housekeeper und Anpassung der Darstellung.", about: "Über Housekeeper", version: "Version", haVersion: "Home Assistant",
     aboutIntro: "Housekeeper zeigt, was in deiner Home-Assistant-Installation nicht mehr passt: ausgefallene Geräte, defekte Verweise, Ungenutztes, leere Batterien und vieles mehr.", aboutIntroSafe: "Es ändert oder löscht nichts von selbst.", aboutIntroPlan: "Jede Änderung läuft über einen Plan mit Vorschau, Backup und deiner Bestätigung.", scanInterval: "Automatischer Scan", unavailableAfter: "Nicht verfügbar gilt als Befund nach", unusedAfter: "Ungenutzte Automationen nach", lowBatteryAt: "Schwache Batterie ab",
     daysValue: "{n} Tage", hoursValue: "alle {n} Stunden", offValue: "Aus", immediately: "sofort", openOptions: "Optionen öffnen", reportIssue: "Fehler melden", changelog: "Änderungsprotokoll", repository: "GitHub", copyInfo: "Info kopieren", copied: "Kopiert",
     appearance: "Darstellung", fontSize: "Schriftgröße", fontSmall: "Klein", fontNormal: "Normal", fontLarge: "Groß", colorMode: "Modus", modeAuto: "Automatisch", modeLight: "Hell", modeDark: "Dunkel", modeHint: "Automatisch folgt dem Design von Home Assistant.",
     colorScheme: "Farbschema", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honig", schemeLagoon: "Lagune", schemeEmerald: "Smaragd", schemeFrost: "Frost", schemeMidnight: "Mitternacht", schemeOlive: "Olive", behavior: "Verhalten", startView: "Startansicht", pageSizeSetting: "Einträge pro Seite", resetPrefs: "Einstellungen zurücksetzen",
-    hiddenFindings: "Ausgeblendete Befunde", decideKind: "Art der Entscheidung", decideKind_ignore: "Ausgeblendet", decideKind_keep: "Bekannt", decideKind_snooze: "Zurückgestellt", decideReason: "Begründung (optional)", decideReasonNeeded: "Begründung (nötig)", decideNeedReason: "Bewusst behalten braucht eine Begründung.", decideHow: "Wie lange", decideForever: "Unbefristet", decideDays: "{n} Tage", decideUntil: "bis {date}", dueLabel: "Wiedervorlage fällig", dueFilter: "Wiedervorlage fällig", hiddenNone: "Keine Befunde ausgeblendet.", hiddenHint: "Hier lassen sich ausgeblendete Befunde wieder einblenden.",
-    sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel",
+    decideKind: "Art der Entscheidung", decideKind_ignore: "Ausgeblendet", decideKind_keep: "Bekannt", decideKind_snooze: "Zurückgestellt", decideReason: "Begründung (optional)", decideReasonNeeded: "Begründung (nötig)", decideNeedReason: "Bewusst behalten braucht eine Begründung.", decideHow: "Wie lange", decideForever: "Unbefristet", decideDays: "{n} Tage", decideUntil: "bis {date}", dueLabel: "Wiedervorlage fällig", dueFilter: "Wiedervorlage fällig",
+    sortBy: "Sortieren nach", sortCertainty: "Sicherheit", sortName: "Name", sortId: "Objekt-ID", sortSince: "Erkannt seit", sortRule: "Regel", sortRuleGrouped: "Befund",
     sortLevel: "Ladestand", sortArea: "Bereich", sortType: "Typ", sortStatus: "Status", allTypes: "Alle Typen", allAreas: "Alle Bereiche",
     denseOn: "Kompakte Zeilen", denseOff: "Ausführliche Zeilen", sortAscending: "Aufsteigend", sortDescending: "Absteigend", searchList: "In der Liste suchen …", noMatches: "Keine Treffer für diese Filter.",
     density: "Dichte", densityNormal: "Normal", densityCompact: "Kompakt", motion: "Animationen", motionAuto: "Wie System", motionReduced: "Reduziert",
@@ -102,7 +102,7 @@ const TEXT = {
     saveOptions: "Speichern", optionsSaved: "Gespeichert. Housekeeper lädt neu …", optionsBusy: "Gerade läuft ein Plan, ein Rückgängigmachen oder eine Löschung. Die Einstellungen lassen sich danach speichern.", optionsInvalid: "Bitte Werte im erlaubten Bereich eingeben.",
     cleanupSubtitle: "Erst deaktivieren, nach der Quarantäne entfernen; Reste in der Datenbank löschen.",
     cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entitäten.", cleanupNone: "Keine Kandidaten gefunden.",
-    selectPage: "Seite auswählen", successorHint: "Mögliche Nachfolger (nur ein Vorschlag):", purgeOpen: "Löschen vorbereiten", purgeTitle: "Statistiken aus dem Recorder löschen", purgeWarn: "{n} Statistik-Reihen werden mit Lang- und Kurzzeitwerten gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an und löscht nur, wenn es gelingt. Danach geht es nur noch aus dem Backup zurück. Reihen im Energie-Dashboard sind ausgenommen.", purgeStates: "Auch die gespeicherten Zustände dieser IDs löschen", purgeWord: "LÖSCHEN", purgeRun: "Jetzt löschen", purgeRunning: "Läuft (Backup, dann Löschen) …", purgeDone: "{n} Reihen gelöscht, {skipped} übersprungen.", purgeReason_backup_unavailable: "Backup nicht verfügbar", purgeReason_no_backup_agent: "kein Backup-Ziel eingerichtet", purgeReason_backup_failed: "Backup fehlgeschlagen", purgeReason_failed: "Fehler beim Löschen", purgeReason_busy: "ein Löschvorgang läuft schon", bpTab: "Blueprints", bpMissing: "Blueprint-Datei fehlt", bpBroken: "Blueprint lädt nicht", bpUnused: "wird nicht benutzt", bpFiles: "Dateien", bpNone: "Nichts auffällig.", notifyTitle: "Benachrichtigung", notifyHint: "Das Einzige, was Housekeeper von sich aus tut. Standardmäßig aus.", notifyLabel: "Bei neuen defekten Referenzen melden", notifyDetail: "Eine Benachrichtigung in Home Assistant, sobald eine Automation oder ein Skript auf etwas zeigt, das nicht existiert. Jeder Fund wird einmal gemeldet; beim Einschalten wird nichts Altes gemeldet.", diagDownload: "Diagnose-Datei herunterladen", diagCopy: "Angaben für eine Fehlermeldung kopieren", diagCopyHint: "Versionen, Browser oder App und die letzten Fehler im Panel, zum Einfügen in ein GitHub-Issue.", diagCopied: "Kopiert", diagHint: "Nur Zahlen und Versionen, keine Namen, IDs oder Attribute. Passend für eine Fehlermeldung auf GitHub.", weeklyBtn: "Wochenbericht", weeklyHint: "Lädt den Vergleich mit dem Stand von vor etwa einer Woche und speichert ihn als Markdown-Datei.", weeklyTitle: "Housekeeper-Bericht", weeklyRecorder: "Lauteste Entitäten im Recorder", findHideSelected: "Ausgewählte ausblenden", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen ({count})", prepareDelete: "Löschen vorbereiten ({count})", selectedCount: "{count} ausgewählt",
+    selectPage: "Seite auswählen", successorHint: "Mögliche Nachfolger (nur ein Vorschlag):", purgeOpen: "Vorschau erstellen", purgeTitle: "Statistiken aus dem Recorder löschen", purgeWarn: "{n} Statistik-Reihen werden mit Lang- und Kurzzeitwerten gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an und löscht nur, wenn es gelingt. Danach geht es nur noch aus dem Backup zurück. Reihen im Energie-Dashboard sind ausgenommen.", purgeStates: "Auch die gespeicherten Zustände dieser IDs löschen", purgeWord: "LÖSCHEN", purgeRun: "Jetzt löschen", purgeRunning: "Läuft (Backup, dann Löschen) …", purgeDone: "{n} Reihen gelöscht, {skipped} übersprungen.", purgeReason_backup_unavailable: "Backup nicht verfügbar", purgeReason_no_backup_agent: "kein Backup-Ziel eingerichtet", purgeReason_backup_failed: "Backup fehlgeschlagen", purgeReason_failed: "Fehler beim Löschen", purgeReason_busy: "ein Löschvorgang läuft schon", bpTab: "Blueprints", bpMissing: "Blueprint-Datei fehlt", bpBroken: "Blueprint lädt nicht", bpUnused: "wird nicht benutzt", bpFiles: "Dateien", bpNone: "Nichts auffällig.", notifyTitle: "Benachrichtigung", notifyHint: "Das Einzige, was Housekeeper von sich aus tut. Standardmäßig aus.", notifyLabel: "Bei neuen defekten Referenzen melden", notifyDetail: "Eine Benachrichtigung in Home Assistant, sobald eine Automation oder ein Skript auf etwas zeigt, das nicht existiert. Jeder Fund wird einmal gemeldet; beim Einschalten wird nichts Altes gemeldet.", diagDownload: "Diagnose-Datei herunterladen", diagCopy: "Angaben für eine Fehlermeldung kopieren", diagCopyHint: "Versionen, Browser oder App und die letzten Fehler im Panel, zum Einfügen in ein GitHub-Issue.", diagCopied: "Kopiert", diagHint: "Nur Zahlen und Versionen, keine Namen, IDs oder Attribute. Passend für eine Fehlermeldung auf GitHub.", weeklyBtn: "Wochenbericht", weeklyHint: "Lädt den Vergleich mit dem Stand von vor etwa einer Woche und speichert ihn als Markdown-Datei.", weeklyTitle: "Housekeeper-Bericht", weeklyRecorder: "Lauteste Entitäten im Recorder", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen ({count})", prepareDelete: "Vorschau erstellen ({count})", selectedCount: "{count} ausgewählt",
     stepsLabel: "Ablauf des Plans", stepSelect: "Auswahl", stepAnalysis: "Auswirkungsanalyse", stepConfirm: "Bestätigung", stepBackup: "Backup", stepRun: "Ausführung", stepVerify: "Verifikation",
     stepDone: "erledigt", stepCurrent: "aktuell", stepTodo: "ausstehend", stepSkipped: "entfällt", stepFailed: "fehlgeschlagen",
     stepAnalysisBlocked: "Keine ausführbare Aktion", stepBackupSkipped: "Nicht nötig: alles lässt sich per Housekeeper zurücknehmen", stepBackupDone: "Erstellt am {date}{name}{job}", stepBackupName: " · „{name}“ in der Backup-Liste", stepBackupJob: " · Job {id}",
@@ -122,8 +122,8 @@ const TEXT = {
     energyDashboard: "Energie-Dashboard",
     orphanStats: "Verwaiste Statistiken", unreferencedEntities: "Entitäten", noOrphanStats: "Keine verwaisten Statistiken.", noRecorder: "Der Recorder ist nicht verfügbar; es gibt keine Statistiken zu prüfen.",
    
-    kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", sortUnit: "Einheit", allKinds: "Alle Arten",
-    warmupBanner: "Home Assistant startet noch. Die Befunde sind vorläufig und werden nach dem Start neu erhoben; Aufräumen ist bis dahin gesperrt.",
+    kindSum: "Zähler (Summe)", kindMean: "Messwert (Mittelwert)", kindBoth: "Zähler und Messwert", inEnergy: "Im Energie-Dashboard", inEnergyLocked: "Im Energie-Dashboard, darum nicht löschbar", sortUnit: "Einheit", allKinds: "Alle Arten",
+    warmupBanner: "Home Assistant startet noch. Die Befunde sind vorläufig und werden nach dem Start neu erhoben; Bereinigen ist bis dahin gesperrt.",
     err_warming_up: "Home Assistant startet noch. Bitte in wenigen Minuten erneut versuchen.",
     staleScan: "Der letzte Scan ist {age} alt. Housekeeper scannt alle {hours} Stunden – die Daten können veraltet sein.", staleScanManual: "Der letzte Scan ist {age} alt.",
     kindDisable: "Deaktivieren (Quarantäne, umkehrbar)", kindRemove: "Entfernen (nach Quarantäne, mit Backup)", actionKind: "Aktion",
@@ -147,8 +147,8 @@ const TEXT = {
     abort_backup_failed: "Das Backup ist fehlgeschlagen – es wurde nichts geändert.", abort_backup_small_failed: "Das Backup nur von Home Assistant ist fehlgeschlagen – es wurde nichts geändert.", repeatFull: "Mit vollem Backup wiederholen", repeatFullHint: "Ein volles Backup nach deinen Backup-Einstellungen (mit Apps und Ordnern) dauert länger, zählt aber nicht als automatisches Backup. Oder wiederhole den Plan mit dem kleinen Backup.", backupFullPlanned: "Volles Backup nach deinen Backup-Einstellungen", abort_interrupted: "Der Lauf wurde unterbrochen (Neustart von Home Assistant); dieser Schritt lief nicht.", abort_database_corrupt: "Die Recorder-Datenbank ist beschädigt („database disk image is malformed“) – es wurde nichts geändert. Prüfe sie mit PRAGMA integrity_check (zum Beispiel in SQLite Web), repariere betroffene Indizes mit REINDEX oder spiele ein Backup ein.", abort_backup_unverified: "Das Backup wurde gemeldet, ist aber nicht wie erwartet in der Backup-Liste (fehlt, ist leer oder ohne Datenbank) – es wurde nichts geändert. Prüfe Einstellungen → System → Backups.", abort_backup_running: "Home Assistant erstellt gerade selbst ein Backup – es wurde nichts geändert. Versuche es danach noch einmal.", abort_recorder_migrating: "Der Recorder baut gerade die Datenbank um (Migration) – es wurde nichts geändert. Warte, bis er fertig ist.", abort_recorder_backlog: "Der Recorder kommt mit dem Schreiben nicht nach (große Warteschlange) – es wurde nichts geändert. Versuche es später noch einmal.", abort_disk_low: "Auf dem Datenträger der Recorder-Datenbank ist zu wenig Platz frei für das Backup und die Änderung (mindestens 512 MB und etwa die halbe Datenbankgröße) – es wurde nichts geändert. Schaffe zuerst Platz.", abort_backup_unavailable: "Die Backup-Komponente ist nicht verfügbar – es wurde nichts geändert.", abort_no_backup_agent: "Es ist kein Backup-Ziel eingerichtet (Einstellungen → System → Backups) – es wurde nichts geändert.",
     result_removed: "Entfernt", undo_restored: "wiederhergestellt (wieder in Quarantäne)", undo_conflict_taken: "nicht wiederhergestellt: Entitäts-ID inzwischen belegt", undo_conflict_unrestorable: "nicht wiederhergestellt: Integration existiert nicht mehr",
     check_removed: "Entität ist entfernt", plan_status_backup: "Backup läuft", backupRunning: "Backup läuft … das kann etwas dauern.", daysLeftShort: "noch {days} Tage", removalCandidatesHint: "Entitäten in Quarantäne. Entfernen ist erst nach {days} Tagen möglich.", removalReady: "Bereit", waitingShort: "Wartet",
-    perPage: "Pro Seite", cleanup: "Aufräumen", cleanupHint: "Hinweise, die einen Blick wert sind",
-    unreferenced: "Nicht verwendet", unreferencedSubtitle: "Aktive Entitäten, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
+    perPage: "Pro Seite", cleanup: "Bereinigen", cleanupHint: "Hinweise, die einen Blick wert sind",
+    unreferenced: "Ohne Verweis", unreferencedSubtitle: "Aktive Entitäten, die in keiner Automation, keinem Skript, keiner Szene, Gruppe, keinem Helfer und keinem lesbaren Dashboard vorkommen.",
     unreferencedHint: "Nur ein Hinweis, keine Empfehlung zum Löschen: Entitäten können auch über Sprachassistenten, Apps, das Energie-Dashboard, automatisch erzeugte Dashboards oder externe Systeme genutzt werden. Diagnose- und Konfigurations-Entitäten sind ausgeblendet.",
     noUnreferenced: "Alle aktiven Entitäten werden irgendwo verwendet.", unrefShown: "{shown} von {total} angezeigt – nach Domäne filtern, um weitere zu sehen.", allDomains: "Alle Domänen",
     noBatteries: "Keine Batterie-Entitäten gefunden.", batteryLevel: "Ladestand",
@@ -190,7 +190,7 @@ const TEXT = {
     title: "Housekeeper", subtitle: "Keep your Home Assistant installation in view",
     overview: "Overview", inventory: "Inventory", graph: "Dependencies", findingsNav: "Findings",
     sumLabel: "Key figures", findSumAffected: "{n} of {m} objects affected", cleanupSumSelected: "Selected", colsLabel: "Show or hide columns", batterySumLimit: "below {n} %", batterySumLowest: "Lowest level", recSumCosts: "Largest footprint", unrefSumStats: "With statistics", unrefSumStatsHint: "are in the recorder", unrefSumDomain: "Most common domain", unrefSumPlatform: "Most common integration", unrefSumEnergy: "Energy", unrefSumEnergyHint: "still in the energy configuration", navMain: "Main navigation", navMenu: "Menu", howCounted: "How is this counted?", enabled: "enabled", agoNow: "just now", agoMinutes: "{n} min ago", agoHours: "{n} h ago", agoDays: "{n} days ago", navGroupOverview: "Overview", navGroupOperation: "Operation", navGroupExplore: "Catalog", navGroupClean: "Clean up", navGroupMaintain: "Maintain",
-    scan: "Scan now", scanHint: "Reads the whole inventory again: entities, automations, dashboards and findings.", exportJson: "JSON", exportCsv: "CSV", exportTitle: "Export findings", scanning: "Scanning …", all: "All types",
+    scan: "Scan now", scanHint: "Reads the whole inventory again: entities, automations, dashboards and findings.", scanning: "Scanning …", all: "All types",
     allStatus: "All states", search: "Name, ID, integration …",
     name: "Name", type: "Type", status: "Status", reason: "Reason",
     tabsLabel: "Sections of the object", tabOverview: "Overview", tabRelations: "Dependencies", tabTechnical: "Technical data", tabAttributes: "Attributes",
@@ -226,11 +226,11 @@ const TEXT = {
     loading: "Loading inventory …", loadError: "Could not load inventory", actionFailed: "That did not work: {detail}", renderError: "This view could not be shown.",
     total: "Total",
     recentFindings: "Current findings", affected: "Affected object",
-    systemState: "System health", health: "Housekeeping status", healthGood: "Good", healthCheck: "Review",
-    healthBad: "Problematic", healthHint: "Share of the objects in order, by their findings", healthTip: "Share in order. Affected: {affected} of {base} objects.",
-    openFindings: "Open findings",
+    systemState: "System health", health: "Housekeeping status", healthGood: "In order", healthCheck: "Open",
+    healthBad: "Urgent", healthHint: "State in points out of 100, by the findings of the objects", healthTip: "State in points. Affected: {affected} of {base} objects.",
+    openFindings: "Findings",
     actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
-    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem",
+    actNewCritical: "New critical findings", actNewCriticalHint: "Since the last scan: unavailable, broken reference or problem", scanNewFilter: "New critical findings ({n})", outagesFilter: "Outages from the overview ({n})", outagesFilterHigh: "Outages ({n})", outagesFilterMedium: "Further outages ({n})", heldFilter: "Held back for the vacation ({n})",
    
     actQuarantine: "Quarantine over", actQuarantineHint: "Ready for removal once you confirm",
     trendTitle: "Since the last scan", trendSince: "Compared with the scan of {date}", trendNewFindings: "New findings", trendResolved: "Resolved", trendChanged: "Status changes", trendNewObjects: "New objects", trendNone: "No changes since the scan of {date}.",
@@ -240,7 +240,7 @@ const TEXT = {
     certain: "Confirmed", probable: "Probable", confidence: "Confidence", origin: "Origin",
     usage: "Usage", pathTitle: "Dependency path", pathSubtitle: "Inspect the origin and usage of an object.",
     searchObject: "Search object …", noRelations: "No relationships found.", firstSeenNote: "since first observation",
-    findingsSubtitle: "All diagnoses with a link to the affected object.", inventorySubtitle: "All recorded objects of the installation.",
+    findingsSubtitle: "What Housekeeper found.", inventorySubtitle: "All recorded objects of the installation.",
     scanDone: "Scan up to date", of_total: "of", shown: "shown", integration: "Integration",
     PROVIDES: "provides", CONNECTED: "connection (assumed)", OWNS: "owns", CONTAINS: "contains", VIA_DEVICE: "via device",
     TRIGGERS_ON: "triggers on", USES_AS_CONDITION: "checks as condition", TARGETS: "targets", REFERENCES: "references",
@@ -256,7 +256,7 @@ const TEXT = {
     noChanges: "No changes since this scan.",
     statusChanges: "Status changes", newFindings: "New findings", resolvedFindings: "Resolved findings", newObjects: "New objects", removedObjects: "Removed objects",
     worsened: "Worse", changedLabel: "Changed", improved: "Better", gone: "No longer present", comparedWith: "Compared with the scan from",
-    possible_duplicate: "Possible duplicate", unused: "Unused", duplicateOf: "Possible duplicate of", lastTriggered: "Last triggered", never: "Never",
+    possible_duplicate: "Possible duplicate", unused: "Unused automation", duplicateOf: "Possible duplicate of", lastTriggered: "Last triggered", never: "Never",
     "automation.never_triggered": "Never triggered", "automation.stale": "Not triggered for a long time", "automation.disabled_long": "Switched off for a long time",
     cause_never_triggered: "The automation is switched on but has never run in at least {days} days. A trigger may no longer match, or it may not be needed any more.",
     cause_stale: "The automation has not run for {days} days. A trigger may no longer match, or it may not be needed any more.",
@@ -268,16 +268,16 @@ const TEXT = {
     INCLUDES: "has as member", missing_member: "Group member",
     cause_group_broken: "The group contains {count} member(s) that no longer exist.", hint_group_broken: "Edit the group and remove the missing members.",
     cause_helper_broken: "This helper builds on {count} entity/entities that no longer exist.", hint_helper_broken: "Edit the helper and replace the missing sources.",
-    hideFinding: "Hide finding", showFinding: "Show again", ignoredLabel: "Hidden", showIgnored: "Show hidden",
+    showFinding: "Show again", ignoredLabel: "Hidden", showIgnored: "Show hidden",
     ignoredByLabel: "Hidden by the label housekeeper_ignore", findingsOfObject: "Findings for this object",
-    batteries: "Batteries", batteriesSubtitle: "Level, need and forecast of your batteries.", batteryLow: "Low", batteryAll: "All",
+    batteries: "Batteries", batteriesSubtitle: "Level, need and forecast of your batteries.", batteryLow: "Low", batteryUnavailable: "Unavailable", batteryUnavailableShort: "unavailable", batteryUnavailableSub: "reports nothing, often the battery is empty", batteryAll: "All",
     settings: "Settings", settingsSubtitle: "About Housekeeper and appearance options.", about: "About Housekeeper", version: "Version", haVersion: "Home Assistant",
     aboutIntro: "Housekeeper shows what no longer fits in your Home Assistant installation: failed devices, broken references, unused items, empty batteries and much more.", aboutIntroSafe: "It never changes or deletes anything by itself.", aboutIntroPlan: "Every change goes through a plan with a preview, a backup and your confirmation.", scanInterval: "Automatic scan", unavailableAfter: "Unavailable becomes a finding after", unusedAfter: "Unused automations after", lowBatteryAt: "Low battery at",
     daysValue: "{n} days", hoursValue: "every {n} hours", offValue: "Off", immediately: "immediately", openOptions: "Open options", reportIssue: "Report an issue", changelog: "Changelog", repository: "GitHub", copyInfo: "Copy info", copied: "Copied",
     appearance: "Appearance", fontSize: "Font size", fontSmall: "Small", fontNormal: "Normal", fontLarge: "Large", colorMode: "Mode", modeAuto: "Automatic", modeLight: "Light", modeDark: "Dark", modeHint: "Automatic follows the Home Assistant theme.",
     colorScheme: "Color scheme", schemeStandard: "Standard", schemeHousekeeper: "Housekeeper", schemeModern: "Modern", schemeAurora: "Aurora", schemeHoney: "Honey", schemeLagoon: "Lagoon", schemeEmerald: "Emerald", schemeFrost: "Frost", schemeMidnight: "Midnight", schemeOlive: "Olive", behavior: "Behavior", startView: "Start view", pageSizeSetting: "Entries per page", resetPrefs: "Reset settings",
-    hiddenFindings: "Hidden findings", decideKind: "Kind of decision", decideKind_ignore: "Hidden", decideKind_keep: "Known", decideKind_snooze: "Snoozed", decideReason: "Reason (optional)", decideReasonNeeded: "Reason (required)", decideNeedReason: "Keeping on purpose needs a reason.", decideHow: "For how long", decideForever: "Indefinitely", decideDays: "{n} days", decideUntil: "until {date}", dueLabel: "Due again", dueFilter: "Due again", hiddenNone: "No findings hidden.", hiddenHint: "Hidden findings can be shown again here.",
-    sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule",
+    decideKind: "Kind of decision", decideKind_ignore: "Hidden", decideKind_keep: "Known", decideKind_snooze: "Snoozed", decideReason: "Reason (optional)", decideReasonNeeded: "Reason (required)", decideNeedReason: "Keeping on purpose needs a reason.", decideHow: "For how long", decideForever: "Indefinitely", decideDays: "{n} days", decideUntil: "until {date}", dueLabel: "Due again", dueFilter: "Due again",
+    sortBy: "Sort by", sortCertainty: "Certainty", sortName: "Name", sortId: "Object ID", sortSince: "Detected since", sortRule: "Rule", sortRuleGrouped: "Finding",
     sortLevel: "Level", sortArea: "Area", sortType: "Type", sortStatus: "Status", allTypes: "All types", allAreas: "All areas",
     denseOn: "Compact rows", denseOff: "Detailed rows", sortAscending: "Ascending", sortDescending: "Descending", searchList: "Search this list …", noMatches: "No matches for these filters.",
     density: "Density", densityNormal: "Normal", densityCompact: "Compact", motion: "Animation", motionAuto: "Like system", motionReduced: "Reduced",
@@ -287,7 +287,7 @@ const TEXT = {
     saveOptions: "Save", optionsSaved: "Saved. Housekeeper is reloading …", optionsBusy: "A plan, an undo or a purge is running. The settings can be saved afterwards.", optionsInvalid: "Please enter values within the allowed range.",
     cleanupSubtitle: "Disable first, remove after the quarantine; delete leftovers in the database.",
     cleanupCandidates: "Candidates", cleanupCandidatesHint: "Orphaned and long-unavailable entities.", cleanupNone: "No candidates found.",
-    selectPage: "Select page", successorHint: "Possible successors (a suggestion only):", purgeOpen: "Prepare deletion", purgeTitle: "Delete statistics from the recorder", purgeWarn: "{n} statistic series are deleted with their long-term and short-term values. Housekeeper creates a Home Assistant backup first and only deletes if it succeeds. Afterwards the backup is the only way back. Series in the Energy dashboard are left out.", purgeStates: "Also delete the stored states of these IDs", purgeWord: "DELETE", purgeRun: "Delete now", purgeRunning: "Running (backup, then delete) …", purgeDone: "{n} series deleted, {skipped} skipped.", purgeReason_backup_unavailable: "backup not available", purgeReason_no_backup_agent: "no backup location set up", purgeReason_backup_failed: "backup failed", purgeReason_failed: "error while deleting", purgeReason_busy: "a purge is already running", bpTab: "Blueprints", bpMissing: "blueprint file is missing", bpBroken: "blueprint fails to load", bpUnused: "not used", bpFiles: "files", bpNone: "Nothing to note.", notifyTitle: "Notification", notifyHint: "The only thing Housekeeper does on its own. Off by default.", notifyLabel: "Tell about new broken references", notifyDetail: "A notification in Home Assistant when an automation or script points to something that does not exist. Each finding is announced once; switching it on announces nothing old.", diagDownload: "Download diagnostics file", diagCopy: "Copy details for a bug report", diagCopyHint: "Versions, browser or app and the last panel errors, to paste into a GitHub issue.", diagCopied: "Copied", diagHint: "Numbers and versions only, no names, ids or attributes. Fit to attach to an issue on GitHub.", weeklyBtn: "Weekly report", weeklyHint: "Loads the comparison with the state from about a week ago and saves it as a Markdown file.", weeklyTitle: "Housekeeper report", weeklyRecorder: "Loudest entities in the recorder", findHideSelected: "Hide selected", clearSelection: "Clear selection", createPlan: "Create preview ({count})", prepareDelete: "Prepare deletion ({count})", selectedCount: "{count} selected",
+    selectPage: "Select page", successorHint: "Possible successors (a suggestion only):", purgeOpen: "Create preview", purgeTitle: "Delete statistics from the recorder", purgeWarn: "{n} statistic series are deleted with their long-term and short-term values. Housekeeper creates a Home Assistant backup first and only deletes if it succeeds. Afterwards the backup is the only way back. Series in the Energy dashboard are left out.", purgeStates: "Also delete the stored states of these IDs", purgeWord: "DELETE", purgeRun: "Delete now", purgeRunning: "Running (backup, then delete) …", purgeDone: "{n} series deleted, {skipped} skipped.", purgeReason_backup_unavailable: "backup not available", purgeReason_no_backup_agent: "no backup location set up", purgeReason_backup_failed: "backup failed", purgeReason_failed: "error while deleting", purgeReason_busy: "a purge is already running", bpTab: "Blueprints", bpMissing: "blueprint file is missing", bpBroken: "blueprint fails to load", bpUnused: "not used", bpFiles: "files", bpNone: "Nothing to note.", notifyTitle: "Notification", notifyHint: "The only thing Housekeeper does on its own. Off by default.", notifyLabel: "Tell about new broken references", notifyDetail: "A notification in Home Assistant when an automation or script points to something that does not exist. Each finding is announced once; switching it on announces nothing old.", diagDownload: "Download diagnostics file", diagCopy: "Copy details for a bug report", diagCopyHint: "Versions, browser or app and the last panel errors, to paste into a GitHub issue.", diagCopied: "Copied", diagHint: "Numbers and versions only, no names, ids or attributes. Fit to attach to an issue on GitHub.", weeklyBtn: "Weekly report", weeklyHint: "Loads the comparison with the state from about a week ago and saves it as a Markdown file.", weeklyTitle: "Housekeeper report", weeklyRecorder: "Loudest entities in the recorder", clearSelection: "Clear selection", createPlan: "Create preview ({count})", prepareDelete: "Create preview ({count})", selectedCount: "{count} selected",
     stepsLabel: "Steps of the plan", stepSelect: "Selection", stepAnalysis: "Impact analysis", stepConfirm: "Confirmation", stepBackup: "Backup", stepRun: "Execution", stepVerify: "Verification",
     stepDone: "done", stepCurrent: "current", stepTodo: "pending", stepSkipped: "not needed", stepFailed: "failed",
     stepAnalysisBlocked: "No executable action", stepBackupSkipped: "Not needed: everything can be taken back by Housekeeper", stepBackupDone: "Created {date}{name}{job}", stepBackupName: " · “{name}” in the backup list", stepBackupJob: " · job {id}",
@@ -307,7 +307,7 @@ const TEXT = {
     energyDashboard: "Energy dashboard",
     orphanStats: "Orphaned statistics", unreferencedEntities: "Entities", noOrphanStats: "No orphaned statistics.", noRecorder: "The recorder is not available; there are no statistics to check.",
    
-    kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", sortUnit: "Unit", allKinds: "All kinds",
+    kindSum: "Counter (sum)", kindMean: "Measurement (mean)", kindBoth: "Counter and measurement", inEnergy: "In the Energy dashboard", inEnergyLocked: "In the Energy dashboard, so it cannot be deleted", sortUnit: "Unit", allKinds: "All kinds",
     warmupBanner: "Home Assistant is still starting. The findings are preliminary and will be collected again after startup; cleanup is locked until then.",
     err_warming_up: "Home Assistant is still starting. Please try again in a few minutes.",
     staleScan: "The last scan is {age} old. Housekeeper scans every {hours} hours – the data may be out of date.", staleScanManual: "The last scan is {age} old.",
@@ -332,8 +332,8 @@ const TEXT = {
     abort_backup_failed: "The backup failed – nothing was changed.", abort_backup_small_failed: "The backup of Home Assistant only failed – nothing was changed.", repeatFull: "Repeat with a full backup", repeatFullHint: "A full backup as your backup settings say (with apps and folders) takes longer but does not count as an automatic backup. Or repeat the plan with the small backup.", backupFullPlanned: "Full backup as your backup settings say", abort_interrupted: "The run was cut off (Home Assistant restarted); this step did not run.", abort_database_corrupt: "The recorder database is damaged (“database disk image is malformed”) – nothing was changed. Check it with PRAGMA integrity_check (for example in SQLite Web), repair the affected indexes with REINDEX or restore a backup.", abort_backup_unverified: "The backup was reported but is not in the backup list as expected (missing, empty or without the database) – nothing was changed. Check Settings → System → Backups.", abort_backup_running: "Home Assistant is making a backup itself – nothing was changed. Try again afterwards.", abort_recorder_migrating: "The recorder is migrating the database – nothing was changed. Wait until it is done.", abort_recorder_backlog: "The recorder cannot keep up with writing (a long queue) – nothing was changed. Try again later.", abort_disk_low: "The disk of the recorder database has too little free space for the backup and the change (at least 512 MB and about half the database size) – nothing was changed. Free some space first.", abort_backup_unavailable: "The backup component is not available – nothing was changed.", abort_no_backup_agent: "No backup location is set up (Settings → System → Backups) – nothing was changed.",
     result_removed: "Removed", undo_restored: "restored (back in quarantine)", undo_conflict_taken: "not restored: entity ID is taken now", undo_conflict_unrestorable: "not restored: the integration no longer exists",
     check_removed: "Entity is removed", plan_status_backup: "Backup running", backupRunning: "Backup running … this can take a while.", daysLeftShort: "{days} days to go", removalCandidatesHint: "Entities in quarantine. Removal is possible only after {days} days.", removalReady: "Ready", waitingShort: "Waiting",
-    perPage: "Per page", cleanup: "Tidy up", cleanupHint: "Hints worth a look",
-    unreferenced: "Not used", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
+    perPage: "Per page", cleanup: "Clean up", cleanupHint: "Hints worth a look",
+    unreferenced: "Not referenced", unreferencedSubtitle: "Active entities that appear in no automation, script, scene, group, helper, or readable dashboard.",
     unreferencedHint: "A hint only, not a recommendation to delete: entities can also be used by voice assistants, apps, the energy dashboard, auto-generated dashboards, or external systems. Diagnostic and configuration entities are hidden.",
     noUnreferenced: "Every active entity is used somewhere.", unrefShown: "Showing {shown} of {total} – filter by domain to see more.", allDomains: "All domains",
     noBatteries: "No battery entities found.", batteryLevel: "Level",
@@ -373,6 +373,7 @@ const TEXT = {
   },
 };
 
+const WARMUP_NAMES_SHOWN = 4; // names of loading integrations the start notice shows before it unfolds the rest
 const ICONS = {
   service: "mdi:cog-off-outline", entity: "mdi:shape-outline", device: "mdi:devices", config_entry: "mdi:puzzle-outline", integration: "mdi:puzzle",
   area: "mdi:floor-plan", automation: "mdi:robot-outline", floor: "mdi:layers-outline",
@@ -401,6 +402,10 @@ const DONE_RESULTS = Object.fromEntries([
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
 const PREFS_KEY = "ha_housekeeper.prefs";
+// A mark on an object that has run this many days without a gap asks whether it is still needed.
+const MARK_QUIET_DAYS = 30;
+// The page sizes every paged list offers, unless it has its own.
+const PAGE_SIZES = [20, 50, 100, 250];
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto" };
 const USER_DATA_KEY = "ha_housekeeper";
 const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
@@ -487,16 +492,19 @@ const MARK_TYPES = ["entity", "device", "config_entry", "app"];
 const ACTION_TYPES = ["entity", "device", "config_entry", "automation", "script", "scene"];
 // Objects whose overview sums up what is known in groups ("Known about …"); scenes keep the facts card.
 const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"];
-// The ring of the status: points off for each urgent topic, and the most that can come off.
-// The status is a score from 100: each entry of the findings list takes points off by its impact (points each, at most),
-// each urgent topic of the state area takes 10 off (at most 30). Green from 90, yellow from 70.
 // The reasons on the findings page: what needs a look first, and what is tidying up. Anything else counts as urgent.
-const FINDING_URGENT = ["problem", "unavailable", "outage", "broken_reference", "run_error", "recurring"];
-const FINDING_TIDY = ["unknown", "unused", "stale", "possible_duplicate"];
-const HEALTH_WEIGHTS = { high: 1, medium: 0.5, low: 0.2, info: 0 };
-const HEALTH_GREEN = 95;
-const HEALTH_YELLOW = 85;
+// The fixed order of the reason tiles, from the cause to what it does: faults first, then tidying up. Which group a
+// tile is in comes from its colour (see FAULT_REASONS), not from this list; a reason it does not name comes last.
+const FINDING_ORDER = ["outage", "unavailable", "stale", "broken_reference", "problem", "unknown", "orphaned", "unused", "possible_duplicate"];
+// Reasons shown red, as faults, besides the classes that are red anyway: a sensor that stopped reporting is mostly broken.
+const FAULT_REASONS = ["outage", "stale"];
+// A filter that leaves at most this many findings opens the heads of the grouped list by itself.
+// The state of the house: what each object with a finding takes off, by its worst level (as in history.py).
+const HEALTH_WEIGHTS = { high: 2, medium: 1, low: 0.5, info: 0 };
 const LABEL_TYPES = ["entity", "automation", "script", "scene"];
+const HK_LABELS = ["housekeeper_keep", "housekeeper_ignore", "housekeeper_critical"];
+// One icon per action, the same in the selection bar and in the menu of a row.
+const FSEL_ICONS = { status: "mdi:checkbox-marked-circle-outline", mark: "mdi:bookmark-plus-outline", exc: "mdi:filter-remove-outline", label: "mdi:label-outline" };
 
 const NAV = [
   ["overview", "mdi:view-dashboard-outline"],
@@ -564,6 +572,8 @@ const CRITICAL_CLASSES = ["broken_reference", "unavailable", "problem"];
 
 // Object types the housekeeping status is calculated from.
 const HEALTH_TYPES = ["entity", "automation", "script", "scene", "config_entry", "device"];
+// The type filter of the inventory that shows the objects the state of the house rates (the KPI of the overview).
+const RATED_TYPE = "_rated";
 
 // One CSV cell, quoted. Text a spreadsheet would run as a formula (leading =, +, -, @) gets a leading
 // apostrophe; numbers, also negative ones as text such as "-3.5", stay numbers.
@@ -577,6 +587,23 @@ const csvCell = v => {
 const VIEW_HINT = { storage: "sysHint", dataflow: "accHint", secrets: "secHint", reliability: "relHint", exposure: "expoHint", policies: "polHint", maintenance: "maintHint", recorder: "recorderHint" };
 const INFO_SUB_VIEWS = ["exposure", "maintenance", "repair", "policies", "recorder", "reliability", "storage", "dataflow", "secrets", "components"];
 
+// From Home Assistant 2026.11 HACS is built in as "Marketplace"; the texts say HACS and are reworded for it.
+const MARKETPLACE_RULES = {
+  de: [
+    [/→ HACS/g, "→ Marketplace"], [/HACS (nicht verfügbar|zuletzt)/g, "Marketplace $1"],
+    [/\b([Vv])on HACS/g, "$1om Marketplace"], [/\bBei HACS/g, "Im Marketplace"], [/\bbei HACS/g, "im Marketplace"],
+    [/\b([Ii])n HACS/g, "$1m Marketplace"], [/\b([Aa])us HACS/g, "$1us dem Marketplace"], [/\b([Mm])it HACS/g, "$1it dem Marketplace"],
+    [/([Üü])ber HACS/g, "$1ber den Marketplace"], [/\b([Dd])urch HACS/g, "$1urch den Marketplace"],
+    [/HACS-/g, "Marketplace-"], [/^HACS$/, "Marketplace"],
+    [/(^|[.!?:] |“|„)HACS/g, "$1Der Marketplace"], [/HACS/g, "der Marketplace"],
+  ],
+  en: [
+    [/^HACS$/, "Marketplace"], [/→ HACS/g, "→ Marketplace"], [/^HACS (not available)/, "Marketplace $1"], [/HACS (repositor|items?|entries|entry)/g, "Marketplace $1"],
+    [/(^|[.!?:] |“)HACS/g, "$1The Marketplace"], [/HACS/g, "the Marketplace"],
+  ],
+};
+const forMarketplace = (text, lang) => (MARKETPLACE_RULES[lang] || MARKETPLACE_RULES.en).reduce((out, [from, to]) => out.replace(from, to), text);
+
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
   changesOfTotal: "von {n}", changesShownOf: "{n} von {total}", changesBarHint: "Suche und Filter gelten für alle Abschnitte.", changesCapped: "Es werden die ersten {shown} gezeigt, {count} weitere zählen nur mit.", changesFiltered: "Der Filter blendet alle {n} Einträge dieses Abschnitts aus.",
@@ -585,7 +612,7 @@ Object.assign(TEXT.de, {
   utStatId: "Statistik-ID", utKind: "Art", utUnit: "Einheit", utLast: "Letzter Eintrag", utFirst: "Erster Eintrag", utRows: "Datensätze", sortFirstEntry: "Erster Eintrag", sortRows: "Datensätze", statFirstEntry: "Erster Statistik-Eintrag", statRows: "{count} Stundenwerte", utEnergy: "Energie-Dashboard",
   sortKind: "Art", sortDomain: "Domain", sortDevice: "Gerät", sortIntegration: "Integration", sortChanged: "Letzte Änderung", sortReported: "Letzte Meldung", sortStats: "Statistik",
   allUnits: "Alle Einheiten", allAges: "Letzter Eintrag: jeder", allIntegrations: "Alle Integrationen", statAge30: "Letzter Eintrag älter als 30 Tage", statAge365: "Letzter Eintrag älter als 1 Jahr", statAge730: "Letzter Eintrag älter als 2 Jahre", lastEntryBusyShort: "Recorder beschäftigt",
-  statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entität mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entität umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Aufräumen → Zählerwechsel (Statistik fortführen). Ist sie wirklich weg, kannst du die Statistik in Home Assistant unter Entwicklerwerkzeuge → Statistiken entfernen. Housekeeper löscht hier nichts. Nachfolger werden aus Name und Einheit abgeleitet.",
+  statSuccessors: "Mögliche Nachfolger:", orphanStatsHint: "Langzeitstatistiken im Recorder, zu denen es keine Entität mehr gibt, zum Beispiel nach Löschen, Umbenennen oder einem Gerätewechsel. Sie kosten nur Platz. Wurde die Entität umbenannt oder ersetzt, lässt sich die Statistik auf die neue übernehmen: Reparieren → Zähler wechseln. Ist sie wirklich weg, wähle sie hier aus und erstelle einen Plan; er legt vorher ein Backup an. Statistiken aus dem Energie-Dashboard lassen sich nicht auswählen. Nachfolger werden aus Name und Einheit abgeleitet.",
   noBaselinePreliminary: "Der letzte Scan war vorläufig, weil Home Assistant gerade gestartet ist. Vorläufige Scans werden nicht gespeichert. Scanne in ein paar Minuten erneut, dann gibt es einen ersten Vergleichspunkt.", noBaselineOneScan: "Es gibt erst einen gespeicherten Scan. Ein Vergleich braucht zwei: Scanne nach Änderungen an deiner Installation erneut oder warte auf den automatischen Scan (alle {hours} Stunden). Jeder Scan wird als Vergleichspunkt gespeichert.", scanPoint: "Jetzt scannen und Vergleichspunkt setzen",
   releaseAction: "Aus Quarantäne holen", releaseQuestion: "Wieder aktivieren?", releaseNothing: "Nichts zurückzuholen: schon nicht mehr in Quarantäne",
   kindDisableDevice: "Gerät deaktivieren (Quarantäne, umkehrbar)", kindRemoveDevice: "Gerät entfernen (nach Quarantäne, mit Backup)",
@@ -618,7 +645,7 @@ Object.assign(TEXT.en, {
   utStatId: "Statistic ID", utKind: "Kind", utUnit: "Unit", utLast: "Last entry", utFirst: "First entry", utRows: "Records", sortFirstEntry: "First entry", sortRows: "Records", statFirstEntry: "First statistics entry", statRows: "{count} hourly values", utEnergy: "Energy dashboard",
   sortKind: "Kind", sortDomain: "Domain", sortDevice: "Device", sortIntegration: "Integration", sortChanged: "Last change", sortReported: "Last report", sortStats: "Statistics",
   allUnits: "All units", allAges: "Last entry: any", allIntegrations: "All integrations", statAge30: "Last entry older than 30 days", statAge365: "Last entry older than 1 year", statAge730: "Last entry older than 2 years", lastEntryBusyShort: "Recorder busy",
-  statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Tidy up → Meter change (continue statistics). If it is really gone, you can remove the statistic in Home Assistant under Developer tools → Statistics. Housekeeper deletes nothing here. Successors are derived from name and unit.",
+  statSuccessors: "Possible successors:", orphanStatsHint: "Long-term statistics in the recorder that no longer have an entity, for example after deleting, renaming or replacing a device. They only take up space. If the entity was renamed or replaced, the statistic can be moved to the new one: Repair → Replace a meter. If it is really gone, select it here and create a plan; it makes a backup first. Statistics used by the Energy dashboard cannot be selected. Successors are derived from name and unit.",
   noBaselinePreliminary: "The last scan was preliminary because Home Assistant has just started. Preliminary scans are not saved. Scan again in a few minutes to get a first comparison point.", noBaselineOneScan: "There is only one saved scan so far. A comparison needs two: scan again after changing your installation or wait for the automatic scan (every {hours} hours). Every scan is saved as a comparison point.", scanPoint: "Scan now and set a comparison point",
   releaseAction: "Take out of quarantine", releaseQuestion: "Enable it again?", releaseNothing: "Nothing to restore: no longer in quarantine",
   kindDisableDevice: "Disable device (quarantine, reversible)", kindRemoveDevice: "Remove device (after quarantine, with backup)",
@@ -673,9 +700,9 @@ Object.assign(TEXT.de, {
   propIntegration: "Integration", propDeviceOf: "Gerät", propArea: "Bereich", propAreaInherited: "{area} (vom Gerät)", propLabels: "Labels", propNone: "–",
   propDomain: "Typ", propDeviceClass: "Geräteklasse", propStateClass: "Zustandsklasse", propUnit: "Einheit", propCategory: "Kategorie", propOriginalName: "Originalname", propAliases: "Aliase", propIcon: "Symbol",
   propDisabledBy: "Deaktiviert durch", propHiddenBy: "Ausgeblendet durch", propEntityId: "Entitäts-ID", propUniqueId: "Eindeutige ID", propPlatform: "Plattform",
-  propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastChangedShort: "Letzter Wechsel", propLastUpdatedShort: "Aktualisiert", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invMarked: "Markiert (erwartet)", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe und Wachstum des Recorders.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvFirst: "Ältester Eintrag", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details im Recorder",
+  propCreated: "Angelegt", propModified: "Geändert", propLastChanged: "Letzter Zustandswechsel", propLastUpdated: "Letzte Aktualisierung", propLastChangedShort: "Letzter Wechsel", propLastUpdatedShort: "Aktualisiert", propLastReported: "Letzte Meldung", statLastEntry: "Letzter Statistik-Eintrag", invOk: "Unauffällig", invCheck: "Prüfen", invProblem: "Problematisch", invMarked: "Markiert (erwartet)", invHint: "Alle erfassten Objekte", dbOvTitle: "Datenbank", dbOvHint: "Größe und Wachstum des Recorders.", dbOvSize: "Größe", dbOvWal: "WAL-Datei", dbOvFirst: "Ältester Eintrag", dbOvGrowth: "Wachstum", dbOvPerDay: "{size} pro Tag", dbOvObserving: "wird beobachtet", dbOvNoSize: "nicht messbar ({dialect})", dbOvDetails: "Details",
   propManufacturer: "Hersteller", propModel: "Modell", propSerial: "Seriennummer", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Art", propUserName: "Eigener Name", propOriginalDeviceName: "Name laut Integration",
-  propKind: "Art", propKindChild: "Untergerät", propParent: "Übergeordnetes Gerät", propCleanupBlock: "Aufräumen gesperrt", propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
+  propKind: "Art", propKindChild: "Untergerät", propParent: "Übergeordnetes Gerät", propCleanupBlock: "Bereinigen gesperrt", propVia: "Verbunden über", propChildren: "Daran hängen", propChildrenCount: "{count} Geräte", propConfigUrl: "Konfigurationsseite", propDeviceId: "Geräte-ID", propIdentifiers: "Kennungen", propConnections: "Verbindungen",
   propNoEntities: "Dieses Gerät hat keine Entitäten.",
   by_user: "Benutzer", by_integration: "Integration", by_config_entry: "Integrationseintrag (deaktiviert)", by_device: "Gerät (deaktiviert)", by_hass: "Home Assistant",
   cat_config: "Konfiguration", cat_diagnostic: "Diagnose", type_service: "Dienst (kein physisches Gerät)",
@@ -685,7 +712,7 @@ Object.assign(TEXT.en, {
   propIntegration: "Integration", propDeviceOf: "Device", propArea: "Area", propAreaInherited: "{area} (from the device)", propLabels: "Labels", propNone: "–",
   propDomain: "Type", propDeviceClass: "Device class", propStateClass: "State class", propUnit: "Unit", propCategory: "Category", propOriginalName: "Original name", propAliases: "Aliases", propIcon: "Icon",
   propDisabledBy: "Disabled by", propHiddenBy: "Hidden by", propEntityId: "Entity ID", propUniqueId: "Unique ID", propPlatform: "Platform",
-  propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update", propLastChangedShort: "Last change", propLastUpdatedShort: "Updated", propLastReported: "Last report", statLastEntry: "Last statistics entry", invOk: "Unremarkable", invCheck: "Check", invProblem: "Problematic", invMarked: "Marked (expected)", invHint: "All recorded objects", dbOvTitle: "Database", dbOvHint: "Recorder size and growth.", dbOvSize: "Size", dbOvWal: "WAL file", dbOvFirst: "Oldest entry", dbOvGrowth: "Growth", dbOvPerDay: "{size} a day", dbOvObserving: "being observed", dbOvNoSize: "not measurable ({dialect})", dbOvDetails: "Details in Recorder",
+  propCreated: "Created", propModified: "Modified", propLastChanged: "Last state change", propLastUpdated: "Last update", propLastChangedShort: "Last change", propLastUpdatedShort: "Updated", propLastReported: "Last report", statLastEntry: "Last statistics entry", invOk: "Unremarkable", invCheck: "Check", invProblem: "Problematic", invMarked: "Marked (expected)", invHint: "All recorded objects", dbOvTitle: "Database", dbOvHint: "Recorder size and growth.", dbOvSize: "Size", dbOvWal: "WAL file", dbOvFirst: "Oldest entry", dbOvGrowth: "Growth", dbOvPerDay: "{size} a day", dbOvObserving: "being observed", dbOvNoSize: "not measurable ({dialect})", dbOvDetails: "Details",
   propManufacturer: "Manufacturer", propModel: "Model", propSerial: "Serial number", propFirmware: "Firmware", propHardware: "Hardware", propEntryType: "Kind", propUserName: "Custom name", propOriginalDeviceName: "Name from the integration",
   propKind: "Kind", propKindChild: "Child device", propParent: "Parent device", propCleanupBlock: "Cleanup blocked", propVia: "Connected via", propChildren: "Attached devices", propChildrenCount: "{count} devices", propConfigUrl: "Configuration page", propDeviceId: "Device ID", propIdentifiers: "Identifiers", propConnections: "Connections",
   propNoEntities: "This device has no entities.",
@@ -718,8 +745,8 @@ Object.assign(TEXT.de, {
   abort_meter_changed: "Entitäten oder Statistik wurden nach der Vorschau geändert.", abort_statistics_changed: "Die Statistik wurde nach der Vorschau geändert.", abort_statistics_failed: "Die Statistik konnte nicht bestätigt werden; der Lauf wurde angehalten.",
   abort_no_recorder: "Der Recorder läuft nicht.", abort_alt_id_taken: "Die Ausweich-ID ist inzwischen belegt.", abort_id_not_freed: "Home Assistant hat die alte ID nicht rechtzeitig freigegeben; alles wurde zurückgesetzt.", abort_id_takeover_failed: "Das Umbenennen ist fehlgeschlagen; alles wurde zurückgesetzt.",
   // maintenance
-  maintHint: "Backups, Updates, Blueprints und Wartungsziele",
-  maintenance: "Wartung", maintenanceSubtitle: "Backups prüfen, offene Updates mit der Prüfung davor, Blueprints und Wartungsziele. Housekeeper liest nur; gelöscht werden allein seine eigenen Backups, und erst nach deiner Bestätigung.",
+  maintHint: "Backups, Updates, Blueprints und Ziele",
+  maintenance: "Wartung", maintenanceSubtitle: "Backups prüfen, offene Updates mit der Prüfung davor, Blueprints und Ziele. Housekeeper liest nur; gelöscht werden allein seine eigenen Backups, und erst nach deiner Bestätigung.",
   recorderTitle: "Speicherbedarf", 
   recorderLoad: "Analyse starten", recorderReload: "Neu berechnen", recorderLoading: "Datenbank wird ausgewertet …", recorderUnavailable: "Der Recorder läuft nicht, daher gibt es nichts auszuwerten.",
   recorderSummary: "{states} gespeicherte Zustände · {size} · Aufbewahrung {days} Tage · {stats} Statistikwerte", recorderSizeUnknown: "Größe unbekannt", recorderPerDay: "{count} pro Tag", recorderTook: "berechnet in {ms} ms", recorderCached: "Ergebnis von vor wenigen Minuten ({ms} ms)", recorderShare: "{share} % aller Zustände",
@@ -728,7 +755,7 @@ Object.assign(TEXT.de, {
   recorderSnippetTitle: "Vorschlag für die configuration.yaml", recorderSnippetHint: "Entitäten, die nichts verwendet, keine Statistik haben und sehr oft schreiben. Prüfe die Liste, bevor du sie übernimmst.", recorderCopy: "Kopieren", recorderCopied: "Kopiert",
   preflightTitle: "Update-Preflight", preflightLoading: "Wird geprüft …",
   pf_backup: "Backup", pf_disk: "Freier Speicher", pf_config: "Konfiguration", pfConfigHint: "Prüft alle Konfigurationsdateien. Das dauert einige Sekunden und läuft nur auf Knopfdruck.", pfConfigRun: "Prüfen", pfConfigAgain: "Erneut prüfen", pfConfigRunning: "Wird geprüft …", pfConfigOk: "Gültig, geprüft am {time}", pfConfigWarn: "Gültig mit Warnungen, geprüft am {time}: ", pfConfigBad: "Ungültig: ", pf_disk_text: "{free} frei", pf_repairs: "Offene Reparaturen", pf_failed_entries: "Ausgefallene Integrationen", pf_broken: "Fehlende Referenzen",
-  pf_backup_ok: "Letztes Backup vor {hours} h", pf_backup_old: "Letztes Backup vor {hours} h – ein neues ist ratsam", pf_backup_none: "Kein Backup eingerichtet oder vorhanden", pf_backup_unavailable: "Backup-Komponente nicht verfügbar",
+  pf_backup_ok: "Letztes Backup vor {hours} h", pf_backup_old: "Letztes Backup vor {hours} h – ein neues ist ratsam", pf_backup_none: "Kein Backup eingerichtet oder vorhanden", pf_backup_unavailable: "Backup-Komponente nicht verfügbar", pf_backup_external: "Außerhalb von Home Assistant gesichert: vor dem Update dort ein frisches Backup machen",
   pf_count_none: "keine", pf_updates: "Verfügbare Updates", pf_updates_none: "keine",
   updatesTab: "Updates", pfOpenBackup: "Backup-Schutz",
   updBlocked: "HACS kann es nicht installieren", updRunning: "läuft", updAuto: "automatisch", updWatch: "Beobachtung startet", updNotes: "Änderungen", updOpenHa: "In Home Assistant öffnen", updOpen: "Öffnen",
@@ -763,8 +790,8 @@ Object.assign(TEXT.en, {
   result_migrated: "Migrated", check_meter_statistics: "Statistics continued", check_meter_id_taken: "New entity carries the stable ID", undo_conflict_statistics: "not undone: statistics can only be reset with the backup",
   abort_meter_changed: "Entities or statistics were changed after the preview.", abort_statistics_changed: "The statistics were changed after the preview.", abort_statistics_failed: "The statistics could not be confirmed; the run stopped.",
   abort_no_recorder: "The recorder is not running.", abort_alt_id_taken: "The fallback ID is taken now.", abort_id_not_freed: "Home Assistant did not free the old ID in time; everything was put back.", abort_id_takeover_failed: "Renaming failed; everything was put back.",
-  maintHint: "Backups, updates, blueprints and maintenance goals",
-  maintenance: "Maintenance", maintenanceSubtitle: "Check backups, open updates with the checks before them, blueprints and maintenance goals. Housekeeper only reads; the only things it deletes are its own backups, and only after you confirm.",
+  maintHint: "Backups, updates, blueprints and goals",
+  maintenance: "Maintenance", maintenanceSubtitle: "Check backups, open updates with the checks before them, blueprints and goals. Housekeeper only reads; the only things it deletes are its own backups, and only after you confirm.",
   recorderTitle: "Storage use", 
   recorderLoad: "Start analysis", recorderReload: "Recalculate", recorderLoading: "Evaluating the database …", recorderUnavailable: "The recorder is not running, so there is nothing to evaluate.",
   recorderSummary: "{states} stored states · {size} · kept {days} days · {stats} statistics values", recorderSizeUnknown: "size unknown", recorderPerDay: "{count} per day", recorderTook: "calculated in {ms} ms", recorderCached: "result from a few minutes ago ({ms} ms)", recorderShare: "{share} % of all states",
@@ -773,7 +800,7 @@ Object.assign(TEXT.en, {
   recorderSnippetTitle: "Suggestion for configuration.yaml", recorderSnippetHint: "Entities that nothing uses, that have no statistics and that write very often. Review the list before you adopt it.", recorderCopy: "Copy", recorderCopied: "Copied",
   preflightTitle: "Update preflight", preflightLoading: "Checking …",
   pf_backup: "Backup", pf_disk: "Free space", pf_config: "Configuration", pfConfigHint: "Checks every configuration file. It takes a few seconds and runs only when you press the button.", pfConfigRun: "Check", pfConfigAgain: "Check again", pfConfigRunning: "Checking …", pfConfigOk: "Valid, checked on {time}", pfConfigWarn: "Valid with warnings, checked on {time}: ", pfConfigBad: "Invalid: ", pf_disk_text: "{free} free", pf_repairs: "Open repairs", pf_failed_entries: "Failed integrations", pf_broken: "Missing references",
-  pf_backup_ok: "Last backup {hours} h ago", pf_backup_old: "Last backup {hours} h ago – a new one is advisable", pf_backup_none: "No backup set up or available", pf_backup_unavailable: "Backup component not available",
+  pf_backup_ok: "Last backup {hours} h ago", pf_backup_old: "Last backup {hours} h ago – a new one is advisable", pf_backup_none: "No backup set up or available", pf_backup_unavailable: "Backup component not available", pf_backup_external: "Backed up outside Home Assistant: make a fresh backup there before the update",
   pf_count_none: "none", pf_updates: "Available updates", pf_updates_none: "none",
   updatesTab: "Updates", pfOpenBackup: "Backup protection",
   updBlocked: "HACS cannot install it", updRunning: "running", updAuto: "automatic", updWatch: "Watch starts", updNotes: "Changes", updOpenHa: "Open in Home Assistant", updOpen: "Open",
@@ -833,14 +860,14 @@ Object.assign(TEXT.de, {
   bh_retention: "Aufbewahrung", bh_encryption: "Verschlüsselung", bh_emergency_kit: "Emergency Kit", bh_restore_test: "Restore-Test", bh_plan_backups: "Backups vor Bereinigungen", bh_own_backups: "Housekeeper-Backups", bh_content: "Inhalt", bh_remote_age: "Alter pro Ablageort", bh_space: "Platz fürs nächste Backup", bhOwnOpen: "Aufräumen", bhSizesTitle: "Größe der letzten Backups", bhSizesLabel: "Größe der letzten {n} Backups, von {from} auf {to}", bhSizesNote: "Die letzten {n} Backups: von {from} auf {to}. Der Balken ganz rechts ist das neueste.",
   bhContentOk: "Datenbank enthalten, {apps} Apps, {folders} Ordner, keine Fehler", bhContentFailed: "Beim neuesten Backup sind Teile fehlgeschlagen: {items}", bhContentNoDb: "Die Datenbank fehlt im neuesten Backup, obwohl sie vorgesehen ist", bhContentNoDbSet: "Der Zeitplan nimmt die Datenbank nicht mit: eine Wiederherstellung hätte keinen Verlauf", bhContentUnknown: "Der Inhalt des neuesten Backups ist nicht zu lesen",
   bhRemoteOk: "Neueste Kopie: {items}", bhRemoteStale: "Zu alt (Grenze {limit}): {items}",
-  bhSpaceOk: "{free} frei, das nächste Backup braucht etwa {need}", bhSpaceNote: "{free} frei, das nächste Backup braucht etwa {need}", bhSpaceProblem: "Nur {free} frei, das letzte Backup war {size} groß", bhSpaceUnknown: "Freier Platz oder Backup-Größe nicht bekannt", bhVerdict_ok: "Belastbar", bhVerdict_note: "Erst ansehen", bhVerdict_problem: "Problem", bhVerdict_unknown: "Unbekannt", bhCheckFirst: "Zu prüfen: {items}", bhTileLast: "Letztes Backup", bhTileCount: "Backups", bhTileRemote: "Externe Kopie", bhTileOpen: "Zu prüfen", bhGroup_running: "Sicherung läuft", bhGroup_storage: "Ablage und Inhalt", bhGroup_restore: "Wiederherstellbarkeit", bhGroup_house: "Housekeeper", backupsTab: "Backups",
+  bhSpaceOk: "{free} frei, das nächste Backup braucht etwa {need}", bhSpaceNote: "{free} frei, das nächste Backup braucht etwa {need}", bhSpaceProblem: "Nur {free} frei, das letzte Backup war {size} groß", bhSpaceUnknown: "Freier Platz oder Backup-Größe nicht bekannt", bhVerdict_ok: "Belastbar", bhVerdict_note: "Erst ansehen", bhVerdict_problem: "Problem", bhVerdict_unknown: "Unbekannt", bhCheckFirst: "Zu prüfen: {items}", bhTileLast: "Letztes Backup", bhTileCount: "Backups", bhTileRemote: "Externe Kopie", bhTileOpen: "Zu prüfen", bhTileProblems: "{n} Probleme", bhTileNotes: "{n} Hinweise", bhTileProblems1: "1 Problem", bhTileNotes1: "1 Hinweis", bhGroup_running: "Sicherung läuft", bhGroup_storage: "Ablage und Inhalt", bhGroup_restore: "Wiederherstellbarkeit", bhGroup_house: "Housekeeper", backupsTab: "Backups",
   bhRec_daily: "täglich", bhRec_custom_days: "an bestimmten Tagen", bhRec_never: "ohne Zeitplan", bhNone: "keine", bhNever: "nie",
-  bhAgeHours: "{n} Std.", bhAgeDays: "{n} Tagen",
+  bhAgeHours: "{n} Std.", bhAgeDays: "{n} Tage", bhAgeDaysAgo: "{n} Tagen",
   bhSetupOk: "Ziele: {agents} · Zeitplan: {recurrence}", bhSetupNote: "Kein Ziel für automatische Backups gewählt, ältere Backups sind aber vorhanden.", bhSetupProblem: "Weder ein Backup-Ziel noch ein vorhandenes Backup.",
   bhNewestNone: "Es gibt noch kein Backup.", bhNewestText: "Vor {age} · Grenze für den Zeitplan: {limit}",
   bhRunOk: "Zuletzt erfolgreich: {completed}", bhRunUnknown: "Noch kein automatischer Lauf bekannt.",
   bhRunFailed: "Der letzte Versuch ({attempted}) hat kein Backup ergeben; letzter Erfolg: {completed}.", bhRunAgents: "Ziele mit Fehler: {agents}",
-  bhTargetsOk: "Lokal: {local} · extern: {remote}", bhTargetsNote: "Nur lokal ({local}). Eine zweite, externe Kopie schützt vor dem Verlust des Geräts. Ob ein Ziel lokal oder extern ist, richtet sich nach seinem Namen.", bhTargetsConfirmed: "Externen Ablageort am {date} bestätigt. Home Assistant meldet nur {local}; die automatische Zuordnung erfolgt nach dem Namen des Ziels.", bhTargetsOkConfirmed: "Lokal: {local} · extern: {remote} · bestätigt am {date}",
+  bhTargetsOk: "Lokal: {local} · extern: {remote}", bhTargetsMissed: "Eingestellt ist auch {remote}, das neueste Backup liegt aber nur lokal ({local}). Prüfe, ob das Hochladen geklappt hat.", bhTargetsNote: "Nur lokal ({local}). Eine zweite, externe Kopie schützt vor dem Verlust des Geräts. Ob ein Ziel lokal oder extern ist, richtet sich nach seinem Namen.", bhTargetsConfirmed: "Externen Ablageort am {date} bestätigt. Home Assistant meldet nur {local}; die automatische Zuordnung erfolgt nach dem Namen des Ziels.", bhTargetsOkConfirmed: "Lokal: {local} · extern: {remote} · bestätigt am {date}",
   bhSizeOk: "{size} (erwartet etwa {expected})", bhSizeNote: "{size} statt etwa {expected} ({percent} %): ungewöhnlich klein oder groß.", bhSizeUnknown: "Zu wenige Backups für einen Vergleich.",
   bhRetentionOk: "Aufbewahrung: {limit} · vorhanden: {count}, das älteste vor {oldest} Tagen", bhRetentionNote: "Keine Aufbewahrungsgrenze eingestellt (vorhanden: {count}). Der Speicher kann volllaufen.",
   bhRetCopies: "{n} Backups", bhRetDays: "{n} Tage",
@@ -853,9 +880,10 @@ Object.assign(TEXT.de, {
   bhListTitle: "Letzte Backups", bhAllProtected: "Alle (geschützt oder nicht)", bhColDate: "Datum", bhColSize: "Größe", bhColTargets: "Ziele", bhAgentLocal: "Lokal", bhAgentNetwork: "Netzwerkspeicher: {name}", bhColProtected: "Verschlüsselt", bhYes: "Ja", bhNo: "Nein",
   bhColKind: "Art", bhColContent: "Inhalt", bhAllKinds: "Alle Arten", bhKind_auto: "Automatisch", bhKind_manual: "Manuell", bhKind_other: "Anderes Werkzeug", bhKind_own: "Housekeeper", bhContent_full: "Voll", bhContent_config: "Nur Konfiguration", bhContent_apps: "Nur Apps", bhFailedPill: "Teil fehlgeschlagen", bhOpen: "Details aufklappen", bhClose: "Details zuklappen",
   bhName: "Name", bhVersion: "HA-Version", bhDatabase: "Datenbank", bhApps: "Apps", bhFolders: "Ordner", bhSizes: "Größe je Ziel", bhFailed: "Fehlgeschlagen", bhId: "Backup-ID",
+  bh_external: "Außerhalb von Home Assistant", bhExternalPill: "Extern", bhExternalText: "Am {date} angegeben. Housekeeper sieht diese Backups nicht und prüft weder Alter noch Inhalt.", bhExternalClear: "Zurücknehmen", bhExternalOpen: "Sichere extern", bhExternalAsk: "Sicherst du außerhalb von Home Assistant, etwa das Docker-Volume oder den Host? Dann kannst du das angeben.", bhExternalForm: "Housekeeper sieht diese Backups nicht und prüft sie nicht: Die Prüfungen zu Zeitplan, Alter, Ablageort, Größe, Aufbewahrung, Verschlüsselung und Emergency Kit entfallen. Die Sicherung, die Housekeeper vor einem Eingriff anlegt, bleibt; sie landet im Backup-Ordner von Home Assistant.", bhExternalSave: "Angeben", bhExternalShort: "Außerhalb von Home Assistant", bhTileBackup: "Sicherung", bhTileOwn: "Housekeeper-Backups", bhTileFree: "Freier Platz",
   bhGuideTitle: "So testest du eine Wiederherstellung", bhGuideSteps: "1. Eine Test-Instanz oder eine zweite Installation bereitstellen (nie zuerst die Hauptinstanz). 2. Dort ein aktuelles Backup einspielen: Einstellungen → System → Backups → Backup hochladen oder bei der Einrichtung wiederherstellen. 3. Prüfen, ob Integrationen, Automationen und Dashboards da sind. 4. Hier das Datum des Tests speichern. Housekeeper führt selbst nie eine Wiederherstellung aus.",
   todoBackupProblem: "Backup-Schutz: Problem",
-  mtProblems_1: "1 Problem", mtProblems_n: "{n} Probleme", mtNotes_1: "1 Hinweis", mtNotes_n: "{n} Hinweise", mtChecks: "{n} Prüfungen", mtPreflight: "Preflight", mtOpen: "{n} offen", mtRecord: "Gespeicherter Stand", mtNoRecord: "keiner",
+  mtProblems_1: "1 Problem", mtProblems_n: "{n} Probleme", mtNotes_1: "1 Hinweis", mtNotes_n: "{n} Hinweise", mtChecks: "{n} Prüfungen", mtPreflight: "Preflight", mtOpen: "{n} offen", mtUpdates_1: "1 Update", mtUpdates_n: "{n} Updates", mtRecord: "Gespeicherter Stand", mtNoRecord: "keiner",
 });
 Object.assign(TEXT.en, {
   backupTitle: "Backup protection", 
@@ -865,14 +893,14 @@ Object.assign(TEXT.en, {
   bh_retention: "Retention", bh_encryption: "Encryption", bh_emergency_kit: "Emergency kit", bh_restore_test: "Restore test", bh_plan_backups: "Backups before cleanups", bh_own_backups: "Housekeeper backups", bh_content: "Content", bh_remote_age: "Age per target", bh_space: "Room for the next backup", bhOwnOpen: "Tidy up", bhSizesTitle: "Size of the last backups", bhSizesLabel: "Size of the last {n} backups, from {from} to {to}", bhSizesNote: "The last {n} backups: from {from} to {to}. The bar on the right is the newest.",
   bhContentOk: "Database included, {apps} apps, {folders} folders, no errors", bhContentFailed: "Parts of the newest backup failed: {items}", bhContentNoDb: "The database is missing in the newest backup although it is planned", bhContentNoDbSet: "The schedule leaves the database out: a restore would have no history", bhContentUnknown: "The content of the newest backup cannot be read",
   bhRemoteOk: "Newest copy: {items}", bhRemoteStale: "Too old (limit {limit}): {items}",
-  bhSpaceOk: "{free} free, the next backup needs about {need}", bhSpaceNote: "{free} free, the next backup needs about {need}", bhSpaceProblem: "Only {free} free, the last backup was {size}", bhSpaceUnknown: "Free space or backup size not known", bhVerdict_ok: "Reliable", bhVerdict_note: "Look first", bhVerdict_problem: "Problem", bhVerdict_unknown: "Unknown", bhCheckFirst: "To check: {items}", bhTileLast: "Latest backup", bhTileCount: "Backups", bhTileRemote: "External copy", bhTileOpen: "To check", bhGroup_running: "Backup runs", bhGroup_storage: "Storage and content", bhGroup_restore: "Restorability", bhGroup_house: "Housekeeper", backupsTab: "Backups",
+  bhSpaceOk: "{free} free, the next backup needs about {need}", bhSpaceNote: "{free} free, the next backup needs about {need}", bhSpaceProblem: "Only {free} free, the last backup was {size}", bhSpaceUnknown: "Free space or backup size not known", bhVerdict_ok: "Reliable", bhVerdict_note: "Look first", bhVerdict_problem: "Problem", bhVerdict_unknown: "Unknown", bhCheckFirst: "To check: {items}", bhTileLast: "Latest backup", bhTileCount: "Backups", bhTileRemote: "External copy", bhTileOpen: "To check", bhTileProblems: "{n} problems", bhTileNotes: "{n} hints", bhTileProblems1: "1 problem", bhTileNotes1: "1 hint", bhGroup_running: "Backup runs", bhGroup_storage: "Storage and content", bhGroup_restore: "Restorability", bhGroup_house: "Housekeeper", backupsTab: "Backups",
   bhRec_daily: "daily", bhRec_custom_days: "on chosen days", bhRec_never: "no schedule", bhNone: "none", bhNever: "never",
-  bhAgeHours: "{n} h", bhAgeDays: "{n} days",
+  bhAgeHours: "{n} h", bhAgeDays: "{n} days", bhAgeDaysAgo: "{n} days",
   bhSetupOk: "Targets: {agents} · schedule: {recurrence}", bhSetupNote: "No target chosen for automatic backups, but older backups exist.", bhSetupProblem: "Neither a backup target nor an existing backup.",
   bhNewestNone: "There is no backup yet.", bhNewestText: "{age} ago · limit for the schedule: {limit}",
   bhRunOk: "Last success: {completed}", bhRunUnknown: "No automatic run known yet.",
   bhRunFailed: "The last attempt ({attempted}) produced no backup; last success: {completed}.", bhRunAgents: "Targets with errors: {agents}",
-  bhTargetsOk: "Local: {local} · remote: {remote}", bhTargetsNote: "Local only ({local}). A second, remote copy protects against losing the device. Whether a target is local or remote depends on its name.", bhTargetsConfirmed: "Remote storage confirmed on {date}. Home Assistant reports only {local}; automatic classification uses the target name.", bhTargetsOkConfirmed: "Local: {local} · remote: {remote} · confirmed on {date}",
+  bhTargetsOk: "Local: {local} · remote: {remote}", bhTargetsMissed: "{remote} is set up as well, but the newest backup is only local ({local}). Check whether the upload worked.", bhTargetsNote: "Local only ({local}). A second, remote copy protects against losing the device. Whether a target is local or remote depends on its name.", bhTargetsConfirmed: "Remote storage confirmed on {date}. Home Assistant reports only {local}; automatic classification uses the target name.", bhTargetsOkConfirmed: "Local: {local} · remote: {remote} · confirmed on {date}",
   bhSizeOk: "{size} (expected about {expected})", bhSizeNote: "{size} instead of about {expected} ({percent} %): unusually small or large.", bhSizeUnknown: "Too few backups to compare.",
   bhRetentionOk: "Retention: {limit} · present: {count}, the oldest {oldest} days old", bhRetentionNote: "No retention limit set (present: {count}). The storage can fill up.",
   bhRetCopies: "{n} backups", bhRetDays: "{n} days",
@@ -885,9 +913,10 @@ Object.assign(TEXT.en, {
   bhListTitle: "Latest backups", bhAllProtected: "All (protected or not)", bhColDate: "Date", bhColSize: "Size", bhColTargets: "Targets", bhAgentLocal: "Local", bhAgentNetwork: "Network storage: {name}", bhColProtected: "Encrypted", bhYes: "Yes", bhNo: "No",
   bhColKind: "Type", bhColContent: "Contents", bhAllKinds: "All types", bhKind_auto: "Automatic", bhKind_manual: "Manual", bhKind_other: "Other tool", bhKind_own: "Housekeeper", bhContent_full: "Full", bhContent_config: "Configuration only", bhContent_apps: "Apps only", bhFailedPill: "Part failed", bhOpen: "Show details", bhClose: "Hide details",
   bhName: "Name", bhVersion: "HA version", bhDatabase: "Database", bhApps: "Apps", bhFolders: "Folders", bhSizes: "Size per target", bhFailed: "Failed", bhId: "Backup ID",
+  bh_external: "Outside Home Assistant", bhExternalPill: "External", bhExternalText: "Stated on {date}. Housekeeper does not see these backups and checks neither their age nor their content.", bhExternalClear: "Take back", bhExternalOpen: "I back up elsewhere", bhExternalAsk: "Do you back up outside Home Assistant, for example the Docker volume or the host? Then you can say so.", bhExternalForm: "Housekeeper does not see these backups and does not check them: the checks of schedule, age, location, size, retention, encryption and emergency kit are left out. The backup Housekeeper makes before a change stays; it goes to the backup folder of Home Assistant.", bhExternalSave: "Confirm", bhExternalShort: "Outside Home Assistant", bhTileBackup: "Backups", bhTileOwn: "Housekeeper backups", bhTileFree: "Free space",
   bhGuideTitle: "How to test a restore", bhGuideSteps: "1. Set up a test instance or a second installation (never the main instance first). 2. Restore a recent backup there: Settings → System → Backups → upload a backup, or restore during setup. 3. Check that integrations, automations and dashboards are there. 4. Save the date of the test here. Housekeeper never performs a restore itself.",
   todoBackupProblem: "Backup protection: problem",
-  mtProblems_1: "1 problem", mtProblems_n: "{n} problems", mtNotes_1: "1 note", mtNotes_n: "{n} notes", mtChecks: "{n} checks", mtPreflight: "Preflight", mtOpen: "{n} open", mtRecord: "Saved state", mtNoRecord: "none",
+  mtProblems_1: "1 problem", mtProblems_n: "{n} problems", mtNotes_1: "1 note", mtNotes_n: "{n} notes", mtChecks: "{n} checks", mtPreflight: "Preflight", mtOpen: "{n} open", mtUpdates_1: "1 update", mtUpdates_n: "{n} updates", mtRecord: "Saved state", mtNoRecord: "none",
 });
 
 // Texts for the reliability view; merged into TEXT.
@@ -896,7 +925,7 @@ Object.assign(TEXT.de, {
   relHint: "Schlechteste zuerst. Gerechnet aus den Zuständen im Recorder",
   relWindow1: "24 Stunden", relWindow7: "7 Tage", relWindow30: "30 Tage", relKeepShort: "Der Recorder behält nur {keep} Tage. Die Zahlen für {days} Tage reichen deshalb nicht weiter zurück.", relLoading: "Der Recorder wird ausgewertet. Das kann bei einer großen Datenbank einige Sekunden dauern …",
   relTab: "Zuverlässigkeit", relAllStates: "Alle Zustände", relOnlyOutages: "Mit gemeinsamen Ausfällen", relDeltaPoints: "Prozentpunkte zum Zeitraum davor", relStrip: "Ausfall je Tag", relPeriods: "Ausfallzeiträume ({n})", relPeriodsMore: "Gezeigt werden die letzten {shown} von {total}.", relColStart: "Beginn", relColDuration: "Dauer", relColAffected: "Betroffen", relColKind: "Art", relOfEntities: "{n} von {m} Entitäten", relKindShared: "Gemeinsam", relKindSingle: "Einzeln", relKindDown: "Ganzer Zeitraum", relCarries: "Trägt die Hausfunktionen",
-  relOnlyDead: "Dauerhaft ausgefallen", relDead: "Ausgefallen", relDeadSub: "{n} Entitäten, ganzes Fenster", relSumAvg: "Ø je Integration", relSumAvgHint: "Mittelwert der Integrationen, jede zählt einmal. Dauerhaft ausgefallene sind nicht eingerechnet.", relTooSmall: "zu klein", relTooSmallHint: "Gemeinsame Ausfälle gibt es erst ab {n} Entitäten.", relReauthOpen: "Zum Befund", relSortAvail: "Verfügbarkeit", relSortOutages: "Gemeinsame Ausfälle", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entitäten mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entität dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
+  relOnlyDead: "Dauerhaft ausgefallen", relDead: "Ausgefallen", relDeadSub: "{n} Entitäten, ganzes Fenster", relTooSmall: "zu klein", relTooSmallHint: "Gemeinsame Ausfälle gibt es erst ab {n} Entitäten.", relReauthOpen: "Zur Integration und ihrem Befund", relSortAvail: "Verfügbarkeit", relSortOutages: "Gemeinsame Ausfälle", relAgeNote: "Stand: {when}", relFactAvail: "Verfügbarkeit ({days} Tage)", relAffected: "Entitäten mit Ausfallzeit ({n})", relAffectedMore: "Gezeigt werden die {shown} mit der niedrigsten Verfügbarkeit von {total}.", relNoAffected: "Keine Entität dieses Eintrags war im Zeitraum nicht verfügbar.", relOpenEntry: "Integration öffnen",
   stability: "Stabilität", stabilityOk: "Stabil im Zeitraum", stabilityMissing: "Noch nicht berechnet. Die Ansicht Zuverlässigkeit rechnet es aus.", cause_unstable: "Die Entität fällt immer wieder aus: {level}.", hint_unstable: "Prüfe Verbindung, Netz und Integration des Geräts; die Zahlen stehen in der Ansicht Zuverlässigkeit.",
   relSumAvail: "Verfügbarkeit gesamt", relSumOutages: "Integrationen mit Ausfällen", relSumOf: "von {n}", relSumUnstable: "Instabile Entitäten", relSumFlapping: "davon {n} flatternd", relSumAttention: "Brauchen Aufmerksamkeit", relSumAttentionHint: "neue Anmeldung oder nicht geladen", relTabIntegrations: "Integrationen", relTabUnstable: "Instabile Entitäten",
   relTook: "berechnet in {s} s", relCached: "aus dem Zwischenspeicher ({s} s)", relNoRecorder: "Der Recorder von Home Assistant ist nicht verfügbar.",
@@ -907,17 +936,18 @@ Object.assign(TEXT.de, {
   relMinutes: "{n} Min.", relHours: "{n} Std.", relDays: "{n} Tage",
   relUnstableNone: "Keine Entität fällt auffällig oft aus.", relUnstableCoverage: "Beobachtet: {days} Tage, {withData} Entitäten mit Daten. Ausfälle während gemeinsamer Ausfälle sind herausgerechnet; sie zählen für die Integration.",
   relUnstable: "instabil", relFlapping: "flatternd", relEpisodes: "{n} Ausfälle in {days} Tagen ({rate} pro Tag) · zusammen {total}, im Mittel {mean}",
-  relPattern: "wiederkehrend, meist zwischen {from} und {to} Uhr", relFollowers: "wird von {n} Automationen, Skripten oder Szenen verwendet", relUnstableMore: "{shown} von {total} Entitäten gezeigt.",
+  relPattern: "wiederkehrend, meist zwischen {from} und {to} Uhr", relFollowers: "wird von {n} Automationen, Skripten oder Szenen verwendet", relUnstableMore: "Gezeigt werden die {shown} auffälligsten von {total} Entitäten.", relUnstableShownSub: "die {n} auffälligsten in der Liste",
   relUnstableFootnote: "Instabil: mindestens {episodes} Ausfälle und {rate} pro Tag, flatternd ab {flap} pro Tag. Ausfälle während eines gemeinsamen Ausfalls der Integration zählen für die Integration, nicht für die Entität. Dauerhaft ausgefallene, deaktivierte und ignorierte Entitäten fehlen.",
   relCoverage: "Letzte {days} Tage · {withData} von {known} Entitäten mit Daten · im Mittel {share} % des Zeitraums beobachtet (neue Entitäten kürzer).",
   relCompare: "Mit Zeitraum davor vergleichen", relDelta: "{delta} Prozentpunkte gegenüber dem Zeitraum davor ({before} %)", relDeltaNone: "Für den Zeitraum davor liegen keine Daten vor.",
   relFootnote: "Verfügbarkeit: Anteil der Zeit ohne „nicht verfügbar“ in den letzten {days} Tagen, gerechnet ab der ersten Meldung im Zeitraum. Ein gemeinsamer Ausfall heißt: mindestens {share} % der Entitäten des Eintrags, mindestens {entities}, mindestens {minutes} Minuten zugleich nicht verfügbar. Ein Ausfall, der vor dem Zeitraum begann, zählt erst ab der ersten Meldung darin. Eine Integration, die den ganzen Zeitraum ausgefallen war, hat keinen Prozentwert und steht oben als „Ausgefallen“. Farben: grün ab {green} %, gelb ab {yellow} %, darunter rot; die Tagesleiste einer Hausfunktion färbt nach der Dauer des Ausfalls und hat eine eigene Schwelle.",
   relColSetup: "Setup-Fehler", relOnlySetup: "Setup-Fehler", relSetupCount: "{n} in {days} Tagen", relSetupLast: "zuletzt {date}", relHintTitle: "Möglicher Grund:",
+  relHintCloud: "{n} Setup-Fehler in {days} Tagen bei niedriger Verfügbarkeit. Die Integration holt ihre Daten aus dem Netz, vermutlich war der Dienst oder die Website nicht erreichbar oder hat sich geändert. Im Protokoll nach dem Fehler suchen, auf ein Update der Integration prüfen und abwarten: Home Assistant versucht es von selbst wieder.",
   relHintOffline: "{n} Setup-Fehler in {days} Tagen bei niedriger Verfügbarkeit. Das spricht eher für ein Gerät, das offline geht, oder ein instabiles Netz als für die Integration selbst. Strom, WLAN und feste IP des Geräts prüfen.",
   relHintError: "Der Setup steht gerade im Fehler. Das ist meist ein Zugangs- oder Konfigurationsproblem: Integration neu anmelden oder neu einrichten.",
   relHintEarly: "{n} Setup-Fehler in {days} Tagen bei guter Verfügbarkeit. Die Integration startet vielleicht zu früh nach dem Neustart, bevor Netz oder Gerät bereit sind.",
   relHintUnload: "Entladen oder Migration ist fehlgeschlagen. Meist hilft ein Neustart von Home Assistant; danach nach Updates der Integration sehen.",
-  relSumAll: "Alle", relColStatus: "Status", relColLongest: "Längster Ausfall", relColLast: "Letzte Störung", relColDelta: "Veränderung (Prozentpunkte)", relColLevel: "Stufe", relColPattern: "Muster",
+  relSumAll: "Alle", relColStatus: "Status", relColLongest: "Längster Ausfall", relLongestSub: "längster {d}", relColLast: "Letzte Störung", relColDelta: "Veränderung (Prozentpunkte)", relColLevel: "Stufe", relColPattern: "Meist um", relPatternCell: "{from}–{to} Uhr",
   relSortRank: "Standard", relSortEpisodes: "Ausfälle", relSortRate: "Ausfälle pro Tag", relSortDuration: "Gesamtdauer", relOnlyFlapping: "Nur flatternd", relOnlyUnstable: "Nur instabil",
 });
 Object.assign(TEXT.en, {
@@ -925,7 +955,7 @@ Object.assign(TEXT.en, {
   relHint: "Worst first. Calculated from the states in the recorder",
   relWindow1: "24 hours", relWindow7: "7 days", relWindow30: "30 days", relKeepShort: "The recorder keeps only {keep} days. The numbers for {days} days therefore reach back no further.", relLoading: "Evaluating the recorder. On a large database this can take a few seconds …",
   relTab: "Reliability", relAllStates: "All states", relOnlyOutages: "With shared outages", relDeltaPoints: "percentage points against the period before", relStrip: "Outage per day", relPeriods: "Outage periods ({n})", relPeriodsMore: "Showing the last {shown} of {total}.", relColStart: "Start", relColDuration: "Duration", relColAffected: "Affected", relColKind: "Kind", relOfEntities: "{n} of {m} entities", relKindShared: "Shared", relKindSingle: "Single", relKindDown: "Whole period", relCarries: "Carries the house functions",
-  relOnlyDead: "Down all the time", relDead: "Down", relDeadSub: "{n} entities, the whole window", relSumAvg: "Avg per integration", relSumAvgHint: "Mean of the integrations, each counts once. Those down all the time are not included.", relTooSmall: "too small", relTooSmallHint: "Shared outages need at least {n} entities.", relReauthOpen: "Open the finding", relSortAvail: "Availability", relSortOutages: "Shared outages", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
+  relOnlyDead: "Down all the time", relDead: "Down", relDeadSub: "{n} entities, the whole window", relTooSmall: "too small", relTooSmallHint: "Shared outages need at least {n} entities.", relReauthOpen: "Open the integration and its finding", relSortAvail: "Availability", relSortOutages: "Shared outages", relAgeNote: "As of {when}", relFactAvail: "Availability ({days} days)", relAffected: "Entities with downtime ({n})", relAffectedMore: "Showing the {shown} with the lowest availability of {total}.", relNoAffected: "No entity of this entry was unavailable in the period.", relOpenEntry: "Open integration",
   stability: "Stability", stabilityOk: "Stable in the period", stabilityMissing: "Not calculated yet. The Reliability view calculates it.", cause_unstable: "The entity keeps failing: {level}.", hint_unstable: "Check the connection, network and integration of the device; the numbers are in the Reliability view.",
   relSumAvail: "Availability overall", relSumOutages: "Integrations with outages", relSumOf: "of {n}", relSumUnstable: "Unstable entities", relSumFlapping: "{n} of them flapping", relSumAttention: "Need attention", relSumAttentionHint: "re-authentication or not loaded", relTabIntegrations: "Integrations", relTabUnstable: "Unstable entities",
   relTook: "calculated in {s} s", relCached: "from the cache ({s} s)", relNoRecorder: "The Home Assistant recorder is not available.",
@@ -936,17 +966,18 @@ Object.assign(TEXT.en, {
   relMinutes: "{n} min", relHours: "{n} h", relDays: "{n} days",
   relUnstableNone: "No entity fails unusually often.", relUnstableCoverage: "Observed: {days} days, {withData} entities with data. Failures during shared outages are taken out; they count for the integration.",
   relUnstable: "unstable", relFlapping: "flapping", relEpisodes: "{n} failures in {days} days ({rate} a day) · {total} in all, {mean} on average",
-  relPattern: "recurring, mostly between {from} and {to} o'clock", relFollowers: "used by {n} automations, scripts or scenes", relUnstableMore: "{shown} of {total} entities shown.",
+  relPattern: "recurring, mostly between {from} and {to} o'clock", relFollowers: "used by {n} automations, scripts or scenes", relUnstableMore: "The {shown} most noticeable of {total} entities are shown.", relUnstableShownSub: "the {n} most noticeable in the list",
   relUnstableFootnote: "Unstable: at least {episodes} failures and {rate} a day, flapping from {flap} a day. Failures during a shared outage of the integration count for the integration, not the entity. Entities that are down all the time, disabled or ignored are left out.",
   relCoverage: "Last {days} days · {withData} of {known} entities with data · on average {share} % of the period observed (new entities less).",
   relCompare: "Compare with the period before", relDelta: "{delta} percentage points against the period before ({before} %)", relDeltaNone: "There is no data for the period before.",
   relFootnote: "Availability: the share of time without “unavailable” in the last {days} days, counted from the first report in the period. A shared outage means at least {share} % of the entry's entities, at least {entities}, were unavailable together for at least {minutes} minutes. An outage that began before the period counts from the first report in it. An integration that was down the whole period has no percentage and is listed first as “Down”. Colors: green from {green} %, yellow from {yellow} %, red below; the day strip of a house function colors by the length of the outage and has a threshold of its own.",
   relColSetup: "Setup failures", relOnlySetup: "Setup failures", relSetupCount: "{n} in {days} days", relSetupLast: "last {date}", relHintTitle: "Possible cause:",
+  relHintCloud: "{n} setup failures in {days} days with low availability. The integration fetches its data over the internet, so the service or website was probably unreachable or has changed. Look for the error in the log, check for an update of the integration and wait: Home Assistant retries by itself.",
   relHintOffline: "{n} setup failures in {days} days with low availability. That points to a device going offline or an unstable network rather than the integration itself. Check the device's power, Wi-Fi and fixed IP.",
   relHintError: "Setup is in an error right now. That is usually an access or configuration problem: sign in again or set the integration up anew.",
   relHintEarly: "{n} setup failures in {days} days with good availability. The integration may start too early after a restart, before the network or device is ready.",
   relHintUnload: "Unloading or migration failed. A restart of Home Assistant usually helps; then look for updates of the integration.",
-  relSumAll: "All", relColStatus: "Status", relColLongest: "Longest outage", relColLast: "Last disruption", relColDelta: "Change (percentage points)", relColLevel: "Level", relColPattern: "Pattern",
+  relSumAll: "All", relColStatus: "Status", relColLongest: "Longest outage", relLongestSub: "longest {d}", relColLast: "Last disruption", relColDelta: "Change (percentage points)", relColLevel: "Level", relColPattern: "Mostly at", relPatternCell: "{from}–{to} h",
   relSortRank: "Default", relSortEpisodes: "Outages", relSortRate: "Outages per day", relSortDuration: "Total duration", relOnlyFlapping: "Flapping only", relOnlyUnstable: "Unstable only",
 });
 
@@ -958,7 +989,7 @@ Object.assign(TEXT.de, {
   runsSince: "Gezählt seit {date}; ältere Läufe sind in Home Assistant nicht mehr vorhanden.", 
   runsLoading: "Die Läufe werden gezählt …", runsNone: "Nichts Auffälliges in den gezählten Läufen.", runsFactNone: "Noch keine Läufe gezählt", runsAllOutcomes: "Alle Läufe", runsOnlyErrors: "Mit Fehlern", runsOnlyFlagged: "Mit Auffälligkeit", runsNoData: "Noch keine Läufe gezählt. Der Zähler liest alle 15 Minuten.",
   runsAll: "Alle gezählten Läufe", runsColName: "Name", runsColRuns: "Läufe", runsColErrors: "Fehler", runsColConditions: "Bedingung", runsColDuration: "Dauer Ø / max", runsColTrend: "7 Tage",
-  runsCoverageFull: "Letzte {days} Tage · alle Zahlen vollständig, soweit Home Assistant die Läufe noch kannte.", runsCoverageLower: "Letzte {days} Tage · bei {n} Einträgen nur „mindestens“: der Trace-Speicher war voll, Läufe können fehlen.",
+  runsCoverageFull: "Letzte {days} Tage · alle Zahlen vollständig, soweit Home Assistant die Läufe noch kannte.", runsCoverageLower: "Letzte {days} Tage · bei {n} Einträgen nur „mindestens“: der Trace-Speicher war voll, Läufe können fehlen.", runsCoverageLower1: "Letzte {days} Tage · bei einem Eintrag nur „mindestens“: der Trace-Speicher war voll, Läufe können fehlen.",
   rfHint_failing: "Prüfe die Ablaufverfolgung der Automation an der genannten Stelle.", rfHint_overlap: "Modus oder maximale Läufe anpassen oder die Auslöser entflechten.", rfHint_never_ok: "Ein Schritt oder eine Bedingung verhindert jeden Erfolg; die Ablaufverfolgung zeigt wo.", rfHint_no_effect: "Die Bedingung stoppt fast jeden Lauf; prüfe, ob sie noch passt oder der Auslöser zu breit ist.", rfHint_burst: "Prüfe, was die Automation so oft auslöst.", rfHint_long_run: "Prüfe Wartezeiten und Aktionen, die lange dauern.", rfHint_after_update: "Prüfe die Änderungen der neuen Version.", rfHint_long_wait: "Ein Neustart verwirft die Wartezeit; erwäge einen Zeitplan oder Auslöser statt Warten.", rfHint_wait_no_timeout: "Setze ein Zeitlimit, damit ein Lauf nicht ewig hängt.", rfHint_continue_on_error: "Fehler werden still übergangen; prüfe, ob das gewollt ist.",
   runsLowerBound: "mindestens, Läufe können fehlen", runsMore: "{shown} von {total} Zeilen gezeigt.", runsTrend30: "30 Tage", runsTrendLabel: "Läufe je Tag, ältester zuerst: {values}",
   runsMs: "{n} ms", runsSec: "{n} s", runsChange: "Seit der Änderung der Konfiguration am {date}: {after}. In der Woche davor: {before}.", runsChangeSide: "{errors} Fehler in {runs} Läufen", runsTab: "Läufe", runsTabHint: "Letzte 7 Tage, gezählt seit {date}",
@@ -971,7 +1002,7 @@ Object.assign(TEXT.de, {
   rfAfterUpdate: "Fehlerquote {after} % nach dem Update ({what}) statt {before} % davor. Zeitlich zusammen, nicht als Ursache bewiesen.", rfWhatHa: "Home Assistant {to}", rfWhatEntry: "{domain} {to}",
   rfLongWait: "Enthält eine Wartezeit von {duration}; sie geht bei einem Neustart verloren.", rfWaitNoTimeout: "{n} Warteschritt(e) ohne Timeout; sie gehen bei einem Neustart verloren.",
   rfContinue: "{n} Schritt(e) mit „continue_on_error“; Fehler bleiben dort unsichtbar.",
-  cfColStage: "Stufe", cfColKind: "Art", cfColWhat: "Was", cfColAutomations: "Automationen", cfAllKinds: "Alle Arten", cfKind_opposing: "Gegenläufig", cfKind_loop: "Schleife",
+  cfColAction: "Entscheidung", cfKnown: "Als bekannt markieren", cfReport: "Wieder melden", cfKnownNote: "Als bekannt markiert: zählt nicht in der Bewertung.", cfColStage: "Stufe", cfColKind: "Art", cfColWhat: "Was", cfColAutomations: "Automationen", cfAllKinds: "Alle Arten", cfKind_opposing: "Gegenläufig", cfKind_loop: "Schleife",
   cfTitle: "Konflikte und Schleifen", cfHint: "Aus den Konfigurationen und den Tageszahlen der Läufe. Kein Beweis: Housekeeper führt nichts aus.", cfNone: "Keine möglichen Konflikte oder Schleifen gefunden.",
   cfStage_static: "möglich", cfStage_observed: "beobachtet", cfStage_confirmed: "wiederholt",
   cfOpposing: "{first} und {second} steuern {entity} gegensätzlich ({a} gegen {b}).", cfLoop: "{chain} führen im Kreis über {path} zurück zum Anfang.",
@@ -986,7 +1017,7 @@ Object.assign(TEXT.en, {
   runsSince: "Counted since {date}; older runs are no longer in Home Assistant.", 
   runsLoading: "Counting the runs …", runsNone: "Nothing stands out in the counted runs.", runsFactNone: "No runs counted yet", runsAllOutcomes: "All runs", runsOnlyErrors: "With errors", runsOnlyFlagged: "Flagged", runsNoData: "No runs counted yet. The counter reads every 15 minutes.",
   runsAll: "All counted runs", runsColName: "Name", runsColRuns: "Runs", runsColErrors: "Errors", runsColConditions: "Condition", runsColDuration: "Duration avg / max", runsColTrend: "7 days",
-  runsCoverageFull: "Last {days} days · all numbers complete as far as Home Assistant still knew the runs.", runsCoverageLower: "Last {days} days · “at least” for {n} entries: the trace store was full, runs may be missing.",
+  runsCoverageFull: "Last {days} days · all numbers complete as far as Home Assistant still knew the runs.", runsCoverageLower: "Last {days} days · “at least” for {n} entries: the trace store was full, runs may be missing.", runsCoverageLower1: "Last {days} days · “at least” for one entry: the trace store was full, runs may be missing.",
   rfHint_failing: "Check the automation's trace at the named step.", rfHint_overlap: "Adjust the mode or max runs, or untangle the triggers.", rfHint_never_ok: "A step or condition prevents every success; the trace shows where.", rfHint_no_effect: "The condition stops almost every run; check whether it still fits or the trigger is too broad.", rfHint_burst: "Check what fires the automation so often.", rfHint_long_run: "Check waits and actions that take long.", rfHint_after_update: "Check the changes of the new version.", rfHint_long_wait: "A restart discards the wait; consider a schedule or trigger instead of waiting.", rfHint_wait_no_timeout: "Set a timeout so a run cannot hang forever.", rfHint_continue_on_error: "Errors are passed over silently; check whether that is intended.",
   runsLowerBound: "at least, runs may be missing", runsMore: "{shown} of {total} rows shown.", runsTrend30: "30 days", runsTrendLabel: "Runs per day, oldest first: {values}",
   runsMs: "{n} ms", runsSec: "{n} s", runsChange: "Since the configuration changed on {date}: {after}. The week before: {before}.", runsChangeSide: "{errors} errors in {runs} runs", runsTab: "Runs", runsTabHint: "Last 7 days, counted since {date}",
@@ -999,7 +1030,7 @@ Object.assign(TEXT.en, {
   rfAfterUpdate: "Error rate {after} % after the update ({what}) instead of {before} % before. Close in time, not proven as the cause.", rfWhatHa: "Home Assistant {to}", rfWhatEntry: "{domain} {to}",
   rfLongWait: "Contains a wait of {duration}; it is lost on a restart.", rfWaitNoTimeout: "{n} wait step(s) without a timeout; they are lost on a restart.",
   rfContinue: "{n} step(s) with “continue_on_error”; errors stay invisible there.",
-  cfColStage: "Stage", cfColKind: "Kind", cfColWhat: "What", cfColAutomations: "Automations", cfAllKinds: "All kinds", cfKind_opposing: "Opposing", cfKind_loop: "Loop",
+  cfColAction: "Decision", cfKnown: "Mark as known", cfReport: "Report again", cfKnownNote: "Marked as known: not counted in the rating.", cfColStage: "Stage", cfColKind: "Kind", cfColWhat: "What", cfColAutomations: "Automations", cfAllKinds: "All kinds", cfKind_opposing: "Opposing", cfKind_loop: "Loop",
   cfTitle: "Conflicts and loops", cfHint: "From the configurations and the daily numbers of the runs. Not proof: Housekeeper runs nothing.", cfNone: "No possible conflicts or loops found.",
   cfStage_static: "possible", cfStage_observed: "observed", cfStage_confirmed: "repeated",
   cfOpposing: "{first} and {second} control {entity} in opposite ways ({a} against {b}).", cfLoop: "{chain} lead around in a circle via {path} back to the start.",
@@ -1072,7 +1103,7 @@ Object.assign(TEXT.en, {
 
 // Texts for the list of Housekeeper's own files (Settings, Info); merged into TEXT.
 const STORE_GROUPS = [
-  ["history", ["observations", "history", "events", "runs", "replies", "load", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
+  ["history", ["observations", "history", "events", "runs", "replies", "load", "starts", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
   ["proof", ["journal", "attest"]],
   ["yours", ["ignored", "exceptions", "marks", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
 ];
@@ -1087,13 +1118,20 @@ Object.assign(TEXT.de, {
   storeChanged: "geändert",
   storeNone: "Noch keine Daten gespeichert.",
   stoColFile: "Datei", stoColGroup: "Gruppe", stoColSize: "Größe", stoColChanged: "Geändert", stoAllGroups: "Alle Gruppen",
-  hidColObject: "Objekt", hidColFinding: "Befund", hidColDecision: "Entscheidung", hidColAction: "Aktion", hidAllWays: "Alle Arten", hidByManual: "Von dir ausgeblendet", hidByLabel: "Durch Label", hidByMark: "Durch Markierung",
+  decStatusKpi: "Befunde mit Status", decMarksKpi: "Vermerke", decRulesKpi: "Ausnahmeregeln", decLabelsKpi: "Objekte mit Label", decDue: "{n} fällig", decReviewDue: "{n} Prüfdatum erreicht", decReviewDueShort: "Prüfdatum erreicht", decRuleHides: "{n} Befunde ausgeblendet",
+  decStatusTitle: "Befunde mit eigenem Status", decStatusHint: "Was du an einzelnen Befunden entschieden hast: bekannt, zurückgestellt, ausgeblendet. Gilt nur für diesen Befund; ein neuer Befund am selben Objekt ist wieder offen. Abgelaufene stehen oben. Ist der Befund gerade nicht da, ruht die Entscheidung und greift wieder, sobald er zurückkommt.", decColNow: "Gerade", decNowAll: "Gerade: alle", decNowHides: "blendet aus", decNowDue: "wieder offen", decNowRests: "ruht", decNowQuiet: "seit {n} Tagen nicht aufgetreten – noch nötig?", decNowGone: "Objekt gibt es nicht mehr", decNowFilter_hides: "Blendet aus", decNowFilter_due: "Wieder offen", decNowFilter_rests: "Ruht", decNowFilter_quiet: "Noch nötig?", decNowFilter_gone: "Objekt fehlt", decLastSeen: "zuletzt am {when}", decOpenObject: "Objekt öffnen", decRemove: "Entscheidung entfernen", decRemoveN: "Entscheidung entfernen ({n})", decRestHead: "Ruhend · Befund gerade nicht da ({n})", decStatusNone: "Kein Befund hat einen eigenen Status.",
+  decAllStates: "Alle", decColStatus: "Status", decColUntil: "Bis", decChange: "Status ändern", decColEffect: "Wirkt gerade",
+  decMarksTitle: "Vermerke", decMarksHint: "Aussagen über ein Objekt: absichtlich offline, saisonal, Ersatz, nicht entfernen, ersetzt. Sie gelten auch für künftige Ausfälle, am Gerät für seine Entitäten. Hier steht jeder Vermerk, auch wenn er gerade nichts ausblendet.", decMarksNone: "Noch kein Vermerk. Du setzt ihn an einem Befund oder auf der Seite des Objekts.", decAllMarks: "Alle Arten",
+  markEffDue: "Prüfdatum erreicht, blendet nichts mehr aus", markEffKeep: "sperrt Bereinigen", markEffHides: "{n} Befunde ausgeblendet", markEffNone: "blendet gerade nichts aus", markEffQuiet: "seit {n} Tagen ohne Ausfall – noch nötig?", markQuietFilter: "Noch nötig?",
+  decAllLink: "Alle Ausnahmen und Vermerke",
+  hidColObject: "Objekt", hidColFinding: "Befund",
   storeHintBytes: "Nur Art und Größe, nie Inhalte. Löschen ist hier nicht vorgesehen.",
   store_observations: "Beobachtungen", storeText_observations: "Seit wann ein Objekt in seinem Zustand ist. Bleibt, solange das Objekt existiert.",
   store_history: "Scanverlauf", storeText_history: "Der letzte Scan jedes Tages als Vergleichspunkt, {days} Tage lang.",
   store_events: "Ereignisse", storeText_events: "Neustarts, Versionswechsel von Home Assistant und Integrationen sowie ausgeführte Pläne, höchstens 5.000 Einträge.",
   store_runs: "Automationsläufe", storeText_runs: "Zähler je Automation und Tag aus den Läufen (ohne Variablen, Auslöserdaten und Fehlertexte), 60 Tage lang.",
   store_replies: "Zwischengespeicherte Abfragen", storeText_replies: "Antworten der aufwendigen Datenbankabfragen, damit sie nicht doppelt laufen.",
+  store_starts: "Startzeiten", storeText_starts: "Dauer der letzten Starts von Home Assistant und die Einrichtungszeit je Integration, so lange wie der Verlauf aufbewahrt wird.",
   store_load: "Systemlast", storeText_load: "Festplatte, Speicher, CPU und Swap in Prozent, alle fünf Minuten, 7 Tage lang.",
   store_entry_states: "Setup-Fehler", storeText_entry_states: "Wie oft ein Integrationseintrag in einem fehlgeschlagenen Zustand war, aus den Scans gezählt.",
   store_stale: "Veraltete Sensoren", storeText_stale: "Wann ein Sensor zuletzt einen neuen Wert gemeldet hat.",
@@ -1101,7 +1139,7 @@ Object.assign(TEXT.de, {
   store_coverage: "Abdeckung", storeText_coverage: "Welche Auslöser und Zweige einer Automation gelaufen sind. Nur, wenn du es einschaltest.",
   store_scan_health: "Scan-Zustand", storeText_scan_health: "Zeitpunkte, Phase und Fehlerklasse der letzten Scans, ohne Fehlertext.",
   store_signals: "Signale", storeText_signals: "Welche Situationen schon als Ereignis gemeldet wurden, damit jede nur einmal gemeldet wird.",
-  store_journal: "Journal", storeText_journal: "Pläne des Aufräumens mit Ergebnis und Rückgängig-Angaben. Nie ausgeführte Pläne kannst du löschen; ausgeführte bleiben als Nachweis. Alte Dateisnapshots werden verdichtet, wenn die Größenbegrenzung erreicht ist.",
+  store_journal: "Journal", storeText_journal: "Pläne des Bereinigens mit Ergebnis und Rückgängig-Angaben. Nie ausgeführte Pläne kannst du löschen; ausgeführte bleiben als Nachweis. Alte Dateisnapshots werden verdichtet, wenn die Größenbegrenzung erreicht ist.",
   store_attest: "Backup-Bestätigungen", storeText_attest: "Zwei Angaben, die nur du kennst: Notfall-Set sicher verwahrt und eine Wiederherstellung ausprobiert.",
   store_ignored: "Entscheidungen zu Befunden", storeText_ignored: "Ausgeblendet, bewusst behalten oder verschoben, mit Grund. Bleibt, bis du es änderst.",
   store_exceptions: "Ausnahmeregeln", storeText_exceptions: "Regeln für Bereiche und Labels, deren Objekte nicht gemeldet werden.",
@@ -1127,13 +1165,20 @@ Object.assign(TEXT.en, {
   storeChanged: "changed",
   storeNone: "No data stored yet.",
   stoColFile: "File", stoColGroup: "Group", stoColSize: "Size", stoColChanged: "Changed", stoAllGroups: "All groups",
-  hidColObject: "Object", hidColFinding: "Finding", hidColDecision: "Decision", hidColAction: "Action", hidAllWays: "All kinds", hidByManual: "Hidden by you", hidByLabel: "By label", hidByMark: "By mark",
+  decStatusKpi: "Findings with a status", decMarksKpi: "Marks", decRulesKpi: "Exception rules", decLabelsKpi: "Objects with a label", decDue: "{n} due", decReviewDue: "{n} review date reached", decReviewDueShort: "Review date reached", decRuleHides: "{n} findings hidden",
+  decStatusTitle: "Findings with a status of their own", decStatusHint: "What you decided about single findings: known, snoozed, hidden. It applies to that finding only; a new finding on the same object is open again. Run-out ones come first. While the finding is away the decision rests and holds again as soon as it comes back.", decColNow: "Right now", decNowAll: "Right now: all", decNowHides: "hides", decNowDue: "open again", decNowRests: "rests", decNowQuiet: "not seen for {n} days – still needed?", decNowGone: "object is gone", decNowFilter_hides: "Hides", decNowFilter_due: "Open again", decNowFilter_rests: "Rests", decNowFilter_quiet: "Still needed?", decNowFilter_gone: "Object gone", decLastSeen: "last seen {when}", decOpenObject: "Open object", decRemove: "Remove decision", decRemoveN: "Remove decision ({n})", decRestHead: "Resting · finding away right now ({n})", decStatusNone: "No finding has a status of its own.",
+  decAllStates: "All", decColStatus: "Status", decColUntil: "Until", decChange: "Change status", decColEffect: "Acting now",
+  decMarksTitle: "Marks", decMarksHint: "Statements about an object: offline on purpose, seasonal, spare, do not remove, replaced. They also apply to future outages, on a device to its entities. Every mark is listed here, also one that hides nothing right now.", decMarksNone: "No mark yet. You set one on a finding or on the page of the object.", decAllMarks: "All kinds",
+  markEffDue: "review date reached, hides nothing any more", markEffKeep: "blocks cleanup", markEffHides: "{n} findings hidden", markEffNone: "hides nothing right now", markEffQuiet: "no outage for {n} days – still needed?", markQuietFilter: "Still needed?",
+  decAllLink: "All exceptions and marks",
+  hidColObject: "Object", hidColFinding: "Finding",
   storeHintBytes: "Only kind and size, never contents. Deleting is not offered here.",
   store_observations: "Observations", storeText_observations: "Since when an object has been in its state. Kept as long as the object exists.",
   store_history: "Scan history", storeText_history: "The last scan of each day as a comparison point, for {days} days.",
   store_events: "Events", storeText_events: "Restarts, version changes of Home Assistant and integrations, and executed plans, at most 5,000 entries.",
   store_runs: "Automation runs", storeText_runs: "Counters per automation and day from the runs (without variables, trigger data and error texts), for 60 days.",
   store_replies: "Cached queries", storeText_replies: "Answers of the expensive database queries, so they do not run twice.",
+  store_starts: "Start times", storeText_starts: "How long the last starts of Home Assistant took and the set-up time of each integration, kept as long as the history is.",
   store_load: "System load", storeText_load: "Disk, memory, CPU and swap in percent, every five minutes, for 7 days.",
   store_entry_states: "Setup failures", storeText_entry_states: "How often an integration entry was in a failed state, counted from the scans.",
   store_stale: "Stale sensors", storeText_stale: "When a sensor last reported a new value.",
@@ -1170,7 +1215,7 @@ Object.assign(TEXT.de, {
   stormGroupHint: "Hier steht, was die Datenbank ungewöhnlich stark füllt. Eine Entität steht nur einmal da, auch wenn mehrere Gründe zutreffen.", stormLegendTitle: "Was bedeuten die Markierungen?",
   stormLegStorm: "Sehr viele Zeilen: ab {peak} in einer Stunde oder ab {day} an einem Tag.", stormLegFlood: "Jede Zeile trägt viele Attribute mit (im Mittel ab {kb} KB), bei mindestens {min} Zeilen pro Tag.",
   stormLegNoNew: "Der Wert bleibt gleich, nur Attribute ändern sich: bei mindestens {share} % der Zeilen und {min} Zeilen pro Tag.", stormLegShare: "Eine Integration verursacht mindestens {share} % aller Zeilen (ab {min} pro Tag).", stormLegBurst: "Ein Ereignistyp (außer state_changed) kommt mindestens {count} Mal vor.",
-  stormFilterAll: "Alle", stormGroupEntities: "Entitäten", stormGroupIntegrations: "Integrationen", stormGroupEvents: "Ereignisse", stormDependsLabel: "Wird gebraucht", stormDependsNote: "Ein Ausschluss nimmt dort den Verlauf.", stormDetails: "Details öffnen", stormShowEntities: "Entitäten der Integration zeigen", stormOnlyEntry: "Nur {title}: {shown} von {total} Entitäten (gezeigt werden die lautesten)", stormEntryClear: "Alle zeigen",
+  stormFilterAll: "Alle", stormSelIntegration: "Eine Integration lässt sich nicht ausschließen, nur ihre Entitäten: „{button}“", stormSelEvent: "Ein Ereignistyp lässt sich hier nicht ausschließen, nur Entitäten", stormGroupEntities: "Entitäten", stormGroupIntegrations: "Integrationen", stormGroupEvents: "Ereignisse", stormDependsLabel: "Wird gebraucht", stormDependsNote: "Ein Ausschluss nimmt dort den Verlauf.", stormDetails: "Details öffnen", stormShowEntities: "Entitäten der Integration zeigen", stormOnlyEntry: "Nur {title}: {shown} von {total} Entitäten (gezeigt werden die lautesten)", stormEntryClear: "Alle zeigen",
   stormWhatToDo: "Was kann ich tun? Ausschließen (Text für die configuration.yaml, Housekeeper schreibt nichts), die Aktualisierung der Quelle selten stellen oder den Verlauf kürzen. „Für Ausschluss vormerken“ hakt die Entität unter „Lauteste Entitäten“ an.",
   stormStorm: "{perDay} Zeilen pro Tag, in der lautesten Stunde {peak}.", stormFlood: "{perDay} Zeilen am letzten Tag, im Mittel {kb} KB Attribute je Zeile.",
   stormNoNew: "{share} % der Zeilen sind Updates ohne neuen Zustand ({perDay} pro Tag): nur Attribute ändern sich.", stormShare: "Etwa {share} % der Last im Recorder ({perDay} Zeilen pro Tag).",
@@ -1197,7 +1242,7 @@ Object.assign(TEXT.en, {
   stormGroupHint: "This is what fills the database unusually fast. An entity appears only once, even when several reasons apply.", stormLegendTitle: "What do the marks mean?",
   stormLegStorm: "Very many rows: from {peak} in one hour or from {day} on one day.", stormLegFlood: "Each row carries many attributes (on average from {kb} KB), at {min} rows a day or more.",
   stormLegNoNew: "The value stays the same, only attributes change: in at least {share} % of the rows and {min} rows a day.", stormLegShare: "One integration causes at least {share} % of all rows (from {min} a day).", stormLegBurst: "An event type (other than state_changed) occurs at least {count} times.",
-  stormFilterAll: "All", stormGroupEntities: "Entities", stormGroupIntegrations: "Integrations", stormGroupEvents: "Events", stormDependsLabel: "In use", stormDependsNote: "An exclusion takes the history away there.", stormDetails: "Open details", stormShowEntities: "Show the integration's entities", stormOnlyEntry: "Only {title}: {shown} of {total} entities (the loudest are listed)", stormEntryClear: "Show all",
+  stormFilterAll: "All", stormSelIntegration: "An integration cannot be excluded, only its entities: “{button}”", stormSelEvent: "An event type cannot be excluded here, only entities", stormGroupEntities: "Entities", stormGroupIntegrations: "Integrations", stormGroupEvents: "Events", stormDependsLabel: "In use", stormDependsNote: "An exclusion takes the history away there.", stormDetails: "Open details", stormShowEntities: "Show the integration's entities", stormOnlyEntry: "Only {title}: {shown} of {total} entities (the loudest are listed)", stormEntryClear: "Show all",
   stormWhatToDo: "What can I do? Exclude (text for configuration.yaml, Housekeeper writes nothing), set the source to update less often, or trim the history. “Mark for exclusion” ticks the entity under “Loudest entities”.",
   stormStorm: "{perDay} rows a day, {peak} in the busiest hour.", stormFlood: "{perDay} rows on the last day, {kb} KB of attributes per row on average.",
   stormNoNew: "{share} % of the rows are updates without a new state ({perDay} a day): only attributes change.", stormShare: "About {share} % of the recorder load ({perDay} rows a day).",
@@ -1216,46 +1261,46 @@ Object.assign(TEXT.en, {
 
 // Texts for the database card; merged into TEXT.
 Object.assign(TEXT.de, {
-  dbKeep: "Aufbewahrung in Home Assistant: {n} Tage", dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
+  dbOvKeep: "Aufbewahrung", dbOvKeepDays: "{n} Tage", dbOvPurgeOff: "Die automatische Bereinigung ist in Home Assistant aus: die Datenbank wächst weiter.",
   dbTitle: "Datenbank", dbLoading: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank einige Sekunden dauern …",
-  dbNone: "Keine Auffälligkeit in der Datenbank.", dbProblem: "Problem", dbHint: "Hinweis",
-  dbSize: "Datenbank {db}, WAL-Datei {wal}", dbNoSize: "Größe nicht messbar (Datenbank: {dialect}); nur SQLite wird gemessen", dbPerDay: "Wachstum zuletzt etwa {size} pro Tag", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbTileSize: "Größe", dbTileWal: "WAL {wal}", dbTileGrowth: "Zuwachs pro Tag", dbTileKeep: "Aufbewahrung", dbTileDays: "{n} Tage", dbTilePurge: "Automatisch löschen", dbTileOn: "Ein", dbTileOff: "Aus", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
+  dbNone: "Keine Auffälligkeit in der Datenbank.", dbWhatToDo: "Was tun?", dbProblem: "Problem", dbHint: "Hinweis",
+  dbNoSize: "Größe nicht messbar (Datenbank: {dialect})", dbTileServer: "laut Server ({dialect})", dbTileEstimated: "geschätzt ({dialect})", dbAbout: "etwa {size}", dbTablesTitle: "Größte Tabellen", dbColPct: "Anteil", dbTable_states: "Zustände", dbTable_state_attributes: "Attribute der Zustände", dbTable_states_meta: "Entitäten der Zustände", dbTable_statistics: "Langzeitstatistik (Stunden)", dbTable_statistics_short_term: "Kurzzeitstatistik (5 Minuten)", dbTable_statistics_meta: "Statistik-Reihen", dbTable_statistics_runs: "Statistik-Läufe", dbTable_events: "Ereignisse", dbTable_event_data: "Daten der Ereignisse", dbTable_event_types: "Ereignisarten", dbTable_recorder_runs: "Recorder-Läufe", dbTable_schema_changes: "Schema-Änderungen", dbTable_migration_changes: "Migrationen", dbTablesHint: "Daten und Indizes je Tabelle, laut Server.", dbTablesHintSqlite: "Daten und Indizes je Tabelle; einmal am Tag gemessen.", dbTablesAt: "Stand {at}.", dbTablesMore: "{n} weitere Tabellen", dbColTable: "Tabelle", dbColBytes: "Bytes", dbGrowthUnknown: "Das Wachstum wird beobachtet; nach einer Woche steht es hier", dbTileSize: "Größe", dbTileWal: "WAL {wal}", dbTileGrowth: "Zuwachs pro Tag", dbTileGrowthShare: "{pct} % der Größe am Tag", dbTileKeep: "Aufbewahrung", dbTileDays: "{n} Tage", dbTilePurge: "Automatisch löschen", dbTileOn: "Ein", dbTileOff: "Aus", dbRestartGaps: "{n} Lücken durch Neustarts (normal)",
   dbKind_wal_large: "Große WAL-Datei", dbKind_growth: "Ungewöhnliches Wachstum", dbKind_duplicates: "Doppelte Statistikzeitpunkte", dbKind_missing_hours: "Fehlende Stunden in Statistiken", dbKind_statistics_issues: "Statistik passt nicht zur Entität", dbKind_recorder_gap: "Lücken im Recorder",
   dbWal: "Die WAL-Datei ist {wal} groß, die Datenbank {db}.", dbGrowth: "In 7 Tagen {recent} gewachsen, in den Wochen davor etwa {base} pro Woche.",
-  dbDuplicates: "{n}{more} Zeitpunkte stehen doppelt in den Statistiken, vor allem bei: {list}.", dbMissing: "{n} Reihen haben Lücken im Stundenverlauf: {list}.", dbMissingHours: "{n} Std. fehlen",
+  dbDuplicates: "{n}{more} Zeitpunkte stehen doppelt in den Statistiken, vor allem bei: {list}.", dbMissingHours: "{n} Std. fehlen",
   dbIssues: "{n} Reihen: {list}.", dbRecorderGap: "{n} Zeiträume ohne einen einzigen Eintrag, der längste {longest}, zuletzt ab {latest}. Kein Neustart erklärt sie.",
   dbIssue_units_changed: "Einheit geändert", dbIssue_unsupported_state_class: "State-Class nicht unterstützt", dbIssue_state_class_removed: "State-Class entfernt", dbIssue_unsupported_unit: "Einheit nicht unterstützt", dbIssue_mean_type_changed: "Art des Mittelwerts geändert",
-  dbAdvice_wal_large: "Ein Neustart oder ein Checkpoint verkleinert die WAL-Datei; bleibt sie groß, prüfe, ob etwas die Datenbank lange offen hält. Erst ein Backup anlegen.",
-  dbAdvice_growth: "Die Ansicht „Last“ zeigt, wer so viel schreibt. Danach Entitäten vom Recorder ausschließen oder die Aufbewahrung senken.",
+  dbAdvice_wal_large: "Ein Neustart von Home Assistant verkleinert die WAL-Datei meist. Bleibt sie danach groß, hält etwas anderes die Datenbank lange offen, etwa ein Add-on wie SQLite Web: schließe es und starte noch einmal neu.",
+  dbAdvice_growth: "Der Reiter „Schreiblast“ zeigt, wer so viel schreibt. Danach Entitäten vom Recorder ausschließen oder die Aufbewahrung senken.",
   dbAdvice_duplicates: "Housekeeper repariert das nicht. Lege ein Backup an und prüfe die Reihen in Entwicklerwerkzeuge → Statistiken.",
   dbAdvice_missing_hours: "Gemeinsame Lücken lassen sich nicht nachholen: Home Assistant stand oder der Recorder arbeitete nicht. Eigene Lücken heißen meist, dass die Entität zeitweise nicht verfügbar war.",
   dbAdvice_statistics_issues: "Entwicklerwerkzeuge → Statistiken bietet an, die Einheit zu korrigieren oder die Reihe zu löschen. Vorher ein Backup anlegen.",
   dbAdvice_recorder_gap: "Prüfe das Protokoll auf Recorder-Fehler (Datenbank gesperrt, Platte voll) und sichere die Datenbank.",
-  dbFootnote: "Gemessen wird nur lesend. Die Größe der Datenbank wird jeden Tag notiert (nur die Zahl), daraus entsteht das Wachstum. Eine Lücke ist ein Zeitraum von mindestens {gap} Minuten ohne einen einzigen Eintrag in den Zuständen der letzten {gapDays} Tage; endet sie, wo Home Assistant nach seinem eigenen Protokoll stand, gilt sie als Neustart. Fehlende Stunden zählen ab {missing} in den letzten {missingDays} Tagen. Housekeeper repariert nichts und löscht nichts.",
+  dbFootnote: "Gemessen wird nur lesend. Die Größe der Datenbank wird jeden Tag notiert (nur die Zahl), daraus entsteht das Wachstum. Eine Lücke ist ein Zeitraum von mindestens {gap} Minuten ohne einen einzigen Eintrag in den Zuständen der letzten {gapDays} Tage; endet sie, wo Home Assistant nach seinem eigenen Protokoll stand, gilt sie als Neustart. Fehlende Stunden zählen ab {missing} in den letzten {missingDays} Tagen. Housekeeper repariert nichts und löscht nichts. „Datenbank prüfen“: {check}",
   todoDbProblem: "Datenbank: Problem",
   dbColFrom: "Von", dbColTo: "Bis", dbColHours: "Dauer", dbColCause: "Ursache",
-  stormTabFindings: "Auffälligkeiten", stormTabEntities: "Lauteste Entitäten", stormTabIntegrations: "Integrationen", stormTabEvents: "Ereignisse", dbMissingShared: "{n} Reihen haben Lücken im Stundenverlauf. Bei allen Reihen zugleich fehlen {hours} Stunden in {count} Zeiträumen; dort wurde keine Statistik berechnet.", dbMissingOwn: "Dazu kommen eigene Lücken einzelner Sensoren (Liste unten).", dbMissingOnlyShared: "Alle Lücken fallen in diese gemeinsamen Zeiträume.", dbMissingOwnOnly: "{n} Sensoren haben Lücken im Stundenverlauf, alle bei den Sensoren selbst. Es gibt keine gemeinsamen Ausfälle.", dbSeriesNone: "Keine Sensoren mit Lücken.", dbGapCause_restart: "Home Assistant stand (Neustart)", dbGapCause_recorder: "Recorder lief nicht oder die Statistik wurde nicht berechnet", dbDetails: "Details: {gaps} gemeinsame Zeiträume, {series} Reihen", dbGapsTitle: "Gemeinsame Lücken (bei allen Reihen)", dbSeriesTitle: "Sensoren mit den meisten Lücken ({n})", dbColSeries: "Sensor", dbColOwn: "Eigene", dbColShared: "Gemeinsame", dbColMissing: "Gesamt",
+  stormTabFindings: "Auffälligkeiten", stormTabEntities: "Lauteste Entitäten", stormTabIntegrations: "Integrationen", stormTabEvents: "Ereignisse", dbMissingShared: "{n} Reihen haben Lücken im Stundenverlauf. Bei allen Reihen zugleich fehlen {hours} Stunden in {count} Zeiträumen; dort wurde keine Statistik berechnet.", dbMissingOwn: "Dazu kommen eigene Lücken einzelner Sensoren (Liste unten).", dbMissingOnlyShared: "Alle Lücken fallen in diese gemeinsamen Zeiträume.", dbMissingOwnOnly: "{n} Sensoren haben Lücken im Stundenverlauf, alle bei den Sensoren selbst. Es gibt keine gemeinsamen Ausfälle.", dbSeriesNone: "Keine Sensoren mit Lücken.", dbGapCause_restart: "Home Assistant stand (Neustart)", dbGapCause_recorder: "Recorder lief nicht oder die Statistik wurde nicht berechnet", dbGapsTitle: "Gemeinsame Lücken (bei allen Reihen)", dbSeriesTitle: "Sensoren mit den meisten Lücken ({n})", dbColOwn: "Eigene", dbColShared: "Gemeinsame", dbColMissing: "Gesamt",
 });
 Object.assign(TEXT.en, {
-  dbKeep: "Retention in Home Assistant: {n} days", dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
+  dbOvKeep: "Retention", dbOvKeepDays: "{n} days", dbOvPurgeOff: "Automatic purging is off in Home Assistant: the database keeps growing.",
   dbTitle: "Database", dbLoading: "Checking the database. On a large database this can take a few seconds …",
-  dbNone: "Nothing unusual in the database.", dbProblem: "Problem", dbHint: "Hint",
-  dbSize: "Database {db}, WAL file {wal}", dbNoSize: "Size not measurable (database: {dialect}); only SQLite is measured", dbPerDay: "Recent growth about {size} a day", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbTileSize: "Size", dbTileWal: "WAL {wal}", dbTileGrowth: "Growth per day", dbTileKeep: "Retention", dbTileDays: "{n} days", dbTilePurge: "Purge automatically", dbTileOn: "On", dbTileOff: "Off", dbRestartGaps: "{n} gaps from restarts (normal)",
+  dbNone: "Nothing unusual in the database.", dbWhatToDo: "What to do?", dbProblem: "Problem", dbHint: "Hint",
+  dbNoSize: "Size not measurable (database: {dialect})", dbTileServer: "reported by the server ({dialect})", dbTileEstimated: "estimated ({dialect})", dbAbout: "about {size}", dbTablesTitle: "Largest tables", dbColPct: "Share", dbTable_states: "States", dbTable_state_attributes: "State attributes", dbTable_states_meta: "Entities of the states", dbTable_statistics: "Long-term statistics (hours)", dbTable_statistics_short_term: "Short-term statistics (5 minutes)", dbTable_statistics_meta: "Statistics series", dbTable_statistics_runs: "Statistics runs", dbTable_events: "Events", dbTable_event_data: "Event data", dbTable_event_types: "Event types", dbTable_recorder_runs: "Recorder runs", dbTable_schema_changes: "Schema changes", dbTable_migration_changes: "Migrations", dbTablesHint: "Data and indexes per table, as the server reports them.", dbTablesHintSqlite: "Data and indexes per table; measured once a day.", dbTablesAt: "As of {at}.", dbTablesMore: "{n} more tables", dbColTable: "Table", dbColBytes: "Bytes", dbGrowthUnknown: "Growth is being observed; it shows here after a week", dbTileSize: "Size", dbTileWal: "WAL {wal}", dbTileGrowth: "Growth per day", dbTileGrowthShare: "{pct} % of the size a day", dbTileKeep: "Retention", dbTileDays: "{n} days", dbTilePurge: "Purge automatically", dbTileOn: "On", dbTileOff: "Off", dbRestartGaps: "{n} gaps from restarts (normal)",
   dbKind_wal_large: "Large WAL file", dbKind_growth: "Unusual growth", dbKind_duplicates: "Duplicate statistics timestamps", dbKind_missing_hours: "Missing hours in statistics", dbKind_statistics_issues: "Statistics do not fit the entity", dbKind_recorder_gap: "Gaps in the recorder",
   dbWal: "The WAL file is {wal}, the database {db}.", dbGrowth: "Grew {recent} in 7 days, about {base} a week in the weeks before.",
-  dbDuplicates: "{n}{more} timestamps appear twice in the statistics, mostly in: {list}.", dbMissing: "{n} series have gaps in their hourly record: {list}.", dbMissingHours: "{n} h missing",
+  dbDuplicates: "{n}{more} timestamps appear twice in the statistics, mostly in: {list}.", dbMissingHours: "{n} h missing",
   dbIssues: "{n} series: {list}.", dbRecorderGap: "{n} periods without a single entry, the longest {longest}, the latest from {latest}. No restart explains them.",
   dbIssue_units_changed: "unit changed", dbIssue_unsupported_state_class: "state class not supported", dbIssue_state_class_removed: "state class removed", dbIssue_unsupported_unit: "unit not supported", dbIssue_mean_type_changed: "mean type changed",
-  dbAdvice_wal_large: "A restart or a checkpoint shrinks the WAL file; if it stays large, check whether something keeps the database open for long. Create a backup first.",
-  dbAdvice_growth: "The Load view shows who writes so much. Then exclude entities from the recorder or lower the retention.",
+  dbAdvice_wal_large: "A restart of Home Assistant usually shrinks the WAL file. If it stays large after that, something else keeps the database open for long, such as an add-on like SQLite Web: close it and restart once more.",
+  dbAdvice_growth: "The “Write load” tab shows who writes so much. Then exclude entities from the recorder or lower the retention.",
   dbAdvice_duplicates: "Housekeeper does not repair this. Create a backup and check the series in Developer tools → Statistics.",
   dbAdvice_missing_hours: "Shared gaps cannot be made up: Home Assistant was down or the recorder was not working. Own gaps usually mean the entity was unavailable for a while.",
   dbAdvice_statistics_issues: "Developer tools → Statistics offers to fix the unit or delete the series. Create a backup first.",
   dbAdvice_recorder_gap: "Check the log for recorder errors (database locked, disk full) and back up the database.",
-  dbFootnote: "Only reads. The size of the database is noted once a day (just the number); the growth comes from that. A gap is a stretch of at least {gap} minutes without a single entry in the states of the last {gapDays} days; if it ends where Home Assistant was down according to its own log, it counts as a restart. Missing hours count from {missing} in the last {missingDays} days. Housekeeper repairs nothing and deletes nothing.",
+  dbFootnote: "Only reads. The size of the database is noted once a day (just the number); the growth comes from that. A gap is a stretch of at least {gap} minutes without a single entry in the states of the last {gapDays} days; if it ends where Home Assistant was down according to its own log, it counts as a restart. Missing hours count from {missing} in the last {missingDays} days. Housekeeper repairs nothing and deletes nothing. “Check database”: {check}",
   todoDbProblem: "Database: problem",
   dbColFrom: "From", dbColTo: "To", dbColHours: "Length", dbColCause: "Cause",
-  stormTabFindings: "Findings", stormTabEntities: "Loudest entities", stormTabIntegrations: "Integrations", stormTabEvents: "Events", dbMissingShared: "{n} series have gaps in their hourly record. {hours} hours are missing from all series at once, in {count} periods; no statistics were compiled then.", dbMissingOwn: "On top of that, single sensors have gaps of their own (list below).", dbMissingOnlyShared: "All gaps fall into these shared periods.", dbMissingOwnOnly: "{n} sensors have gaps in their hourly record, all in the sensors themselves. There are no shared outages.", dbSeriesNone: "No sensors with gaps.", dbGapCause_restart: "Home Assistant was down (restart)", dbGapCause_recorder: "The recorder was not running or the statistics were not compiled", dbDetails: "Details: {gaps} shared periods, {series} series", dbGapsTitle: "Shared gaps (all series)", dbSeriesTitle: "Sensors with the most gaps ({n})", dbColSeries: "Sensor", dbColOwn: "Own", dbColShared: "Shared", dbColMissing: "Total",
+  stormTabFindings: "Findings", stormTabEntities: "Loudest entities", stormTabIntegrations: "Integrations", stormTabEvents: "Events", dbMissingShared: "{n} series have gaps in their hourly record. {hours} hours are missing from all series at once, in {count} periods; no statistics were compiled then.", dbMissingOwn: "On top of that, single sensors have gaps of their own (list below).", dbMissingOnlyShared: "All gaps fall into these shared periods.", dbMissingOwnOnly: "{n} sensors have gaps in their hourly record, all in the sensors themselves. There are no shared outages.", dbSeriesNone: "No sensors with gaps.", dbGapCause_restart: "Home Assistant was down (restart)", dbGapCause_recorder: "The recorder was not running or the statistics were not compiled", dbGapsTitle: "Shared gaps (all series)", dbSeriesTitle: "Sensors with the most gaps ({n})", dbColOwn: "Own", dbColShared: "Shared", dbColMissing: "Total",
 });
 
 Object.assign(TEXT.de, {
@@ -1267,8 +1312,7 @@ Object.assign(TEXT.de, {
   dbKind_integrity: "Datenbank beschädigt", dbIntegrity: "Die Prüfung vom {at} meldete: {lines}.",
   dbAdvice_integrity: "Lege zuerst ein Backup an. Betroffene Indizes lassen sich mit REINDEX neu aufbauen (zum Beispiel in SQLite Web), sonst hilft ein Backup. Housekeeper löscht nichts, solange die Datenbank beschädigt ist.",
   dbCheck: "Datenbank prüfen", dbChecking: "Die Datenbank wird geprüft. Das kann bei einer großen Datenbank Minuten dauern, die Seite bleibt benutzbar.",
-  dbCheckHint: "Prüft mit SQLite (integrity_check), ob Tabellen und Indizes zusammenpassen. Liest nur, belastet die Datenbank aber einige Minuten.",
-  dbCheckOk: "Zuletzt geprüft am {at}: in Ordnung.", dbCheckFailed: "Die Prüfung vom {at} ist nicht fertig geworden.", dbCheckNever: "Noch nie geprüft.",
+  dbCheckHint: "Prüft mit SQLite (integrity_check), ob Tabellen und Indizes zusammenpassen. Liest nur, belastet die Datenbank aber einige Minuten.", dbTileCheck: "Integrität", dbCheckRunning: "Läuft", dbCheckRunningSub: "kann Minuten dauern", dbCheckState_ok: "In Ordnung", dbCheckState_damaged: "Beschädigt", dbCheckState_failed: "Nicht fertig", dbCheckState_never: "Nie geprüft",
 });
 Object.assign(TEXT.en, {
   dbKind_disk_low: "Little free disk space", dbDiskLow: "Only {free} of {total} are free on the database's disk.",
@@ -1279,8 +1323,7 @@ Object.assign(TEXT.en, {
   dbKind_integrity: "Database damaged", dbIntegrity: "The check of {at} reported: {lines}.",
   dbAdvice_integrity: "Make a backup first. Affected indexes can be rebuilt with REINDEX (for example in SQLite Web), otherwise restore a backup. Housekeeper deletes nothing while the database is damaged.",
   dbCheck: "Check database", dbChecking: "Checking the database. On a large database this can take minutes; the page stays usable.",
-  dbCheckHint: "Uses SQLite (integrity_check) to see whether tables and indexes match. Reads only, but loads the database for a few minutes.",
-  dbCheckOk: "Last checked {at}: fine.", dbCheckFailed: "The check of {at} did not finish.", dbCheckNever: "Never checked.",
+  dbCheckHint: "Uses SQLite (integrity_check) to see whether tables and indexes match. Reads only, but loads the database for a few minutes.", dbTileCheck: "Integrity", dbCheckRunning: "Running", dbCheckRunningSub: "can take minutes", dbCheckState_ok: "Fine", dbCheckState_damaged: "Damaged", dbCheckState_failed: "Not finished", dbCheckState_never: "Never checked",
 });
 
 // ThemeMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -1300,7 +1343,7 @@ class ThemeMixin {
     if (SCHEMES[scheme]) prefs.scheme = scheme;
     if (["normal", "compact"].includes(saved.density)) prefs.density = saved.density;
     if (["auto", "reduced"].includes(saved.motion)) prefs.motion = saved.motion;
-    if ([20, 50, 100].includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
+    if (PAGE_SIZES.includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
     if (saved.language === "auto" || Object.hasOwn(TEXT, saved.language)) prefs.language = saved.language;
@@ -1454,14 +1497,14 @@ class StylesMixin {
       .vacbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 16px;background:var(--hk-soft,#e6f0f8);border-bottom:1px solid var(--hk-border);border-left:4px solid #2f6fa3;font-size:14px}.vacbar b{color:#2f6fa3}.vacbar .sp{flex:1}.vacbar a{color:#2f6fa3;font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}.vacbar.warn{border-left-color:var(--hk-amber,#b57a0c)}.vacbar.warn b{color:var(--hk-amber,#b57a0c)}.vacbar.after{border-left-color:var(--hk-accent,#1d4a3f)}.vacbar.after b{color:var(--hk-accent,#1d4a3f)}
       .excform{display:grid;gap:14px;padding:14px 16px;border-top:2px solid var(--hk-blue);border-bottom:1px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface))}.excform .mfield{display:grid;gap:6px;min-width:0}.excform .mfield>span{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.excform .chip{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.excform .chip ha-icon{--mdc-icon-size:14px}.excform input[data-exc-search],.excform input[data-exc-note]{width:100%;box-sizing:border-box}.excact{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.excact input{width:5em}.excprev{padding:10px 12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.excnum{display:flex;gap:8px;align-items:center}.excnum input{width:6em}
       .excgroup .setrow small{display:block}
-      .labrow{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) auto;gap:12px 16px;align-items:start;padding:14px 16px;border-top:1px solid var(--hk-border)}.labrow code{padding:2px 8px;border-radius:7px;background:var(--hk-soft);border:1px solid var(--hk-border);user-select:all}.labrow .factnote{margin:4px 0 0}.labfx{display:grid;gap:3px;margin:0;padding:0;list-style:none}.labfx li::before{content:"";display:inline-block;width:8px;height:8px;margin-right:8px;border-radius:50%;background:var(--hk-green)}.labfx li.no{color:var(--hk-muted)}.labfx li.no::before{background:var(--hk-border)}.labrow .actions{display:grid;gap:6px;justify-items:end}.labrow .labhow{grid-column:1/-1}@media(max-width:760px){.labrow{grid-template-columns:minmax(0,1fr)}.labrow .actions{justify-items:start}}
+      .labrow{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) 10rem;gap:12px 16px;align-items:start;padding:14px 16px;border-top:1px solid var(--hk-border)}.labrow code{padding:2px 8px;border-radius:7px;background:var(--hk-soft);border:1px solid var(--hk-border);user-select:all}.labrow .factnote{margin:4px 0 0}.labfx{display:grid;gap:4px;margin:0;padding:0;list-style:none;font-size:calc(13px*var(--hk-fs,1));line-height:1.45}.labfx li{display:grid;grid-template-columns:8px minmax(0,1fr);column-gap:8px;align-items:baseline}.labfx li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--hk-green);align-self:start;margin-top:.45em}.labfx li.no{color:var(--hk-muted)}.labfx li.no::before{background:var(--hk-border)}.labrow .actions{display:grid;gap:6px;justify-items:end}.labrow .statcell{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.labrow .statcell .iconbtn{--mdc-icon-size:16px}.labfoot{display:grid;gap:8px}@media(max-width:760px){.labrow{grid-template-columns:minmax(0,1fr)}.labrow .actions{justify-items:start}}
       .excrules td:nth-child(n+4),.excrules th:nth-child(n+4){width:1%;white-space:nowrap}.excrules .excacts{display:inline-flex;gap:2px}input[data-vac-entity]{width:min(100%,20em);box-sizing:border-box}.formfoot{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:12px 16px}.vacdirty{color:var(--hk-amber);font-size:calc(12px*var(--hk-fs,1));font-weight:600}
       .safeitem{display:inline-flex;align-items:center;gap:6px;padding:2px 0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}
       .safeitem:hover{color:var(--hk-text)}.safeitem .dot{width:8px;height:8px;border-radius:50%;background:var(--hk-muted)}.safeitem .dot.ok{background:var(--hk-green,#2e7d32)}.safeitem .dot.warn{background:var(--hk-amber,#b26a00)}.safeitem .dot.red{background:var(--hk-red,#c62828)}
       @media(max-width:860px){.safebar{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;padding:6px 12px}}
       .top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:22px;padding:0 clamp(16px,2.4vw,32px);min-height:calc(60px*var(--hk-fs,1));border-bottom:1px solid var(--hk-border);background:var(--hk-surface)}
       .brand{display:flex;align-items:center;gap:10px;flex:none;padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer}.brandtext{display:grid;gap:1px}.brand small{font-size:calc(11px*var(--hk-fs,1));line-height:1.1;color:var(--hk-muted);font-weight:500}.brand:hover small{color:var(--hk-text)}.brand.active small{color:var(--hk-blue-text);font-weight:700}.nav.iconly span{display:none}.brandmark{width:34px;height:34px;display:grid;place-items:center;flex:none}.brandmark img{width:34px;height:34px;object-fit:contain}.brandmark ha-icon{display:none}.brandmark.nologo{border-radius:10px;color:#fff;background:linear-gradient(135deg,#0394d5,#087dbb)}.brandmark.nologo ha-icon{display:block}.brand strong{font-weight:600;font-size:calc(17px*var(--hk-fs,1));white-space:nowrap}
-      .topnav{flex:1;min-width:0;display:flex;align-items:stretch;align-self:stretch;gap:2px}.navmenu{position:relative;display:flex;align-items:stretch}.navend{margin-left:auto;display:flex;align-items:stretch;gap:8px}.quick{position:relative;display:flex;align-items:center;align-self:center}.quick>ha-icon{position:absolute;left:8px;--mdc-icon-size:18px;color:var(--hk-muted);pointer-events:none}.quick input{width:190px;max-width:100%;min-height:36px;padding:0 10px 0 32px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.quick input:focus{outline:2px solid var(--hk-blue);outline-offset:0}.quicklist{position:absolute;top:calc(100% + 6px);right:0;z-index:30;width:min(380px,90vw);max-height:60vh;overflow:auto;margin:0;padding:6px;list-style:none;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.quicklist li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:8px;border-radius:8px;cursor:pointer}.quicklist li.on,.quicklist li:hover{background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.quicklist li.grp{display:block;padding:8px 8px 2px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase;color:var(--hk-muted);cursor:default}.quicklist li.grp:hover{background:none}.quicklist li.none{display:block;color:var(--hk-muted);cursor:default}.row.jrow{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap}.jrow .row-text{flex:1 1 220px}.jrow .tile{flex:none}.jrow input[type=checkbox]{flex:none}.jbtns{display:flex;gap:8px;margin-left:auto}.quicklist .row-text{min-width:0}.quicklist small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.quick{display:flex;margin:6px 0}.quick input{width:100%}.navend{flex-direction:column;align-items:stretch}}.navhead{display:none;padding:10px 12px 2px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+      .topnav{flex:1;min-width:0;display:flex;align-items:stretch;align-self:stretch;gap:2px}.navmenu{position:relative;display:flex;align-items:stretch}.navend{margin-left:auto;display:flex;align-items:stretch;gap:8px}.quick{position:relative;display:flex;align-items:center;align-self:center}.quick>ha-icon{position:absolute;left:8px;--mdc-icon-size:18px;color:var(--hk-muted);pointer-events:none}.quick input{width:190px;max-width:100%;min-height:36px;padding:0 10px 0 32px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.quick input:focus{outline:2px solid var(--hk-blue);outline-offset:0}.quicklist{position:absolute;top:calc(100% + 6px);right:0;z-index:30;width:min(380px,90vw);max-height:60vh;overflow:auto;margin:0;padding:6px;list-style:none;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.quicklist li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;padding:8px;border-radius:8px;cursor:pointer}.quicklist li.on,.quicklist li:hover{background:color-mix(in srgb,var(--hk-blue) 10%,transparent)}.quicklist li.grp{display:block;padding:8px 8px 2px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase;color:var(--hk-muted);cursor:default}.quicklist li.grp:hover{background:none}.quicklist li.none{display:block;color:var(--hk-muted);cursor:default}.jbtns{display:flex;gap:8px;margin-left:auto}.quicklist .row-text{min-width:0}.quicklist small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.quick{display:flex;margin:6px 0}.quick input{width:100%}.navend{flex-direction:column;align-items:stretch}}.navhead{display:none;padding:10px 12px 2px;color:var(--hk-muted);font-size:calc(10.5px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}
       .delbtn{display:inline-flex;align-items:center;justify-content:center;width:36px;min-width:36px;height:36px;min-height:36px;padding:0}.delbtn.small{width:32px;min-width:32px;height:32px;min-height:32px}.delbtn ha-icon{--mdc-icon-size:18px}.delbtn[disabled]{opacity:.5;cursor:not-allowed}
       .nav{min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 12px;border:0;border-bottom:3px solid transparent;border-radius:0;color:var(--hk-muted);background:transparent;font-weight:500;white-space:nowrap}.nav:hover{color:var(--hk-text);background:var(--hk-soft)}.nav ha-icon{--mdc-icon-size:20px}.nav .caret{--mdc-icon-size:16px;margin-left:-2px}
       .navpop{display:none;position:absolute;top:100%;left:0;min-width:210px;padding:6px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 8px 24px rgba(0,0,0,.14)}.navmenu.open .navpop{display:grid;gap:2px}.navpop .nav{min-height:40px;border-bottom:0;border-radius:8px}.navpop .nav.active{box-shadow:none;background-image:linear-gradient(var(--hk-blue),var(--hk-blue));background-size:3px 100%;background-repeat:no-repeat;background-position:left top}
@@ -1489,7 +1532,7 @@ class StylesMixin {
       .card-text{min-width:0;display:grid;gap:2px}.card-text small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.card-text strong{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2}.card-text em{overflow:hidden;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-style:normal;text-overflow:ellipsis;white-space:nowrap}
       .tile{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 13%,transparent);flex:none}
       .tile.ok{color:var(--hk-green);background:color-mix(in srgb,var(--hk-green) 14%,transparent)}.tile.warn{color:var(--hk-amber);background:color-mix(in srgb,var(--hk-amber) 15%,transparent)}.tile.red{color:var(--hk-red);background:color-mix(in srgb,var(--hk-red) 13%,transparent)}.tile.mute{color:var(--hk-gray);background:color-mix(in srgb,var(--hk-gray) 15%,transparent)}.tile.violet{color:var(--hk-violet);background:color-mix(in srgb,var(--hk-violet) 14%,transparent)}
-      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}
+      .grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px;align-items:start}.stack{display:grid;gap:14px}.apbar i{background:var(--hk-amber)}.apact{flex:none;padding-right:8px}.rowslot{width:34px;height:34px}.rowwrap>.row{flex:1;min-width:0;border-bottom:0}.aphint{color:var(--hk-blue)}.apmanual,.apbtns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}.apmanual{padding:12px 16px}.apmore .fold+.fold{border-top:1px solid var(--hk-border)}.apmore .foldbody{margin:0;border-left:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.apmore .foldbody .row:last-of-type{border-bottom:0}.apmore .foldbody .factnote{margin:0;padding:10px 16px 12px;border-top:1px solid var(--hk-border)}.apmore .row .unitrow{margin:0}.foldhead:focus-visible{outline-offset:-2px}.evtable th{padding:9px 16px;text-align:left;font-weight:600;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.apbtns{margin-left:auto}
       .panel{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);overflow:hidden}.panelhead{min-height:56px;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.aboutintro{padding:12px 16px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted)}.aboutintro p{margin:0}.aboutintro p+p{margin-top:6px}.aboutintro strong{color:var(--hk-text)}
       .panelhead h2{font-size:calc(15px*var(--hk-fs,1));font-weight:600}.panelhead p{margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
       .link{display:inline-flex;align-items:center;gap:4px;padding:4px;border:0;color:var(--hk-blue-text);background:transparent;font-size:calc(12px*var(--hk-fs,1));font-weight:600}
@@ -1512,14 +1555,14 @@ class StylesMixin {
       input,select{border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);padding:9px 12px;min-width:0}
       select{appearance:none;-webkit-appearance:none;padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23808a84' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;cursor:pointer}input:focus,select:focus{border-color:var(--hk-blue)}input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .listbar{display:flex;flex-wrap:wrap;gap:10px;padding:12px 14px;border-bottom:1px solid var(--hk-border)}.listbar input{flex:0 1 200px;min-width:0}.listbar select{flex:0 1 180px;min-width:0}.sortgroup{display:flex;gap:4px;margin-left:auto;min-width:0}.sortgroup select{flex:0 1 180px;min-width:0}.dirbtn{flex:none}@media(max-width:560px){.listbar>select{flex:1 1 130px}.viewgroup{flex:1 1 100%}.sortgroup{flex:1 1 100%;margin-left:0}.sortgroup select{flex:1 1 auto}}.dirbtn{display:grid;place-items:center;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;padding:0 10px}.dirbtn:hover{border-color:var(--hk-blue)}
-      .setrow.stackrow{grid-template-columns:1fr;gap:8px}.setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}.setrow .btn{justify-self:start}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn{color:inherit;text-decoration:none}
-      @media(max-width:700px){.setrow{grid-template-columns:1fr}}
+      .setrow.stackrow{grid-template-columns:1fr;gap:8px}.setrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.setrow:last-child{border-bottom:0}.setrow small{display:block;margin-top:3px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.setrow select{max-width:240px}.detailhead .actions .rowmenu{margin:0}tr[data-rowtone="red"]>td:first-child{box-shadow:inset 3px 0 0 var(--hk-red,#b3392f)}.setrow .btn{justify-self:end}.setrow:has(>div:first-child+:last-child){grid-template-columns:minmax(150px,1fr) minmax(0,360px)}.setrow:has(>div:first-child+:last-child)>:last-child{min-width:0}.setrow:has(>div:first-child+:last-child)>:is(select,.seg,.rangewin,input[type=number]){justify-self:end}.setrow:has(>div:first-child+:last-child)>select.w460{justify-self:stretch;max-width:none}.setrow:has(>div:first-child+:last-child) input:not([type=number],[type=checkbox],[type=radio]){width:100%;max-width:none;box-sizing:border-box}.excnum{justify-content:flex-end}.seg{display:flex;flex-wrap:wrap;gap:8px}.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;border-radius:50%;vertical-align:-1px}a.btn,a.menuitem{color:inherit;text-decoration:none}
+      @media(max-width:700px){.setrow,.setrow:has(>div:first-child+:last-child){grid-template-columns:1fr}.setrow:has(>div:first-child+:last-child)>:is(select,.seg,.rangewin,input[type=number]),.setrow .btn,.excnum{justify-self:start;justify-content:flex-start}}
       .row,.btn,.card,.chip,.nav,.dirbtn{transition:background-color .15s ease,border-color .15s ease,color .15s ease}.bar i{transition:width .4s ease}@keyframes hk-spin{to{transform:rotate(360deg)}}.loading ha-icon,.btn[aria-busy="true"] ha-icon{animation:hk-spin 1s linear infinite}
       .tablewrap{overflow-x:auto;overflow-y:visible}table{border-collapse:collapse;width:100%}th{text-align:left;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;padding:11px 16px;background:var(--hk-soft);cursor:pointer;white-space:nowrap}.thbtn{padding:0;border:0;background:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}td{padding:11px 16px;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1))}tbody tr{cursor:pointer}tbody tr:hover{background:var(--hk-soft)}
       .object{display:flex;align-items:center;gap:11px;min-width:260px}.object .tile{width:34px;height:34px}.object strong{display:block;font-weight:600}.id{display:block;color:var(--hk-muted);font-family:ui-monospace,SFMono-Regular,monospace;font-size:calc(11px*var(--hk-fs,1));margin-top:2px;max-width:390px;overflow:hidden;text-overflow:ellipsis}
       .tablefoot{padding:12px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));display:flex;align-items:center;justify-content:space-between;gap:10px}.pager{display:flex;align-items:center;gap:8px}.pager button{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:7px;padding:5px 10px}.pager button:disabled{opacity:.4}
       .viewswitch{display:inline-flex;gap:4px}.chip:disabled{opacity:.55;cursor:not-allowed}.chip em{font-style:normal;opacity:.7;margin-left:4px}.chip .tabdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:6px;background:var(--hk-red)}.chips .spacer{flex:1}.chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;border-bottom:1px solid var(--hk-border)}.chip{border:1px solid var(--hk-border);background:var(--hk-surface);border-radius:99px;padding:5px 12px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip.active{color:var(--hk-blue-text);border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 11%,transparent);font-weight:600}
-      .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.viewgroup{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}.skeleton{display:grid;gap:10px;padding:18px 16px}.skeleton i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--hk-soft),color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface)),var(--hk-soft)) 0 0/200% 100%;animation:hk-shimmer 1.4s ease-in-out infinite}.skeleton i:nth-of-type(2){width:80%}.skeleton i:nth-of-type(3){width:60%}@keyframes hk-shimmer{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.skeleton i{animation:none}}.coverage{display:flex;gap:6px;align-items:flex-start}.coverage ha-icon{--mdc-icon-size:16px;flex:none;margin-top:1px}.fline{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}.fline .fnote{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:12px 14px;border-radius:10px;border-left:3px solid var(--hk-red);background:color-mix(in srgb,var(--hk-red) 10%,transparent);color:var(--hk-red);font-size:calc(13px*var(--hk-fs,1));line-height:1.45}span.error{padding:0;border:0;border-radius:0;background:none;font-size:calc(13px*var(--hk-fs,1))}span.error:empty{display:none}.notice{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:10px;border-left:3px solid var(--nc,var(--hk-blue));background:color-mix(in srgb,var(--nc,var(--hk-blue)) 10%,transparent);font-size:calc(13px*var(--hk-fs,1));line-height:1.45;color:var(--hk-text)}.notice ha-icon{--mdc-icon-size:18px;flex:none;margin-top:1px;color:var(--nc,var(--hk-blue))}.notice.err{--nc:var(--hk-red)}.notice.warn{--nc:var(--hk-amber)}
+      .emptymsg,.loading{padding:46px;text-align:center;color:var(--hk-muted)}.viewgroup{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}.skeleton{display:grid;gap:10px;padding:18px 16px}.skeleton i{display:block;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--hk-soft),color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface)),var(--hk-soft)) 0 0/200% 100%;animation:hk-shimmer 1.4s ease-in-out infinite}.skeleton i:nth-of-type(2){width:80%}.skeleton i:nth-of-type(3){width:60%}@keyframes hk-shimmer{to{background-position:-200% 0}}@media(prefers-reduced-motion:reduce){.skeleton i{animation:none}}.coverage{display:flex;gap:6px;align-items:flex-start}.coverage ha-icon{--mdc-icon-size:16px;flex:none;margin-top:1px}.fline{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin-top:6px}.fline .fnote{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap td .fline{display:flex}.emptymsg ha-icon{--mdc-icon-size:34px;color:var(--hk-green);display:block;margin:0 auto 8px}.error{padding:12px 14px;border-radius:10px;border-left:3px solid var(--hk-red);background:color-mix(in srgb,var(--hk-red) 10%,transparent);color:var(--hk-red);font-size:calc(13px*var(--hk-fs,1));line-height:1.45}span.error{padding:0;border:0;border-radius:0;background:none;font-size:calc(13px*var(--hk-fs,1))}span.error:empty{display:none}.notice{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-radius:10px;border-left:3px solid var(--nc,var(--hk-blue));background:color-mix(in srgb,var(--nc,var(--hk-blue)) 10%,transparent);font-size:calc(13px*var(--hk-fs,1));line-height:1.45;color:var(--hk-text)}.notice ha-icon{--mdc-icon-size:18px;flex:none;margin-top:1px;color:var(--nc,var(--hk-blue))}.notice.err{--nc:var(--hk-red)}.notice.warn{--nc:var(--hk-amber)}.outagehint p{margin:0 0 8px}tr.grprow td{background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--hk-muted);padding:6px 14px}tr.restrow td{color:var(--hk-muted)}.statusform .outagehint{margin-bottom:10px}
       .bh.open{background:var(--hk-soft)}.bhactions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.bhopen{min-height:30px;padding:4px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit;font-size:calc(11px*var(--hk-fs,1));font-weight:600;white-space:nowrap;cursor:pointer}.bhopen:hover{background:var(--hk-soft);border-color:var(--hk-muted)}.bhopen:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.bhattest{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:4px 16px 14px 62px;background:var(--hk-soft)}.bhattest label{display:flex;align-items:center;gap:8px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.bhattest input{padding:6px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.bhcancel,.bhtake{border:0;background:none;padding:4px 2px;font:inherit;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);cursor:pointer;text-decoration:underline}.bhtake{margin-left:auto;color:var(--hk-red)}.bhcancel:hover{color:var(--hk-text)}
       .viewpop{min-width:220px;gap:2px;padding:6px}.viewrow{display:flex;align-items:center;gap:2px}.viewitem{display:flex;flex:1;gap:8px;align-items:center;padding:8px 10px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.viewitem:hover,.viewdel:hover{background:var(--hk-soft)}.viewitem.on{font-weight:700;color:var(--hk-blue)}.viewdel{display:grid;place-items:center;padding:6px;border:0;border-radius:6px;background:none;color:var(--hk-muted);cursor:pointer}.viewitem ha-icon,.viewdel ha-icon{--mdc-icon-size:18px}.dirbtn.withname{display:inline-flex;align-items:center;gap:6px;max-width:170px}.viewname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.viewpop .viewitem[data-lview-save]{border-top:1px solid var(--hk-border);border-radius:0 0 6px 6px;margin-top:4px}.dirbtn[aria-pressed="true"]{border-color:var(--hk-blue);color:var(--hk-blue)}details>summary{display:flex;align-items:center;gap:8px;list-style:none}.storegrp>summary{padding:10px 16px}details>summary::-webkit-details-marker{display:none}details>summary::before{content:"";flex:none;box-sizing:border-box;width:7px;height:7px;margin:0 5px 2px 3px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;opacity:.65;transform:rotate(-45deg);transition:transform .15s ease}details[open]>summary::before{transform:rotate(45deg) translate(-1px,-1px)}.rowmenu>summary::before{display:none}@media(prefers-reduced-motion:reduce){details>summary::before{transition:none}}
       .bh .row-text small{overflow:visible;white-space:normal;text-overflow:clip}
@@ -1540,8 +1583,8 @@ class StylesMixin {
       .detailhead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:16px;padding:18px 20px;margin-bottom:14px}.detailhead .tile{width:48px;height:48px}.detailhead h1{margin:6px 0 2px;font-size:calc(22px*var(--hk-fs,1))}.actions{display:flex;flex-wrap:wrap;gap:8px}
       .sumline{display:flex;flex-wrap:wrap;gap:10px 26px;padding:12px 18px;margin-bottom:14px}.sumline span{display:grid;gap:3px;align-content:start}.sumline small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.sumline b{font-size:calc(13px*var(--hk-fs,1));font-weight:600}
       .tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--hk-border);overflow-x:auto;background:linear-gradient(to right,var(--hk-bg),transparent) left/36px 100% no-repeat local,linear-gradient(to left,var(--hk-bg),transparent) right/36px 100% no-repeat local,linear-gradient(to right,rgba(0,0,0,.16),transparent) left/10px 100% no-repeat scroll,linear-gradient(to left,rgba(0,0,0,.16),transparent) right/10px 100% no-repeat scroll}.tab{flex:none;padding:10px 14px;border:0;border-bottom:2px solid transparent;background:none;color:var(--hk-muted);white-space:nowrap}.tab em{font-style:normal;font-size:calc(11px*var(--hk-fs,1));padding:1px 6px;border-radius:10px;background:var(--hk-soft)}.tab[aria-selected="true"]{color:var(--hk-blue-text);border-bottom-color:var(--hk-blue);font-weight:600}
-      .needgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:16px}.needtile{display:flex;flex-direction:column;justify-content:center;gap:4px;height:92px;padding:0 16px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-soft);min-width:0}.needtile b{font-size:calc(28px*var(--hk-fs,1));line-height:1;font-variant-numeric:tabular-nums}.needtile span{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.needtile.miss{border-style:dashed}.needtile.miss b{color:var(--hk-amber)}.tablewrap.lt.batt .iconbtn{padding:3px 6px;margin-left:4px;--mdc-icon-size:16px}.linkbtn{border:0;background:none;padding:0;font:inherit;color:var(--hk-text);cursor:pointer;text-decoration:underline;text-decoration-color:var(--hk-border)}.linkbtn:hover{text-decoration-color:currentColor}.tablewrap.lt.batt .lvl{display:flex;align-items:center;gap:8px;min-width:130px}.tablewrap.lt.batt .lvl .bar{flex:1;height:7px;border-radius:4px;background:var(--hk-border);overflow:hidden;min-width:48px}.tablewrap.lt.batt .lvl .bar i{display:block;height:100%}.lvl .lvlnum{min-width:4.2em;text-align:right;white-space:nowrap}.lvl .lvlnum small{display:block;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1))}.tablewrap.lt.batt .red{color:var(--hk-red)}.tablewrap.lt.batt .amber{color:var(--hk-amber)}.tablewrap.lt.batt .green{color:var(--hk-green)}.tablewrap.lt.batt td .btedit{display:flex;flex-wrap:wrap;gap:6px;white-space:normal}.tablewrap.lt.batt .btedit label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.tablewrap.lt.batt .bkedit{padding:0;background:none;border:0}.tablewrap.lt.batt .bkedit .factnote{display:none}.tablewrap.lt.batt .btn.miss{border-style:dashed;color:var(--hk-amber)}.btn.miss ha-icon{--mdc-icon-size:14px;margin-left:6px}.tablewrap.lt.batt td:last-child{text-align:right}@media(max-width:700px){}.bkedit{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px 12px 62px;background:var(--hk-soft);border-bottom:1px solid var(--hk-border)}.bkedit select,.bkrow select{padding:5px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit;font-size:calc(13px*var(--hk-fs,1))}.bkcancel{border:0;background:none;padding:4px 2px;font:inherit;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);cursor:pointer;text-decoration:underline}.bkrow{gap:8px;padding-right:12px;flex-wrap:wrap}.bkall,.bkask{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.bkask{background:var(--hk-soft)}.rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.selcell{width:34px;padding-right:0}.selcell .selbox{margin:0}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.toast.bad{border-left:5px solid var(--hk-red);max-width:min(560px,calc(100vw - 32px))}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}.btcart,.btsuggest{margin:14px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 10%,transparent);border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent)}.btcart strong{display:block;margin-bottom:2px}.btsuggest{background:color-mix(in srgb,var(--hk-green) 11%,transparent);border-color:color-mix(in srgb,var(--hk-green) 30%,transparent)}.btsuggest h3{margin:0 0 4px}.btrepl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}.btrepl .row-text{flex:1;min-width:200px}.btct{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border)}.btct .factnote{flex:1;min-width:120px;margin:0}.btct input{padding:5px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.btctl,.btedit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 16px 0 8px}.btedit{flex-basis:100%;margin:0;padding:8px 16px 12px}.rowwrap:has(.btedit){flex-wrap:wrap}.chcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;padding:0 16px}.chcols>div{padding:8px 0}.chcols .big{font-size:22px;font-weight:700}.chbars{display:flex;gap:3px;align-items:flex-end;height:54px;padding:8px 16px 4px}.chbars i{flex:1;max-width:14px;min-width:3px;border-radius:3px 3px 0 0;background:var(--hk-green);display:block}.chbars i.m{background:var(--hk-red)}.chaxis{display:flex;justify-content:space-between;padding:0 16px 12px;color:var(--hk-muted);font-size:12px}.trimbox{margin:14px 16px 0;padding-top:14px;border-top:1px solid var(--hk-border)}.trimbox .actions{margin-top:8px}
-      .row.politem[data-pol-row],tr[data-pol-row]{cursor:pointer}.tablewrap.lt tr.poldetailrow td{white-space:normal;background:var(--hk-soft)}.poldetail{cursor:auto;display:grid;gap:12px;margin-top:10px}.poldetail h4{margin:0 0 4px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hk-muted)}.poldetail p{margin:0}.poledit{display:grid;gap:6px}.poldetail .inline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.poldetail .inline input,.poldetail .inline select{height:36px;min-width:0}.poldetail .acts{display:flex;flex-wrap:wrap;gap:8px}.poldetail .btn.on{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,var(--hk-surface));color:var(--hk-blue-text);font-weight:700}.poldetail .btn small{font-weight:400;color:var(--hk-muted);margin-left:4px}.polcheck{font-size:calc(13px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.polcheck.ok{color:var(--hk-green)}.polcheck.bad{color:var(--hk-red,#b3392f)}.row.politem.open{background:var(--hk-soft)}
+      .needgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:16px}.needtile{display:flex;flex-direction:column;justify-content:center;gap:4px;height:92px;padding:0 16px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-soft);min-width:0}.needtile b{font-size:calc(28px*var(--hk-fs,1));line-height:1;font-variant-numeric:tabular-nums}.needtile span{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}.needtile.miss{border-style:dashed}.needtile.miss b{color:var(--hk-amber)}.tablewrap.lt.batt .iconbtn{padding:3px 6px;margin-left:4px;--mdc-icon-size:16px}.linkbtn{border:0;background:none;padding:0;font:inherit;color:var(--hk-text);cursor:pointer;text-decoration:underline;text-decoration-color:var(--hk-border)}.linkbtn:hover{text-decoration-color:currentColor}.tablewrap.lt.batt .lvl{display:flex;align-items:center;gap:8px;min-width:130px}.tablewrap.lt.batt .lvl .bar{flex:1;height:7px;border-radius:4px;background:var(--hk-border);overflow:hidden;min-width:48px}.tablewrap.lt.batt .lvl .bar i{display:block;height:100%}.lvl .lvlnum{min-width:4.2em;text-align:right;white-space:nowrap}.lvl .lvlnum small{display:block;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1))}.tablewrap.lt.batt .red{color:var(--hk-red)}.tablewrap.lt.batt .amber{color:var(--hk-amber)}.tablewrap.lt.batt .green{color:var(--hk-green)}.tablewrap.lt.batt td .btedit{display:flex;flex-wrap:wrap;gap:6px;white-space:normal}.tablewrap.lt.batt .btedit label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}.tablewrap.lt.batt .bkedit{padding:0;background:none;border:0}.tablewrap.lt.batt .bkedit .factnote{display:none}.tablewrap.lt.batt .btn.miss{border-style:dashed;color:var(--hk-amber)}.btn.miss ha-icon{--mdc-icon-size:14px;margin-left:6px}.tablewrap.lt.batt td:last-child{text-align:right}@media(max-width:700px){}.bkedit{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:8px 16px 12px 62px;background:var(--hk-soft);border-bottom:1px solid var(--hk-border)}.bkedit select,.bkrow select{padding:5px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit;font-size:calc(13px*var(--hk-fs,1))}.bkcancel{border:0;background:none;padding:4px 2px;font:inherit;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);cursor:pointer;text-decoration:underline}.bkrow{gap:8px;padding-right:12px;flex-wrap:wrap}.rowwrap{display:flex;align-items:center;border-bottom:1px solid var(--hk-border)}.rowwrap:last-child{border-bottom:0}.rowwrap .row{border-bottom:0;flex:1;min-width:0}.selbox{margin:0 0 0 16px;flex:none}.selcell{width:34px;padding-right:0}.selcell .selbox{margin:0}.statcell{display:flex;gap:10px;align-items:flex-start}.outcome{display:flex;gap:12px;align-items:center;margin:14px 16px 4px;padding:14px 16px;border-radius:12px;--oc:var(--hk-gray);color:color-mix(in srgb,var(--oc) 55%,var(--hk-text));background:color-mix(in srgb,var(--oc) 13%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.outcome ha-icon{--mdc-icon-size:26px;flex:none}.outcome.ok{--oc:var(--hk-green)}.outcome.warn{--oc:var(--hk-amber)}.outcome.red{--oc:var(--hk-red)}.namecell{position:relative}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;padding:10px 16px;border-radius:10px;background:var(--hk-text);color:var(--hk-bg);font-weight:600;box-shadow:var(--hk-sh2);pointer-events:none}.toast.bad{border-left:5px solid var(--hk-red);max-width:min(560px,calc(100vw - 32px))}.modepill{display:inline-flex;align-items:center;gap:5px;--mdc-icon-size:14px}.outcome small{display:block;font-weight:400;margin-top:2px}.visitline{display:flex;gap:8px;align-items:center;margin:0 0 12px}.visitline ha-icon{--mdc-icon-size:16px}.headsel{display:flex;gap:10px;align-items:center}.statcell .selbox{margin:3px 0 0}.statcell>div{min-width:0}.btcart,.btsuggest{margin:14px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 10%,transparent);border:1px solid color-mix(in srgb,var(--hk-blue) 30%,transparent)}.btcart strong{display:block;margin-bottom:2px}.btsuggest{background:color-mix(in srgb,var(--hk-green) 11%,transparent);border-color:color-mix(in srgb,var(--hk-green) 30%,transparent)}.btsuggest h3{margin:0 0 4px}.btrepl{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}.btrepl .row-text{flex:1;min-width:200px}.btct{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border)}.btct .factnote{flex:1;min-width:120px;margin:0}.btct input{padding:5px 8px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.btctl,.btedit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 16px 0 8px}.btedit{flex-basis:100%;margin:0;padding:8px 16px 12px}.rowwrap:has(.btedit){flex-wrap:wrap}.chcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;padding:0 16px}.chcols>div{padding:8px 0}.chcols .big{font-size:22px;font-weight:700}.chbars{display:flex;gap:3px;align-items:flex-end;height:54px;padding:8px 16px 4px}.chbars i{flex:1;max-width:14px;min-width:3px;border-radius:3px 3px 0 0;background:var(--hk-green);display:block}.chbars i.m{background:var(--hk-red)}.chaxis{display:flex;justify-content:space-between;padding:0 16px 12px;color:var(--hk-muted);font-size:12px}.trimbox{margin:14px 16px 0;padding-top:14px;border-top:1px solid var(--hk-border)}.trimbox .actions{margin-top:8px}
+      .row.politem[data-pol-row],tr[data-pol-row]{cursor:pointer}.tablewrap.lt tr.poldetailrow td{white-space:normal;background:var(--hk-soft)}.poldetail{cursor:auto;display:grid;gap:10px;margin-top:10px;padding-left:14px;border-left:2px solid var(--hk-border)}.tablewrap.lt tr.poldetailrow .poldetail{margin:2px 0 4px 52px}.poldetail p{margin:0}.poldetail .polwhy{color:var(--hk-muted)}.poldetail .factnote ha-icon{--mdc-icon-size:14px;vertical-align:-2px}.poledit{display:grid;gap:6px}.poldetail .inline{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.poldetail .inline input,.poldetail .inline select{height:36px;min-width:0}.poldetail .acts{display:flex;flex-wrap:wrap;gap:8px}.poldetail .btn.on{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,var(--hk-surface));color:var(--hk-blue-text);font-weight:700}.poldetail .btn small{font-weight:400;color:var(--hk-muted);margin-left:4px}.polcheck:empty{display:none}.polcheck{font-size:calc(13px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.polcheck.ok{color:var(--hk-green)}.polcheck.bad{color:var(--hk-red,#b3392f)}.row.politem.open{background:var(--hk-soft)}
       .remform{display:grid;gap:14px;padding:16px;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.remgrid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:start}.remfield{display:grid;grid-template-rows:auto 40px auto;gap:4px;font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted);min-width:0}.remfield input{height:40px;min-width:0}.remfield.full{grid-column:1/-1;grid-template-rows:auto 40px}.remchips{display:flex;gap:6px;flex-wrap:wrap}.remchips .chip{padding:2px 10px;font-size:calc(12px*var(--hk-fs,1))}.remhint{color:var(--hk-blue-text);font-weight:600}.remactions{display:flex;gap:14px;align-items:center;justify-content:flex-end}
       .tablewrap.rem td:first-child{white-space:normal}.chevbtn{display:inline-flex;vertical-align:middle;padding:0;margin-right:4px;border:0;background:none;color:var(--hk-muted);cursor:pointer}.remnote{display:block;color:var(--hk-muted)}.remact{text-align:right;white-space:nowrap}.remact .btn{margin-left:6px}.remhist td{padding:10px 16px 14px 44px;background:var(--hk-soft)}.remhist h3{margin:0 0 6px;font-size:calc(11px*var(--hk-fs,1));font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--hk-muted)}.remhist ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}.remhist li{display:flex;gap:12px;align-items:center}.remhist li .linkbtn{margin-left:auto;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.remhist p{margin:0}.bhgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;padding-left:28px}@media(max-width:760px){.bhgrid{grid-template-columns:minmax(0,1fr);padding-left:0}}.bhgrid small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.bhgrid .wide{grid-column:1/-1}.bh .statcell{align-items:center}.pill.bhfail{margin-left:6px}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
       @media(max-width:700px){.remact{display:flex;flex-wrap:wrap;gap:8px;white-space:normal}.remact .btn{margin-left:0}.remgrid{grid-template-columns:1fr}.remfield.wide,.remfield.full{grid-column:auto}}
@@ -1551,7 +1594,7 @@ class StylesMixin {
       .viewcount{margin-left:auto;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));white-space:nowrap}.toolgap+.viewcount{margin-left:0}
       .kids{margin:4px 0 6px 40px;padding-left:16px;border-left:2px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 45%,transparent);border-radius:0 0 8px 0}.kids .tile{width:28px;height:28px}.foldarrow{--mdc-icon-size:18px;color:var(--hk-muted);flex:none;margin-right:2px}
       .alsopill{margin-left:6px;vertical-align:1px}.corralso{display:grid;gap:6px;padding:8px 12px;border-left:3px solid var(--hk-amber);background:var(--hk-soft);border-radius:0 8px 8px 0}.corralso strong{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.corralso ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}.corralso li{display:flex;align-items:center;gap:8px}.corralso ha-icon{--mdc-icon-size:18px;color:var(--hk-amber);flex:none}
-      .incidenthead{display:flex;align-items:center;gap:8px;padding-right:12px}.incidenthead .foldhead{flex:1;min-width:0}.incsec{border-left:3px solid var(--hk-border);padding:2px 0 2px 12px;margin:8px 14px 12px}.incsec.obs{border-left-color:var(--hk-amber)}.incsec h4{margin:0 0 6px;font-size:calc(12px*var(--hk-fs,1));font-weight:500;color:var(--hk-muted)}.incfilter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.incfilter b{font-weight:500}.incfilter .chip{margin-left:auto}.incfilter.on{background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));border-color:var(--hk-blue)}
+      .incicon{--mdc-icon-size:18px;color:var(--hk-muted);flex:none}.incdetail{display:grid;gap:4px;padding:4px 0 8px}.incdetail .btn{justify-self:start}.incsec{border-left:3px solid var(--hk-border);padding:2px 0 2px 12px;margin:8px 14px 12px}.incsec.obs{border-left-color:var(--hk-amber)}.incfilter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.incfilter b{font-weight:500}.incfilter .chip{margin-left:auto}.incfilter.on{background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));border-color:var(--hk-blue)}
       .sumgroups{display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:14px;align-items:stretch}.sumgroup{min-width:0;display:flex;flex-direction:column}@media(min-width:1000px){.sumgroups{display:grid;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));gap:6px 10px;grid-auto-rows:1fr}.sumgroup{grid-column:span var(--n,1);flex:none}.sumgroup.row2{grid-column:1/span var(--n,1)}}.sumgroup .sumtiles{margin-bottom:0;flex:1}.sumgroup .sumtile .spark-row{margin-top:auto;padding-top:4px}.sumgrouphead{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));margin:0 0 6px 2px}.tilerows{display:grid;gap:10px}.tilerows .sumgrouphead{margin-bottom:-4px}.sumtiles.even{grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;margin-bottom:0}.sumtiles.even .sumlabel,.sumtiles.even small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:640px){.sumtiles.even{grid-template-columns:repeat(2,minmax(0,1fr))}}
       .sumtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}.sumtile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:12px 14px;border:1px solid var(--hk-border);border-left:4px solid var(--hk-gray);border-radius:12px;background:var(--hk-surface);text-align:left;font:inherit;color:inherit}button.sumtile{cursor:pointer}button.sumtile:hover{background:var(--hk-soft)}.sumtile.ok{border-left-color:var(--hk-green)}.sumtile.warn{border-left-color:var(--hk-amber)}.sumtile.red{border-left-color:var(--hk-red)}.sumlabel{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.sumvalue{font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.2;overflow-wrap:anywhere}.sumtile small{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.sumtile{position:relative}button.sumtile .sumlabel{padding-right:20px}.sumcue{position:absolute;top:10px;right:10px;--mdc-icon-size:16px;color:var(--hk-muted)}div.sumtile,div.sumtile:hover{box-shadow:none;background:var(--hk-soft)}.sumtile.filter[aria-pressed=true]{border-color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface));box-shadow:0 0 0 1px var(--hk-blue)}.sumtile.filter[aria-pressed=true] .sumcue{color:var(--hk-blue)}.sumtile.filter[aria-pressed=true] .sumlabel{color:var(--hk-blue-text)}.sumtile.filter[aria-pressed=true] .sumlabel:before{content:"\\2713";margin-right:.4em}.filteron{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:8px 16px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);background:color-mix(in srgb,var(--hk-blue) 7%,var(--hk-surface));border-bottom:1px solid var(--hk-border)}.filteron ha-icon{--mdc-icon-size:16px;color:var(--hk-blue)}.filteron b{color:var(--hk-text);font-weight:600}.filteron .btn{margin-left:auto}.tabdot{display:inline-block;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--hk-gray)}.tabdot.warn{background:var(--hk-amber)}.tabdot.red{background:var(--hk-red)}
       .detailgrid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,1fr);gap:14px;align-items:start}.pad{padding:16px}.todofoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px}.visitline{display:inline-flex;align-items:center;gap:6px;color:var(--hk-muted)}.visitline ha-icon{--mdc-icon-size:16px}
@@ -1634,12 +1677,13 @@ class StylesMixin {
       .card,.sumtile,.type,.taskcard{transition:transform .15s ease,box-shadow .15s ease,background .15s ease,border-color .15s ease}
       .statushead{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:20px 22px;margin-bottom:16px;border:1px solid var(--hk-border);border-radius:14px;background:var(--hk-surface);box-shadow:var(--hk-sh2),var(--hk-hi)}
       .statushead .ring{width:84px;height:84px;flex:none;box-shadow:inset 0 0 0 1px var(--hk-border),var(--hk-sh1);background:radial-gradient(circle at center,var(--hk-surface) 66%,transparent 68%),conic-gradient(var(--c) calc(var(--p)*1%),var(--hk-soft) 0)}
+      .ringcol{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
       .statushead .ring b{font-size:calc(22px*var(--hk-fs,1));font-weight:600}.ring b small{font-size:.55em;margin-left:1px}
-      .statustext{min-width:0;flex:1 1 220px}.statustext h2{font-size:calc(18px*var(--hk-fs,1));font-weight:600}.statustext p{margin-top:3px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
-      .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:100%;gap:8px}}
+      .statustext{min-width:0;flex:1 1 220px}.statustext>.pill{margin-bottom:6px}.statustext h2{font-size:calc(18px*var(--hk-fs,1));font-weight:600}.statustext p{margin-top:3px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
+      .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}}
       .kpi{display:block;min-width:0;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
       .kpi small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.kpi strong{font-size:calc(20px*var(--hk-fs,1));font-weight:600}.kpi.red strong{color:var(--hk-red)}.kpi.warn strong{color:var(--hk-amber)}
-      .cfgout{display:block;margin-top:4px;white-space:pre-wrap;word-break:break-word}.bhsizes{display:flex;align-items:flex-end;gap:3px;height:48px;padding:6px 16px 0}.bhsizes i{flex:1;min-width:0;background:color-mix(in srgb,var(--hk-blue) 45%,transparent);border-radius:3px 3px 0 0}.bhsizes i.last{background:var(--hk-blue)}.bhsizes i.last.warn{background:var(--hk-amber)}.spark-row{display:block;margin-top:4px}.spark{display:block;width:100%;height:36px}.sysmeter+.spark,.sysmeter+.spark-hint{margin-top:14px}.sysmeter+.spark polyline{opacity:.65}.spark-end,.spark-halo{stroke-linecap:round;vector-effect:non-scaling-stroke}.spark-halo{stroke:var(--hk-soft);stroke-width:10}.spark-end{stroke:var(--hk-muted);stroke-width:7}.sys-spark-end{stroke-width:4}.spark-end.red{stroke:var(--hk-red)}.spark-end.ok{stroke:var(--hk-green)}.spark-cap,.spark-hint{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.spark-cap.red{color:var(--hk-red)}.spark-cap.ok{color:var(--hk-green)}
+      .cfgout{display:block;margin-top:4px;white-space:pre-wrap;word-break:break-word}.bhchart{display:grid;grid-template-columns:auto 1fr;grid-template-rows:96px auto;gap:2px 8px;padding:8px 16px 0}.bhaxis{grid-row:1;display:flex;flex-direction:column;justify-content:space-between;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted);text-align:right}.bhaxis b,.bhdates b{font-weight:400}.bhdates{grid-column:2;display:flex;justify-content:space-between;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.bhsizes{grid-column:2;grid-row:1;display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:96px;border-bottom:1px solid var(--hk-border);border-left:1px solid var(--hk-border);padding:0 6px}.bhsizes i{flex:1 1 0;max-width:36px;min-width:6px;background:color-mix(in srgb,var(--hk-blue) 45%,transparent);border-radius:3px 3px 0 0;cursor:default}.bhsizes i:hover{background:color-mix(in srgb,var(--hk-blue) 70%,transparent)}.bhsizes i.last{background:var(--hk-blue)}.bhsizes i.last.warn{background:var(--hk-amber)}.spark-row{display:block;margin-top:4px}.spark{display:block;width:100%;height:36px}.sysmeter+.spark,.sysmeter+.spark-hint{margin-top:14px}.sysmeter+.spark polyline{opacity:.65}.spark-end,.spark-halo{stroke-linecap:round;vector-effect:non-scaling-stroke}.spark-halo{stroke:var(--hk-soft);stroke-width:10}.spark-end{stroke:var(--hk-muted);stroke-width:7}.sys-spark-end{stroke-width:4}.spark-end.red{stroke:var(--hk-red)}.spark-end.ok{stroke:var(--hk-green)}.spark-cap,.spark-hint{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.spark-cap.red{color:var(--hk-red)}.spark-cap.ok{color:var(--hk-green)}
       .taskgrid{gap:14px}
       .taskcard{--c:var(--hk-blue);position:relative;overflow:hidden;padding-left:20px;box-shadow:var(--hk-sh1),var(--hk-hi)}
       .taskcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
@@ -1658,8 +1702,8 @@ class StylesMixin {
       .rangechart .grid{stroke:var(--hk-border);stroke-width:1}
       .bkcsum{padding:14px 16px 0}.bkcsum .sumtiles{margin-bottom:0}.bkcrule{display:grid;gap:8px;margin:14px 16px;padding:12px 14px;border-radius:12px;background:var(--hk-soft)}.bkcrule .line{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.bkcrule input{width:76px}.bkcrule .line .btn{margin-left:auto}.bkcrule p,.bkcfoot small{display:block;margin:0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}.bkcwarn{display:flex;gap:6px;align-items:flex-start;margin-top:4px;color:var(--hk-amber)}.bkcwarn ha-icon{--mdc-icon-size:14px;flex:none;margin-top:1px}.bkcfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:14px 16px;border-top:1px solid var(--hk-border)}.bkcfoot>div{flex:1 1 260px;min-width:0}.bkcerr{margin:6px 0 0;color:var(--hk-red);font-size:calc(12px*var(--hk-fs,1))}@media(max-width:640px){.bkcrow{grid-auto-flow:row}.bkcrow>.pill{grid-column:2;justify-self:start}}
       .pagebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.pb-left,.pb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.pb-right{margin-left:auto}.pagebar .btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.pagebar ha-icon{--mdc-icon-size:18px}.pagebar ha-icon.spin{animation:hkspin 1s linear infinite}@keyframes hkspin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.pagebar ha-icon.spin{animation:none}}
-      .navtiles.compact{grid-template-columns:repeat(auto-fit,minmax(max(200px,calc(100%/var(--cols,4) - 12px)),1fr));grid-auto-rows:1fr;gap:10px}.navtiles.compact .taskcard{display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto auto auto;column-gap:14px;row-gap:3px;align-content:center;align-items:center;padding:10px 8px 10px 16px}.navtiles.compact .taskcard>ha-icon{grid-row:1 / span 4;margin:0}.navtiles.compact .taskcard>.navfacts{grid-column:2;display:flex;flex-wrap:nowrap;gap:6px;margin-top:4px;min-height:24px;overflow:hidden;min-width:0}.navtiles.compact .taskcard>.navfacts .pill{flex:none}.navtiles.fixed .taskcard>small{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(min-width:641px){.navtiles.compact.five{grid-template-columns:repeat(6,minmax(0,1fr))}.navtiles.compact.five .taskcard{grid-column:span 2}.navtiles.compact.five .taskcard:nth-child(n+4){grid-column:span 3}}@media(max-width:640px){.navtiles.compact .taskcard>.navfacts{flex-wrap:wrap;min-height:0}.navtiles.compact .taskcard>.navfacts:empty{display:none}}.navtiles.compact .taskcard>strong{grid-column:2;grid-row:1}.navtiles.compact .taskcard>.setpill{grid-column:2;grid-row:2;flex-wrap:wrap;gap:6px;min-height:0;justify-self:start}.navtiles.compact .taskcard>.setpill:empty{display:none}.navtiles.compact .taskcard>small{grid-column:2;grid-row:3}
-      @media(max-width:640px){.navtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.navtiles .taskcard{grid-template-rows:auto auto;padding:10px}.navtiles .taskcard>ha-icon,.navtiles .taskcard>small{display:none}.navtiles.compact{grid-template-columns:repeat(2,minmax(0,1fr))}.navtiles.compact .taskcard{grid-template-columns:1fr}.navtiles.compact .taskcard>strong,.navtiles.compact .taskcard>.setpill{grid-column:1}.toolbar.nosel [data-fsel-clear],.toolbar.nosel [data-sel-clear],.toolbar.nosel [data-sel-only],.toolbar.nosel .fbtns{display:none}}
+      .navtiles.compact{grid-template-columns:repeat(auto-fit,minmax(max(200px,calc(100%/var(--cols,4) - 12px)),1fr));grid-auto-rows:1fr;gap:10px}.navtiles.compact .taskcard{display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto auto auto;column-gap:14px;row-gap:3px;align-content:center;align-items:center;padding:10px 8px 10px 16px}.navtiles.compact .taskcard>ha-icon{grid-row:1 / span 4;margin:0}.navtiles.compact .taskcard>.navfacts{grid-column:2;display:flex;flex-wrap:nowrap;gap:6px;margin-top:4px;min-height:24px;overflow:hidden;min-width:0}.navtiles.compact .taskcard>.navfacts .pill{flex:none}.navtiles.fixed .taskcard>small{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(min-width:641px){.navtiles.compact.five{grid-template-columns:repeat(6,minmax(0,1fr))}.navtiles.compact.five .taskcard{grid-column:span 2}.navtiles.compact.five .taskcard:nth-child(n+4){grid-column:span 3}}@media(max-width:640px){.navtiles.compact .taskcard>.navfacts{flex-wrap:wrap;min-height:0}.navtiles.compact .taskcard>.navfacts:empty{display:none}}.navtiles.compact .taskcard>strong{grid-column:2;grid-row:1}.navtiles.compact .taskcard>.setpill{grid-column:2;grid-row:2;flex-wrap:wrap;gap:6px;min-height:0;justify-self:start}.navtiles.compact .taskcard>.setpill:empty{display:none}.navtiles.compact .taskcard>.setpill.slot:empty{display:flex;min-height:24px}.navtiles.compact .taskcard>small{grid-column:2;grid-row:3}
+      @media(max-width:640px){.navtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.navtiles .taskcard{grid-template-rows:auto auto;padding:10px}.navtiles .taskcard>ha-icon,.navtiles .taskcard>small{display:none}.navtiles.compact{grid-template-columns:repeat(2,minmax(0,1fr))}.navtiles.compact .taskcard{grid-template-columns:1fr}.navtiles.compact .taskcard>strong,.navtiles.compact .taskcard>.setpill,.navtiles.compact .taskcard>.navfacts{grid-column:1}.toolbar.nosel [data-fsel-clear],.toolbar.nosel [data-sel-clear],.toolbar.nosel [data-sel-only],.toolbar.nosel .fbtns{display:none}}
       .setgrid3{grid-template-columns:repeat(3,minmax(0,1fr))}@media(max-width:860px){.setgrid3{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.setgrid3{grid-template-columns:minmax(0,1fr)}}
       .hkmodal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(10,14,20,.55)}.hkdialog{width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;border:1px solid var(--hk-border);border-radius:16px;background:var(--hk-surface);box-shadow:0 14px 40px rgba(0,0,0,.35)}.hkdialog .dhead{padding:16px 18px 4px}.hkdialog .dhead h2{margin:0}.hkdialog .dbody{display:grid;gap:12px;padding:10px 18px 14px}.hkdialog .dbody label{display:block;margin-bottom:4px;font-weight:600;font-size:calc(12.5px*var(--hk-fs,1))}.hkdialog .dbody input[type=text],.hkdialog .dbody input[type=datetime-local],.hkdialog .dbody textarea{width:100%;box-sizing:border-box}.hkdialog .dfoot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.hkdialog .dbtns,.logsuggest .dbtns{display:flex;gap:8px;margin-left:auto}.hkdialog .dquestion{font-weight:600}.hkdialog .danger-t{color:var(--hk-red)}.notechips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.notechips .chip{cursor:pointer}.notetwo{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:560px){.notetwo{grid-template-columns:1fr}}
       .kngrp{padding:9px 16px 4px;border-top:1px solid var(--hk-border);background:var(--hk-soft);color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:700;letter-spacing:.05em;text-transform:uppercase}.kngrp:first-child{border-top:0}.knline{display:grid;grid-template-columns:20px minmax(110px,170px) minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:9px 16px;border-top:1px solid var(--hk-border)}.kngrp+.knline{border-top:0}.knline .kk{color:var(--hk-muted)}.knline .kval{min-width:0;overflow-wrap:anywhere}.knline .kval small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.knline .ksrc{padding:1px 6px;border:1px solid var(--hk-border);border-radius:6px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));white-space:nowrap}.kdot{font-weight:700;text-align:center}.k-ok{color:var(--hk-green)}.k-warn{color:var(--hk-amber)}.k-red{color:var(--hk-red)}.k-mute{color:var(--hk-muted)}@media(max-width:640px){.knline{grid-template-columns:20px minmax(0,1fr)}.knline .kval{grid-column:2}.knline .ksrc{display:none}}
@@ -1681,16 +1725,16 @@ class StylesMixin {
       .btn.small{padding:5px 11px;font-size:calc(13px*var(--hk-fs,1))}.notehint{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 16px}.notehint small{display:block;color:var(--hk-muted)}.row.seeall{justify-content:flex-start;color:var(--hk-blue-text);font-weight:600}.logsuggest{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:12px 16px 0;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--hk-blue) 9%,transparent)}
       .hamenu{display:grid;place-items:center;flex:none;width:40px;height:40px;margin:0 -10px 0 -6px;padding:0;border:0;border-radius:50%;background:none;color:inherit}.hamenu:hover{background:var(--hk-soft)}.hamenu:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.hamenu ha-icon{--mdc-icon-size:24px}.sysmeter{display:block;height:6px;margin-top:6px;border-radius:99px;background:var(--hk-soft);overflow:hidden}.sysmeter i{display:block;height:100%;border-radius:99px;background:var(--hk-green)}.sysmeter.warn i{background:var(--hk-amber)}.sysmeter.red i{background:var(--hk-red)}.sysmeter.mute i{background:var(--hk-gray)}.sysshare{display:block;width:100%;min-width:120px;height:8px;margin-top:2px;border-radius:99px;background:var(--hk-soft);overflow:hidden}.sysshare i{display:block;height:100%;border-radius:99px;background:var(--hk-green)}.tablewrap.lt.acc td{white-space:normal}.pills{display:flex;flex-wrap:wrap;gap:4px}@media(min-width:641px){.sysnav .navtiles{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(min-width:1300px){.sysnav .navtiles{grid-template-columns:repeat(6,minmax(0,1fr))}}
       .intentry{margin:4px 2px 0;font-size:15px}.syssec{margin:18px 16px 6px;font-size:15px}.syssec:first-child{margin-top:12px}
-      .pill.kind{background:none;border:1px solid var(--hk-border);color:var(--hk-muted)}.rowmenu{position:relative;flex:none;margin:0 10px 0 0}.rowmenu>summary{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;list-style:none;cursor:pointer;color:var(--hk-muted)}.rowmenu>summary::-webkit-details-marker{display:none}.rowmenu>summary:hover,.rowmenu[open]>summary{background:var(--hk-soft);color:inherit}.menupop{position:absolute;right:0;top:100%;z-index:20;display:grid;min-width:260px;padding:4px 0;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.menuitem{white-space:nowrap;display:flex;gap:10px;align-items:center;padding:8px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}.menuitem:hover{background:var(--hk-soft)}.menuitem ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}
-      .row[data-object]{cursor:pointer}.monitor-meta{margin-top:2px}.monitor-sec{display:flex;align-items:baseline;gap:8px;padding:16px 16px 8px;border-top:1px solid var(--hk-border);margin-top:14px}.monitor-sec h3{margin:0;font-size:calc(14px*var(--hk-fs,1));font-weight:600}.monitor-sec small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.avail-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px 16px 4px}.avail-tile{background:var(--hk-soft);border-radius:10px;padding:10px 14px}.avail-tile b{display:block;font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.25}.avail-tile b.ok{color:var(--hk-green)}.avail-tile span{font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.avail-info{--mdc-icon-size:16px;color:var(--hk-muted);vertical-align:-2px;cursor:help}.monitor-axis{display:flex;justify-content:space-between;padding:6px 16px 0;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.avail-since{padding:8px 16px 0;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-days{display:flex;gap:3px;padding:14px 16px 0}.monitor-days i{flex:1;min-width:3px;height:34px;border-radius:3px;background:repeating-linear-gradient(135deg,var(--hk-soft) 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1px var(--hk-border)}.monitor-days i.ok,.monitor-days i.problem,.monitor-days i.unverified,.monitor-days i.flapping{box-shadow:none}.monitor-days i.problem.short{background:var(--hk-amber)}.monitor-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 16px 0;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-legend span{display:inline-flex;align-items:center;gap:6px}.monitor-legend i{width:10px;height:10px;border-radius:2px;background:var(--hk-soft);box-shadow:inset 0 0 0 1px var(--hk-border)}.monitor-legend i.ok{background:var(--hk-green);box-shadow:none}.monitor-legend i.problem{background:var(--hk-red);box-shadow:none}.monitor-legend i.problem.short{background:var(--hk-amber)}.monitor-days i.ok{background:var(--hk-green)}.monitor-days i.problem{background:var(--hk-red)}.monitor-days i.unverified,.monitor-days i.flapping{background:var(--hk-amber)}.page-editor{max-width:960px;margin:0 auto}.monitor-fields{display:grid;gap:14px;padding:16px}.monitor-twocol{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}@media(max-width:560px){.monitor-twocol{grid-template-columns:1fr}}.monitor-add{display:grid;gap:10px;padding:12px 16px 16px;border-top:1px solid var(--hk-border)}.monitor-add>input[type=search]{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-suggest{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip{font:inherit;font-size:calc(12px*var(--hk-fs,1));padding:3px 10px;border-radius:999px;border:1px solid var(--hk-border);background:none;color:var(--hk-muted);cursor:pointer}.chip.dashed{border-style:dashed}.chip:hover{color:var(--hk-text);border-color:var(--hk-muted)}.iconbtn{border:0;background:none;color:var(--hk-muted);cursor:pointer;padding:4px;border-radius:6px}.iconbtn:hover{background:var(--hk-soft);color:var(--hk-text)}.monitor-fields label{display:grid;gap:6px;font-weight:600}.monitor-fields input,.monitor-fields textarea{width:100%;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-fields textarea{min-height:0;box-sizing:border-box;resize:none;overflow-y:hidden}.monitor-check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.monitor-check input{width:18px;height:18px}.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto auto}.row.monitor-choice{grid-template-columns:auto minmax(0,1fr) auto}.monitor-choice .btn,.monitor-member .btn{justify-self:end;width:auto;white-space:nowrap}.row.monitor-notify{grid-template-columns:minmax(0,1fr) auto;cursor:pointer}.monitor-notify .policyswitch{justify-self:end}.monitor-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px;border-bottom:1px solid var(--hk-border)}.monitor-tabs .btn{border-radius:99px;min-height:34px}.monitor-group h3{display:flex;gap:8px;align-items:center;margin:0;padding:10px 16px;background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-group h3 span{font-weight:400}.monitor-group .row{border-bottom:1px solid var(--hk-border)}.monitor-choice .btn:disabled{opacity:.65}.monitor-results{max-height:420px;overflow:auto}.monitor-search-note{padding:0 16px 18px;color:var(--hk-muted)}.page-editor .savebar{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface)}@media(max-width:600px){.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;grid-auto-flow:row;gap:8px}.monitor-member .tile{grid-column:1;grid-row:1}.monitor-member .row-text{grid-column:2;grid-row:1}.monitor-member .monitor-check{grid-column:2;grid-row:2}.monitor-member .btn{grid-column:3;grid-row:1/3}}
+      .pill.kind{background:none;border:1px solid var(--hk-border);color:var(--hk-muted)}.rowmenu{position:relative;flex:none;margin:0 10px 0 0}.rowmenu>summary{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;list-style:none;cursor:pointer;color:var(--hk-muted)}.rowmenu>summary::-webkit-details-marker{display:none}.rowmenu>summary:hover,.rowmenu[open]>summary{background:var(--hk-soft);color:inherit}.menusep{height:0;margin:4px 0;border:0;border-top:1px solid var(--hk-border)}.menupop{position:absolute;right:0;top:100%;z-index:20;display:grid;min-width:260px;padding:4px 0;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.menuitem{white-space:nowrap;display:flex;gap:10px;align-items:center;padding:8px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}.menuitem:hover{background:var(--hk-soft)}.menuitem ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}
+      .row[data-object]{cursor:pointer}.monitor-meta{margin-top:2px}.monitor-sec{display:flex;align-items:baseline;gap:8px;padding:16px 16px 8px;border-top:1px solid var(--hk-border);margin-top:14px}.monitor-sec h3{margin:0;font-size:calc(14px*var(--hk-fs,1));font-weight:600}.monitor-sec small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.avail-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px 16px 4px}.avail-tile{background:var(--hk-soft);border-radius:10px;padding:10px 14px}.avail-tile b{display:block;font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.25}.avail-tile b.ok{color:var(--hk-green)}.avail-tile span{font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.avail-info{--mdc-icon-size:16px;color:var(--hk-muted);vertical-align:-2px;cursor:help}.monitor-axis{display:flex;justify-content:space-between;padding:6px 16px 0;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.avail-since{padding:8px 16px 0;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-days{display:flex;gap:3px;padding:14px 16px 0}.monitor-days i{flex:1;min-width:3px;height:34px;border-radius:3px;background:repeating-linear-gradient(135deg,var(--hk-soft) 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1px var(--hk-border)}.monitor-days i.ok,.monitor-days i.problem,.monitor-days i.unverified,.monitor-days i.flapping{box-shadow:none}.monitor-days i.problem.short{background:var(--hk-amber)}.monitor-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 16px 0;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-legend span{display:inline-flex;align-items:center;gap:6px}.monitor-legend i{width:10px;height:10px;border-radius:2px;background:var(--hk-soft);box-shadow:inset 0 0 0 1px var(--hk-border)}.monitor-legend i.ok{background:var(--hk-green);box-shadow:none}.monitor-legend i.problem{background:var(--hk-red);box-shadow:none}.monitor-legend i.problem.short{background:var(--hk-amber)}.monitor-days i.ok{background:var(--hk-green)}.monitor-days i.problem{background:var(--hk-red)}.monitor-days i.unverified,.monitor-days i.flapping{background:var(--hk-amber)}.page-editor{max-width:960px;margin:0 auto}.monitor-fields{display:grid;gap:14px;padding:16px}.monitor-twocol{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}@media(max-width:560px){.monitor-twocol{grid-template-columns:1fr}}.monitor-add{display:grid;gap:10px;padding:12px 16px 16px;border-top:1px solid var(--hk-border)}.monitor-add>input[type=search]{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-suggest{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip{font:inherit;font-size:calc(12px*var(--hk-fs,1));padding:3px 10px;border-radius:999px;border:1px solid var(--hk-border);background:none;color:var(--hk-muted);cursor:pointer}.chip.dashed{border-style:dashed}.chip:hover{color:var(--hk-text);border-color:var(--hk-muted)}.iconbtn{border:0;background:none;color:var(--hk-muted);cursor:pointer;padding:4px;border-radius:6px}.iconbtn:hover{background:var(--hk-soft);color:var(--hk-text)}.monitor-fields label{display:grid;gap:6px;font-weight:600}.monitor-fields input,.monitor-fields textarea{width:100%;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-fields textarea{min-height:0;box-sizing:border-box;resize:none;overflow-y:hidden}.monitor-check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.monitor-check input{width:18px;height:18px}.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto auto}.row.monitor-choice{grid-template-columns:auto minmax(0,1fr) auto}.monitor-choice .btn,.monitor-member .btn{justify-self:end;width:auto;white-space:nowrap}.row.monitor-notify{grid-template-columns:minmax(0,1fr) auto;cursor:pointer}.monitor-notify .policyswitch{justify-self:end}.monitor-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px;border-bottom:1px solid var(--hk-border)}.monitor-group h3{display:flex;gap:8px;align-items:center;margin:0;padding:10px 16px;background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-group h3 span{font-weight:400}.monitor-group .row{border-bottom:1px solid var(--hk-border)}.monitor-choice .btn:disabled{opacity:.65}.monitor-results{max-height:420px;overflow:auto}.monitor-search-note{padding:0 16px 18px;color:var(--hk-muted)}.page-editor .savebar{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface)}@media(max-width:600px){.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;grid-auto-flow:row;gap:8px}.monitor-member .tile{grid-column:1;grid-row:1}.monitor-member .row-text{grid-column:2;grid-row:1}.monitor-member .monitor-check{grid-column:2;grid-row:2}.monitor-member .btn{grid-column:3;grid-row:1/3}}
       .note-editor{min-width:0}.note-fields{display:grid;gap:14px;padding:16px}.note-fields>div{min-width:0}.note-fields h3{margin:0;font-size:calc(15px*var(--hk-fs,1))}.note-fields label{display:block;margin-bottom:6px;color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1));font-weight:600}.note-fields input,.note-fields textarea{box-sizing:border-box;width:100%;min-width:0;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.note-fields textarea{resize:vertical}.note-fields .picker{max-width:none}.note-fields .notetwo{grid-template-columns:repeat(2,minmax(0,1fr))}.note-fields .notetwo>div{min-width:0}.note-fields .notemeta{display:flex;align-items:center;align-self:end;gap:8px;flex-wrap:wrap;min-height:42px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));overflow-wrap:anywhere}.note-fields .notemeta strong{color:var(--hk-text)}.note-fields .notehint2{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.page-editor .note-editor .note-actions,.note-editor .note-actions{border:0;border-top:1px solid var(--hk-border);border-radius:0;background:var(--hk-soft)}.note-editor .danger-t{color:var(--hk-red)}.note-editor.inline .notetwo{grid-template-columns:1fr}@media(max-width:700px){.note-fields .notetwo{grid-template-columns:1fr}}
       .monitor-member-wrap{border-bottom:1px solid var(--hk-border)}.monitor-member-wrap:last-child{border-bottom:0}.monitor-member-wrap .row{border-bottom:0}.monitor-rules{padding:0 16px 12px 62px}.monitor-rules summary{color:var(--hk-blue-text);cursor:pointer;font-size:calc(12px*var(--hk-fs,1));font-weight:600}.monitor-rules p{margin:8px 0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.monitor-rule{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;font-size:calc(13px*var(--hk-fs,1))}.monitor-rule label{display:inline-flex;align-items:center;gap:8px;min-width:210px;cursor:pointer}.monitor-rule input[type=number]{width:100px;padding:7px 9px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-rule input[type=number]:disabled{opacity:.45}.monitor-preview-body{padding:12px 16px}.monitor-preview-body>p{margin:0;color:var(--hk-muted)}.monitor-preview-body>strong{display:block;margin-bottom:4px}.monitor-preview-body>small{display:block;margin-bottom:8px;color:var(--hk-muted)}.monitor-preview-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:7px 0;border-top:1px solid var(--hk-border)}.monitor-preview-row small{grid-column:1/-1;color:var(--hk-muted)}@media(max-width:600px){.monitor-rules{padding-left:16px}.monitor-rule label{min-width:0;flex:1 1 100%}.monitor-rule input[type=number]{width:90px}}
       .pin-editor{border-bottom:1px solid var(--hk-border)}.pin-fields{display:grid;gap:10px;padding:16px}.pin-fields h3{margin:0;font-size:calc(15px*var(--hk-fs,1))}.pin-fields p{margin:0;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.pin-fields label{display:block;margin:4px 0 6px;color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1));font-weight:600}.pin-fields input{box-sizing:border-box;width:100%;max-width:520px;min-height:40px;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.pin-fields small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.pin-fields .notechips{margin-top:8px}.pin-editor .pin-actions{border-bottom:0;border-top:1px solid var(--hk-border);background:var(--hk-soft)}.pin-actions [role=status]{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
       @media(max-width:860px){.tablewrap.dense-list tr{padding-top:8px;padding-bottom:8px}.tablewrap.dense-list .namecell .id{display:block}}
       @media(min-width:861px){.listbar .sortgroup.table-sort{display:none}}.th-alt{margin-left:8px;padding-left:8px;border-left:1px solid var(--hk-border);color:var(--hk-blue-text)}
-      .findings-table td{vertical-align:middle}.findings-table td:nth-child(2){min-width:260px;white-space:normal}.findings-table .finding-link{display:flex;align-items:flex-start;gap:10px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}.findings-table .finding-link .tile{flex:none}.findings-table .finding-name{display:grid;gap:2px;min-width:0}.findings-table .finding-name strong{overflow-wrap:anywhere}.findings-table .finding-name .id{margin:0;overflow-wrap:anywhere}.findings-table .finding-name small{color:var(--hk-muted);white-space:normal;overflow-wrap:anywhere}.findings-table .finding-rule{font-family:var(--hk-mono,monospace);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.findings-table td:nth-child(6) small{display:block;color:var(--hk-muted)}.findings-table .finding-action .rowmenu{margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{padding:0;white-space:normal}.findings-table .finding-group .rowwrap{border-bottom:0}.findings-table .finding-group .fold{border:0}.findings-table .finding-detail .pad{padding:10px 16px}.findings-table.dense-list .finding-name .id,.findings-table.dense-list .finding-name small,.findings-table.dense-list td:nth-child(6) small{display:none}.findings-table.dense-list .finding-link .tile{width:28px;height:28px}.findings-table.dense-list td{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-group>td,.findings-table.dense-list .finding-detail>td{padding:0}@media(max-width:860px){.findings-table tr.finding-data{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 10px;align-items:start}.findings-table tr.finding-data td{grid-column:2;min-width:0}.findings-table tr.finding-data td.selcol{grid-column:1;grid-row:1;width:24px;min-width:24px;max-width:24px;padding:0}.findings-table tr.finding-data td:nth-child(2){grid-column:2;grid-row:1}.findings-table tr.finding-data td.finding-action{grid-column:3;grid-row:1}.findings-table tr.finding-data td:nth-child(n+3):not(.finding-action){display:inline-block;margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{display:block}.findings-table.dense-list .finding-name .id{display:none}}
+      .findings-table td{vertical-align:middle}.findings-table td:nth-child(2){min-width:260px;white-space:normal}.findings-table .finding-link{display:flex;align-items:flex-start;gap:10px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}.findings-table .finding-link .tile{flex:none}.findings-table .finding-name{display:grid;gap:2px;min-width:0}.findings-table .finding-name strong{overflow-wrap:anywhere}.findings-table .finding-name .id{margin:0;overflow-wrap:anywhere}.findings-table .finding-name small{color:var(--hk-muted);white-space:normal;overflow-wrap:anywhere}.findings-table .finding-label{display:block}.finding-rule{display:block;font-family:var(--hk-mono,monospace);font-size:calc(10.5px*var(--hk-fs,1));color:var(--hk-muted);overflow-wrap:anywhere}.findings-table td:nth-child(6) small{display:block;color:var(--hk-muted)}.findings-table .finding-action .rowmenu{margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{padding:0;white-space:normal}.findings-table .finding-group .rowwrap{border-bottom:0}.findings-table .finding-group .fold{border:0}.findings-table .finding-detail .pad{padding:10px 16px}.findings-table.dense-list .finding-name .id,.findings-table.dense-list .finding-name small,.findings-table.dense-list td:nth-child(6) small{display:none}.findings-table.dense-list .finding-link .tile{width:28px;height:28px}.findings-table.dense-list td{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-group>td,.findings-table.dense-list .finding-detail>td{padding:0}@media(max-width:860px){.findings-table tr.finding-data{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 10px;align-items:start}.findings-table tr.finding-data td{grid-column:2;min-width:0}.findings-table tr.finding-data td.selcol{grid-column:1;grid-row:1;width:24px;min-width:24px;max-width:24px;padding:0}.findings-table tr.finding-data td:nth-child(2){grid-column:2;grid-row:1}.findings-table tr.finding-data td.finding-action{grid-column:3;grid-row:1}.findings-table tr.finding-data td:nth-child(n+3):not(.finding-action){display:inline-block;margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{display:block}.findings-table.dense-list .finding-name .id{display:none}}@media(max-width:640px){.findings-table tr.finding-data{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:10px 12px}.findings-table tr.finding-data td{padding:0;border:0}.findings-table tr.finding-data td.selcol{order:0;flex:none}.findings-table tr.finding-data td:nth-child(2){order:1;flex:1 1 calc(100% - 80px);min-width:0}.findings-table tr.finding-data td.finding-action{order:2;flex:none}.findings-table tr.finding-data td:nth-child(n+3):not(.finding-action){order:3;display:inline-flex;align-items:center;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.findings-table tr.finding-data td:nth-child(3){margin-left:32px}.findings-table tr.finding-data td:nth-child(4):not(.finding-action),.findings-table tr.finding-data td:nth-child(5) small,.findings-table tr.finding-data .finding-rule{display:none}.findings-table tr.finding-data td[data-label]::before{display:none}.findings-table tr.finding-data td:nth-child(5)::before,.findings-table tr.finding-data td:nth-child(6)::before{display:inline;content:"·";margin:0}.findings-table tr.finding-data td:nth-child(6) .finding-label{display:inline}.findings-table .finding-name .id{display:none}}
       .panel:has(.colpop),.panel:has(.viewform),.panel:has(.rowmenu[open]),.tablewrap:has(.rowmenu[open]){overflow:visible}tr:has(.rowmenu[open]){position:relative;z-index:25}.listbar-actions{display:flex;flex:1 1 auto;justify-content:flex-end;align-items:center;gap:8px;margin-left:auto;min-height:40px}.listbar-actions:empty{display:none}.listbar-actions>.dirbtn,.listbar-actions>.colwrap>.dirbtn{min-height:40px}.listbar-actions .viewwrap{z-index:30}.viewform{position:absolute;right:0;top:calc(100% + 8px);z-index:30;display:grid;gap:10px;width:min(320px,calc(100vw - 32px));box-sizing:border-box;padding:16px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 10px 30px rgba(0,0,0,.18)}.viewform strong{font-size:calc(15px*var(--hk-fs,1))}.viewform label{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.viewform input{box-sizing:border-box;width:100%;min-width:0;height:40px;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.viewform small{font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.viewform-actions{display:flex;justify-content:flex-end;gap:8px}.viewform-actions .btn{white-space:nowrap}.findings-table .finding-name{flex:1}.findings-table .finding-cause .finding-link>.pill{flex:none;align-self:center}.findings-table .finding-detail .rowwrap{border-bottom:1px solid var(--hk-border)}.findings-table .finding-detail .rowwrap:last-child{border-bottom:0}.findings-table.dense-list .finding-detail .row{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-detail .row-text small{display:none}.findings-table.dense-list .finding-detail .row .tile{width:28px;height:28px}.findings-table.dense-list .finding-detail .rowmenu>summary{width:28px;height:28px}@media(max-width:860px){.listbar-actions{margin-left:auto}.findings-table tr.finding-detail{padding:0}.findings-table .finding-detail>td{padding:0}}@media(max-width:560px){.listbar-actions{margin-left:auto}.listbar .sortgroup:not(.table-sort){margin-left:0}}
-      .findings-table .finding-link-group{display:flex;align-items:flex-start;gap:6px;min-width:0}.findings-table .finding-link-group .finding-link{flex:1;min-width:0}.findings-table .finding-fold{display:flex;align-items:center;justify-content:center;flex:none;width:24px;height:28px;padding:0;border:0;background:none;color:var(--hk-muted);cursor:pointer}.findings-table .finding-fold .foldarrow{margin:0}.findings-table .finding-fold:hover{color:var(--hk-text)}
+      .findings-table .finding-link-group{display:flex;align-items:flex-start;gap:6px;min-width:0}.findings-table .finding-link-group .finding-link{flex:1;min-width:0}.findings-table .finding-fold{display:flex;align-items:center;justify-content:center;flex:none;width:24px;height:28px;padding:0;border:0;background:none;color:var(--hk-muted);cursor:pointer}.findings-table .finding-fold .foldarrow{margin:0}.findings-table .finding-fold:hover{color:var(--hk-text)}.finding-fold-gap{flex:none;width:24px}.findings-table tr.og.lvl1 .finding-link-group{padding-left:22px}.findings-table tr.og.lvl2 .finding-link-group{padding-left:44px}.findings-table tr.og.lvl3 .finding-link-group{padding-left:66px}.findings-table tr.og:not(.finding-cause){background:color-mix(in srgb,var(--hk-soft) 55%,transparent)}.findings-table .ognew{display:block;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1))}.chips .seg{display:inline-flex;flex-wrap:wrap;gap:4px}@media(max-width:860px){.findings-table tr.og.lvl1 .finding-link-group,.findings-table tr.og.lvl2 .finding-link-group,.findings-table tr.og.lvl3 .finding-link-group{padding-left:12px}}
       .planfootcol{flex-direction:column;align-items:stretch}.planfootcol>:first-child{flex:none}.planfootcol .planfootbtns{justify-content:flex-end;gap:10px}.planfootcol .planfootbtns .btn{min-width:150px;justify-content:center}.fold .planrow{padding:8px 16px}.fold .planrow small{margin-top:1px}
       .wmx{padding:12px 16px 14px;display:grid;gap:10px}.wmx .wtop{display:flex;gap:10px;align-items:center;color:var(--hk-amber)}.wmx .wtop strong{font-size:calc(15px*var(--hk-fs,1));color:var(--hk-text)}
       .wtr{display:flex;list-style:none;margin:0;padding:0}.wtr li{flex:1;position:relative;padding-top:20px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted);text-align:center}
@@ -1710,6 +1754,12 @@ class StylesMixin {
       .optswitch{display:flex;gap:12px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border:2px solid var(--hk-blue);border-radius:12px;background:var(--hk-soft);cursor:pointer}.optswitch .policyswitch{margin-top:2px}.optswitch span{display:grid;gap:2px}.optswitch small{color:var(--hk-muted)}
       .mcplog tr.undone td{opacity:.55}.logwhat{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;min-width:0}.logwhat code{overflow-wrap:anywhere}.logwhat small,.logn{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.logdetail{padding:4px 0 8px}.logdetail small{color:var(--hk-muted)}.logdetail pre{margin:4px 0 0;padding:8px 10px;border-radius:8px;background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));overflow:auto}.mcpbulk{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--hk-border);font-size:calc(13px*var(--hk-fs,1));color:var(--hk-muted)}.mcprow select,.mcpbulk select{font:inherit;padding:4px 8px;border-radius:8px;border:1px solid var(--hk-border);background:var(--hk-card,transparent);color:var(--hk-text)}
       .mcprow .row-text small{white-space:normal;overflow:visible;text-overflow:clip}.mcprow .seg{flex-wrap:nowrap;justify-content:flex-end}@media(max-width:640px){.mcprow .seg{grid-column:1/-1;grid-row:2;justify-content:flex-start;padding-left:52px}}.mcpneeds{color:var(--hk-amber)}.mcpnote{display:flex;gap:10px;align-items:flex-start;margin:12px 16px;padding:10px 12px;border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1));line-height:1.5}.mcpnote ha-icon{--mdc-icon-size:18px;flex:none;margin-top:1px;color:var(--hk-muted)}.mcpcalls{margin-left:8px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));font-weight:400}.mcphow .mcpsteps{display:grid;gap:8px;margin:6px 0 0;padding-left:20px;font-size:calc(13px*var(--hk-fs,1));line-height:1.6}.mcpchip{display:inline-block;margin:1px 2px;padding:1px 7px;border-radius:6px;background:var(--hk-soft);border:1px solid var(--hk-border);font-size:calc(12px*var(--hk-fs,1))}
+      .statusopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.statusopt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--hk-border);border-radius:10px;cursor:pointer;background:var(--hk-surface)}.statusopt.on{border-color:var(--hk-blue-solid);box-shadow:0 0 0 1px var(--hk-blue-solid)}.statusopt input{margin:3px 0 0;flex:none}.statusopt span{display:grid;gap:2px;min-width:0}.statusopt small{color:var(--hk-muted);font-size:12.5px;white-space:normal}.statusform{display:grid;gap:10px}.statusrow{display:flex;gap:8px;flex-wrap:wrap}.statusrow input{flex:1 1 220px;min-width:0}.statusform .mbtns{display:flex;gap:8px;justify-content:flex-end}.finding .polform.statusform{grid-template-columns:minmax(0,1fr);align-items:stretch}.menuitem span{display:grid;text-align:left}.menuitem small{color:var(--hk-muted);font-size:12px}.fbtns .btn.ha{background:none;box-shadow:none;border-color:var(--hk-border)}
+      .statustext h2 .headlink{text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:color-mix(in srgb,currentColor 25%,transparent);text-underline-offset:5px}.statustext p .link{font-size:inherit}.todogrp{display:flex;gap:8px;align-items:center}.foldhd small{text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px}.todogrp.red{color:var(--hk-red)}.relpills{display:flex;flex-wrap:wrap;gap:4px;max-width:240px}.btctl .btn.miss,.btn.quiet.miss{border:1px dashed color-mix(in srgb,var(--hk-amber) 60%,var(--hk-border));padding:2px 8px;gap:4px}@media(max-width:560px){.listbar{gap:8px}.listbar>input{flex:1 1 100%}.listbar .sortgroup{flex:1 1 calc(100% - 120px);min-width:0;margin-left:0}.listbar .sortgroup select{flex:1 1 auto}.listbar-actions{flex:none;margin-left:0}}@media(max-width:640px){.tablewrap.lt.objs tr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:10px 12px}.tablewrap.lt.objs td{display:block;padding:0;border:0;margin:0}.tablewrap.lt.objs td.selcol{flex:0 0 24px;width:24px;min-width:24px;max-width:24px}.tablewrap.lt.objs td:nth-child(2){flex:1 1 calc(100% - 44px);min-width:0}.tablewrap.lt.objs td:nth-child(n+3){display:inline-flex;align-items:center;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.tablewrap.lt.objs td:nth-child(3){margin-left:32px}.tablewrap.lt.objs td[data-label]::before{display:none}.tablewrap.lt.objs .agestamp{display:none}}.levelsrow .row-text small{white-space:normal;overflow:visible;text-overflow:clip}.row.zero{opacity:.55;cursor:default}.row.zero:hover{background:none}.todogrp .todofold{display:inline-flex;align-items:center;gap:8px;padding:0;border:0;background:none;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer}.todogrp .todofold ha-icon{--mdc-icon-size:16px;margin-left:-2px}.todogrp.care{margin-top:18px;margin-bottom:10px;padding-top:12px;border-top:1px solid var(--hk-border)}.whygroups{display:grid;gap:4px;margin-bottom:10px}.whygroups p{margin:0}.why-red{color:var(--hk-red)}.why-open{color:var(--hk-amber)}.why-care{color:var(--hk-muted)}
+      .decbar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.decbar .kpi{text-align:left}.decbar .warntext{color:var(--hk-amber)}@media(max-width:640px){.decbar{grid-template-columns:repeat(2,minmax(0,1fr))}}.row.duerow{background:color-mix(in srgb,var(--hk-amber) 7%,transparent)}.rowacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.link.strong{font-weight:600;color:inherit;text-align:left}
+      .findsum{display:grid;grid-template-columns:minmax(150px,200px) 1fr;gap:10px 14px;align-items:start;margin-bottom:12px}.sumall{display:grid;gap:4px;margin-top:22px}.sumrows{display:grid;gap:8px;min-width:0}.findsum .sumgroup{display:grid;gap:4px}.findsum .sumgrouphead{margin:0 0 0 2px;font-weight:600}.sumtile.zero{background:transparent;border-style:dashed;border-left-style:solid;box-shadow:none}.sumtile.zero .sumvalue{color:var(--hk-muted);font-weight:500}.findsum .sumgrouphead.zero{color:var(--hk-muted)}.dbfold{display:grid;gap:6px;padding:8px 16px 12px}.dbfold .sectionlabel{margin-top:4px}.dbshare{display:flex;align-items:center;gap:10px;min-width:140px}.foldhead .dbshare{width:260px}.dbshare .sysshare{flex:1}.dbshare b{min-width:3.2em;text-align:right;font-weight:500}.findsum{grid-template-columns:minmax(150px,190px) repeat(var(--k,5),minmax(0,1fr));grid-template-rows:auto 1fr auto 1fr;gap:6px 8px;align-items:stretch}.findsum .sumall{grid-column:1;grid-row:2/5;margin-top:0;display:grid}.findsum .sumhead{grid-column:2/-1;display:flex;align-items:end}.findsum .sumrow{display:contents}.findsum .sumrow>.sumtile{grid-row:var(--r)}.findsum .sumtile{grid-template-rows:auto auto 1fr auto}.findsum .sumtile .sumlabel{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sumtotal{position:relative}.sumtotal .sumstretch{position:absolute;inset:0;border:0;border-radius:inherit;background:none;cursor:pointer;padding:0}.sumtotal:hover{background:var(--hk-soft)}.sumtotal>.sumsubs{grid-row:3;align-self:start;display:grid;gap:2px;justify-items:start;position:relative;z-index:1;pointer-events:none}.sumtotal>.sumsubs .sumfollow{pointer-events:auto;text-align:left;padding:0;margin:0}@media(max-width:760px){.findsum{display:block}.findsum .sumall{margin-bottom:8px}.findsum .sumhead{margin:8px 0 4px}.findsum .sumrow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:6px}.findsum .sumrow>.sumtile{grid-row:auto}}.findsum button.sumgrouphead{justify-self:start;display:inline-flex;align-items:center;gap:4px;padding:1px 9px 1px 7px;border:1px solid var(--hk-border);border-radius:999px;background:var(--hk-surface);box-shadow:var(--hk-sh1);font:inherit;font-size:calc(12px*var(--hk-fs,1));font-weight:600;cursor:pointer;margin-left:0}.findsum button.sumgrouphead:hover{background:var(--hk-soft)}.findsum button.sumgrouphead[aria-pressed=true]{border-color:var(--hk-blue);color:var(--hk-blue-text);background:color-mix(in srgb,var(--hk-blue) 9%,var(--hk-surface))}.findsum button.sumgrouphead ha-icon{--mdc-icon-size:14px}.findsum button.sumgrouphead[aria-pressed=true] ha-icon{display:none}.findsum button.sumgrouphead[aria-pressed=true]:before{content:"\\2713";margin-right:.2em}.findsum .sumgrouphead.red{color:color-mix(in srgb,var(--hk-red) 75%,var(--hk-muted))}.findsum .sumgrouphead.warn{color:color-mix(in srgb,var(--hk-amber) 75%,var(--hk-muted))}.sumtiles.compact{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.sumtiles.compact .sumtile{padding:8px 10px;gap:0}.sumtiles.compact .sumvalue{font-size:calc(19px*var(--hk-fs,1))}.sumtiles.compact .spark{height:24px}.sumtiles.compact .spark-row{padding-top:2px}.sumtiles.compact small{font-size:calc(11.5px*var(--hk-fs,1))}/* Every tile of a row shares four lines: title, figure, the text that may run over several lines, and the curve at the bottom; the free space sits between text and curve. */.sumtiles,.sumtiles.even{grid-auto-rows:auto}.sumtile{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:2px;align-content:start}.sumtiles.compact .sumtile{row-gap:0}.sumtile>.sumlabel{grid-row:1}.sumtile>.sumvalue{grid-row:2}.sumtile>small{grid-row:3;align-self:start}.sumtile>.spark-row{grid-row:4;align-self:end;margin-top:0}.kpis{grid-auto-rows:auto}.kpis>.kpi{display:grid;grid-row:span 4;grid-template-rows:subgrid;row-gap:2px;align-content:start}.kpis>.kpi>.kpilabel{grid-row:1}.kpis>.kpi>strong{grid-row:2}.kpis>.kpi>.kpisub{grid-row:3;align-self:start}.kpis>.kpi>.spark-row{grid-row:4;align-self:end;margin-top:0}.navtiles.compact{grid-auto-rows:auto}.navtiles.compact .taskcard{grid-row:span 4;grid-template-rows:subgrid;align-content:start;align-items:start}.navtiles.compact .taskcard>ha-icon{align-self:center}.navtiles.compact .taskcard>strong{grid-row:1}.navtiles.compact .taskcard>.setpill{grid-row:2}.navtiles.compact .taskcard>small{grid-row:3}.navtiles.compact .taskcard>.navfacts{grid-row:4;align-self:end}.sumfollow{justify-self:start;font-size:calc(12.5px*var(--hk-fs,1))}.sumfollow.on{text-decoration:underline}@media(max-width:700px){.findsum{grid-template-columns:1fr}.sumall{margin-top:0}}.hintrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;margin-bottom:0}.hintlabel{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.04em}.hintbtn{display:inline-flex;gap:6px;align-items:center;padding:5px 12px;border-radius:99px;border:1px solid var(--hk-border);background:var(--hk-soft);font:inherit;color:inherit;cursor:pointer}.hintbtn.warn{background:color-mix(in srgb,var(--hk-amber) 14%,var(--hk-surface))}.hintbtn.on{border-color:var(--hk-blue-solid)}.hintbtn ha-icon{--mdc-icon-size:18px}.chip.sub{border-style:dashed}.chipsep{width:1px;align-self:stretch;background:var(--hk-border);margin:0 4px}.fnotes{flex-wrap:wrap;gap:6px}.fchip{display:inline-flex;gap:4px;align-items:center}.fchip ha-icon{--mdc-icon-size:14px}
+      .spacebox{padding:4px 0 10px 22px}.spacehead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0}.spacehead .factnote{margin:0}.spacehead .btn{flex:none}.spacekeys{padding:4px 0 10px 12px}.spaceacts{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.spacechev{--mdc-icon-size:18px;color:var(--hk-muted);vertical-align:middle;margin-right:4px;float:left}
+      .startint{display:grid;grid-template-columns:minmax(0,2fr) 110px 70px minmax(120px,1.3fr) minmax(80px,1fr);gap:6px 12px;align-items:center;font-size:13px;padding:6px 0;border-top:1px solid var(--hk-border)}.startint .sysshare{min-width:0}.remhist.startdet td{padding:0 16px 8px 44px;background:var(--hk-surface);border-top:1px solid var(--hk-border)}.startdet .sectionlabel{padding:12px 0 6px}.startdet .sectionlabel .pill{margin-left:6px;letter-spacing:0}.startdet .startint{padding:8px 0}.startdet .startint.starthead{padding:2px 0 6px;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1));font-weight:600;border-top:0;border-bottom:1px solid var(--hk-border)}.startdet .startint.starthead>:nth-child(3){text-align:right}.startdet .startint:last-of-type{border-bottom:0}.startname .id{font-family:inherit;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.startname .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.startname strong .pill{margin-left:6px;font-weight:500}.startok{display:inline-flex;align-items:center;gap:4px;color:var(--hk-muted)}.startok ha-icon{--mdc-icon-size:15px;color:var(--hk-green)}.startint.link{cursor:pointer;border-radius:6px}.startint.link:hover{background:var(--hk-surface)}.startint.link:focus-visible{outline:2px solid var(--hk-blue);outline-offset:0}.startint small{font-size:calc(11.5px*var(--hk-fs,1))}@media(max-width:700px){.startint{grid-template-columns:minmax(0,1fr) auto auto}.startint>:nth-child(4),.startint>:nth-child(5){display:none}}.startname{display:flex;flex-direction:column;min-width:0}.startint b{font-weight:500;text-align:right}
       ${this.themeCss()}
     </style>`;
   }
@@ -1717,15 +1767,15 @@ class StylesMixin {
 
 // Texts of the shared table of objects (objectTable); merged into TEXT.
 Object.assign(TEXT.de, {
-  objColState: "Zustand", objAllStatus: "Alle Zustände", objColEntities: "Entitäten", objColDevices: "Geräte", relColAvail: "Verfügbarkeit", relColObject: "Objekt", relColType: "Typ", relColRelation: "Beziehung", relColKind: "Art", relColStatus: "Zustand", relAllGroups: "Alle Arten", relAvailOk: "Ab 99,5 %", relAvailWarn: "95 bis 99,5 %", cleanupAllClasses: "Alle Einstufungen", cleanupAllReadiness: "Alle Zustände", cleanupColRecorder: "Recorder-Daten", recurringColSince: "Vergessen am", recurringColDomains: "Integrationen", recurringPill: "Kehrt zurück", purgeColWhen: "Zeit", purgeColWhat: "Gelöscht", purgeColDetails: "Einzelheiten", bkcColName: "Backup", bkcColDb: "Datenbank", bkcColState: "Schutz / Alter", bkcAllStates: "Alle Backups", bkcFilterProtected: "Geschützt", bkcFilterSelected: "Ausgewählt", bpColFile: "Datei", bpColKind: "Art", bpColDomain: "Domain", bpColUsers: "Verwendet von", bpBack: "Zur Liste", bpTabInputs: "Eingaben", bpDetSize: "Dateigröße", bpDetModified: "Geändert", bpDetMin: "Mindestens Home Assistant", bpNoInputs: "Dieses Blueprint hat keine Eingaben.", bpUsersNone: "Keine Automation und kein Skript benutzt dieses Blueprint.", bpInDefaultIs: "Standard", bpInNoDefault: "Kein Standardwert, muss gesetzt werden", bpInDefault: "Standard", bpInSet: "gesetzt", bpInMissing: "Entität fehlt", bpValueHidden: "Wert ausgeblendet", bpDetPath: "Pfad", bpDetAuthor: "Autor", bpDetSource: "Quelle", bpHint_missing: "Die Datei gibt es nicht mehr. Diese Automationen oder Skripte laufen nicht, solange sie nicht neu zugewiesen werden.", bpHint_broken: "Die Datei lässt sich nicht laden. Die Nutzer unten laufen nicht, bis sie repariert ist.", bpHint_unused: "Keine Automation und kein Skript benutzt dieses Blueprint.", bpAllKinds: "Alle Arten", bpAllDomains: "Alle Domains", lifeColDevice: "Gerät", lifeColKind: "Art", lifeColWhen: "Wann", lifeColNote: "Notiz", lifeAllKinds: "Alle Arten", journalColDate: "Erstellt", journalColActions: "Prüfung", journalColFollow: "Nachkontrolle", journalColAct: "Aktionen", journalAllStatus: "Alle Zustände", journalAllFollow: "Alle Nachkontrollen", exColEntity: "Entität", exColUsed: "Verwendung", exColTarget: "Ersatz", exColHow: "Art", exAllPairs: "Alle Paare", exFilterSuggest: "Mit Vorschlag", exFilterNone: "Ohne Verwendung", exFilterChosen: "Gewählt", counterColName: "Entität", counterColKind: "Art", counterColFound: "Fund", counterColAction: "Aktion", counterAllKinds: "Alle Arten", counterKindMeasurement: "Messwert", counterKindCounter: "Zähler", relAvailRed: "Unter 95 %",
+  objColState: "Zustand", objAllStatus: "Alle Zustände", objColEntities: "Entitäten", objColDevices: "Geräte", relColAvail: "Verfügbarkeit", relColObject: "Objekt", relColType: "Typ", relColRelation: "Beziehung", relColKind: "Art", relColStatus: "Zustand", relAllGroups: "Alle Arten", relAvailOk: "Ab 99,5 %", relAvailWarn: "95 bis 99,5 %", cleanupAllClasses: "Alle Gründe", cleanupColReason: "Grund", cleanupColHeld: "In Quarantäne seit", cleanupColAction: "Aktion", cleanupAllReadiness: "Alle Zustände", cleanupColRecorder: "Recorder-Daten", recurringColSince: "Vergessen am", recurringColDomains: "Integrationen", recurringPill: "Kehrt zurück", purgeColWhen: "Zeit", purgeColWhat: "Gelöscht", purgeColDetails: "Einzelheiten", bkcColName: "Backup", bkcColDb: "Datenbank", bkcColState: "Schutz / Alter", bkcAllStates: "Alle Backups", bkcFilterProtected: "Geschützt", bkcFilterSelected: "Ausgewählt", bpColFile: "Datei", bpColKind: "Art", bpColDomain: "Domain", bpColUsers: "Verwendet von", bpBack: "Zur Liste", bpTabInputs: "Eingaben", bpDetSize: "Dateigröße", bpDetModified: "Geändert", bpDetMin: "Mindestens Home Assistant", bpNoInputs: "Dieses Blueprint hat keine Eingaben.", bpUsersNone: "Keine Automation und kein Skript benutzt dieses Blueprint.", bpInDefaultIs: "Standard", bpInNoDefault: "Kein Standardwert, muss gesetzt werden", bpInDefault: "Standard", bpInSet: "gesetzt", bpInMissing: "Entität fehlt", bpValueHidden: "Wert ausgeblendet", bpDetPath: "Pfad", bpDetAuthor: "Autor", bpDetSource: "Quelle", bpHint_missing: "Die Datei gibt es nicht mehr. Diese Automationen oder Skripte laufen nicht, solange sie nicht neu zugewiesen werden.", bpHint_broken: "Die Datei lässt sich nicht laden. Die Nutzer unten laufen nicht, bis sie repariert ist.", bpHint_unused: "Keine Automation und kein Skript benutzt dieses Blueprint.", bpAllKinds: "Alle Arten", bpAllDomains: "Alle Domains", lifeColDevice: "Gerät", lifeColKind: "Art", lifeColWhen: "Wann", lifeColNote: "Notiz", lifeAllKinds: "Alle Arten", journalColDate: "Erstellt", journalColActions: "Prüfung", journalColFollow: "Nachkontrolle", journalColAct: "Aktionen", journalAllStatus: "Alle Zustände", journalAllFollow: "Alle Nachkontrollen", exColEntity: "Entität", exColUsed: "Verwendung", exColTarget: "Ersatz", exColHow: "Art", exAllPairs: "Alle Paare", exFilterSuggest: "Mit Vorschlag", exFilterNone: "Ohne Verwendung", exFilterChosen: "Gewählt", counterColName: "Entität", counterColKind: "Art", counterColFound: "Fund", counterColAction: "Aktion", counterAllKinds: "Alle Arten", counterKindMeasurement: "Messwert", counterKindCounter: "Zähler", relAvailRed: "Unter 95 %",
 });
 Object.assign(TEXT.en, {
-  objColState: "State", objAllStatus: "All states", objColEntities: "Entities", objColDevices: "Devices", relColAvail: "Availability", relColObject: "Object", relColType: "Type", relColRelation: "Relation", relColKind: "Kind", relColStatus: "State", relAllGroups: "All kinds", relAvailOk: "99.5 % and above", relAvailWarn: "95 to 99.5 %", cleanupAllClasses: "All classes", cleanupAllReadiness: "All states", cleanupColRecorder: "Recorder data", recurringColSince: "Forgotten on", recurringColDomains: "Integrations", recurringPill: "Keeps coming back", purgeColWhen: "Time", purgeColWhat: "Deleted", purgeColDetails: "Details", bkcColName: "Backup", bkcColDb: "Database", bkcColState: "Protection / age", bkcAllStates: "All backups", bkcFilterProtected: "Protected", bkcFilterSelected: "Selected", bpColFile: "File", bpColKind: "Kind", bpColDomain: "Domain", bpColUsers: "Used by", bpBack: "Back to list", bpTabInputs: "Inputs", bpDetSize: "File size", bpDetModified: "Changed", bpDetMin: "Home Assistant at least", bpNoInputs: "This blueprint has no inputs.", bpUsersNone: "No automation or script uses this blueprint.", bpInDefaultIs: "Default", bpInNoDefault: "No default, must be set", bpInDefault: "default", bpInSet: "set", bpInMissing: "entity missing", bpValueHidden: "value hidden", bpDetPath: "Path", bpDetAuthor: "Author", bpDetSource: "Source", bpHint_missing: "The file is gone. These automations or scripts do not run until they are pointed at another blueprint.", bpHint_broken: "The file fails to load. The users below do not run until it is repaired.", bpHint_unused: "No automation or script uses this blueprint.", bpAllKinds: "All kinds", bpAllDomains: "All domains", lifeColDevice: "Device", lifeColKind: "Kind", lifeColWhen: "When", lifeColNote: "Note", lifeAllKinds: "All kinds", journalColDate: "Created", journalColActions: "Check", journalColFollow: "Follow-up", journalColAct: "Actions", journalAllStatus: "All states", journalAllFollow: "All follow-ups", exColEntity: "Entity", exColUsed: "Use", exColTarget: "Replacement", exColHow: "How", exAllPairs: "All pairs", exFilterSuggest: "With a proposal", exFilterNone: "Unused", exFilterChosen: "Chosen", counterColName: "Entity", counterColKind: "Kind", counterColFound: "Finding", counterColAction: "Action", counterAllKinds: "All kinds", counterKindMeasurement: "Measurement", counterKindCounter: "Counter", relAvailRed: "Below 95 %",
+  objColState: "State", objAllStatus: "All states", objColEntities: "Entities", objColDevices: "Devices", relColAvail: "Availability", relColObject: "Object", relColType: "Type", relColRelation: "Relation", relColKind: "Kind", relColStatus: "State", relAllGroups: "All kinds", relAvailOk: "99.5 % and above", relAvailWarn: "95 to 99.5 %", cleanupAllClasses: "All reasons", cleanupColReason: "Reason", cleanupColHeld: "In quarantine since", cleanupColAction: "Action", cleanupAllReadiness: "All states", cleanupColRecorder: "Recorder data", recurringColSince: "Forgotten on", recurringColDomains: "Integrations", recurringPill: "Keeps coming back", purgeColWhen: "Time", purgeColWhat: "Deleted", purgeColDetails: "Details", bkcColName: "Backup", bkcColDb: "Database", bkcColState: "Protection / age", bkcAllStates: "All backups", bkcFilterProtected: "Protected", bkcFilterSelected: "Selected", bpColFile: "File", bpColKind: "Kind", bpColDomain: "Domain", bpColUsers: "Used by", bpBack: "Back to list", bpTabInputs: "Inputs", bpDetSize: "File size", bpDetModified: "Changed", bpDetMin: "Home Assistant at least", bpNoInputs: "This blueprint has no inputs.", bpUsersNone: "No automation or script uses this blueprint.", bpInDefaultIs: "Default", bpInNoDefault: "No default, must be set", bpInDefault: "default", bpInSet: "set", bpInMissing: "entity missing", bpValueHidden: "value hidden", bpDetPath: "Path", bpDetAuthor: "Author", bpDetSource: "Source", bpHint_missing: "The file is gone. These automations or scripts do not run until they are pointed at another blueprint.", bpHint_broken: "The file fails to load. The users below do not run until it is repaired.", bpHint_unused: "No automation or script uses this blueprint.", bpAllKinds: "All kinds", bpAllDomains: "All domains", lifeColDevice: "Device", lifeColKind: "Kind", lifeColWhen: "When", lifeColNote: "Note", lifeAllKinds: "All kinds", journalColDate: "Created", journalColActions: "Check", journalColFollow: "Follow-up", journalColAct: "Actions", journalAllStatus: "All states", journalAllFollow: "All follow-ups", exColEntity: "Entity", exColUsed: "Use", exColTarget: "Replacement", exColHow: "How", exAllPairs: "All pairs", exFilterSuggest: "With a proposal", exFilterNone: "Unused", exFilterChosen: "Chosen", counterColName: "Entity", counterColKind: "Kind", counterColFound: "Finding", counterColAction: "Action", counterAllKinds: "All kinds", counterKindMeasurement: "Measurement", counterKindCounter: "Counter", relAvailRed: "Below 95 %",
 });
 
 // Texts for the policies view; merged into TEXT.
 Object.assign(TEXT.de, {
-  polAllRules: "Alle Regeln", polColRule: "Regel", polColNote: "Hinweis", polNoViolations: "Keine Verstöße.", polSumRules: "Regeln an", polSumViolations: "Verstöße", polSumHidden: "Ausgeblendet", polTabViolations: "Verstöße", polTabRules: "Regeln",
+  polAllRules: "Alle Regeln", polColRule: "Regel", polColNote: "Hinweis", polSelHidden: "Ausgeblendet; erst wieder einblenden", polSelOnlyArea: "Gemeinsam bearbeiten lassen sich nur Entitäten und Geräte (Bereich zuweisen)", polNoViolations: "Keine Verstöße.", polSumRules: "Regeln an", polSumViolations: "Verstöße", polSumHidden: "Ausgeblendet", polTabViolations: "Verstöße", polTabRules: "Regeln",
   policies: "Richtlinien", policiesSubtitle: "Eigene Regeln für Ordnung in Home Assistant. Hinweise, keine Defekte; liest nur.", polOverviewViolations: "Richtlinienverstöße", polOverviewRules: "{n} Regeln aktiv", polOverviewRuleOne: "1 Regel aktiv",
   polObjTitle: "Richtlinien · {n} Verstöße", polObjTitleOne: "Richtlinien · 1 Verstoß", polObjHint: "Regeln, gegen die dieses Objekt verstößt. Ausgeblendete Verstöße stehen nicht hier.", polObjAll: "Alle Richtlinien",
   polHint: "Schalte ein, was in deiner Installation gelten soll. Alle Regeln sind zunächst aus.", polLoading: "Richtlinien werden geprüft",
@@ -1744,7 +1794,7 @@ Object.assign(TEXT.de, {
   polRule_state_rate: "Zustandsänderungen pro Tag", polDesc_state_rate: "Entitäten, die in den zuletzt berechneten Last-Zahlen mindestens so oft am Tag ihren Zustand geändert haben, wie die Grenze sagt. Die Regel startet keine Recorder-Abfrage.", polLimit: "Grenze (Änderungen pro Entität und Tag)", polLimitSave: "Speichern", polPending: "Noch nicht berechnet: Öffne Recorder → Last einmal, dann prüft die Regel diese Zahlen.", polRate: "{n} Änderungen pro Tag",
 });
 Object.assign(TEXT.en, {
-  polAllRules: "All rules", polColRule: "Rule", polColNote: "Note", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
+  polAllRules: "All rules", polColRule: "Rule", polColNote: "Note", polSelHidden: "Hidden; show it again first", polSelOnlyArea: "Only entities and devices can be handled together (assign an area)", polNoViolations: "No violations.", polSumRules: "Rules on", polSumViolations: "Violations", polSumHidden: "Hidden", polTabViolations: "Violations", polTabRules: "Rules",
   policies: "Policies", policiesSubtitle: "Your own rules for tidiness in Home Assistant. Hints, not defects; only reads.", polOverviewViolations: "Policy violations", polOverviewRules: "{n} active rules", polOverviewRuleOne: "1 active rule",
   polObjTitle: "Policies · {n} violations", polObjTitleOne: "Policies · 1 violation", polObjHint: "Rules this object breaks. Hidden violations are not shown here.", polObjAll: "All policies",
   polHint: "Switch on what should apply to your installation. All rules start off.", polLoading: "Checking policies",
@@ -1834,7 +1884,7 @@ class ListsMixin {
   }
 
   // A short message at the bottom of the page for small actions; it goes away by itself.
-  toast(text, error = false) {
+  toast(text, error = false, ms = 0) {
     const root = this.shadowRoot;
     if (!root?.querySelector || typeof document === "undefined") return;
     try {
@@ -1842,7 +1892,7 @@ class ListsMixin {
       const el = document.createElement("div");
       el.className = error ? "toast bad" : "toast"; el.setAttribute("role", error ? "alert" : "status"); el.textContent = text;
       root.appendChild(el);
-      setTimeout(() => el.remove(), error ? 8000 : 2600);
+      setTimeout(() => el.remove(), ms || (error ? 8000 : 2600));
     } catch (_) { /* a missing message is no loss */ }
   }
 
@@ -1870,6 +1920,20 @@ class ListsMixin {
   }
 
   // Shows only what is ticked in a list (the box is the proof before something is deleted).
+  // What a selection offers (clear it, show only it, how many) appears with the first tick, as on the findings page;
+  // "only the selected" stays while it is on, so the way back is there.
+  // The menu behind the three dots of a row: [icon, label key, attributes] per entry; a null entry draws a line; attributes that start with href= make an external link. Nothing without entries.
+  rowMenuHtml(entries) {
+    const list = entries.filter((e, i, all) => e === null ? i > 0 && i < all.length - 1 && all[i - 1] !== null : true);
+    if (!list.some(Boolean)) return "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
+  }
+
+  selTools(id, count, clearAttr) {
+    if (!count) return this.selOnly?.[id] ? this.selOnlyButton(id, count) : "";
+    return `<button class="btn quiet" ${clearAttr}>${this.t("clearSelection")}</button>${this.selOnlyButton(id, count)}<span class="selcount" role="status">${this.t("selectedCount", { count })}</span>`;
+  }
+
   selOnlyButton(id, count) {
     const on = Boolean(this.selOnly?.[id]);
     return `<button class="btn quiet" data-sel-only="${this.esc(id)}" aria-pressed="${on}" ${count || on ? "" : "disabled"}>${this.t(on ? "showAll" : "showSelectedOnly")}</button>`;
@@ -1902,7 +1966,7 @@ class ListsMixin {
     requestAnimationFrame(() => this.shadowRoot?.querySelector(".filteron, .listbar")?.scrollIntoView?.({ block: "nearest" }));
   }
 
-  listBar(id, { sorts, filters = [], columns = [], dense = false, table = false }) {
+  listBar(id, { sorts, filters = [], columns = [], dense = false, table = false, note = true }) {
     const st = this.lv[id];
     for (const f of filters) if (st.f[f.name] && !f.options.some(([v]) => v === st.f[f.name])) delete st.f[f.name]; // a kept value this list no longer offers
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
@@ -1910,8 +1974,8 @@ class ListsMixin {
     const desc = st.dir === "desc";
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}${st.sort === x.key ? (desc ? " ↓" : " ↑") : ""}</option>`).join("");
     const on = filters.filter(f => st.f[f.name]).map(f => `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`);
-    const note = this.filterNote(on, `data-lf-set="${id}||"`);
-    return `${note}<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}" aria-label="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup${table ? " table-sort" : ""}"><select data-ls="${id}" aria-label="${this.t("sortBy")}" title="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}<span class="listbar-actions">${this.viewsControl(id)}${dense ? this.denseButton(id) : ""}${this.listTools(id, columns)}</span></div>`;
+    const noteHtml = note ? this.filterNote(on, `data-lf-set="${id}||"`) : ""; // a list with notes of its own leaves this out
+    return `${noteHtml}<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}" aria-label="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup${table ? " table-sort" : ""}"><select data-ls="${id}" aria-label="${this.t("sortBy")}" title="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}<span class="listbar-actions">${this.viewsControl(id)}${dense ? this.denseButton(id) : ""}${this.listTools(id, columns)}</span></div>`;
   }
 
   // Column picker and export menu of a list; both are optional. `columns` are the switchable columns: { key, label }.
@@ -2025,7 +2089,7 @@ class ListsMixin {
     columns = columns.filter((c, i) => !i || !this.colHidden(id, c.key));
     const head = columns.map(c => {
       const on = st.sort === c.key, sortedHere = on || c.sortKeys?.includes(st.sort);
-      const inner = c.allBox ? c.allBox(rows) : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
+      const inner = c.allBox ? c.allBox(rows) : c.menu ? `<span class="sr-only">${this.t(c.label)}</span>` : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
       return `<th scope="col"${c.narrow ? ' class="selcol"' : ""} aria-sort="${sortedHere ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${c.headPrefix ? `<span class="headsel">${c.headPrefix()}${inner}</span>` : inner}${c.headSuffix ? c.headSuffix() : ""}</th>`;
     }).join("");
     const body = rows.map(item => {
@@ -2038,9 +2102,12 @@ class ListsMixin {
   // A table of objects (entities, entries, automations): name with id, type when mixed, state, plus extra columns.
   // rows: [{ key: "entity:light.a", type, name, sub, tone, state, stateLabel, pill, rank, open }]; open: false makes a row that opens nothing; bar: false leaves the bar to the caller (the header still sorts); extras: [{ key, label, dir, get, cell(row) }].
   // The bar shows from `min` rows on; a row opens its object.
-  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
+  // Options: menu(row) -> entries of rowMenuHtml (or true for the usual one of objectRowMenu) puts the three dots in a column of their own; stripe marks the red rows at their edge;
+  // sort: the first sort ("status" puts the problems on top, the names after them); statusFirst puts the state next to the name.
+  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", menu = null, stripe = false, sort = "name", statusFirst = false, tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
     if (!rows.length) return empty ? `<div class="emptymsg">${empty}</div>` : "";
-    this.lvState(id, "name", "asc");
+    this.lvState(id, sort, "asc");
+    if (menu === true) menu = r => this.objectRowMenu(r);
     const types = [...new Set(rows.map(r => r.type))].sort();
     const tones = ["red", "warn", "violet", "blue", "mute", "ok"], rank = r => (r.rank ?? tones.indexOf(r.tone));
     const sorts = [
@@ -2055,16 +2122,27 @@ class ListsMixin {
     ];
     const st = this.lv[id];
     const bar = withBar && (rows.length >= min || st.q) ? this.listBar(id, { table: true, dense: true, sorts, filters }) : "";
-    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => r.key });
+    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => (sort === "status" ? `${r.name}\u0000${r.key}` : r.key) });
     const pg = this.paginate(id, shown);
+    const stateCol = { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill };
     const columns = [
       { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${tile(r)}<div>${this.nameCell(r.name, r.sub)}</div></div>` },
+      ...(statusFirst ? [stateCol] : []),
       ...(types.length > 1 ? [{ key: "type", label: "sortType", dir: "asc", cell: r => this.esc(this.t(r.type)) }] : []),
       ...extras.map(x => ({ key: x.key, label: x.label, dir: x.dir || "asc", cell: x.cell })),
-      { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill },
+      ...(statusFirst ? [] : [stateCol]),
+      ...(menu && shown.some(r => this.rowMenuHtml(menu(r))) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml(menu(r)) }] : []),
     ];
-    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
+    const tone = r => (stripe && r.tone === "red" ? ' data-rowtone="red"' : "");
+    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) + tone(r) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     return `${bar}${table}${pg.footer}`;
+  }
+
+  // The usual menu of an object row: open it, open it in Home Assistant, show it in the dependency diagram.
+  objectRowMenu(r) {
+    const obj = r.open === false ? null : this.findObject(r.key), path = obj ? this.haPath(obj) : null;
+    if (!obj) return [];
+    return [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], path ? ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(path)}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(r.key)}"`]];
   }
 
   // The arrow of a row that unfolds in place (a history, a detail): the look of a fold's arrow, as a button of its own; attr is the data attribute the click handler listens to.
@@ -2199,13 +2277,17 @@ class ListsMixin {
     const from = (page - 1) * size;
     const rows = items.slice(from, from + size);
     if (items.length <= (own ? own[0] : 20)) return { rows, footer: "" };
-    const sizes = (own || [20, 50, 100]).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
-    const footer = `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
-    return { rows, footer };
+    return { rows, footer: this.pageFooter(id, { page, count, from, shown: rows.length, total: items.length, size, own }) };
+  }
+
+  // The bar below a paged list: which rows of how many, the page size, and the way to the other pages.
+  pageFooter(id, { page, count, from, shown, total, size, own }) {
+    const sizes = (own || PAGE_SIZES).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
+    return `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + shown)} ${this.t("of")} ${this.formatNumber(total)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
   }
 
   // A fold: the head always shows, the body only while open. `def` is the state until the person toggles it.
-  // head: { tone, title, sub, pill }; the state lives in this.folds and survives a render.
+  // head: { tone, title, sub, pill, count }; the state lives in this.folds and survives a render.
   foldOpen(id, def) { return this.folds?.[id] ?? def; }
 
   // The size of the current view at the right end of a selection row: what the filters and search leave over.
@@ -2213,8 +2295,8 @@ class ListsMixin {
 
   fold(id, head, body, def, force) {
     const open = force ?? this.foldOpen(id, def);
-    const pill = head.pill ? `<span class="pill ${head.tone || "mute"}">${this.esc(head.pill)}</span>` : "";
-    const top = `<button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${head.tone || "mute"}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${head.sub ? `<small>${this.esc(head.sub)}</small>` : ""}</span>${pill}</button>`;
+    const pill = `${head.count ? `<span class="pill mute">${this.esc(head.count)}</span>` : ""}${head.pill ? `<span class="pill ${head.tone || "mute"}">${this.esc(head.pill)}</span>` : ""}`;
+    const top = `<button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${head.tone || "mute"}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${head.sub ? `<small>${this.esc(head.sub)}</small>` : ""}</span>${head.meter || ""}${pill}</button>`;
     return `<div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${body}</div>` : ""}</div>`;
   }
 }
@@ -2262,7 +2344,7 @@ class OverviewMixin {
     let seen = false;
     try { seen = globalThis.localStorage?.getItem("ha_housekeeper.levels_hint") === "1"; } catch (_) { seen = false; }
     if (seen || this.data?.meta?.preliminary) return "";
-    return `<div class="panel u-mb14" data-levels-hint><div class="row"><span class="tile mute"><ha-icon icon="mdi:stairs-up"></ha-icon></span><span class="row-text"><strong>${this.t("levelsHintTitle")}</strong><small>${this.t("levelsHintText")}</small></span><button class="btn" data-levels-go>${this.t("levelsHintSettings")}</button><button class="btn quiet" data-levels-ok>${this.t("levelsHintOk")}</button></div></div>`;
+    return `<div class="panel u-mb14" data-levels-hint><div class="row levelsrow"><span class="tile mute"><ha-icon icon="mdi:stairs-up"></ha-icon></span><span class="row-text"><strong>${this.t("levelsHintTitle")}</strong><small>${this.t("levelsHintText")}</small></span><button class="btn" data-levels-go>${this.t("levelsHintSettings")}</button><button class="btn quiet" data-levels-ok>${this.t("levelsHintOk")}</button></div></div>`;
   }
 
   // A scan that failed, or none that succeeded for a long time: the counts shown then come from an older scan.
@@ -2289,21 +2371,28 @@ class OverviewMixin {
     const steps = ["warmupS1", "warmupS2", "warmupS3", "warmupS4"].map((k, n) => `<li class="${n < at ? "done" : n === at ? "on" : ""}"><i>${n < at ? "✓" : ""}</i>${this.t(k)}</li>`).join("");
     const total = w.total || 0, done = Math.min(w.done || 0, total);
     let body = "", line = "";
-    if (w.booting) { body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span></div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine"); }
+    if (w.booting) {
+      // The server says how long Home Assistant has been loading; the clock runs on from there between two answers.
+      const since = Number.isFinite(w.bootSeconds) ? `<span>${this.esc(this.t("warmupSince", { x: clock(w.bootSeconds + Math.round((Date.now() - w.bootAt) / 1000)) }))}</span>` : "";
+      body = `<div class="wduo"><div><div class="wcap"><span>${this.t("warmupBooting")}</span>${since}</div><span class="wbar ind"><i></i></span></div><div></div></div>`; line = this.t("warmupBootLine");
+    }
     else if (scanning) {
       const order = ["registries", "devices", "automations", "finalizing"], phase = st?.running ? order.indexOf(st.phase) : -1;
       const percent = st?.running ? st.progress : 0;
       body = `<div class="wduo">${pair(`${this.t(phase >= 0 ? `warmupPhase_${order[phase]}` : "warmupPhase_start")}${phase >= 0 ? ` <b>${phase + 1}/${order.length}</b>` : ""}`, `${percent} %`, percent / 100)}<div></div></div>`;
       line = this.t("warmupAfter");
     } else {
-      const names = (w.names || []).map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
-      const more = (w.pending || 0) > (w.names || []).length ? ` +${w.pending - w.names.length}` : "";
+      // The first few names; a click unfolds the rest (the box is redrawn every second, so the click is caught on the box, see 90-panel.js).
+      const all = w.names || [], shown = this._warmAll ? all : all.slice(0, WARMUP_NAMES_SHOWN);
+      const names = shown.map(n => `<span class="pill">${this.esc(n)}</span>`).join("");
+      const toggle = all.length > WARMUP_NAMES_SHOWN ? ` <button type="button" class="link" data-warm-all>${this.esc(this._warmAll ? this.t("warmupFewer") : `+${all.length - WARMUP_NAMES_SHOWN}`)}</button>` : "";
+      const more = toggle + ((w.pending || 0) > all.length ? ` +${w.pending - all.length}` : "");
       // Once nothing is loading any more, what is still not set up will not be (it fails or waits for something else): the bar is full.
       const loaded = w.settling ? this.t("warmupLoadedAll", { done: this.formatNumber(done) }) : this.t("warmupLoaded", { done: this.formatNumber(done), total: this.formatNumber(total) });
       body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.total_s || 300))}</div>`;
       line = w.settling
         ? ((w.pending || 0) > 0 ? this.t("warmupBlip", { name: this.esc((w.names || [])[0] || "") }) : this.t("warmupLocked"))
-        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")}`;
+        : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")} ${this.t("warmupEarly")}`;
     }
     // The notice is redrawn every second; the offset keeps the animations in step with the clock instead of restarting.
     return `<div class="wph" style="--wt:-${Date.now() % 2000}ms">${head}<ol class="wtr">${steps}</ol>${body}<div class="wline">${line}</div></div>`;
@@ -2322,10 +2411,10 @@ class OverviewMixin {
         const s = await this._hass.callWS({ type: "ha_housekeeper/status" });
         this.scanStatus = s;
         const w = s.warmup || {};
-        this._warm = { ...this._warm, booting: Boolean(w.booting), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
+        this._warm = { ...this._warm, booting: Boolean(w.booting), bootSeconds: Number.isFinite(w.boot_seconds) ? w.boot_seconds : null, bootAt: Date.now(), until: Date.now() + (Number(w.seconds_left) || 0) * 1000, pending: Number(w.pending) || 0, settling: Boolean(w.settling), names: w.names || [], done: Number(w.done) || 0, total: Number(w.total) || 0, known: true };
         draw();
         // The final scan is in: take it at once, the notice goes away by itself.
-        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(this.t("warmupDoneToast")); }
+        if (w.preliminary === false && !s.running && !this.busy) { this.stopWarmupTicker(); await this.load(false); this.toast?.(`${this.t("warmupDoneToast")}${await this.startToastNote()}`, false, 30000); }
       } catch (_) { /* the next tick asks again */ } finally { asking = false; }
     };
     ask();
@@ -2336,10 +2425,24 @@ class OverviewMixin {
     }, 1000);
   }
 
+  // What the start took, for the toast that ends the notice: the whole start and the slowest integration; empty when it is not known.
+  async startToastNote() {
+    try {
+      const result = await this._hass.callWS({ type: "ha_housekeeper/starts" });
+      this.sysState("starts").data = result;
+      const last = result?.starts?.[0];
+      if (!last || !Number.isFinite(last.boot_s) || Date.now() - Date.parse(last.at) > 15 * 60 * 1000) return "";
+      const slow = this.startSlowest(last);
+      const parts = [this.t("warmupDoneTook", { x: this.startClock(last.boot_s) }), slow ? this.t("warmupDoneSlow", { name: this.startName(slow), s: this.startSeconds(slow.seconds) }) : ""];
+      return ` ${parts.filter(Boolean).join(", ")}.`;
+    } catch (_) { return ""; }
+  }
+
   stopWarmupTicker() {
     if (this._warmTick) window.clearInterval(this._warmTick);
     this._warmTick = null;
     this._warm = null;
+    this._warmAll = false;
   }
 
   // What to do now, most urgent first: outages (integrations and devices that are down) and new critical findings, then an
@@ -2352,30 +2455,34 @@ class OverviewMixin {
     if (impaired.length) {
       const first = impaired[0], key = first.state === "unverified" ? first.last_problem_key : first.reason_key, object = key ? this.findObject(key) : null;
       const uncovered = impaired.some(item => !(this.data.findings || []).some(f => !f.ignored && this.findingKey(f) === (item.state === "unverified" ? item.last_problem_key : item.reason_key)));
-      items.push({ key: "monitor_problem", area: uncovered ? "state" : "findings", tone: "red", icon: "mdi:home-alert-outline", text: this.t("monitorOverviewProblem", { n: impaired.length }), hintText: `${first.name} · ${first.incident_open && first.state === "unverified" ? `${this.t("monitorOverviewUnresolved")}: ${this.monitorReason(first.last_problem_reason)}` : [object?.name || key, this.monitorReason(first.reason)].filter(Boolean).join(" · ")} · ${this.t("monitorFindingAt", { date: this.formatDate(first.scanned_at) })}`, view: "monitor", filter: "problem" });
+      items.push({ key: "monitor_problem", area: uncovered ? "state" : "findings", tone: "red", icon: "mdi:home-alert-outline", text: this.t("monitorOverviewProblem", { n: impaired.length }), hintText: `${first.name} · ${first.incident_open && first.state === "unverified" ? `${this.t("monitorOverviewUnresolved")}: ${this.monitorReason(first.last_problem_reason)}` : [object?.name || key, this.apMonitorReason(first.reason_key, first.reason)].filter(Boolean).join(" · ")} · ${this.t("monitorFindingAt", { date: this.formatDate(first.scanned_at) })}`, view: "monitor", filter: "problem" });
     }
     if (uncertain.length) items.push({ key: "monitor_unknown", area: "state", tone: "warn", icon: "mdi:home-question-outline", text: this.t("monitorOverviewUnknown", { n: uncertain.length }), hintText: uncertain[0].last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(uncertain[0].last_verified_at) }) : this.t("monitorNeverVerified"), view: "monitor", filter: "unverified" });
     const reauth = this.reauthFindings();
     if (reauth.length) {
       const names = reauth.map(f => this.findObject(`config_entry:${f.object_id}`)?.name || f.object_id);
-      const followers = this.causeList().filter(c => c.kind === "integration_down" && reauth.some(f => f.object_id === c.object_id)).reduce((sum, c) => sum + (c.follower_count || 0), 0);
-      items.push({ key: "reauth", area: "findings", tone: "red", icon: "mdi:key-alert-outline", text: reauth.length === 1 ? this.t("todoReauthOne", { name: names[0] }) : this.t("todoReauthMany", { n: reauth.length }), hintText: [reauth.length > 1 ? names.slice(0, 3).join(", ") + (names.length > 3 ? ", …" : "") : "", followers ? this.t("todoReauthFollowers", { n: this.formatNumber(followers) }) : ""].filter(Boolean).join(" · ") || this.t("secSumReauthSub"), pill: this.t("todoReauthPill"), view: "findingsNav", filter: "config_entry.reauth" });
+      // The follow-ups are not named: the jump shows the requests for a login, not what hangs below them.
+      items.push({ key: "reauth", area: "findings", tone: "red", icon: "mdi:key-alert-outline", text: reauth.length === 1 ? this.t("todoReauthOne", { name: names[0] }) : this.t("todoReauthMany", { n: reauth.length }), hintText: reauth.length > 1 ? names.slice(0, 3).join(", ") + (names.length > 3 ? ", …" : "") : this.t("secSumReauthSub"), pill: this.t("todoReauthPill"), view: "findingsNav", filter: "config_entry.reauth" });
     }
     const hacsGone = this.data.meta?.hacs_removed || [];
     if (hacsGone.length) items.push({ key: "hacs_removed", area: "care", tone: "warn", icon: "mdi:store-alert-outline", text: hacsGone.length === 1 ? this.t("hacsTodoOne", { name: hacsGone[0].name || hacsGone[0].id }) : this.t("hacsTodoMany", { n: hacsGone.length }), hintText: [hacsGone.length > 1 ? hacsGone.slice(0, 3).map(r => r.name || r.id).join(", ") + (hacsGone.length > 3 ? ", …" : "") : hacsGone[0].reason, this.t("hacsTodoHint")].filter(Boolean).join(" · "), pill: this.t("hacsTodoPill"), jump: 'data-jump="components" data-jump-tab="hacs" data-jump-lf="hacsrepos|state|removed"' });
     this.ensurePreflight();
     const updates = this.preflight?.state?.updates || [];
     if (updates.length) items.push({ key: "updates", area: "care", tone: "warn", icon: "mdi:package-up", text: this.t(updates.length === 1 ? "todoUpdates_1" : "todoUpdates_n", { n: this.formatNumber(updates.length) }), hintText: updates.slice(0, 3).map(u => u.name).join(", ") + (updates.length > 3 ? ", …" : ""), jump: 'data-jump="maintenance" data-jump-tab="updates"' });
-    const outages = this.causeList().filter(c => !this.quietCause(c));
-    if (outages.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(outages), count: outages.length, view: "findingsNav", filter: "" });
-    const regressions = (this.data.regressions || []).length;
-    if (regressions) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions, view: "journal" });
+    // Urgent is an outage at the level high (long, or at something critical); the others the overview counts are open.
+    const urgent = this.countedOutages("high"), other = this.countedOutages("medium");
+    if (urgent.length) items.push({ key: "outages", area: "findings", tone: "red", icon: "mdi:source-branch", label: "actOutages", hintText: this.outagesHint(urgent), count: urgent.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="high"' });
+    if (other.length) items.push({ key: "outages_open", area: "findings", tone: "warn", icon: "mdi:source-branch", label: "actOutagesOpen", hintText: this.outagesHint(other), count: other.length, jump: 'data-jump="findingsNav" data-filter="" data-jump-outages="medium"' });
+    // Each row lands on what it counts: one plan with a setback opens itself, several the journal filtered to them.
+    const regressions = this.data.regressions || [];
+    if (regressions.length) items.push({ key: "followup", area: "findings", tone: "red", icon: "mdi:history", label: "actFollowup", hint: "actFollowupHint", count: regressions.length, jump: regressions.length === 1 ? `data-plan-open="${this.esc(regressions[0].plan_id)}"` : 'data-jump="journal" data-jump-tab="plans" data-jump-lf="journal|follow|regression"' });
     const due = (this.data.reminders || []).filter(r => r.state === "due").length;
-    if (due) items.push({ key: "reminders", area: "care", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, view: "reminders" });
-    const missed = (this.data.criteria_alerts || []).length;
-    if (missed) items.push({ key: "criteria", area: "care", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, view: "runs" });
-    const fresh = (this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).length;
-    if (fresh) items.push({ key: "critical", area: "findings", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, view: "findingsNav", filter: "" });
+    if (due) items.push({ key: "reminders", area: "care", tone: "warn", icon: "mdi:wrench-clock", label: "actReminders", hint: "actRemindersHint", count: due, jump: 'data-jump="reminders" data-jump-lf="reminders|state|due"' });
+    // A missed criterion is a finding of its automation: counted and shown as those findings, hidden ones left out.
+    const missed = (this.data.findings || []).filter(f => f.rule_id === "automation.goal_missed" && !f.ignored).length;
+    if (missed) items.push({ key: "criteria", area: "care", tone: "warn", icon: "mdi:target", label: "actCriteria", hint: "actCriteriaHint", count: missed, jump: 'data-jump="findingsNav" data-filter="automation.goal_missed"' });
+    const fresh = this.scanNewKeys().size;
+    if (fresh) items.push({ key: "critical", area: "findings", tone: "red", icon: "mdi:alert-circle-outline", label: "actNewCritical", hint: "actNewCriticalHint", count: fresh, jump: 'data-jump="findingsNav" data-filter="" data-jump-scan-new' });
     // A nearly full disk, from the light read of the overview; red from 90 % takes points off the ring like any urgent topic.
     this.ensureSysLight();
     const disk = this.sysLight?.disk;
@@ -2392,15 +2499,17 @@ class OverviewMixin {
     const problems = this.backup?.available && this.backup.overall === "problem" ? this.backup.checks.filter(c => c.level === "problem") : [];
     const dbProblems = this.dbHealth?.available ? this.dbHealth.findings.filter(f => f.level === "problem") : [];
     if (dbProblems.length) items.push({ key: "db", area: "state", tone: "red", icon: "mdi:database-alert-outline", label: "todoDbProblem", hintText: dbProblems.map(f => this.t(`dbKind_${f.kind}`)).join(", "), view: "recorder" });
-    if (problems.length) items.push({ key: "backup", area: "state", tone: "red", icon: "mdi:backup-restore", label: "todoBackupProblem", count: problems.length, hintText: problems.map(c => this.t(`bh_${c.id}`)).join(", "), view: "maintenance" });
+    if (problems.length) items.push({ key: "backup", area: "state", tone: "red", icon: "mdi:backup-restore", label: "todoBackupProblem", count: problems.length, hintText: problems.map(c => this.t(`bh_${c.id}`)).join(", "), jump: 'data-jump="maintenance" data-jump-tab="backup"' });
     const limit = m.quarantine_days ?? 14;
     const ready = (this.data.quarantine || []).filter(q => this.daysSince(q.since) >= limit).length;
-    if (ready) items.push({ key: "quarantine", area: "care", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, view: "cleanup" });
+    if (ready) items.push({ key: "quarantine", area: "care", tone: "warn", icon: "mdi:archive-clock-outline", label: "actQuarantine", hint: "actQuarantineHint", count: ready, jump: 'data-jump="cleanup" data-jump-tab="quarantine" data-jump-lf="cleanup|readiness|ready"' });
     this.ensureGoals();
     this.ensurePolicies(); // the menu counts need both
     for (const g of (this.goals?.goals || []).filter(x => x.state === "missed")) {
       items.push({ key: `goal_${g.id}`, area: "care", tone: "warn", icon: "mdi:target", text: this.t(`goal_${g.id}`), hintText: `${this.goalNow(g)} · ${g.limit === 0 && g.unit === "count" ? this.t("goalAllowedNone") : this.t("goalAllowed", { limit: this.goalAmount(g, g.limit) })}`, pill: this.t("goalMissedPill"), view: GOAL_JUMPS[g.id].view, jump: this.goalJump(g.id) });
     }
+    this.ensureAutoPause();
+    items.push(...this.apTodoItems());
     return items;
   }
 
@@ -2429,19 +2538,35 @@ class OverviewMixin {
     return last ? `<small>${this.t("monitorLastProblemLine")}: <button class="link" data-monitor-last="${this.esc(last.id)}">${this.esc(last.name)}</button> · ${this.agoText(last.last_problem_at)}</small>` : "";
   }
 
-  // "1 topic urgent, 4 more open": what the headline counts are topics (rows of the list), not objects.
-  statusHeadline(health) {
-    const urgent = health.red === 1 ? this.t("statusUrgentOne") : this.t("statusUrgent", { n: this.formatNumber(health.red) });
-    if (health.red && health.later) return `${urgent}, ${this.t("statusMoreOpen", { n: this.formatNumber(health.later) })}`;
-    if (health.red) return urgent;
-    return health.later === 1 ? this.t("statusOpenOne") : this.t("statusOpen", { n: this.formatNumber(health.later) });
+  // The rows of the to-do card in the three groups the headline names: urgent (red), open (the rest outside maintenance)
+  // and maintenance. Every row is counted once, so the headline and the card add up.
+  todoGroups(items = this.todoItems()) {
+    const red = items.filter(i => i.tone === "red").sort((a, b) => (b.key === "monitor_problem") - (a.key === "monitor_problem"));
+    return { red, open: items.filter(i => i.tone !== "red" && i.area !== "care"), care: items.filter(i => i.tone !== "red" && i.area === "care") };
   }
 
-  statusSubline(health) {
-    return `${this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })} · ${this.t("statusHealth", { percent: this.formatNumber(health.percent) })}`;
+  todoName(it) { return `${it.text || this.t(it.label)}${it.count !== undefined ? ` (${this.formatNumber(it.count)})` : ""}`; }
+
+  // The headline names what is urgent instead of counting topics: one or two by name, more as the first and a number.
+  // With `link` each name is a button to its row of the to-do card.
+  statusHeadline(groups = this.todoGroups(), link = false) {
+    const name = it => (link ? `<button type="button" class="headlink" data-todo-go="${this.esc(it.key)}" title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.todoName(it))}</button>` : this.esc(this.todoName(it)));
+    const red = groups.red;
+    if (red.length === 1) return name(red[0]);
+    if (red.length === 2) return this.t("statusAnd", { a: name(red[0]), b: name(red[1]) });
+    if (red.length > 2) return this.t("statusMoreUrgent", { first: name(red[0]), n: this.formatNumber(red.length - 1) });
+    return this.esc(this.t(groups.open.length ? "statusNothingUrgent" : "statusAllGood"));
   }
 
-  // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level.
+  // Below the headline: what is open besides the urgent rows and the objects with a finding.
+  statusSubline(health, groups = this.todoGroups()) {
+    const rest = [groups.open.length ? this.t("statusPartOpen", { n: this.formatNumber(groups.open.length) }) : "", groups.care.length ? this.t("statusPartCare", { n: this.formatNumber(groups.care.length) }) : ""].filter(Boolean);
+    const restText = rest.length ? (groups.red.length ? this.t("statusAlso", { what: rest.join(this.t("statusJoin")) }) : rest.join(this.t("statusJoin"))) : "";
+    return [restText, this.t("statusObjects", { affected: this.formatNumber(health.affected), base: this.formatNumber(health.base) })].filter(Boolean).map(x => this.esc(x)).join(" · ");
+  }
+
+  // The calculation behind the ring: the rated objects, minus the weight of each object with a finding, by its worst level,
+  // scaled to 100 points.
   healthWhyCard(health) {
     const row = (label, value, cls = "") => `<div class="row ${cls}"><span>${label}</span><span>${value}</span></div>`;
     const lines = [row(this.t("whyStart"), this.formatNumber(health.base))];
@@ -2450,8 +2575,9 @@ class OverviewMixin {
       lines.push(row(label, l.points ? `− ${this.formatNumber(l.points)}` : "0", l.points ? "minus" : "minus mute"));
     }
     lines.push(row(this.t("whyTotal"), this.formatNumber(health.ok), "total"));
-    lines.push(row(this.t("whyShare"), `${this.formatNumber(health.percent)} %`));
-    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}">${lines.join("")}<small>${this.t("whyNote", { green: HEALTH_GREEN, yellow: HEALTH_YELLOW })}</small></div>`;
+    lines.push(row(this.t("whyShare"), this.t("pointsOf100", { n: this.formatNumber(health.percent) })));
+    const groups = ["red", "open", "care"].map(g => `<p><b class="why-${g}">${this.t(`group_${g}`)}</b> ${this.t(`whyGroup_${g}`)}</p>`).join("");
+    return `<div class="healthwhy" role="region" aria-label="${this.esc(this.t("healthWhy"))}"><div class="whygroups"><strong>${this.t("whyHeadTitle")}</strong>${groups}</div><strong>${this.t("whyRingTitle")}</strong>${lines.join("")}<small>${this.t("whyNote")}</small></div>`;
   }
 
   // A number with its noun, so that the rows count what they say: "8 integrations".
@@ -2472,18 +2598,23 @@ class OverviewMixin {
       const pill = it.count !== undefined ? this.todoCount(it) : it.pill;
       return `<button class="row todo" data-todo="${it.key}" ${target}>${inner}${pill ? `<span class="pill ${it.tone}">${this.esc(pill)}</span>` : ""}</button>`;
     };
-    const inArea = area => items.filter(i => i.area === area && i.key !== "outages"); // the outages are entries of the list itself
+    const groups = this.todoGroups(items);
     const pinned = new Set(this.reauthFindings().map(f => f.object_id));
-    const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)));
+    const entries = this.findingEntries().filter(e => !(pinned.has(e.finding?.object_id) && e.finding?.rule_id === "config_entry.reauth") && !(e.cause?.kind === "integration_down" && pinned.has(e.cause.object_id)) && !(e.finding?.rule_id === "config_entry.not_loaded" && this.apPausedItem(e.finding.object_id)));
     const entryRow = e => (e.cause ? this.overviewCause(e.cause) : this.overviewFinding(e.finding));
-    const findingRows = [...inArea("findings").filter(i => i.key === "monitor_problem").map(row), ...inArea("findings").filter(i => i.key !== "monitor_problem").map(row), ...entries.slice(0, LIMIT).map(entryRow)];
     const all = `<button class="link" data-jump="findingsNav">${this.t("allFindings")} (${this.formatNumber(this.findingTotal())}) <ha-icon icon="mdi:chevron-right"></ha-icon></button>`;
-    const state = [...inArea("state")].sort((x, y) => (y.tone === "red") - (x.tone === "red"));
-    const care = inArea("care");
+    const head = (g, n) => `<h3 class="foldhd todogrp ${g}">${this.t(`group_${g}`)} <span class="pill ${g === "red" ? "red" : "warn"}">${this.formatNumber(n)}</span></h3>`;
     const sections = [];
-    if (findingRows.length) sections.push(`<h3 class="foldhd">${this.t("areaFindings")}</h3>${findingRows.join("")}`);
-    if (state.length) sections.push(`<h3 class="foldhd">${this.t("areaState")}</h3>${state.map(row).join("")}`);
-    if (care.length) sections.push(this.fold("todo_care", { tone: "warn", title: this.t("areaCare"), sub: this.t("areaCareSub"), pill: this.formatNumber(care.length) }, care.map(row).join(""), !sections.length));
+    if (groups.red.length) sections.push(`${head("red", groups.red.length)}${groups.red.map(row).join("")}`);
+    if (groups.open.length) sections.push(`${head("open", groups.open.length)}${groups.open.map(row).join("")}`);
+    // Maintenance is a group of its own with a head like the others, folded while something else is open.
+    if (groups.care.length) {
+      const open = this.foldOpen("todo_care", !sections.length);
+      sections.push(`<h3 class="foldhd todogrp care"><button type="button" class="todofold" data-fold="todo_care" aria-expanded="${open}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon>${this.t("areaCare")} <span class="pill warn">${this.formatNumber(groups.care.length)}</span><small>${this.t("areaCareSub")}</small></button></h3>${open ? groups.care.map(row).join("") : ""}`);
+    }
+    // The first entries of the findings list: a look at what matters most, not counted as rows of the headline.
+    const top = entries.slice(0, LIMIT).map(entryRow);
+    if (top.length) sections.push(`<h3 class="foldhd">${this.t("topFindings")} <small class="muted">${this.t("topFindingsSub")}</small></h3>${top.join("")}`);
     const body = sections.length ? sections.join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.esc(this.t("actNone", { date: this.formatDate(this.data.meta.scanned_at) }))}</div>`;
     return `<section class="panel u-mb14" aria-labelledby="hk-todo" id="hk-todo-card" tabindex="-1"><div class="panelhead"><div><h2 id="hk-todo">${this.t("actTitle")}</h2><p>${this.t("actSub")}</p></div>${all}</div>${body}${this.todoFoot()}</section>`;
   }
@@ -2509,13 +2640,13 @@ class OverviewMixin {
     if (!c?.available) return "";
     const date = this.formatDate(c.baseline_at);
     const rows = [
-      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+"],
-      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−"],
-      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", ""],
-      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+"],
+      ["trendNewFindings", c.new_findings?.total, "mdi:arrow-up-bold", "red", "+", "newFindings"],
+      ["trendResolved", c.resolved_findings?.total, "mdi:arrow-down-bold", "ok", "−", "resolvedFindings"],
+      ["trendChanged", c.status_changes?.total, "mdi:swap-horizontal", "warn", "", "statusChanges"],
+      ["trendNewObjects", c.new_objects?.total, "mdi:plus-circle-outline", "mute", "+", "newObjects"],
     ].filter(([, n]) => n);
     const body = rows.length
-      ? rows.map(([label, n, icon, tone, sign]) => `<button class="row" data-jump="changes"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
+      ? rows.map(([label, n, icon, tone, sign, section]) => `<button class="row" data-jump="changes" data-jump-changes="${section}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong></span><span class="pill ${tone}">${sign}${this.formatNumber(n)}</span></button>`).join("")
       : `<div class="emptymsg">${this.esc(this.t("trendNone", { date }))}</div>`;
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("trendTitle")}</h2><p>${this.esc(this.t("trendSince", { date }))}</p></div></div>${body}</div>`;
   }
@@ -2550,15 +2681,15 @@ class OverviewMixin {
     this.ensureSeries();
     this.ensureBackup();
     const quiet = this.quietCount();
-    // As on the findings page: everything open with this reason, the follow-ups of an outage counted in and named beside it.
-    const down = (this.data.findings || []).filter(f => !f.ignored && this.findingReason(f) === "unavailable");
-    const downFollows = down.filter(f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id)).length;
-    const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-filter="${filter}"` : ""}><small>${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small>${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
-    const headline = health.tasks ? `<button type="button" class="headlink" data-todo-jump title="${this.esc(this.t("statusTasksJump"))}">${this.esc(this.statusHeadline(health))}</button>` : this.t("statusAllGood");
+    // The two groups of the findings page: faults (red reasons) and tidying up; the follow-ups of an outage are counted in.
+    const faults = (this.data.findings || []).filter(f => !f.ignored && this.findingTileGroup(f) === "red"), tidy = total - faults.length;
+    const faultFollows = faults.filter(f => this.isFollowUp(f)).length;
+    const kpi = ([label, value, tone, view, status, key, rising, extra, filter]) => `<button class="kpi ${tone}" data-jump="${view}" data-status="${status || ""}"${filter ? ` data-${view === "inventory" ? "type" : "filter"}="${filter}"` : ""}><small class="kpilabel">${this.t(label)}</small><strong>${this.formatNumber(value)}</strong>${extra ? `<small class="kpisub">${this.esc(extra)}</small>` : ""}${this.series ? `<span class="spark-row">${this.sparkline(key, rising)}</span>` : ""}</button>`;
+    const groups = this.todoGroups(), headline = this.statusHeadline(groups, true);
     const why = this.healthWhy ? this.healthWhyCard(health) : "";
-    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(this.t("healthWhy"))}"><b>${Math.floor(health.percent)}<small>%</small></b></button>
-      <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
-      <div class="kpis">${[["objects", m.object_count, "", "inventory", "", "objects"], ["openFindings", total - quiet, total - quiet ? "warn" : "", "findingsNav", "", "findings", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["unavailable", down.length, down.length ? "red" : "", "findingsNav", "", "class:unavailable", "bad", downFollows ? this.t("findingsOfFollow", { n: this.formatNumber(downFollows) }) : "", "unavailable"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
+    return `${this.levelsBanner()}<section class="statushead" title="${this.esc(this.t("healthTip", { affected: health.affected, base: health.base }))}"><div class="ringcol"><button type="button" class="ring ${health.tone}" style="--p:${health.percent}" data-health-why aria-expanded="${Boolean(this.healthWhy)}" aria-label="${this.esc(`${this.t(health.label)} · ${this.t("pointsOf100", { n: this.formatNumber(health.percent) })} · ${this.t("healthWhy")}`)}"><b>${Math.floor(health.percent)}</b></button><button type="button" class="link" data-health-why aria-expanded="${Boolean(this.healthWhy)}" title="${this.esc(this.t("healthWhy"))}">${this.t("healthInfo")}</button></div>
+      <div class="statustext"><h2>${headline}</h2><p>${this.statusSubline(health, groups)}</p>${this.series ? `<span class="spark-row">${this.sparkline("health", "good")}</span>` : ""}</div>
+      <div class="kpis">${[["ratedObjects", health.base, "", "inventory", "", "rated", undefined, "", RATED_TYPE], ["openFindings", total, "", "findingsNav", "", "open", "bad", quiet ? this.t("openFindingsQuiet", { n: this.formatNumber(quiet) }) : ""], ["sumGroupUrgent", faults.length, faults.length ? "red" : "", "findingsNav", "", "group:red", "bad", faultFollows ? this.t("findingsOfFollow", { n: this.formatNumber(faultFollows) }) : "", "group:red"], ["sumGroupTidy", tidy, tidy ? "warn" : "", "findingsNav", "", "group:tidy", "bad", "", "group:tidy"]].map(kpi).join("")}</div></section>${why}${this.watchBand()}
       ${this.scanCoverageLine()}${this.todoCard()}<div class="ovzone">${this.cleanupCard()}${this.trendCard()}${this.inventoryStatusCard()}</div>
       <div class="ovzone">${this.systemCard()}${this.databaseCard()}${this.backupSummaryCard()}</div>`;
   }
@@ -2568,13 +2699,13 @@ class OverviewMixin {
     const b = this.backup;
     if (!b?.available) return "";
     const checks = b.checks || [], by = id => checks.find(c => c.id === id);
-    const newest = by("newest"), run = by("last_run");
+    const newest = by("newest"), run = by("last_run"), external = by("external");
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
     const tone = level => ({ ok: "ok", note: "warn", problem: "red" })[level] || "mute";
     const fact = (label, value, level) => `<div class="fact"><span>${this.t(label)}</span><b>${value}${level ? ` <span class="pill ${tone(level)}">${this.t(`bhLevel_${level}`)}</span>` : ""}</b></div>`;
     const age = newest?.values?.age_hours;
     const rows = [
-      fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age) })), newest?.level),
+      external ? fact("bh_newest", this.t("bhExternalShort"), "") : fact("bh_newest", age === null || age === undefined ? this.t("safeNoBackup") : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), newest?.level),
       run ? fact("bh_last_run", run.values?.completed ? this.esc(this.formatDate(run.values.completed)) : this.t("bhNever"), run.level) : "",
       fact("bhResult", problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), ""),
     ].join("");
@@ -2646,19 +2777,19 @@ class OverviewMixin {
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("sysOvTitle")}</h2><p>${this.t("sysOvHint")}</p></div><button class="link" data-jump="storage">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows}</div></div>`;
   }
 
-  // Size of the recorder database from two file stats taken during the scan; the table queries stay in the Recorder view.
+  // Size of the recorder database from two file stats (SQLite) or one size query to the server taken during the scan; the table queries stay in the Recorder view.
   databaseCard() {
     const d = this.data.meta.database;
     if (!d) return "";
     this.ensureDbFirst();
     const measured = d.db_bytes !== null && d.db_bytes !== undefined;
     const rows = measured ? [
-      [this.t("dbOvSize"), this.formatBytes(d.db_bytes)],
-      [this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)],
+      [this.t("dbOvSize"), d.estimated ? this.t("dbAbout", { size: this.formatBytes(d.db_bytes) }) : this.formatBytes(d.db_bytes)],
+      ...(d.dialect === "sqlite" ? [[this.t("dbOvWal"), this.formatBytes(d.wal_bytes || 0)]] : []),
       ...(d.keep_days ? [[this.t("dbOvKeep"), this.t("dbOvKeepDays", { n: this.formatNumber(d.keep_days) })]] : []),
       ...(this.dbFirst ? [[this.t("dbOvFirst"), `${this.esc(this.formatDate(new Date(this.dbFirst * 1000).toISOString()))}<small>${this.esc(this.relTime(new Date(this.dbFirst * 1000).toISOString()))}</small>`]] : []),
-      [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, d.per_day)) }) : this.t("dbOvObserving")],
-    ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(d.dialect || "?") })]];
+      [this.t("dbOvGrowth"), d.per_day !== null && d.per_day !== undefined ? this.t("dbOvPerDay", { size: this.dbGrowthSize(d.per_day) }) : this.t("dbOvObserving")],
+    ] : [[this.t("dbOvSize"), this.t("dbOvNoSize", { dialect: this.esc(this.dbDialect(d.dialect)) })]];
     const purgeOff = d.auto_purge === false ? `<p class="factnote">${this.t("dbOvPurgeOff")}</p>` : "";
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbOvTitle")}</h2><p>${this.t("dbOvHint")}</p></div><button class="link" data-jump="recorder">${this.t("dbOvDetails")} <ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="facts">${rows.map(([k, v]) => `<div class="fact"><span>${k}</span><b>${v}</b></div>`).join("")}</div>${purgeOff}</div>`;
   }
@@ -2678,7 +2809,13 @@ class OverviewMixin {
       ["quarantine", "mdi:archive-clock-outline", "cleanup", (this.data.quarantine || []).length, undefined],
       ...(this.policies?.available ? [["polOverviewViolations", "mdi:clipboard-alert-outline", "policies", policyViolations, undefined, activeRules.length === 1 ? this.t("polOverviewRuleOne") : this.t("polOverviewRules", { n: this.formatNumber(activeRules.length) })]] : []),
     ];
-    const rows = items.map(([label, icon, view, count, filter, hint]) => `<button class="row" data-jump="${view}"${label === "unreferenced" ? ' data-jump-tab="unused"' : ""}${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}><span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong>${hint ? `<small>${this.esc(hint)}</small>` : ""}</span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span></button>`).join("");
+    // Each row lands where it counted: the low batteries, the unused tab and the quarantine tab, with their lists cleared.
+    const land = { batteries: ' data-jump-battery="low" data-jump-clear="batteries"', unreferenced: ' data-jump-tab="unused" data-jump-clear="unreferenced"', quarantine: ' data-jump-tab="quarantine" data-jump-clear="cleanup"' };
+    // A row with nothing to show is a quiet line that leads nowhere, like a tile with 0 on the findings page.
+    const rows = items.map(([label, icon, view, count, filter, hint]) => {
+      const inner = `<span class="tile ${count ? "warn" : "mute"}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(label)}</strong>${hint ? `<small>${this.esc(hint)}</small>` : ""}</span><span class="pill ${count ? "warn" : "mute"}">${this.formatNumber(count)}</span>`;
+      return count ? `<button class="row" data-jump="${view}"${land[label] || ""}${filter !== undefined && view === "findingsNav" ? ` data-filter="${filter}"` : ""}>${inner}</button>` : `<div class="row zero">${inner}</div>`;
+    }).join("");
     return `<div class="panel"><div class="panelhead"><div><h2>${this.t("hintsTitle")}</h2><p>${this.t("cleanupHint")}</p></div></div>${rows}</div>`;
   }
 }
@@ -2692,8 +2829,15 @@ class FindingsMixin {
   }
 
   // The reason of a finding as the person sees it: an outage of an integration, otherwise its class (unused, broken reference …).
-  findingReason(f) { return f.rule_id === "config_entry.not_loaded" ? "outage" : f.classification; }
-  reasonLabel(r) { return r === "outage" ? this.t("chip_outage") : this.statusLabel(r); }
+  // An outage is whatever starts a chain (integration not loaded or asking for a login, device down, app stopped);
+  // what is left of "problem" then are automations and scripts that cannot work.
+  findingReason(f) { return CAUSE_OWN_RULES.includes(f.rule_id) ? "outage" : f.classification; }
+  reasonLabel(r) { return r === "group:red" ? this.t("sumGroupUrgent") : r === "group:tidy" ? this.t("sumGroupTidy") : r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
+  // The two groups of the tiles: red reasons are faults, the rest is tidying up.
+  findingTileGroup(f) { return this.reasonTone(this.findingReason(f)) === "red" ? "red" : "tidy"; }
+  // The tile filter: one reason (or rule), or a whole group as "group:red" / "group:tidy".
+  matchesFindingFilter(f, filter = this.findingFilter) { return filter.startsWith("group:") ? this.findingTileGroup(f) === filter.slice(6) : this.findingReason(f) === filter || f.rule_id === filter; }
+  reasonTone(r) { const tone = FAULT_REASONS.includes(r) ? "red" : this.tone(r); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; }
 
   // Impact first, then how sure the diagnosis is: the fraction keeps the certainty from outranking a level.
   impactScore(f) { return (IMPACT_RANK[f.impact] ?? 0) + (f.confidence || 0) / 2; }
@@ -2713,15 +2857,16 @@ class FindingsMixin {
     return [...top, ...single];
   }
 
-  // The state of the house: the rated objects, minus the weight of each object that has a finding (high 1, medium a half,
-  // low a fifth, info nothing). An object counts once, with its worst level; a chain of outages stands for its cause and its
-  // followers do not count. The percent is what is left of the objects. Urgent state topics (backup, disk) take nothing off
-  // but keep the ring from reading green.
+  // The state of the house in points: the rated objects, minus the weight of each object that has a finding (high 2,
+  // medium 1, low a half, info nothing), scaled to 100 and never below 0. An object counts once, with its worst level;
+  // the follow-ups of a cause are objects like any other and count with their own level. The colour does not come
+  // from the number but from what is open: red while an urgent topic is, yellow while another topic or an object
+  // with high or medium impact is, green otherwise. Maintenance (goals, reminders, quarantine) never colours it.
   health() {
-    const objects = this.data.objects.filter(o => HEALTH_TYPES.includes(o.object_type));
+    // As the inventory lists them: an automation, script or scene is one object, not also its registry entity.
+    const objects = this.invObjects().filter(o => HEALTH_TYPES.includes(o.object_type));
     const base = objects.length;
     const known = new Set(objects.map(o => this.objectKey(o)));
-    const affected = new Set(this.data.findings.filter(f => !f.ignored).map(f => this.findingKey(f)).filter(key => known.has(key)));
     // The same number in every view: what it counts is fetched here, not only when the overview opens. The database
     // check stays out of it, because it reads the recorder and only runs once Maintenance is opened.
     this.ensureBackup?.(); this.ensureTrend?.();
@@ -2733,7 +2878,7 @@ class FindingsMixin {
       if (!worst.has(key) || order.indexOf(level) > order.indexOf(worst.get(key))) worst.set(key, level);
     };
     for (const c of this.causeList().filter(c => !c.parent_id)) note(`${c.object_type}:${c.object_id}`, c.impact);
-    for (const f of this.data.findings.filter(f => !f.ignored && !f.cause_id)) note(this.findingKey(f), f.impact);
+    for (const f of this.data.findings.filter(f => !f.ignored)) note(this.findingKey(f), f.impact);
     const levels = [...worst.values()];
     const lines = [...order].reverse().map(level => {
       const n = levels.filter(l => l === level).length;
@@ -2741,12 +2886,12 @@ class FindingsMixin {
     }).filter(l => l.n);
     const load = Math.round(lines.reduce((sum, l) => sum + l.points, 0) * 10) / 10;
     // Rounded down, so that a house with a finding never reads 100.
-    const percent = base ? Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10 : 100;
-    let tone = percent >= HEALTH_GREEN ? "ok" : percent >= HEALTH_YELLOW ? "warn" : "red";
-    // A high-impact object or an urgent state topic never reads as green, however small the sum is.
-    if (tone === "ok" && (levels.includes("high") || stateRed)) tone = "warn";
+    const percent = base > 0 ? Math.max(0, Math.floor(Math.round(1000 * (1 - load / base) * 1e6) / 1e6) / 10) : 100;
+    const affected = levels.filter(l => l !== "info").length;
+    const pending = open.some(i => i.area !== "care") || levels.includes("high") || levels.includes("medium");
+    const tone = red ? "red" : pending ? "warn" : "ok";
     const label = tone === "ok" ? "healthGood" : tone === "warn" ? "healthCheck" : "healthBad";
-    return { percent, tone, label, affected: affected.size, base, tasks, red, later: tasks - red, load, ok: Math.round((base - load) * 10) / 10, lines, stateRed, entries: levels.length };
+    return { percent, tone, label, affected, base, tasks, red, later: tasks - red, load, ok: Math.max(0, Math.round((base - load) * 10) / 10), lines, stateRed, entries: levels.length };
   }
 
   findingRowContent(finding, inGroup = false) {
@@ -2763,7 +2908,7 @@ class FindingsMixin {
         : finding.affected_object
           ? [this.esc(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
           : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
-    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.esc(finding.mark ? this.markLine(finding.mark) : this.decisionLabel(finding))}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.oftenChip(finding)}</span>` };
+    return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.hiddenWhy(finding)}` : ""}${finding.resurfaced ? ` · ${this.t("dueLabel")}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
   }
 
   // pick = false outside the findings list: there is no bar for the actions on a selection there.
@@ -2773,72 +2918,27 @@ class FindingsMixin {
     return `<div class="rowwrap">${pick ? `<input type="checkbox" class="selbox" data-fsel="${this.esc(finding.key)}" ${this.findSel.has(finding.key) ? "checked" : ""} aria-label="${this.esc(title)}">` : ""}${button}${this.rowMenu(finding)}</div>${this.rowDecide(finding)}`;
   }
 
-  findingsTable(items) {
+  // `body`: rows already rendered, as a grouped list pages them.
+  findingsTable(items, body = null) {
     const st = this.lv.findings, header = (key, label, dir = "asc") => {
       const on = st.sort === key;
       return `<th scope="col" aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|${key}|${dir}">${this.t(label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button></th>`;
     };
     const idSort = `<button type="button" class="thbtn th-alt" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
-    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRule")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
-    const rows = items.map(item => {
-      if (item.cause) return this.causeTableRow(item.cause);
-      if (item.members) return this.brokenGroupTableRow(item);
-      const f = item, { key, object, title, subtitle } = this.findingRowContent(f);
-      const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
-      const name = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
-      const detail = this.rowDecide(f);
-      return `<tr class="finding-data${f.ignored ? " dim" : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
-    }).join("");
+    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
+    // In the grouped view every row is a head of an object; in the flat one every row is a finding.
+    const rows = body ?? items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>`;
   }
 
-  causeTableRow(c) {
-    const total = this.causeTotal(c), own = c.finding_key && this.data.findings.find(f => f.key === c.finding_key);
-    const id = `cause_${c.id}`, open = total && this.foldOpen(id, false);
-    const link = `${c.object_type}:${c.object_id}`, title = this.t(`cause_${c.kind}`, { name: c.name });
-    const summary = [total ? this.t("causeExplains", { n: this.formatNumber(total) }) : "", this.causeShort(c)].filter(Boolean).join(" · ");
-    const fold = total ? `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${Boolean(open)}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: c.name }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>` : "";
-    const name = `<div class="finding-link-group">${fold}<button type="button" class="finding-link" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(summary)}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}</button></div>`;
-    const row = `<tr class="finding-data finding-cause"><td class="selcol">${this.causeBox(c)}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(c.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${own?.confidence == null ? "–" : `${Math.round(own.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(own?.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(own?.rule_id || c.kind)}</span><small>${this.t("chip_outage")}</small></td><td class="finding-action">${this.rowMenu(own)}</td></tr>`;
-    const decision = this.rowDecide(own);
-    const detail = open || decision ? `<tr class="finding-detail"><td colspan="7">${decision}${open ? this.causeChildren(c, false) : ""}</td></tr>` : "";
-    return row + detail;
-  }
-
-  brokenGroupTableRow(g) {
-    const f = g.members[0], p = f.evidence[0].place, object = this.findObject(this.findingKey(f));
-    const keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, false);
-    (this._findGroups ||= {})[g.group] = keys;
-    const title = `${object?.name || f.object_id}${p.view != null ? ` › ${p.view}` : ""}`;
-    const sub = [...this.placeParts({ card: p.card, section: p.section }), this.t("brokenCount", { n: keys.length })].join(" · ");
-    const name = `<div class="finding-link-group"><button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: title }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button><button type="button" class="finding-link" data-object="${this.esc(this.findingKey(f))}">${this.tile(object?.object_type || "dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span><span class="pill red">${keys.length}</span></button></div>`;
-    const row = `<tr class="finding-data finding-cause"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(g.group)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-rule">${this.esc(f.rule_id)}</span><small>${this.esc(this.reasonLabel(this.findingReason(f)))}</small></td><td></td></tr>`;
-    const orphan = this.isOrphan(p);
-    const hint = orphan ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div>` : "";
-    return row + (open ? `<tr class="finding-detail"><td colspan="7">${hint}<div class="kids">${g.members.map(m => this.findingRow(m, true)).join("")}</div></td></tr>` : "");
-  }
-
-  sortFindingEntries(items) {
-    const st = this.lv.findings, { natural, ids } = this.collators(), sign = st.dir === "desc" ? -1 : 1;
-    const findingOf = item => item.cause ? this.data.findings.find(f => f.key === item.cause.finding_key) : item.members ? item.members[0] : item;
-    const value = item => {
-      const c = item.cause, f = findingOf(item);
-      switch (st.sort) {
-        case "name": return c ? c.name : this.findObject(this.findingKey(f))?.name || f.object_id;
-        case "id": return c ? c.object_id : f.object_id;
-        case "since": return f?.first_detected_at;
-        case "rule": return c ? f?.rule_id || c.kind : f.rule_id;
-        case "certainty": return f?.confidence;
-        default: return c ? (IMPACT_RANK[c.impact] ?? 0) + (f?.confidence || 0) / 2 : this.impactScore(f);
-      }
-    };
-    return items.map(item => ({ item, key: value(item) })).sort((a, b) => {
-      const emptyA = a.key == null || a.key === "", emptyB = b.key == null || b.key === "";
-      if (emptyA !== emptyB) return emptyA ? 1 : -1;
-      const order = typeof a.key === "number" && typeof b.key === "number" ? a.key - b.key : natural.compare(String(a.key ?? ""), String(b.key ?? ""));
-      const id = item => item.cause?.id || item.members?.[0]?.key || item.key || item.object_id;
-      return order * sign || ids.compare(String(id(a.item)), String(id(b.item))) * sign;
-    }).map(x => x.item);
+  // One finding as a row of the table; below a head (depth) it is indented and keeps the room of the fold arrow.
+  findingTableRow(f, depth = 0, inGroup = false, gap = false) {
+    const { key, object, title, subtitle } = this.findingRowContent(f, inGroup);
+    const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
+    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
+    const name = depth || gap ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
+    const detail = this.rowDecide(f);
+    return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="7">${detail}</td></tr>` : ""}`;
   }
 
   findingSorts() {
@@ -2855,13 +2955,21 @@ class FindingsMixin {
   // The findings as shown (classification chip, search, type filter, sort); the export uses the same list.
   visibleFindings() {
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
-    const classed = this.findingFilter ? all.filter(f => this.findingReason(f) === this.findingFilter || f.rule_id === this.findingFilter) : all;
-    const afterOnly = this.findingAfter ? classed.filter(f => this.corr?.by_key?.[f.key]) : classed;
-    const byClass = this.findingDue ? afterOnly.filter(f => f.resurfaced) : afterOnly;
-    this.lvState("findings", "impact", "desc");
+    const classed = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)) : all;
+    const follows = this.findingFollowers ? classed.filter(f => this.isFollowUp(f)) : classed;
+    const afterOnly = this.findingAfter ? follows.filter(f => this.corr?.by_key?.[f.key]) : follows;
+    const scanNew = this.findingScanNew ? this.scanNewKeys() : null;
+    const outages = this.findingOutages ? this.outageKeys(this.findingOutages === true ? "" : this.findingOutages) : null;
+    const held = this.findingHeld ? this.heldKeys() : null;
+    const cause = this.findingCause ? this.causeKeys(this.findingCause) : null;
+    const corr = this.findingCorr ? this.corrKeys(this.findingCorr) : null;
+    const byClass = [scanNew, outages, held, cause, corr].reduce((list, keys) => (keys ? list.filter(f => keys.has(f.key)) : list), afterOnly);
+    const kept = this.lvState("findings", "impact", "desc").f;
+    delete kept.fresh; // new and in work are chips of the status row now
+    if (kept.type === "_causes") delete kept.type; // "causes only" is gone: the outage tile and the grouped list show them
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
-      filters: { type: (f, v) => this.findingType(f) === v, fresh: (f, v) => this.freshMatch(f, v), impact: (f, v) => (f.impact || "none") === v },
+      filters: { type: (f, v) => this.findingType(f) === v, area: (f, v) => this.findingArea(f) === v, integration: (f, v) => this.findingIntegrations(f).includes(v), impact: (f, v) => (f.impact || "none") === v, by: (f, v) => (["mark", "rule", "label"].includes(f.ignored_by) ? f.ignored_by : "user") === v },
       sorts: this.findingSorts(), tie: f => f.object_id,
     });
   }
@@ -2898,14 +3006,47 @@ class FindingsMixin {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  // The filters the tiles above set (class, "after"); the list bar shows its own.
-  findingNote() {
-    return this.filterNote([this.findingFilter ? this.reasonLabel(this.findingFilter) : "", this.findingAfter ? this.t("corrTile") : ""].filter(Boolean), "data-finding-reset");
+  // The area and the integrations of the object of a finding, for the filters of the list bar.
+  findingArea(f) { const o = this.findObject(this.findingKey(f)); return o ? this.areaName(o) : ""; }
+  findingIntegrations(f) {
+    const o = this.findObject(this.findingKey(f));
+    if (!o) return [];
+    if (o.object_type === "config_entry") return [o.domain].filter(Boolean);
+    const device = o.object_type === "device" ? o : o.device_id ? this.findObject(`device:${o.device_id}`) : null;
+    return [...new Set([o.object_type === "entity" ? o.platform : null, ...(device?.config_entry_ids || []).map(id => this.findObject(`config_entry:${id}`)?.domain)].filter(Boolean))];
   }
 
-  // Opens or closes every chain and group of the findings list at once.
+  // Every filter that narrows the list, each as a note with its own ✕, and one button that clears them all. The status
+  // row is not a filter here: the tiles count within it.
+  findingNote(filters = []) {
+    const st = this.lv.findings || { q: "", f: {} }, notes = [];
+    if (this.findingFilter) notes.push(["class", this.reasonLabel(this.findingFilter)]);
+    if (this.findingFollowers) notes.push(["followers", this.t("followersFilter")]);
+    if (this.findingAfter) notes.push(["after", this.t("corrTile")]);
+    if (this.findingScanNew) notes.push(["scanNew", this.t("scanNewFilter", { n: this.formatNumber(this.scanNewKeys().size) })]);
+    if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
+    // The findings of one incident: the note names it, as its row in the card does.
+    if (this.findingCorr) { const g = (this.corr?.groups || []).find(x => x.id === this.findingCorr); notes.push(["corr", this.t("corrFilterOne", { what: this.plainText(g ? this.corrText(g) : this.findingCorr), n: this.formatNumber(this.corrKeys(this.findingCorr).size) })]); }
+    if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
+    // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
+    if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
+    if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
+    for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
+    if (!notes.length) return "";
+    const chips = notes.map(([key, label]) => `<button type="button" class="chip fchip" data-fclear="${this.esc(key)}" aria-label="${this.esc(this.t("filterRemove", { name: label }))}">${this.esc(label)} <ha-icon icon="mdi:close"></ha-icon></button>`).join("");
+    return `<div class="filteron fnotes" role="status"><ha-icon icon="mdi:filter-variant"></ha-icon>${chips}<span class="spacer"></span><button class="btn quiet" data-finding-reset>${this.t("filterResetAll")}</button></div>`;
+  }
+
+  // Back to the plain list of the chosen status: the tiles, the notes and the list bar start empty.
+  clearFindingFilters() {
+    this.findingFilter = ""; this.findingFollowers = false; this.findingAfter = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = "";
+    const st = this.lvState("findings", "impact", "desc");
+    st.q = ""; st.f = {}; this.persistLv("findings");
+  }
+
+  // Opens or closes every head of the grouped list at once, the ones below a closed head too.
   foldAllFindings(open) {
-    const ids = [...this.causeList().filter(c => this.causeTotal(c)).map(c => `cause_${c.id}`), ...Object.keys(this._findGroups || {}).map(g => `bg:${g}`)];
+    const ids = [...(this._nodeFoldIds || []), ...Object.keys(this._findGroups || {}).filter(g => g.startsWith("bg:"))];
     const next = { ...this.folds };
     ids.forEach(id => { next[id] = open; });
     this.folds = next; this.render();
@@ -2919,49 +3060,116 @@ class FindingsMixin {
     return `<section class="panel pad helpcard"><div class="helphead"><strong>${t("helpTitle")}</strong><button class="btn quiet" data-fold="findings_help" aria-expanded="true"><ha-icon icon="mdi:close"></ha-icon>${t("helpClose")}</button></div><div class="helpgrid">${terms}</div><div class="helpnums">${nums}</div></section>`;
   }
 
-  // Grouped (follow-ups under their cause) or one by one; with any filter the list is one by one anyway, so the switch is locked there.
-  viewSwitch(grouped, free) {
-    const btn = (flat, label) => `<button type="button" class="chip ${flat === !grouped ? "active" : ""}" data-toggle-followers="${flat ? "flat" : "grouped"}" aria-pressed="${flat === !grouped}"${free ? "" : " disabled"}>${label}</button>`;
-    return `<span class="viewswitch" role="group" aria-label="${this.esc(this.t("viewLabel"))}"${free ? "" : ` title="${this.esc(this.t("viewLocked"))}"`}>${btn(false, this.t("viewGrouped"))}${btn(true, this.t("viewFlat"))}</span>`;
+  // Grouped (every finding below its object, the objects below their causes) or flat (every finding a row of its own).
+  // The choice holds with filters too.
+  viewSwitch(grouped) {
+    const btn = (flat, label) => `<button type="button" class="chip ${flat === !grouped ? "active" : ""}" data-toggle-followers="${flat ? "flat" : "grouped"}" aria-pressed="${flat === !grouped}">${label}</button>`;
+    return `<span class="viewswitch seg" role="group" aria-label="${this.esc(this.t("viewLabel"))}">${btn(false, this.t("viewGrouped"))}${btn(true, this.t("viewFlat"))}</span>`;
   }
 
   findingsView() {
     if (this._impactOnce) { this.visibleFindings(); if (this.lv.findings) { this.lv.findings.f.impact = this._impactOnce; this.persistLv("findings"); } this._impactOnce = ""; }
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
-    const classes = [...new Set(all.map(f => this.findingReason(f)))];
-    const open = !this.findingStatus && !this.findingFilter && !this.findingAfter && !this.lv.findings?.q && !Object.values(this.lv.findings?.f || {}).some(Boolean);
     const sorted = this.visibleFindings();
-    const grouped = open && !this.showFollowers;
-    const list = this.groupBroken(this.collapseFollowers(sorted, !grouped));
-    const types = [...new Set(all.map(f => this.findingType(f)))].sort();
-    const bar = this.listBar("findings", { table: true, dense: true, sorts: this.findingSorts(), filters: [{ name: "type", all: this.t("allTypes"), options: types.map(x => [x, this.t(x)]) }, this.freshFilter(), { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) }] });
+    const st = this.lv.findings;
+    const open = !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingScanNew && !this.findingOutages && !this.findingHeld && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
+    const grouped = !this.showFollowers;
+    const values = pick => [...new Set(all.flatMap(f => [].concat(pick(f))).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
+    // Each filter asks its own question: what kind of object, where, from which integration, how much it matters.
+    const filters = [
+      { name: "type", all: this.t("allObjectTypes"), options: values(f => this.findingType(f)).map(x => [x, this.t(x)]) },
+      { name: "area", all: this.t("allAreas"), options: values(f => this.findingArea(f)).map(a => [a, a]) },
+      { name: "integration", all: this.t("allIntegrations"), options: values(f => this.findingIntegrations(f)).map(d => [d, d]) },
+      { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) },
+      ...(this.findingStatus === "hidden" ? [{ name: "by", all: this.t("hiddenByAll"), options: ["user", "mark", "rule", "label"].map(x => [x, this.t(`hiddenBy_${x}`)]) }] : []),
+    ];
+    // The export button of the list bar, as on every list: the rows as shown, or only the selected ones.
+    const cols = ["rule_id", "classification", "confidence", "impact", "cause", "object_id", "name", "affected_object", "first_detected_at", "location"];
+    this.setExporter("findings", "ha-housekeeper-findings", cols, () => this.exportRows().map(r => cols.map(c => r[c])));
+    const bar = this.listBar("findings", { table: true, dense: true, note: false, sorts: this.findingSorts(), filters });
     this.ensureSeries();
     const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
-    const classTone = c => { const tone = c === "outage" ? "red" : this.tone(c); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; };
     this.ensureCorrelations();
-    const isFollower = f => f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id);
+    const isFollower = f => this.isFollowUp(f);
     const afterAll = all.filter(f => this.corr?.by_key?.[f.key]);
-    const afterCount = afterAll.filter(f => !isFollower(f)).length, afterFollows = afterAll.length - afterCount;
-    // A reason counts what the list shows under it: the follow-ups of an outage hang on their cause and are named beside the number.
-    const tile = c => { const mine = all.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length; return { label: this.reasonLabel(c), value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: classTone(c), filter: c, active: this.findingFilter === c, spark: spark(`class:${c}`, "bad") }; };
-    const rank = c => { const i = [...FINDING_URGENT, ...FINDING_TIDY].indexOf(c); return i < 0 ? FINDING_URGENT.length : i; };
-    const sorted2 = [...classes].sort((a, b) => rank(a) - rank(b));
-    const tidy = sorted2.filter(c => FINDING_TIDY.includes(c)), urgent = sorted2.filter(c => !FINDING_TIDY.includes(c));
-    const total = { label: this.t("allFindings"), value: this.formatNumber(this.findingTotal() + this.followerCount()), sub: this.followerCount() ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(this.followerCount()) })) : undefined, tone: this.findingTotal() ? "warn" : "ok", filter: "", active: !this.findingFilter, spark: spark("open", "bad") };
-    const group = (title, list, make, row) => list.length ? `<div class="sumgroup${row ? ` row${row}` : ""}" style="--n:${list.length};flex:${list.length} 1 ${list.length * 150}px"><div class="sumgrouphead">${this.t(title)}</div>${this.sumTiles(list.map(make))}</div>` : "";
-    const tiles = `<div class="sumgroups" style="--cols:${Math.max(1 + tidy.length, urgent.length)}">${group("sumGroupAll", [total], x => x, 1)}${group("sumGroupTidy", tidy, tile, 1)}${group("sumGroupUrgent", urgent, tile, 2)}</div>`;
-    const dueCount = this.data.findings.filter(f => f.resurfaced).length;
-    const followers = this.followerCount();
+    const afterFollows = afterAll.filter(isFollower).length, afterCount = afterAll.length;
+    // The tiles are fixed: they count the open findings whatever status the list shows, every finding of a reason with
+    // the follow-ups, and every reason keeps its place; one without open findings stays as a quiet 0 that filters nothing.
+    const openAll = this.data.findings.filter(f => !f.ignored);
+    const tile = c => {
+      const mine = openAll.filter(f => this.findingReason(f) === c), follows = mine.filter(isFollower).length;
+      if (!mine.length) return { label: this.reasonLabel(c), value: "0", tone: "zero", spark: spark(`reason:${c}`, "bad") };
+      return { label: this.reasonLabel(c), value: this.formatNumber(mine.length), sub: follows ? this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) })) : undefined, tone: this.reasonTone(c), filter: c, active: this.findingFilter === c, spark: spark(`reason:${c}`, "bad") };
+    };
+    // A fixed order, from the cause to what it does; a reason no list names comes last.
+    const ordered = [...FINDING_ORDER, ...new Set(openAll.map(f => this.findingReason(f)).filter(c => !FINDING_ORDER.includes(c)))];
+    // The groups follow the colour of a reason: red ones are faults, the rest is tidying up, also a reason no list names.
+    const faults = ordered.filter(c => this.reasonTone(c) === "red"), tidy = ordered.filter(c => this.reasonTone(c) !== "red");
+    const followers = openAll.filter(isFollower).length;
+    const allObjects = this.countObjects(this.objectTree(openAll, openAll, true));
+    // "All findings" clears the filters; it is not marked itself, only a filter that is on is.
+    const total = { label: this.t("allFindings"), value: this.formatNumber(openAll.length), sub: this.esc(this.t(allObjects === 1 ? "findingsOnObjects1" : "findingsOnObjects", { m: this.formatNumber(allObjects) })), tone: openAll.length ? "warn" : "ok", filter: "", active: false, spark: spark("open", "bad") };
+    const followLink = followers ? `<button type="button" class="link sumfollow${this.findingFollowers ? " on" : ""}" data-finding-followers aria-pressed="${Boolean(this.findingFollowers)}">${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(followers) }))}</button>` : "";
+    // The head of a group filters the list to the whole group, like a tile to one reason; without open findings it is a quiet label.
+    const group = (title, list, tone, id, row) => {
+      const n = openAll.filter(f => this.findingTileGroup(f) === id).length, on = this.findingFilter === `group:${id}`;
+      const text = this.esc(this.t("sumGroupCount", { group: this.t(title), n: this.formatNumber(n) }));
+      const head = n ? `<button type="button" class="sumgrouphead ${tone}" data-finding-filter="group:${id}" aria-pressed="${on}"><ha-icon icon="mdi:filter-variant"></ha-icon>${text}</button>` : `<span class="sumgrouphead zero">${text}</span>`;
+      return `<div class="sumhead" style="grid-row:${row}">${head}</div><div class="sumrow" style="--r:${row + 1}">${this.sumTileCells(list.map(c => ({ ...tile(c), hint: this.reasonLabel(c) })))}</div>`;
+    };
+    // "All findings" stands left over both rows; the follow-ups are named inside it. The whole tile clears the filters,
+    // the link to the follow-ups lies above that.
+    const totalTile = `<div class="sumall"><div class="sumtile sumtotal ${total.tone}"><button type="button" class="sumstretch" data-finding-filter="" aria-label="${this.esc(this.t("allFindings"))}"></button><span class="sumlabel">${this.esc(total.label)}</span><b class="sumvalue">${total.value}</b><span class="sumsubs"><small>${total.sub}</small>${followLink}</span>${total.spark ? `<span class="spark-row">${total.spark}</span>` : ""}</div></div>`;
+    // One grid: the faults in the first row, the tidying up in the second, every tile of the same width and height.
+    const tiles = `<div class="findsum" role="group" aria-label="${this.esc(this.t("sumLabel"))}" style="--k:${Math.max(faults.length, tidy.length)}">${totalTile}${group("sumGroupUrgent", faults, "red", "red", 1)}${group("sumGroupTidy", tidy, "warn", "tidy", 3)}</div>`;
     const fixedView = this.findingStatus === "fixed";
-    const entries = this.causeEntries(), withFollowers = entries.filter(c => this.causeTotal(c));
-    // Chains and single findings share the chosen order. Under a filter or in the flat list every finding stands for itself.
-    let items = grouped ? this.sortFindingEntries([...entries.map(cause => ({ cause })), ...list]) : list;
-    if (this.findingWithFollowers) items = grouped ? items.filter(i => i.cause && this.causeTotal(i.cause)) : items.filter(i => CAUSE_OWN_RULES.includes(i.rule_id) && entries.some(c => c.id === i.cause_id && this.causeTotal(c)));
-    const pg = this.paginate("findings", items);
-    const body = fixedView ? this.fixedList() : `${this.findSelBar(pg.rows, items.length)}${items.length ? this.findingsTable(pg.rows) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
-    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.oftenNote()}${fixedView ? "" : this.corrGroupsCard(afterCount, afterFollows)}<div class="panel"><div class="chips">${this.statusChips()}${followers ? this.viewSwitch(grouped, open) : ""}${followers ? `<button class="chip ${this.findingWithFollowers ? "active" : ""}" data-with-followers>${this.t("withFollowers")} (${withFollowers.length})</button>` : ""}${(followers && grouped) || Object.keys(this._findGroups || {}).length ? `<button class="chip" data-fold-all="open">${this.t("foldAll")}</button><button class="chip" data-fold-all="close">${this.t("foldNone")}</button>` : ""}${dueCount ? `<button class="chip ${this.findingDue ? "active" : ""}" data-finding-due>${this.t("dueFilter")} (${dueCount})</button>` : ""}<span class="spacer"></span><button class="chip" data-export="csv" title="${this.t("exportTitle")}">${this.t("exportCsv")}</button><button class="chip" data-export="json" title="${this.t("exportTitle")}">${this.t("exportJson")}</button></div>
-      ${this.findingNote()}${fixedView ? "" : bar}${body}</div></div>`;
+    // Every head starts folded, however few the filter leaves; a head opened or closed by hand stays so.
+    // Grouped: the heads of the objects, sorted by the chosen column. Flat: every finding for itself, in the same order.
+    const nodes = grouped ? this.sortNodes(this.objectTree(sorted, all, open)) : [];
+    this._nodeFoldIds = this.nodeFoldIds(nodes);
+    const items = grouped ? nodes : sorted;
+    // The same count in both views: findings and the objects they belong to.
+    const objects = this.countObjects(grouped ? nodes : this.objectTree(sorted, all, open));
+    // The head counts what is shown; narrowed further, it names the number of the active tile beside it.
+    const base = this.findingFilter ? all.filter(f => this.matchesFindingFilter(f)).length : this.findingFollowers ? followers : this.findingOutages ? all.filter(f => this.outageKeys(this.findingOutages === true ? "" : this.findingOutages).has(f.key)).length : this.findingScanNew ? all.filter(f => this.scanNewKeys().has(f.key)).length : this.findingAfter ? all.filter(f => this.corr?.by_key?.[f.key]).length : this.findingHeld ? all.filter(f => this.heldKeys().has(f.key)).length : this.findingCause ? all.filter(f => this.causeKeys(this.findingCause).has(f.key)).length : this.findingCorr ? all.filter(f => this.corrKeys(this.findingCorr).has(f.key)).length : all.length;
+    const of = sorted.length < base ? { total: this.formatNumber(base) } : null;
+    // Filtered to outages, the head counts them as the overview does (chains at their top) instead of every object below.
+    const outageN = this.findingOutages && !of ? this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length : 0;
+    const count = outageN ? this.t(outageN === 1 ? (sorted.length === 1 ? "ogViewOutageOne" : "ogViewOutage1") : "ogViewOutages", { o: this.formatNumber(outageN), n: this.formatNumber(sorted.length) })
+      : this.t(of ? (objects === 1 ? "ogViewCountOf1" : "ogViewCountOf") : sorted.length === 1 ? "ogViewCountOne" : objects === 1 ? "ogViewCount1" : "ogViewCount", { n: this.formatNumber(sorted.length), m: this.formatNumber(objects), ...of });
+    // Grouped, the pages count the heads at the top; an open head shows everything below it on the same page.
+    const units = grouped ? nodes.map(item => { const [head, ...rows] = this.nodeRows(item).split(/(?=<tr class="finding-data)/); return { item, head, rows }; }) : null;
+    const pg = this.paginate("findings", grouped ? units : items);
+    const pageItems = grouped ? pg.rows.map(u => u.item) : pg.rows;
+    const body = fixedView ? this.fixedList() : `${this.findSelBar(pageItems, count)}${items.length ? this.findingsTable(pageItems, grouped ? pg.rows.map(u => u.head + u.rows.join("")).join("") : null) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("findings") : this.t("noFindings")}</div>`}${pg.footer}`;
+    const anyOpen = this._nodeFoldIds.some(id => this.foldOpen(id, false));
+    const foldBtn = grouped && nodes.length ? `<button class="chip" data-fold-all="${anyOpen ? "close" : "open"}">${this.t(anyOpen ? "foldNone" : "foldAll")}</button>` : "";
+    const decisions = ["known", "snoozed", "hidden"].includes(this.findingStatus) ? `<button class="link" data-goto-decisions>${this.t("decAllLink")} <ha-icon icon="mdi:chevron-right"></ha-icon></button>` : "";
+    return `<div class="stack">${this.foldOpen("findings_help", false) ? this.findingsHelp() : ""}${tiles}${fixedView ? "" : this.findingHints(afterCount, afterFollows)}<div class="panel"><div class="chips"><span class="seg statusseg">${this.statusChips()}</span>${decisions}<span class="spacer"></span>${fixedView ? "" : `${foldBtn}${this.viewSwitch(grouped)}`}</div>
+      ${this.statusNote()}${fixedView ? "" : this.findingNote(filters)}${fixedView ? "" : bar}${body}</div></div>`;
   }
+
+  // Another status than open: the list shows it, the tiles above still count the open findings. One button goes back.
+  statusNote() {
+    const s = this.findingStatus;
+    if (!s) return "";
+    const name = s === "new" ? this.t("freshNew", { days: NEW_FINDING_DAYS }) : s === "inwork" ? this.t("freshInwork") : s === "due" ? this.t("stateDue") : this.t(`state_${s}`);
+    return `<div class="filteron statusnote" role="status"><ha-icon icon="mdi:information-outline"></ha-icon><span>${this.esc(this.t("statusNoteText", { status: name }))}</span><span class="spacer"></span><button class="btn quiet" data-fstatus="open">${this.t("statusNoteBack")}</button></div>`;
+  }
+
+  // The objects of a grouped list: every head that is an object, the ones below a cause too, not the causes themselves.
+  countObjects(nodes) { return nodes.filter(n => !n.key.startsWith("cause:")).length + nodes.reduce((s, n) => s + this.nodeFoldIds(n.kids).filter(id => !id.startsWith("og:cause:")).length, 0); }
+
+  // The two hints above the list as one row: suggestions for marks and incidents after updates. A button opens its card below.
+  findingHints(afterCount, afterFollows) {
+    this.ensureStability?.(); this.ensureWatches?.();
+    const often = this.oftenSuggestions?.() || [], incidents = this.incidents?.() || [];
+    if (!often.length && !incidents.length) return "";
+    const btn = (fold, icon, text, tone) => `<button type="button" class="hintbtn ${tone}${this.foldOpen(fold, false) ? " on" : ""}" data-fold="${fold}" aria-expanded="${this.foldOpen(fold, false)}"><ha-icon icon="${icon}"></ha-icon>${this.esc(text)}<ha-icon icon="mdi:chevron-${this.foldOpen(fold, false) ? "down" : "right"}"></ha-icon></button>`;
+    const row = `<div class="panel hintrow"><span class="hintlabel">${this.t("hintsLabel")}</span>${often.length ? btn("often", "mdi:lightbulb-on-outline", this.t("hintOften", { n: this.formatNumber(often.length) }), "warn") : ""}${incidents.length ? btn("corr", "mdi:update", this.t("hintCorr", { n: this.formatNumber(incidents.length) }), "mute") : ""}</div>`;
+    return `${row}${this.foldOpen("often", false) ? this.oftenCard() : ""}${this.foldOpen("corr", false) ? this.corrGroupsCard(afterCount, afterFollows) : ""}`;
+  }
+
 
   // The selection of findings: hide several at once, or export just those. Kept across pages until cleared.
   // A label does not mend a missing reference: the button stays away while only such findings are picked.
@@ -2970,13 +3178,22 @@ class FindingsMixin {
     return picked.length > 0 && picked.every(f => f.classification === "broken_reference");
   }
 
-  findSelBar(pageRows, total = 0) {
+  findSelBar(pageRows, count = "") {
     const n = this.findSel.size;
-    this._findPage = pageRows.flatMap(f => (f.cause ? [{ key: f.cause.finding_key }] : f.members ? f.members : [f])).map(f => f.key).filter(Boolean);
-    if (!pageRows.length && !n) return "";
+    this._findPage = pageRows.flatMap(f => (f.findings ? this.nodeFindings(f) : [f])).map(f => f.key).filter(Boolean);
+    const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
+    // A mixed pick: the buttons that fit only some of the findings say how many.
+    const picked = [...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean);
+    const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type)).length, marks = this.markTargets().size;
+    const part = k => (k < n ? ` (${this.t("fselPart", { n: this.formatNumber(k), m: this.formatNumber(n) })})` : "");
+    const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
+    // The same actions in the same order as the menu of a row: first about the findings, then about their objects.
+    const btn = (icon, label, attr, extra = "") => `<button ${attr.includes("class=") ? "" : 'class="btn" '}${attr}><ha-icon icon="${FSEL_ICONS[icon]}"></ha-icon>${this.t(label)}${extra}</button>`;
+    const exc = this.excForm?.here && this.exc ? `<div class="pad">${this.excFormHtml(this.excForm)}</div>` : "";
+    if (!pageRows.length && !n) return exc;
     // Nothing picked: only the box that picks the page. The actions appear with the first pick.
-    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${this.viewCount(total)}</div>`;
-    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns"><button class="btn" data-fsel-state="known">${this.t("fselKnown")}</button><button class="btn" data-fsel-state="snoozed">${this.t("fselSnooze")}</button>${this.selectionOnlyBroken() ? "" : `<button class="btn" data-fsel-state="label">${this.t("fselLabel")}</button>`}${this.markTargets().size ? `<button class="btn" data-fsel-state="mark">${this.t("markSet")}</button>` : ""}<button class="btn" data-fsel-hide>${this.t("findHideSelected")}</button></div>`}${this.viewCount(total)}</div>${this.bulkForm()}`;
+    if (!n) return `<div class="toolbar selhead"><label class="selall"><input type="checkbox" class="selbox" data-fsel-page> ${this.t("selectPage")}</label><span class="toolgap"></span>${total}</div>${exc}`;
+    return `<div class="toolbar"><button class="btn quiet" data-fsel-page>${this.t("selectPage")}</button><button class="btn quiet" data-fsel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${["hidden", "known", "snoozed"].includes(this.findingStatus) ? `<div class="fbtns"><button class="btn accent" data-fsel-unhide><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("findUnhide")}</button></div>` : `<div class="fbtns">${btn("status", "fselStatus", 'data-fsel-state="status"')}${marks ? btn("mark", "markSet", 'data-fsel-state="mark"', part(marks)) : ""}${excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : ""}${this.selectionOnlyBroken() ? "" : btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels))}</div>`}${total}</div>${this.bulkForm()}${exc}`;
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
@@ -2990,6 +3207,7 @@ class FindingsMixin {
     });
     this.render();
     if (!failed) this.toast(this.t("findUnhidden", { n: done }));
+    if (done) await this.reloadAfterDecision();
   }
 
   async hideSelectedFindings() {
@@ -3000,11 +3218,13 @@ class FindingsMixin {
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; }
     });
     this.render();
+    if (keys.length) await this.reloadAfterDecision();
   }
 
   findingTitle(f) {
     const sub = f.rule_id.split(".")[1] || f.rule_id;
-    if (sub.startsWith("missing_")) return `${this.t(sub)}: ${f.affected_object}`;
+    // A reference that leads nowhere: "Refers to entity sensor.x".
+    if (sub.startsWith("missing_")) return this.t("refersTo", { kind: this.lang === "en" ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
     if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
     const text = this.t(f.rule_id);
     return text === f.rule_id ? this.t(sub) : text;
@@ -3018,19 +3238,35 @@ class FindingsMixin {
     return `${this.t(`decideKind_${info.kind}`)}${until}${info.reason ? ` · ${info.reason}` : ""}${info.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
   }
 
-  // The small form that asks what to do with a finding: hide it, keep it on purpose, or look again later.
+  // The status of one finding or of the selection: known, snoozed or hidden, each with what it means. Row and bar share it.
+  statusFields(d, p, kind = d.kind) {
+    const opt = k => `<label class="statusopt${kind === k ? " on" : ""}"><input type="radio" name="${p}-kind" value="${k}" data-${p}-kind ${kind === k ? "checked" : ""}><span><b>${this.t(`decideKind_${k}`)}</b><small>${this.t(`decideKindHint_${k}`)}</small></span></label>`;
+    const days = [...(kind === "snooze" ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
+    return `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideKind"))}">${["keep", "snooze", "ignore"].map(opt).join("")}</div>
+      <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
+      <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
+      <small class="factnote">${this.t("statusScopeHint")}</small>`;
+  }
+
+  // A status on the finding of an outage ends the outage: its follow-ups then count one by one. When the object can carry
+  // a mark, the form says so and offers the mark, which hides the outage and what follows from it.
+  outageStatusHint(f) {
+    if (!["device.down", "config_entry.not_loaded", "app.stopped_in_use"].includes(f.rule_id) || f.ignored) return "";
+    const cause = this.causeList().find(c => c.finding_key === f.key), n = cause ? cause.follower_count || 0 : 0;
+    const key = this.findingKey(f), object = this.findObject(key);
+    if (!n || !object || !MARK_TYPES.includes(object.object_type) || object.mark) return "";
+    const btn = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("outageMarkInstead")}</button>`;
+    return `<div class="notice warn outagehint"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t(n === 1 ? "outageStatusHint1" : "outageStatusHint", { n: this.formatNumber(n) }))}</p>${btn}</div></div>`;
+  }
+
   decideForm(f) {
-    const d = this.decide, snooze = d.kind === "snooze";
-    const kinds = ["ignore", "keep", "snooze"].map(k => `<option value="${k}" ${d.kind === k ? "selected" : ""}>${this.t(`decideKind_${k}`)}</option>`).join("");
-    const days = [...(snooze ? [] : [0]), 7, 30, 90, 365].map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("decideForever")}</option>`).join("");
-    return `<form class="polform" data-decide-form="${this.esc(f.key)}"><select data-decide-kind aria-label="${this.esc(this.t("decideKind"))}">${kinds}</select>
-      <input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
-      <select data-decide-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>
-      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button>
+    const d = this.decide;
+    return `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.outageStatusHint(f)}${this.statusFields(d, "decide")}
+      <div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
       ${d.error ? `${this.notice("err", this.t(d.error))}` : ""}</form>`;
   }
 
-  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: kind === "snooze" ? 30 : 0, reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]")?.focus?.(); }
+  openDecide(key, kind = "ignore") { this.decide = { key, kind, days: kind === "snooze" ? 30 : 0, reason: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-decide-kind]:checked")?.focus?.(); }
 
   async commitDecide() {
     const d = this.decide;
@@ -3050,6 +3286,9 @@ class FindingsMixin {
         this._rev++;
       }
       this.decide = null;
+      this.render();
+      await this.reloadAfterDecision();
+      return;
     } catch (err) { this.failed(err); this.decide = null; }
     this.render();
   }
@@ -3062,30 +3301,38 @@ class FindingsMixin {
     const fixes = item ? this.fixItems(item, key).items : [];
     const steps = f => fixes.filter(it => it.finding === f.key).map(it => `<button class="btn primary" ${it.attr} title="${this.esc(this.t(it.hint))}"><ha-icon icon="${it.icon}"></ha-icon>${it.label}</button>`).join("");
     const hideButton = f => this.decide && this.decide.key === f.key ? this.decideForm(f)
-      : `<div class="fbtns">${steps(f)}${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon>${this.t("markKnown")}</button><button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="snooze"><ha-icon icon="mdi:clock-outline"></ha-icon>${this.t("fselSnooze")}</button><button class="btn" data-decide-open="${this.esc(f.key)}"><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("hideFinding")}</button></div>`;
+      : `<div class="fbtns">${steps(f)}${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="${FSEL_ICONS.status}"></ha-icon>${this.t("fselStatus")}</button></div>`;
     const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small class="fmeta">${this.pill(f.classification)}<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}${f.ignore_rule ? `<small>${this.esc(this.findingRuleLine(f))}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return rows;
   }
 }
+Object.assign(TEXT.de, {
+  refersTo: "Verweist auf {kind} {target}",
+  statusNoteText: "Die Liste zeigt den Status „{status}“. Die Kacheln oben zählen die offenen Befunde; ein Klick darauf schaltet zurück auf „Offen“.", statusNoteBack: "Zu den offenen",
+});
+Object.assign(TEXT.en, {
+  refersTo: "Refers to {kind} {target}",
+  statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones",
+});
 
 // Texts for the findings that began together with an update or restart; merged into TEXT.
 Object.assign(TEXT.de, {
   corrAfter: "Zeitlich zusammen mit: {what} ({when})", corrTile: "Nach Update neu", corrTileSub: "begannen zusammen mit einem Update", corrTitle: "Nach Updates und Neustarts",
-  sumGroupAll: "Gesamt", sumGroupUrgent: "Dringend", sumGroupTidy: "Aufräumen", corrShow: "{n} Befunde anzeigen",
+  sumGroupAll: "Gesamt", sumGroupUrgent: "Störungen", sumGroupTidy: "Aufräumen", sumGroupCount: "{group} · {n}", corrShow: "{n} Befunde anzeigen",
   corrIncidents: "{n} Vorfälle", corrAlsoLabel: "Zusammen mit",
   corrHint: "Was nach einem Update oder Neustart begann oder nicht mehr läuft. Updates kurz nacheinander und der Neustart dabei sind ein Vorfall; ein Befund kann zu mehreren gehören. Das ist ein zeitlicher Zusammenhang, keine Ursache.",
   corr_ha_version: "Home-Assistant-Update {from} → {to}", corr_os_version: "Betriebssystem-Update {from} → {to}", corr_supervisor_version: "Supervisor-Update {from} → {to}", corr_entry_version: "Update von {domain} {from} → {to}", corr_start: "Neustart von Home Assistant", corr_plan: "Plan ausgeführt", corr_purge: "Statistiken gelöscht", corrCount: "{n} Befunde", corrReason: "{n}× {what}", corrSpan: "Begannen zwischen {first} und {last}.", corrMore: "{n} weitere sind hier nicht aufgeführt.",
 });
 Object.assign(TEXT.en, {
   corrAfter: "At about the same time as: {what} ({when})", corrTile: "New after update", corrTileSub: "began together with an update", corrTitle: "After updates and restarts",
-  sumGroupAll: "Total", sumGroupUrgent: "Urgent", sumGroupTidy: "Tidying up", corrShow: "Show {n} findings",
+  sumGroupAll: "Total", sumGroupUrgent: "Faults", sumGroupTidy: "Tidying up", sumGroupCount: "{group} · {n}", corrShow: "Show {n} findings",
   corrIncidents: "{n} incidents", corrAlsoLabel: "Together with",
   corrHint: "What began or stopped working after an update or restart. Updates shortly after one another and the restart beside them are one incident; a finding can belong to several. This is a link in time, not a cause.",
   corr_ha_version: "Home Assistant update {from} → {to}", corr_os_version: "Operating system update {from} → {to}", corr_supervisor_version: "Supervisor update {from} → {to}", corr_entry_version: "Update of {domain} {from} → {to}", corr_start: "Home Assistant restart", corr_plan: "Cleanup plan run", corr_purge: "Statistics deleted", corrCount: "{n} findings", corrReason: "{n}× {what}", corrSpan: "Began between {first} and {last}.", corrMore: "{n} more are not listed here.",
 });
 
 Object.assign(TEXT.de, {
-  incObs: "Beobachtung · Vergleich mit dem Scan vor dem Neustart", incFindings: "Befunde, die dabei begannen · {n}", incLeft: "noch {hours} Std.", incNoFindings: "keine Befunde", corrStrip: "{n} Befunde begannen zusammen mit einem Update", corrFilterOn: "Nur diese zeigen", corrFilterOff: "Filter aufheben", endWatchTitle: "Beobachtung beenden?", endWatchText: "Die Beobachtung wird jetzt mit den bisherigen Messungen ausgewertet und läuft nicht weiter. Für dieses Update finden keine zusätzlichen Scans mehr statt.",
+  incObs: "Beobachtung · Vergleich mit dem Scan vor dem Neustart", incFindings: "Befunde, die dabei begannen · {n}", incLeft: "noch {hours} Std.", incColWhat: "Ereignis", incColAt: "Zeitpunkt", incColFindings: "Befunde", incColWatch: "Beobachtung", incOpen: "Details zeigen", incClose: "Details ausblenden", corrShowN: "{n} Befunde in der Liste zeigen", corrFilterOne: "{what} ({n})", corrStrip: "{n} Befunde begannen zusammen mit einem Update", corrFilterOn: "Nur diese zeigen", corrFilterOff: "Filter aufheben", endWatchTitle: "Beobachtung beenden?", endWatchText: "Die Beobachtung wird jetzt mit den bisherigen Messungen ausgewertet und läuft nicht weiter. Für dieses Update finden keine zusätzlichen Scans mehr statt.",
   viewCount: "{n} in dieser Ansicht", foldAll: "Alle aufklappen", foldNone: "Alle zuklappen", foldGroupOpen: "Unterobjekte von {name} aufklappen", foldGroupClose: "Unterobjekte von {name} zuklappen",
   openEntity: "Entität öffnen", helpOpen: "Was die Zahlen auf dieser Seite bedeuten", helpClose: "Schließen", helpTitle: "Was du hier siehst",
   helpFindingT: "Befund", helpFinding: "Etwas ist jetzt auffällig, zum Beispiel ein ausgefallenes Gerät, ein Duplikat oder eine fehlende Referenz. Jedes Objekt zählt je Regel einmal.",
@@ -3105,7 +3352,7 @@ Object.assign(TEXT.de, {
 });
 
 Object.assign(TEXT.en, {
-  incObs: "Watch · comparison with the scan before the restart", incFindings: "Findings that began with it · {n}", incLeft: "{hours} h left", incNoFindings: "no findings", corrStrip: "{n} findings began together with an update", corrFilterOn: "Show only these", corrFilterOff: "Clear filter", endWatchTitle: "End the watch?", endWatchText: "The watch is judged now with what it has measured so far and does not go on. No more extra scans follow for this update.",
+  incObs: "Watch · comparison with the scan before the restart", incFindings: "Findings that began with it · {n}", incLeft: "{hours} h left", incColWhat: "Event", incColAt: "When", incColFindings: "Findings", incColWatch: "Watch", incOpen: "Show details", incClose: "Hide details", corrShowN: "Show {n} findings in the list", corrFilterOne: "{what} ({n})", corrStrip: "{n} findings began together with an update", corrFilterOn: "Show only these", corrFilterOff: "Clear filter", endWatchTitle: "End the watch?", endWatchText: "The watch is judged now with what it has measured so far and does not go on. No more extra scans follow for this update.",
   viewCount: "{n} in this view", foldAll: "Open all", foldNone: "Close all", foldGroupOpen: "Expand items under {name}", foldGroupClose: "Collapse items under {name}",
   openEntity: "Open entity", helpOpen: "What the numbers on this page mean", helpClose: "Close", helpTitle: "What you see here",
   helpFindingT: "Finding", helpFinding: "Something is conspicuous right now, for example a failed device, a duplicate or a missing reference. Each object counts once per rule.",
@@ -3194,7 +3441,7 @@ class ChangesMixin {
     const lines = [
       `# ${this.t("weeklyTitle")}`, "",
       `${this.t("comparedWith")} ${this.formatDate(c.baseline_at)} → ${this.formatDate(this.data.meta.scanned_at)}`, "",
-      `- ${this.t("health")}: ${h.percent} %`,
+      `- ${this.t("health")}: ${this.t("pointsOf100", { n: h.percent })}`,
       ...[["statusChanges", c.status_changes], ["newFindings", c.new_findings], ["resolvedFindings", c.resolved_findings], ["endedFindings", c.ended_findings || { total: 0 }], ["newObjects", c.new_objects], ["removedObjects", c.removed_objects]].map(([label, part]) => `- ${this.t(label)}: ${part.total}`), "",
       ...list20(this.t("newFindings"), c.new_findings, f => `- ${this.findingTitle(f)}: ${name({ name: this.findObject(this.findingKey(f))?.name, object_id: f.object_id })}`),
       ...list20(this.t("resolvedFindings"), c.resolved_findings, f => `- ${this.findingTitle(f)}: ${f.object_id}`),
@@ -3259,7 +3506,7 @@ class ChangesMixin {
       const shown = items.filter(matches);
       if (items.length && !shown.length) return `<div class="emptymsg">${this.t("changesFiltered", { n: items.length })}</div>`;
       this.lvState(`changes-${id}`, sort, "asc");
-      return this.objectTable(`changes-${id}`, shown.map(toRow), { bar: false });
+      return this.objectTable(`changes-${id}`, shown.map(toRow), { bar: false, menu: true, stripe: true });
     };
     const objRow = (type, id, over) => {
       const key = `${type}:${id}`, obj = this.findObject(key);
@@ -3339,7 +3586,11 @@ class SettingsMixin {
     const v = m.vacation, rules = this.exc?.rules ? this.exc.rules.length : m.exception_rules || 0;
     const pills = [{ text: this.t(rules === 1 ? "setRuleOne" : "setRulesCount", { n: rules }) }, { text: hidden ? this.t("setHiddenCount", { n: hidden }) : this.t("setNoneHidden") }];
     pills.push(v ? { text: this.t(v.active ? "setVacationOn" : "setVacationOff"), tone: v.active ? "warn" : "mute" } : { text: this.t("setVacationNone"), tone: "warn" });
-    return pills;
+    // What wants a look again: marks whose review date passed, findings whose status ran out.
+    const marksDue = (this.data?.objects || []).filter(o => o.mark_due).length, statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length;
+    if (marksDue) pills.unshift({ text: this.t("decReviewDue", { n: marksDue }), tone: "warn" });
+    if (statusDue) pills.unshift({ text: this.t("decDue", { n: statusDue }), tone: "warn" });
+    return pills.slice(0, 3); // more do not fit the tile; what is due comes first
   }
 
   // One line with what runs and how fresh the data is, plus the one button for support questions.
@@ -3362,7 +3613,7 @@ class SettingsMixin {
     const modes = [["auto", "modeAuto", "mdi:theme-light-dark"], ["light", "modeLight", "mdi:white-balance-sunny"], ["dark", "modeDark", "mdi:weather-night"]].map(([id, key, icon]) => tile("mode", id, this.t(key), `<ha-icon icon="${icon}"></ha-icon>`)).join("");
     const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("setLanguage")}</h2><p>${this.t("setLanguageHint")}</p></div></div>
-      ${row(this.t("setLanguage"), "", this.segment("language", [["auto", this.t("langAuto")], ...Object.keys(TEXT).map(lang => [lang, ({ de: "Deutsch", en: "English", sk: "Slovenčina", ru: "Русский" }[lang] || new Intl.DisplayNames([lang], { type: "language" }).of(lang))])]))}
+      ${row(this.t("setLanguage"), "", this.segment("language", [["auto", this.t("langAuto")], ...Object.keys(TEXT).map(lang => [lang, ({ de: "Deutsch", en: "English", sk: "Slovenčina" }[lang] || new Intl.DisplayNames([lang], { type: "language" }).of(lang))])]))}
       <div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles schemetiles">${schemes}</div>
       <div class="panelhead"><div><h2>${this.t("colorMode")}</h2><p>${this.t("modeHint")}</p></div></div><div class="tiles">${modes}</div></section>`;
   }
@@ -3382,7 +3633,7 @@ class SettingsMixin {
     const select = (key, options) => `<select data-pref-select="${key}" aria-label="${this.esc(this.t(key === "startView" ? "startView" : "pageSizeSetting"))}">${options.map(([v, l]) => `<option value="${v}" ${String(p[key]) === String(v) ? "selected" : ""}>${l}</option>`).join("")}</select>`;
     return `<section class="panel"><div class="panelhead"><h2>${this.t("behavior")}</h2></div>
       ${row(this.t("startView"), select("startView", START_VIEWS.map(v => [v, this.t(v)])))}
-      ${row(this.t("pageSizeSetting"), select("pageSize", [20, 50, 100].map(n => [n, n])))}
+      ${row(this.t("pageSizeSetting"), select("pageSize", PAGE_SIZES.map(n => [n, n])))}
       <div class="setrow quietreset"><small>${this.t("prefsNote")}</small><button class="btn quiet" data-pref-reset>${this.t("resetPrefs")}</button></div></section>`;
   }
 
@@ -3403,26 +3654,114 @@ class SettingsMixin {
       <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save disabled>${this.t("saveOptions")}</button></div></section>`;
   }
 
-  hiddenCard() {
-    const hidden = (this.data?.findings || []).filter(f => f.ignored);
-    const by = f => (f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? f.ignored_by : "manual");
+  // The numbers of the tab, one per card: findings with a status, marks, rules and labelled objects; each jumps to its card.
+  decisionsBar() {
+    const findings = this.data?.findings || [], objects = this.data?.objects || [];
+    const status = [...findings.filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), ...this.restingDecisions()], statusDue = status.filter(f => !f.ignored).length;
+    const marks = objects.filter(o => o.mark), marksDue = marks.filter(o => o.mark_due).length;
+    const rules = this.exc?.rules?.length ?? this.data?.meta?.exception_rules ?? 0, byRule = findings.filter(f => f.ignored_by === "rule").length;
+    const labelled = this.invObjects().filter(o => (o.labels || []).some(l => HK_LABELS.includes(l))).length;
+    const kpi = (sec, label, n, extra, warn) => `<button type="button" class="kpi" data-sec-go="${sec}"><small>${this.t(label)}</small><strong>${this.formatNumber(n)}</strong>${extra ? `<small class="${warn ? "warntext" : ""}">${this.esc(extra)}</small>` : ""}</button>`;
+    return `<div class="kpis decbar">${kpi("status", "decStatusKpi", status.length, statusDue ? this.t("decDue", { n: this.formatNumber(statusDue) }) : "", true)}${kpi("marks", "decMarksKpi", marks.length, marksDue ? this.t("decReviewDue", { n: this.formatNumber(marksDue) }) : "", true)}${kpi("rules", "decRulesKpi", rules, byRule ? this.t("decRuleHides", { n: this.formatNumber(byRule) }) : "")}${kpi("labels", "decLabelsKpi", labelled, "housekeeper_*")}</div>`;
+  }
+
+  // The decisions about findings that are away right now: they rest and hold again when the finding comes back. Each one
+  // in the shape of a finding, from its key (rule|object|affected), with what was decided and when it was last seen.
+  restingDecisions() {
+    return (this.data?.resting_decisions || []).map(d => {
+      const [rule_id, object_id = "", affected_object = ""] = d.key.split("|");
+      return { key: d.key, rule_id, object_id, affected_object, ignored: true, ignored_by: "user", resting: true, seen: d.seen, ignore_info: { kind: d.kind, reason: d.reason, until: d.until } };
+    });
+  }
+
+  // What a decision does right now: hides its finding, is due again, rests (finding away), has rested a month (still
+  // needed?) or belongs to an object that is gone.
+  decisionNow(f) {
+    if (!f.resting) return f.ignored ? "hides" : "due";
+    if (!this.findObject(this.findingKey(f))) return "gone";
+    const days = f.seen ? Math.floor((Date.now() - Date.parse(f.seen)) / 864e5) : null;
+    return days !== null && days >= MARK_QUIET_DAYS ? "quiet" : "rests";
+  }
+
+  // The findings with a status of their own, as a list: the ones whose time ran out (due) first, then the ones that hide
+  // their finding, then the resting ones under a head of their own. Marks, rules and labels have their own cards.
+  statusCard() {
+    const resting = this.restingDecisions();
+    const list = [...(this.data?.findings || []).filter(f => (f.ignored && f.ignored_by === "user") || (f.resurfaced && !f.ignored)), ...resting];
+    const sel = (this.decSel ||= new Set());
+    for (const key of [...sel]) if (!list.some(f => f.key === key)) sel.delete(key);
+    const state = f => (f.ignored ? this.decidedState(f) : "due"), now = f => this.decisionNow(f);
     const objectName = f => this.findObject(this.findingKey(f))?.name || f.object_id;
-    const decision = f => (f.ignore_info ? this.decisionLabel(f) : "") + (f.mark ? ` ${this.markLine(f.mark)}` : "") + (f.ignored_by === "rule" ? this.findingRuleLine(f) : "");
-    const action = f => (by(f) === "manual" ? `<button class="btn quiet" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : `<span class="pill mute">${this.t(f.ignored_by === "mark" ? "mark_" + f.mark.kind : f.ignored_by === "rule" ? "hidRuleLink" : "ignoredByLabel")}</span>`);
-    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }];
-    const filters = [{ name: "by", all: this.t("hidAllWays"), options: [["manual", this.t("hidByManual")], ["label", this.t("hidByLabel")], ["mark", this.t("hidByMark")], ["rule", this.t("hidByRule")]] }];
-    const st = this.lvState("hidden", "name", "asc");
-    this.setExporter("hidden", "hidden-findings", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("hidColDecision")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), decision(f).trim()]));
-    const bar = hidden.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("hidden", { sorts, filters }) : "";
-    const refined = this.refine("hidden", hidden, { text: f => [objectName(f), f.object_id, this.findingTitle(f), decision(f)].join(" "), filters: { by: (f, v) => by(f) === v }, sorts, tie: f => f.key });
-    const pg = this.paginate("hidden", refined);
+    const until = f => (f.ignore_info?.until ? this.t("decideUntil", { date: this.formatDate(f.ignore_info.until) }) : f.ignored ? this.t("decideForever") : "");
+    const quietDays = f => Math.floor((Date.now() - Date.parse(f.seen)) / 864e5);
+    const nowText = f => ({ hides: this.t("decNowHides"), due: this.t("decNowDue"), rests: this.t("decNowRests"), quiet: this.t("decNowQuiet", { n: this.formatNumber(quietDays(f)) }), gone: this.t("decNowGone") })[now(f)];
+    const nowTone = { hides: "mute", due: "warn", rests: "mute", quiet: "warn", gone: "warn" };
+    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: objectName }, { key: "finding", label: "hidColFinding", dir: "asc", get: f => this.findingTitle(f) }, { key: "until", label: "decColUntil", dir: "asc", get: f => f.ignore_info?.until || "9999" }];
+    const filters = [
+      { name: "state", all: this.t("decAllStates"), options: ["known", "snoozed", "hidden", "due"].map(s => [s, this.t(s === "due" ? "dueLabel" : `state_${s}`)]) },
+      { name: "now", all: this.t("decNowAll"), options: ["hides", "due", "rests", "quiet", "gone"].filter(n => list.some(f => now(f) === n)).map(n => [n, this.t(`decNowFilter_${n}`)]) },
+    ];
+    const st = this.lvState("decided", "name", "asc");
+    this.setExporter("decided", "finding-status", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("decColStatus"), this.t("decideReason"), this.t("decColUntil"), this.t("decColNow")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`), f.ignore_info?.reason || "", until(f), nowText(f)]));
+    const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("decided", { sorts, filters }) : "";
+    const sorted = this.refine("decided", this.selOnly?.decided ? list.filter(f => sel.has(f.key)) : list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v, now: (f, v) => now(f) === v }, sorts, tie: f => f.key });
+    const refined = [...sorted.filter(f => !f.ignored), ...sorted.filter(f => f.ignored && !f.resting), ...sorted.filter(f => f.resting)];
+    const pg = this.paginate("decided", refined);
     st.shown = refined.length;
-    const row = f => {
-      const key = this.findingKey(f), object = this.findObject(key), why = decision(f).trim();
-      return `<div class="row" ${object ? `data-object="${this.esc(key)}" tabindex="0" role="button" aria-label="${this.esc(objectName(f))}"` : ""} title="${this.esc(f.object_id)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="row-text"><strong>${this.esc(objectName(f))}</strong><small>${this.esc(this.findingTitle(f))}${why ? ` · ${this.esc(why)}` : ""}</small></span>${action(f)}</div>`;
+    const tone = { known: "ok", snoozed: "warn", hidden: "mute", due: "warn" };
+    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    const menu = f => {
+      const key = this.findingKey(f), object = this.findObject(key);
+      const open = object ? item("mdi:open-in-new", "decOpenObject", `data-object="${this.esc(key)}"`) : "";
+      const change = item(FSEL_ICONS.status, f.ignored ? "fselStatusChange" : "fselStatus", `data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "keep"}"`);
+      const back = f.ignored && !f.resting ? item("mdi:eye-outline", "showFinding", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`) : item("mdi:delete-outline", "decRemove", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`);
+      return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${open}${change}<hr class="menusep">${back}</div></details>`;
     };
-    const table = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${hidden.length ? this.noMatches("hidden") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("hiddenNone")}`}</div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("hiddenFindings")} (${hidden.length})</h2><p>${this.t("hiddenHint")}</p></div></div>${bar}${table}${pg.footer}</section>`;
+    const visible = pg.rows.map(f => f.key);
+    const columns = [
+      { key: "sel", label: "selectPage", narrow: true, sortable: false,
+        allBox: () => { const n = visible.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-dec-page ${n && n === visible.length ? "checked" : ""} ${n && n < visible.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+        cell: f => `<input type="checkbox" class="selbox" data-dec-sel="${this.esc(f.key)}" ${sel.has(f.key) ? "checked" : ""} aria-label="${this.esc(objectName(f))}">` },
+      { key: "name", label: "hidColObject", sortKeys: ["finding"], cell: f => { const key = this.findingKey(f), object = this.findObject(key); return `<div class="statcell">${this.tile(object?.object_type || key.split(":")[0], f.resting ? "mute" : this.tone(f.classification))}<div>${object ? `<button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(objectName(f))}</button>` : `<code>${this.esc(f.object_id)}</code>`}<small class="muted u-block">${this.esc(this.findingTitle(f))}</small></div></div>`; } },
+      { key: "until", label: "decColStatus", cell: f => `<span class="pill ${tone[state(f)]}">${this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`)}</span>${until(f) ? `<small class="muted u-block">${this.esc(until(f))}</small>` : ""}` },
+      { key: "reason", label: "decideReason", sortable: false, cell: f => (f.ignore_info?.reason ? this.esc(f.ignore_info.reason) : "–") },
+      { key: "now", label: "decColNow", sortable: false, cell: f => `<span class="pill ${nowTone[now(f)]}">${this.esc(nowText(f))}</span>${f.resting && f.seen && now(f) !== "gone" ? `<small class="muted u-block">${this.esc(this.t("decLastSeen", { when: this.formatDate(f.seen) }))}</small>` : ""}` },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
+    ];
+    const restN = refined.filter(f => f.resting).length;
+    let table = refined.length ? this.listTable("decided", columns, pg.rows, { cls: "objs", rowAttrs: f => `class="static${f.resting ? " restrow" : ""}${now(f) === "due" ? " duerow" : ""}"${f.resting ? ' data-rest="1"' : ""}`, after: f => (this.decide?.key === f.key ? `<tr class="static"><td colspan="${columns.length}"><div class="pad">${this.decideForm(f)}</div></td></tr>` : "") }) : "";
+    // The resting ones stand under a head of their own: they do nothing right now.
+    table = table.replace(/<tr class="static restrow/, `<tr class="static grprow"><td colspan="${columns.length}">${this.t("decRestHead", { n: this.formatNumber(restN) })}</td></tr>$&`);
+    const n = sel.size;
+    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("decided", n, "data-dec-clear")}<span class="toolgap"></span><button type="button" class="btn" data-dec-remove ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("decRemoveN", { n: this.formatNumber(n) })}</button></div>` : "";
+    const body = refined.length ? table : `<div class="emptymsg">${list.length ? this.noMatches("decided") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("decStatusNone")}`}</div>`;
+    return `<section class="panel" id="hk-sec-status"><div class="panelhead"><div><h2>${this.t("decStatusTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decStatusHint")}</p></div></div>${bar}${tools}${body}${pg.footer}</section>`;
+  }
+
+  // Every mark, also one that hides nothing right now: what it says, when it applies and what it does at the moment.
+  marksCard() {
+    const list = (this.data?.objects || []).filter(o => o.mark);
+    const hides = new Map();
+    for (const f of this.data?.findings || []) if (f.ignored_by === "mark") { const owner = this.markOwner(f); if (owner) hides.set(owner, (hides.get(owner) || 0) + 1); }
+    const keyOf = o => `${o.object_type}:${o.object_id}`;
+    // A mark on an object that has run without a gap for a long time asks whether it is still needed.
+    const quiet = o => (!o.mark_due && !hides.get(keyOf(o)) ? this.markQuietDays(o) : null), isQuiet = o => quiet(o) !== null;
+    const effect = o => (o.mark_due ? this.t("markEffDue") : o.mark.kind === "keep" ? this.t("markEffKeep") : hides.get(keyOf(o)) ? this.t("markEffHides", { n: this.formatNumber(hides.get(keyOf(o))) }) : isQuiet(o) ? this.t("markEffQuiet", { n: this.formatNumber(quiet(o)) }) : this.t("markEffNone"));
+    const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: o => o.name || o.object_id }, { key: "kind", label: "markKind", dir: "asc", get: o => this.t(`mark_${o.mark.kind}`) }, { key: "review", label: "markReview", dir: "asc", get: o => o.mark.until || "9999" }];
+    const filters = [{ name: "kind", all: this.t("decAllMarks"), options: [["due", this.t("decReviewDueShort")], ...(list.some(isQuiet) ? [["quiet", this.t("markQuietFilter")]] : []), ...["expected_offline", "seasonal", "spare", "keep", "replaced"].filter(k => list.some(o => o.mark.kind === k)).map(k => [k, this.t(`mark_${k}`)])] }];
+    const st = this.lvState("marks", "name", "asc");
+    this.setExporter("marks", "marks", [this.t("hidColObject"), "ID", this.t("type"), this.t("markKind"), this.t("markReason"), this.t("markReview"), this.t("decColEffect")], () => refined.map(o => [o.name || o.object_id, o.object_id, this.t(o.object_type), this.t(`mark_${o.mark.kind}`), o.mark.reason || "", o.mark.until ? this.formatDate(o.mark.until) : "", effect(o)]));
+    const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("marks", { sorts, filters }) : "";
+    const sorted = this.refine("marks", list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
+    const refined = [...sorted.filter(o => o.mark_due), ...sorted.filter(o => !o.mark_due && isQuiet(o)), ...sorted.filter(o => !o.mark_due && !isQuiet(o))];
+    const pg = this.paginate("marks", refined);
+    st.shown = refined.length;
+    const row = o => {
+      const key = keyOf(o);
+      return `<div class="row${o.mark_due ? " duerow" : ""}">${this.tile(o.object_type, o.mark_due ? "warn" : "mute")}<span class="row-text"><button type="button" class="link strong" data-object="${this.esc(key)}">${this.esc(o.name || o.object_id)}</button><small>${this.esc(this.t(o.object_type))} · ${this.esc(this.markLine(o.mark))}</small></span><span class="pill ${o.mark_due || isQuiet(o) ? "warn" : "mute"}">${this.esc(effect(o))}</span>${this.rowMenuHtml([[FSEL_ICONS.mark, "markChange", `data-watch-mark="${this.esc(key)}"`], ["mdi:bookmark-remove-outline", "markClear", `data-mark-clear="${this.esc(key)}"`]])}</div>`;
+    };
+    const body = refined.length ? pg.rows.map(row).join("") : `<div class="emptymsg">${list.length ? this.noMatches("marks") : `<ha-icon icon="mdi:bookmark-outline"></ha-icon>${this.t("decMarksNone")}`}</div>`;
+    return `<section class="panel" id="hk-sec-marks"><div class="panelhead"><div><h2>${this.t("decMarksTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decMarksHint")}</p></div></div>${bar}${body}${pg.footer}</section>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
@@ -3537,7 +3876,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => `${this.excCard()}${this.hiddenCard()}`, scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), exceptions: () => this.excCard(), scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
@@ -3616,7 +3955,7 @@ class CleanupMixin {
 
   // The tiles of the Cleanup view: one job each, with the number of things to do; the chosen one is marked.
   cleanupTiles(tabs, open) {
-    return this.navTiles("cleanup", tabs.map(t => ({ ...t, tone: t.count ? t.tone : "mute" })), open, this.t("cleanup"), true);
+    return this.navTiles("cleanup", tabs, open, this.t("cleanup"), true);
   }
 
   // Devices without a working entity: nothing there to lose by quarantining them. Marked, labelled or excepted ones stay out.
@@ -4278,7 +4617,7 @@ class CleanupMixin {
       { key: "since", label: "recurringColSince", dir: "desc", get: r => r.since, cell: r => this.esc(this.formatDate(r.since)) },
       { key: "domains", label: "recurringColDomains", dir: "asc", get: r => r.domains, cell: r => this.esc(r.domains || "–") },
     ];
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("recurringTitle")} (${entries.length})</h2><p>${this.t("recurringHint")}</p></div></div>${this.objectTable("recurring", rows, { extras })}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("recurringTitle")} (${entries.length})</h2><p>${this.t("recurringHint")}</p></div></div>${this.objectTable("recurring", rows, { extras, menu: true, stripe: true })}</div>`;
   }
 
   cleanupView() {
@@ -4289,19 +4628,16 @@ class CleanupMixin {
     const unusedCount = this.unreferencedRows().length, statsCount = (this.data.orphaned_statistics || []).length;
     const count = kind => this.cleanupCandidates(kind).length;
     const unusedRows = this.unreferencedRows();
-    const topDomain = (() => { const counts = new Map(); unusedRows.forEach(o => { const d = o.object_id.split(".")[0]; counts.set(d, (counts.get(d) || 0) + 1); }); return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]; })();
-    const unusedFacts = [
-      this.data.meta.recorder_available && unusedRows.length ? { text: this.t("unrefFactStats", { n: this.formatNumber(unusedRows.filter(o => o.has_statistics).length) }), tone: "mute" } : null,
-      topDomain ? { text: this.t("unrefFactDomain", { name: topDomain[0] }), tone: "mute" } : null,
-    ].filter(Boolean);
-    const nothing = n => (n ? [] : [{ text: this.t("cleanupNothing"), tone: "ok" }]);
+    const unusedExtra = this.data.meta.recorder_available && unusedRows.length ? [{ text: this.t("unrefFactStats", { n: this.formatNumber(unusedRows.filter(o => o.has_statistics).length) }), tone: "mute" }] : [];
+    // One status pill per tile, as on Maintenance: how many with their noun, or "Nothing to do" in green.
+    const status = (n, unit, tone) => (n ? { pill: this.tCount(unit, n), tone } : { pill: this.t("cleanupNothing"), tone: "ok" });
     // The tiles are the navigation: each one is one job, with how much there is to do.
     const tabs = [
-      { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), count: count("disable_entity"), facts: nothing(count("disable_entity")), tone: "warn" },
-      { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), count: count("disable_device"), facts: nothing(count("disable_device")), tone: "warn" },
-      { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), count: held.length, facts: [], pill: heldReady ? this.t("cleanupReadyCount", { count: heldReady }) : "", tone: heldReady ? "ok" : "mute" },
-      { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), count: statsCount, facts: [], tone: "mute" },
-      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), count: unusedCount, facts: unusedFacts, tone: "mute" },
+      { id: "entities", icon: "mdi:shape-outline", label: this.t("cleanupTabEntities"), hint: this.t("cleanupTileEntitiesHint"), ...status(count("disable_entity"), "cuEntities", "warn") },
+      { id: "devices", icon: "mdi:devices", label: this.t("cleanupTabDevices"), hint: this.t("cleanupTileDevicesHint"), ...status(count("disable_device"), "cuDevices", "warn") },
+      { id: "quarantine", icon: "mdi:archive-clock-outline", label: this.t("cleanupTabQuarantine"), hint: this.t("cleanupTileQuarantineHint", { days: limit }), ...(held.length ? { pill: heldReady ? this.t("cuHeldReady", { n: this.formatNumber(held.length), ready: this.formatNumber(heldReady) }) : this.tCount("cuHeld", held.length), tone: heldReady ? "ok" : "mute" } : status(0)) },
+      { id: "stats", icon: "mdi:database-remove-outline", label: this.t("orphanStats"), hint: this.t("cleanupTileStatsHint"), ...status(statsCount, "cuStats", "mute") },
+      { id: "unused", icon: "mdi:link-variant-off", label: this.t("unreferenced"), hint: this.t("cleanupTileUnusedHint"), ...status(unusedCount, "cuUnused", "mute"), extra: unusedExtra },
     ];
     const open = this.viewTabOf("cleanup", tabs, "entities");
     const tiles = this.cleanupTiles(tabs, open);
@@ -4350,16 +4686,18 @@ class CleanupMixin {
       { key: "name", label: "sortName", dir: "asc", sortKeys: ["id"],
         headSuffix: () => `<button type="button" class="thbtn th-alt" data-lsort="cleanup|id|asc">${this.t("sortId")}${this.lv.cleanup.sort === "id" ? ` <span aria-hidden="true">${this.lv.cleanup.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`,
         cell: r => `<div class="statcell">${this.tile(r.item.object_type, "")}<div>${this.nameCell(r.item.name, r.item.object_type === "device" ? [r.item.manufacturer, r.item.model].filter(Boolean).join(" ") || r.item.object_id : r.item.object_id)}</div></div>` },
-      { key: "status", label: "sortStatus", dir: "asc", cell: badge },
-      { key: "since", label: "sortSince", dir: "desc", cell: r => { const v = r.quarantine ? r.quarantine.since : r.finding?.first_detected_at; return v ? this.esc(this.formatDate(v)) : "–"; } },
+      // Entities and devices show the reason of their finding, as the findings page names it; the quarantine its state.
+      { key: "status", label: open === "quarantine" ? "sortStatus" : "cleanupColReason", dir: "asc", cell: badge },
+      // Since when, as on the findings page: how long ago, the date below. In the quarantine it is the day it went in.
+      { key: "since", label: open === "quarantine" ? "cleanupColHeld" : "sortSince", dir: "desc", cell: r => { const v = r.quarantine ? r.quarantine.since : r.finding?.first_detected_at; return v ? this.ageCell(v) : "–"; } },
       ...(all.some(r => r.finding) ? [{ key: "certainty", label: "sortCertainty", dir: "desc", cell: r => (r.finding?.confidence == null ? "–" : `${Math.round(r.finding.confidence * 100)} %`) }] : []),
       ...(recorderCol ? [{ key: "recorder", label: "cleanupColRecorder", sortable: false, cell: r => this.recorderOwn(r.item) || "–" }] : []),
-      ...(open === "quarantine" ? [{ key: "release", label: "releaseAction", sortable: false, cell: r => (r.quarantine ? this.releaseControl(r.quarantine) : "") }] : []),
+      ...(open === "quarantine" ? [{ key: "release", label: "cleanupColAction", sortable: false, cell: r => (r.quarantine ? this.releaseControl(r.quarantine) : "") }] : []),
     ];
     const table = shownList.length ? this.listTable("cleanup", columns, pg.rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(`${r.item.object_type}:${r.item.object_id}`)}" tabindex="0" role="button" aria-label="${this.esc(r.item.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("cleanup") : this.t("cleanupNone")}</div>`;
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
-      <div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("cleanup", n)}<span class="selcount" aria-live="polite">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
+      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("cleanup", n, "data-sel-clear")}<span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
       <button class="btn ${REMOVAL_KINDS.includes(this.cleanupKind) ? "dangersoft" : "primary"}" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t(REMOVAL_KINDS.includes(this.cleanupKind) ? "prepareDelete" : "createPlan", { count: n })}</button>${this.viewCount(shownList.length)}</div>
       ${bar}${table}${pg.footer}</div>`;
     const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
@@ -4478,7 +4816,7 @@ class CleanupMixin {
       { key: "status", label: "sortStatus", dir: "asc", cell: plan => `<span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${statusOf(plan)}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}` },
       ...(this.isDenseList("journal") ? [] : [{ key: "total", label: "journalColActions", dir: "desc", cell: plan => `<span class="jsum">${this.esc(summary(plan))}</span>` }]),
       { key: "follow", label: "journalColFollow", sortable: false, cell: plan => (fuState(plan) ? `<span class="pill ${this.followupTone(fuState(plan))}">${this.t(`fu_${fuState(plan)}`)}</span>` : "–") },
-      { key: "act", label: "journalColAct", sortable: false, cell: plan => `<span class="jbtns">${this.planStale(plan) ? `<button type="button" class="btn small" data-plan-renew="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : ""}${plan.executed || plan.run ? "" : this.deleteButton(`data-plan-delete="${this.esc(plan.plan_id)}"`, this.t("deletePlan"))}</span>` },
+      { key: "act", label: "journalColAct", sortable: false, cell: plan => `<span class="jbtns">${this.planStale(plan) ? `<button type="button" class="btn small" data-plan-renew="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : ""}${plan.executed || plan.run ? "" : this.rowMenuHtml([["mdi:delete-outline", "deletePlan", `data-plan-delete="${this.esc(plan.plan_id)}"`]])}</span>` },
     ];
     const table = plans.length ? this.sysList("journal", plans, {
       sort: "date", dir: "desc", columns, cls: "journal", empty: "journalEmpty",
@@ -4624,7 +4962,7 @@ class InventoryMixin {
       const { natural, ids } = this.collators();
       const reason = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? String(item.missing_reference_count) : "");
       const pick = item => sort === "status" ? item.status : sort === "type" ? item.object_type : sort === "since" ? item.status_since : sort === "version" ? item.integration_version : sort === "reason" ? reason(item) : sort === "entities" ? String(item.entity_count ?? "") : sort === "usedByCol" ? String(this.usedByCount(item) ?? "") : sort === "changedCol" ? (item.last_changed || "") : (item.name || item.object_id);
-      const rows = this.invObjects().filter(item => (!q || this.haystack(item).includes(q)) && (!type || (type === "helper" ? this.isHelper(item) : item.object_type === type))
+      const rows = this.invObjects().filter(item => (!q || this.haystack(item).includes(q)) && (!type || (type === "helper" ? this.isHelper(item) : type === RATED_TYPE ? HEALTH_TYPES.includes(item.object_type) : item.object_type === type))
         && (!status || item.status === status)
         && (!label || (item.labels || []).includes(label))
         && (!(type === "helper" && idle) || this.isIdleHelper(item, Number(idle)))
@@ -4709,7 +5047,7 @@ class InventoryMixin {
     ];
     if (!sorts.some(x => x.key === st.sort)) st.sort = "name";
     const filters = [
-      { name: "type", all: this.t("allTypes"), options: [["helper", this.t("helperKind")], ...types.map(x => [x, this.t(x)])] },
+      { name: "type", all: this.t("allTypes"), options: [[RATED_TYPE, this.t("ratedObjects")], ["helper", this.t("helperKind")], ...types.map(x => [x, this.t(x)])] },
       { name: "status", all: this.t("allStatus"), options: statuses.map(x => [x, this.statusLabel(x)]) },
       ...(labels.length ? [{ name: "label", all: this.t("allLabels"), options: labels }] : []),
       ...(integ ? [{ name: "origin", all: this.t("allOrigins"), options: [["core", this.t("originKindCore")], ["custom", this.t("originKindCustom")]] }] : []),
@@ -4725,8 +5063,9 @@ class InventoryMixin {
       { key: "reason", label: "reason", dir: "asc", cell: item => this.esc(reasonText(item) || "—") },
       { key: "since", label: "since", dir: "desc", cell: item => this.formatDate(item.status_since) },
       ...integCols.map(k => ({ key: k, label: k, dir: k === "version" ? "asc" : "desc", cell: item => this.esc(k === "usedByCol" ? (this.usedByCount(item) == null ? "—" : this.formatNumber(this.usedByCount(item))) : k === "changedCol" ? (item.last_changed ? this.formatDate(item.last_changed) : "—") : item.object_type !== "config_entry" ? "—" : k === "version" ? (item.integration_version || "—") : this.formatNumber(item.entity_count ?? 0)) })),
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(item) })) },
     ];
-    const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
+    const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"${this.tone(item.status) === "red" ? ' data-rowtone="red"' : ""}` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
     return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
   }
 
@@ -5023,8 +5362,10 @@ class UnusedMixin {
   batteryRows() {
     const rows = [];
     for (const o of this.data.objects) {
-      if (o.object_type !== "entity" || o.device_class !== "battery" || o.status !== "active" || this.batteryExcluded(o)) continue;
+      if (o.object_type !== "entity" || o.device_class !== "battery" || !["active", "unavailable"].includes(o.status) || this.batteryExcluded(o)) continue;
       const domain = o.object_id.split(".")[0];
+      // A battery that reports nothing is often an empty one: it stays in the list, without a level.
+      if (o.status === "unavailable") { if (["sensor", "binary_sensor"].includes(domain)) rows.push({ item: o, level: null, low: false, unavailable: true }); continue; }
       if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
       else if (domain === "sensor" && (!o.unit || o.unit === "%") && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
     }
@@ -5166,7 +5507,7 @@ class UnusedMixin {
       { key: "first", label: "utFirst", dir: "asc", cell: firstCell },
       { key: "last", label: "utLast", dir: "desc", cell: lastCell },
       { key: "rows", label: "utRows", dir: "desc", cell: rowsCell },
-      { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn">${this.t("inEnergy")}</span>` : "") },
+      { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn" title="${this.esc(this.t("inEnergyLocked"))}">${this.t("inEnergy")}</span>` : "") },
     ];
     const empty = this.data.meta.recorder_available ? (all.length ? this.noMatches("orphanstats") : this.t("noOrphanStats")) : this.t("noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
@@ -5174,8 +5515,10 @@ class UnusedMixin {
   }
 
   // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
+  // A statistic of the Energy dashboard cannot be picked: a greyed box that says why, so the rows stay in line.
   purgeBox(o) {
-    if (!this.data.meta.recorder_available || o.in_energy) return "";
+    if (!this.data.meta.recorder_available) return "";
+    if (o.in_energy) return `<input type="checkbox" class="selbox" disabled title="${this.esc(this.t("inEnergyLocked"))}" aria-label="${this.esc(`${o.statistic_id}: ${this.t("inEnergyLocked")}`)}">`;
     return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""} aria-label="${this.esc(o.statistic_id)}">`;
   }
 
@@ -5191,7 +5534,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = n > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar"><button class="btn quiet" data-purge-page>${this.t("selectPage")}</button><button class="btn quiet" data-purge-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button>${this.selOnlyButton("orphanstats", n)}<span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span><button class="btn dangersoft" data-purge-run ${n && !this.purgeBusy ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button>${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span><button class="btn dangersoft" data-purge-run ${n && !this.purgeBusy ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button>${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   async purgeRun() {
@@ -5253,6 +5596,7 @@ class UnusedMixin {
       { key: "reported", label: "utReported", dir: "desc", cell: o => this.ageCell(o.last_reported || o.last_updated) },
       { key: "since", label: "utSince", cell: o => this.ageCell(o.status_since) },
       { key: "stats", label: "utStats", dir: "desc", cell: o => (this.data.meta.recorder_available ? this.t(o.has_statistics ? "yes" : "no") : dash) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: o => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(o) })) },
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${table}${pg.footer}</div></div>`;
@@ -5287,15 +5631,18 @@ class UnusedMixin {
       { name: "type", all: this.t("btAllTypes"), options: types.map(x => [x, x]) },
       { name: "area", all: this.t("allAreas"), options: areas.map(a => [a, a]) },
     ] });
-    const list = this.refine("batteries", this.batteryFilter === "low" ? low : all, {
+    const gone = all.filter(r => r.unavailable);
+    const list = this.refine("batteries", this.batteryFilter === "low" ? low : this.batteryFilter === "unavailable" ? gone : all, {
       text: r => [this.batteryName(r.item).title, r.item.name, r.item.object_id, this.areaName(r.item), r.type].join(" "),
       filters: { area: (r, v) => this.areaName(r.item) === v, type: (r, v) => r.type === v, soon: (r, v) => (v === "soon" ? r.low || (r.days !== null && r.days <= 30) : !r.type) },
       sorts: this.batteryTableSorts(), tie: r => r.item.object_id,
     });
     const lowest = all.filter(r => !r.volt && r.level !== null && r.level !== undefined).sort((x, y) => x.level - y.level)[0];
     const chips = this.sumTiles([
-      { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: this.batteryFilter !== "low" },
+      // "All" clears the filter; it is not marked itself, only a filter that is on is (as on the findings page).
+      { label: this.t("batteryAll"), value: this.formatNumber(all.length), tone: "mute", attr: ["data-battery-filter", "all"], active: false },
       { label: this.t("batteryLow"), value: this.formatNumber(low.length), sub: this.t("batterySumLimit", { n: need }), tone: low.length ? "red" : "ok", attr: ["data-battery-filter", "low"], active: this.batteryFilter === "low" },
+      gone.length ? { label: this.t("batteryUnavailable"), value: this.formatNumber(gone.length), sub: this.t("batteryUnavailableSub"), tone: "warn", attr: ["data-battery-filter", "unavailable"], active: this.batteryFilter === "unavailable" } : null,
       lowest ? { label: this.t("batterySumLowest"), value: `${this.formatNumber(lowest.level)} %`, sub: this.esc([this.batteryName(lowest.item).title, this.areaName(lowest.item)].filter(Boolean).join(" · ")), tone: lowest.low ? "warn" : "mute", attr: ["data-object", this.objectKey(lowest.item)] } : null,
     ]);
     const unknown = this.batteryTrend?.unknown;
@@ -5305,7 +5652,7 @@ class UnusedMixin {
     this.ensureBatteryTrend();
     const bar2 = this.pageBar({ at: this.loadedAt("batteries"), loading: this.batteryTrendLoading, attr: "data-bt-refresh" });
     // One column: when which battery runs out (need and forecast together), the list, then the kinds that need a look.
-    return `<div class="stack">${bar2}${chips}${this.batteryNeed(all)}<div class="panel">${head}${this.filterNote(this.batteryFilter === "low" ? [this.t("batteryLow")] : [], 'data-battery-filter="all"')}${bar}${body}${notes}</div>${this.batteryCustomTypes()}${this.batteryKindCard()}</div>`;
+    return `<div class="stack">${bar2}${chips}${this.batteryNeed(all)}<div class="panel">${head}${this.filterNote(this.batteryFilter === "low" ? [this.t("batteryLow")] : this.batteryFilter === "unavailable" ? [this.t("batteryUnavailable")] : [], 'data-battery-filter="all"')}${bar}${body}${notes}</div>${this.batteryCustomTypes()}${this.batteryKindCard()}</div>`;
   }
 }
 
@@ -5396,13 +5743,15 @@ class DiagnosisMixin {
     } else if (item.object_type === "device") {
       const ids = item.config_entry_ids || [];
       ids.forEach(id => rows.push(this.integrationCheck(id).row));
-      const down = this.data.findings.some(f => f.rule_id === "device.down" && f.object_id === item.object_id && !f.ignored);
-      rows.push(down ? this.check(t("entities"), "red", t("devAllDown", { n: this.formatNumber(item.entity_count) }), t("unavailable"))
+      const downFinding = this.data.findings.find(f => f.rule_id === "device.down" && f.object_id === item.object_id && !f.ignored), down = !!downFinding;
+      // A device in standby: its entities lost their values (unknown) rather than being unavailable.
+      const standby = downFinding?.evidence?.[0]?.kind === "all_entities_without_value";
+      rows.push(down ? this.check(t("entities"), "red", t(standby ? "devAllNoValue" : "devAllDown", { n: this.formatNumber(item.entity_count) }), t(standby ? "noValue" : "unavailable"))
         : this.check(t("entities"), item.entity_count ? "ok" : "warn", this.formatNumber(item.entity_count), item.entity_count ? t("present") : t("empty")));
       const downSince = down ? this.data.findings.find(f => f.rule_id === "device.down" && f.object_id === item.object_id)?.first_detected_at : null;
       if (down) {
-        cause = t("cause_device_unavailable", { n: this.formatNumber(item.entity_count), span: downSince ? this.spanText(Math.max(0, (Date.now() - Date.parse(downSince)) / 3600000)) : "?" });
-        hint = t("hint_device_unavailable");
+        cause = t(standby ? "cause_device_novalue" : "cause_device_unavailable", { n: this.formatNumber(item.entity_count), span: downSince ? this.spanText(Math.max(0, (Date.now() - Date.parse(downSince)) / 3600000)) : "?" });
+        hint = t(standby ? "hint_device_novalue" : "hint_device_unavailable");
         tone = "red";
       } else cause = item.status === "disabled" ? t("cause_device_off") : item.status === "empty" ? t("cause_device_empty") : t("cause_device_active");
     } else if (item.object_type === "config_entry") {
@@ -5654,7 +6003,7 @@ class DiagnosisMixin {
     const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
     const key = this.objectKey(item);
     if (["automation", "script"].includes(item.object_type)) { this.ensureRuns(); this.ensureQuality(); }
-    if (item.object_type === "config_entry" || item.object_type === "integration") this.ensureReliability();
+    if (item.object_type === "config_entry" || item.object_type === "integration") { this.ensureReliability(); this.ensureAutoPause(); }
     if (item.object_type === "integration" && item.custom && this.detailTab === "overview") this.sysEnsure("storage"); // the folder size
     if (item.object_type === "integration" && this.detailTab === "access") { this.sysEnsure("dataflow"); this.sysEnsure("secrets"); }
     // The reports of Access & data flow and Credentials are read when their tab is opened, not with the page.
@@ -5669,11 +6018,16 @@ class DiagnosisMixin {
     const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
     const back = this.trail.length ? this.trail[this.trail.length - 1].name : this.t(this.view);
+    const ap = this.apPageParts(item.object_type === "config_entry" ? item.object_id : item.object_type === "integration" && item.entries?.length === 1 ? item.entries[0].object_id : "", item.state);
+    const moreInfo = (item.object_type === "entity" || item.object_type === "scene") && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : "";
+    const primary = moreInfo || ap.primary;
+    const exportable = ["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type);
+    const menu = [["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"`], exportable ? ["mdi:export-variant", "xpButton", `data-xp-from="${this.esc(key)}"`] : null, null, ...ap.menu];
     const summary = this.detailSummary(item, key).map(([label, value]) => `<span><small>${label}</small><b>${value}</b></span>`).join("");
     const tablist = tabs.map(([id, label, count, tone]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}${tone ? `<i class="tabdot ${tone}" aria-hidden="true"></i>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div><div class="headpills">${this.pill(item.status)}<span class="pill mute">${this.t(item.object_type)}</span></div><h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
-      <div class="actions">${(item.object_type === "entity" || item.object_type === "scene") && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : ""}${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
+      <div class="actions">${ap.pill}${primary}${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}${this.rowMenuHtml(menu)}</div></div>
       <div class="panel sumline">${summary}</div>
       ${this.statusBand(item, key)}
       <div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${tablist}</div>
@@ -5818,7 +6172,7 @@ class PropertiesMixin {
     ]);
     const members = this.data.objects.filter(o => o.object_type === "entity" && o.device_id === item.object_id).sort((a, b) => a.name.localeCompare(b.name));
     const memberRows = this.objectTable(`members-${item.object_id}`, members.map(m => ({ key: `entity:${m.object_id}`, type: "entity", name: m.name, sub: m.object_id, tone: this.tone(m.status), state: m.status, stateLabel: this.statusLabel(m.status), pill: this.pill(m.status), value: m.state === null || m.state === undefined ? "" : `${m.state}${m.unit ? ` ${m.unit}` : ""}` })), {
-      extras: [{ key: "value", label: "objColState", get: r => r.value, cell: r => r.value ? this.esc(r.value) : `<span class="muted">—</span>` }], empty: t("propNoEntities"),
+      extras: [{ key: "value", label: "objColState", get: r => r.value, cell: r => r.value ? this.esc(r.value) : `<span class="muted">—</span>` }], empty: t("propNoEntities"), menu: true, stripe: true, sort: "status",
     });
     const entities = `<section class="panel wide"><div class="panelhead"><h2><ha-icon icon="mdi:shape-outline" class="propicon"></ha-icon>${t("propEntities")} (${members.length})</h2></div>${memberRows}</section>`;
     const technical = this.propCard(t("propTechnical"), "mdi:identifier", [
@@ -5946,6 +6300,7 @@ class MaintenanceMixin {
       backup: () => {
         const b = state.backup || {};
         if (!b.available) return this.t("pf_backup_unavailable");
+        if (b.level === "external") return this.t("pf_backup_external");
         if (b.age_hours === null || b.age_hours === undefined) return this.t("pf_backup_none");
         return this.t(b.level === "ok" ? "pf_backup_ok" : "pf_backup_old", { hours: Math.round(b.age_hours) });
       },
@@ -5956,7 +6311,7 @@ class MaintenanceMixin {
       const names = (items || []).slice(0, 5).map(i => i.title || i.name || i.issue_id || i.object_id).filter(Boolean).map(n => this.esc(n)).join(", ");
       const text = detail[c.check] ? detail[c.check]() : c.count ? `${c.count}${names ? ` · ${names}` : ""}` : this.t("pf_count_none");
       const tone = { ok: "ok", warn: "warn", red: "red" }[c.level] || "mute";
-      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : "mdi:alert-outline";
+      const icon = c.level === "ok" ? "mdi:check" : c.level === "red" ? "mdi:close-octagon-outline" : c.level === "info" ? "mdi:export" : "mdi:alert-outline";
       return `<div class="row rel"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`pf_${c.check}`)}</strong><small>${text}</small></span>${c.check === "backup" ? `<button class="btn quiet" data-jump="maintenance" data-jump-tab="backup">${this.t("pfOpenBackup")}</button>` : ""}</div>`;
     }).join("");
   }
@@ -6033,7 +6388,7 @@ class MaintenanceMixin {
       { key: "version", label: "updColVersion", sortable: false, cell: u => `<span class="verchip">${this.esc(u.installed ?? "–")} → ${this.esc(u.latest ?? "–")}</span>` },
       { key: "group", label: "updColGroup", cell: u => `<span class="pill mute">${this.t(`updGroup_${u.group}`)}</span>` },
       { key: "state", label: "updColState", sortable: false, cell: u => pills(u) || "–" },
-      { key: "actions", label: "updColActions", sortable: false, cell: u => `<span class="updact">${typeof u.release_url === "string" && u.release_url.startsWith("https://") ? `<a class="btn quiet" href="${this.esc(u.release_url)}" target="_blank" rel="noopener noreferrer">${this.t("updNotes")}</a>` : ""}<button class="btn quiet" data-ha-path="/config/updates" title="${this.esc(this.t("updOpenHa"))}">${this.t("updOpen")}</button></span>` },
+      { key: "actions", label: "updColActions", sortable: false, menu: true, narrow: true, cell: u => this.rowMenuHtml([typeof u.release_url === "string" && u.release_url.startsWith("https://") ? ["mdi:text-box-outline", "updNotes", `href="${this.esc(u.release_url)}"`] : null, ["mdi:open-in-new", "updOpenHa", 'data-ha-path="/config/updates"']]) },
     ];
     const table = rows.length ? this.listTable(id, columns, pg.rows, { cls: "upds", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     const current = groups.filter(g => !updates.some(u => u.group === g)).map(g => `<div class="row rel"><span class="tile ok"><ha-icon icon="mdi:check"></ha-icon></span><span class="row-text"><strong>${this.t(`updCurrent_${g}`)}</strong></span></div>`).join("");
@@ -6073,21 +6428,24 @@ class MaintenanceMixin {
     const problems = checks.filter(c => c.level === "problem").length, notes = checks.filter(c => c.level === "note").length;
     const pf = this.preflight;
     const updates = pf?.counts?.total ?? pf?.state?.updates?.length ?? 0;
-    const backupTone = !this.backup?.available ? "mute" : problems ? "red" : notes ? "warn" : "ok";
+    const external = checks.some(c => c.id === "external");
+    const backupTone = !this.backup?.available || (external && !problems && !notes) ? "mute" : problems ? "red" : notes ? "warn" : "ok";
     const pfTone = !pf ? "mute" : !updates ? "ok" : { stop: "red", look: "warn" }[pf.verdict] || "ok";
     const goalsMissed = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     this.ensureGoals();
     this.ensureBlueprints(); // the pill of the tab needs the numbers before the tab is opened
     const bp = this.blueprints, bpBad = bp ? (bp.missing || 0) + (bp.broken || 0) : 0;
     const tabs = [
-      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: !this.backup?.available ? "" : problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : this.t("bhLevel_ok"), tone: backupTone },
-      { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.formatNumber(updates) : "", tone: pfTone },
+      { id: "backup", icon: "mdi:backup-restore", label: this.t("backupsTab"), hint: "maintHintBackup", pill: problems ? this.t(problems === 1 ? "mtProblems_1" : "mtProblems_n", { n: problems }) : notes ? this.t(notes === 1 ? "mtNotes_1" : "mtNotes_n", { n: notes }) : external ? this.t("bhExternalPill") : "", tone: backupTone },
+      { id: "updates", icon: "mdi:package-up", label: this.t("updatesTab"), hint: "maintHintUpdates", pill: updates ? this.t(updates === 1 ? "mtUpdates_1" : "mtUpdates_n", { n: this.formatNumber(updates) }) : "", tone: pfTone },
       { id: "blueprints", icon: "mdi:file-code-outline", label: this.t("bpTab"), hint: "maintHintBlueprints", pill: bpBad ? this.t("mtOpen", { n: bpBad }) : "", tone: "warn" },
-      { id: "goals", icon: "mdi:target", label: this.t("goalsTitle"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: "maintHintGoals", pill: goalsMissed ? this.t("tilesMissed", { count: goalsMissed }) : "", tone: "red" },
     ];
     this.ensureBackupCleanup();
     const open = this.viewTabOf("maintenance", tabs, "backup");
-    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), tone: tab.pill ? tab.tone : "ok" })), open, this.t("maintenance"), true);
+    // One status pill per tile: what is open, or "Nothing to do" once the numbers are there; while they load the place stays empty.
+    const loaded = { backup: Boolean(this.backup?.available), updates: Boolean(pf), blueprints: Boolean(bp), goals: Boolean(this.goals) };
+    const grid = this.navTiles("maintenance", tabs.map(tab => ({ ...tab, hint: this.t(tab.hint), status: true, tone: tab.pill ? tab.tone : "ok", pill: tab.pill || (loaded[tab.id] ? this.t("cleanupNothing") : "") })), open, this.t("maintenance"), true);
     return `<div class="stack">${grid}${open === "goals" ? this.goalsCard() : open === "updates" ? this.updatesCard() : open === "blueprints" ? this.blueprintsCard() : this.backupCard()}</div>`;
   }
 }
@@ -6111,7 +6469,8 @@ class BackupMixin {
     setTimeout(() => this.loadBackup(), 0);
   }
 
-  bhAge(hours) { return hours >= 48 ? this.t("bhAgeDays", { n: Math.round(hours / 24) }) : this.t("bhAgeHours", { n: Math.max(1, Math.round(hours)) }); }
+  // A span of hours or days. `ago` gives the form after "vor" ("vor 3 Tagen"); without it a plain span ("3 Tage").
+  bhAge(hours, ago = false) { return hours >= 48 ? this.t(ago ? "bhAgeDaysAgo" : "bhAgeDays", { n: Math.round(hours / 24) }) : this.t("bhAgeHours", { n: Math.max(1, Math.round(hours)) }); }
 
   bhDay(iso) {
     if (!iso) return "—";
@@ -6146,7 +6505,7 @@ class BackupMixin {
         if (c.level === "note") return t("bhSetupNote");
         return t("bhSetupOk", { agents: this.bhAgents(v.agents), recurrence: t(`bhRec_${v.recurrence}`) });
       case "newest":
-        return v.age_hours === null || v.age_hours === undefined ? t("bhNewestNone") : t("bhNewestText", { age: this.bhAge(v.age_hours), limit: this.bhAge(v.limit_hours) });
+        return v.age_hours === null || v.age_hours === undefined ? t("bhNewestNone") : t("bhNewestText", { age: this.bhAge(v.age_hours, true), limit: this.bhAge(v.limit_hours) });
       case "last_run": {
         if (c.level === "unknown") return t("bhRunUnknown");
         const parts = [];
@@ -6157,7 +6516,13 @@ class BackupMixin {
       case "targets":
         if (v.at && !v.remote?.length) return t("bhTargetsConfirmed", { local: this.bhAgents(v.local), date: this.bhDay(v.at) });
         if (v.at) return t("bhTargetsOkConfirmed", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote), date: this.bhDay(v.at) });
-        return c.level === "ok" ? t("bhTargetsOk", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote) }) : c.level === "note" ? t("bhTargetsNote", { local: this.bhAgents(v.local) }) : "";
+        if (c.level === "note") {
+          // A remote target is set up, but the newest backup did not reach it: say so instead of "local only".
+          const set = (this.backup?.checks || []).find(x => x.id === "setup")?.values?.agents || [];
+          const missed = set.filter(a => !this.bhAgent(a).local);
+          return missed.length ? t("bhTargetsMissed", { remote: this.bhAgents(missed), local: this.bhAgents(v.local) }) : t("bhTargetsNote", { local: this.bhAgents(v.local) });
+        }
+        return c.level === "ok" ? t("bhTargetsOk", { local: this.bhAgents(v.local), remote: this.bhAgents(v.remote) }) : "";
       case "size":
         if (c.level === "unknown") return t("bhSizeUnknown");
         return t(c.level === "ok" ? "bhSizeOk" : "bhSizeNote", { size: this.formatBytes(v.size), expected: this.formatBytes(v.expected), percent: Math.round(v.ratio * 100) });
@@ -6181,7 +6546,7 @@ class BackupMixin {
         if (c.level === "note") return t(v.scheduled === false ? "bhContentNoDbSet" : "bhContentNoDb");
         return t("bhContentOk", { apps: this.formatNumber(v.apps ?? 0), folders: this.formatNumber(v.folders ?? 0) });
       case "remote_age": {
-        const row = a => `${this.esc(this.bhAgent(a.agent).label)}: ${this.bhAge(a.age_hours)}`;
+        const row = a => `${this.esc(this.bhAgent(a.agent).label)}: ${this.esc(this.t("backupAgo", { age: this.bhAge(a.age_hours, true) }))}`;
         return c.level === "note"
           ? t("bhRemoteStale", { items: (v.agents || []).filter(a => (v.stale || []).includes(a.agent)).map(row).join(", "), limit: this.bhAge(v.limit_hours) })
           : t("bhRemoteOk", { items: (v.agents || []).map(row).join(", ") });
@@ -6189,6 +6554,8 @@ class BackupMixin {
       case "space":
         if (c.level === "unknown") return t("bhSpaceUnknown");
         return t({ ok: "bhSpaceOk", note: "bhSpaceNote", problem: "bhSpaceProblem" }[c.level], { free: this.formatBytes(v.free), size: this.formatBytes(v.size), need: this.formatBytes(v.need) });
+      case "external":
+        return t("bhExternalText", { date: this.bhDay(v.at) });
       case "own_backups":
         return t("bhOwnNote", { count: v.count, size: this.formatBytes(v.size) });
       case "plan_backups":
@@ -6198,14 +6565,28 @@ class BackupMixin {
     }
   }
 
+  // Backups made outside Home Assistant can be stated where the setup or the newest backup is not in order.
+  bhOffersExternal(c) {
+    if (c.id !== "setup") return false;
+    return (this.backup?.checks || []).some(x => (x.id === "setup" || x.id === "newest") && (x.level === "problem" || x.level === "note"));
+  }
+
+  bhExternalRow(c) {
+    return `<div class="row rel bh"><span class="tile mute"><ha-icon icon="mdi:export"></ha-icon></span><span class="row-text"><strong>${this.t("bh_external")}</strong><small>${this.bhText(c)}</small></span><span class="bhactions"><button class="bhopen" data-bh-clear="external">${this.t("bhExternalClear")}</button><span class="pill mute">${this.t("bhExternalPill")}</span></span></div>`;
+  }
+
   bhRow(c) {
+    if (c.id === "external") return this.bhExternalRow(c);
     const tone = { ok: "ok", note: "warn", problem: "red", unknown: "mute" }[c.level] || "mute";
     const icon = { ok: "mdi:check", note: "mdi:alert-outline", problem: "mdi:close-octagon-outline", unknown: "mdi:help-circle-outline" }[c.level] || "mdi:help-circle-outline";
     const attest = c.id === "targets" || c.id === "emergency_kit" || c.id === "restore_test" || c.id === "encryption";
     const tidy = c.id === "own_backups" ? `<button class="bhopen" data-bkc-open>${this.t("bhOwnOpen")}</button>` : "";
+    const offer = this.bhOffersExternal(c), offerOpen = offer && this.bhForm === "external";
+    const external = offer ? `<button class="bhopen" data-bh-open="external" aria-expanded="${offerOpen}">${this.t("bhExternalOpen")}</button>` : "";
     const open = attest && c.level !== "unknown" && this.bhForm === c.id;
     const opener = attest && c.level !== "unknown" ? `<button class="bhopen" data-bh-open="${c.id}" aria-expanded="${open}">${this.t(c.values?.at ? "bhAttestAgain" : c.id === "targets" ? "bhAttestTargets" : c.id === "encryption" ? "bhAttestEnc" : "bhAttestMark")}</button>` : "";
-    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}</small></span><span class="bhactions">${opener}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    const row = `<div class="row rel bh${open ? " open" : ""}"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><span class="row-text"><strong>${this.t(`bh_${c.id}`)}</strong><small>${this.bhText(c)}${offer ? ` ${this.t("bhExternalAsk")}` : ""}</small></span><span class="bhactions">${opener}${external}${tidy}<span class="pill ${tone}">${this.t(`bhLevel_${c.level}`)}</span></span></div>`;
+    if (offerOpen) return `${row}<div class="bhattest"><span class="factnote">${this.t("bhExternalForm")}</span><button class="btn small primary" data-bh-save="external">${this.t("bhExternalSave")}</button><button class="bhcancel" data-bh-cancel>${this.t("bhAttestCancel")}</button></div>`;
     if (!open) return row;
     const today = new Date().toISOString().slice(0, 10);
     const clear = c.values?.at ? `<button class="bhtake" data-bh-clear="${c.id}">${this.t("bhAttestClear")}</button>` : "";
@@ -6276,14 +6657,18 @@ class BackupMixin {
     if (rows.length < 3) return "";
     const max = Math.max(...rows.map(x => x.size)), last = rows[rows.length - 1], first = rows[0];
     const tone = b.checks.find(c => c.id === "size")?.level === "note" ? " warn" : "";
-    const bars = rows.map((x, i) => `<i class="${i === rows.length - 1 ? `last${tone}` : ""}" style="height:${Math.max(4, Math.round((x.size / max) * 100))}%" title="${this.esc(`${this.formatDate(x.date)} · ${this.formatBytes(x.size)}`)}"></i>`).join("");
-    return `<div class="panel"><div class="sectionlabel">${this.t("bhSizesTitle")}</div><div class="bhsizes" role="img" aria-label="${this.esc(this.t("bhSizesLabel", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) }))}">${bars}</div><p class="factnote pad">${this.t("bhSizesNote", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) })}</p></div>`;
+    // Columns from zero, one per backup, each with its date, size and change to the one before as a tooltip.
+    const tip = (x, i) => { const d = i ? x.size - rows[i - 1].size : 0; return [this.formatDate(x.date), this.formatBytes(x.size), i ? `${d >= 0 ? "+" : "−"}${this.formatBytes(Math.abs(d))}` : ""].filter(Boolean).join(" · "); };
+    const bars = rows.map((x, i) => `<i class="${i === rows.length - 1 ? `last${tone}` : ""}" style="height:${Math.max(3, Math.round((x.size / max) * 100))}%" title="${this.esc(tip(x, i))}"><span class="sr-only">${this.esc(tip(x, i))}</span></i>`).join("");
+    const label = this.t("bhSizesLabel", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) });
+    return `<div class="panel"><div class="sectionlabel">${this.t("bhSizesTitle")}</div><div class="bhchart"><span class="bhaxis"><b>${this.esc(this.formatBytes(max))}</b><b>0</b></span><div class="bhsizes" role="img" aria-label="${this.esc(label)}">${bars}</div><span class="bhdates"><b>${this.esc(this.bhDay(first.date))}</b><b>${this.esc(this.bhDay(last.date))}</b></span></div><p class="factnote pad">${this.t("bhSizesNote", { n: rows.length, from: this.formatBytes(first.size), to: this.formatBytes(last.size) })}</p></div>`;
   }
+
 
   // The checks in the order a person thinks in: does it run, where is it kept and what is in it, can it be restored, what Housekeeper adds.
   bhGroups(checks) {
     const groups = [
-      ["running", ["setup", "newest", "last_run"]],
+      ["running", ["external", "setup", "newest", "last_run"]],
       ["storage", ["targets", "remote_age", "content", "size", "retention", "space"]],
       ["restore", ["encryption", "emergency_kit", "restore_test"]],
       ["house", ["plan_backups", "own_backups"]],
@@ -6310,12 +6695,226 @@ class BackupMixin {
     const by = Object.fromEntries(b.checks.map(c => [c.id, c.values || {}]));
     const age = by.newest?.age_hours, remote = by.targets?.remote?.length || by.targets?.at;
     const open = (b.counts?.note || 0) + (b.counts?.problem || 0);
+    const external = Boolean(by.external), free = by.space?.free;
     return this.sumTiles([
-      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.bhAge(age)), tone: "mute" },
+      ...(external ? [
+        { label: this.t("bhTileBackup"), value: this.t("bhExternalPill"), tone: "mute" },
+        { label: this.t("bhTileOwn"), value: this.formatNumber(b.own_count ?? 0), tone: "mute" },
+        { label: this.t("bhTileFree"), value: free === null || free === undefined ? "–" : this.esc(this.formatBytes(free)), tone: "mute" },
+      ] : [
+      { label: this.t("bhTileLast"), value: age === null || age === undefined ? "–" : this.esc(this.t("backupAgo", { age: this.bhAge(age, true) })), tone: "mute" },
       { label: this.t("bhTileCount"), value: this.formatNumber(b.backup_count ?? 0), tone: "mute" },
       { label: this.t("bhTileRemote"), value: this.t(remote ? "bhYes" : "bhNo"), tone: remote ? "ok" : "warn" },
-      { label: this.t("bhTileOpen"), value: this.formatNumber(open), tone: open ? "warn" : "ok" },
+      ]),
+      // The number counts problems and hints together; below it, how many of each, so it matches "2 problems" above.
+      { label: this.t("bhTileOpen"), value: this.formatNumber(open), sub: open ? this.esc([b.counts?.problem ? this.t(b.counts.problem === 1 ? "bhTileProblems1" : "bhTileProblems", { n: this.formatNumber(b.counts.problem) }) : "", b.counts?.note ? this.t(b.counts.note === 1 ? "bhTileNotes1" : "bhTileNotes", { n: this.formatNumber(b.counts.note) }) : ""].filter(Boolean).join(", ")) : "", tone: b.counts?.problem ? "red" : open ? "warn" : "ok" },
     ]);
+  }
+}
+
+// AutoPauseMixin: the tab "Auto-Pause" of Reliability and the button on an integration's page. An integration that keeps failing
+// to set up is paused (disabled) and tried again later; data is `ha_housekeeper/auto_pause`, changes go through `auto_pause_set`.
+// Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  apTab: "Auto-Pause", apTileHint: "{n} Kandidaten · pausiert Dauerfehler und versucht es später wieder",
+  apHead: "Dauerfehler automatisch pausieren", apHeadSub: "Pausiert Datenlieferanten, die dauernd an der Einrichtung scheitern, und versucht es später wieder. Eine Pause von Hand braucht diesen Schalter nicht.",
+  apSwitch: "Automatisch pausieren", apStatusOn: "Aktiv · Dienste im Blick: {n}", apStatusOff: "Aus · Dienste, die überwacht würden: {n}",
+  apSettings: "Einstellungen", apSettingsSub: "Pausiert nach {a} Fehlversuchen in {h} Std.", apAttempts: "Fehlversuche", apAttemptsHint: "So viele gescheiterte Einrichtungsversuche lösen die Pause aus.", apHours: "Stunden", apHoursHint: "Die Fehlversuche müssen in diesem Zeitraum liegen.",
+  apHouse: "Auch Integrationen pausieren, die eine Hausfunktion tragen", apHouseHint: "Aus: Eine Integration, auf die sich eine Hausfunktion verlässt, wird nie von selbst pausiert.",
+  apPlan: "Wiederholungen: 3 × 1 Std., 3 × 3 Std., 12 × 6 Std., dann täglich, höchstens {days} Tage ab Beginn der Pause. Danach bleibt die Pause bestehen und Housekeeper meldet es.",
+  apPaused: "Pausiert", apManual: "Integration von Hand pausieren", apManualHint: "Wenn du schon weißt, dass es gerade ein Problem gibt.", apPick: "Integration suchen", apPause: "Pausieren", apSince: "Seit {span}", apNext: "nächster Versuch in {span}", apTry: "Versuch {n} von {total}",
+  apExhausted: "Keine Versuche mehr, bitte prüfen", apReasonAuto: "{n} Fehlversuche", apReasonManual: "von dir pausiert",
+  apTodoOne: "{name} ist pausiert", apTodoMany: "{n} Integrationen pausiert", apTodoHint: "Versuch {n} von {total}, nächster in {span} · seit {since}", apTodoExhaustedOne: "{name}: {days} Tage ohne Erfolg, bitte prüfen", apTodoExhaustedMany: "{n} Pausen ohne Erfolg, bitte prüfen", apTodoExhaustedHint: "Pause bleibt bestehen · Protokoll, Update und Quelle prüfen", apTodoCheck: "Bitte prüfen", apWouldPause: "Auto-Pause würde das pausieren",
+  apWatching: "Unter Beobachtung", apWatchingHint: "Datenlieferanten, die gerade Fehlversuche sammeln", apWindow: "{n} von {limit} Fehlversuchen in {hours} Std.", apWindowOff: "würde bei {limit} pausieren",
+  apReasonPaused: "pausiert von Auto-Pause",
+  apTryNow: "Jetzt versuchen", apEnd: "Pause beenden", apNever: "Nie pausieren", apNeverPill: "nie pausiert", apAllow: "Wieder zulassen",
+  apWatched: "Dienste im Blick", apWatchedHint: "Datenlieferanten ohne Steuerfunktion, die Auto-Pause pausieren würde", apNoWatched: "Keine Integration erfüllt die Regel: Cloud-Abruf und nur Daten-Entitäten.", apHouseFn: "trägt eine Hausfunktion", apFailures: "{n} Fehlversuche",
+  apMore: "Dienste", apAttemptsTitle: "Fehlversuche bis zur Pause", apHoursTitle: "Zeitraum", apLogWhen: "Zeitpunkt", apLogWho: "Integration", apLogWhat: "Ereignis",
+  apLog: "Verlauf", apLog_paused: "pausiert", apLog_tried: "Versuch ohne Erfolg", apLog_back: "läuft wieder", apLog_ended: "Pause beendet", apLog_exhausted: "Pause bleibt, bitte prüfen",
+  apSend: "In Auto-Pause schicken", apSendHint: "Vorübergehende Störung? Auto-Pause entlastet die Quelle.", apPausedNow: "Pausiert seit {span}",
+  apConfirmTitle: "{name} pausieren?", apConfirmText: "{name} wird deaktiviert und danach in Abständen wieder versucht, höchstens {days} Tage lang.",
+  apWarnControl: "Die Integration hat Entitäten, die etwas steuern oder melden. Für die Dauer der Pause sind sie aus Home Assistant verschwunden.", apWarnHouse: "Eine Hausfunktion verlässt sich darauf.",
+  apConfirmYes: "Pausieren",
+  err_auto_pause_confirm_needed: "Die Integration steuert etwas oder trägt eine Hausfunktion: bitte bestätigen.", err_auto_pause_core: "Diese Integration wird nie pausiert.", err_auto_pause_reauth: "Die Integration braucht eine neue Anmeldung; eine Pause hilft nicht.", err_auto_pause_paused: "Bereits pausiert.", err_auto_pause_disabled: "Die Integration ist schon deaktiviert.", err_auto_pause_not_found: "Integration nicht gefunden.", err_auto_pause_not_paused: "Nicht pausiert.", err_auto_pause_busy: "Es läuft gerade ein Versuch.", err_auto_pause_invalid: "Wert nicht zulässig.",
+});
+Object.assign(TEXT.en, {
+  apTab: "Auto-pause", apTileHint: "{n} candidates · pauses constant failures and tries again later",
+  apHead: "Pause constant failures automatically", apHeadSub: "Pauses data providers that keep failing to set up and tries them again later. A pause you start by hand does not need this switch.",
+  apSwitch: "Pause automatically", apStatusOn: "On · services watched: {n}", apStatusOff: "Off · services that would be watched: {n}",
+  apSettings: "Settings", apSettingsSub: "Pauses after {a} failed attempts within {h} h", apAttempts: "failed attempts", apAttemptsHint: "This many failed setup attempts start the pause.", apHours: "hours", apHoursHint: "The failed attempts must fall within this time.",
+  apHouse: "Also pause integrations that carry a house function", apHouseHint: "Off: an integration that a house function relies on is never paused by itself.",
+  apPlan: "Retries: 3 × 1 h, 3 × 3 h, 12 × 6 h, then daily, for up to {days} days from the start of the pause. After that the pause stays and Housekeeper tells you.",
+  apPaused: "Paused", apManual: "Pause an integration by hand", apManualHint: "When you already know there is a problem right now.", apPick: "Search an integration", apPause: "Pause", apSince: "For {span}", apNext: "next try in {span}", apTry: "Try {n} of {total}",
+  apExhausted: "No more tries, please look", apReasonAuto: "{n} failed attempts", apReasonManual: "paused by you",
+  apTodoOne: "{name} is paused", apTodoMany: "{n} integrations paused", apTodoHint: "Try {n} of {total}, next in {span} · for {since}", apTodoExhaustedOne: "{name}: {days} days without success, please look", apTodoExhaustedMany: "{n} pauses without success, please look", apTodoExhaustedHint: "The pause stays · check the log, the update and the source", apTodoCheck: "Please look", apWouldPause: "Auto-pause would pause this",
+  apWatching: "Under observation", apWatchingHint: "Data providers that are collecting failed attempts right now", apWindow: "{n} of {limit} failed attempts in {hours} h", apWindowOff: "would be paused at {limit}",
+  apReasonPaused: "paused by auto-pause",
+  apTryNow: "Try now", apEnd: "End pause", apNever: "Never pause", apNeverPill: "never paused", apAllow: "Allow again",
+  apWatched: "Services watched", apWatchedHint: "Data providers without a control function that auto-pause would pause", apNoWatched: "No integration meets the rule: cloud polling and data entities only.", apHouseFn: "carries a house function", apFailures: "{n} failed attempts",
+  apMore: "Services", apAttemptsTitle: "Failed attempts before a pause", apHoursTitle: "Time window", apLogWhen: "When", apLogWho: "Integration", apLogWhat: "Event",
+  apLog: "History", apLog_paused: "paused", apLog_tried: "try without success", apLog_back: "is back", apLog_ended: "pause ended", apLog_exhausted: "pause stays, please look",
+  apSend: "Send to auto-pause", apSendHint: "A temporary fault? Auto-pause spares the source.", apPausedNow: "Paused for {span}",
+  apConfirmTitle: "Pause {name}?", apConfirmText: "{name} will be disabled and tried again at intervals, for up to {days} days.",
+  apWarnControl: "The integration has entities that control or report something. They are gone from Home Assistant while it is paused.", apWarnHouse: "A house function relies on it.",
+  apConfirmYes: "Pause",
+  err_auto_pause_confirm_needed: "The integration controls something or carries a house function: please confirm.", err_auto_pause_core: "This integration is never paused.", err_auto_pause_reauth: "The integration needs a new login; a pause does not help.", err_auto_pause_paused: "Already paused.", err_auto_pause_disabled: "The integration is already disabled.", err_auto_pause_not_found: "Integration not found.", err_auto_pause_not_paused: "Not paused.", err_auto_pause_busy: "An attempt is running.", err_auto_pause_invalid: "Value not allowed.",
+});
+
+class AutoPauseMixin {
+  async loadAutoPause() {
+    this.apLoading = true;
+    try { this.autoPause = await this._hass.callWS({ type: "ha_housekeeper/auto_pause" }); this.apError = ""; }
+    catch (err) { this.apError = this.errText(err); }
+    this.apLoading = false; this.render();
+  }
+
+  // The first visit loads once; every change comes back with the new state.
+  // Again after every new scan, so that the next try and a used-up schedule are not stale on the overview.
+  ensureAutoPause() {
+    const key = this.data?.meta?.scanned_at || "";
+    if (this.apLoading || (this._apRequested && this._apKey === key)) return;
+    this._apRequested = true; this._apKey = key;
+    setTimeout(() => this.loadAutoPause(), 0);
+  }
+
+  async apCall(payload) {
+    try { this.autoPause = await this._hass.callWS({ type: "ha_housekeeper/auto_pause_set", ...payload }); }
+    catch (err) { this.failed(err); }
+    this.render();
+  }
+
+  // The name of an integration, a link to its page where the inventory knows it.
+  apName(entryId, name) {
+    return this.findObject(`config_entry:${entryId}`) ? `<button type="button" class="linkbtn" data-object="${this.esc(`config_entry:${entryId}`)}">${this.esc(name)}</button>` : this.esc(name);
+  }
+
+  apPausedItem(entryId) { return (this.autoPause?.paused || []).find(p => p.entry_id === entryId) || null; }
+
+  // The rows of the overview's to-do card: a running pause is maintenance, a used-up schedule is open (never urgent).
+  apTodoItems() {
+    const a = this.autoPause;
+    if (!a?.paused?.length) return [];
+    const now = Date.now(), total = a.schedule.offsets.length, items = [];
+    const running = a.paused.filter(p => !p.exhausted), spent = a.paused.filter(p => p.exhausted);
+    const names = list => list.slice(0, 3).map(p => p.title || p.domain).join(", ") + (list.length > 3 ? ", …" : "");
+    const jump = 'data-jump="reliability" data-jump-tab="autopause"';
+    if (spent.length) items.push({ key: "autopause_exhausted", area: "state", tone: "warn", icon: "mdi:pause-circle-outline", text: spent.length === 1 ? this.t("apTodoExhaustedOne", { name: spent[0].title || spent[0].domain, days: Math.round(a.schedule.end_hours / 24) }) : this.t("apTodoExhaustedMany", { n: this.formatNumber(spent.length) }), hintText: this.t("apTodoExhaustedHint"), pill: this.t("apTodoCheck"), jump });
+    if (running.length) {
+      const one = running[0], due = one.next ? Math.max(new Date(one.next).getTime() - now, 0) : null;
+      items.push({ key: "autopause", area: "care", tone: "warn", icon: "mdi:pause-circle-outline", text: running.length === 1 ? this.t("apTodoOne", { name: one.title || one.domain }) : this.t("apTodoMany", { n: this.formatNumber(running.length) }),
+        hintText: running.length === 1 ? (due !== null ? this.t("apTodoHint", { n: Math.min(one.done + 1, total), total, span: this.apSpan(due), since: this.apSpan(now - new Date(one.since).getTime()) }) : this.t("apSince", { span: this.apSpan(now - new Date(one.since).getTime()) })) : names(running), jump });
+    }
+    return items;
+  }
+
+  // Beside an integration that is paused: the "Paused" pill. The way to pause one sits in the row menu (apRowMenu).
+  apRowAction(entryId) {
+    return this.autoPause && entryId && this.apPausedItem(entryId) ? `<span class="pill warn" role="link" tabindex="0" data-view-tab="reliability|autopause">${this.t("apPaused")}</span>` : "";
+  }
+
+  // The offer to pause as a menu entry: rows carry the menu in a column of their own, so the chips stay in line.
+  // With a `state` the offer stands only while the integration is not loaded.
+  apCanPause(entryId, state = "any") {
+    const a = this.autoPause;
+    return Boolean(a && entryId && state && state !== "loaded" && !this.apPausedItem(entryId) && (a.pausable || []).some(p => p.entry_id === entryId));
+  }
+
+  apRowMenu(entryId, state = "any") {
+    if (!this.apCanPause(entryId, state)) return "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-ap-send="${this.esc(entryId)}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button></div></details>`;
+  }
+
+  // A monitored function that a paused integration carries reads "paused", not just "Disabled".
+  apMonitorReason(key, reason) {
+    if (reason === "disabled") this.ensureAutoPause();
+    return reason === "disabled" && key?.startsWith("config_entry:") && this.apPausedItem(key.slice("config_entry:".length)) ? this.t("apReasonPaused") : this.monitorReason(reason);
+  }
+
+  // Only a hint while the automatic pause is off and this integration would be one of its candidates.
+  apWouldPause(entryId) {
+    const a = this.autoPause;
+    return Boolean(a && !a.settings.enabled && a.candidates.some(c => c.entry_id === entryId && !c.excluded));
+  }
+
+  apSpan(ms) {
+    const hours = Math.max(1, Math.round(ms / 3600000));
+    return hours >= 48 ? this.t("relDays", { n: Math.round(hours / 24) }) : hours >= 2 ? this.t("relHours", { n: hours }) : this.t("relMinutes", { n: Math.max(1, Math.round(ms / 60000)) });
+  }
+
+  autoPauseTile() {
+    const a = this.autoPause, paused = a?.paused?.length || 0;
+    return { id: "autopause", icon: "mdi:pause-circle-outline", label: this.t("apTab"), hint: this.t("apTileHint", { n: this.formatNumber(a?.candidates?.length || 0) }), count: a ? paused : undefined, tone: paused ? "warn" : "mute", status: !a };
+  }
+
+  // Asks first where pausing has a consequence, then sends the entry into the pause.
+  apStart(entryId) {
+    const item = (this.autoPause?.pausable || []).find(p => p.entry_id === entryId);
+    if (!item) return;
+    const days = Math.round((this.autoPause.schedule?.end_hours || 168) / 24);
+    const warn = item.warn?.length ? { title: item.warn.includes("house_function") ? this.t("apWarnHouse") : this.t("apWarnControl"), hint: item.warn.length > 1 ? this.t("apWarnControl") : "" } : null;
+    this.confirmAsk(this.t("apConfirmText", { name: item.title, days }), () => this.apCall({ action: "pause", entry_id: entryId, confirm: true }), { title: this.t("apConfirmTitle", { name: item.title }), yes: this.t("apConfirmYes"), danger: false, ...(warn ? { warn } : {}) });
+  }
+
+  // The auto-pause on the page of an integration, in three parts for its head: the pill of a pause, the one button that fits
+  // (try again while paused, send in while it fails) and the entries for the menu (the rest).
+  apPageParts(entryId, state) {
+    const a = this.autoPause, none = { pill: "", primary: "", menu: [] };
+    if (!a || !entryId) return none;
+    const id = this.esc(entryId), paused = this.apPausedItem(entryId);
+    if (paused) {
+      const span = this.apSpan(Date.now() - new Date(paused.since).getTime());
+      return { pill: `<span class="pill warn">${this.esc(this.t("apPausedNow", { span }))}</span>`, primary: `<button class="btn primary" data-ap-try="${id}"><ha-icon icon="mdi:refresh"></ha-icon>${this.t("apTryNow")}</button>`, menu: [["mdi:play-circle-outline", "apEnd", `data-ap-end="${id}"`]] };
+    }
+    if (!(a.pausable || []).some(p => p.entry_id === entryId)) return none;
+    if (state && state !== "loaded") return { ...none, primary: `<button class="btn primary" data-ap-send="${id}" title="${this.esc(this.t("apSendHint"))}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("apSend")}</button>` };
+    return { ...none, menu: [["mdi:pause-circle-outline", "apSend", `data-ap-send="${id}"`]] };
+  }
+
+  autoPauseView() {
+    this.ensureAutoPause();
+    const a = this.autoPause;
+    if (this.apError) return `<div class="panel">${this.notice("err", this.apError)}</div>`;
+    if (!a) return `<div class="panel">${this.skeleton("relLoading")}</div>`;
+    const s = a.settings, days = Math.round(a.schedule.end_hours / 24), now = Date.now();
+    const watched = a.candidates.filter(c => !c.excluded);
+    const menu = (id, ...items) => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${items.map(([key, attr, icon]) => `<button type="button" class="menuitem" ${attr}="${this.esc(id)}"><ha-icon icon="${icon}"></ha-icon>${this.t(key)}</button>`).join("")}</div></details>`;
+    const mainTop = `<div class="panelhead"><div><h2>${this.t("apHead")}</h2><p>${this.t("apHeadSub")}</p></div></div>
+      <div class="row"><span class="tile ${s.enabled ? "ok" : "mute"}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t("apSwitch")}</strong><small>${this.t(s.enabled ? "apStatusOn" : "apStatusOff", { n: this.formatNumber(watched.length) })}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("apSwitch"))}" data-ap-setting="enabled" ${s.enabled ? "checked" : ""}></div>`;
+    const pausedRows = a.paused.map(p => {
+      const due = p.next ? new Date(p.next).getTime() - now : null;
+      const sub = [p.exhausted ? this.t("apExhausted") : due !== null ? `${this.t("apTry", { n: Math.min(p.done + 1, a.schedule.offsets.length), total: a.schedule.offsets.length })}, ${this.t("apNext", { span: this.apSpan(Math.max(due, 0)) })}` : "",
+        p.reason === "manual" ? this.t("apReasonManual") : this.t("apReasonAuto", { n: this.formatNumber(p.failures || 0) })].filter(Boolean).join(" · ");
+      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(p.entry_id, p.title || p.domain)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
+        <span class="apbtns"><button class="btn" data-ap-try="${this.esc(p.entry_id)}">${this.t("apTryNow")}</button>${menu(p.entry_id, ["apEnd", "data-ap-end", "mdi:play-circle-outline"], ["apNever", "data-ap-never", "mdi:cancel"])}</span></div>`;
+    }).join("");
+    const failing = watched.filter(c => c.window > 0 || c.state !== "loaded").sort((x, y) => y.window - x.window || x.title.localeCompare(y.title));
+    const watching = failing.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apWatching")} <span class="pill warn">${this.formatNumber(failing.length)}</span></h2><p>${this.t("apWatchingHint")}</p></div></div>${failing.map(c => {
+      const sub = [c.domain !== c.title ? c.domain : "", this.entryStateLabel(c.state), s.enabled ? "" : this.t("apWindowOff", { limit: this.formatNumber(s.attempts) })].filter(Boolean).join(" · ");
+      return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:cloud-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(c.entry_id, c.title || c.domain)}</strong><small>${this.esc(sub)}</small><small>${this.esc(this.t("apWindow", { n: this.formatNumber(c.window), limit: this.formatNumber(s.attempts), hours: s.hours }))}</small><span class="bar evbar apbar"><i style="width:${Math.min(100, Math.round((c.window / s.attempts) * 100))}%"></i></span></span></div>`;
+    }).join("")}</section>` : "";
+    const paused = a.paused.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apPaused")} <span class="pill warn">${this.formatNumber(a.paused.length)}</span></h2></div></div>${pausedRows}</section>` : "";
+    const rows = [...a.candidates].sort((x, y) => Number(x.excluded) - Number(y.excluded)).map(c => {
+      const sub = [c.domain !== c.title ? c.domain : "", this.entryStateLabel(c.state), c.attempts ? this.t("apFailures", { n: this.formatNumber(c.attempts) }) : "", c.house_function ? this.t("apHouseFn") : ""].filter(Boolean).join(" · ");
+      return `<div class="row"><span class="tile ${c.excluded ? "mute" : c.state === "loaded" ? "ok" : "warn"}"><ha-icon icon="mdi:cloud-${c.state === "loaded" ? "check" : "alert"}-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(c.entry_id, c.title || c.domain)}</strong><small>${this.esc(sub)}</small></span>${c.excluded ? `<span class="pill mute">${this.t("apNeverPill")}</span>${menu(c.entry_id, ["apAllow", "data-ap-allow", "mdi:undo"])}` : menu(c.entry_id, ["apNever", "data-ap-never", "mdi:cancel"])}</div>`;
+    }).join("");
+    const watchedFold = this.fold("ap_watched", { tone: "mute", title: this.t("apWatched"), sub: this.t("apWatchedHint"), count: this.formatNumber(a.candidates.length) }, rows || `<p class="factnote">${this.t("apNoWatched")}</p>`, false);
+    const num = (key, value, min, max, title, hint, unit, icon) => `<div class="row"><span class="tile mute"><ha-icon icon="${icon}"></ha-icon></span><label class="row-text" for="ap-${key}"><strong>${this.t(title)}</strong><small>${this.t(hint)}</small></label><span class="unitrow"><input id="ap-${key}" type="number" min="${min}" max="${max}" value="${value}" data-ap-num="${key}"><span>${this.t(unit)}</span></span></div>`;
+    const settingsBody = `${num("attempts", s.attempts, 3, 500, "apAttemptsTitle", "apAttemptsHint", "apAttempts", "mdi:counter")}${num("hours", s.hours, 1, 48, "apHoursTitle", "apHoursHint", "apHours", "mdi:timer-outline")}
+      <div class="row"><span class="tile mute"><ha-icon icon="mdi:home-lightning-bolt-outline"></ha-icon></span><span class="row-text"><strong>${this.t("apHouse")}</strong><small>${this.t("apHouseHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("apHouse"))}" data-ap-setting="house_functions" ${s.house_functions ? "checked" : ""}></div><p class="factnote">${this.t("apPlan", { days })}</p>`;
+    const settingsFold = this.fold("ap_settings", { tone: "mute", title: this.t("apSettings"), sub: this.t("apSettingsSub", { a: s.attempts, h: s.hours }) }, settingsBody, false);
+    const manualFold = this.fold("ap_manual", { tone: "mute", title: this.t("apManual"), sub: this.t("apManualHint") }, `<div class="apmanual">${this.pickerBox("autopause", this.t("apPick"))}</div>`, false);
+    const log = a.log.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apLog")}</h2></div></div><div class="tablewrap"><table class="evtable"><thead><tr><th>${this.t("apLogWhen")}</th><th>${this.t("apLogWho")}</th><th>${this.t("apLogWhat")}</th></tr></thead><tbody>${a.log.map(l => `<tr><td>${this.esc(this.formatDate(l[0]))}</td><td>${this.esc(l[2])}</td><td><span class="pill ${{ paused: "warn", back: "ok", exhausted: "red" }[l[1]] || "mute"}">${this.esc(this.t(`apLog_${l[1]}`))}</span></td></tr>`).join("")}</tbody></table></div></section>` : "";
+    return `<div class="stack"><section class="panel apmore">${mainTop}${settingsFold}</section>${watching}${paused}<section class="panel apmore${this._picker?.name === "autopause" && this._picker.open ? " ovvis" : ""}"><div class="panelhead"><div><h2>${this.t("apMore")}</h2></div></div>${watchedFold}${manualFold}</section>${log}</div>`;
+  }
+
+  bindAutoPause(root) {
+    root.querySelectorAll("[data-ap-setting]").forEach(el => el.onchange = () => this.apCall({ action: "settings", values: { [el.dataset.apSetting]: el.checked } }));
+    root.querySelectorAll("[data-ap-num]").forEach(el => el.onchange = () => this.apCall({ action: "settings", values: { [el.dataset.apNum]: Number(el.value) } }));
+    root.querySelectorAll("[data-ap-never]").forEach(el => el.onclick = () => this.apCall({ action: "never", entry_id: el.dataset.apNever, on: true }));
+    root.querySelectorAll("[data-ap-allow]").forEach(el => el.onclick = () => this.apCall({ action: "never", entry_id: el.dataset.apAllow, on: false }));
+    root.querySelectorAll("[data-ap-try]").forEach(el => el.onclick = () => this.apCall({ action: "try", entry_id: el.dataset.apTry }));
+    root.querySelectorAll("[data-ap-end]").forEach(el => el.onclick = () => this.apCall({ action: "resume", entry_id: el.dataset.apEnd }));
+    root.querySelectorAll("[data-ap-send]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.apStart(el.dataset.apSend); });
   }
 }
 
@@ -6324,6 +6923,9 @@ const REL_GREEN = 99.5, REL_YELLOW = 95; // availability in percent: green from,
 class ReliabilityMixin {
   // Slow recorder views: an old reply is shown at once and renewed once; when another calculation holds the
   // query lock, the panel asks again by itself a few times instead of asking the user to click.
+  // The state of a config entry in words ("Retrying setup"), the raw one where no text exists.
+  entryStateLabel(state) { const key = `cs_${state}`, text = this.t(key); return text === key ? state : text; }
+
   followUp(name, view, result, reload, refresh) {
     if (!result) return;
     if (!refresh && result.stale) { reload(true); return; }
@@ -6378,9 +6980,12 @@ class ReliabilityMixin {
     if (layer) lines.push(layer);
     const flags = [];
     if (item.reauth) flags.push(`<span class="pill red">${this.t("relReauth")}</span>`);
-    if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn">${this.esc(item.state)}</span>`);
+    const pausing = this.apRowAction(item.entry_id);
+    if (item.state && item.state !== "loaded") flags.push(`<span class="pill warn" title="${this.esc(item.state)}">${this.esc(this.entryStateLabel(item.state))}</span>`);
+    if (pausing) flags.push(pausing);
     if (item.setup) lines.push(`${item.setup.count ? this.t("relSetup", { n: item.setup.count, days: item.setup.days, last: this.formatDate(item.setup.last) }) : ""}${item.setup.state ? `${item.setup.count ? " · " : ""}${this.t("relSetupNow", { state: item.setup.state })}` : ""}`);
-    return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${item.dead ? this.t("relDead") : percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>`;
+    if (item.setup?.attempts) lines.push(this.t("relAttempts", { n: this.formatNumber(item.setup.attempts), date: this.formatDate(item.setup.attempts_since) }));
+    return `<span class="tile ${tone}"><ha-icon icon="mdi:lan-connect"></ha-icon></span><span class="row-text"><strong>${this.esc(item.title)}</strong>${lines.map(line => `<small>${line}</small>`).join("")}${flags.length ? `<span class="relflags">${flags.join(" ")}</span>` : ""}</span><span class="pill ${tone}">${item.dead ? this.t("relDead") : percent === null ? "—" : `${this.formatNumber(percent)} %`}</span>${this.apRowMenu(item.entry_id, item.state)}`;
   }
 
   // The row of one config entry in the loaded numbers, for its detail page.
@@ -6395,7 +7000,7 @@ class ReliabilityMixin {
     const list = this.objectTable(`relaffected-${row.entry_id || row.domain || ""}`, items.map(m => {
       const tone = m.availability >= REL_GREEN ? "ok" : m.availability >= REL_YELLOW ? "warn" : "red";
       return { key: `entity:${m.entity_id}`, type: "entity", name: m.name, sub: m.entity_id, tone, state: tone, stateLabel: this.t({ ok: "relAvailOk", warn: "relAvailWarn", red: "relAvailRed" }[tone]), avail: m.availability, pill: `<span class="pill ${tone}">${this.formatNumber(m.availability)} %</span>`, rank: m.availability };
-    }), { extras: [{ key: "avail", label: "relColAvail", get: r => r.avail, cell: r => `${this.formatNumber(r.avail)} %` }], empty: "" });
+    }), { extras: [{ key: "avail", label: "relColAvail", get: r => r.avail, cell: r => `${this.formatNumber(r.avail)} %` }], empty: "", menu: true, stripe: true, sort: "status" });
     const more = row.affected_total > items.length ? `<p class="factnote">${this.t("relAffectedMore", { shown: items.length, total: row.affected_total })}</p>` : "";
     const hintKey = this.relSetupHint(row);
     const hint = hintKey ? `<div class="factnote"><strong>${this.t("relHintTitle")}</strong> ${this.t(hintKey, { n: row.setup.count, days: row.setup.days })}</div>` : "";
@@ -6446,16 +7051,17 @@ class ReliabilityMixin {
     if (!setup) return null;
     if (setup.state === "failed_unload" || setup.state === "migration_error") return "relHintUnload";
     if (setup.state === "setup_error") return "relHintError";
-    if (setup.count >= 2 && row.availability !== null && row.availability !== undefined && row.availability < 95) return "relHintOffline";
+    if (setup.count >= 2 && row.availability !== null && row.availability !== undefined && row.availability < 95) return row.layer === "cloud" ? "relHintCloud" : "relHintOffline";
     return setup.count >= 2 ? "relHintEarly" : null;
   }
 
   // One row per integration entry: the numbers sit in columns so the list sorts by them; the sentences live on the detail page.
   relSetupCell(setup) {
     if (!setup) return "–";
-    const now = setup.state ? `<small>${this.t("relSetupNow", { state: this.esc(setup.state) })}</small>` : "";
+    const now = setup.state ? `<small>${this.t("relSetupNow", { state: this.esc(this.entryStateLabel(setup.state)) })}</small>` : "";
     const last = setup.last ? `<small>${this.t("relSetupLast", { date: this.formatDate(setup.last) })}</small>` : "";
-    return `${setup.count ? this.t("relSetupCount", { n: setup.count, days: setup.days }) : ""}${last}${now}`;
+    const tries = setup.attempts ? `<small>${this.t("relAttempts", { n: this.formatNumber(setup.attempts), date: this.formatDate(setup.attempts_since) })}</small>` : "";
+    return `${setup.count ? this.t("relSetupCount", { n: setup.count, days: setup.days }) : ""}${last}${tries}${now}`;
   }
 
   relEntriesList(r) {
@@ -6468,13 +7074,15 @@ class ReliabilityMixin {
     const delta = e => (e.delta === null || e.delta === undefined ? null : e.delta);
     const columns = [
       { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.t("relEntities", { n: e.entities })}`) },
-      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" data-jump="findingsNav" data-filter="config_entry.reauth" title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn">${this.esc(e.state)}</span>` : "", e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ") },
+      { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", this.apRowAction(e.entry_id), e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ").replace(/^(.+)$/, '<span class="relpills">$1</span>') },
       { key: "setup", label: "relColSetup", dir: "desc", cell: e => this.relSetupCell(e.setup) },
       { key: "avail", label: "relSortAvail", dir: "asc", cell: availCell },
-      { key: "outages", label: "relSortOutages", dir: "desc", cell: outagesCell },
-      { key: "longest", label: "relColLongest", dir: "desc", cell: e => (e.shared_outages ? this.esc(this.relDuration(e.longest_outage)) : "–") },
-      { key: "last", label: "relColLast", dir: "desc", cell: e => (e.last_disruption ? this.esc(`${this.formatDate(new Date(e.last_disruption.end * 1000).toISOString())}, ${this.relDuration(e.last_disruption.seconds)}`) : this.esc(this.t("relNoDisruption"))) },
+      // The longest outage stands below their count instead of in a column of its own, so the table fits a window;
+      // it stays a sort of the list bar.
+      { key: "outages", label: "relSortOutages", dir: "desc", cell: e => `${outagesCell(e)}${e.shared_outages ? `<small class="muted u-block">${this.esc(this.t("relLongestSub", { d: this.relDuration(e.longest_outage) }))}</small>` : ""}` },
+      { key: "last", label: "relColLast", dir: "desc", cell: e => (e.last_disruption ? `${this.esc(this.formatDate(new Date(e.last_disruption.end * 1000).toISOString()))}<small class="muted u-block">${this.esc(this.relDuration(e.last_disruption.seconds))}</small>` : this.esc(this.t("relNoDisruption"))) },
       ...(compare ? [{ key: "delta", label: "relColDelta", dir: "asc", cell: e => (delta(e) === null ? "–" : this.esc(`${delta(e) > 0 ? "+" : delta(e) < 0 ? "−" : "±"}${this.formatNumber(Math.abs(delta(e)))}`)) }] : []),
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.apRowMenu(e.entry_id, e.state) },
     ];
     return this.sysList("relentries", r.entries, {
       sort: "avail", dir: "asc",
@@ -6495,11 +7103,24 @@ class ReliabilityMixin {
 
   reliabilityView() {
     this.ensureReliability();
+    this.ensureAutoPause();
     const r = this.reliability;
+    const apOpen = (this.viewTab ||= {}).reliability === "autopause";
     const windows = [[1, "relWindow1"], [7, "relWindow7"], [30, "relWindow30"]].map(([days, key]) => `<button class="chip ${this.relWindow === days ? "active" : ""}" data-rel-window="${days}" aria-pressed="${this.relWindow === days}">${this.t(key)}</button>`).join("") + `<button class="chip ${this.relCompare ? "active" : ""}" data-rel-compare aria-pressed="${this.relCompare}">${this.t("relCompare")}</button>`;
     const aged = Boolean(r?.computed_at && (r.stale || r.age_seconds >= 60)), took = aged ? "" : this.tookNote(r).replace(/^ · /, "");
-    const head = this.pageBar({ left: `${windows}${took ? `<span>${this.esc(took)}</span>` : ""}`, at: r?.computed_at ? new Date(r.computed_at * 1000).toISOString() : null, loading: this.relLoading, attr: "data-rel-refresh" });
-    const alone = inner => `<div class="stack">${head}<div class="panel">${inner}</div></div>`;
+    const head = apOpen
+      ? this.pageBar({ left: "", loading: this.apLoading, attr: "data-ap-refresh" })
+      : this.pageBar({ left: `${windows}${took ? `<span>${this.esc(took)}</span>` : ""}`, at: r?.computed_at ? new Date(r.computed_at * 1000).toISOString() : null, loading: this.relLoading, attr: "data-rel-refresh" });
+    // Without numbers (no recorder, still loading) the tiles stay, so Auto-Pause is always reachable: it does not need them.
+    const alone = inner => {
+      const tabs = [
+        { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: "", status: true },
+        { id: "unstable", icon: "mdi:pulse", label: this.t("relTabUnstable"), hint: "", status: true },
+        this.autoPauseTile(),
+      ];
+      const open = this.viewTabOf("reliability", tabs, "integrations");
+      return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${open === "autopause" ? this.autoPauseView() : `<div class="panel">${inner}</div>`}</div>`;
+    };
     if (this.relError) return alone(`${this.notice("err", this.relError)}`);
     if (!r) return alone(this.skeleton("relLoading"));
     if (!r.available) return alone(`<p class="factnote">${this.t("relNoRecorder")}</p>`);
@@ -6520,19 +7141,20 @@ class ReliabilityMixin {
     const availText = overall === null ? "–" : `${this.formatNumber(Math.round(overall * 10) / 10)} %`;
     const odd = r.entries.filter(e => e.dead || e.shared_outages > 0 || e.reauth || (e.state && e.state !== "loaded") || e.setup).length;
     const setupCount = r.entries.filter(e => e.setup).length;
+    // The average availability stands in the area tile above; the row below counts integrations only.
     const tiles = this.sumTiles([
       { label: this.t("relSumAll"), value: this.formatNumber(r.entries.length), tone: "mute", lf: ["relentries", "", ""] },
       { label: this.t("relOnlyDead"), value: this.formatNumber(dead), tone: dead ? "red" : "ok", lf: ["relentries", "state", "dead"] },
       { label: this.t("relOnlyOutages"), value: this.formatNumber(outages), tone: outages ? "warn" : "ok", lf: ["relentries", "state", "outages"] },
       { label: this.t("relOnlySetup"), value: this.formatNumber(setupCount), tone: setupCount ? "warn" : "ok", lf: ["relentries", "state", "setup"] },
-      { label: this.t("relSumAvg"), value: availText, tone: overall === null ? "mute" : overall >= REL_GREEN ? "ok" : overall >= REL_YELLOW ? "warn" : "red", hint: this.t("relSumAvgHint") },
     ]);
     const tabs = [
       { id: "integrations", icon: "mdi:puzzle-outline", label: this.t("relTabIntegrations"), hint: this.t("relTileIntHint", { avail: availText, window: this.t(`relWindow${r.window_days}`) }), count: r.entries.length, tone: outages || attention ? "warn" : "ok", pill: odd ? this.t("relTilePill", { n: this.formatNumber(odd) }) : "", pillTone: attention ? "red" : "warn" },
       { id: "unstable", icon: "mdi:pulse", label: this.t("relTabUnstable"), hint: this.t("relTileUnstableHint"), count: u.total || 0, tone: flapping ? "red" : u.total ? "warn" : "ok", pill: flapping ? this.t("relSumFlapping", { n: this.formatNumber(flapping) }) : "" },
+      this.autoPauseTile(),
     ];
     const open = this.viewTabOf("reliability", tabs, u.total && !outages ? "unstable" : "integrations");
-    const body = open === "unstable" ? this.unstableCard(r) : `<div class="panel">${coverage}${loading}${list}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60), green: this.formatNumber(REL_GREEN), yellow: this.formatNumber(REL_YELLOW) })}</div>`;
+    const body = open === "autopause" ? this.autoPauseView() : open === "unstable" ? this.unstableCard(r) : `<div class="panel">${coverage}${loading}${list}${this.howCounted("relFootnote", { days: r.window_days, share: th.shared_share_percent ?? 80, entities: th.shared_min_entities ?? 3, minutes: Math.round((th.shared_min_seconds ?? 300) / 60), green: this.formatNumber(REL_GREEN), yellow: this.formatNumber(REL_YELLOW) })}</div>`;
     return `<div class="stack">${head}${this.navTiles("reliability", tabs, open, this.t("reliability"), true)}${open === "integrations" ? tiles : ""}${body}</div>`;
   }
 
@@ -6579,7 +7201,9 @@ class ReliabilityMixin {
       { key: "duration", label: "relSortDuration", dir: "desc", get: item => item.total_seconds },
     ];
     const tone = item => (item.level === "flapping" ? "red" : "warn");
-    const pattern = item => (item.pattern_hour === null || item.pattern_hour === undefined ? null : `${String(item.pattern_hour).padStart(2, "0")}–${String((item.pattern_hour + 2) % 24).padStart(2, "0")}`);
+    // The hours in which most outages begin, as "3–5 Uhr", with the whole sentence as tooltip.
+    const hours = item => ({ from: String(item.pattern_hour).padStart(2, "0"), to: String((item.pattern_hour + 2) % 24).padStart(2, "0") });
+    const pattern = item => (item.pattern_hour === null || item.pattern_hour === undefined ? null : this.t("relPatternCell", hours(item)));
     const list = this.sysList("relunstable", u.items, {
       sort: "rank", dir: "asc",
       sorts: [...sorts, { key: "pattern", label: "relColPattern", dir: "asc", get: item => item.pattern_hour ?? null }],
@@ -6593,13 +7217,14 @@ class ReliabilityMixin {
         { key: "episodes", label: "relSortEpisodes", dir: "desc", cell: item => this.esc(this.formatNumber(item.episodes)) },
         { key: "rate", label: "relSortRate", dir: "desc", cell: item => this.esc(this.formatNumber(item.per_day)) },
         { key: "duration", label: "relSortDuration", dir: "desc", cell: item => this.esc(this.relDuration(item.total_seconds)) },
-        { key: "pattern", label: "relColPattern", dir: "asc", cell: item => this.esc(pattern(item) || "–") },
+        { key: "pattern", label: "relColPattern", dir: "asc", cell: item => (pattern(item) ? `<span title="${this.esc(this.t("relPattern", hours(item)))}">${this.esc(pattern(item))}</span>` : "–") },
       ],
       exportName: "reliability-unstable", header: [this.t("utName"), "ID", this.t("relSortEpisodes"), this.t("relSortRate"), this.t("relSortDuration")], rows: item => [item.name, item.entity_id, item.episodes, item.per_day, item.total_seconds],
     });
     const count = level => u.items.filter(item => item.level === level).length;
     const tiles = this.sumTiles([
-      { label: this.t("relSumAll"), value: this.formatNumber(u.items.length), tone: "mute", lf: ["relunstable", "", ""] },
+      // "All" counts every unstable entity; the list holds the most noticeable of them, which the sub line says.
+      { label: this.t("relSumAll"), value: this.formatNumber(u.total ?? u.items.length), sub: u.total > u.items.length ? this.esc(this.t("relUnstableShownSub", { n: this.formatNumber(u.items.length) })) : "", tone: "mute", lf: ["relunstable", "", ""] },
       { label: this.t("relOnlyFlapping"), value: this.formatNumber(count("flapping")), tone: count("flapping") ? "red" : "ok", lf: ["relunstable", "level", "flapping"] },
       { label: this.t("relOnlyUnstable"), value: this.formatNumber(count("unstable")), tone: count("unstable") ? "warn" : "ok", lf: ["relunstable", "level", "unstable"] },
     ]);
@@ -6653,8 +7278,9 @@ class RunsMixin {
     return p ? p() : "";
   }
 
+  // Pill, figure and hint of each finding; the space keeps the sentences apart where a table sets the line inline.
   runsFindingLines(row) {
-    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span class="fnum">${this.runFindingText(f)}</span><span class="fnote">${this.t(`rfHint_${f.kind}`)}</span></small>`).join("");
+    return row.findings.map(f => `<small class="fline"><span class="pill ${f.level === "info" ? "mute" : f.level}">${this.t((RUN_FINDINGS[f.kind] || ["rfLabelFailing"])[0])}</span><span class="fnum">${this.runFindingText(f)}</span> <span class="fnote">${this.t(`rfHint_${f.kind}`)}</span></small>`).join("");
   }
 
   runsTrend(row, days = row.per_day) {
@@ -6682,7 +7308,7 @@ class RunsMixin {
     if (!c.items.length) return `<p class="factnote">${this.t("cfNone")}</p>`;
     const rank = { confirmed: 0, observed: 1, static: 2 };
     const key = item => `${item.kind}|${item.entity_id || (item.entities || []).join(",")}|${item.automations.map(a => a.entity_id).join(",")}`;
-    const tone = item => (item.stage === "confirmed" ? "warn" : "mute");
+    const tone = item => (item.stage === "confirmed" && !item.ignored ? "warn" : "mute");
     const list = this.sysList("runs_conflicts", c.items, {
       sort: "stage", dir: "asc", tie: key, empty: "cfNone",
       sorts: [
@@ -6695,11 +7321,12 @@ class RunsMixin {
       columns: [
         { key: "stage", label: "cfColStage", dir: "asc", cell: item => `<span class="pill ${tone(item)}">${this.t(`cfStage_${item.stage}`)}</span>` },
         { key: "kind", label: "cfColKind", dir: "asc", cell: item => this.t(`cfKind_${item.kind}`) },
-        { key: "what", label: "cfColWhat", sortable: false, cell: item => `${this.conflictText(item)}<small>${this.esc(this.conflictSeen(item))}</small><small class="fnote">${this.t(`cfHint_${item.kind}`)}</small>` },
+        { key: "what", label: "cfColWhat", sortable: false, cell: item => `${this.conflictText(item)}<small>${this.esc(this.conflictSeen(item))}</small><small class="fnote">${this.t(`cfHint_${item.kind}`)}</small>${item.ignored ? `<small>${this.t("cfKnownNote")}</small>` : ""}` },
         { key: "autos", label: "cfColAutomations", sortable: false, cell: item => item.automations.map(a => `<button class="link" data-object="${this.esc(`automation:${a.entity_id}`)}">${this.esc(a.name)}</button>`).join(" · ") },
+        { key: "act", label: "cfColAction", sortable: false, cell: item => `<button class="btn" data-conflict-key="${this.esc(item.key)}" data-conflict-value="${item.ignored ? 0 : 1}">${this.t(item.ignored ? "cfReport" : "cfKnown")}</button>` },
       ],
     });
-    return `<div class="panel">${this.fold("runs_conflicts", { tone: "warn", title: this.t("cfTitle"), sub: this.t("cfHint"), pill: this.formatNumber(c.items.length) }, list, false)}</div>`;
+    return `<div class="panel">${this.fold("runs_conflicts", { tone: "warn", title: this.t("cfTitle"), sub: this.t("cfHint"), pill: this.formatNumber(c.total) }, list, false)}</div>`;
   }
 
   runsSorts() {
@@ -6790,7 +7417,7 @@ class RunsMixin {
     if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("runsLoading")}</div></div>`;
     this.lvState("runs", "runs", "desc");
     const lower = r.items.filter(row => row.lower_bound).length;
-    const coverage = this.coverageNote(this.t(lower ? "runsCoverageLower" : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }) + ` ${this.excludedText(r.excluded)}`.trimEnd());
+    const coverage = this.coverageNote(this.t(lower ? (lower === 1 ? "runsCoverageLower1" : "runsCoverageLower") : "runsCoverageFull", { n: this.formatNumber(lower), days: r.window_days }) + ` ${this.excludedText(r.excluded)}`.trimEnd());
     const everyCounted = r.items.filter(row => row.runs);
     const counted = this.refine("runs", everyCounted.filter(row => this.runsMatch(row)), { text: row => [row.name, row.entity_id].join(" "), sorts: this.runsSorts(), tie: row => row.entity_id });
     const bar = everyCounted.length > 5 || this.lv.runs.q ? this.runsBar(counted) : "";
@@ -6870,7 +7497,7 @@ class StormsMixin {
     const kindsOf = g => g.items.map(f => f.kind);
     const present = ["storm", "attribute_flood", "no_new_state", "integration_share", "event_burst"].filter(k => groups.some(g => kindsOf(g).includes(k)));
     const columns = [
-      { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.filter(g => g.type === "entities").map(g => g.items[0].entity_id)), cell: g => (g.type === "entities" ? this.excludeBox(g.items[0].entity_id) : "") },
+      { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.filter(g => g.type === "entities").map(g => g.items[0].entity_id)), cell: g => (g.type === "entities" ? this.excludeBox(g.items[0].entity_id) : `<input type="checkbox" class="selbox" disabled title="${this.esc(this.t(g.type === "integrations" ? "stormSelIntegration" : "stormSelEvent", { button: this.t("stormShowEntities") }))}" aria-label="${this.esc(this.t(g.type === "integrations" ? "stormSelIntegration" : "stormSelEvent", { button: this.t("stormShowEntities") }))}">`) }, // only entities can be excluded; a greyed box says why
       { key: "name", label: "utName", cell: g => { const chain = g.items.map(f => this.stormFollowers(f.followers)).find(Boolean); return `${this.nameCell(title(g), g.type === "entities" && g.items[0].entity_id !== title(g) ? g.items[0].entity_id : "")}${chain ? `<small class="muted">${this.esc(chain)}</small>` : ""}`; } },
       { key: "kinds", label: "stormColKinds", sortable: false, cell: g => g.items.map(f => `<span class="pill ${tone(f)}">${this.t(`stormKind_${f.kind}`)}</span>`).join(" ") },
       { key: "perDay", label: "stormColPerDay", dir: "desc", cell: g => num(perDay(g)) },
@@ -6917,11 +7544,11 @@ class StormsMixin {
   stormEntitiesList(entities) {
     const num = v => (v === null || v === undefined ? "–" : this.esc(this.formatNumber(v)));
     const kb = item => (item.attr_bytes === null || item.attr_bytes === undefined ? null : Math.round(item.attr_bytes / 102.4) / 10);
-    const info = item => this.excludeInfo(item);
+    const info = item => this.excludeInfo(item), flood = this.storms?.thresholds?.flood_attr_bytes ?? 4096;
     const columns = [
       { key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.map(item => item.entity_id)), cell: item => this.excludeBox(item.entity_id) },
       { key: "name", label: "utName", cell: item => this.nameCell(item.name || item.entity_id, item.name ? item.entity_id : "") },
-      { key: "hint", label: "stormColHint", sortable: false, cell: item => { const i = info(item); return `<span class="extags" ${i.why ? `title="${this.esc(i.why)}"` : ""}>${i.tags}</span>`; } },
+      { key: "hint", label: "stormColHint", sortable: false, cell: item => { const i = info(item); return `<span class="extags" ${i.why ? `title="${this.esc(i.why)}"` : ""}>${i.tags}</span>${(item.attr_bytes ?? 0) >= flood ? `<button type="button" class="btn quiet" data-space-look="${this.esc(item.entity_id)}">${this.t("spaceLook")}</button>` : ""}`; } },
       { key: "rows", label: "stormColRows", dir: "desc", cell: item => num(item.rows) },
       { key: "perDay", label: "stormColPerDay", dir: "desc", cell: item => num(item.per_day) },
       { key: "noNew", label: "stormColNoNew", dir: "desc", cell: item => (item.no_new_state === null || item.no_new_state === undefined ? "–" : `${this.esc(this.formatNumber(Math.round(item.no_new_state * 100)))} %`) },
@@ -6989,10 +7616,8 @@ class StormsMixin {
   }
 
   // Operation > Recorder: what writes the most, what fills the database, and how healthy it is.
-  // The two recorder queries run one after the other: the second starts when the first is done.
+  // The two recorder queries run one after the other: the open tab's query first, the other when it is done.
   recorderView() {
-    const stormsDone = this.storms || this.stormsError;
-    if (stormsDone) this.ensureDbHealth();
     const st = this.storms?.available && !this.storms.busy ? this.storms : null;
     const db = this.dbHealth?.available && !this.dbHealth.busy ? this.dbHealth : null;
     const meta = this.data?.meta?.database;
@@ -7011,7 +7636,7 @@ class StormsMixin {
     const dbFacts = [
       purge === false ? { text: this.t("recSumPurgeOff"), tone: "warn" } : null,
       bytes !== null && bytes !== undefined ? { text: this.formatBytes(bytes), tone: "mute" } : null,
-      perDay !== null && perDay !== undefined ? { text: this.t("dbOvPerDay", { size: this.formatBytes(Math.max(0, perDay)) }), tone: "mute" } : null,
+      perDay !== null && perDay !== undefined ? { text: this.t("dbOvPerDay", { size: this.dbGrowthSize(perDay) }), tone: "mute" } : null,
     ].filter(Boolean);
     const tabs = [
       { id: "load", icon: "mdi:chart-timeline-variant", label: this.t("stormTitle"), hint: this.t("recTileLoadHint"), count: st ? stormFindings : null, facts: loadFacts, tone: stormTone },
@@ -7019,6 +7644,8 @@ class StormsMixin {
       { id: "db", icon: "mdi:database-outline", label: this.t("dbTitle"), hint: this.t("recTileDbHint"), count: db ? dbFindings : null, facts: dbFacts, tone: dbTone },
     ];
     const open = this.viewTabOf("recorder", tabs, "load");
+    if (open === "db") { this.ensureDbHealth(); if (this.dbHealth || this.dbError) this.ensureStorms(); }
+    else if (this.storms || this.stormsError) this.ensureDbHealth();
     const body = open === "costs" ? this.recorderCard() : open === "db" ? this.dbCard() : this.stormsView();
     return `<div class="stack">${this.navTiles("recorder", tabs, open, this.t("recorder"), true)}${body}</div>`;
   }
@@ -7088,44 +7715,70 @@ class StormsMixin {
   }
 }
 
-// DbHealthMixin: the database card in Maintenance; mixed into the panel in 99-register.js.
+// DbHealthMixin: the database tab of the Recorder; mixed into the panel in 99-register.js.
 class DbHealthMixin {
-  async loadDbHealth(refresh = false, check = false) {
-    this.dbLoading = true; this.dbError = ""; this.render();
+  // quiet: a look while the full check runs; the page keeps its state instead of flashing "reading".
+  async loadDbHealth(refresh = false, check = false, quiet = false) {
+    if (!quiet) { this.dbLoading = true; this.dbError = ""; this.render(); }
     try { this.dbHealth = await this._hass.callWS({ type: "ha_housekeeper/db_health", refresh, ...(check ? { check } : {}) }); }
     catch (err) { this.dbError = this.errText(err); }
     this.dbLoading = false; this.render();
     this.followUp("db", "recorder", this.dbHealth, r => this.loadDbHealth(r), refresh);
-    // The full check runs on in the background: look again until it is done (cached reply, no new query).
+    // The full check runs on in the background: look again until it is done (cached reply, no new query),
+    // but only while the Recorder is open; elsewhere the timer just waits for the way back.
     globalThis.clearTimeout?.(this._dbCheckTimer);
-    if (this.dbHealth?.integrity?.running) this._dbCheckTimer = setTimeout(() => this.loadDbHealth(false), 5000);
+    const look = () => { this._dbCheckTimer = setTimeout(() => (this.view === "recorder" ? this.loadDbHealth(false, false, true) : look()), 5000); };
+    if (this.dbHealth?.integrity?.running) look();
   }
 
-  // Loads on the first visit of Maintenance only: the query reads the recorder, so the overview never starts it.
+  // Loads on the first visit of the Recorder only: the query reads the recorder, so the overview never starts it.
   ensureDbHealth() {
     if (this.dbLoading || this._dbRequested) return;
     this._dbRequested = true;
     setTimeout(() => this.loadDbHealth(), 0);
   }
 
-  dbSeriesList(series) {
-    return series.map(s => this.esc(s.name || s.statistic_id)).join(", ");
+  // A series that is a known entity opens it on the page; the export gets plain names.
+  dbSeriesName(s, links) {
+    const key = `entity:${s.statistic_id}`, name = this.esc(s.name || s.statistic_id);
+    return links && this.findObject(key) ? `<button type="button" class="linklike" data-object="${this.esc(key)}">${name}</button>` : name;
   }
 
-  dbFindingText(f) {
+  dbSeriesList(series, links) {
+    return series.map(s => this.dbSeriesName(s, links)).join(", ");
+  }
+
+  // Growth a day with its sign: a database that shrank after a purge shows minus, not zero. plus also marks growth.
+  dbGrowthSize(bytes, plus = false) {
+    return `${bytes < 0 ? "−" : plus ? "+" : ""}${this.formatBytes(Math.abs(bytes))}`;
+  }
+
+  // The recorder names MariaDB "mysql"; the panel names both.
+  dbDialect(dialect) {
+    return { sqlite: "SQLite", mysql: "MariaDB/MySQL", postgresql: "PostgreSQL" }[dialect] || dialect || "?";
+  }
+
+  dbFindingText(f, links = false) {
     const n = v => this.formatNumber(v), size = v => this.formatBytes(v);
     if (f.kind === "wal_large") return this.t("dbWal", { wal: size(f.wal_bytes), db: size(f.db_bytes) });
     if (f.kind === "growth") return this.t("dbGrowth", { recent: size(f.recent_bytes), base: size(f.base_bytes) });
-    if (f.kind === "duplicates") return this.t("dbDuplicates", { n: n(f.groups), more: f.capped ? "+" : "", list: this.dbSeriesList(f.series) });
+    if (f.kind === "duplicates") return this.t("dbDuplicates", { n: n(f.groups), more: f.capped ? "+" : "", list: this.dbSeriesList(f.series, links) });
     if (f.kind === "missing_hours") {
       if (!f.gap_hours) return this.t("dbMissingOwnOnly", { n: n(f.series_total) });
       return `${this.t("dbMissingShared", { n: n(f.series_total), hours: n(f.gap_hours), count: n(f.gaps_total) })} ${f.own_series ? this.t("dbMissingOwn", { n: n(f.own_series) }) : this.t("dbMissingOnlyShared")}`;
     }
-    if (f.kind === "statistics_issues") return this.t("dbIssues", { n: n(f.series_total), list: f.series.map(s => `${this.esc(s.name || s.statistic_id)} (${s.types.map(type => this.t(`dbIssue_${type}`) === `dbIssue_${type}` ? type : this.t(`dbIssue_${type}`)).join(", ")})`).join(", ") });
+    if (f.kind === "statistics_issues") return this.t("dbIssues", { n: n(f.series_total), list: f.series.map(s => `${this.dbSeriesName(s, links)} (${s.types.map(type => this.t(`dbIssue_${type}`) === `dbIssue_${type}` ? type : this.t(`dbIssue_${type}`)).join(", ")})`).join(", ") });
     if (f.kind === "disk_low") return this.t("dbDiskLow", { free: size(f.free_bytes), total: size(f.total_bytes) });
     if (f.kind === "corrupt_files") return this.t("dbCorruptFiles", { n: n(f.files), size: size(f.bytes), list: f.names.map(x => this.esc(x)).join(", ") });
     if (f.kind === "integrity") return this.t("dbIntegrity", { at: this.formatDate(f.at), lines: f.lines.map(l => this.esc(l)).join("; ") }) + (f.unclean_starts ? ` ${this.t("dbIntegrityCrash", { n: n(f.unclean_starts) })}` : "");
-    return this.t("dbRecorderGap", { n: n(f.gaps), longest: this.relDuration(f.longest_seconds), latest: this.formatDate(new Date(f.latest[0].start * 1000).toISOString()) });
+    if (f.kind === "recorder_gap") return this.t("dbRecorderGap", { n: n(f.gaps), longest: this.relDuration(f.longest_seconds), latest: this.formatDate(new Date(f.latest[0].start * 1000).toISOString()) });
+    return ""; // a kind from a newer backend: the row shows its name and level
+  }
+
+  // A text of a finding kind, or null when this panel does not know the kind yet.
+  dbKindText(prefix, kind) {
+    const key = `${prefix}${kind}`, text = this.t(key);
+    return text === key ? null : text;
   }
 
   // What lies behind a finding: the periods all series lack, and the series with their own and their shared hours.
@@ -7165,55 +7818,103 @@ class DbHealthMixin {
     return `<div class="dbextra">${gaps ? `<div class="sectionlabel">${this.t("dbGapsTitle")}</div>${gaps}` : ""}<div class="sectionlabel">${this.t("dbSeriesTitle", { n: this.formatNumber(f.series_total) })}</div>${table}${more}</div>`;
   }
 
+  // A finding as a fold like the others of the integration: kind, short text and level in the head; the text with its
+  // links, what to do and the periods and sensors of missing hours inside. A problem starts open, a hint closed.
   dbFindingRow(f) {
-    const tone = f.level === "problem" ? "red" : "warn";
-    return `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`dbKind_${f.kind}`)}</strong><small>${this.dbFindingText(f)}</small><small>${this.t(`dbAdvice_${f.kind}`)}</small></span><span class="pill ${tone}">${this.t(f.level === "problem" ? "dbProblem" : "dbHint")}</span></div>${this.dbFindingExtra(f)}`;
+    const tone = f.level === "problem" ? "red" : "warn", advice = this.dbKindText("dbAdvice_", f.kind);
+    const plain = this.plainText(this.dbFindingText(f)), linked = this.dbFindingText(f, true);
+    const body = [linked && linked !== this.dbFindingText(f) ? `<p>${linked}</p>` : "", advice ? `<div class="sectionlabel">${this.t("dbWhatToDo")}</div><p class="factnote">${advice}</p>` : "", this.dbFindingExtra(f)].filter(Boolean).join("");
+    const head = { tone, title: this.dbKindText("dbKind_", f.kind) ?? this.esc(f.kind), sub: plain, pill: this.t(f.level === "problem" ? "dbProblem" : "dbHint"), count: f.kind === "missing_hours" && f.series_total ? this.formatNumber(f.series_total) : "" };
+    return body ? this.fold(`db_${f.kind}`, head, `<div class="dbfold">${body}</div>`, f.level === "problem")
+      : `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:database-alert-outline"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${plain ? `<small>${this.esc(plain)}</small>` : ""}</span><span class="pill ${tone}">${head.pill}</span></div>`;
   }
 
-  // The full integrity check on demand: a button, and the result of the last run.
-  dbCheckRow(r) {
+  // The full integrity check as a tile beside the figures: its result and when; the button sits in the page bar.
+  dbCheckTile(r) {
     const c = r.integrity || {};
-    const note = c.running ? this.t("dbChecking")
-      : c.state === "ok" ? this.t("dbCheckOk", { at: this.formatDate(c.at) })
-      : c.state === "failed" ? this.t("dbCheckFailed", { at: this.formatDate(c.at) })
-      : c.state === "damaged" ? "" : this.t("dbCheckNever");
-    return `<div class="row"><span class="row-text"><small>${this.esc(note)}</small><small>${this.t("dbCheckHint")}</small></span><button class="btn" data-db-check${c.running ? " disabled" : ""}>${this.t("dbCheck")}</button></div>`;
+    if (c.running) return { label: this.t("dbTileCheck"), value: this.t("dbCheckRunning"), sub: this.t("dbCheckRunningSub"), tone: "mute" };
+    const state = ["ok", "damaged", "failed"].includes(c.state) ? c.state : "never";
+    return { label: this.t("dbTileCheck"), value: this.t(`dbCheckState_${state}`), sub: c.at && state !== "never" ? this.formatDate(c.at) : "", tone: { ok: "ok", damaged: "red", failed: "warn", never: "mute" }[state] };
+  }
+
+  // The figures as tiles, and short notes for what could not be measured and for the normal restart gaps;
+  // the page shows them, the export lists them.
+  dbFigures(r) {
+    const dialect = this.esc(this.dbDialect(r.dialect)), server = r.dialect !== "sqlite";
+    const sizeKnown = r.supported && r.db_bytes !== null && r.db_bytes !== undefined, growthKnown = Boolean(r.growth?.known);
+    const tiles = [
+      sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: server ? this.t(r.estimated ? "dbTileEstimated" : "dbTileServer", { dialect }) : this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
+      growthKnown ? { label: this.t("dbTileGrowth"), value: this.dbGrowthSize(r.growth.per_day, true), sub: sizeKnown && r.db_bytes > 0 ? this.t("dbTileGrowthShare", { pct: this.formatNumber(Math.round(Math.abs(r.growth.per_day) / r.db_bytes * 1000) / 10) }) : "", tone: "mute" } : null,
+      r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
+      r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
+      this.dbCheckTile(r),
+    ].filter(Boolean);
+    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : "", r.integrity?.running ? this.t("dbChecking") : ""].filter(Boolean);
+    return { tiles, notes };
+  }
+
+  // What the page shows, for its export; registered before the page bar so the button is there on the first render.
+  dbExporter(r) {
+    const { tiles, notes } = this.dbFigures(r);
+    const facts = [...tiles.map(t => `${t.label}: ${t.value}${t.sub ? ` (${t.sub})` : ""}`), ...notes];
+    this.setPageExporter("recdb", "recorder-database", `${this.t("recorder")} · ${this.t("dbTitle")}`, [
+      { name: "findings", title: this.t("stormTabFindings"), header: [this.t("stormColKinds"), this.t("expColLevel"), this.t("expColText"), this.t("expColAdvice")], rows: () => r.findings.map(f => [this.dbKindText("dbKind_", f.kind) ?? f.kind, this.t(f.level === "problem" ? "dbProblem" : "dbHint"), this.plainText(this.dbFindingText(f)), this.dbKindText("dbAdvice_", f.kind) ?? ""]) },
+      { name: "facts", title: this.t("expColFact"), header: [this.t("expColFact")], rows: () => facts.map(x => [this.plainText(x)]) },
+      { name: "tables", title: this.t("dbTablesTitle"), header: [this.t("dbColTable"), this.t("dbColBytes")], rows: () => (r.tables || []).map(t => [t.name, t.bytes]) },
+    ].filter(sec => sec.rows().length));
   }
 
   dbCard() {
     const r = this.dbHealth;
-    const took = this.tookNote(r);
+    // An older result has its time in the bar on the right; the note on the left then would only say it again.
+    const aged = Boolean(r?.computed_at && (r.stale || r.age_seconds >= 60)), took = aged ? "" : this.tookNote(r).replace(/^ · /, "");
     const ready = Boolean(r?.available && !r.busy);
-    const head = this.pageBar({ left: took ? `<span>${this.esc(took.replace(/^ · /, ""))}</span>` : "", at: this.isoOf(r?.computed_at), loading: this.dbLoading, attr: "data-db-refresh", exportId: ready && !this.dbError ? "recdb" : "" });
+    if (ready && !this.dbError) this.dbExporter(r);
+    const check = ready && !this.dbError ? `<button class="btn" data-db-check title="${this.esc(this.t("dbCheckHint"))}"${r.integrity?.running ? " disabled" : ""}><ha-icon icon="mdi:database-check-outline"></ha-icon>${this.t("dbCheck")}</button>` : "";
+    const head = this.pageBar({ left: took ? `<span>${this.esc(took)}</span>` : "", at: this.isoOf(r?.computed_at), loading: this.dbLoading, attr: "data-db-refresh", exportId: ready && !this.dbError ? "recdb" : "", actions: check });
     if (this.dbError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.dbError)}</div></div>`;
     if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("dbLoading")}</div></div>`;
     if (!r.available) return `<div class="stack">${head}<div class="panel"><p class="factnote">${this.t("relNoRecorder")}</p></div></div>`;
     if (r.busy) return `<div class="stack">${head}<div class="panel">${this.skeleton("relBusy")}<p class="factnote">${this.t("relBusy")}</p></div></div>`;
     const th = r.thresholds || {};
-    const facts = [];
-    if (r.supported && r.db_bytes !== null && r.db_bytes !== undefined) facts.push(this.t("dbSize", { db: this.formatBytes(r.db_bytes), wal: this.formatBytes(r.wal_bytes || 0) }));
-    else facts.push(this.t("dbNoSize", { dialect: this.esc(r.dialect || "?") }));
-    if (r.growth?.known) facts.push(this.t("dbPerDay", { size: this.formatBytes(Math.max(0, r.growth.per_day)) }));
-    else facts.push(this.t("dbGrowthUnknown"));
-    if (r.keep_days) facts.push(this.t("dbKeep", { n: this.formatNumber(r.keep_days) }));
-    if (r.auto_purge === false) facts.push(this.t("dbOvPurgeOff"));
-    if (r.restart_gaps) facts.push(this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }));
-    this.setPageExporter("recdb", "recorder-database", `${this.t("recorder")} · ${this.t("dbTitle")}`, [
-      { name: "findings", title: this.t("stormTabFindings"), header: [this.t("stormColKinds"), this.t("expColLevel"), this.t("expColText"), this.t("expColAdvice")], rows: () => r.findings.map(f => [this.t(`dbKind_${f.kind}`), this.t(f.level === "problem" ? "dbProblem" : "dbHint"), this.plainText(this.dbFindingText(f)), this.t(`dbAdvice_${f.kind}`)]) },
-      { name: "facts", title: this.t("expColFact"), header: [this.t("expColFact")], rows: () => facts.map(x => [this.plainText(x)]) },
-    ].filter(sec => sec.rows().length));
     const rows = r.findings.length ? r.findings.map(f => this.dbFindingRow(f)).join("") : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("dbNone")}</div>`;
-    // The figures stand as tiles; what could not be measured, and the normal restart gaps, stay as short notes.
-    const sizeKnown = r.supported && r.db_bytes !== null && r.db_bytes !== undefined, growthKnown = Boolean(r.growth?.known);
-    const tiles = this.sumTiles([
-      sizeKnown ? { label: this.t("dbTileSize"), value: this.formatBytes(r.db_bytes), sub: this.t("dbTileWal", { wal: this.formatBytes(r.wal_bytes || 0) }), tone: "mute" } : null,
-      growthKnown ? { label: this.t("dbTileGrowth"), value: `+${this.formatBytes(Math.max(0, r.growth.per_day))}`, tone: "mute" } : null,
-      r.keep_days ? { label: this.t("dbTileKeep"), value: this.t("dbTileDays", { n: this.formatNumber(r.keep_days) }), tone: "mute" } : null,
-      r.auto_purge !== undefined && r.auto_purge !== null ? { label: this.t("dbTilePurge"), value: this.t(r.auto_purge === false ? "dbTileOff" : "dbTileOn"), tone: r.auto_purge === false ? "warn" : "ok" } : null,
-    ]);
-    const notes = [sizeKnown ? "" : this.t("dbNoSize", { dialect: this.esc(r.dialect || "?") }), growthKnown ? "" : this.t("dbGrowthUnknown"), r.auto_purge === false ? this.t("dbOvPurgeOff") : "", r.restart_gaps ? this.t("dbRestartGaps", { n: this.formatNumber(r.restart_gaps) }) : ""].filter(Boolean);
-    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${this.dbCheckRow(r)}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30 })}</div></div>`;
+    const figures = this.dbFigures(r), tiles = this.sumTiles(figures.tiles), notes = figures.notes;
+    return `<div class="stack">${head}${tiles}<div class="panel">${rows}${notes.length ? `<p class="factnote">${notes.join(" · ")}</p>` : ""}${this.howCounted("dbFootnote", { gap: th.state_gap_minutes ?? 10, gapDays: th.state_gap_window_days ?? 7, missing: th.gap_min_hours ?? 6, missingDays: th.gap_window_days ?? 30, check: this.t("dbCheckHint") })}</div>${this.dbTablesCard(r)}</div>`;
   }
+
+  // The largest tables (data and indexes); SQLite measures them once a day, a server from its catalog. A list like the
+  // ones of Storage & system: the table in words with its name below, the size with a bar, its share of the database.
+  dbTablesCard(r) {
+    const tables = r.tables || [];
+    if (!tables.length) return "";
+    const total = r.db_bytes || tables.reduce((sum, t) => sum + t.bytes, 0), max = Math.max(0, ...tables.map(t => t.bytes));
+    // One share column: the bar and the number both against the whole database.
+    const label = t => { const key = `dbTable_${t.name}`, text = this.t(key); return text === key ? t.name : text; };
+    const share = t => (total ? Math.round(t.bytes / total * 100) : 0);
+    const list = this.sysList("dbtables", tables, {
+      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "dbColTable", dir: "asc", get: label }],
+      text: t => `${label(t)} ${t.name}`, tie: t => t.name, empty: "dbSeriesNone",
+      columns: [
+        { key: "name", label: "dbColTable", dir: "asc", cell: t => `${this.spaceTable(t.name) ? `<ha-icon class="spacechev" icon="mdi:chevron-${this.spaceOpen === t.name ? "down" : "right"}"></ha-icon>` : ""}${this.nameCell(label(t), label(t) !== t.name ? t.name : "")}` },
+        this.sysSizeColumns(max)[0],
+        { key: "share", label: "dbColPct", sortable: false, cell: t => `<span class="dbshare">${this.sysShare(t.bytes, total)}<b>${this.esc(`${this.formatNumber(share(t))} %`)}</b></span>` },
+      ],
+      exportName: "recorder-tables", header: [this.t("dbColTable"), "Name", "Bytes", "%"], rows: t => [label(t), t.name, t.bytes, share(t)],
+      // states and state_attributes unfold the space per entity below them.
+      rowAttrs: t => (this.spaceTable(t.name) ? `data-space-toggle="${this.esc(t.name)}" tabindex="0" role="button" aria-expanded="${this.spaceOpen === t.name}"` : 'class="static"'),
+      after: t => (this.spaceOpen === t.name ? `<tr class="static"><td colspan="3"><div class="spacebox">${this.spaceBlock()}</div></td></tr>` : ""),
+    });
+    const more = r.tables_total > tables.length ? `<p class="factnote">${this.t("dbTablesMore", { n: this.formatNumber(r.tables_total - tables.length) })}</p>` : "";
+    const at = r.tables_at ? ` ${this.t("dbTablesAt", { at: this.esc(this.relTime(new Date(r.tables_at * 1000).toISOString())) })}` : "";
+    let again = "";
+    if (tables.some(t => this.spaceTable(t.name))) {
+      this.ensureSpace();
+      const busy = Boolean(this.space?.running);
+      again = `<div class="actions"><button class="btn quiet" data-space-start ${busy ? 'aria-busy="true"' : ""} ${busy || !this.space?.available ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("spaceAgain")}</button></div>`;
+    }
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.t("dbTablesTitle")}</h2><p>${this.t(r.dialect === "sqlite" ? "dbTablesHintSqlite" : "dbTablesHint")}${at}</p></div>${again}</div>${list}${more}</div>`;
+  }
+
 }
 
 // ExposureMixin: which entities assistants and bridges can reach; mixed into the panel in 99-register.js.
@@ -7407,7 +8108,7 @@ const SEARCH_WORDS = {
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
   goals: "ziele wartungsziele grenzen goals",
   backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
-  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs firmware check before",
+  updates: "updates aktualisierungen vorab prüfen preflight speicher system apps hacs marketplace firmware check before",
   blueprints: "blueprints vorlagen fehlend defekt ungenutzt missing broken unused",
   info: "info version speichert daten diagnose prüfung quellen dauer about stored diagnostics coverage timing",
   compare: "scan-vergleich verlauf vergleich scans history compare",
@@ -7481,11 +8182,14 @@ class SearchPagesMixin {
     this.view = view; this.pages = {}; this.selected = null; this.trail = []; this.graphTrail = []; this.graphOrigin = null;
     if (entry.settingsTab) this.settingsTab = entry.settingsTab;
     if (entry.viewTab) (this.viewTab ||= {})[view] = entry.viewTab;
-    if (entry.kind === "filter" && entry.objectStatus) { this.statusFilter = entry.objectStatus; this.typeFilter = ""; this.originFilter = ""; }
+    // A filter from the search shows what its count said: the list starts without the search and filters kept before.
+    if (entry.kind === "filter" && entry.objectStatus) {
+      const st = this.invState(); st.q = ""; st.f = {}; // type, origin, label and status live in the filters of the list
+      this.statusFilter = entry.objectStatus;
+    }
     if (entry.kind === "filter" && !entry.objectStatus) {
-      const fresh = FRESH_STATES.includes(entry.findingStatus);
-      this.findingStatus = fresh ? "" : entry.findingStatus;
-      if (fresh) this.lvState("findings", "impact", "desc").f.fresh = entry.findingStatus;
+      this.clearFindingFilters();
+      this.findingStatus = entry.findingStatus; // new and in work are chips of the status row like the others
     }
     this.render();
     if (view === "changes" && !this.compare) this.loadCompare();
@@ -7648,22 +8352,20 @@ class PoliciesMixin {
   polItemParts(item) {
     const pill = item.ignored ? `<span class="pill mute">${this.t(item.by === "label" ? "polByLabel" : item.by === "rule" ? "hidByRule" : "polHiddenLabel")}</span>` : "";
     const due = item.resurfaced ? `<span class="pill warn">${this.t("dueLabel")}</span>` : "";
-    const button = item.by === "label" || item.by === "rule" ? ""
-      : item.ignored ? `<button class="btn" data-policy-ignore="${this.esc(item.key)}" data-policy-value="0">${this.t("polShow")}</button>`
-      : `<button class="btn" data-decide-open="${this.esc(item.key)}">${this.t("polHide")}</button>`;
     const decision = item.ignored && item.by === "user" ? `<small>${this.esc(this.decisionLabel(item))}</small>` : "";
     const form = this.decide?.key === item.key ? this.decideForm(item) : "";
     const open = this.polIsOpen(item), main = this.polMainAction(item);
-    // A row with a fix offers it as its button (it folds the row open); the other rows keep their hide button; an opened row has it next to "open object".
-    const act = open ? "" : main ? `<button class="btn" data-pol-open="${this.esc(item.key)}">${this.t(main)}</button>` : button;
-    return { pill, due, button, decision, form, open, act };
+    // The menu of a row: the fix that folds it open (not once it is open), hide or show, and open the object.
+    const hide = item.by === "label" || item.by === "rule" ? null : item.ignored ? ["mdi:eye-outline", "polShow", `data-policy-ignore="${this.esc(item.key)}" data-policy-value="0"`] : ["mdi:eye-off-outline", "polHide", `data-decide-open="${this.esc(item.key)}"`];
+    const act = this.rowMenuHtml([!open && main ? ["mdi:wrench-outline", main, `data-pol-open="${this.esc(item.key)}"`] : null, hide, ["recorder", "system", "user"].includes(item.object_type) ? null : ["mdi:open-in-new", "decOpenObject", `data-object="${this.esc(`${item.object_type}:${item.object_id}`)}"`]]);
+    return { pill, due, decision, form, open, act };
   }
 
   // The compact row of the object's own page: the violation with its note and fix, no table around it.
   polItemRow(item) {
-    const { pill, due, button, decision, form, open, act } = this.polItemParts(item);
+    const { pill, due, decision, form, open, act } = this.polItemParts(item);
     const chev = this.expandBtn("data-pol-open", item.key, open, this.t(open ? "polCloseRow" : "polOpenRow"));
-    const detail = open ? this.polDetail(item, button) : "";
+    const detail = open ? this.polDetail(item) : "";
     return `<div class="row politem${open ? " open" : ""}" data-pol-row="${this.esc(item.key)}">${chev}<span class="row-text"><strong>${this.esc(item.name)}</strong>${this.rowId(item.object_id, item.rule ? this.t(`polRule_${item.rule}`) : "")}${this.polItemNote(item)}${decision}${detail}</span>${due}${pill}${act}</div>${form}`;
   }
 
@@ -7724,16 +8426,19 @@ class PoliciesMixin {
         return `<div class="statcell">${this.expandBtn("data-pol-open", item.key, open, this.t(open ? "polCloseRow" : "polOpenRow"))}<div>${link}</div></div>`;
       } },
       { key: "rule", label: "polColRule", dir: "asc", cell: item => this.esc(ruleName(item)) },
-      { key: "note", label: "polColNote", sortable: false, cell: item => `${this.polItemNote(item)}${this.polItemParts(item).decision}` || "—" },
-      { key: "status", label: "sortStatus", dir: "asc", cell: item => { const { pill, due } = this.polItemParts(item); return `${due}${pill}` || "—"; } },
-      { key: "act", label: "btColAct", sortable: false, cell: item => this.polItemParts(item).act },
+      // Note: a fact of the rule (days unused, retention, expected prefix) or why a row is hidden; status: hidden or due.
+      // Each column only stands while a row of the list has something for it.
+      ...(shown.some(item => this.polItemNote(item) || this.polItemParts(item).decision) ? [{ key: "note", label: "polColNote", sortable: false, cell: item => `${this.polItemNote(item)}${this.polItemParts(item).decision}` || "—" }] : []),
+      ...(shown.some(item => item.ignored || item.resurfaced) ? [{ key: "status", label: "sortStatus", dir: "asc", cell: item => { const { pill, due } = this.polItemParts(item); return `${due}${pill}` || "—"; } }] : []),
+      { key: "act", label: "btColAct", menu: true, narrow: true, sortable: false, cell: item => this.polItemParts(item).act },
     ];
     const after = item => {
-      const { open, button, form } = this.polItemParts(item);
-      return `${open ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${this.polDetail(item, button)}</td></tr>` : ""}${form ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${form}</td></tr>` : ""}`;
+      const { open, form } = this.polItemParts(item);
+      return `${open ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${this.polDetail(item)}</td></tr>` : ""}${form ? `<tr class="static poldetailrow"><td colspan="${columns.length}">${form}</td></tr>` : ""}`;
     };
     const hidden = on.reduce((n, rule) => n + (rule.ignored || 0), 0);
-    const note = hidden && !this.policyShowHidden ? `<p class="factnote">${this.t("polHiddenN", { n: this.formatNumber(hidden) })}</p>` : "";
+    // Showing the hidden rows belongs to the list: the line below it counts them and switches them on and off.
+    const note = hidden ? `<p class="factnote pad">${this.policyShowHidden ? "" : `${this.t("polHiddenN", { n: this.formatNumber(hidden) })} · `}<button class="link" data-policy-hidden aria-pressed="${Boolean(this.policyShowHidden)}">${this.t(this.policyShowHidden ? "polHideHidden" : "polShowHidden")}</button></p>` : "";
     const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "pols", rowAttrs: item => `data-pol-row="${this.esc(item.key)}"`, after }) : `<div class="emptymsg">${items.length ? this.noMatches(id) : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("polNoViolations")}`}</div>`;
     return `<div class="panel">${bar}${this.polSelBar(shown.length)}${table}${pg.footer}${note}</div>`;
   }
@@ -7741,9 +8446,7 @@ class PoliciesMixin {
   policiesView() {
     this.ensurePolicies();
     const r = this.policies;
-    const anyHidden = r?.rules?.some(rule => rule.ignored);
-    const left = anyHidden ? `<button class="chip ${this.policyShowHidden ? "active" : ""}" data-policy-hidden aria-pressed="${Boolean(this.policyShowHidden)}">${this.t(this.policyShowHidden ? "polHideHidden" : "polShowHidden")}</button>` : "";
-    const head = this.pageBar({ left, at: this.policiesAt, loading: this.policiesLoading, attr: "data-policy-refresh" });
+    const head = this.pageBar({ at: this.policiesAt, loading: this.policiesLoading, attr: "data-policy-refresh" });
     if (this.policiesError) return `<div class="stack">${head}<div class="panel">${this.notice("err", this.policiesError)}</div></div>`;
     if (!r) return `<div class="stack">${head}<div class="panel">${this.skeleton("polLoading")}</div></div>`;
     const on = r.rules.filter(rule => rule.enabled);
@@ -7766,7 +8469,13 @@ class LayoutMixin {
   // A row of key figures. tile: { label, value, sub, tone ("ok"|"warn"|"red"|"mute"), tab, filter, lf } where tab ("view|id") makes it a button; lf ([list id, filter name, value]) sets that list filter, an empty name clears them all.
   // `cls` adds a class to the grid, e.g. "even" for tiles of one size in rows of three.
   sumTiles(tiles, cls = "") {
-    const cells = tiles.filter(Boolean).map(t => {
+    const cells = this.sumTileCells(tiles);
+    return cells ? `<div class="sumtiles${cls ? ` ${cls}` : ""}" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
+  }
+
+  // The tiles alone, for a page that lays them out in a grid of its own.
+  sumTileCells(tiles) {
+    return tiles.filter(Boolean).map(t => {
       const inner = `<span class="sumlabel">${this.esc(t.label)}</span><b class="sumvalue">${t.value}</b>${t.sub ? `<small>${t.sub}</small>` : ""}${t.spark ? `<span class="spark-row">${t.spark}</span>` : ""}`;
       const hint = t.hint ? ` title="${this.esc(t.hint)}"` : "";
       // Three kinds, told apart by a cue in the corner: a figure only (flat), a filter of the list below (funnel, marked when on), a link to another page (arrow).
@@ -7774,7 +8483,8 @@ class LayoutMixin {
       if (t.filter !== undefined) return filter(`data-finding-filter="${this.esc(t.filter)}"`, t.active);
       if (t.lf) {
         const [id, name, value] = t.lf, f = this.lv[id]?.f || {};
-        return filter(`data-lf-set="${this.esc(t.lf.join("|"))}"`, name ? f[name] === value : !Object.values(f).some(Boolean));
+        // A tile without a filter of its own ("All") clears the filters; it is not marked itself, only a filter that is on is.
+        return filter(`data-lf-set="${this.esc(t.lf.join("|"))}"`, name ? f[name] === value : false);
       }
       if (t.attr && t.attr[0] !== "data-object") return filter(`${t.attr[0]}="${this.esc(t.attr[1])}"`, t.active);
       if (t.inv !== undefined) return filter(`data-inv-filter="${this.esc(t.inv)}"`, t.active);
@@ -7783,7 +8493,6 @@ class LayoutMixin {
       if (t.unref) return go(`data-unref-tab="${t.unref}"`);
       return t.tab ? go(`data-view-tab="${this.esc(t.tab)}"`) : `<div class="sumtile ${t.tone || "mute"}"${hint}>${inner}</div>`;
     }).join("");
-    return cells ? `<div class="sumtiles${cls ? ` ${cls}` : ""}" role="group" aria-label="${this.esc(this.t("sumLabel"))}">${cells}</div>` : "";
   }
 
   // When the data of a page was read last (for its "as of"), and a time given in seconds as ISO text.
@@ -7793,19 +8502,20 @@ class LayoutMixin {
 
   // The slim row under a page title: the page's own controls and facts on the left, "as of" and the refresh button on the
   // right. { left, at (ISO time or null), loading, error, attr (the data-… attribute of the refresh button), exportId (a page exporter) }.
-  pageBar({ left = "", at = null, loading = false, attr = "", refresh = true, exportId = "" }) {
+  pageBar({ left = "", at = null, loading = false, attr = "", refresh = true, exportId = "", actions = "" }) {
     const stand = loading ? this.t("sysReading") : at ? this.t("sysAsOf", { time: this.formatDate(at) }) : "";
-    return `<div class="pagebar"><div class="pb-left">${left}</div><div class="pb-right">${stand ? `<span class="scanago">${this.esc(stand)}</span>` : ""}${exportId ? this.exportMenu(exportId) : ""}${refresh ? `<button class="btn" ${attr} title="${this.esc(this.t("sysRefreshHint"))}" ${loading ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:refresh" class="${loading ? "spin" : ""}"></ha-icon>${this.t("sysRefresh")}</button>` : ""}</div></div>`;
+    return `<div class="pagebar"><div class="pb-left">${left}</div><div class="pb-right">${stand ? `<span class="scanago">${this.esc(stand)}</span>` : ""}${actions}${exportId ? this.exportMenu(exportId) : ""}${refresh ? `<button class="btn" ${attr} title="${this.esc(this.t("sysRefreshHint"))}" ${loading ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:refresh" class="${loading ? "spin" : ""}"></ha-icon>${this.t("sysRefresh")}</button>` : ""}</div></div>`;
   }
 
   // Tiles that switch between the areas of one view: icon, title, number and a short hint; the open one is marked.
-  // tab: { id, icon, label, hint, count, tone, pill, pillTone, disabled }.
+  // tab: { id, icon, label, hint, count, tone, pill, pillTone, disabled, status }; status keeps the place of the pill while
+  // the numbers load, so the hints of a row of status tiles stay on one line.
   navTiles(view, tabs, open, label, compact = false) {
     const fixed = compact && tabs.some(t => t.facts);
     const cells = tabs.map(t => {
       const tone = t.tone || "mute", has = t.count !== undefined && t.count !== null;
-      const pills = `${has ? `<span class="pill ${tone}">${this.esc(this.formatNumber(t.count))}</span>` : ""}${t.pill ? `<span class="pill ${t.pillTone || tone}">${this.esc(t.pill)}</span>` : ""}`;
-      const inner = `<ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill">${pills}</span><small title="${this.esc(t.hint || "")}">${this.esc(t.hint || "")}</small>${t.facts ? `<span class="navfacts">${t.facts.map(f => `<span class="pill ${f.tone}">${this.esc(f.text)}</span>`).join("")}</span>` : ""}`;
+      const pills = `${has ? `<span class="pill ${tone}">${this.esc(this.formatNumber(t.count))}</span>` : ""}${t.pill ? `<span class="pill ${t.pillTone || tone}">${this.esc(t.pill)}</span>` : ""}${(t.extra || []).map(f => `<span class="pill ${f.tone}">${this.esc(f.text)}</span>`).join("")}`;
+      const inner = `<ha-icon icon="${t.icon}"></ha-icon><strong>${this.esc(t.label)}</strong><span class="setpill${t.status ? " slot" : ""}">${pills}</span><small title="${this.esc(t.hint || "")}">${this.esc(t.hint || "")}</small>${t.facts ? `<span class="navfacts">${t.facts.map(f => `<span class="pill ${f.tone}">${this.esc(f.text)}</span>`).join("")}</span>` : ""}`;
       if (t.disabled) return `<div class="taskcard t-mute off" aria-disabled="true">${inner}</div>`;
       return `<button class="taskcard t-${tone}${t.id === open ? " on" : ""}" aria-pressed="${t.id === open}" data-view-tab="${this.esc(`${view}|${t.id}`)}">${inner}</button>`;
     }).join("");
@@ -8014,11 +8724,15 @@ class CorrelationMixin {
     return list.length ? `<div class="corralso u-mb14"><strong>${this.t("corrAlsoLabel")}</strong><ul>${list.join("")}</ul></div>` : "";
   }
 
+  // The findings of an incident are not listed again here: one button narrows the findings list below to them.
   corrGroupBody(group) {
-    const findings = group.keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean);
-    const pg = this.paginate(`corr_${group.id}`, findings);
-    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${pg.rows.map(f => this.findingRow(f, false, false)).join("")}${pg.footer}`;
+    const findings = group.keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean), n = this.corrKeys(group.id).size;
+    const show = n ? `<button type="button" class="btn" data-corr-show="${this.esc(group.id)}"><ha-icon icon="mdi:filter-variant"></ha-icon>${this.t("corrShowN", { n: this.formatNumber(n) })}</button>` : "";
+    return `${this.corrAlso(group)}${this.corrSummary(group, findings)}${show}`;
   }
+
+  // The open findings that began with one incident: the filter its button sets.
+  corrKeys(id) { const by = this.corr?.by_key || {}; return new Set((this.data?.findings || []).filter(f => !f.ignored && by[f.key] === id).map(f => f.key)); }
 
   // The incidents of the findings page: every update or restart that has findings, and every watch after a system
   // update. A watch belongs to the incident that holds the same update (kind, from, to); one without findings stands alone.
@@ -8050,27 +8764,12 @@ class CorrelationMixin {
 
   incidentBody(item) {
     const parts = [];
-    if (item.watch) parts.push(`<div class="incsec obs"><h4>${this.t("incObs")}</h4>${this.watchBody(item.watch)}</div>`);
-    if (item.group) parts.push(`<div class="incsec"><h4>${this.t("incFindings", { n: this.formatNumber(item.group.total) })}</h4>${this.corrGroupBody(item.group)}</div>`);
+    if (item.watch) parts.push(`<div class="incsec obs"><div class="sectionlabel">${this.t("incObs")}</div>${this.watchBody(item.watch)}</div>`);
+    if (item.group) parts.push(`<div class="incsec"><div class="sectionlabel">${this.t("incFindings", { n: this.formatNumber(item.group.total) })}</div>${this.corrGroupBody(item.group)}</div>`);
     return parts.join("");
   }
 
-  incidentRow(item) {
-    const { group, watch } = item, id = this.incidentId(item), open = this.foldOpen(id, false);
-    const running = watch && !watch.closed_at;
-    const icon = !group ? "mdi:package-up" : group.kind === "start" ? "mdi:restart" : group.kind === "plan" ? "mdi:broom" : group.kind === "purge" ? "mdi:database-remove" : group.kind === "note" ? "mdi:pin-outline" : "mdi:package-up";
-    const title = group ? this.corrText(group) + (group.also?.length ? ` <span class="pill warn alsopill" title="${this.esc(this.t("corrAlsoLabel"))}">+${group.also.length}</span>` : "") : this.watchWhat(watch);
-    const when = [this.formatDate(item.at)];
-    if (running) when.push(this.t("incLeft", { hours: Math.max(0, Math.ceil((Date.parse(watch.until) - Date.now()) / 3600000)) }));
-    else if (watch?.closed_at) when.push(this.t("watchEnded", { when: this.formatDate(watch.closed_at) }));
-    const tones = { worse: "red", stable: "ok", transient: "mute", unknown: "mute", pending: "warn" };
-    const pills = [group ? `<span class="pill ${group.only_group ? "mute" : "warn"}">${this.esc(this.t("corrCount", { n: this.formatNumber(group.total) }))}</span>` : (watch ? `<span class="pill mute">${this.esc(this.t("incNoFindings"))}</span>` : ""),
-      watch ? `<span class="pill ${tones[watch.result?.verdict] || "mute"}">${this.esc(this.t(`watchV_${watch.result?.verdict || "unknown"}`))}</span>` : ""].join("");
-    const endBtn = running ? `<button class="btn quiet" data-watch-end><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("watchEnd")}</button>` : "";
-    const tile = group && group.only_group ? "mute" : "warn";
-    const head = `<div class="incidenthead"><button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${tile}"><ha-icon icon="${open ? "mdi:chevron-down" : icon}"></ha-icon></span><span class="row-text"><strong>${title}</strong><small>${this.esc(when.join(" · "))}</small></span>${pills}</button>${endBtn}</div>`;
-    return `<div class="fold${open ? " open" : ""}">${head}${open ? `<div class="foldbody">${this.incidentBody(item)}</div>` : ""}</div>`;
-  }
+  incidentIcon(group) { return !group ? "mdi:package-up" : group.kind === "start" ? "mdi:restart" : group.kind === "plan" ? "mdi:broom" : group.kind === "purge" ? "mdi:database-remove" : group.kind === "note" ? "mdi:pin-outline" : "mdi:package-up"; }
 
   // One card for what began or stopped after an update or restart. Closed by default; the filter line stays in view.
   corrGroupsCard(afterCount = 0, follows = 0) {
@@ -8079,12 +8778,32 @@ class CorrelationMixin {
     if (!items.length) return "";
     const pg = this.paginate("corr", items);
     const open = this.foldOpen("corr", false);
-    const rows = pg.rows.map(it => this.incidentRow(it)).join("");
+    // The incidents as a list like the backups: a row opens its details below it, running watches first.
+    this.lvState("corr", "at", "desc");
+    const tones = { worse: "red", stable: "ok", transient: "mute", unknown: "mute", pending: "warn" };
+    const isOpen = it => this.foldOpen(this.incidentId(it), false), running = it => it.watch && !it.watch.closed_at;
+    const columns = [
+      { key: "what", label: "incColWhat", sortable: false, cell: it => {
+        const { group, watch } = it, id = this.incidentId(it), also = group?.also?.length ? ` <span class="pill warn alsopill" title="${this.esc(this.t("corrAlsoLabel"))}">+${group.also.length}</span>` : "";
+        return `<div class="statcell">${this.expandBtn("data-inc-more", id, isOpen(it), this.t(isOpen(it) ? "incClose" : "incOpen"))}<ha-icon class="incicon" icon="${this.incidentIcon(group)}"></ha-icon><div><strong>${group ? this.corrText(group) : this.watchWhat(watch)}</strong>${also}</div></div>`;
+      } },
+      { key: "at", label: "incColAt", sortable: false, cell: it => this.ageCell(it.at) },
+      { key: "findings", label: "incColFindings", sortable: false, cell: it => (it.group ? `<span class="pill ${it.group.only_group ? "mute" : "warn"}">${this.esc(this.formatNumber(it.group.total))}</span>` : "–") },
+      { key: "watch", label: "incColWatch", sortable: false, cell: it => {
+        const w = it.watch;
+        if (!w) return "–";
+        const left = running(it) ? `<small class="muted">${this.esc(this.t("incLeft", { hours: Math.max(0, Math.ceil((Date.parse(w.until) - Date.now()) / 3600000)) }))}</small>` : "";
+        return `<span class="pill ${tones[w.result?.verdict] || "mute"}">${this.esc(this.t(`watchV_${w.result?.verdict || "unknown"}`))}</span>${left}`;
+      } },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: it => (running(it) ? `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-watch-end><ha-icon icon="mdi:eye-off-outline"></ha-icon>${this.t("watchEnd")}</button></div></details>` : "") },
+    ];
+    const table = this.listTable("corr", columns, pg.rows, { cls: "inc", rowAttrs: it => `data-inc-row="${this.esc(this.incidentId(it))}" tabindex="0" role="button" aria-expanded="${isOpen(it)}"`,
+      after: it => (isOpen(it) ? `<tr class="static remhist"><td colspan="${columns.length}"><div class="incdetail">${this.incidentBody(it)}</div></td></tr>` : "") });
     const pill = `<span class="pill warn">${this.esc(this.t("corrIncidents", { n: this.formatNumber(items.length) }))}</span>`;
     const top = `<button class="row foldhead" data-fold="corr" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("corrTitle")}</strong><small>${this.esc(this.t("corrHint"))}</small></span>${pill}</button>`;
     const on = Boolean(this.findingAfter);
-    const strip = afterCount ? `<div class="incfilter${on ? " on" : ""}"><span><b>${this.esc(this.t("corrStrip", { n: this.formatNumber(afterCount) }))}</b>${follows ? ` <span class="muted">· ${this.esc(this.t("findingsFollowSub", { n: this.formatNumber(follows) }))}</span>` : ""}</span><button class="chip" data-finding-after="1" aria-pressed="${on}"><ha-icon icon="mdi:${on ? "close" : "filter-variant"}"></ha-icon>${this.t(on ? "corrFilterOff" : "corrFilterOn")}</button></div>` : "";
-    return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${strip}${open ? `<div class="foldbody">${rows}${pg.footer}</div>` : ""}</div></div>`;
+    const strip = afterCount ? `<div class="incfilter${on ? " on" : ""}"><span><b>${this.esc(this.t("corrStrip", { n: this.formatNumber(afterCount) }))}</b>${follows ? ` <span class="muted">· ${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) }))}</span>` : ""}</span><button class="chip" data-finding-after="1" aria-pressed="${on}"><ha-icon icon="mdi:${on ? "close" : "filter-variant"}"></ha-icon>${this.t(on ? "corrFilterOff" : "corrFilterOn")}</button></div>` : "";
+    return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${strip}${open ? `<div class="foldbody">${table}${pg.footer}</div>` : ""}</div></div>`;
   }
 }
 
@@ -8206,22 +8925,29 @@ class WatchMixin {
     return `<div class="panel u-mb14" data-watch><button class="row" data-watch-go="${this.esc(w.id || "")}" title="${this.esc(this.t("watchGo"))}"><span class="tile ${n ? "warn" : "mute"}"><ha-icon icon="mdi:eye-check-outline"></ha-icon></span><span class="row-text"><strong>${text}</strong><small>${this.t("watchGo")}</small></span></button></div>`;
   }
 
-  // past = a group about the time of the watch (briefly disturbed, fixed): no finding row with the state of today, only a note when it is a finding again.
+  // The objects of one section of a watch as a small table: object, state, menu. An object that is a finding has the menu
+  // of a finding row (decisions, mark); past = a group about the time of the watch: only a note when it is a finding again.
   watchRows(keys, tone, past = false) {
-    const pg = keys.slice(0, WATCH_LIST).map(key => {
-      // An object that is a finding already shows as in the findings list: checkbox, menu, decisions.
+    const id = `watch_${tone}_${past ? "past" : "now"}`;
+    this.lvState(id, "name", "asc");
+    const rows = keys.slice(0, WATCH_LIST).map(key => {
       const finding = (this.data?.findings || []).find(f => !f.ignored && this.findingKey(f) === key);
-      if (finding && !past) return this.findingRow(finding, false, false);
       const item = this.findObject(key);
-      const name = item?.name || key.split(":").slice(1).join(":");
-      const mark = item?.mark;
-      const again = past && finding ? `<span class="pill warn">${this.t("watchAgain")}</span>` : "";
-      const menu = item && !past ? this.objectMenu(key, !mark) : "";
-      const act = past ? again : `${mark ? `<span class="pill mute">${this.esc(this.t(`mark_${mark.kind}`))}</span>` : ""}${menu}`;
-      return `<div class="row" role="button" tabindex="0" data-object="${this.esc(key)}">${this.tile(item?.object_type || key.split(":")[0], tone)}<span class="row-text"><strong>${this.esc(name)}</strong><small>${this.esc(key)}${item?.status && !past ? ` · ${this.esc(item.status)}` : ""}</small></span>${act}</div>`;
-    }).join("");
+      return { key, finding, item, name: item?.name || key.split(":").slice(1).join(":"), type: item?.object_type || key.split(":")[0] };
+    });
+    const state = r => {
+      if (past) return r.finding ? `<span class="pill warn">${this.t("watchAgain")}</span>` : "–";
+      const mark = r.item?.mark;
+      return [r.item?.status ? `<span class="pill ${tone}">${this.esc(this.t(r.item.status))}</span>` : "", mark ? `<span class="pill mute">${this.esc(this.t(`mark_${mark.kind}`))}</span>` : ""].join("") || "–";
+    };
+    const menu = r => (past ? "" : r.finding ? this.rowMenu(r.finding) : r.item ? this.objectMenu(r.key, !r.item.mark) : "");
+    const columns = [
+      { key: "name", label: "sortName", sortable: false, cell: r => `<div class="statcell">${this.tile(r.type, tone)}<div>${this.nameCell(r.name, r.key)}</div></div>` },
+      { key: "state", label: "sortStatus", sortable: false, cell: state },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
+    ];
     const more = keys.length > WATCH_LIST ? `<p class="sub">${this.t("watchMore", { n: this.formatNumber(keys.length - WATCH_LIST) })}</p>` : "";
-    return pg + more;
+    return this.listTable(id, columns, rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"` }) + more;
   }
 
   // Ends the open watch only after the person has said yes: what it measured so far is judged and no more scans follow.
@@ -8239,11 +8965,11 @@ class WatchMixin {
     const r = { silent: [], marked: [], ...w.result }, parts = [];
     parts.push(`<p class="sub u-mb14">${w.before ? this.t("watchBefore", { when: this.formatDate(w.before.at) }) : this.t("watchNoBefore")} · ${this.t("watchSamples", { n: w.samples.length })}</p>`);
     if (r.reason === "unread") parts.push(`<p class="factnote">${this.t("watchUnread")}</p>`);
-    const section = (id, keys, tone, past = false) => keys.length ? `<h3>${this.t(id, { n: this.formatNumber(keys.length) })}</h3>${this.watchRows(keys, tone, past)}` : "";
+    const section = (id, keys, tone, past = false) => keys.length ? `<div class="sectionlabel">${this.t(id, { n: this.formatNumber(keys.length) })}</div>${this.watchRows(keys, tone, past)}` : "";
     parts.push(section("watchNew", r.new, "warn"), section("watchSilent", r.silent, "mute"), section("watchMarked", r.marked, "mute"), section("watchTransient", r.transient, "mute", true), section("watchFixed", r.fixed, "ok", true));
     if (r.new_repairs?.length) {
       const info = this.watch?.repairs || {};
-      parts.push(`<h3>${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</h3>${r.new_repairs.slice(0, WATCH_LIST).map(key => {
+      parts.push(`<div class="sectionlabel">${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</div>${r.new_repairs.slice(0, WATCH_LIST).map(key => {
         const i = info[key], domain = key.split(":")[0], id = key.split(":").slice(1).join(":");
         const sub = [this.esc(domain), ["critical", "error", "warning"].includes(i?.severity) ? this.t(`repairSeverity_${i.severity}`) : "", i?.fixable ? this.t("repairFixable") : ""].filter(Boolean).join(" · ");
         return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(i?.title || id)}</strong><small>${sub}</small></span>${i?.url ? `<a class="btn quiet" href="${this.esc(i.url)}" target="_blank" rel="noopener noreferrer">${this.t("repairMore")}</a>` : ""}</div>`;
@@ -8451,7 +9177,7 @@ class MarksMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("markTitle")}</h2><p>${this.t("markHint")}</p></div></div>`;
     if (f && f.key === key) return `<section class="panel">${head}${this.markFormHtml(f, key)}</section>`;
     const body = mark
-      ? `<div class="row"><span class="tile ${item.mark_due ? "warn" : "mute"}"><ha-icon icon="mdi:bookmark-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t(`mark_${mark.kind}`))}</strong><small>${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}</small></span><button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}">${this.t("markClear")}</button></div>`
+      ? `<div class="row"><span class="tile ${item.mark_due ? "warn" : "mute"}"><ha-icon icon="mdi:bookmark-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t(`mark_${mark.kind}`))}</strong><small>${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}</small></span><button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button>${this.rowMenuHtml([["mdi:bookmark-remove-outline", "markClear", `data-mark-clear="${this.esc(key)}"`]])}</div>`
       : `<div class="pad"><p class="factnote">${this.t("markNone")}</p><button class="btn" data-mark-open="${this.esc(key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("markSet")}</button></div>`;
     return `<section class="panel">${head}${body}</section>`;
   }
@@ -8462,7 +9188,7 @@ class MarksMixin {
     const f = this.markForm, key = this.objectKey(item), mark = item.mark;
     if (f && f.key === key) return [this.actRow(this.t("markTitle"), this.t("markHint"), ""), `<div class="actblock">${this.markFormHtml(f, key)}</div>`];
     if (!mark) return [...this.oftenRows(item), this.actRow(this.t("markTitle"), `${this.t("markNone")} ${this.t("markHint")}`, `<button class="btn" data-mark-open="${this.esc(key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("markSet")}</button>`)];
-    return [this.actRow(`${this.esc(this.t("markTitle"))}: ${this.esc(this.t(`mark_${mark.kind}`))}`, `${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}`, `<button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button><button class="btn quiet" data-mark-clear="${this.esc(key)}">${this.t("markClear")}</button>`)];
+    return [this.actRow(`${this.esc(this.t("markTitle"))}: ${this.esc(this.t(`mark_${mark.kind}`))}`, `${this.esc(this.markLine(mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}`, `<button class="btn" data-mark-open="${this.esc(key)}">${this.t("markChange")}</button>${this.rowMenuHtml([["mdi:bookmark-remove-outline", "markClear", `data-mark-clear="${this.esc(key)}"`]])}`)];
   }
 
   openMark(key) {
@@ -8473,9 +9199,26 @@ class MarksMixin {
   }
 
   // The backend refreshes its cached snapshot; the panel fetches that copy, so no new scan is needed.
+  // Days an object with a hiding mark (offline on purpose, spare) has run without a gap, from MARK_QUIET_DAYS on;
+  // null below that, while something of it is off, or when it is not known. A device counts from its entities: the
+  // shortest run of the ones not disabled. Seasonal marks stay out: a season is long on purpose.
+  markQuietDays(o) {
+    if (!["expected_offline", "spare"].includes(o.mark?.kind)) return null;
+    const run = since => (since ? Math.floor((Date.now() - Date.parse(since)) / 864e5) : null);
+    let days;
+    if (o.object_type === "device") {
+      const ents = (this.data?.objects || []).filter(e => e.object_type === "entity" && e.device_id === o.object_id && e.status !== "disabled");
+      if (!ents.length || ents.some(e => e.status !== "active" || !e.status_since)) return null;
+      days = Math.min(...ents.map(e => run(e.status_since)));
+    } else days = o.status === "active" ? run(o.status_since) : null;
+    return Number.isFinite(days) && days >= MARK_QUIET_DAYS ? days : null;
+  }
+
   async refreshData() {
     const key = this.selected ? this.objectKey(this.selected) : null;
-    this.data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    const data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    if (!Array.isArray(data?.findings)) return; // an answer without a scan keeps what is on screen
+    this.data = data;
     this._rev++;
     if (key) this.selected = this.findObject(key) || null;
   }
@@ -8536,15 +9279,21 @@ Object.assign(TEXT.de, {
   oftenChip: "Fällt regelmäßig aus", oftenChipAt: "Fällt meist zwischen {from} und {to} Uhr aus",
   oftenTitle: "Absichtlich?", oftenText: "{lines} Wenn das gewollt ist, hält ein Vermerk es fest, und Housekeeper meldet den Ausfall dann nicht mehr.",
   oftenSet: "Vermerk mit Zeitfenster setzen", oftenSetPlain: "Vermerk setzen", oftenSkip: "Nicht mehr fragen",
-  oftenNote: "{n} Befunde betreffen Objekte, die regelmäßig ausfallen. Absichtlich? Im Detail steht der Vorschlag für einen Vermerk.",
-  oftenDevice: "Mehrere Entitäten dieses Geräts fallen zur selben Zeit aus.",
+  oftenDevice: "Mehrere Entitäten dieses Geräts fallen zur selben Zeit aus.", oftenGroup: "{device}: {n} Entitäten", oftenRest: "die übrigen {n} Entitäten bleiben überwacht", oftenRest1: "die übrige Entität bleibt überwacht",
+  oftenCardTitle: "Vorschläge für Vermerke", oftenCardHint: "Fallen regelmäßig aus oder haben keinen Wert, etwa im Standby. Ein Vermerk „Absichtlich offline“ blendet ihre Befunde 90 Tage aus.",
+  oftenCount: "{n} Vorschläge", oftenFindings1: "1 Befund", oftenFindings: "{n} Befunde", oftenTake: "Vermerken", oftenTakeN: "Vermerken ({n})", oftenColObject: "Objekt", oftenColPattern: "Muster", oftenColFindings: "Befunde", oftenNone: "Nichts ausgewählt.",
+  oftenAllTitle: "Ausgewählte Vorschläge übernehmen?", oftenAllText: "{n} Vermerke „Absichtlich offline“ werden gesetzt, mit erkanntem Zeitfenster, wo es eines gibt. Sie blenden {hides} Befunde aus und lassen sich einzeln wieder entfernen.",
+  oftenReason: "Vorschlag: fällt regelmäßig aus",
 });
 Object.assign(TEXT.en, {
   oftenChip: "Fails regularly", oftenChipAt: "Usually fails between {from} and {to}",
   oftenTitle: "On purpose?", oftenText: "{lines} If that is intended, a mark records it and Housekeeper stops reporting the outage.",
   oftenSet: "Set a mark with a time window", oftenSetPlain: "Set a mark", oftenSkip: "Do not ask again",
-  oftenNote: "{n} findings concern objects that fail regularly. On purpose? The detail page proposes a mark.",
-  oftenDevice: "Several entities of this device fail at the same time.",
+  oftenDevice: "Several entities of this device fail at the same time.", oftenGroup: "{device}: {n} entities", oftenRest: "the other {n} entities stay watched", oftenRest1: "the other entity stays watched",
+  oftenCardTitle: "Suggested marks", oftenCardHint: "They fail or lose their value regularly, in standby for instance. A mark “Offline on purpose” hides their findings for 90 days.",
+  oftenCount: "{n} suggestions", oftenFindings1: "1 finding", oftenFindings: "{n} findings", oftenTake: "Mark", oftenTakeN: "Mark ({n})", oftenColObject: "Object", oftenColPattern: "Pattern", oftenColFindings: "Findings", oftenNone: "Nothing picked.",
+  oftenAllTitle: "Mark the picked suggestions?", oftenAllText: "{n} marks “Offline on purpose” are set, with the detected time window where there is one. They hide {hides} findings and can be removed one by one.",
+  oftenReason: "Suggested: fails regularly",
 });
 
 const OFTEN_RULES = ["entity.state_unavailable", "entity.state_unknown", "device.down"];
@@ -8559,7 +9308,8 @@ class OftenMixin {
     return { ...stored, ...(this._oftenSkip || {}) };
   }
 
-  // { info, days, device } for an entity or a device that falls out regularly, else null; a dismissed one stays quiet for a while.
+  // { info, days, device, members } for an entity or a device that falls out regularly, else null; a dismissed one stays quiet
+  // for a while. For a device, members are the entities that fail together at the same hour.
   oftenOut(type, id) {
     const key = `${type}:${id}`, skipped = this.oftenDismissed()[key];
     if (skipped && Date.now() - skipped < OFTEN_QUIET_DAYS * 86400000) return null;
@@ -8570,11 +9320,13 @@ class OftenMixin {
     }
     if (type !== "device") return null;
     const members = (this.data?.objects || []).filter(o => o.object_type === "entity" && o.device_id === id);
-    const infos = members.map(o => this.stabilityOf(o)).filter(s => s?.info && regular(s.info));
     const byHour = new Map();
-    for (const s of infos) { const h = s.info.pattern_hour; if (h !== null && h !== undefined) byHour.set(h, [...(byHour.get(h) || []), s]); }
+    for (const o of members) {
+      const s = this.oftenOut("entity", o.object_id), h = s?.info.pattern_hour;
+      if (h !== null && h !== undefined) byHour.set(h, [...(byHour.get(h) || []), { ...s, id: o.object_id }]);
+    }
     const best = [...byHour.values()].sort((a, b) => b.length - a.length)[0];
-    return best && best.length >= OFTEN_DEVICE_MIN ? { info: best[0].info, days: best[0].r.window_days, device: true } : null;
+    return best && best.length >= OFTEN_DEVICE_MIN ? { info: best[0].info, days: best[0].days, device: true, members: best.map(s => s.id) } : null;
   }
 
   oftenFor(finding) {
@@ -8596,11 +9348,100 @@ class OftenMixin {
     return ` · <span class="nw">${this.esc(w ? this.t("oftenChipAt", w) : this.t("oftenChip"))}</span>`;
   }
 
-  // One line on top of the findings: how many of them are such objects.
-  oftenNote() {
+  // The entities a suggestion "group:<device>" stands for: those that fail together and carry no mark yet.
+  oftenMembers(key) {
+    const id = key.slice("group:".length);
+    return (this.oftenOut("device", id)?.members || []).filter(e => !this.findObject(`entity:${e}`)?.mark);
+  }
+
+  // The findings a mark "offline on purpose" on the object would hide: of a device also those of its entities.
+  oftenHidden(key) {
+    if (key.startsWith("group:")) return this.oftenMembers(key).reduce((n, e) => n + this.oftenHidden(`entity:${e}`), 0);
+    const [type, ...rest] = key.split(":"), id = rest.join(":");
+    const outage = f => !f.ignored && ["unavailable", "unknown", "stale"].includes(f.classification);
+    return (this.data?.findings || []).filter(f => type === "device"
+      ? (f.rule_id === "device.down" && f.object_id === id && !f.ignored) || (outage(f) && this.findObject(`entity:${f.object_id}`)?.device_id === id)
+      : outage(f) && f.object_id === id).length;
+  }
+
+  // The suggestions gathered, most findings first: a device only when it is down completely, the entities of a device that
+  // fail together as one group (the mark goes on each of them, the others stay watched), else one per entity.
+  oftenSuggestions() {
+    const out = new Map();
+    for (const f of this.data?.findings || []) {
+      let often = this.oftenFor(f);
+      if (!often) continue;
+      let key = f.rule_id === "device.down" ? `device:${f.object_id}` : `entity:${f.object_id}`;
+      const device = key.startsWith("entity:") && this.findObject(key)?.device_id;
+      const together = device && this.findObject(`device:${device}`) && this.oftenOut("device", device);
+      if (together?.members.includes(f.object_id) && this.oftenMembers(`group:${device}`).length > 1) { key = `group:${device}`; often = together; }
+      if (out.has(key) || this.findObject(key)?.mark) continue;
+      out.set(key, { key, often, hides: this.oftenHidden(key) });
+    }
+    return [...out.values()].sort((a, b) => b.hides - a.hides || a.key.localeCompare(b.key));
+  }
+
+  // The card above the findings list: a fold with the count in its head, inside a list like every other one. Picked
+  // rows are marked or left out from the selection bar; one row alone through its menu. A click on a row opens the object.
+  oftenCard() {
     this.ensureStability?.();
-    const n = (this.data?.findings || []).filter(f => this.oftenFor(f)).length;
-    return n ? `<p class="factnote">${this.t("oftenNote", { n: this.formatNumber(n) })}</p>` : "";
+    const items = this.oftenSuggestions();
+    if (!items.length) return "";
+    const open = this.foldOpen("often", false), sel = (this.oftenSel ||= new Set());
+    for (const key of [...sel]) if (!items.some(s => s.key === key)) sel.delete(key);
+    const rows = items.map(({ key, often, hides }) => {
+      const group = key.startsWith("group:"), link = group ? `device:${key.slice(6)}` : key, item = this.findObject(link), w = this.oftenWindow(often.info);
+      const members = group ? this.oftenMembers(key) : [];
+      const names = members.slice(0, 3).map(e => this.findObject(`entity:${e}`)?.name || e).join(", ") + (members.length > 3 ? " …" : "");
+      // The other entities of the device that say something about it: they stay watched.
+      const rest = group ? (this.data?.objects || []).filter(o => o.object_type === "entity" && o.device_id === item?.object_id && ["active", "unavailable", "unknown"].includes(o.status) && !members.includes(o.object_id)).length : 0;
+      const restText = rest ? (rest === 1 ? this.t("oftenRest1") : this.t("oftenRest", { n: this.formatNumber(rest) })) : "";
+      const title = group ? this.t("oftenGroup", { device: item?.name || link, n: this.formatNumber(members.length) }) : item?.name || key;
+      return { key, link, type: item?.object_type || "entity", title, id: group ? names : link.split(":").slice(1).join(":"), note: restText, pattern: w ? this.t("oftenChipAt", w) : this.t("oftenChip"), hides };
+    });
+    const menu = r => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-often-take="${this.esc(r.key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("oftenTake")}</button><button type="button" class="menuitem" data-often-skip="${this.esc(r.key)}"><ha-icon icon="mdi:close"></ha-icon>${this.t("oftenSkip")}</button></div></details>`;
+    const shown = this.selOnly?.often ? rows.filter(r => sel.has(r.key)) : rows;
+    const list = this.sysList("often", shown, {
+      sort: "hides", dir: "desc", tie: r => r.key, empty: "oftenNone", text: r => `${r.title} ${r.id} ${r.pattern}`,
+      sorts: [{ key: "name", label: "sortName", dir: "asc", get: r => r.title }, { key: "pattern", label: "oftenColPattern", dir: "asc", get: r => r.pattern }, { key: "hides", label: "oftenColFindings", dir: "desc", get: r => r.hides }],
+      rowAttrs: r => `data-object="${this.esc(r.link)}" tabindex="0" role="button" aria-label="${this.esc(r.title)}"`,
+      columns: [
+        { key: "sel", label: "selectPage", narrow: true, sortable: false,
+          allBox: page => { const ids = (this._oftenVisible = page.map(r => r.key)), n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-often-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+          cell: r => `<input type="checkbox" class="selbox" data-often-sel="${this.esc(r.key)}" ${sel.has(r.key) ? "checked" : ""} aria-label="${this.esc(r.title)}">` },
+        { key: "name", label: "oftenColObject", dir: "asc", cell: r => `<div class="statcell">${this.tile(r.type, "warn")}<div>${this.nameCell(r.title, r.id)}${r.note ? `<small class="muted">${this.esc(r.note)}</small>` : ""}</div></div>` },
+        { key: "pattern", label: "oftenColPattern", dir: "asc", cell: r => this.esc(r.pattern) },
+        { key: "hides", label: "oftenColFindings", dir: "desc", cell: r => this.formatNumber(r.hides) },
+        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
+      ],
+    });
+    const n = [...sel].length;
+    const bar = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("often", n, "data-often-clear")}<span class="toolgap"></span><button type="button" class="btn quiet" data-often-skip-picked ${n ? "" : "disabled"}>${this.t("oftenSkip")}</button><button type="button" class="btn primary" data-often-picked ${n ? "" : "disabled"}>${this.t("oftenTakeN", { n: this.formatNumber(n) })}</button></div>`;
+    const top = `<button class="row foldhead" data-fold="often" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("oftenCardTitle")}</strong><small>${this.esc(this.t("oftenCardHint"))}</small></span><span class="pill warn">${this.esc(this.t("oftenCount", { n: this.formatNumber(items.length) }))}</span></button>`;
+    return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${bar}${list}</div>` : ""}</div></div>`;
+  }
+
+  oftenFindings(n) { return n === 1 ? this.t("oftenFindings1") : this.t("oftenFindings", { n: this.formatNumber(n) }); }
+
+  // Set the suggested mark: offline on purpose, with the window when one was found, asked again after 90 days.
+  async takeOften(keys) {
+    const items = new Map(this.oftenSuggestions().map(s => [s.key, s]));
+    let failed = 0, last = null;
+    for (const key of keys) {
+      const s = items.get(key);
+      if (!s) continue;
+      const w = this.oftenWindow(s.often.info);
+      // A group is marked entity by entity: the entities of the device that keep working stay watched.
+      for (const target of key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]) {
+        const [object_type, ...rest] = target.split(":");
+        const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: "expected_offline", reason: this.t("oftenReason"), days: OFTEN_MARK_DAYS };
+        if (w) msg.window = { mode: "time", from: w.from, to: w.to };
+        try { await this._hass.callWS(msg); } catch (err) { failed += 1; last = err; }
+      }
+    }
+    if (failed) this.failed(last);
+    try { await this.refreshData(); } catch (err) { this.failed(err); }
+    this.render();
   }
 
   // The card of the tab "Actions": what the numbers say, and the mark prepared for it.
@@ -8624,8 +9465,9 @@ class OftenMixin {
     this.render();
   }
 
+  // "Do not ask again" holds for the entities of a group, not for the device: another entity that fails later is asked about.
   skipOften(key) {
-    (this._oftenSkip ||= {})[key] = Date.now();
+    for (const k of key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]) (this._oftenSkip ||= {})[k] = Date.now();
     const kept = this.oftenDismissed();
     try { globalThis.localStorage?.setItem("ha_housekeeper.often", JSON.stringify(kept)); } catch (_) { /* no storage */ }
     this.render();
@@ -8634,22 +9476,38 @@ class OftenMixin {
   bindOften(root) {
     root.querySelectorAll("[data-often-set]").forEach(el => el.onclick = () => this.openOftenMark(el.dataset.oftenSet));
     root.querySelectorAll("[data-often-skip]").forEach(el => el.onclick = () => this.skipOften(el.dataset.oftenSkip));
+    root.querySelectorAll("[data-often-take]").forEach(el => el.onclick = () => this.takeOften([el.dataset.oftenTake]));
+    // The picked suggestions: one is marked at once, several after a question that names the marks and findings.
+    const sel = () => (this.oftenSel ||= new Set());
+    root.querySelectorAll("[data-often-sel]").forEach(el => el.onchange = () => { this.pickRows("often", el.dataset.oftenSel, el.checked, sel(), this._oftenVisible); this.render(); });
+    const pageBox = root.querySelector("[data-often-page]");
+    if (pageBox) { pageBox.indeterminate = pageBox.hasAttribute("data-partial"); pageBox.onchange = ev => { (this._oftenVisible || []).forEach(k => (ev.target.checked ? sel().add(k) : sel().delete(k))); this.render(); }; }
+    root.querySelector("[data-often-clear]")?.addEventListener("click", () => { sel().clear(); this.render(); });
+    root.querySelector("[data-often-skip-picked]")?.addEventListener("click", () => { const keys = [...sel()]; sel().clear(); keys.forEach(k => this.skipOften(k)); });
+    root.querySelector("[data-often-picked]")?.addEventListener("click", () => {
+      const items = this.oftenSuggestions().filter(s => sel().has(s.key)), keys = items.map(s => s.key);
+      if (!keys.length) return;
+      const take = () => { sel().clear(); this.takeOften(keys); };
+      if (keys.length === 1) return take();
+      const hides = items.reduce((n, s) => n + s.hides, 0), marks = items.reduce((n, s) => n + (s.key.startsWith("group:") ? this.oftenMembers(s.key).length : 1), 0);
+      this.confirmAsk(this.t("oftenAllText", { n: this.formatNumber(marks), hides: this.formatNumber(hides) }), take, { title: this.t("oftenAllTitle"), yes: this.t("oftenTake"), danger: false });
+    });
   }
 }
 
 // Texts for the impact of a finding (see impact.py); merged into TEXT.
 Object.assign(TEXT.de, {
-  levelsHintTitle: "Ausfälle werden nach Dauer gestuft", levelsHintText: "Ein Ausfall wird nach der Info-Schwelle ein Befund und steigt über niedrig und mittel auf hoch. Die Übersicht zählt ab mittel; Info und niedrig stehen auf der Befundseite. Die Schwellen stellst du in den Einstellungen ein.", levelsHintSettings: "Schwellen ansehen", levelsHintOk: "Verstanden", changesNewRating: "Neue Bewertung: Seit dieser Version werden Ausfälle nach Dauer gestuft. Befunde, die dadurch anders gelten, stehen unter „Ohne Reparatur beendet“, nicht als erledigt.",
-  openFindingsQuiet: "+ {n} weitere (Info, niedrig)", whyOpenLevel: "Befunde dieser Stufe anzeigen",
-  sortImpact: "Schweregrad", allSeverities: "Alle Schweregrade", chip_none: "Keine", viewsClear: "Keine Ansicht", impact_high: "Hohe Auswirkung", impact_medium: "Mittlere Auswirkung", impact_low: "Geringe Auswirkung", impact_info: "Info", outageFor: "seit {span}", outageNext: "{level} in {span}", unitMin: "Min.", unitHour: "Std.", unitDay: "Tagen", chip_outage: "Ausfall", allReasons: "Alle Gründe", chip_high: "Hoch", chip_medium: "Mittel", chip_low: "Niedrig", chip_info: "Info", rowMenu: "Aktionen für diese Zeile", impact_none: "Keine Auswirkung",
+  levelsHintTitle: "Ausfälle werden nach Dauer gestuft", levelsHintText: "Ein Ausfall wird nach der Info-Schwelle ein Befund und steigt über niedrig und mittel auf hoch. Die Übersicht zählt ab mittel, dringend ist ein Ausfall ab hoch; Info und niedrig stehen auf der Befundseite. Die Schwellen stellst du in den Einstellungen ein.", levelsHintSettings: "Schwellen ansehen", levelsHintOk: "Verstanden", changesNewRating: "Neue Bewertung: Seit dieser Version werden Ausfälle nach Dauer gestuft. Befunde, die dadurch anders gelten, stehen unter „Ohne Reparatur beendet“, nicht als erledigt.",
+  openFindingsQuiet: "davon {n} Info/niedrig", whyOpenLevel: "Befunde dieser Stufe anzeigen",
+  sortImpact: "Schweregrad", allSeverities: "Alle Schweregrade", chip_none: "Keine", viewsClear: "Keine Ansicht", impact_high: "Hohe Auswirkung", impact_medium: "Mittlere Auswirkung", impact_low: "Geringe Auswirkung", impact_info: "Info", outageFor: "seit {span}", outageNext: "{level} in {span}", unitMin: "Min.", unitHour: "Std.", unitDay: "Tagen", chip_outage: "Ausfall", reasonProblem: "Automation gestört", allObjectTypes: "Alle Objektarten", followersFilter: "Folgen von Ausfällen", filterRemove: "Filter {name} entfernen", filterResetAll: "Alle Filter zurücksetzen", findingsOnObjects: "an {m} Objekten", findingsOnObjects1: "an 1 Objekt", hintsLabel: "Hinweise", hintOften: "{n} Vorschläge für Vermerke", hintCorr: "{n} Vorfälle nach Updates", allReasons: "Alle Gründe", chip_high: "Hoch", chip_medium: "Mittel", chip_low: "Niedrig", chip_info: "Info", rowMenu: "Aktionen für diese Zeile", impact_none: "Keine Auswirkung",
   impactFact_outage_age: "Dauer des Ausfalls", impactFact_critical: "kritisch: {why}", impactFact_target_critical: "fehlendes Ziel {id} ist kritisch", impactFact_controls_critical: "steuert {n} kritische Objekte", impactFact_used_by_active: "von {n} aktiven Automationen oder Skripten genutzt", impactFact_on_dashboards: "auf {n} Dashboards", impactFact_many_dependents: "{n} Abhängige", impactFact_runs_active: "läuft aktiv", impactFact_runs_inactive: "ist deaktiviert",
   reason_critical_object: "Kritisches Objekt (Schloss, Alarm, Wasser- oder Rauchmelder, Label housekeeper_critical): bitte einzeln bestätigen.",
   impactWhy_label: "Label", impactWhy_device_label: "Label am Gerät", impactWhy_area_label: "Label am Bereich", impactWhy_kind: "Art des Objekts",
 });
 Object.assign(TEXT.en, {
-  levelsHintTitle: "Outages are graded by how long they last", levelsHintText: "An outage becomes a finding after the info threshold and rises through low and medium to high. The overview counts from medium on; info and low are on the findings page. You set the thresholds in the settings.", levelsHintSettings: "See thresholds", levelsHintOk: "Got it", changesNewRating: "New rating: since this version outages are graded by duration. Findings that read differently now are listed under “Ended without a repair”, not as resolved.",
-  openFindingsQuiet: "+ {n} more (info, low)", whyOpenLevel: "Show the findings of this level",
-  sortImpact: "Severity", allSeverities: "All severities", chip_none: "None", viewsClear: "No view", impact_high: "High impact", impact_medium: "Medium impact", impact_low: "Low impact", impact_info: "Info", outageFor: "for {span}", outageNext: "{level} in {span}", unitMin: "min", unitHour: "h", unitDay: "days", chip_outage: "Outage", allReasons: "All reasons", chip_high: "High", chip_medium: "Medium", chip_low: "Low", chip_info: "Info", rowMenu: "Actions for this row", impact_none: "No impact",
+  levelsHintTitle: "Outages are graded by how long they last", levelsHintText: "An outage becomes a finding after the info threshold and rises through low and medium to high. The overview counts from medium on and calls an outage urgent from high on; info and low are on the findings page. You set the thresholds in the settings.", levelsHintSettings: "See thresholds", levelsHintOk: "Got it", changesNewRating: "New rating: since this version outages are graded by duration. Findings that read differently now are listed under “Ended without a repair”, not as resolved.",
+  openFindingsQuiet: "{n} of them info/low", whyOpenLevel: "Show the findings of this level",
+  sortImpact: "Severity", allSeverities: "All severities", chip_none: "None", viewsClear: "No view", impact_high: "High impact", impact_medium: "Medium impact", impact_low: "Low impact", impact_info: "Info", outageFor: "for {span}", outageNext: "{level} in {span}", unitMin: "min", unitHour: "h", unitDay: "days", chip_outage: "Outage", reasonProblem: "Automation impaired", allObjectTypes: "All object types", followersFilter: "Follow-ups of outages", filterRemove: "Remove filter {name}", filterResetAll: "Reset all filters", findingsOnObjects: "on {m} objects", findingsOnObjects1: "on 1 object", hintsLabel: "Hints", hintOften: "{n} suggestions for marks", hintCorr: "{n} incidents after updates", allReasons: "All reasons", chip_high: "High", chip_medium: "Medium", chip_low: "Low", chip_info: "Info", rowMenu: "Actions for this row", impact_none: "No impact",
   impactFact_outage_age: "length of the outage", impactFact_critical: "critical: {why}", impactFact_target_critical: "the missing target {id} is critical", impactFact_controls_critical: "controls {n} critical objects", impactFact_used_by_active: "used by {n} active automations or scripts", impactFact_on_dashboards: "on {n} dashboards", impactFact_many_dependents: "{n} dependents", impactFact_runs_active: "runs actively", impactFact_runs_inactive: "is disabled",
   reason_critical_object: "Critical object (lock, alarm, water or smoke sensor, label housekeeper_critical): confirm it on its own.",
   impactWhy_label: "label", impactWhy_device_label: "label on the device", impactWhy_area_label: "label on the area", impactWhy_kind: "kind of object",
@@ -8770,20 +9628,26 @@ class CausesMixin {
   causeShort(c) { return c.kind === "integration_down" ? [this.causeCounts(c), this.outageLine(c)].filter(Boolean).join(" · ") : [this.causeCounts(c), this.causeLine(c)].filter(Boolean).join(" · "); }
 
   // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
+  // A count with its noun; one of a kind takes the text with the suffix 1: "1 follow-up", not "1 follow-ups".
+  tCount(key, n) { return this.t(n === 1 ? `${key}1` : key, { n: this.formatNumber(n) }); }
+
   causeCounts(c) {
     if (c.kind === "service_missing") return this.t("causeCallers", { n: this.formatNumber(c.follower_count) });
     if (c.virtual) return this.t("causeUsers", { n: this.formatNumber(c.follower_count) });
     if (c.kind === "app_down") return this.t("causeBelow", { n: this.formatNumber(c.child_ids.length) });
     if (!c.follower_count && !Object.keys(c.consumers || {}).length) return this.t("causeNone");
-    const parts = [this.t("causeN_entity", { n: this.formatNumber(c.follower_count) }), ...["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeN_${k}`, { n: c.consumers[k] }))];
+    const parts = [this.tCount("causeN_entity", c.follower_count), ...["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.tCount(`causeN_${k}`, c.consumers[k]))];
     return this.t("causeCounts", { parts: parts.join(", ") });
   }
 
   // "3 integrations, 1 device" for the to-do row.
   outagesHint(causes) {
-    const n = kind => causes.filter(c => c.kind === kind).length;
-    return [n("integration_down") ? this.t("outageIntegrations", { n: n("integration_down") }) : "", n("device_down") ? this.t("outageDevices", { n: n("device_down") }) : "", n("service_missing") ? this.t("outageServices", { n: n("service_missing") }) : "", n("app_down") ? this.t("outageApps", { n: n("app_down") }) : "", causes.filter(c => c.virtual && c.kind !== "service_missing").length ? this.t("outageTargets", { n: causes.filter(c => c.virtual && c.kind !== "service_missing").length }) : ""].filter(Boolean).join(", ");
+    // One of a kind reads in the singular: "1 integration", not "1 integrations".
+    const part = (key, n) => (n ? this.t(n === 1 ? `${key}1` : key, { n }) : "");
+    const n = kind => causes.filter(c => c.kind === kind).length, targets = causes.filter(c => c.virtual && c.kind !== "service_missing").length;
+    return [part("outageIntegrations", n("integration_down")), part("outageDevices", n("device_down")), part("outageServices", n("service_missing")), part("outageApps", n("app_down")), part("outageTargets", targets)].filter(Boolean).join(", ");
   }
+
 
   // The causes at the top of a chain: the entries of the findings list. The ones below hang in their body.
   causeEntries() { return this.causeList().filter(c => !c.parent_id); }
@@ -8809,23 +9673,63 @@ class CausesMixin {
   kindChip(label) { return `<span class="pill kind">${this.esc(label)}</span>`; }
 
   // The menu at the end of a row: what can be decided about the finding, and where it applies the removal.
-  // An open decision shows its form below the row.
+  // An open decision shows its form below the row. One menu for open and decided findings: only its top block differs.
   rowMenu(f) {
-    if (!f || f.ignored) return "";
+    if (!f) return "";
     const key = this.esc(f.key);
-    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
+    const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
     const entity = f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? item("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : "";
     // The row itself is one button, so the twin of a duplicate is opened from here.
     const twin = f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? item("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : "";
     const del = ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id) ? item("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`) : "";
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${item("mdi:bookmark-check-outline", "markKnown", `data-decide-open="${key}" data-decide-preset="keep"`)}${item("mdi:clock-outline", "fselSnooze", `data-decide-open="${key}" data-decide-preset="snooze"`)}${item("mdi:eye-off-outline", "hideFinding", `data-decide-open="${key}"`)}${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    // The same actions in the same order as the selection bar: the status of the finding, then its object, then Home Assistant.
+    // The top block says where the finding stands: open, decided by the person (the way back and a change), or hidden by a
+    // mark, a rule or a label (the way to it).
+    const owner = f.ignored ? this.markOwner(f) : null;
+    const status = !f.ignored ? item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`)
+      : f.ignored_by === "mark" && owner ? item(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`)
+      : f.ignored_by === "rule" && f.ignore_rule?.id ? item(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)
+      : f.ignored_by === "label" ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)
+      : `${item("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`)}${item(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)}`;
+    const objectKey = this.findingKey(f), object = this.findObject(objectKey);
+    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : "";
+    const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`) : "";
+    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))}` : "";
+    const about = mark + exc;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${status}${about ? `<hr class="menusep">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+  }
+
+  // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.
+  markOwner(f) {
+    const m = f.mark;
+    if (!m) return "";
+    const owner = (this.data?.objects || []).find(o => o.mark && o.mark.at === m.at && o.mark.kind === m.kind);
+    return owner ? `${owner.object_type}:${owner.object_id}` : "";
+  }
+
+  // Why a finding is hidden, as the row says it: by its own status, a mark, an exception rule or the label.
+  hiddenWhy(f) {
+    const by = ["mark", "rule", "label"].includes(f.ignored_by) ? f.ignored_by : "user";
+    const text = by === "mark" ? this.markLine(f.mark) : by === "rule" ? this.findingRuleLine(f) : by === "label" ? "housekeeper_ignore" : this.decisionLabel(f);
+    return `<span class="pill mute">${this.t(`hiddenBy_${by}`)}</span> ${this.esc(text)}`;
+  }
+
+  // The menu of a cause: that of its own finding, or that of its object when it has none. A device that is down completely
+  // is the object of its own finding, so the mark lands on the device and covers all its entities.
+  causeMenu(c, own) {
+    const link = `${c.object_type}:${c.object_id}`;
+    const canMark = c.kind === "device_down" && this.findObject(link) && !this.findObject(link).mark;
+    if (own) return this.rowMenu(own);
+    return canMark ? this.objectMenu(link) : "";
   }
 
   // The menu of an object that is not a finding (the watch lists such objects): the same shape as the menu of a finding row, with what applies to an object.
   objectMenu(key, canMark = true) {
     const k = this.esc(key);
     const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${canMark ? item("mdi:bookmark-plus-outline", "markSet", `data-watch-mark="${k}"`) : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
+    const object = this.findObject(key), exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`) : "";
+    const about = (canMark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${k}"`) : "") + exc;
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${about ? `${about}<hr class="menusep">` : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
   }
 
   rowDecide(f) { return f && this.decide && this.decide.key === f.key ? `<div class="pad">${this.decideForm(f)}</div>` : ""; }
@@ -8833,15 +9737,15 @@ class CausesMixin {
   causeEntry(c) {
     const total = this.causeTotal(c), link = `${c.object_type}:${c.object_id}`;
     const title = this.esc(this.t(`cause_${c.kind}`, { name: c.name })), own1 = c.finding_key && this.data.findings.find(x => x.key === c.finding_key);
-    const sub = [total ? this.t("causeExplains", { n: this.formatNumber(total) }) : "", this.causeShort(c)].filter(Boolean).join(" · ");
-    if (!total) return `<div class="rowwrap">${this.causeBox(c)}<button class="row rel" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${title}</strong><small>${this.esc(sub)}</small></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(c.impact)}</button>${this.rowMenu(own1)}</div>${this.rowDecide(own1)}`;
-    return this.fold(`cause_${c.id}`, { tone: "red", title, sub, pill: this.t("causeFollowers", { n: this.formatNumber(total) }) }, this.causeChildren(c), false);
+    const sub = [total ? this.tCount("causeExplains", total) : "", this.causeShort(c)].filter(Boolean).join(" · ");
+    if (!total) return `<div class="rowwrap">${this.causeBox(c)}<button class="row rel" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${title}</strong><small>${this.esc(sub)}</small></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(c.impact)}</button>${this.causeMenu(c, own1)}</div>${this.rowDecide(own1)}`;
+    return this.fold(`cause_${c.id}`, { tone: "red", title, sub, pill: this.tCount("causeFollowers", total) }, this.causeChildren(c), false);
   }
 
   causeChildren(c, includeOwn = true) {
     const link = `${c.object_type}:${c.object_id}`, own1 = c.finding_key && this.data.findings.find(x => x.key === c.finding_key);
     const byId = id => this.causeList().find(x => x.id === id);
-    const own = !includeOwn || c.virtual ? "" : `<div class="rowwrap">${this.causeBox(c)}<button class="row" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(c.name)}</strong></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(own1 ? own1.impact : "")}</button>${this.rowMenu(own1)}</div>${this.rowDecide(own1)}`;
+    const own = !includeOwn || c.virtual ? "" : `<div class="rowwrap">${this.causeBox(c)}<button class="row" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(c.name)}</strong></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(own1 ? own1.impact : "")}</button>${this.causeMenu(c, own1)}</div>${this.rowDecide(own1)}`;
     const below = (c.child_ids || []).map(byId).filter(Boolean).map(x => this.causeEntry(x)).join("");
     const followers = (this.data.findings || []).filter(f => f.cause_id === c.id && !f.ignored && !CAUSE_OWN_RULES.includes(f.rule_id));
     const pg = this.paginate(`cause_${c.id}`, followers.map(f => this.findingRow(f)));
@@ -8857,20 +9761,30 @@ class CausesMixin {
 
   // A cause as a compact row of the overview: the counter says how many findings it explains.
   overviewCause(c) {
-    const total = this.causeTotal(c), sub = [this.causeCounts(c), this.causeLine(c)].filter(Boolean).join(" · ");
-    const target = c.virtual ? 'data-jump="findingsNav"' : `data-object="${this.esc(`${c.object_type}:${c.object_id}`)}"`;
-    return `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small></span>${total ? `<span class="pill red">${this.esc(this.t("causeFollowers", { n: this.formatNumber(total) }))}</span>` : ""}</button>`;
+    // The level stands as a chip at the right, like on a finding row, not again in the text.
+    const total = this.causeTotal(c), sub = [this.causeCounts(c), this.causeLine({ ...c, impact: null })].filter(Boolean).join(" · ");
+    // A missing target has no page of its own: its row opens the findings filtered to it and what it explains.
+    const target = c.virtual ? `data-jump="findingsNav" data-jump-cause="${this.esc(c.id)}"` : `data-object="${this.esc(`${c.object_type}:${c.object_id}`)}"`;
+    const down = c.kind === "integration_down" && !c.virtual && c.object_type === "config_entry";
+    const hint = down && this.apWouldPause(c.object_id) ? this.t("apWouldPause") : "", act = down && this.apPausedItem(c.object_id) ? this.apRowAction(c.object_id, "not_loaded") : "", menu = down ? this.apRowMenu(c.object_id) : "";
+    const row = `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small>${hint ? `<small class="aphint">${this.esc(hint)}</small>` : ""}</span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
+    return `<div class="rowwrap">${row}${act ? `<span class="apact">${act}</span>` : ""}${menu || '<span class="rowmenu rowslot"></span>'}</div>`;
   }
 
   // A single finding as a plain row of the overview: it opens the object; deciding and selecting happen on the Findings page.
+  // The overview says what the finding is in words and since when; where in a config it sits stays on the Findings page.
   overviewFinding(finding) {
-    const { key, object, title, subtitle } = this.findingRowContent(finding);
-    return `<button class="row" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${subtitle}</small></span>${this.impactChip(finding.impact)}</button>`;
+    const { key, object, title } = this.findingRowContent(finding);
+    const what = this.esc(object?.reason && !finding.affected_object ? this.t(object.reason) : this.findingTitle(finding));
+    const since = finding.first_detected_at ? this.esc(this.t("ovFoundAt", { age: this.relTime(finding.first_detected_at) })) : "";
+    const row = `<button class="row" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(finding.classification))}<span class="row-text"><strong>${this.esc(title)}</strong><small>${[what, since].filter(Boolean).join(" · ")}</small></span>${this.impactChip(finding.impact)}</button>`;
+    return `<div class="rowwrap">${row}<span class="rowmenu rowslot"></span></div>`;
   }
 
   // Only in the flat view: "Follow-up of Integration Cloud" next to a finding that a cause explains.
   followOf(f) {
-    const c = f.cause_id && !CAUSE_OWN_RULES.includes(f.rule_id) ? this.causeList().find(x => x.id === f.cause_id) : null;
+    if (!this.showFollowers) return "";
+    const own = this.causeById(f.cause_id), c = this.isFollowUp(f) ? (CAUSE_OWN_RULES.includes(f.rule_id) ? this.causeById(own?.parent_id) : own) : null;
     return this.showFollowers && c ? ` · ${this.esc(this.t("causeFollowOf", { name: c.name }))}` : "";
   }
 
@@ -8880,41 +9794,46 @@ class CausesMixin {
 
   quietCause(c) { return !c.virtual && ["info", "low"].includes(c.impact); }
 
-  quietCount() { return this.causeEntries().filter(c => this.quietCause(c)).length + this.data.findings.filter(f => !f.cause_id && !f.ignored && this.isQuiet(f)).length; }
+  // The open findings that stay off the overview counts: a quiet outage, or a follow-up of a chain whose top cause is quiet.
+  quietCount() {
+    const top = id => { let c = this.causeById(id); while (c?.parent_id) c = this.causeById(c.parent_id); return c; };
+    return this.data.findings.filter(f => !f.ignored && (this.isQuiet(f) || (f.cause_id && top(f.cause_id) && this.quietCause(top(f.cause_id))))).length;
+  }
 
-  findingTotal() { return this.causeEntries().length + this.data.findings.filter(f => !f.cause_id && !f.ignored).length; }
+  // Every open finding, the follow-ups of an outage too: the unit of the tiles, the list head, "Open" and the menu.
+  findingTotal() { return this.data.findings.filter(f => !f.ignored).length; }
 
-  followerCount() { return this.data.findings.filter(f => f.cause_id && !f.ignored && !CAUSE_OWN_RULES.includes(f.rule_id)).length; }
+  followerCount() { return this.data.findings.filter(f => !f.ignored && this.isFollowUp(f)).length; }
 }
 Object.assign(TEXT.de, {
   causesTitle: "Ausfälle",
-  sumRiskOutage: "Beim Entfernen (nicht der Ausfall)", cause_device_unavailable: "Alle {n} Entitäten des Geräts sind seit {span} nicht verfügbar. Das Gerät ist registriert, liefert aber keine Werte.", hint_device_unavailable: "Prüfen, ob das Gerät erreichbar ist (Strom, Netzwerk, Cloud-Verbindung), und die Integration neu laden.", devAllDown: "alle {n} nicht verfügbar", causeNone: "keine Entität betroffen", outageIntegrations: "{n} Integrationen", outageDevices: "{n} Geräte",
+  cause_device_novalue: "Alle {n} Entitäten des Geräts haben seit {span} keinen Wert mehr. Meist ist das Gerät im Standby oder ausgeschaltet.", hint_device_novalue: "Ist das gewollt, hält ein Vermerk „Absichtlich offline“ am Gerät es fest; dann meldet Housekeeper weder das Gerät noch seine Entitäten.", devAllNoValue: "alle {n} ohne Wert", noValue: "Ohne Wert", sumRiskOutage: "Beim Entfernen (nicht der Ausfall)", cause_device_unavailable: "Alle {n} Entitäten des Geräts sind seit {span} nicht verfügbar. Das Gerät ist registriert, liefert aber keine Werte.", hint_device_unavailable: "Prüfen, ob das Gerät erreichbar ist (Strom, Netzwerk, Cloud-Verbindung), und die Integration neu laden.", devAllDown: "alle {n} nicht verfügbar", causeNone: "keine Entität betroffen", outageIntegrations: "{n} Integrationen", outageIntegrations1: "1 Integration", outageDevices: "{n} Geräte", outageDevices1: "1 Gerät",
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
   cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
-  causeFollowers: "{n} Folgen", causeExplains: "erklärt {n} weitere Befunde", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageTargets: "{n} fehlende Ziele", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
-  findingsFollowSub: "dazu {n} Folgen der Ausfälle", findingsOfFollow: "davon {n} Folgen der Ausfälle", actOutages: "Ausfälle",
+  causeFollowers: "{n} Folgen", causeFollowers1: "1 Folge", causeExplains: "erklärt {n} weitere Befunde", causeExplains1: "erklärt 1 weiteren Befund", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageApps1: "1 App", outageTargets: "{n} fehlende Ziele", outageTargets1: "1 fehlendes Ziel", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", outageServices1: "1 fehlender Dienst", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
+  findingsOfFollow: "davon {n} Folgen von Ausfällen", ogViewCountOf: "{n} von {total} Befunden an {m} Objekten", ogViewCountOf1: "{n} von {total} Befunden an 1 Objekt", viewCountOf: "{n} von {total} Befunden", actOutages: "Ausfälle", ovFoundAt: "erkannt {age}", actOutagesOpen: "Weitere Ausfälle",
 });
 Object.assign(TEXT.en, {
   causesTitle: "Outages",
-  sumRiskOutage: "When removed (not the outage)", cause_device_unavailable: "All {n} entities of the device have been unavailable for {span}. The device is registered but delivers no values.", hint_device_unavailable: "Check that the device is reachable (power, network, cloud connection) and reload the integration.", devAllDown: "all {n} unavailable", causeNone: "no entity affected", outageIntegrations: "{n} integrations", outageDevices: "{n} devices",
+  cause_device_novalue: "All {n} entities of the device have had no value for {span}. Usually the device is in standby or switched off.", hint_device_novalue: "If that is intended, a mark “Offline on purpose” on the device records it; then Housekeeper reports neither the device nor its entities.", devAllNoValue: "all {n} without a value", noValue: "No value", sumRiskOutage: "When removed (not the outage)", cause_device_unavailable: "All {n} entities of the device have been unavailable for {span}. The device is registered but delivers no values.", hint_device_unavailable: "Check that the device is reachable (power, network, cloud connection) and reload the integration.", devAllDown: "all {n} unavailable", causeNone: "no entity affected", outageIntegrations: "{n} integrations", outageIntegrations1: "1 integration", outageDevices: "{n} devices", outageDevices1: "1 device",
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
   cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
-  causeFollowers: "{n} follow-ups", causeExplains: "explains {n} more findings", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageTargets: "{n} missing targets", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
-  findingsFollowSub: "plus {n} follow-ups of the outages", findingsOfFollow: "of which {n} follow-ups of the outages", actOutages: "Outages",
+  causeFollowers: "{n} follow-ups", causeFollowers1: "1 follow-up", causeExplains: "explains {n} more findings", causeExplains1: "explains 1 more finding", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageApps1: "1 app", outageTargets: "{n} missing targets", outageTargets1: "1 missing target", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", outageServices1: "1 missing service", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
+  findingsOfFollow: "{n} of them follow-ups of outages", ogViewCountOf: "{n} of {total} findings on {m} objects", ogViewCountOf1: "{n} of {total} findings on 1 object", viewCountOf: "{n} of {total} findings", actOutages: "Outages", ovFoundAt: "found {age}", actOutagesOpen: "Further outages",
 });
 
 // Maintenance goals: what "in order" means for this house and whether it is so (see goals.py); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt", goalsNone: "Es gibt noch keine Wartungsziele.",
+  tilesMissed: "{count} Ziele verfehlt", moreItems: "und {count} weitere", goalsTitle: "Wartungsziele", goalsTab: "Ziele", goalsSub: "Eigene Grenzen für das, was in Ordnung heißt. Housekeeper ändert nichts.", goalsSummary: "{met} erfüllt, {missed} verfehlt", goalsNone: "Es gibt noch keine Wartungsziele.",
   goal_broken_references: "Defekte Referenzen", goal_unavailable: "Nicht verfügbare Entitäten", goal_backup_age: "Alter des letzten Backups", goal_restore_test_age: "Alter des Wiederherstellungstests", goal_recorder_growth: "Datenbankwachstum", goal_weak_batteries: "Schwache Batterien", goal_devices_without_area: "Geräte ohne Bereich", goal_stale_sensors: "Sensoren ohne neue Meldung", goal_recurring_devices: "Wiederkehrende Ausfälle (Geräte)", goal_automation_errors: "Automationen mit Fehlern (30 Tage)", goal_blocked_automations: "Blockierte Automationen", goal_orphaned_statistics: "Verwaiste Statistiken",
-  goalLimit: "höchstens {limit}", goalAllowed: "erlaubt: {limit}", goalAllowedNone: "erlaubt: keine", goalMissedPill: "Ziel verfehlt", areaFindings: "Befunde", areaState: "Zustand", areaCare: "Wartung", areaCareSub: "nichts dringend", goalNow: "jetzt {value}", goalNever: "nie", goalNoBackup: "kein Backup", goalUnknownHint: "noch nicht messbar",
+  goalLimit: "höchstens {limit}", goalAllowed: "erlaubt: {limit}", goalAllowedNone: "erlaubt: keine", goalMissedPill: "Ziel verfehlt", areaFindings: "Befunde", areaState: "Zustand", areaCare: "Wartung", areaCareSub: "nichts dringend", goalNow: "jetzt {value}", goalNever: "nie", goalNoBackup: "kein Backup", goalUnknownHint: "noch nicht messbar", goalExternal: "außerhalb von Home Assistant gesichert",
   goalState_met: "Erfüllt", goalState_missed: "Verfehlt", goalState_unknown: "Unbekannt", goalState_off: "Aus",
   goalUnit_mb_per_day: "{n} MB pro Tag", goalEdit: "Anpassen", goalLimitLabel: "Grenze", goalEnabled: "Ziel beachten", goalDefault: "Standard: {n}", goalFailed: "Nicht gespeichert: {reason}", goalSave: "Speichern", goalsAdjust: "Grenzen anpassen", goalsAllMet: "Alle {n} beachteten Ziele sind erreicht.",
 });
 Object.assign(TEXT.en, {
-  tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed", goalsNone: "There are no maintenance goals yet.",
+  tilesMissed: "{count} goals missed", moreItems: "and {count} more", goalsTitle: "Maintenance goals", goalsTab: "Goals", goalsSub: "Your own limits for what in order means. Housekeeper changes nothing.", goalsSummary: "{met} met, {missed} missed", goalsNone: "There are no maintenance goals yet.",
   goal_broken_references: "Broken references", goal_unavailable: "Unavailable entities", goal_backup_age: "Age of the latest backup", goal_restore_test_age: "Age of the restore test", goal_recorder_growth: "Database growth", goal_weak_batteries: "Weak batteries", goal_devices_without_area: "Devices without an area", goal_stale_sensors: "Sensors without a new report", goal_recurring_devices: "Recurring outages (devices)", goal_automation_errors: "Automations with errors (30 days)", goal_blocked_automations: "Blocked automations", goal_orphaned_statistics: "Orphaned statistics",
-  goalLimit: "at most {limit}", goalAllowed: "allowed: {limit}", goalAllowedNone: "allowed: none", goalMissedPill: "Goal missed", areaFindings: "Findings", areaState: "State", areaCare: "Maintenance", areaCareSub: "nothing urgent", goalNow: "now {value}", goalNever: "never", goalNoBackup: "no backup", goalUnknownHint: "cannot be measured yet",
+  goalLimit: "at most {limit}", goalAllowed: "allowed: {limit}", goalAllowedNone: "allowed: none", goalMissedPill: "Goal missed", areaFindings: "Findings", areaState: "State", areaCare: "Maintenance", areaCareSub: "nothing urgent", goalNow: "now {value}", goalNever: "never", goalNoBackup: "no backup", goalUnknownHint: "cannot be measured yet", goalExternal: "backed up outside Home Assistant",
   goalState_met: "Met", goalState_missed: "Missed", goalState_unknown: "Unknown", goalState_off: "Off",
   goalUnit_mb_per_day: "{n} MB per day", goalEdit: "Adjust", goalLimitLabel: "Limit", goalEnabled: "Watch this goal", goalDefault: "Default: {n}", goalFailed: "Not saved: {reason}", goalSave: "Save", goalsAdjust: "Adjust limits", goalsAllMet: "All {n} watched goals are met.",
 });
@@ -8928,10 +9847,10 @@ const GOAL_JUMPS = {
   backup_age: { view: "maintenance", tab: "backup" },
   restore_test_age: { view: "maintenance", tab: "backup" },
   recorder_growth: { view: "recorder", tab: "db" },
-  weak_batteries: { view: "batteries", battery: "low" },
+  weak_batteries: { view: "batteries", battery: "low", clear: "batteries" },
   devices_without_area: { view: "policies", tab: "violations", lf: "polviol|rule|device_area" },
-  recurring_devices: { view: "cleanup", tab: "devices" },
-  orphaned_statistics: { view: "cleanup", tab: "stats" },
+  recurring_devices: { view: "cleanup", tab: "devices", clear: "cleanup" },
+  orphaned_statistics: { view: "cleanup", tab: "stats", clear: "orphanstats" },
   automation_errors: { view: "runs", tab: "overview", lf: "overview|runs|errors" },
 };
 const GOAL_TONES = { met: "ok", missed: "red", unknown: "mute", off: "mute" };
@@ -8960,13 +9879,14 @@ class GoalsMixin {
   }
 
   goalNow(g) {
+    if (g.external) return this.t("goalExternal");
     if (g.never) return this.t(g.id === "backup_age" ? "goalNoBackup" : "goalNever");
     return g.value === null ? this.t("goalUnknownHint") : this.t("goalNow", { value: this.goalAmount(g, g.value) });
   }
 
   goalJump(id) {
     const j = GOAL_JUMPS[id];
-    return `data-jump="${j.view}"${j.tab ? ` data-jump-tab="${j.tab}"` : ""}${j.filter ? ` data-filter="${j.filter}" data-jump-fresh` : ""}${j.lf ? ` data-jump-lf="${j.lf}"` : ""}${j.battery ? ` data-jump-battery="${j.battery}"` : ""}`;
+    return `data-jump="${j.view}"${j.tab ? ` data-jump-tab="${j.tab}"` : ""}${j.filter ? ` data-filter="${j.filter}"` : ""}${j.lf ? ` data-jump-lf="${j.lf}"` : ""}${j.battery ? ` data-jump-battery="${j.battery}"` : ""}${j.clear ? ` data-jump-clear="${j.clear}"` : ""}`;
   }
 
   goalRow(g, editable = true) {
@@ -9041,14 +9961,14 @@ class GoalsMixin {
 // Texts for the purge entries in the cleanup journal.
 Object.assign(TEXT.de, {
   purgeJournal: "Gelöschte Statistiken", purgeJournalHint: "Ältere Löschungen von Recorder-Resten, aus der Zeit vor den Plänen. Neue Löschungen stehen als Plan im Journal.",
-  purgeEntry: "{removed} gelöscht, {skipped} übersprungen", purgeWithStates: "mit Zuständen", purgeBackup: "Backup {job}", purgeNoBackup: "ohne Backup", purgeByYou: "von dir", purgeByOther: "von anderem Benutzer", purgeError: "Fehler: {error}", purgeNothing: "nichts gelöscht", purgeNotDeleted: "Nichts gelöscht: {reason}", purgeChunk: "{n} ausgewählt. Ein Plan nimmt höchstens {max}: dieser Durchgang nimmt die ersten {max}, die übrigen {rest} bleiben ausgewählt.", purgeOpenCount: "Löschen vorbereiten ({n})", planObjects: "Objekte ({n})", purgeStatesOn: "An (empfohlen): Statistik und {n} gespeicherte Zustände werden gelöscht.", purgeStatesOff: "Aus: nur die Statistik wird gelöscht. Die Zustände bleiben im Verlauf und können die Statistik neu entstehen lassen.",
+  purgeEntry: "{removed} gelöscht, {skipped} übersprungen", purgeWithStates: "mit Zuständen", purgeBackup: "Backup {job}", purgeNoBackup: "ohne Backup", purgeByYou: "von dir", purgeByOther: "von anderem Benutzer", purgeError: "Fehler: {error}", purgeNothing: "nichts gelöscht", purgeNotDeleted: "Nichts gelöscht: {reason}", purgeChunk: "{n} ausgewählt. Ein Plan nimmt höchstens {max}: dieser Durchgang nimmt die ersten {max}, die übrigen {rest} bleiben ausgewählt.", purgeOpenCount: "Vorschau erstellen ({n})", planObjects: "Objekte ({n})", purgeStatesOn: "An (empfohlen): Statistik und {n} gespeicherte Zustände werden gelöscht.", purgeStatesOff: "Aus: nur die Statistik wird gelöscht. Die Zustände bleiben im Verlauf und können die Statistik neu entstehen lassen.",
 });
 Object.assign(TEXT.en, {
   purgeJournal: "Deleted statistics", purgeJournalHint: "Older deletions of recorder leftovers, from before plans. New deletions appear as plans in the journal.",
-  purgeEntry: "{removed} deleted, {skipped} skipped", purgeWithStates: "with states", purgeBackup: "backup {job}", purgeNoBackup: "no backup", purgeByYou: "by you", purgeByOther: "by another user", purgeError: "error: {error}", purgeNothing: "nothing deleted", purgeNotDeleted: "Nothing deleted: {reason}", purgeChunk: "{n} selected. A plan takes at most {max}: this round takes the first {max}, the other {rest} stay selected.", purgeOpenCount: "Prepare deletion ({n})", planObjects: "Objects ({n})", purgeStatesOn: "On (recommended): the statistics and {n} stored states are deleted.", purgeStatesOff: "Off: only the statistics are deleted. The states stay in the history and can let the statistics reappear.",
+  purgeEntry: "{removed} deleted, {skipped} skipped", purgeWithStates: "with states", purgeBackup: "backup {job}", purgeNoBackup: "no backup", purgeByYou: "by you", purgeByOther: "by another user", purgeError: "error: {error}", purgeNothing: "nothing deleted", purgeNotDeleted: "Nothing deleted: {reason}", purgeChunk: "{n} selected. A plan takes at most {max}: this round takes the first {max}, the other {rest} stay selected.", purgeOpenCount: "Create preview ({n})", planObjects: "Objects ({n})", purgeStatesOn: "On (recommended): the statistics and {n} stored states are deleted.", purgeStatesOff: "Off: only the statistics are deleted. The states stay in the history and can let the statistics reappear.",
 });
 Object.assign(TEXT.de, {
-  purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Aufräumen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
+  purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Bereinigen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
   reason_irreversible: "Nur per Backup umkehrbar.", reason_with_states: "Löscht auch die gespeicherten Zustände.", reason_entity_exists: "Eine Entität trägt diese ID wieder.", reason_not_orphaned: "Die ID ist keine verwaiste Statistik.", reason_in_energy: "Das Energie-Dashboard nutzt diese Statistik.",
   check_statistics_gone: "Statistik ist gelöscht", result_purged: "Gelöscht", undo_irreversible: "nicht rückgängig: nur mit dem Backup", confirmedSummaryPurge: "{count} Statistiken werden gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an. Das lässt sich nur mit dem Backup zurücknehmen.",
   abort_recorder_busy: "Der Recorder war 30 Sekunden lang mit einer Abfrage belegt; nichts wurde gelöscht.", abort_still_there: "Die Statistik war nach dem Löschen noch da.", abort_states_left: "Nach dem Löschen gab es noch gespeicherte Zustände.",
@@ -9081,6 +10001,7 @@ Object.assign(TEXT.de, {
   simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",
   simRemoved: "{count} Entitäten entfernt", simRemovedOne: "1 Entität entfernt", simDisabled: "{count} Entitäten deaktiviert", simDisabledOne: "1 Entität deaktiviert", simDevices: " ({devices} Geräte)", simDevicesOne: " (1 Gerät)", simReplaced: "{count} Referenzen ersetzt", simMeters: "{count} Zählerwechsel",
   simCertain: "{count} sichere Verwendungen bleiben bestehen", simUncertain: "{count} unsichere oder manuelle Verwendungen bleiben bestehen", simOrphaned: "{count} Statistiken voraussichtlich verwaist", simBlocked: "{count} Aktionen laufen nicht",
+  sim_reloaded: "{count} Integration(en) werden neu geladen (einige Sekunden nicht erreichbar, nichts wird gelöscht)", sim_labeled: "{count} Entitäten bekommen ein Label", sim_area_set: "{count} Objekte bekommen einen Bereich", sim_refactored: "{count} Automationen werden umgebaut", sim_enabled: "{count} Entitäten werden aktiviert", sim_hidden: "{count} Entitäten werden ausgeblendet", sim_unhidden: "{count} Entitäten werden eingeblendet", sim_backups_deleted: "{count} Backups werden gelöscht", sim_automations_deleted: "{count} Automationen werden gelöscht",
   simLimits: "Grenzen: Die Datenbankdatei schrumpft erst nach einem Repack. Verweise in Vorlagen und außerhalb von Home Assistant sind nicht sicher prüfbar; eine Speicherersparnis wird nicht geschätzt.",
 });
 Object.assign(TEXT.en, {
@@ -9103,6 +10024,7 @@ Object.assign(TEXT.en, {
   simTitle: "Expected end state", simPurged: "{count} statistics will be deleted (reversible only from the backup)",
   simRemoved: "{count} entities removed", simRemovedOne: "1 entity removed", simDisabled: "{count} entities disabled", simDisabledOne: "1 entity disabled", simDevices: " ({devices} devices)", simDevicesOne: " (1 device)", simReplaced: "{count} references replaced", simMeters: "{count} meter switches",
   simCertain: "{count} certain uses remain", simUncertain: "{count} uncertain or manual uses remain", simOrphaned: "{count} statistics likely orphaned", simBlocked: "{count} actions will not run",
+  sim_reloaded: "{count} integration(s) will be reloaded (unreachable for a few seconds, nothing is deleted)", sim_labeled: "{count} entities get a label", sim_area_set: "{count} objects get an area", sim_refactored: "{count} automations are rewritten", sim_enabled: "{count} entities are enabled", sim_hidden: "{count} entities are hidden", sim_unhidden: "{count} entities are shown again", sim_backups_deleted: "{count} backups are deleted", sim_automations_deleted: "{count} automations are deleted",
   simLimits: "Limits: the database file only shrinks after a repack. References inside templates and outside Home Assistant cannot be checked for certain; saved storage is not estimated.",
 });
 
@@ -9300,7 +10222,9 @@ class ExchangeMixin {
     if (s.remaining_uncertain) lines.push(this.t("simUncertain", { count: s.remaining_uncertain }));
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
     if (s.rows_counted) { const other = s.purge_rows - (s.purge_stat_rows || 0) - (s.purge_states_rows || 0); if (s.purge_stat_rows) lines.push(this.t("simPurgeStatRows", { count: this.formatNumber(s.purge_stat_rows) })); if (s.purge_states_rows) lines.push(this.t("simPurgeStateRows", { count: this.formatNumber(s.purge_states_rows) })); if (other > 0) lines.push(this.t("simPurgeRows", { count: this.formatNumber(other) })); if (s.history_states_kept === undefined) { if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); } else { if (s.history_states_kept) lines.push(this.t(plan.recorder_auto_purge === false ? "simKeptStatesForever" : plan.recorder_keep_days ? "simKeptStates" : "simKeptStatesOpen", { count: this.formatNumber(s.history_states_kept), days: plan.recorder_keep_days })); if (s.history_stats_kept) lines.push(this.t("simKeptStats", { count: this.formatNumber(s.history_stats_kept) })); } }
+    for (const key of ["reloaded", "labeled", "area_set", "refactored", "enabled", "hidden", "unhidden", "backups_deleted", "automations_deleted"]) if (s[key]) lines.push(this.t(`sim_${key}`, { count: s[key] }));
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
+    if (!lines.length) return "";
     return `<div class="simbox"><details ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary><ul class="simlist">${lines.map(l => `<li>${this.esc(l)}</li>`).join("")}</ul><p class="simlimits">${this.t("simLimits")}</p></details></div>`;
   }
 }
@@ -9308,9 +10232,9 @@ class ExchangeMixin {
 Object.assign(TEXT.de, {
   warmupTitle: "Home Assistant startet ...", warmupS1: "Home Assistant startet", warmupS2: "Integrationen laden", warmupS3: "Puffer", warmupS4: "Befunde erheben",
   warmupLoaded: "{done} von {total} Integrationen geladen", warmupLoadedAll: "{done} Integrationen geladen", warmupWait: "Wartezeit, höchstens noch", warmupBuffer: "Sicherheitspuffer, noch", warmupMin: "Min.",
-  warmupNames: "Laden noch:", warmupLocked: "Aufräumen ist bis dahin gesperrt.", warmupBlip: "{name} lädt kurz neu, der Puffer läuft weiter.",
-  warmupBootLine: "Home Assistant lädt noch. Die Wartezeit beginnt danach. Aufräumen ist bis dahin gesperrt.", warmupAfter: "Danach sind die Befunde endgültig, und Aufräumen ist wieder frei.",
-  warmupBooting: "Home Assistant lädt", warmupAsking: "Stand wird abgefragt …", warmupDoneToast: "Die Befunde sind endgültig.",
+  warmupNames: "Laden noch:", warmupLocked: "Bereinigen ist bis dahin gesperrt.", warmupBlip: "{name} lädt kurz neu, der Puffer läuft weiter.",
+  warmupBootLine: "Home Assistant lädt noch. Die Wartezeit beginnt danach. Bereinigen ist bis dahin gesperrt.", warmupAfter: "Danach sind die Befunde endgültig, und Bereinigen ist wieder frei.",
+  warmupBooting: "Home Assistant lädt", warmupSince: "seit {x}", warmupFewer: "weniger", warmupEarly: "Die Wartezeit endet früher, sobald nichts mehr lädt.", warmupDoneTook: "Start nach {x}", warmupDoneSlow: "langsamste Integration: {name} ({s})", warmupAsking: "Stand wird abgefragt …", warmupDoneToast: "Die Befunde sind endgültig.",
   warmupPhase_start: "Der Scan startet", warmupPhase_registries: "Register lesen", warmupPhase_devices: "Geräte und Entitäten", warmupPhase_automations: "Automationen und Verweise", warmupPhase_finalizing: "Befunde berechnen",
 });
 Object.assign(TEXT.en, {
@@ -9318,7 +10242,7 @@ Object.assign(TEXT.en, {
   warmupLoaded: "{done} of {total} integrations loaded", warmupLoadedAll: "{done} integrations loaded", warmupWait: "Waiting time, at most", warmupBuffer: "Safety buffer, left", warmupMin: "min",
   warmupNames: "Still loading:", warmupLocked: "Cleanup is locked until then.", warmupBlip: "{name} is reloading briefly, the buffer keeps running.",
   warmupBootLine: "Home Assistant is still loading. The waiting time starts afterwards. Cleanup is locked until then.", warmupAfter: "After that the findings are final and cleanup is free again.",
-  warmupBooting: "Home Assistant is loading", warmupAsking: "Asking for the state …", warmupDoneToast: "The findings are final.",
+  warmupBooting: "Home Assistant is loading", warmupSince: "for {x}", warmupFewer: "fewer", warmupEarly: "The waiting time ends earlier as soon as nothing is loading any more.", warmupDoneTook: "Start took {x}", warmupDoneSlow: "slowest integration: {name} ({s})", warmupAsking: "Asking for the state …", warmupDoneToast: "The findings are final.",
   warmupPhase_start: "The scan is starting", warmupPhase_registries: "Reading registries", warmupPhase_devices: "Devices and entities", warmupPhase_automations: "Automations and references", warmupPhase_finalizing: "Working out findings",
 });
 
@@ -9951,25 +10875,30 @@ class SafetyMixin {
     this.ensureBackup();
   }
 
-  // Each item is [key, tone, text, target view]; running work comes first, nothing is invented when data is missing.
+  // Each item is [key, tone, text, target view]; what needs a look (red, then yellow) comes first, the rest keeps its order.
+  // Nothing is invented when data is missing.
   safetyItems() {
     const items = [], plans = this.journal || [];
     const mode = this.data?.meta?.protection || "full";
     items.push(["mode", mode === "full" ? "mute" : "warn", this.t(`safeMode_${mode}`), "settings"]);
     const check = this.backup?.available ? (this.backup.checks || []).find(c => c.id === "newest") : null;
     if (this.plan && ["backup", "running"].includes(this.plan.status)) items.push(["run", "warn", this.t(this.plan.status === "backup" ? "safeBackupRunning" : "safeRunning"), "journal"]);
-    if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours) }), "maintenance"]);
+    if (check) items.push(["backup", check.level === "ok" ? "ok" : "warn", check.values?.age_hours === null || check.values?.age_hours === undefined ? this.t("safeNoBackup") : this.t("safeBackup", { age: this.bhAge(check.values.age_hours, true) }), "maintenance"]);
     const last = plans.find(p => p.finished_at);
-    if (last) {
-      items.push(["last", "mute", this.t("safeLast", { when: this.formatDate(last.finished_at) }), "journal"]);
-      items.push(["undo", last.undoable ? "ok" : "mute", this.t(last.undoable ? "safeUndo" : "safeNoUndo"), "journal"]);
-    }
+    if (last) items.push(["last", last.undoable ? "ok" : "mute", `${this.t("safeLast", { when: this.formatDate(last.finished_at) })} · ${this.t(last.undoable ? "safeUndo" : "safeNoUndo")}`, "journal"]);
     if (this.scanCoverageComplete()) items.push(["coverage", "ok", this.t("covBar"), "settings"]);
+    // AI access while it is on, so it is not forgotten; yellow while it may change the list.
+    const mcp = this.data?.meta?.mcp;
+    if (mcp?.enabled) {
+      const off = mcp.off_at ? ` · ${this.t("mcpOffAt", { date: `${this.mcpDay(mcp.off_at)}, ${this.mcpTime(mcp.off_at).slice(0, 5)}` })}` : "";
+      items.push(["ai", mcp.write ? "warn" : "mute", `${this.t("safeAi", { mode: this.t(mcp.write ? "mcpBarWrite" : "mcpBarRead") })}${off}`, "settings"]);
+    }
     const watching = plans.filter(p => p.followup === "watching").length;
     if (watching) items.push(["watch", "warn", this.t(watching === 1 ? "safeWatching1" : "safeWatching", { n: watching }), "journal"]);
     const regress = plans.filter(p => p.followup === "regression").length;
     if (regress) items.push(["regress", "red", this.t("safeRegression", { n: regress }), "journal"]);
-    return items;
+    const rank = tone => ({ red: 0, warn: 1 })[tone] ?? 2;
+    return items.map((item, i) => [item, i]).sort((a, b) => rank(a[0][1]) - rank(b[0][1]) || a[1] - b[1]).map(([item]) => item);
   }
 
   // Settings > Scan: the protection mode, which the server enforces, and the events Housekeeper fires.
@@ -10001,23 +10930,23 @@ class SafetyMixin {
 }
 Object.assign(TEXT.de, {
   safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
-  safeLast: "Letzte Änderung: {when}", safeUndo: "Rückgängig möglich", safeNoUndo: "Rückgängig nicht mehr möglich, nur Backup-Restore",
+  safeLast: "Letzter Plan: {when}", safeUndo: "rückgängig möglich", safeNoUndo: "nicht mehr rückgängig", safeAi: "KI-Zugriff: {mode}",
   safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeWatchingTip: "Bis 24 Stunden nach der Ausführung prüft Housekeeper bei jedem Scan, ob neue Befunde dazugekommen sind.", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",
-  causeCounts: "{parts} betroffen", causeN_entity: "{n} Entitäten", causeN_automation: "{n} Automationen", causeN_script: "{n} Skripte", causeN_dashboard: "{n} Dashboards",
+  causeCounts: "{parts} betroffen", causeN_entity: "{n} Entitäten", causeN_automation: "{n} Automationen", causeN_script: "{n} Skripte", causeN_dashboard: "{n} Dashboards", causeN_entity1: "1 Entität", causeN_automation1: "1 Automation", causeN_script1: "1 Skript", causeN_dashboard1: "1 Dashboard",
 });
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
-  safeLast: "Last change: {when}", safeUndo: "Undo available", safeNoUndo: "Undo no longer possible, backup restore only",
+  safeLast: "Last plan: {when}", safeUndo: "undo available", safeNoUndo: "no longer undoable", safeAi: "AI access: {mode}",
   safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeWatchingTip: "For up to 24 hours after the run, Housekeeper checks at every scan whether new findings appeared.", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
-  causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards",
+  causeCounts: "{parts} affected", causeN_entity: "{n} entities", causeN_automation: "{n} automations", causeN_script: "{n} scripts", causeN_dashboard: "{n} dashboards", causeN_entity1: "1 entity", causeN_automation1: "1 automation", causeN_script1: "1 script", causeN_dashboard1: "1 dashboard",
 });
 Object.assign(TEXT.de, {
   modeBadge_full: "Alles erlaubt", modeBadge_read_only: "Nur lesen", modeBadge_quarantine: "Nur Quarantäne", modeBadge_confirmed: "Ohne endgültiges Löschen",
-  safeMode_full: "Schutzmodus: alles erlaubt", safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne endgültiges Löschen",
+  safeMode_full: "Schutzmodus: Standard", safeMode_read_only: "Schutzmodus: nur lesen", safeMode_quarantine: "Schutzmodus: nur Quarantäne", safeMode_confirmed: "Schutzmodus: ohne endgültiges Löschen",
   modeTitle: "Schutzmodus", modeHint: "Legt auf dem Server fest, was Pläne ändern dürfen. Das gilt für Bestätigen, Starten und Rückgängig, nicht nur für Knöpfe im Panel. Pläne anlegen und alle Ansichten bleiben immer erlaubt.", modeLabel: "Was Housekeeper ändern darf",
   mode_read_only: "1 · Nur lesen", mode_quarantine: "2 · Quarantäne erlaubt", mode_confirmed: "3 · Bestätigte Änderungen mit Backup", mode_full: "4 · Voller Wartungsmodus",
   modeText_read_only: "Nichts wird geändert, auch kein Rückgängig.", modeText_quarantine: "Nur Deaktivieren (und dessen Rückgängig) ist erlaubt.", modeText_confirmed: "Alles mit Einzelbestätigung und Backup außer unumkehrbarem Löschen von Recorder-Daten.", modeText_full: "Alles, wie bisher.",
@@ -10030,7 +10959,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   modeBadge_full: "Everything allowed", modeBadge_read_only: "Read only", modeBadge_quarantine: "Quarantine only", modeBadge_confirmed: "No irreversible deletions",
-  safeMode_full: "Protection mode: everything allowed", safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
+  safeMode_full: "Protection mode: standard", safeMode_read_only: "Protection mode: read only", safeMode_quarantine: "Protection mode: quarantine only", safeMode_confirmed: "Protection mode: no irreversible deletions",
   modeTitle: "Protection mode", modeHint: "Sets on the server what plans may change. It holds for confirming, starting and undoing, not only for buttons in the panel. Making plans and every view stay allowed.", modeLabel: "What Housekeeper may change",
   mode_read_only: "1 · Read only", mode_quarantine: "2 · Quarantine allowed", mode_confirmed: "3 · Confirmed changes with backup", mode_full: "4 · Full maintenance",
   modeText_read_only: "Nothing is changed, not even an undo.", modeText_quarantine: "Only disabling (and undoing it) is allowed.", modeText_confirmed: "Everything with one-by-one confirmation and backup except irreversible deletion of recorder data.", modeText_full: "Everything, as before.",
@@ -10136,17 +11065,21 @@ class BatteryCareMixin {
     if (!(this.remOpen || []).includes(r.id)) return "";
     const id = this.esc(r.id), hist = r.history || [];
     const list = hist.length ? `<ul>${hist.map(d => `<li>${this.esc(this.remDay(d))}${this.deleteButton(`data-rem-hdel="${id}|${this.esc(d)}"`, this.t("remDelete"), { small: true })}</li>`).join("")}</ul>` : `<p class="muted">${this.t("remNoHistory")}</p>`;
-    return `<tr class="static remhist"><td colspan="5"><h3>${this.t("remHistory", { n: hist.length })}</h3>${list}</td></tr>`;
+    return `<tr class="static remhist"><td colspan="6"><h3>${this.t("remHistory", { n: hist.length })}</h3>${list}</td></tr>`;
   }
 
-  reminderColumns() {
-    const tone = r => ({ due: "red", soon: "warn", ok: "ok" }[r.state]);
+  reminderColumns(page = []) {
+    const tone = r => ({ due: "red", soon: "warn", ok: "ok" }[r.state]), sel = (this.remSel ||= new Set());
     return [
+      { key: "sel", label: "selectPage", narrow: true, sortable: false,
+        allBox: () => { const n = page.filter(r => sel.has(r.id)).length; return `<input type="checkbox" class="selbox" data-rem-page ${n && n === page.length ? "checked" : ""} ${n && n < page.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+        cell: r => `<input type="checkbox" class="selbox" data-rem-sel="${this.esc(r.id)}" ${sel.has(r.id) ? "checked" : ""} aria-label="${this.esc(r.name)}">` },
       { key: "name", label: "remColName", dir: "asc", cell: r => `<div class="statcell">${this.expandBtn("data-rem-open", r.id, (this.remOpen || []).includes(r.id), this.t((this.remOpen || []).includes(r.id) ? "remHistoryClose" : "remHistoryOpen"))}<div><strong>${this.esc(r.name)}</strong>${r.note ? `<small class="remnote">${this.esc(r.note)}</small>` : ""}</div></div>` },
       { key: "every", label: "remColEvery", dir: "asc", cell: r => this.esc(this.t("remEveryN", { n: r.interval_days })) },
       { key: "last", label: "remColLast", dir: "desc", cell: r => r.last_done ? this.esc(this.remDay(r.last_done)) : `<span class="muted">–</span>` },
       { key: "due", label: "remColDue", dir: "asc", cell: r => `<span class="pill ${tone(r)}" title="${this.esc(this.remDay(r.due))}">${this.esc(this.remWhen(r.days_left))}</span>` },
-      { key: "act", label: "remColActions", sortable: false, cell: r => { const id = this.esc(r.id); return `<span class="remact"><button class="btn small" data-rem-done="${id}">${this.t("remDone")}</button><button class="btn small quiet" data-rem-edit="${id}">${this.t("remEdit")}</button>${this.deleteButton(`data-rem-del="${id}"`, this.t("remDelete"), { small: true })}</span>`; } },
+      // "Done" is the step of a reminder and stays in its row; change and delete sit in the menu, as in the other lists.
+      { key: "act", label: "remColActions", sortable: false, cell: r => { const id = this.esc(r.id); return `<span class="remact"><button class="btn small" data-rem-done="${id}">${this.t("remDone")}</button><details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-rem-edit="${id}"><ha-icon icon="mdi:pencil-outline"></ha-icon>${this.t("remEdit")}</button><hr class="menusep"><button type="button" class="menuitem" data-rem-del="${id}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("remDelete")}</button></div></details></span>`; } },
     ];
   }
 
@@ -10183,11 +11116,28 @@ class BatteryCareMixin {
     ]) : "";
     this.setExporter("reminders", "reminders", [this.t("remColName"), this.t("remColEvery"), this.t("remColLast"), this.t("remColDue"), this.t("remFNote")], () => this.refine("reminders", items, { text: r => [r.name, r.note].join(" "), filters: { state: (r, v) => r.state === v }, sorts, tie: r => r.id }).map(r => [r.name, this.t("remEveryN", { n: r.interval_days }), r.last_done || "", r.due, r.note || ""]));
     const bar = items.length ? this.listBar("reminders", { table: true, dense: true, sorts, filters: [{ name: "state", all: this.t("remAllStates"), options: [["due", this.t("remStateDue")], ["soon", this.t("remStateSoon")], ["ok", this.t("remStateOk")]] }] }) : "";
-    const rows = this.refine("reminders", items, { text: r => [r.name, r.note].join(" "), filters: { state: (r, v) => r.state === v }, sorts, tie: r => r.id });
+    const sel = (this.remSel ||= new Set());
+    for (const id of [...sel]) if (!items.some(r => r.id === id)) sel.delete(id);
+    const rows = this.refine("reminders", this.selOnly?.reminders ? items.filter(r => sel.has(r.id)) : items, { text: r => [r.name, r.note].join(" "), filters: { state: (r, v) => r.state === v }, sorts, tie: r => r.id });
     const pg = this.paginate("reminders", rows);
+    this._remVisible = pg.rows.map(r => r.id);
+    // Several reminders done at once: tick them, then one button.
+    const n = sel.size;
+    const tools = items.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("reminders", n, "data-rem-clear")}<span class="toolgap"></span><button type="button" class="btn" data-rem-done-picked ${n ? "" : "disabled"}><ha-icon icon="mdi:check"></ha-icon>${this.t("remDoneN", { n: this.formatNumber(n) })}</button></div>` : "";
     const table = !items.length ? `<div class="emptymsg"><ha-icon icon="mdi:calendar-clock-outline"></ha-icon>${this.t("remEmpty")}</div>`
-      : rows.length ? this.listTable("reminders", this.reminderColumns(), pg.rows, { cls: "rem", rowAttrs: r => `data-rem-row="${this.esc(r.id)}" tabindex="0" role="button" aria-expanded="${(this.remOpen || []).includes(r.id)}"`, after: r => this.reminderHistory(r) }) : `<div class="emptymsg">${this.noMatches("reminders")}</div>`;
-    return `${tiles}<div class="panel">${head}${bar}${table}${pg.footer}</div>`;
+      : rows.length ? this.listTable("reminders", this.reminderColumns(pg.rows), pg.rows, { cls: "rem", rowAttrs: r => `data-rem-row="${this.esc(r.id)}" tabindex="0" role="button" aria-expanded="${(this.remOpen || []).includes(r.id)}"`, after: r => this.reminderHistory(r) }) : `<div class="emptymsg">${this.noMatches("reminders")}</div>`;
+    return `${tiles}<div class="panel">${head}${bar}${tools}${table}${pg.footer}</div>`;
+  }
+
+  // Marks the picked reminders as done, one request each; the list shows the answer of the last one.
+  async remDonePicked() {
+    const sel = this.remSel || new Set();
+    this.remError = "";
+    for (const id of [...sel]) {
+      try { const reply = await this._hass.callWS({ type: "ha_housekeeper/reminder_set", action: "done", reminder_id: id }); this.data.reminders = reply.reminders; sel.delete(id); }
+      catch (err) { this.remError = this.t("remInvalid", { field: String(err?.message || err).replace(/^Not accepted: /, "") }); break; }
+    }
+    this.render();
   }
 
   async reminderCall(msg) {
@@ -10231,7 +11181,7 @@ class BatteryCareMixin {
       this.reminderCall({ action: "save", ...(d.id ? { reminder_id: d.id } : {}), name: d.name, interval_days: Number(d.interval_days), due: d.due, note: d.note });
     });
     root.querySelectorAll("[data-rem-open], [data-rem-row]").forEach(el => el.addEventListener("click", ev => {
-      const inner = ev?.target?.closest?.("button, select, input, a, label");
+      const inner = ev?.target?.closest?.("button, select, input, a, label, summary, .menupop");
       if (el.dataset.remRow !== undefined && inner && inner !== el && el.contains(inner)) return;
       const id = el.dataset.remOpen ?? el.dataset.remRow;
       const open = this.remOpen || [];
@@ -10247,6 +11197,12 @@ class BatteryCareMixin {
       this.render();
     }));
     root.querySelectorAll("[data-rem-done]").forEach(el => el.addEventListener("click", () => this.reminderCall({ action: "done", reminder_id: el.dataset.remDone })));
+    const remSel = () => (this.remSel ||= new Set());
+    root.querySelectorAll("[data-rem-sel]").forEach(el => el.onchange = () => { this.pickRows("reminders", el.dataset.remSel, el.checked, remSel(), this._remVisible); this.render(); });
+    const remPage = root.querySelector("[data-rem-page]");
+    if (remPage) { remPage.indeterminate = remPage.hasAttribute("data-partial"); remPage.onchange = ev => { (this._remVisible || []).forEach(id => (ev.target.checked ? remSel().add(id) : remSel().delete(id))); this.render(); }; }
+    root.querySelector("[data-rem-clear]")?.addEventListener("click", () => { remSel().clear(); this.render(); });
+    root.querySelector("[data-rem-done-picked]")?.addEventListener("click", () => this.remDonePicked());
     root.querySelectorAll("[data-rem-hdel]").forEach(el => el.addEventListener("click", () => {
       const [id, day] = el.dataset.remHdel.split("|"), r = (this.data.reminders || []).find(x => x.id === id);
       this.confirmAsk(this.t("confirmRemDay", { date: this.remDay(day), name: r?.name || "" }), () => this.reminderCall({ action: "history_delete", reminder_id: id, day }));
@@ -10262,11 +11218,12 @@ Object.assign(TEXT.de, {
   bvLine: "Jetzt {now} · erkannt als {kind} · Grenze {limit}", bvNote: "Der Typ ist eine Schätzung; liegt er falsch, ist auch die Grenze falsch. Ohne Angabe: {unknown} (zu wenige Tage oder eine Spannung, die zu keinem Typ passt).",
   bvType_cell15: "Einzelzelle 1,5 V (AA/AAA, Alkaline oder NiMH)", bvType_coin3: "3-V-Zelle (z. B. CR2032 oder 2 × AA)", bvType_lithium: "Lithium-Ionen-Zelle", bvType_cells3: "3 Zellen in Reihe (4,5 V)", bvType_cells4: "4 Zellen in Reihe (6 V)", bvType_block9: "9-V-Block", bvType_lead12: "12-V-Akku",
   btTitle: "Alle Batterien", btHint: "Stand, Verbrauch und die Prognose, wann eine Batterie die Grenze erreicht (bis 90 Tage).", btLoading: "Prognose wird berechnet …", btNoRecorder: "Ohne Recorder gibt es keine Prognose.",
-  remTitle: "Wartungserinnerungen", remHint: "Filter, Entkalken, Batteriewechsel: du trägst Name, Abstand und Fälligkeit ein, Housekeeper sagt, wann es dran ist, und merkt sich, wann du es erledigt hast. Es ändert nichts in Home Assistant.", remEmpty: "Noch keine Erinnerung. Lege zum Beispiel den Wasserfilter oder den Rauchmelder-Test an.",
-  remName: "z. B. Wasserfilter", remNote: "z. B. Batterietyp CR2032", remAdd: "Hinzufügen", remSave: "Speichern", remCancel: "Abbrechen", remDone: "Erledigt", remDelete: "Löschen", remEdit: "Ändern", remNew: "+ Erinnerung hinzufügen",
+  remTitle: "Deine Erinnerungen", remHint: "Filter, Entkalken, Batteriewechsel: du trägst Name, Abstand und Fälligkeit ein, Housekeeper sagt, wann es dran ist, und merkt sich, wann du es erledigt hast. Es ändert nichts in Home Assistant.", remEmpty: "Noch keine Erinnerung. Lege zum Beispiel den Wasserfilter oder den Rauchmelder-Test an.",
+  remName: "z. B. Wasserfilter", remNote: "z. B. Batterietyp CR2032", remAdd: "Hinzufügen", remSave: "Speichern", remCancel: "Abbrechen", remDone: "Erledigt", remDoneN: "Erledigt ({n})", remDelete: "Löschen", remEdit: "Ändern", remNew: "+ Erinnerung hinzufügen",
   remFName: "Name", remFEvery: "Abstand in Tagen", remFDue: "Fällig am", remFNote: "Notiz (optional)", remAllStates: "Alle Zustände", remSumAll: "Alle", remStateDue: "Überfällig", remStateSoon: "Bald fällig", remStateOk: "In Ordnung", remColName: "Name", remColEvery: "Abstand", remColLast: "Zuletzt erledigt", remColDue: "Fällig", remColActions: "Aktionen",
   remDialogNew: "Neue Erinnerung", remDialogEdit: "Erinnerung bearbeiten", remEveryN: "alle {n} Tage", remHistory: "Historie · {n}× erledigt", remNoHistory: "Noch nie erledigt.", remHistoryOpen: "Historie aufklappen", remHistoryClose: "Historie zuklappen", remToday: "heute", remOverdue: "{n} Tage überfällig", remIn: "in {n} Tagen", remInvalid: "Nicht gespeichert, bitte prüfen: {field}",
-  reminders: "Erinnerungen", remindersSubtitle: "Eigene Wartungstermine: Filter, Entkalken, Batteriewechsel.", actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
+  reminders: "Erinnerungen", remindersSubtitle: "Termine für das, was du regelmäßig erledigst.", actReminders: "Wartung fällig", actRemindersHint: "Eine eigene Erinnerung ist erreicht",
+  relAttempts: "Etwa {n} Wiederholungen der Einrichtung, gezählt seit {date}",
   relSetup: "Einrichtungsfehler: {n} in {days} Tagen, zuletzt {last}", relSetupNow: "Gerade im Zustand {state}", relSetupNote: "Aus den Scans gezählt, so fein wie das Scan-Intervall.",
   event_reminder_due: "Wartungserinnerung fällig",
 });
@@ -10275,11 +11232,12 @@ Object.assign(TEXT.en, {
   bvLine: "Now {now} · recognised as {kind} · limit {limit}", bvNote: "The type is a guess; if it is wrong, so is the limit. Without a result: {unknown} (too few days or a voltage that fits no type).",
   bvType_cell15: "single 1.5 V cell (AA/AAA, alkaline or NiMH)", bvType_coin3: "3 V cell (e.g. CR2032 or 2 × AA)", bvType_lithium: "lithium-ion cell", bvType_cells3: "3 cells in series (4.5 V)", bvType_cells4: "4 cells in series (6 V)", bvType_block9: "9 V block", bvType_lead12: "12 V battery",
   btTitle: "All batteries", btHint: "Level, drain and the forecast of when a battery reaches the limit (up to 90 days).", btLoading: "Calculating the forecast …", btNoRecorder: "There is no forecast without a recorder.",
-  remTitle: "Maintenance reminders", remHint: "Filter, descaling, battery change: you enter a name, an interval and the due date, Housekeeper tells you when it is due and keeps when you did it. It changes nothing in Home Assistant.", remEmpty: "No reminder yet. Add the water filter or the smoke detector test, for example.",
-  remName: "e.g. water filter", remNote: "e.g. battery type CR2032", remAdd: "Add", remSave: "Save", remCancel: "Cancel", remDone: "Done", remDelete: "Delete", remEdit: "Edit", remNew: "+ Add reminder",
+  remTitle: "Your reminders", remHint: "Filter, descaling, battery change: you enter a name, an interval and the due date, Housekeeper tells you when it is due and keeps when you did it. It changes nothing in Home Assistant.", remEmpty: "No reminder yet. Add the water filter or the smoke detector test, for example.",
+  remName: "e.g. water filter", remNote: "e.g. battery type CR2032", remAdd: "Add", remSave: "Save", remCancel: "Cancel", remDone: "Done", remDoneN: "Done ({n})", remDelete: "Delete", remEdit: "Edit", remNew: "+ Add reminder",
   remFName: "Name", remFEvery: "Interval in days", remFDue: "Due on", remFNote: "Note (optional)", remAllStates: "All states", remSumAll: "All", remStateDue: "Overdue", remStateSoon: "Due soon", remStateOk: "On track", remColName: "Name", remColEvery: "Interval", remColLast: "Last done", remColDue: "Due", remColActions: "Actions",
   remDialogNew: "New reminder", remDialogEdit: "Edit reminder", remEveryN: "every {n} days", remHistory: "History · done {n}×", remNoHistory: "Never done yet.", remHistoryOpen: "Show history", remHistoryClose: "Hide history", remToday: "today", remOverdue: "{n} days overdue", remIn: "in {n} days", remInvalid: "Not saved, please check: {field}",
-  reminders: "Reminders", remindersSubtitle: "Your own maintenance dates: filter, descaling, changing batteries.", actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
+  reminders: "Reminders", remindersSubtitle: "Dates for what you do regularly.", actReminders: "Maintenance due", actRemindersHint: "One of your own reminders is reached",
+  relAttempts: "About {n} setup retries, counted since {date}",
   relSetup: "Setup failures: {n} in {days} days, last {last}", relSetupNow: "Currently in state {state}", relSetupNote: "Counted from the scans, as fine as the scan interval.",
   event_reminder_due: "maintenance reminder due",
 });
@@ -10602,8 +11560,8 @@ Object.assign(TEXT.en, {
 // snoozed, hidden), some follow from what Housekeeper sees (new, in work, fixed). Nothing here stores anything:
 // the decisions are the ones of the ignore list, the rest is derived from the scan and the journal of plans.
 const NEW_FINDING_DAYS = 7, DONE_PERIODS = [7, 30, 90], ACTIVE_PLAN = ["dry_run", "backup", "running"];
-// The chips of the list are states that exclude each other; "new" and "in work" are subsets of the open ones and live in the list bar as one filter.
-const FINDING_STATES = ["known", "snoozed", "hidden"], FRESH_STATES = ["new", "inwork"];
+// The chips of the list are states that exclude each other; "new", "in work" and "due" are parts of the open ones.
+const FINDING_STATES = ["known", "snoozed", "hidden"];
 
 Object.assign(TEXT.de, {
   bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ausgeblendet", bandMark: "Markiert: {kind}", bandRemoveMark: "Entfernen",
@@ -10633,10 +11591,15 @@ class FindingStatusMixin {
 
   // The objects of drafted or running plans; rebuilt when the journal changes.
   planSets() {
-    if (this._planSets?.journal === this.journal) return this._planSets;
+    const hour = Math.floor(Date.now() / 3600000); // a preview runs out with time, not only with a new journal
+    if (this._planSets?.journal === this.journal && this._planSets.data === this.data && this._planSets.hour === hour) return this._planSets;
     const active = new Set();
-    for (const plan of this.journal || []) if (ACTIVE_PLAN.includes(plan.status)) (plan.objects || []).forEach(id => active.add(id));
-    this._planSets = { journal: this.journal, active };
+    // A preview older than a day can no longer be confirmed: it is dropped by the backend and does not count here.
+    // A plan for a device puts the findings of its entities in work as well.
+    const devices = new Set();
+    for (const plan of this.journal || []) if (ACTIVE_PLAN.includes(plan.status) && !this.planStale(plan)) (plan.objects || []).forEach(id => { active.add(id); devices.add(id); });
+    for (const o of this.data?.objects || []) if (o.object_type === "entity" && o.device_id && devices.has(o.device_id)) active.add(o.object_id);
+    this._planSets = { journal: this.journal, data: this.data, hour, active };
     return this._planSets;
   }
 
@@ -10650,6 +11613,34 @@ class FindingStatusMixin {
 
   isNewFinding(f) { return !f.ignored && f.first_detected_at && Date.parse(f.first_detected_at) >= Date.now() - NEW_FINDING_DAYS * 864e5; }
 
+  // The critical findings that came up since the last scan: what the overview counts and its jump shows.
+  scanNewKeys() {
+    return new Set((this.trend?.new_findings?.items || []).filter(f => !f.ignored && CRITICAL_CLASSES.includes(f.classification)).map(f => `${f.rule_id}|${f.object_id}|${f.affected_object || ""}`));
+  }
+
+  // The outages the overview counts (every cause from medium on) with everything they explain: the jump of its row.
+  // A finding belongs when its cause or one above it counts; quiet outages stay out, missing services are in.
+  // The outages the overview counts: chains at their top, a device below an integration that is down is part of that
+  // integration's chain, not an outage of its own; quiet ones (info, low) stay away.
+  // level "high" keeps the urgent ones, "medium" the others; without a level all of them.
+  countedOutages(level = "") { return this.causeEntries().filter(c => !this.quietCause(c) && (level === "high" ? c.impact === "high" : level === "medium" ? c.impact !== "high" : true)); }
+
+  // The findings of the counted outages (of one level): every open finding whose chain ends at the top in one of them.
+  outageKeys(level = "") {
+    const tops = new Set(this.countedOutages(level).map(c => c.id));
+    const top = f => { let c = this.causeById(f.cause_id), n = 0; while (c?.parent_id && n < 20) { c = this.causeById(c.parent_id); n++; } return c; };
+    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && tops.has(top(f)?.id)).map(f => f.key));
+  }
+
+  // The findings below one cause, at any depth: the jump of a cause that has no page of its own.
+  causeKeys(id) {
+    const below = f => { for (let c = this.causeById(f.cause_id), n = 0; c && n < 20; c = this.causeById(c.parent_id), n++) if (c.id === id) return true; return false; };
+    return new Set((this.data?.findings || []).filter(f => !f.ignored && f.cause_id && below(f)).map(f => f.key));
+  }
+
+  // The findings the vacation mode holds back right now or until its grace ends: what the vacation bar counts.
+  heldKeys() { return new Set((this.data?.findings || []).filter(f => f.ignored_by === "rule" && ["vacation", "after"].includes(f.ignore_rule?.phase)).map(f => f.key)); }
+
   inWork(f) { return !f.ignored && this.planSets().active.has(f.object_id); }
 
   // Does a finding belong to the chosen status? "" is the default: everything not decided.
@@ -10659,6 +11650,7 @@ class FindingStatusMixin {
       case "all": return true;
       case "new": return this.isNewFinding(f);
       case "inwork": return this.inWork(f);
+      case "due": return !f.ignored && Boolean(f.resurfaced);
       default: return this.decidedState(f) === this.findingStatus;
     }
   }
@@ -10666,7 +11658,7 @@ class FindingStatusMixin {
   statusCount(state) {
     const list = this.data.findings;
     if (state === "") return list.filter(f => !f.ignored).length;
-    return list.filter(f => (state === "new" ? this.isNewFinding(f) : state === "inwork" ? this.inWork(f) : this.decidedState(f) === state)).length;
+    return list.filter(f => (state === "new" ? this.isNewFinding(f) : state === "inwork" ? this.inWork(f) : state === "due" ? !f.ignored && f.resurfaced : this.decidedState(f) === state)).length;
   }
 
   // "New", "In work" next to a row's other facts.
@@ -10674,18 +11666,14 @@ class FindingStatusMixin {
     return [this.isNewFinding(f) ? this.t("stateNew") : "", this.inWork(f) ? this.t("stateInwork") : ""].filter(Boolean).map(x => ` · ${x}`).join("");
   }
 
-  // The filter of the list bar: findings first seen in the last days, or touched by a plan that is running.
-  freshFilter() {
-    return { name: "fresh", all: this.t("freshAll"), options: [["new", this.t("freshNew", { days: NEW_FINDING_DAYS })], ["inwork", this.t("freshInwork")]] };
-  }
-
-  freshMatch(f, value) { return value === "new" ? this.isNewFinding(f) : this.inWork(f); }
-
+  // One row for the state of a finding: open with its parts (new in the last days, in work, due again), then what was
+  // decided and what was done. The tiles count within the chosen chip.
   statusChips() {
-    const chip = (state, label, count) => `<button class="chip ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}">${label} (${this.formatNumber(count)})</button>`;
+    const chip = (state, label, count, sub = false) => `<button class="chip${sub ? " sub" : ""} ${(this.findingStatus || "") === state ? "active" : ""}" data-fstatus="${state || "open"}" aria-pressed="${(this.findingStatus || "") === state}">${label} (${this.formatNumber(count)})</button>`;
+    const parts = [["new", this.t("freshNew", { days: NEW_FINDING_DAYS })], ["inwork", this.t("freshInwork")], ["due", this.t("stateDue")]].map(([s, label]) => [s, label, this.statusCount(s)]).filter(([, , n]) => n);
     const decided = FINDING_STATES.filter(s => this.statusCount(s)), fixed = this.doneCount();
-    if (!decided.length && !fixed) return "";
-    return [chip("", this.t("stateOpen"), this.findingTotal() + this.followerCount()), ...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])].join("");
+    const rest = [...decided.map(s => chip(s, this.t(`state_${s}`), this.statusCount(s))), ...(fixed ? [chip("fixed", this.t("state_fixed"), fixed)] : [])];
+    return [chip("", this.t("stateOpen"), this.findingTotal()), ...parts.map(([s, label, n]) => chip(s, label, n, true)), ...(rest.length ? ['<span class="chipsep" aria-hidden="true"></span>', ...rest] : [])].join("");
   }
 
   doneDays() { return this.doneDaysSel || 30; }
@@ -10729,6 +11717,7 @@ class FindingStatusMixin {
   }
 
   // "Done": what a plan fixed, and what ended by itself, in the chosen period. Only the first two groups count as fixed.
+  // Every group starts folded; its head names the count.
   fixedList() {
     this.loadEnded();
     const days = this.doneDays(), e = this.endedNow(), self = this.endedSelf();
@@ -10746,8 +11735,8 @@ class FindingStatusMixin {
     };
     const row = (f, tone) => `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:${tone === "ok" ? "check" : "help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(this.findObject(`${f.rule_id.split(".")[0]}:${f.object_id}`)?.name || f.object_id)}</strong><small>${this.esc(this.findingTitle(f))}</small></span></div>`;
     const groups = [
-      group("plan", "doneByPlan", "ok", planRows, true),
-      group("back", "doneBack", "ok", self.back.map(f => row(f, "ok")), true),
+      group("plan", "doneByPlan", "ok", planRows, false),
+      group("back", "doneBack", "ok", self.back.map(f => row(f, "ok")), false),
       group("removed", "doneRemoved", "mute", self.removed.map(f => row(f, "mute")), false),
       group("unread", "doneUnread", "mute", self.unread.map(f => row(f, "mute")), false),
       group("other", "doneOther", "mute", self.other.map(f => row(f, "mute")), false),
@@ -10757,14 +11746,24 @@ class FindingStatusMixin {
   }
 
   // The selected rows whose object can carry a mark (entity, device, integration, app): selection key -> object key.
-  markTargets() {
+  markTargets(onDevice = false) {
     const out = new Map();
     for (const key of this.findSel) {
       const finding = this.data.findings.find(f => f.key === key);
-      const objectKey = finding && this.findingKey(finding);
+      let objectKey = finding && this.findingKey(finding);
+      // "On the device": only a device that is down completely, so the mark covers no entity that still works.
+      const device = onDevice && objectKey?.startsWith("entity:") && this.findObject(objectKey)?.device_id;
+      if (device && this.findObject(`device:${device}`) && this.deviceDown(device)) objectKey = `device:${device}`;
       if (objectKey && MARK_TYPES.includes(objectKey.split(":")[0])) out.set(key, objectKey);
     }
     return out;
+  }
+
+  deviceDown(id) { return this.data.findings.some(f => f.rule_id === "device.down" && f.object_id === id); }
+
+  // How many selected entities have a device that is down: only then the form offers to mark the devices instead.
+  markDeviceCount() {
+    return new Set([...this.markTargets(true).values()].filter(k => k.startsWith("device:"))).size - new Set([...this.markTargets().values()].filter(k => k.startsWith("device:"))).size;
   }
 
   // The kinds every selected object accepts: integrations and apps take fewer than entities and devices.
@@ -10774,12 +11773,15 @@ class FindingStatusMixin {
   }
 
   async commitMarkBulk() {
-    const b = this.bulk, targets = this.markTargets();
-    const failed = await this.runBulk([...targets.keys()], async key => {
-      const [object_type, ...rest] = targets.get(key).split(":");
+    const b = this.bulk, targets = this.markTargets(b.onDevice);
+    // One mark per object: several findings of the same device need it once.
+    const objects = [...new Set(targets.values())];
+    const failed = await this.runBulk(objects, async objectKey => {
+      const [object_type, ...rest] = objectKey.split(":");
       const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: b.markKind || this.markKindsFor(targets)[0], reason: b.reason.trim() };
       if (Number(b.days)) msg.days = Number(b.days);
       await this._hass.callWS(msg);
+      targets.forEach((k, key) => { if (k === objectKey) this.findSel.delete(key); });
     });
     await this.refreshData();
     if (!failed) this.bulk = null;
@@ -10791,15 +11793,22 @@ class FindingStatusMixin {
     const b = this.bulk;
     if (!b) return "";
     if (b.kind === "mark") {
-      const targets = this.markTargets(), kinds = this.markKindsFor(targets);
+      const targets = this.markTargets(b.onDevice), kinds = this.markKindsFor(targets), devices = this.markDeviceCount();
+      const objects = new Set(targets.values()).size;
       const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
-      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(targets.size)})</strong>
+      const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
+      return `<form class="polform bulkform" data-bulk-form><strong>${this.t("markTitle")} (${this.formatNumber(objects)})</strong>${onDevice}
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
         <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></form>`;
     }
     if (b.kind === "area") return this.areaForm();
+    if (b.kind === "status") {
+      return `<form class="polform bulkform statusform" data-bulk-form><strong>${this.t("statusTitle", { n: this.formatNumber(this.findSel.size) })}</strong>${this.statusFields(b, "bulk", b.state)}
+        <div class="mbtns"><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
+        ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}</form>`;
+    }
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="polform bulkform"><small>${this.t("labelNone")}</small><button type="button" class="btn quiet" data-bulk-cancel>${this.t("cancelRun")}</button></div>`;
@@ -10836,11 +11845,14 @@ class FindingStatusMixin {
     if (b.kind === "label") return this.makeLabelPlan();
     if (b.kind === "area") return this.makeAreaPlan();
     if (b.kind === "mark") return this.commitMarkBulk();
-    if (b.kind === "known" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
+    // "known" and "snoozed" are the older shortcuts of the same form.
+    const kind = b.kind === "status" ? b.state : b.kind === "known" ? "keep" : "snooze";
+    if (kind === "keep" && !b.reason.trim()) { b.error = "decideNeedReason"; this.render(); return; }
     const keys = [...this.findSel].filter(key => this.data.findings.some(f => f.key === key && !f.ignored));
     const failed = await this.runBulk(keys, async key => {
-      const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: b.kind === "known" ? "keep" : "snooze", reason: b.reason.trim() };
-      if (b.kind === "snoozed") msg.days = Number(b.days);
+      const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind, reason: b.reason.trim() };
+      if (kind === "snooze") msg.days = Number(b.days) || 30;
+      else if (b.kind === "status" && Number(b.days)) msg.days = Number(b.days);
       await this._hass.callWS(msg);
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) {
@@ -10849,6 +11861,15 @@ class FindingStatusMixin {
       }
     });
     if (!failed) this.bulk = null;
+    this.render();
+    if (failed < keys.length) await this.reloadAfterDecision();
+  }
+
+  // After a decision the server works the outages out again: a device marked as known is no outage any more, and its
+  // entities stand on their own. The list reads the findings again, so it shows what the server now counts.
+  async reloadAfterDecision() {
+    if (!this.data || !this._hass) return;
+    try { await this.refreshData(); } catch (_) { return; } // the local change stays on screen until the next load
     this.render();
   }
 
@@ -10873,13 +11894,20 @@ class FindingStatusMixin {
       await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("notDuplicateReason") });
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) { finding.ignored = true; finding.ignored_by = "user"; finding.resurfaced = false; finding.ignore_info = { kind: "keep", reason: this.t("notDuplicateReason"), until: null, at: new Date().toISOString() }; this._rev++; }
+      this.render();
+      await this.reloadAfterDecision();
+      return;
     } catch (err) { this.failed(err); }
     this.render();
   }
 
   bindFindingStatus(root) {
+    root.querySelector("[data-fsel-exc]")?.addEventListener("click", () => this.openExceptionFor([...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean).map(f => this.findingKey(f))));
+    root.querySelectorAll("[data-exc-for]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openExceptionFor([el.dataset.excFor]); });
+    // A label from the menu of a row: that finding alone, in the same form as the selection bar.
+    root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { this.bulk = { kind: el.dataset.fselState, reason: "", days: el.dataset.fselState === "mark" ? 0 : 30, markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.bulk = { kind, state: "keep", reason: "", days: ["mark", "status"].includes(kind) ? 0 : 30, markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     const form = root.querySelector("[data-bulk-form]");
     if (form) {
@@ -10890,8 +11918,11 @@ class FindingStatusMixin {
       if (label) label.onchange = ev => { this.bulk.label = ev.target.value; };
       const area = form.querySelector("[data-bulk-area]");
       if (area) area.onchange = ev => { this.bulk.area = ev.target.value; };
+      const onDevice = form.querySelector("[data-bulk-ondevice]");
+      if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
       const markKind = form.querySelector("[data-bulk-markkind]");
       if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; };
+      form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = b.state === "snooze" ? 30 : 0; this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
       form.querySelector("[data-bulk-cancel]").onclick = () => { this.bulk = null; this.render(); };
@@ -10899,14 +11930,22 @@ class FindingStatusMixin {
   }
 }
 Object.assign(TEXT.de, {
-  stateOpen: "Offen", freshAll: "Neu und in Arbeit", freshNew: "Neu (letzte {days} Tage)", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
-  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", fselKnown: "Als bekannt markieren", fselSnooze: "Zurückstellen", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
-  notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen", markKnown: "Als bekannt markieren",
+  stateOpen: "Offen", freshNew: "Neu ({days} Tage)", stateDue: "Fällig", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Bekannt", state_snoozed: "Zurückgestellt", state_hidden: "Ausgeblendet",
+  doneNone: "In den letzten {days} Tagen wurde nichts erledigt.", donePeriod: "Zeitraum", doneDays: "{n} Tage", doneByPlan: "Durch einen Plan behoben", doneBack: "Von selbst wieder in Ordnung", doneRemoved: "Objekt entfernt (nicht behoben)", doneUnread: "Quelle nicht gelesen (nicht behoben)", doneOther: "Grund unbekannt (nicht behoben)", donePlan: "Plan", doneObjects: "{n} Objekte", doneUndoYes: "rückgängig möglich: ja", doneUndoNo: "rückgängig möglich: nein", doneSince: "Verglichen mit dem Scan vom {date}.", actKind_add_label: "Label ergänzt", actKind_delete_automation: "Automation gelöscht", actKind_delete_backup: "Backup gelöscht", actKind_migrate_meter: "Zähler gewechselt", actKind_purge_statistics: "Statistiken bereinigt", actKind_trim_history: "Verlauf gekürzt", actKind_refactor_automation: "Automation umgebaut", actKind_rename_entity: "Entität umbenannt", actKind_replace_references: "Verweise ersetzt", actKind_set_area: "Bereich gesetzt", actKind_disable_entity: "Entität deaktiviert", actKind_remove_entity: "Entität entfernt", actKind_disable_device: "Gerät deaktiviert", actKind_remove_device: "Gerät entfernt", actKind_forget_device: "Gerät vergessen", actKind_repair_range: "Zählerbereich repariert", actKind_quarantine: "In Quarantäne gelegt", excCreate: "Ausnahme anlegen", fselStatus: "Status setzen …", fselStatusChange: "Status ändern …", outageStatusHint: "Ein Status beendet den Ausfall: Die {n} Entitäten dahinter zählen dann einzeln als nicht verfügbar. Ist das Objekt absichtlich aus, passt ein Vermerk besser; er blendet den Ausfall samt Folgen aus und greift auch beim nächsten Mal.", outageStatusHint1: "Ein Status beendet den Ausfall: Die Entität dahinter zählt dann einzeln als nicht verfügbar. Ist das Objekt absichtlich aus, passt ein Vermerk besser; er blendet den Ausfall samt Folge aus und greift auch beim nächsten Mal.", outageMarkInstead: "Stattdessen Vermerk setzen", statusTitle: "Status setzen · {n} Befunde",
+  decideKindHint_keep: "Ist so gewollt. Bleibt still, bis du es änderst. Begründung nötig.", decideKindHint_snooze: "Kümmere ich mich später drum. Kommt nach der Frist als „fällig“ zurück.", decideKindHint_ignore: "Interessiert mich nicht. Begründung freiwillig.",
+  statusScopeHint: "Gilt nur für diese Befunde; ein neuer Befund am selben Objekt ist wieder offen. Für das ganze Objekt: Vermerk oder Ausnahme.",
+  markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Eigener Status", hiddenBy_mark: "Vermerk", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
+  hiddenMarkOpen: "Vermerk ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
+  notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
 });
 Object.assign(TEXT.en, {
-  stateOpen: "Open", freshAll: "New and in work", freshNew: "New (last {days} days)", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
-  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", fselKnown: "Mark as known", fselSnooze: "Snooze", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
-  notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity", markKnown: "Mark as known",
+  stateOpen: "Open", freshNew: "New ({days} days)", stateDue: "Due", freshInwork: "In work", state_fixed: "Done", stateNew: "New", stateInwork: "In work", state_new: "New", state_inwork: "In work", state_known: "Known", state_snoozed: "Snoozed", state_hidden: "Hidden",
+  doneNone: "Nothing was done in the last {days} days.", donePeriod: "Period", doneDays: "{n} days", doneByPlan: "Fixed by a plan", doneBack: "Back in order by itself", doneRemoved: "Object removed (not fixed)", doneUnread: "Source not read (not fixed)", doneOther: "Reason unknown (not fixed)", donePlan: "Plan", doneObjects: "{n} objects", doneUndoYes: "can be undone: yes", doneUndoNo: "can be undone: no", doneSince: "Compared with the scan of {date}.", actKind_add_label: "Label added", actKind_delete_automation: "Automation deleted", actKind_delete_backup: "Backup deleted", actKind_migrate_meter: "Meter replaced", actKind_purge_statistics: "Statistics cleaned", actKind_trim_history: "History trimmed", actKind_refactor_automation: "Automation reworked", actKind_rename_entity: "Entity renamed", actKind_replace_references: "References replaced", actKind_set_area: "Area set", actKind_disable_entity: "Entity disabled", actKind_remove_entity: "Entity removed", actKind_disable_device: "Device disabled", actKind_remove_device: "Device removed", actKind_forget_device: "Device forgotten", actKind_repair_range: "Meter range repaired", actKind_quarantine: "Put in quarantine", excCreate: "Add exception", fselStatus: "Set status …", fselStatusChange: "Change status …", outageStatusHint: "A status ends the outage: the {n} entities behind it then count one by one as unavailable. If the object is off on purpose, a mark fits better; it hides the outage with what follows from it, also the next time.", outageStatusHint1: "A status ends the outage: the entity behind it then counts on its own as unavailable. If the object is off on purpose, a mark fits better; it hides the outage with what follows from it, also the next time.", outageMarkInstead: "Set a mark instead", statusTitle: "Set status · {n} findings",
+  decideKindHint_keep: "Meant to be this way. Stays quiet until you change it. Needs a reason.", decideKindHint_snooze: "I will see to it later. Comes back as “due” after the time.", decideKindHint_ignore: "Not of interest to me. Reason optional.",
+  statusScopeHint: "Applies to these findings only; a new finding on the same object is open again. For the whole object: a mark or an exception.",
+  markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Own status", hiddenBy_mark: "Mark", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
+  hiddenMarkOpen: "View mark", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
+  notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
 });
 
 // DetailActionsMixin: the card "What you can do" on the overview of an object. It collects what the other views
@@ -11158,16 +12197,22 @@ Object.assign(TEXT.de, {
   repeatPlan: "Plan wiederholen", repeatHint: "Es wurde nichts geändert. Das erstellt eine neue Vorschau mit denselben Objekten.",
   planResultDone: "Plan", undoYes: "Ja, rückgängig machen", undoAskOne: "Diese Änderung zurücksetzen?", undoAskAll: "Alles rückgängig machen?",
   undoAskAllHint: "Housekeeper stellt zurück, was dieser Plan geändert hat, soweit es unverändert ist.", undoAllHint: "Housekeeper kann zurückstellen, was dieser Plan geändert hat, solange es unverändert ist.", reportTitle: "Prüfbericht",
-  statusUrgentOne: "1 Thema dringend", statusUrgent: "{n} Themen dringend", statusMoreOpen: "{n} weitere offen", statusOpenOne: "1 Thema offen", statusOpen: "{n} Themen offen",
-  statusObjects: "{affected} von {base} Objekten mit Befund", statusHealth: "Zustand {percent} %", healthWhy: "Wie entsteht die Zahl?",
-  whyStart: "Ausgangswert · geprüfte Objekte", whyLevel: "{n} Objekte · {level} · {weight}", whyWeight_high: "zählt voll", whyWeight_medium: "zählt halb", whyWeight_low: "zählt ein Fünftel", whyWeight_info: "kein Abzug", whyTotal: "In Ordnung", whyShare: "Anteil", whyNote: "Jedes Objekt zählt einmal, mit seiner schlimmsten Stufe; die Folgebefunde einer Ursache gehören zu ihr. Die Befundseite zählt Befunde, diese Karte Objekte. Ab {green} % grün, ab {yellow} % gelb, darunter rot; ein Objekt mit hoher Auswirkung oder ein dringendes Zustandsthema (Backup, Datenträger) ist mindestens gelb, nimmt aber nichts ab. Ausgeblendete, bekannte und zurückgestellte Befunde zählen nicht.",
+  statusAnd: "{a} und {b}", statusMoreUrgent: "{first} und {n} weitere dringende Punkte", statusNothingUrgent: "Nichts dringend",
+  statusPartOpen: "{n} offen", statusPartCare: "{n} in der Wartung", statusJoin: " und ", statusAlso: "Dazu {what}",
+  group_red: "Dringend", group_open: "Offen", group_care: "Wartung", topFindings: "Wichtigste Befunde", topFindingsSub: "zählen nicht als eigener Punkt",
+  whyHeadTitle: "Die Kopfzeile", whyRingTitle: "Der Ring",
+  whyGroup_red: "ist, was jetzt etwas kaputt macht: Ausfälle der Stufe hoch (lange oder an Kritischem), neue kritische Befunde, eine Anmeldung, die erneuert werden muss, eine gestörte überwachte Funktion, Rückfälle nach einem Plan, ein Backup- oder Datenbankproblem, eine fast volle Platte.",
+  whyGroup_open: "ist Zustand, der geprüft werden sollte: ein alter Scan, eine unklare überwachte Funktion, eine Platte, die voll wird.",
+  whyGroup_care: "sind Updates, Erinnerungen, Ziele, Quarantäne und entfernte HACS-Repositorys. Sie färben den Ring nie.",
+  statusObjects: "{affected} von {base} Objekten mit Befund", statusHealth: "Zustand {percent} Punkte", healthWhy: "Wie kommt das zustande?", healthInfo: "Info",
+  ratedObjects: "Geprüfte Objekte", pointsOf100: "{n} von 100", whyStart: "Ausgangswert · geprüfte Objekte", whyLevel: "{n} Objekte · {level} · {weight}", whyWeight_high: "je 2", whyWeight_medium: "je 1", whyWeight_low: "je 0,5", whyWeight_info: "kein Abzug", whyTotal: "Verbleibend", whyShare: "Zustand", whyNote: "Jedes Objekt zählt einmal, mit seiner schlimmsten Stufe, und zieht 2, 1 oder 0,5 ab; auch die Folgen einer Ursache sind Objekte und zählen mit ihrer eigenen Stufe. Der Zustand ist der Rest, umgerechnet auf 100 Punkte, mindestens 0. Die Farbe zeigt, ob etwas zu tun ist: rot bei dringenden Punkten, gelb bei offenen Punkten oder Objekten mit hoher oder mittlerer Auswirkung, sonst grün; Wartung (Ziele, Erinnerungen, Quarantäne) färbt nicht. Ausgeblendete, bekannte und zurückgestellte Befunde zählen nicht.",
  
   unit_outages_1: "Ausfall", unit_outages_n: "Ausfälle", unit_followup_1: "Plan", unit_followup_n: "Pläne", unit_reminders_1: "Erinnerung", unit_reminders_n: "Erinnerungen", unit_criteria_1: "Ziel", unit_criteria_n: "Ziele", unit_critical_1: "Befund", unit_critical_n: "Befunde", unit_backup_1: "Problem", unit_backup_n: "Probleme", unit_quarantine_1: "Objekt", unit_quarantine_n: "Objekte",
   statusTasks: "{count} Aufgaben warten auf dich", statusTasksJump: "Zur Liste der Aufgaben springen", statusAllGood: "Alles in Ordnung",
   counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten. Starte die Prüfung mit „Sensoren prüfen“.",
   stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
   setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
-  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen", setHintExceptions: "Ausnahmeregeln und ausgeblendete Befunde.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
+  setTabProtection: "Schutzmodus", setTabExceptions: "Ausnahmen & Vermerke", navCount_findingsNav: "{n} offene Befunde", navCount_batteries: "{n} schwache Batterien", navCount_reminders: "{n} fällige Erinnerungen", navCount_cleanup: "{n} in Quarantäne bereit zum Entfernen", navCount_repair: "{n} Sensorfehler zum Bereinigen", navCount_maintenance: "{n} verfehlte Wartungsziele", navCount_policies: "{n} Verstöße gegen Richtlinien", navCount_other: "{n} Punkte zum Ansehen", setHintExceptions: "Status, Vermerke, Regeln und Labels.", setHiddenCount: "{n} ausgeblendet", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setNoneHidden: "nichts ausgeblendet", setRuleOne: "1 Regel", setRulesCount: "{n} Regeln", setVacationOn: "Urlaubsmodus an", setVacationOff: "Urlaubsmodus aus", setVacationNone: "Urlaubsmodus nicht eingerichtet", setOn: "an", setOff: "aus",
   maintHintBackup: "Backups prüfen, schützen und aufräumen.", maintHintUpdates: "Offene Updates und was vorher zu prüfen ist.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
   actRepairValues: "Werte reparieren", actHintRepair: "Falsche Werte im Verlauf und in der Statistik ersetzen.", actMeter: "Zähler wechseln", actHintMeter: "Die Statistik bei einem neuen Zähler fortführen.", actExchange: "Gerät austauschen", actHintExchange: "Durch ein neues Gerät ersetzen und alles übernehmen.",
@@ -11176,11 +12221,11 @@ Object.assign(TEXT.de, {
   err_cleanup_busy: "Ein Plan läuft gerade. Housekeeper lädt die Ansicht neu, sobald er fertig ist.", 
   
   goalsLine: "Wartungsziele: {met} von {total} erfüllt", hintsTitle: "Hinweise",
-  healthScore: "Zustand {percent} %", healthTasks: "{count} Aufgaben offen", healthNoTasks: "keine offenen Aufgaben", healthTip: "Anteil der Objekte in Ordnung: Jedes Objekt mit Befund nimmt je nach Auswirkung ganz, halb oder zu einem Fünftel ab. {affected} von {base} Objekten haben einen Befund; das ist nur die Begleitzahl. Mehr per Klick auf den Ring.",
+  healthScore: "Zustand {percent} Punkte", healthTasks: "{count} Aufgaben offen", healthNoTasks: "keine offenen Aufgaben", healthTip: "Zustand in Punkten von 100: Jedes Objekt mit Befund zieht je nach Auswirkung 2, 1 oder 0,5 ab. Die Farbe zeigt, ob etwas zu tun ist. {affected} von {base} Objekten haben einen Befund. Mehr per Klick auf den Ring.",
   repair: "Reparieren", repairSubtitle: "Bestehende Daten und Verweise korrigieren oder auf etwas Neues umstellen. Housekeeper zeigt erst eine Vorschau; geschrieben wird erst nach deiner Bestätigung.", repairDryRun: "Nichts wird geändert, bis du die Vorschau bestätigst.",
-  journalSubtitle: "Alle Pläne aus Aufräumen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt, dazu, was entfernt oder gelöscht wurde.",
+  journalSubtitle: "Alle Pläne aus Bereinigen und Reparieren: was geändert wurde, was geprüft wurde und was sich rückgängig machen lässt, dazu, was entfernt oder gelöscht wurde.",
  relTileIntHint: "Verfügbarkeit {avail} in {window}", relTilePill: "{n} auffällig", relTileUnstableHint: "Entitäten, die oft zwischen Zuständen wechseln", recTileLoadRows: "{n} Einträge pro Tag ({window})", recTileLoadHint: "Wie oft etwas geschrieben wird", recTileCostsTop: "Größter Posten: {name} ({share} %)", recTileCostsHint: "Wie viel Platz jede Entität belegt", recTileDbHint: "Größe, Wachstum und Aufbewahrung", polTileRulesHint: "{on} eingeschaltet", polTileViolationsHint: "Verstöße gegen eingeschaltete Regeln", polTileHidden: "{n} ausgeblendet", expoTileFindingsHint: "Was du prüfen oder wissen solltest", expoTileSourceHint: "{n} Entitäten freigegeben", runsTileRunsHint: "Gezählte Läufe von Automationen und Skripten", runsTileQualityHint: "Alle Automationen auf einen Blick",
-  cleanupTabEntities: "Entitäten deaktivieren", cleanupTabDevices: "Geräte deaktivieren", cleanupTabQuarantine: "Quarantäne und Entfernen", cleanupReadyCount: "{count} bereit", cleanupNothing: "nichts zu tun", unrefFactStats: "{n} mit Statistik", unrefFactDomain: "häufigste: {name}", cleanupTileEntitiesHint: "Verwaist oder lange nicht verfügbar", cleanupTileDevicesHint: "Geräte ohne funktionierende Entität", cleanupTileQuarantineHint: "Frühestens nach {days} Tagen entfernbar", cleanupTileUnusedHint: "Ohne bekannte Verwendung, nur ein Hinweis", cleanupTileStatsHint: "Reste in der Datenbank löschen", cleanupTilePurgesHint: "Was schon gelöscht wurde", qTypeEntities: "Entitäten ({count})", qTypeDevices: "Geräte ({count})",
+  cleanupTabEntities: "Entitäten deaktivieren", cleanupTabDevices: "Geräte deaktivieren", cleanupTabQuarantine: "Quarantäne und Entfernen", cleanupNothing: "Nichts zu tun", cuEntities: "{n} Entitäten", cuEntities1: "1 Entität", cuDevices: "{n} Geräte", cuDevices1: "1 Gerät", cuStats: "{n} Statistiken", cuStats1: "1 Statistik", cuUnused: "{n} Objekte", cuUnused1: "1 Objekt", cuHeld: "{n} gehalten", cuHeld1: "1 gehalten", cuHeldReady: "{n} gehalten · {ready} bereit", unrefFactStats: "{n} mit Statistik", cleanupTileEntitiesHint: "Verwaist oder lange nicht verfügbar", cleanupTileDevicesHint: "Geräte ohne funktionierende Entität", cleanupTileQuarantineHint: "Frühestens nach {days} Tagen entfernbar", cleanupTileUnusedHint: "Ohne bekannte Verwendung, nur ein Hinweis", cleanupTileStatsHint: "Reste in der Datenbank löschen", cleanupTilePurgesHint: "Was schon gelöscht wurde", qTypeEntities: "Entitäten ({count})", qTypeDevices: "Geräte ({count})",
   repairTitle: "Was möchtest du reparieren?", repairHint: "Wähle eine Aufgabe. Jede führt in Schritten durch, mit Vorschau und Bestätigung.", repairBack: "Alle Aufgaben", repairFound: "{count} Funde", repairNotChecked: "nicht geprüft", repairNoneFound: "keine Funde",
   repairTaskCounter: "Sensorfehler bereinigen", repairTaskCounterHint: "Falsche Werte in Zählern und Messwerten korrigieren, zum Beispiel ein Zähler, der kurz sinkt, oder ein Ausschlag auf 85 °C.",
   repairTaskMeter: "Zähler wechseln", repairTaskMeterHint: "Die Statistik eines alten Zählers beim neuen fortführen.",
@@ -11201,16 +12246,22 @@ Object.assign(TEXT.en, {
   repeatPlan: "Repeat plan", repeatHint: "Nothing was changed. This creates a new preview with the same objects.",
   planResultDone: "Plan", undoYes: "Yes, undo", undoAskOne: "Undo this change?", undoAskAll: "Undo everything?",
   undoAskAllHint: "Housekeeper puts back what this plan changed, as far as it is still unchanged.", undoAllHint: "Housekeeper can put back what this plan changed, as long as it is unchanged.", reportTitle: "Audit report",
-  statusUrgentOne: "1 topic urgent", statusUrgent: "{n} topics urgent", statusMoreOpen: "{n} more open", statusOpenOne: "1 topic open", statusOpen: "{n} topics open",
-  statusObjects: "{affected} of {base} objects with a finding", statusHealth: "State {percent} %", healthWhy: "How is this number made?",
-  whyStart: "Starting value · rated objects", whyLevel: "{n} objects · {level} · {weight}", whyWeight_high: "counts fully", whyWeight_medium: "counts half", whyWeight_low: "counts a fifth", whyWeight_info: "nothing off", whyTotal: "In order", whyShare: "Share", whyNote: "Every object counts once, with its worst level; the follow-up findings of a cause belong to it. The findings page counts findings, this card objects. Green from {green} %, yellow from {yellow} %, red below; an object with high impact or an urgent state topic (backup, disk) is at least yellow but takes nothing off. Hidden, known and snoozed findings do not count.",
+  statusAnd: "{a} and {b}", statusMoreUrgent: "{first} and {n} more urgent items", statusNothingUrgent: "Nothing urgent",
+  statusPartOpen: "{n} open", statusPartCare: "{n} in maintenance", statusJoin: " and ", statusAlso: "Plus {what}",
+  group_red: "Urgent", group_open: "Open", group_care: "Maintenance", topFindings: "Most important findings", topFindingsSub: "not counted as items of their own",
+  whyHeadTitle: "The headline", whyRingTitle: "The ring",
+  whyGroup_red: "is what breaks something now: outages at the level high (long, or at something critical), new critical findings, a login that needs renewing, a monitored function with a fault, setbacks after a plan, a backup or database problem, a nearly full disk.",
+  whyGroup_open: "is state that should be checked: an old scan, a monitored function that is unclear, a disk that is filling up.",
+  whyGroup_care: "are updates, reminders, goals, quarantine and removed HACS repositories. They never colour the ring.",
+  statusObjects: "{affected} of {base} objects with a finding", statusHealth: "State {percent} points", healthWhy: "How does this come about?", healthInfo: "Info",
+  ratedObjects: "Checked objects", pointsOf100: "{n} of 100", whyStart: "Starting value · checked objects", whyLevel: "{n} objects · {level} · {weight}", whyWeight_high: "2 each", whyWeight_medium: "1 each", whyWeight_low: "0.5 each", whyWeight_info: "nothing off", whyTotal: "Remaining", whyShare: "State", whyNote: "Every object counts once, with its worst level, and takes off 2, 1 or 0.5; the follow-ups of a cause are objects too and count with their own level. The state is what remains, scaled to 100 points, never below 0. The colour shows whether something needs doing: red for urgent items, yellow for open items or objects with high or medium impact, green otherwise; maintenance (goals, reminders, quarantine) does not colour it. Hidden, known and snoozed findings do not count.",
  
   unit_outages_1: "outage", unit_outages_n: "outages", unit_followup_1: "plan", unit_followup_n: "plans", unit_reminders_1: "reminder", unit_reminders_n: "reminders", unit_criteria_1: "goal", unit_criteria_n: "goals", unit_critical_1: "finding", unit_critical_n: "findings", unit_backup_1: "problem", unit_backup_n: "problems", unit_quarantine_1: "object", unit_quarantine_n: "objects",
   statusTasks: "{count} tasks are waiting for you", statusTasksJump: "Jump to the list of tasks", statusAllGood: "All good",
   counterNoneSub: "{count} sensors look fine.", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements. Start the check with “Check sensors”.",
   stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
   setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
-  setTabProtection: "Protection mode", setTabExceptions: "Exceptions", setHintExceptions: "Exception rules and hidden findings.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
+  setTabProtection: "Protection mode", setTabExceptions: "Exceptions & marks", navCount_findingsNav: "{n} open findings", navCount_batteries: "{n} low batteries", navCount_reminders: "{n} reminders due", navCount_cleanup: "{n} in quarantine ready for removal", navCount_repair: "{n} sensor errors to repair", navCount_maintenance: "{n} maintenance goals missed", navCount_policies: "{n} policy violations", navCount_other: "{n} items to look at", setHintExceptions: "Status, marks, rules and labels.", setHiddenCount: "{n} hidden", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setNoneHidden: "nothing hidden", setRuleOne: "1 rule", setRulesCount: "{n} rules", setVacationOn: "Vacation mode on", setVacationOff: "Vacation mode off", setVacationNone: "Vacation mode not set up", setOn: "on", setOff: "off",
   maintHintBackup: "Check, protect and tidy up backups.", maintHintUpdates: "Open updates and what to check first.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintGoals: "Your own limits for what in order means.",
   actRepairValues: "Repair values", actHintRepair: "Replace wrong values in the history and the statistics.", actMeter: "Replace the meter", actHintMeter: "Carry the statistics on with a new meter.", actExchange: "Exchange the device", actHintExchange: "Replace it with a new device and carry everything over.",
@@ -11219,11 +12270,11 @@ Object.assign(TEXT.en, {
   err_cleanup_busy: "A plan is running. Housekeeper reloads the view as soon as it has finished.", 
   
   goalsLine: "Maintenance goals: {met} of {total} met", hintsTitle: "Hints",
-  healthScore: "State {percent} %", healthTasks: "{count} tasks open", healthNoTasks: "no open tasks", healthTip: "Share of the objects in order: every object with a finding takes off fully, by half or by a fifth, by its impact. {affected} of {base} objects have a finding; that is only the number beside it. More with a click on the ring.",
+  healthScore: "State {percent} points", healthTasks: "{count} tasks open", healthNoTasks: "no open tasks", healthTip: "State in points out of 100: every object with a finding takes off 2, 1 or 0.5, by its impact. The colour shows whether something needs doing. {affected} of {base} objects have a finding. More with a click on the ring.",
   repair: "Repair", repairSubtitle: "Correct existing data and references, or switch them over to something new. Housekeeper shows a preview first; nothing is written until you confirm.", repairDryRun: "Nothing is changed until you confirm the preview.",
-  journalSubtitle: "Every plan from Tidy up and Repair: what changed, what was checked and what can be undone, plus what was removed or deleted.",
+  journalSubtitle: "Every plan from Clean up and Repair: what changed, what was checked and what can be undone, plus what was removed or deleted.",
  relTileIntHint: "Availability {avail} over {window}", relTilePill: "{n} need a look", relTileUnstableHint: "Entities that often change between states", recTileLoadRows: "{n} rows a day ({window})", recTileLoadHint: "How often things are written", recTileCostsTop: "Biggest item: {name} ({share} %)", recTileCostsHint: "How much space each entity takes", recTileDbHint: "Size, growth and retention", polTileRulesHint: "{on} switched on", polTileViolationsHint: "Violations of the rules that are on", polTileHidden: "{n} hidden", expoTileFindingsHint: "What you should check or know", expoTileSourceHint: "{n} entities exposed", runsTileRunsHint: "Counted runs of automations and scripts", runsTileQualityHint: "All automations at a glance",
-  cleanupTabEntities: "Disable entities", cleanupTabDevices: "Disable devices", cleanupTabQuarantine: "Quarantine and removal", cleanupReadyCount: "{count} ready", cleanupNothing: "nothing to do", unrefFactStats: "{n} with statistics", unrefFactDomain: "most: {name}", cleanupTileEntitiesHint: "Orphaned or unavailable for a long time", cleanupTileDevicesHint: "Devices without a working entity", cleanupTileQuarantineHint: "Removable after {days} days at the earliest", cleanupTileUnusedHint: "No known use, a hint only", cleanupTileStatsHint: "Delete leftovers in the database", cleanupTilePurgesHint: "What has been deleted already", qTypeEntities: "Entities ({count})", qTypeDevices: "Devices ({count})",
+  cleanupTabEntities: "Disable entities", cleanupTabDevices: "Disable devices", cleanupTabQuarantine: "Quarantine and removal", cleanupNothing: "Nothing to do", cuEntities: "{n} entities", cuEntities1: "1 entity", cuDevices: "{n} devices", cuDevices1: "1 device", cuStats: "{n} statistics", cuStats1: "1 statistic", cuUnused: "{n} objects", cuUnused1: "1 object", cuHeld: "{n} held", cuHeld1: "1 held", cuHeldReady: "{n} held · {ready} ready", unrefFactStats: "{n} with statistics", cleanupTileEntitiesHint: "Orphaned or unavailable for a long time", cleanupTileDevicesHint: "Devices without a working entity", cleanupTileQuarantineHint: "Removable after {days} days at the earliest", cleanupTileUnusedHint: "No known use, a hint only", cleanupTileStatsHint: "Delete leftovers in the database", cleanupTilePurgesHint: "What has been deleted already", qTypeEntities: "Entities ({count})", qTypeDevices: "Devices ({count})",
   repairTitle: "What would you like to repair?", repairHint: "Pick a task. Each one leads through the steps, with a preview and a confirmation.", repairBack: "All tasks", repairFound: "{count} found", repairNotChecked: "not checked", repairNoneFound: "none found",
   repairTaskCounter: "Repair sensor errors", repairTaskCounterHint: "Correct wrong values in counters and measurements, for example a counter that briefly falls, or a spike to 85 °C.",
   repairTaskMeter: "Replace a meter", repairTaskMeterHint: "Carry the statistics of an old meter on with the new one.",
@@ -11273,6 +12324,11 @@ class PickerMixin {
           if (o.manufacturer && o.manufacturer === old.manufacturer) return o.model && o.model === old.model ? 0 : 1;
           return (o.config_entry_ids || []).some(id => (old.config_entry_ids || []).includes(id)) ? 2 : 3;
         },
+      },
+      autopause: {
+        get: () => this.apPickText || "", set: v => { this.apPickText = v; }, min: 0, browse: true, types: ["config_entry"], limit: 40, sub: o => o.domain,
+        filter: o => (this.autoPause?.pausable || []).some(p => p.entry_id === o.object_id) && !this.apPausedItem(o.object_id),
+        pick: o => { this.apPickText = ""; this.apStart(o.object_id); },
       },
       note: {
         get: () => this.noteDraft?.targetText ?? "", set: v => { if (this.noteDraft) { this.noteDraft.targetText = v; this.noteDraft.target = ""; } }, min: 2, types: null, limit: 15,
@@ -11518,7 +12574,7 @@ class EntityTrimMixin {
 // a list in Settings > Info. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   covLine: "Prüfung: {n} von {m} Quellen",
-  covAll: "Prüfung: alle {m} Quellen gelesen", covBar: "Prüfung vollständig",
+  covAll: "Prüfung: alle {m} Quellen gelesen", covBar: "Scan vollständig",
   covGaps: "Nicht vollständig gelesen: {list}. Befunde dort fehlen in den Zahlen.", covRetry: "Housekeeper versucht es in {n} Minuten noch einmal.",
   covDetails: "Details",
   covListTitle: "Was zuletzt geprüft wurde",
@@ -11556,7 +12612,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   covLine: "Check: {n} of {m} sources",
-  covAll: "Check: all {m} sources read", covBar: "Check complete",
+  covAll: "Check: all {m} sources read", covBar: "Scan complete",
   covGaps: "Not read in full: {list}. Findings there are missing from the numbers.", covRetry: "Housekeeper tries again in {n} minutes.",
   covDetails: "Details",
   covListTitle: "What was checked last",
@@ -11779,7 +12835,7 @@ class EntityRecorderMixin {
     if (state?.loading) body = `<p class="factnote">${this.t("erecRunning")}</p>`;
     else if (state?.data) body = this.entityRecorderRows(state.data, id);
     else body = `${state?.message ? `<p class="factnote">${this.esc(state.message)}</p>` : ""}<div class="pad"><button class="btn" data-erec="${this.esc(id)}">${this.t("erecCount")}</button></div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("erecTitle")}</h2><p>${this.t("erecHint")}</p></div></div>${body}</section>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("erecTitle")}</h2><p>${this.t("erecHint")}</p></div></div>${body}${this.spaceEntityPart(id)}</section>`;
   }
 
   // The write rate of the entity (from the recorder load numbers) is the last row; it needs the numbers of the whole recorder.
@@ -11825,6 +12881,243 @@ class EntityRecorderMixin {
 
   bindEntityRecorder(root) {
     root.querySelectorAll("[data-erec]").forEach(el => el.onclick = () => this.loadEntityRecorder(el.dataset.erec));
+  }
+}
+
+// Space per entity: which entities fill the states and their attributes (measured on request in the background), and
+// which attributes of one entity take the space. Shown below the rows "states" and "state_attributes" of the largest
+// tables, on the page of an entity and from the recorder load; mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  spaceIntro: "Welche Entitäten hier den Platz belegen und welche Attribute dahinterstecken. Housekeeper liest dafür die Tabellen states und state_attributes ganz. Das läuft im Hintergrund, kann einige Minuten dauern und liest nur.",
+  spaceStart: "Messen", spaceAgain: "Platz je Entität messen", spaceStop: "Abbrechen", spaceLoading: "Wird geladen …",
+  spaceRunning: "Wird gemessen · {pct} %", spaceStopping: "Wird abgebrochen · {pct} %", spacePhaseStates: "Zustände", spacePhaseAttrs: "Attribute",
+  spaceLeft: "noch etwa {left}", spaceLeftUnknown: "Restzeit wird geschätzt", spaceSeconds: "{n} Sekunden", spaceLeave: "Du kannst die Seite verlassen.", spaceInterim: "Vorläufig, bisher gelesen",
+  spaceAt: "Gemessen {when} · dauerte {took} s", spaceStopped: "Abgebrochen nach {pct} %. Die Liste zeigt, was bis dahin gelesen war.", spaceFailed: "Nicht fertig geworden ({pct} % gelesen). Die Liste zeigt, was bis dahin gelesen war.",
+  spaceScaled: "Gezählt sind Zeilen und Längen. Verteilt auf die Größe, die die Datenbank für beide Tabellen meldet; die Werte sind Schätzungen. Gleiche Attribute zählen einmal, geteilte zu gleichen Teilen.",
+  spaceScaledEstimated: "Gezählt sind Zeilen und Längen. Verteilt auf die Größe, die MariaDB/MySQL für beide Tabellen schätzt; die Werte sind daher grob. Gleiche Attribute zählen einmal, geteilte zu gleichen Teilen.",
+  spaceUnscaled: "Die Datenbank meldet keine Tabellengrößen. Die Werte sind die gemessenen Längen ohne Indizes und Verwaltung, also zu klein.",
+  spaceLoose: "Nicht zugeordnet: {size} in {n} Attribut-Zeilen, die kein Zustand mehr benutzt. Der Recorder räumt sie beim nächsten Aufräumen weg.",
+  spaceMore: "Gezeigt: die {shown} größten von {total} Entitäten.",
+  spaceColSize: "Platz", spaceColRows: "Zustände", spaceColVariants: "Attribut-Zeilen", spaceColKey: "Attribut", spaceColShare: "Anteil", spaceColChanges: "Ändert sich",
+  spaceAttrsLoading: "Attribute werden gelesen …", spaceAttrsNone: "Für diese Entität sind keine Attribute gespeichert.", spaceAttrsFailed: "Das Lesen ist fehlgeschlagen: {reason}",
+  spaceAttrsTitle: "Attribute von {name}", spaceAttrsRead: "{read} Attribut-Zeilen gelesen", spaceAttrsNewest: "die neuesten {read} von {total} Attribut-Zeilen",
+  spaceAttrsHint: "Ändert sich ein Attribut, legt Home Assistant eine neue Attribut-Zeile an, mit allen anderen Attributen darin. Markiert ist, was sich in mindestens der Hälfte der Zeilen ändert: Das verursacht die neuen Zeilen, auch wenn es selbst klein ist.",
+  spaceAttrsRest: "Dazu {n} kleinere Attribute mit zusammen {pct} %.",
+  spaceDriver: "verursacht neue Zeilen", spaceConstant: "gleichbleibend", spaceAlone: "In {n} Zeilen hat sich nur dieses Attribut geändert.",
+  spaceExAdd: "Zum Ausschluss vormerken", spaceExOn: "Zum Ausschluss vorgemerkt", spaceExWhere: "YAML unter Recorder → Last", spaceTrim: "Verlauf kürzen",
+  spaceFact: "Belegter Platz", spaceSplit: "Zustände {states} · Attribute {attrs}", spaceNotTop: "nicht unter den {n} größten", spaceGoto: "Messen unter Recorder → Datenbank", spaceFactRunning: "wird gemessen ({pct} %)",
+  spaceAttrsOpen: "Nach Attributen aufschlüsseln", spaceLook: "Platz ansehen",
+});
+Object.assign(TEXT.en, {
+  spaceIntro: "Which entities take the space here and which attributes are behind it. Housekeeper reads the tables states and state_attributes in full for it. It runs in the background, can take a few minutes and only reads.",
+  spaceStart: "Measure", spaceAgain: "Measure space per entity", spaceStop: "Stop", spaceLoading: "Loading …",
+  spaceRunning: "Measuring · {pct} %", spaceStopping: "Stopping · {pct} %", spacePhaseStates: "states", spacePhaseAttrs: "attributes",
+  spaceLeft: "about {left} left", spaceLeftUnknown: "estimating the time left", spaceSeconds: "{n} seconds", spaceLeave: "You can leave the page.", spaceInterim: "Interim, read so far",
+  spaceAt: "Measured {when} · took {took} s", spaceStopped: "Stopped at {pct} %. The list shows what was read until then.", spaceFailed: "Did not finish ({pct} % read). The list shows what was read until then.",
+  spaceScaled: "Rows and lengths are counted, then spread over the size the database reports for both tables; the values are estimates. Identical attributes count once, shared ones in equal parts.",
+  spaceScaledEstimated: "Rows and lengths are counted, then spread over the size MariaDB/MySQL estimates for both tables; the values are rough. Identical attributes count once, shared ones in equal parts.",
+  spaceUnscaled: "The database reports no table sizes. The values are the measured lengths without indexes and overhead, so they are too small.",
+  spaceLoose: "Not assigned: {size} in {n} attribute rows no state uses any more. The recorder removes them at its next purge.",
+  spaceMore: "Shown: the {shown} largest of {total} entities.",
+  spaceColSize: "Space", spaceColRows: "States", spaceColVariants: "Attribute rows", spaceColKey: "Attribute", spaceColShare: "Share", spaceColChanges: "Changes",
+  spaceAttrsLoading: "Reading the attributes …", spaceAttrsNone: "No attributes are stored for this entity.", spaceAttrsFailed: "Reading failed: {reason}",
+  spaceAttrsTitle: "Attributes of {name}", spaceAttrsRead: "{read} attribute rows read", spaceAttrsNewest: "the newest {read} of {total} attribute rows",
+  spaceAttrsHint: "When an attribute changes, Home Assistant makes a new attribute row that holds all the other attributes again. Marked is what changes in at least half of the rows: it causes the new rows, even when it is small itself.",
+  spaceAttrsRest: "Plus {n} smaller attributes with {pct} % together.",
+  spaceDriver: "causes new rows", spaceConstant: "constant", spaceAlone: "In {n} rows only this attribute changed.",
+  spaceExAdd: "Mark for exclusion", spaceExOn: "Marked for exclusion", spaceExWhere: "YAML under Recorder → Load", spaceTrim: "Trim history",
+  spaceFact: "Space taken", spaceSplit: "states {states} · attributes {attrs}", spaceNotTop: "not among the {n} largest", spaceGoto: "Measure under Recorder → Database", spaceFactRunning: "being measured ({pct} %)",
+  spaceAttrsOpen: "Break down by attributes", spaceLook: "Look at the space",
+});
+
+const SPACE_TABLES = ["states", "state_attributes"];
+
+class EntitySpaceMixin {
+  // mode: "" only looks, "start" or "stop" also starts or stops the measurement. While one runs, look again every two seconds.
+  async loadSpace(mode = "") {
+    this._spaceRequested = true;
+    try { this.space = await this._hass.callWS({ type: "ha_housekeeper/entity_space", ...(mode ? { [mode]: true } : {}) }); this.spaceError = ""; }
+    catch (err) { this.spaceError = this.errText(err); }
+    this.render();
+    globalThis.clearTimeout?.(this._spaceTimer);
+    if (this.space?.running) this._spaceTimer = setTimeout(() => this.loadSpace(), 2000);
+  }
+
+  ensureSpace() {
+    if (this._spaceRequested) return;
+    this._spaceRequested = true;
+    setTimeout(() => this.loadSpace(), 0);
+  }
+
+  async loadSpaceAttrs(id, retry = 0) {
+    this.spaceAttrs = { ...this.spaceAttrs, [id]: { loading: true } };
+    this.render();
+    let next;
+    try {
+      const r = await this._hass.callWS({ type: "ha_housekeeper/entity_attributes", entity_id: id });
+      // Another recorder query holds the lock (a step of the measurement, often): try again shortly.
+      if (r?.busy && retry < 5) { setTimeout(() => this.loadSpaceAttrs(id, retry + 1), 2000); return; }
+      next = r?.busy || !r?.available ? { message: this.t("erecBusy") } : { data: r };
+    } catch (err) { next = { message: this.t("spaceAttrsFailed", { reason: this.errText(err) }) }; }
+    this.spaceAttrs = { ...this.spaceAttrs, [id]: next };
+    this.render();
+  }
+
+  spaceName(id) {
+    return this.findObject(`entity:${id}`)?.name || id;
+  }
+
+  spacePct(share) {
+    return this.formatNumber(Math.round((share || 0) * 100));
+  }
+
+  spaceLeft(seconds) {
+    return seconds < 90 ? this.t("spaceSeconds", { n: this.formatNumber(Math.max(1, Math.round(seconds))) }) : this.relDuration(seconds);
+  }
+
+  // The entities by the space they take; outside a running measurement a row opens its attributes below it.
+  spaceList(result, interim = false) {
+    const items = result.entities || [], max = Math.max(0, ...items.map(e => e.bytes));
+    const num = v => this.esc(this.formatNumber(v ?? 0));
+    return this.sysList(interim ? "spaceinterim" : "spaceents", items, {
+      sort: "size", dir: "desc",
+      sorts: [
+        { key: "size", label: "spaceColSize", dir: "desc", get: e => e.bytes },
+        { key: "name", label: "utName", dir: "asc", get: e => this.spaceName(e.entity_id) },
+        { key: "rows", label: "spaceColRows", dir: "desc", get: e => e.rows },
+        { key: "variants", label: "spaceColVariants", dir: "desc", get: e => e.variants },
+      ],
+      text: e => `${this.spaceName(e.entity_id)} ${e.entity_id}`, tie: e => e.entity_id, empty: "dbSeriesNone",
+      columns: [
+        { key: "name", label: "utName", dir: "asc", cell: e => this.nameCell(this.spaceName(e.entity_id), e.entity_id) },
+        { key: "size", label: "spaceColSize", dir: "desc", cell: e => `<span class="dbshare">${this.sysShare(e.bytes, max)}<b>${this.esc(this.formatBytes(e.bytes))}</b></span>` },
+        { key: "rows", label: "spaceColRows", dir: "desc", cell: e => num(e.rows) },
+        { key: "variants", label: "spaceColVariants", dir: "desc", cell: e => num(e.variants) },
+      ],
+      rowAttrs: e => (interim ? 'class="static"' : `data-space-ent="${this.esc(e.entity_id)}" tabindex="0" role="button" aria-expanded="${this.spaceSel === e.entity_id}"`),
+      after: e => (!interim && !this.spaceSelTop && this.spaceSel === e.entity_id ? `<tr class="static"><td colspan="4"><div class="spacekeys">${this.spaceAttrsBlock(e.entity_id, e)}</div></td></tr>` : ""),
+      bare: true,
+      ...(interim ? {} : { exportName: "entity-space", header: ["Name", "Entity", "Bytes", this.t("spaceColRows"), this.t("spaceColVariants")], rows: e => [this.spaceName(e.entity_id), e.entity_id, e.bytes, e.rows, e.variants] }),
+    });
+  }
+
+  // What opens below the rows states and state_attributes: the button, the running measurement or its result.
+  spaceBlock() {
+    const s = this.space;
+    if (this.spaceError) return this.notice("err", this.spaceError);
+    if (!s) return `<p class="factnote">${this.t("spaceLoading")}</p>`;
+    if (!s.available) return `<p class="factnote">${this.t("relNoRecorder")}</p>`;
+    if (s.running) {
+      const p = s.progress || {}, pct = Math.round((p.share || 0) * 100);
+      const left = p.left === null || p.left === undefined ? this.t("spaceLeftUnknown") : this.t("spaceLeft", { left: this.spaceLeft(p.left) });
+      const list = s.interim?.entities?.length ? `<div class="sectionlabel">${this.t("spaceInterim")}</div>${this.spaceList(s.interim, true)}` : "";
+      return `<div class="spacehead"><span>${this.t(p.stopping ? "spaceStopping" : "spaceRunning", { pct: this.formatNumber(pct) })} · ${this.t(p.phase === "attrs" ? "spacePhaseAttrs" : "spacePhaseStates")}</span><button class="btn quiet" data-space-stop ${p.stopping ? "disabled" : ""}>${this.t("spaceStop")}</button></div>
+        <div class="wzprog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div><p class="factnote">${left} · ${this.t("spaceLeave")}</p>${list}`;
+    }
+    // Opened from the load view for an entity without a page: its attributes stand on top, whatever the list shows.
+    const top = this.spaceSelTop && this.spaceSel ? `<div class="spacekeys">${this.spaceAttrsBlock(this.spaceSel, (s.result?.entities || []).find(e => e.entity_id === this.spaceSel))}</div>` : "";
+    const r = s.result;
+    if (!r) return `${top}<div class="spacehead"><p class="factnote">${this.t("spaceIntro")}</p></div>`;
+    const when = this.relTime(new Date(r.computed_at * 1000).toISOString()), took = this.formatNumber(Math.round((r.took_ms || 0) / 1000));
+    const partial = r.state === "stopped" || r.state === "failed" ? this.notice("warn", this.t(r.state === "stopped" ? "spaceStopped" : "spaceFailed", { pct: this.spacePct(r.read_share) })) : "";
+    const notes = [
+      this.t(!r.scaled ? "spaceUnscaled" : r.estimated ? "spaceScaledEstimated" : "spaceScaled"),
+      r.loose_attrs_bytes ? this.t("spaceLoose", { size: this.formatBytes(r.loose_attrs_bytes), n: this.formatNumber(r.loose_attrs_rows) }) : "",
+      r.entities_total > r.entities.length ? this.t("spaceMore", { shown: this.formatNumber(r.entities.length), total: this.formatNumber(r.entities_total) }) : "",
+    ].filter(Boolean).map(x => `<p class="factnote">${this.esc(x)}</p>`).join("");
+    return `${top}<div class="spacehead"><span>${this.esc(this.t("spaceAt", { when, took }))}</span></div>${partial}${this.spaceList(r)}${notes}`;
+  }
+
+  // The attributes of one entity by their share; `measured` is its row of the measurement (bytes instead of lengths), `page` leaves out the way to the page.
+  spaceAttrsBlock(id, measured = null, page = false) {
+    const st = this.spaceAttrs?.[id];
+    if (!st || st.loading) return `<p class="factnote">${this.t("spaceAttrsLoading")}</p>`;
+    if (!st.data) return `<p class="factnote">${this.esc(st.message || "")}</p>`;
+    const d = st.data;
+    if (!d.found || !d.read) return `<p class="factnote">${this.t("spaceAttrsNone")}</p>`;
+    const steps = Math.max(d.read - 1, 1), scale = measured?.attrs_bytes ? measured.attrs_bytes : d.chars;
+    const changed = k => (d.read > 1 ? Math.round((k.changes / steps) * 100) : null);
+    const hint = k => (k.driver ? `<span class="pill warn"${k.alone ? ` title="${this.esc(this.t("spaceAlone", { n: this.formatNumber(k.alone) }))}"` : ""}>${this.t("spaceDriver")}</span>` : d.read > 1 && !k.changes ? `<span class="pill mute">${this.t("spaceConstant")}</span>` : "");
+    const list = this.sysList(page ? "spacekeyspage" : "spacekeys", d.keys, {
+      sort: "share", dir: "desc",
+      sorts: [
+        { key: "share", label: "spaceColShare", dir: "desc", get: k => k.chars },
+        { key: "key", label: "spaceColKey", dir: "asc", get: k => k.key },
+        { key: "changes", label: "spaceColChanges", dir: "desc", get: k => k.changes },
+      ],
+      text: k => k.key, tie: k => k.key, empty: "spaceAttrsNone",
+      columns: [
+        { key: "key", label: "spaceColKey", dir: "asc", cell: k => `<code>${this.esc(k.key)}</code> ${hint(k)}` },
+        { key: "share", label: "spaceColShare", dir: "desc", cell: k => `<span class="dbshare">${this.sysShare(k.share, 1)}<b>${this.esc(`${this.formatNumber(Math.round(k.share * 1000) / 10)} %`)}</b></span>` },
+        { key: "size", label: "spaceColSize", sortable: false, cell: k => this.esc(this.formatBytes(Math.round(k.share * scale))) },
+        { key: "changes", label: "spaceColChanges", dir: "desc", cell: k => (changed(k) === null ? "–" : this.esc(`${this.formatNumber(changed(k))} %`)) },
+      ],
+    });
+    const read = d.read < d.total ? this.t("spaceAttrsNewest", { read: this.formatNumber(d.read), total: this.formatNumber(d.total) }) : this.t("spaceAttrsRead", { read: this.formatNumber(d.read) });
+    const rest = d.rest?.keys ? `<p class="factnote">${this.t("spaceAttrsRest", { n: this.formatNumber(d.rest.keys), pct: this.formatNumber(Math.round((d.rest.chars / (d.chars || 1)) * 1000) / 10) })}</p>` : "";
+    const marked = this.excludeSel.has(id);
+    const actions = `<div class="spaceacts"><button class="btn quiet${marked ? " on" : ""}" data-space-ex="${this.esc(id)}" aria-pressed="${marked}"><ha-icon icon="mdi:database-off-outline"></ha-icon>${this.t(marked ? "spaceExOn" : "spaceExAdd")}</button>${marked ? `<button type="button" class="btn quiet" data-space-goto="load">${this.t("spaceExWhere")}</button>` : ""}${page || !this.findObject(`entity:${id}`) ? "" : `<button class="btn quiet" data-object="entity:${this.esc(id)}"><ha-icon icon="mdi:content-cut"></ha-icon>${this.t("spaceTrim")}</button>`}</div>`;
+    return `<div class="sectionlabel">${this.esc(this.t("spaceAttrsTitle", { name: this.spaceName(id) }))} · ${this.esc(read)}</div>${list}${rest}<p class="factnote">${this.t("spaceAttrsHint")}</p>${actions}`;
+  }
+
+  // On the page of an entity, inside "In the recorder": its space from the last measurement and the breakdown on request.
+  spaceEntityPart(id) {
+    this.ensureSpace();
+    const s = this.space, r = s?.result, row = r?.entities?.find(e => e.entity_id === id);
+    let value;
+    if (row) value = `${this.esc(this.formatBytes(row.bytes))}<small>${this.esc(this.t("spaceSplit", { states: this.formatBytes(row.states_bytes), attrs: this.formatBytes(row.attrs_bytes) }))}</small>`;
+    else if (s?.running) value = this.t("spaceFactRunning", { pct: this.spacePct(s.progress?.share) });
+    else if (r) value = this.t("spaceNotTop", { n: this.formatNumber(r.entities.length) });
+    else value = `<button type="button" class="btn quiet" data-space-goto="db">${this.t("spaceGoto")}</button>`;
+    const st = this.spaceAttrs?.[id];
+    const open = st ? `<div class="pad">${this.spaceAttrsBlock(id, row, true)}</div>` : `<div class="pad"><button class="btn" data-space-attrs="${this.esc(id)}"><ha-icon icon="mdi:format-list-bulleted-square"></ha-icon>${this.t("spaceAttrsOpen")}</button></div>`;
+    return `<div class="facts"><div class="fact"><span>${this.t("spaceFact")}</span><b>${value}</b></div></div>${open}`;
+  }
+
+  // The tables that open the measurement; the name cell gets the arrow.
+  spaceTable(name) {
+    return SPACE_TABLES.includes(name);
+  }
+
+  bindSpace(root) {
+    root.querySelectorAll("[data-space-start]").forEach(el => el.onclick = () => this.loadSpace("start"));
+    root.querySelectorAll("[data-space-stop]").forEach(el => el.onclick = () => this.loadSpace("stop"));
+    root.querySelectorAll("[data-space-toggle]").forEach(el => el.onclick = () => {
+      this.spaceOpen = this.spaceOpen === el.dataset.spaceToggle ? "" : el.dataset.spaceToggle;
+      if (this.spaceOpen) this.ensureSpace();
+      this.render();
+    });
+    root.querySelectorAll("[data-space-ent]").forEach(el => el.onclick = ev => {
+      if (ev?.target?.closest?.("button, a, input") && ev.target.closest("tr") === el) return;
+      const id = el.dataset.spaceEnt;
+      this.spaceSel = this.spaceSel === id && !this.spaceSelTop ? "" : id;
+      this.spaceSelTop = false;
+      if (this.spaceSel && !this.spaceAttrs?.[id]?.data) this.loadSpaceAttrs(id);
+      else this.render();
+    });
+    root.querySelectorAll("[data-space-attrs]").forEach(el => el.onclick = () => this.loadSpaceAttrs(el.dataset.spaceAttrs));
+    root.querySelectorAll("[data-space-ex]").forEach(el => el.onclick = () => {
+      const id = el.dataset.spaceEx;
+      this.excludeSel.has(id) ? this.excludeSel.delete(id) : this.excludeSel.add(id);
+      this.render();
+    });
+    // To a tab of the Recorder, also from the page of an entity: the database tab opens with the measurement unfolded.
+    root.querySelectorAll("[data-space-goto]").forEach(el => el.onclick = ev => {
+      ev?.stopPropagation();
+      const tab = el.dataset.spaceGoto;
+      this.noteJump?.("recorder");
+      this.view = "recorder"; (this.viewTab ||= {}).recorder = tab; this.pages = {}; this.selected = null; this.trail = [];
+      if (tab === "db") { this.spaceOpen = "states"; this.ensureSpace(); }
+      this.render();
+    });
+    root.querySelectorAll("[data-space-look]").forEach(el => el.onclick = ev => {
+      ev?.stopPropagation();
+      const id = el.dataset.spaceLook, obj = this.findObject(`entity:${id}`);
+      this.loadSpaceAttrs(id);
+      if (obj) { this.openObject(obj); return; }
+      // An entity the inventory does not know has no page: its attributes open below the measurement instead.
+      (this.viewTab ||= {}).recorder = "db"; this.spaceOpen = "states"; this.spaceSel = id; this.spaceSelTop = true; this.ensureSpace(); this.render();
+    });
   }
 }
 
@@ -11914,7 +13207,7 @@ class ScanPointsMixin {
 Object.assign(TEXT.de, {
   exclHint: "Das ändert nichts in Home Assistant, es ist nur Text zum Einfügen. Ausgeschlossene Entitäten haben danach keinen Verlauf mehr.",
   exTrimCount: "{count} zum Kürzen", exLeft: "Ausgeschlossen, aber noch gespeichert: {count} Entitäten, mindestens {rows} Zeilen", exLeftPick: "Zum Kürzen wählen",
-  exCount: "{count} ausgewählt", exNone: "Nichts ausgewählt", exNoneSug: "Nichts ausgewählt · {count} Vorschläge", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Leeren", exCopy: "YAML kopieren",
+  exCount: "{count} ausgewählt", exSugCount: "{count} Vorschläge", exPickSuggested: "Alle Vorgeschlagenen wählen", exClear: "Leeren", exCopy: "YAML kopieren",
   exStepsTitle: "So geht es weiter", exStep1: "Einfügen in die configuration.yaml. Gibt es dort schon einen recorder:-Abschnitt, trage nur die Zeilen unter entities: in dessen exclude:-Liste ein, nicht noch einmal recorder:.",
   exStep2: "Prüfen unter Entwicklerwerkzeuge → YAML → Konfiguration prüfen.", exStep3: "Neu starten. Der Recorder liest den Ausschluss nur beim Start. Danach steht die Entität hier als „bereits ausgeschlossen“.",
   exSuggest: "Empfohlen", exOnlySug: "Nur Vorschläge", exWhy: "Nicht verwendet, keine Statistik, {perDay} Zeilen in den letzten 24 Stunden", exRule: "Empfohlen ist, was nirgends verwendet wird, keine Statistik hat und in den letzten 24 Stunden mindestens {min} Zeilen schreibt.", exHasStats: "Statistik vorhanden", exUsedBy: "{count} Verwendungen",
@@ -11929,7 +13222,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   exclHint: "This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",
   exTrimCount: "{count} to trim", exLeft: "Excluded but still stored: {count} entities, at least {rows} rows", exLeftPick: "Select to trim",
-  exCount: "{count} selected", exNone: "Nothing selected", exNoneSug: "Nothing selected · {count} suggestions", exPickSuggested: "Select all suggested", exClear: "Clear", exCopy: "Copy YAML",
+  exCount: "{count} selected", exSugCount: "{count} suggestions", exPickSuggested: "Select all suggested", exClear: "Clear", exCopy: "Copy YAML",
   exStepsTitle: "What to do next", exStep1: "Paste it into configuration.yaml. If there is a recorder: section already, add only the lines under entities: to its exclude: list, not recorder: again.",
   exStep2: "Check under Developer tools → YAML → Check configuration.", exStep3: "Restart. The recorder reads the exclusion only at start. Afterwards the entity shows here as “already excluded”.",
   exSuggest: "Recommended", exOnlySug: "Only suggestions", exWhy: "Not used, no statistics, {perDay} rows in the last 24 hours", exRule: "Recommended means: used nowhere, no statistics and wrote at least {min} rows in the last 24 hours.", exHasStats: "has statistics", exUsedBy: "{count} uses",
@@ -11995,11 +13288,11 @@ class ExcludeMixin {
   excludeCard(suggested, { only = true } = {}) {
     this._exSuggested = suggested;
     const n = this.excludeChosen().length, trim = this.excludeSel.size - n, sug = suggested.length, left = this.excludeLeft();
-    const label = [n ? this.t("exCount", { count: n }) : "", trim ? this.t("exTrimCount", { count: trim }) : ""].filter(Boolean).join(" · ") || (sug ? this.t("exNoneSug", { count: sug }) : this.t("exNone"));
+    const label = [n ? this.t("exCount", { count: n }) : "", trim ? this.t("exTrimCount", { count: trim }) : ""].filter(Boolean).join(" · ") || (sug ? this.t("exSugCount", { count: sug }) : ""); // nothing picked: only the suggestions, if any
     const leftNote = left.ids.length && left.ids.some(id => !this.excludeSel.has(id))
       ? `<span class="date">${this.t("exLeft", { count: this.formatNumber(left.ids.length), rows: this.formatNumber(left.rows) })}</span><button class="btn quiet" data-ex-left>${this.t("exLeftPick")}</button>` : "";
     const any = n || trim;
-    const bar = `<div class="toolbar exbar${any ? "" : " nosel"}">${only && (sug || this.exOnlySug) ? `<button class="btn quiet${this.exOnlySug ? " on" : ""}" data-ex-only aria-pressed="${Boolean(this.exOnlySug)}">${this.t("exOnlySug")}</button>` : ""}${sug ? `<button class="btn quiet" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${any ? `<button class="btn quiet" data-ex-clear>${this.t("exClear")}</button>` : ""}<span class="selcount" role="status" title="${this.esc(this.t("exclHint"))}">${label}</span><span class="toolgap"></span>${n ? `<button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}${leftNote}</div>`;
+    const bar = `<div class="toolbar exbar${any ? "" : " nosel"}">${only && (sug || this.exOnlySug) ? `<button class="btn quiet${this.exOnlySug ? " on" : ""}" data-ex-only aria-pressed="${Boolean(this.exOnlySug)}">${this.t("exOnlySug")}</button>` : ""}${sug ? `<button class="btn quiet" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${any ? `<button class="btn quiet" data-ex-clear>${this.t("exClear")}</button>` : ""}${label ? `<span class="selcount" role="status" title="${this.esc(this.t("exclHint"))}">${label}</span>` : ""}<span class="toolgap"></span>${n ? `<button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}${leftNote}</div>`;
     const steps = `<div class="exsteps"><strong>${this.t("exStepsTitle")}</strong><ol><li>${this.t("exStep1")}</li><li>${this.t("exStep2")}</li><li>${this.t("exStep3")}</li></ol></div>`;
     const rule = `<p class="factnote exrule">${this.t("exRule", { min: EXCLUDE_MIN_PER_DAY })}</p>`;
     return `${bar}${rule}${n ? `<pre class="code exblock">${this.esc(this.excludeSnippet())}</pre>${steps}` : ""}${any ? this.trimBlock() : ""}`;
@@ -12124,10 +13417,11 @@ Object.assign(TEXT.de, {
   allLabels: "Alle Labels", lblTitle: "Labels", lblHint: "Housekeeper kennt drei feste Labels. Du legst sie in Home Assistant mit genau diesem Namen an und weist sie Objekten zu; Housekeeper erstellt sie nicht selbst.",
   lblOpenHa: "Labels in Home Assistant öffnen", lblCreated: "angelegt", lblMissing: "nicht angelegt", lblNoUse: "an keinem Objekt", lblUse: "an", lblShow: "Objekte anzeigen", lblCopy: "Name kopieren", lblCopied: "Kopiert",
   lblKind_keep: "Nicht entfernen", lblKind_ignore: "Ignorieren", lblKind_critical: "Kritisch",
-  lblFx_keep_1: "Sperrt alle Bereinigungsschritte (deaktivieren, entfernen); das Gerät fehlt in „Aufräumen → Geräte deaktivieren“", lblFx_keep_0: "Blendet keine Befunde aus: Ein Ausfall wird weiter gemeldet",
+  lblFx_keep_1: "Sperrt alle Bereinigungsschritte (deaktivieren, entfernen); das Gerät fehlt in „Bereinigen → Geräte deaktivieren“", lblFx_keep_0: "Blendet keine Befunde aus: Ein Ausfall wird weiter gemeldet",
   lblFx_ignore_1: "Blendet die Befunde der Entität, Automation oder des Geräts (samt seiner Entitäten) aus", lblFx_ignore_2: "Nimmt das Objekt aus Richtlinien, Zuverlässigkeit, Ausfallstürmen und Exposition und sperrt Bereinigungsschritte", lblFx_ignore_0: "Auch Ausfälle werden nicht mehr gemeldet",
   lblFx_critical_1: "Das Objekt zählt als wichtig; Ausfälle werden höher eingestuft", lblFx_critical_2: "Bereinigungsschritte müssen einzeln bestätigt werden; wirkt an Entität, Gerät oder Bereich", lblFx_critical_0: "Schlösser, Alarme, Rauch- und Wassermelder sind auch ohne Label kritisch",
-  lblHow: "So legst du es an: In Home Assistant unter Einstellungen → Bereiche, Labels & Zonen → Labels ein Label mit genau diesem Namen erstellen, dann Geräte oder Entitäten (auch mehrere auf einmal) auswählen und das Label zuweisen. Danach neu scannen.",
+  lblN_entity: "{n} Entitäten", lblN_entity1: "1 Entität", lblN_device: "{n} Geräten", lblN_device1: "1 Gerät", lblN_automation: "{n} Automationen", lblN_automation1: "1 Automation", lblN_script: "{n} Skripten", lblN_script1: "1 Skript", lblN_scene: "{n} Szenen", lblN_scene1: "1 Szene", lblN_area: "{n} Bereichen", lblN_area1: "1 Bereich",
+  lblHow: "So legst du ein fehlendes Label an: In Home Assistant unter Einstellungen → Bereiche, Labels & Zonen → Labels ein Label mit genau diesem Namen erstellen, dann Geräte oder Entitäten (auch mehrere auf einmal) auswählen und das Label zuweisen. Danach neu scannen.",
   lblFoot: "Soll nur nichts aufgeräumt werden, nimm housekeeper_keep. Soll Housekeeper ein Objekt ganz in Ruhe lassen, nimm housekeeper_ignore oder einen Vermerk. Für Geräte, die oft aus sind, passen der Vermerk „Absichtlich offline“ und Ausnahmeregeln mit Frist besser. Die Zahlen stammen aus dem letzten Scan.",
   excTitle: "Ausnahmeregeln", excHint: "Housekeeper meldet Objekte nicht, auf die eine Regel passt: nach Bereich, Label, Integration, Typ (Domain), Gerät oder Entität. Die Regeln gelten nur in Housekeeper; Home Assistant bleibt unverändert. Das Label housekeeper_ignore wirkt zusätzlich fest.",
   excFormNew: "Regel anlegen", excFormEdit: "Regel bearbeiten", excAdd: "Regel hinzufügen", excEdit: "Ändern", excDelete: "Löschen", excLoading: "Regeln werden geladen …",
@@ -12143,10 +13437,12 @@ Object.assign(TEXT.de, {
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
   excOn: "Regel aktiv", excDue: "Frist abgelaufen",
   hidByRule: "Durch eine Regel", ignoredByRule: "Ausgeblendet durch eine Ausnahmeregel: {rule}", heldByRule: "Zurückgehalten durch eine Ausnahmeregel: {rule}, wird ab {date} gemeldet", dueByRule: "Frist abgelaufen · Ausnahmeregel: {rule}",
-  hidRuleLink: "Regel",
   excKind_device: "Gerät", excKind_entity: "Entität", excRuleDevice: "Gerät {names}", excRuleEntity: "Entität {names}", excSearch: "Suchen …", excMore: "Weitere über die Suche",
   excColRule: "Regel", excColAction: "Aktion", excColEffect: "Wirkung jetzt", excColOn: "An", excColActions: "Aktionen", excKind_any: "Alle Typen", excAnyHint: "Sucht über alle Typen: Bereiche, Labels, Integrationen, Geräte und Entitäten. Beim Speichern entsteht je Art eine Regel ({n}).", excGroupAlways: "Immer", excGroupVacation: "Im Urlaubsmodus", excAddShort: "Regel hinzufügen", excChosen: "{n} gewählt",
   excEmptyAlways: "Noch keine dauerhafte Regel", excEmptyAlwaysNext: "Zum Beispiel einen Bereich oder ein Label dauerhaft ausblenden.", excEmptyVacation: "Noch keine Regel für den Urlaubsmodus", excEmptyVacationNext: "Zum Beispiel das Gewächshaus ausblenden, solange du weg bist.", excVacNoEntity: "Ohne Entität für den Urlaubsmodus greifen diese Regeln nie. Wähle sie unten bei „Urlaubsmodus“.",
+  excForLabel: "Wofür", excFor_objects: "Nur {name}", excFor_objects_n: "Nur diese {n} Objekte", excFor_devices: "Gerät {name}", excFor_devices_n: "Ihre {n} Geräte", excFor_areas: "Bereich {name}", excFor_areas_n: "Ihre {n} Bereiche", excFor_integrations: "Integration {name}", excFor_integrations_n: "Ihre {n} Integrationen",
+  excForSub_devices: "mit allen seinen Entitäten", excForSub_areas: "alle Geräte und Entitäten im Bereich", excForSub_integrations: "alle ihre Entitäten",
+  excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist der Vermerk da. Label, Typ oder eine andere Auswahl:", excForSettings: "in den Einstellungen bearbeiten",
   excScope: "Gilt", excScope_always: "Immer", excScope_vacation: "Nur im Urlaubsmodus", excScopeChip_vacation: "nur im Urlaub", excScopeChip_always: "immer",
   excScopeHint: "Im Urlaubsmodus bleiben diese Objekte still, auch wenn ein Gerät kaputtgeht. Nach dem Urlaub zählt der Ausfall neu: mit eigener Frist deren Tage, sonst die Nachfrist.",
   excOverlap: "Diese Objekte trifft schon: {rules}. Im Urlaub gilt das Ausblenden, danach wieder die Frist der anderen Regel, gezählt ab dem Ende des Urlaubs.",
@@ -12155,7 +13451,7 @@ Object.assign(TEXT.de, {
   vacAuto: "Vorschlag, weil es diese Entität gibt. Sie gilt erst, wenn du speicherst; ändere oder leere das Feld, wenn du sie nicht willst.", vacKeyword: "Stichwort im Termin", vacKeywordExample: "Urlaub", vacKeywordHint: "Nur Termine, deren Titel dieses Wort enthält, schalten den Urlaubsmodus ein, so lässt sich dein normaler Kalender nutzen. Leer: jeder laufende Termin zählt, für einen eigenen Urlaubskalender.",
   vacGrace: "Nachfrist nach dem Urlaub", vacGraceUnit: "Stunden", vacGraceHint: "Standard 24 Stunden. Wie lange Befunde nach dem Ende zurückgehalten werden, wenn für das Objekt keine eigene Frist gilt.",
   vacSave: "Speichern", vacUnsaved: "Nicht gespeichert", vacEntityInvalid: "Eine Entität hat die Form bereich.name, zum Beispiel input_boolean.urlaub.", vacGraceInvalid: "Die Nachfrist muss eine ganze Zahl von 0 bis {max} Stunden sein.", vacStateOn: "Aktuell: an", vacStateNone: "Nicht eingerichtet", vacStateOff: "Aktuell: aus", vacStateMissing: "Aktuell: nicht verfügbar", vacEnded: "Zuletzt beendet am {date}.", vacFailed: "Nicht gespeichert: {reason}",
-  vacBarOn: "Urlaubsmodus aktiv", vacBarHeld: "{n} Befunde zurückgehalten", vacBarHeld1: "1 Befund zurückgehalten",
+  vacBarOn: "Urlaubsmodus aktiv", vacBarHeld: "{n} Befunde zurückgehalten", vacBarNothing: "hält gerade nichts zurück", vacBarNoRule: "keine Regel dafür", vacBarNewRule: "Regel anlegen", vacBarHeld1: "1 Befund zurückgehalten",
   vacBarAfter: "Urlaub beendet", vacBarAfterLine: "Frist bis {date} · {n} Befunde noch zurückgehalten", vacBarAfterLine1: "Frist bis {date} · 1 Befund noch zurückgehalten",
   vacBarMissing: "Urlaubsmodus-Entität nicht verfügbar", vacBarMissingLine: "{entity} meldet keinen Zustand. Der Modus gilt als aus.", vacBarShow: "Zurückgehaltene anzeigen", vacBarRules: "Regeln", vacBarSettings: "Einstellung",
   vacRuleAfter: "Urlaub beendet, zurückgehalten bis {date}", vacRuleActive: "Urlaubsmodus aktiv",
@@ -12167,7 +13463,8 @@ Object.assign(TEXT.en, {
   lblFx_keep_1: "Blocks every cleanup step (disable, remove); the device is missing from “Cleanup → Disable devices”", lblFx_keep_0: "Hides no findings: an outage is still reported",
   lblFx_ignore_1: "Hides the findings of the entity, automation or device (and its entities)", lblFx_ignore_2: "Takes the object out of policies, reliability, outage storms and exposure and blocks cleanup steps", lblFx_ignore_0: "Outages are no longer reported either",
   lblFx_critical_1: "The object counts as important; outages are rated higher", lblFx_critical_2: "Cleanup steps must be confirmed one by one; works on an entity, device or area", lblFx_critical_0: "Locks, alarms, smoke and water sensors are critical without the label too",
-  lblHow: "How to create it: in Home Assistant under Settings → Areas, labels & zones → Labels, create a label with exactly this name, then select devices or entities (several at once) and assign the label. Then scan again.",
+  lblN_entity: "{n} entities", lblN_entity1: "1 entity", lblN_device: "{n} devices", lblN_device1: "1 device", lblN_automation: "{n} automations", lblN_automation1: "1 automation", lblN_script: "{n} scripts", lblN_script1: "1 script", lblN_scene: "{n} scenes", lblN_scene1: "1 scene", lblN_area: "{n} areas", lblN_area1: "1 area",
+  lblHow: "How to create a missing label: in Home Assistant under Settings → Areas, labels & zones → Labels, create a label with exactly this name, then select devices or entities (several at once) and assign the label. Then scan again.",
   lblFoot: "If you only want nothing cleaned up, use housekeeper_keep. If Housekeeper should leave an object completely alone, use housekeeper_ignore or a mark. For devices that are often off, the mark “Offline on purpose” and exception rules with a delay fit better. The numbers come from the last scan.",
   excTitle: "Exception rules", excHint: "Housekeeper does not report objects that a rule matches: by area, label, integration, type (domain), device or entity. The rules apply only in Housekeeper; Home Assistant stays unchanged. The label housekeeper_ignore keeps working on top.",
   excFormNew: "Add rule", excFormEdit: "Edit rule", excAdd: "Add rule", excEdit: "Change", excDelete: "Delete", excLoading: "Loading rules …",
@@ -12183,10 +13480,12 @@ Object.assign(TEXT.en, {
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
   excOn: "Rule active", excDue: "Time has passed",
   hidByRule: "By a rule", ignoredByRule: "Hidden by an exception rule: {rule}", heldByRule: "Held back by an exception rule: {rule}, reported from {date}", dueByRule: "Time has passed · exception rule: {rule}",
-  hidRuleLink: "Rule",
   excKind_device: "Device", excKind_entity: "Entity", excRuleDevice: "Device {names}", excRuleEntity: "Entity {names}", excSearch: "Search …", excMore: "More through the search",
   excColRule: "Rule", excColAction: "Action", excColEffect: "Effect now", excColOn: "On", excColActions: "Actions", excKind_any: "All types", excAnyHint: "Searches all types: areas, labels, integrations, devices and entities. Saving makes one rule per kind ({n}).", excGroupAlways: "Always", excGroupVacation: "In vacation mode", excAddShort: "Add rule", excChosen: "{n} chosen",
   excEmptyAlways: "No permanent rule yet", excEmptyAlwaysNext: "For example hide an area or a label for good.", excEmptyVacation: "No vacation mode rule yet", excEmptyVacationNext: "For example hide the greenhouse while you are away.", excVacNoEntity: "Without an entity for the vacation mode these rules never apply. Choose it below under “Vacation mode”.",
+  excForLabel: "For what", excFor_objects: "Only {name}", excFor_objects_n: "Only these {n} objects", excFor_devices: "Device {name}", excFor_devices_n: "Their {n} devices", excFor_areas: "Area {name}", excFor_areas_n: "Their {n} areas", excFor_integrations: "Integration {name}", excFor_integrations_n: "Their {n} integrations",
+  excForSub_devices: "with all its entities", excForSub_areas: "all devices and entities in the area", excForSub_integrations: "all its entities",
+  excForMore: "A single object with a reason or a time window: that is what a mark is for. Label, type or another choice:", excForSettings: "edit in the settings",
   excScope: "Applies", excScope_always: "Always", excScope_vacation: "Only in vacation mode", excScopeChip_vacation: "vacation only", excScopeChip_always: "always",
   excScopeHint: "In vacation mode these objects stay quiet, even if a device breaks. After the vacation the outage counts anew: with a delay of its own that delay, otherwise the grace period.",
   excOverlap: "These objects are already hit by: {rules}. In the vacation hiding applies, afterwards the delay of the other rule, counted from the end of the vacation.",
@@ -12195,7 +13494,7 @@ Object.assign(TEXT.en, {
   vacAuto: "Suggestion, because this entity exists. It counts only once you save; change or clear the field if you do not want it.", vacKeyword: "Keyword in the event", vacKeywordExample: "Vacation", vacKeywordHint: "Only events whose title contains this word switch vacation mode on, so your normal calendar works. Empty: every running event counts, for a calendar of its own.",
   vacGrace: "Grace period after the vacation", vacGraceUnit: "hours", vacGraceHint: "Default 24 hours. How long findings are held back after the end when the object has no delay of its own.",
   vacSave: "Save", vacUnsaved: "Not saved", vacEntityInvalid: "An entity looks like domain.name, for example input_boolean.vacation.", vacGraceInvalid: "The grace period must be a whole number from 0 to {max} hours.", vacStateOn: "Now: on", vacStateNone: "Not set up", vacStateOff: "Now: off", vacStateMissing: "Now: unavailable", vacEnded: "Last ended on {date}.", vacFailed: "Not saved: {reason}",
-  vacBarOn: "Vacation mode on", vacBarHeld: "{n} findings held back", vacBarHeld1: "1 finding held back",
+  vacBarOn: "Vacation mode on", vacBarHeld: "{n} findings held back", vacBarNothing: "holds nothing back right now", vacBarNoRule: "no rule for it", vacBarNewRule: "Add a rule", vacBarHeld1: "1 finding held back",
   vacBarAfter: "Vacation over", vacBarAfterLine: "Delay until {date} · {n} findings still held back", vacBarAfterLine1: "Delay until {date} · 1 finding still held back",
   vacBarMissing: "Vacation mode entity unavailable", vacBarMissingLine: "{entity} reports no state. The mode counts as off.", vacBarShow: "Show held back", vacBarRules: "Rules", vacBarSettings: "Settings",
   vacRuleAfter: "Vacation over, held back until {date}", vacRuleActive: "Vacation mode on",
@@ -12285,15 +13584,18 @@ class ExceptionsMixin {
       const id = `housekeeper_${kind}`, counts = new Map();
       for (const o of this.invObjects()) if ((o.labels || []).includes(id)) counts.set(o.object_type, (counts.get(o.object_type) || 0) + 1);
       const total = [...counts.values()].reduce((a, b) => a + b, 0), made = !!this.findObject(`label:${id}`);
-      const parts = [...counts].map(([type, n]) => `${this.esc(this.t(type))}: ${n}`).join(" · ");
+      // "on 2 devices, 5 entities"; a type without its own words keeps "Type: n".
+      const parts = [...counts].map(([type, n]) => { const key = `lblN_${type}`; return this.t(key) === key ? `${this.esc(this.t(type))}: ${n}` : this.esc(this.tCount(key, n)); }).join(", ");
       const fx = (kind === "keep" ? [1, 0] : [1, 2, 0]).map(n => `<li${n ? "" : ' class="no"'}>${this.esc(this.t(`lblFx_${kind}_${n}`))}</li>`).join("");
       const show = total ? `<button class="btn" data-jump="inventory" data-jump-lf="inventory|label|${id}">${this.t("lblShow")}</button>` : "";
-      return `<div class="labrow"><div><div class="statcell"><code>${id}</code> <span class="pill ${made ? "ok" : "warn"}">${this.t(made ? "lblCreated" : "lblMissing")}</span></div><p class="factnote">${this.esc(this.t(`lblKind_${kind}`))} · ${total ? `${this.t("lblUse")} ${parts}` : this.t("lblNoUse")}</p></div>
+      const copy = `<button type="button" class="iconbtn" data-copy="${id}" title="${this.esc(this.t("lblCopy"))}" aria-label="${this.esc(this.t("lblCopy"))}"><ha-icon icon="mdi:content-copy"></ha-icon></button>`;
+      return `<div class="labrow"><div><div class="statcell"><code>${id}</code>${copy}<span class="pill ${made ? "ok" : "warn"}">${this.t(made ? "lblCreated" : "lblMissing")}</span></div><p class="factnote">${this.esc(this.t(`lblKind_${kind}`))} · ${total ? `${this.t("lblUse")} ${parts}` : this.t("lblNoUse")}</p></div>
         <ul class="labfx">${fx}</ul>
-        <div class="actions"><button class="btn quiet" data-copy="${id}">${this.t("lblCopy")}</button>${show}</div>
-        ${made ? "" : `<p class="factnote labhow">${this.esc(this.t("lblHow"))}</p>`}</div>`;
+        <div class="actions">${show}</div></div>`;
     }).join("");
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("lblTitle")}</h2><p>${this.t("lblHint")}</p></div><button class="btn" data-ha-path="/config/labels"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("lblOpenHa")}</button></div>${rows}<div class="pad"><p class="factnote">${this.t("lblFoot")}</p></div></section>`;
+    // How to create a label is said once, below the rows, while one of them is missing.
+    const missing = ["keep", "ignore", "critical"].some(kind => !this.findObject(`label:housekeeper_${kind}`));
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("lblTitle")}</h2><p>${this.t("lblHint")}</p></div><button class="btn" data-ha-path="/config/labels"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("lblOpenHa")}</button></div>${rows}<div class="pad labfoot">${missing ? `<p class="factnote">${this.esc(this.t("lblHow"))}</p>` : ""}<p class="factnote">${this.t("lblFoot")}</p></div></section>`;
   }
 
   excCard() {
@@ -12301,7 +13603,8 @@ class ExceptionsMixin {
     const v = this.exc.vacation || {};
     const state = !v.entity ? "vacStateNone" : v.state === "on" ? "vacStateOn" : v.state && v.state !== "unavailable" && v.state !== "unknown" ? "vacStateOff" : "vacStateMissing";
     const pill = state ? ` <span class="pill ${!v.entity ? "warn" : v.state === "on" ? "ok" : "mute"}">${this.t(state)}</span>` : "";
-    return `${this.excRulesCard()}${this.labelsCard()}<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section>`;
+    // In the order of the actions of a finding: status, mark, exception (with the vacation mode), label.
+    return `${this.decisionsBar()}${this.statusCard()}${this.marksCard()}<div id="hk-sec-rules" class="stack">${this.excRulesCard()}<section class="panel"><div class="panelhead"><div><h2>${this.t("vacTitle")}${pill}</h2><p>${this.t("vacHint")}</p></div></div>${this.vacationHtml()}</section></div><div id="hk-sec-labels">${this.labelsCard()}</div>`;
   }
 
   vacationHtml() {
@@ -12346,6 +13649,11 @@ class ExceptionsMixin {
     const date = value => this.formatDate(value), n = v.held;
     const go = `<a href="#" data-vac-go="hidden">${this.t("vacBarShow")}</a><a href="#" data-vac-go="rules">${this.t("vacBarRules")}</a>`;
     if (v.missing) return `<div class="vacbar warn" role="status"><b>${this.t("vacBarMissing")}</b><span>${this.esc(this.t("vacBarMissingLine", { entity: v.entity }))}</span><span class="sp"></span><a href="#" data-vac-go="rules">${this.t("vacBarSettings")}</a></div>`;
+    // With nothing held back there is nothing to show: the bar says why, and offers the rules or a first one.
+    if (v.active && !n) {
+      const none = v.rules === 0, link = none ? `<a href="#" data-vac-go="new">${this.t("vacBarNewRule")}</a>` : `<a href="#" data-vac-go="rules">${this.t("vacBarRules")}</a>`;
+      return `<div class="vacbar" role="status"><b>${this.t("vacBarOn")}</b><span>${this.t(none ? "vacBarNoRule" : "vacBarNothing")} · ${this.esc(v.entity)}</span><span class="sp"></span>${link}</div>`;
+    }
     if (v.active) return `<div class="vacbar" role="status"><b>${this.t("vacBarOn")}</b><span>${n === 1 ? this.t("vacBarHeld1") : this.t("vacBarHeld", { n })} · ${this.esc(v.entity)}</span><span class="sp"></span>${go}</div>`;
     if (v.after_until && n) return `<div class="vacbar after" role="status"><b>${this.t("vacBarAfter")}</b><span>${n === 1 ? this.t("vacBarAfterLine1", { date: date(v.after_until) }) : this.t("vacBarAfterLine", { date: date(v.after_until), n })}</span><span class="sp"></span>${go}</div>`;
     return "";
@@ -12379,13 +13687,17 @@ class ExceptionsMixin {
       : `<div class="mfield"><span>${this.t("excAction")}</span><div class="excact"><button type="button" class="chip${f.action === "hide" ? " active" : ""}" data-exc-action="hide" aria-pressed="${f.action === "hide"}">${this.t("excAction_hide")}</button><button type="button" class="chip${f.action === "delay" ? " active" : ""}" data-exc-action="delay" aria-pressed="${f.action === "delay"}">${this.t("excAction_delay")}</button>
         ${f.action === "delay" ? `<input type="number" min="1" max="${this.exc.days_max || 365}" data-exc-days value="${this.esc(f.days)}" aria-label="${this.esc(this.t("excDays"))}"> <span>${this.t("excDays")}</span>` : ""}</div>
         ${f.action === "delay" ? `<small class="factnote">${this.t("excDelayHint")}</small>` : ""}</div>`;
+    const scopeChips = `<div class="mfield"><span>${this.t("excScope")}</span><div class="chips bare">${["always", "vacation"].map(s => `<button type="button" class="chip${(f.scope || "always") === s ? " active" : ""}" data-exc-scope-set="${s}" aria-pressed="${(f.scope || "always") === s}">${this.t(`excScope_${s}`)}</button>`).join("")}</div></div>`;
+    const what = f.scopes ? `${this.excScopeCards(f)}${scopeChips}`
+      : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
+      <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
+    const more = f.scopes ? `<small class="factnote">${this.t("excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
     return `<form class="excform markform" data-exc-form>
       <strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>
-      <div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
-      <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>
+      ${what}
       ${action}
       <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
-      ${preview}${f.error ? this.notice("err", f.error) : ""}
+      ${preview}${more}${f.error ? this.notice("err", f.error) : ""}
       <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
   }
 
@@ -12412,6 +13724,40 @@ class ExceptionsMixin {
       : { id: "", kind: "any", targets: [], picks: [], action: "hide", scope: scope || "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null };
     this.render();
     this.excPreview();
+  }
+
+  // A new rule from the findings, the form above the list: "for what" offers the objects themselves, their devices,
+  // areas and integrations, so a rule can reach beyond the object. Other kinds are set in the settings.
+  async openExceptionFor(objectKeys) {
+    if (!this.exc) await this.loadExceptions();
+    const objects = objectKeys.map(key => this.findObject(key)).filter(Boolean);
+    const device = o => (o.object_type === "device" ? o : o.device_id ? this.findObject(`device:${o.device_id}`) : null);
+    const named = (list, id) => (list || []).find(x => x.id === id)?.name || id;
+    const domains = o => (o.object_type === "entity" ? [o.platform] : o.object_type === "config_entry" ? [o.domain] : (device(o)?.config_entry_ids || []).map(e => this.findObject(`config_entry:${e}`)?.domain));
+    const uniq = picks => picks.filter((p, i) => p && picks.findIndex(q => q && q.kind === p.kind && q.id === p.id) === i);
+    const scopes = [
+      ["objects", uniq(objects.map(o => { const t = this.excTargetOf(o); return t && { ...t, name: o.name || t.id }; }))],
+      ["devices", uniq(objects.map(device).filter(Boolean).map(d => ({ kind: "device", id: d.object_id, name: d.name || d.object_id })))],
+      ["areas", uniq(objects.map(o => o.area_id || device(o)?.area_id).filter(Boolean).map(id => ({ kind: "area", id, name: named(this.exc?.areas, id) })))],
+      ["integrations", uniq(objects.flatMap(domains).filter(Boolean).map(id => ({ kind: "integration", id, name: named(this.exc?.integrations, id) })))],
+    ].filter(([, picks], i, all) => picks.length && !all.slice(0, i).some(([, other]) => other.length === picks.length && other.every(p => picks.some(q => q.kind === p.kind && q.id === p.id))))
+      .map(([id, picks]) => ({ id, picks }));
+    if (!scopes.length) return;
+    this.excForm = { id: "", kind: "any", targets: [], picks: scopes[0].picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true, scopes, scopeSel: scopes[0].id };
+    this.render();
+    this.shadowRoot?.querySelector?.("[data-exc-form]")?.scrollIntoView?.({ block: "nearest" });
+    this.excPreview();
+  }
+
+  // "For what" of a rule made from findings: one card per reach, the names below.
+  excScopeCards(f) {
+    const card = s => {
+      const names = s.picks.map(p => p.name), many = s.picks.length > 1;
+      const title = this.t(`excFor_${s.id}${many ? "_n" : ""}`, { n: s.picks.length, name: names[0] });
+      const sub = many ? names.slice(0, 3).join(", ") + (names.length > 3 ? ", …" : "") : s.id === "objects" ? s.picks[0].id : this.t(`excForSub_${s.id}`);
+      return `<label class="statusopt${f.scopeSel === s.id ? " on" : ""}"><input type="radio" name="exc-for" value="${s.id}" data-exc-for-pick ${f.scopeSel === s.id ? "checked" : ""}><span><b>${this.esc(title)}</b><small>${this.esc(sub)}</small></span></label>`;
+    };
+    return `<div class="mfield"><span>${this.t("excForLabel")}</span><div class="statusopts">${f.scopes.map(card).join("")}</div></div>`;
   }
 
   async excPreview() {
@@ -12451,9 +13797,24 @@ class ExceptionsMixin {
 
   bindExceptions(root) {
     root.querySelectorAll("[data-copy]").forEach(el => el.onclick = async () => {
-      try { await globalThis.navigator?.clipboard?.writeText(el.dataset.copy); el.textContent = this.t("lblCopied"); } catch (_) { /* no clipboard: the name stays selectable */ }
+      try {
+        await globalThis.navigator?.clipboard?.writeText(el.dataset.copy);
+        const icon = el.querySelector("ha-icon");
+        if (icon) { icon.setAttribute("icon", "mdi:check"); el.title = this.t("lblCopied"); el.setAttribute("aria-label", this.t("lblCopied")); } else el.textContent = this.t("lblCopied");
+      } catch (_) { /* no clipboard: the name stays selectable */ }
     });
     const rules = () => this.excRules();
+    // "Open rule" from a hidden finding: the rule in its form in the settings.
+    root.querySelectorAll("[data-exc-goto]").forEach(el => el.onclick = async ev => {
+      ev.stopPropagation();
+      this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {};
+      if (!this.exc) await this.loadExceptions();
+      const rule = this.exc?.rules?.find(r => r.id === el.dataset.excGoto);
+      if (rule) this.excScope = rule.scope || "always";
+      this.openException(el.dataset.excGoto);
+    });
+    root.querySelectorAll("[data-sec-go]").forEach(el => el.onclick = () => { const sec = root.querySelector(`#hk-sec-${el.dataset.secGo}`); sec?.scrollIntoView?.({ block: "start", behavior: "smooth" }); });
+    root.querySelectorAll("[data-goto-decisions]").forEach(el => el.onclick = () => { this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
     root.querySelectorAll("[data-exc-toggle]").forEach(el => el.onchange = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excToggle ? { ...r, enabled: el.checked } : r)), null));
@@ -12476,10 +13837,13 @@ class ExceptionsMixin {
       if (keyword) keyword.oninput = ev => { v.keyword = ev.target.value; sync(); };
       form.querySelector("[data-vac-grace]").oninput = ev => { v.grace = ev.target.value; sync(); };
     });
-    root.querySelectorAll("[data-vac-go]").forEach(el => el.onclick = ev => {
+    root.querySelectorAll("[data-vac-go]").forEach(el => el.onclick = async ev => {
       ev.preventDefault();
-      this.selected = null; this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {};
-      if (el.dataset.vacGo === "hidden") { this.lvState("hidden", "name", "asc"); this.lv.hidden.f.by = "rule"; }
+      this.selected = null; this.pages = {};
+      // The findings held back are on the findings page, hidden for an exception; the rules in the settings.
+      // The held findings are hidden ones, and only those of the vacation mode: other rules hide findings as well.
+      if (el.dataset.vacGo === "hidden") { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.clearFindingFilters(); this.findingStatus = "hidden"; this.findingHeld = true; } else { this.view = "settings"; this.settingsTab = "exceptions"; this.excScope = "vacation"; }
+      if (el.dataset.vacGo === "new") { this.render(); if (!this.exc) await this.loadExceptions(); this.openException("", "vacation"); return; }
       this.render();
     });
     root.querySelectorAll("[data-exc-scope]").forEach(el => el.onclick = () => { this.excScope = el.dataset.excScope; this.render(); });
@@ -12487,6 +13851,10 @@ class ExceptionsMixin {
     root.querySelectorAll("[data-exc-form]").forEach(form => {
       const f = this.excForm;
       form.onsubmit = ev => { ev.preventDefault(); this.commitException(); };
+      form.querySelectorAll("[data-exc-for-pick]").forEach(el => el.onchange = () => { const s = f.scopes.find(x => x.id === el.value); f.scopeSel = s.id; f.picks = s.picks; f.error = ""; f.preview = null; this.render(); this.excPreview(); });
+      form.querySelectorAll("[data-exc-scope-set]").forEach(el => el.onclick = () => { f.scope = el.dataset.excScopeSet; f.error = ""; this.render(); this.excPreview(); });
+      const settings = form.querySelector("[data-exc-settings]");
+      if (settings) settings.onclick = () => { f.here = false; f.scopes = null; this.excScope = f.scope; this.noteJump?.("settings"); this.view = "settings"; this.settingsTab = "exceptions"; this.pages = {}; this.render(); };
       form.querySelectorAll("[data-exc-kind]").forEach(el => el.onclick = () => { f.error = ""; f.kind = el.dataset.excKind; f.targets = []; f.picks = []; f.search = ""; f.preview = null; this._picker = null; this.render(); });
       const search = form.querySelector("[data-exc-search]");
       if (search) search.oninput = ev => { f.search = ev.target.value; this.render(); this.shadowRoot.querySelector("[data-exc-search]")?.focus(); };
@@ -13093,7 +14461,7 @@ Object.assign(TEXT.de, {
   noteNeedTitle: "Gib dem Eintrag einen Titel.", noteBadTime: "Die Zeit ist ungültig oder liegt zu weit in der Zukunft.", noteFailed: "Der Eintrag konnte nicht gespeichert werden: {reason}",
   noteConcerns: "Betrifft: {name}", noteHint: "Nur für dich. Housekeeper ändert nichts in Home Assistant.", noteConcernsNow: "Betrifft", noteChange: "ändern",
   noteDetailTitle: "Logbuch", noteDetailEmpty: "Noch kein Eintrag.", noteDetailHint: "Halte fest, was du hieran geändert hast, damit es nachvollziehbar bleibt.", noteDetailNone: "Halte fest, was du hieran geändert hast, damit es später als möglicher Zusammenhang auftaucht.", noteAddHere: "Eintrag",
-  noteDialogNew: "Neuer Eintrag", noteDialogEdit: "Eintrag bearbeiten", noteChips: "Schnell eintragen", findingNote: "Ins Logbuch eintragen",
+  noteDialogNew: "Neuer Eintrag", noteDialogEdit: "Eintrag bearbeiten", noteChips: "Schnell eintragen", findingNote: "Logbuch-Eintrag hinzufügen",
   noteChipStick: "Stick getauscht", noteChipFirmware: "Firmware aktualisiert", noteChipPaired: "Neu angelernt", noteChipMoved: "Umgezogen",
   noteSeeAll: "Im Logbuch ansehen", logbook: "Logbuch", tabScans: "Scan-Vergleich", logbookHint: "Alle Einträge, neueste zuerst", logbookEmpty: "Das Logbuch ist leer. Trage ein, was du außerhalb von Housekeeper änderst, zum Beispiel einen getauschten Stick.",
   logColWhen: "Wann", logColTitle: "Titel", logColTarget: "Betrifft", logColSource: "Quelle", logAllSources: "Alle Quellen", logAllObjects: "Alle Objekte",
@@ -13109,7 +14477,7 @@ Object.assign(TEXT.en, {
   noteNeedTitle: "Give the entry a title.", noteBadTime: "The time is invalid or too far in the future.", noteFailed: "The entry could not be saved: {reason}",
   noteConcerns: "Concerns: {name}", noteHint: "Only for you. Housekeeper changes nothing in Home Assistant.", noteConcernsNow: "Concerns", noteChange: "change",
   noteDetailTitle: "Logbook", noteDetailEmpty: "No entry yet.", noteDetailHint: "Note what you changed here, so it stays traceable.", noteDetailNone: "Note what you changed here, so it shows up later as a possible connection.", noteAddHere: "Entry",
-  noteDialogNew: "New entry", noteDialogEdit: "Edit entry", noteChips: "Quick entry", findingNote: "Add to logbook",
+  noteDialogNew: "New entry", noteDialogEdit: "Edit entry", noteChips: "Quick entry", findingNote: "Add a logbook entry",
   noteChipStick: "Stick replaced", noteChipFirmware: "Firmware updated", noteChipPaired: "Paired again", noteChipMoved: "Moved",
   noteSeeAll: "See in the logbook", logbook: "Logbook", tabScans: "Scan comparison", logbookHint: "All entries, newest first", logbookEmpty: "The logbook is empty. Note what you change outside Housekeeper, for example a replaced stick.",
   logColWhen: "When", logColTitle: "Title", logColTarget: "Concerns", logColSource: "Source", logAllSources: "All sources", logAllObjects: "All objects",
@@ -13325,7 +14693,7 @@ Object.assign(TEXT.de, {
   mcpResult_ok: "ok", mcpResult_disabled: "KI-Zugriff war aus", mcpResult_write_disabled: "Ändern war aus", mcpResult_not_admin: "kein Administrator", mcpResult_invalid_format: "Angaben unvollständig oder falsch", mcpResult_rate_limited: "zu viele Änderungen", mcpResult_too_many_calls: "zu viele Aufrufe", mcpResult_reason_required: "Grund fehlt", mcpResult_error: "Fehler",
   mcpUndoAll: "Zurücknehmen", mcpUndoAllHint: "Änderungen durch KI-Zugriff", mcpUndoHour: "der letzten Stunde", mcpUndoDay: "der letzten 24 Stunden", mcpUndoEverything: "alle", mcpUndoneCount: "{n} Änderungen zurückgenommen", mcpFn_undo_all: "Alles zurücknehmen",
   mcpWriteLimit: "Änderungen pro 5 Minuten", mcpWriteLimitDetail: "Mehr Änderungen werden abgewiesen. Schützt vor einem Agenten, der in Schleife läuft.", mcpReadLimit: "Lesezugriffe pro Minute", mcpReadLimitDetail: "Mehr Abfragen werden abgewiesen.", mcpAutoOff: "Automatisch ausschalten", mcpAutoOffDetail: "Schaltet KI-Zugriff und „Merkliste ändern“ nach dieser Zeit selbst aus, damit sie nicht aus Versehen an bleiben.", mcpAutoNever: "nie", mcpAutoHours: "nach {n} Stunden", mcpAutoHour: "nach 1 Stunde", mcpOffAt: "Schaltet sich aus: {date}", mcpFn_auto_off: "Automatisch ausgeschaltet",
-  mcpBarOn: "KI-Zugriff aktiv", mcpBarRead: "nur lesend", mcpBarWrite: "mit Ändern der Merkliste", mcpBarOpen: "Protokoll ansehen",
+  mcpBarRead: "nur lesend", mcpBarWrite: "mit Ändern der Merkliste",
   mcpHide: "Sensible Objekte zurückhalten", mcpHideDetail: "Schlösser, Alarmanlagen, Kameras, Sirenen, Ventile, Personen, Standort-Tracker sowie Garagen- und Tortore kommen in keiner Antwort vor. Empfohlen, vor allem bei einem Modell in der Cloud.",
   mcpTimes: "{n} Aufrufe bis {date}", mcpCount: "{n} Treffer", mcpUndo: "Rückgängig", mcpUndone: "zurückgenommen", mcpUndoFailed: "Nicht zurückgenommen: {reason}",
   mcpUserSystem: "Automation oder System", mcpUserYou: "du", mcpUserOther: "anderer Benutzer",
@@ -13353,7 +14721,7 @@ Object.assign(TEXT.en, {
   mcpResult_ok: "ok", mcpResult_disabled: "AI access was off", mcpResult_write_disabled: "changing was off", mcpResult_not_admin: "not an administrator", mcpResult_invalid_format: "invalid parameters", mcpResult_rate_limited: "too many changes", mcpResult_too_many_calls: "too many calls", mcpResult_reason_required: "reason missing", mcpResult_error: "error",
   mcpUndoAll: "Take back", mcpUndoAllHint: "Changes through AI access", mcpUndoHour: "of the last hour", mcpUndoDay: "of the last 24 hours", mcpUndoEverything: "all", mcpUndoneCount: "{n} changes taken back", mcpFn_undo_all: "Take everything back",
   mcpWriteLimit: "Changes per 5 minutes", mcpWriteLimitDetail: "More changes are refused. Protects against an agent stuck in a loop.", mcpReadLimit: "Reads per minute", mcpReadLimitDetail: "More requests are refused.", mcpAutoOff: "Switch off automatically", mcpAutoOffDetail: "Switches AI access and “Change the list” off by itself after this time, so they do not stay on by mistake.", mcpAutoNever: "never", mcpAutoHours: "after {n} hours", mcpAutoHour: "after 1 hour", mcpOffAt: "Switches off: {date}", mcpFn_auto_off: "Switched off automatically",
-  mcpBarOn: "AI access on", mcpBarRead: "read-only", mcpBarWrite: "with changes to the list", mcpBarOpen: "Show the log",
+  mcpBarRead: "read-only", mcpBarWrite: "with changes to the list",
   mcpHide: "Keep sensitive objects back", mcpHideDetail: "Locks, alarm panels, cameras, sirens, valves, people, location trackers and garage doors and gates appear in no answer. Recommended, above all with a model in the cloud.",
   mcpTimes: "{n} calls until {date}", mcpCount: "{n} results", mcpUndo: "Undo", mcpUndone: "taken back", mcpUndoFailed: "Not taken back: {reason}",
   mcpUserSystem: "Automation or system", mcpUserYou: "you", mcpUserOther: "another user",
@@ -13450,14 +14818,6 @@ class McpMixin {
     return `${bar}${table}${pg.footer}`;
   }
 
-  // A strip under the header while AI access is on, so it is not forgotten; not on its own page.
-  aiBar() {
-    const m = this.data?.meta?.mcp;
-    if (!m?.enabled || (this.view === "settings" && this.settingsTab === "mcp")) return "";
-    const off = m.off_at ? ` · ${this.t("mcpOffAt", { date: `${this.mcpDay(m.off_at)}, ${this.mcpTime(m.off_at).slice(0, 5)}` })}` : "";
-    return `<div class="vacbar aibar" role="status"><b>${this.t("mcpBarOn")}</b><span>${this.t(m.write ? "mcpBarWrite" : "mcpBarRead")}${off}</span><span class="sp"></span><a href="#" data-ai-go>${this.t("mcpBarOpen")}</a></div>`;
-  }
-
   mcpCard() {
     const m = this.data?.meta?.mcp || {};
     const on = Boolean(m.enabled), write = Boolean(m.write);
@@ -13485,11 +14845,6 @@ class McpMixin {
   }
 
   bindMcp(root) {
-    root.querySelectorAll("[data-ai-go]").forEach(el => el.onclick = ev => {
-      ev.preventDefault();
-      this.selected = null; this.view = "settings"; this.settingsTab = "mcp"; this.pages = {};
-      this.render();
-    });
     const set = async changes => {
       try {
         const res = await this._hass.callWS({ type: "ha_housekeeper/mcp_set", ...changes });
@@ -13535,6 +14890,8 @@ class McpMixin {
 // SparklineMixin: the small history lines in the overview tiles. The series comes from the stored
 // scan history (one point per day); the number beside it is the change over the whole period.
 const SPARK_MIN_POINTS = 3;
+// A line shows at most the last week, so the tiles side by side cover the same days once every series is that old.
+const SPARK_DAYS = 7;
 
 class SparklineMixin {
   // The series is fetched once per data set, like the comparison with the previous scan.
@@ -13560,16 +14917,24 @@ class SparklineMixin {
   sparkline(key, rising) {
     // "class:<name>" reads the open findings of one class, "lead:<name>" the same without follow-ups; a day that stored
     // classes without it had none, and a day from before the follow-ups were told apart has no such series at all.
-    const read = p => key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
+    // "reason:<name>" reads the open findings of one tile of the findings page (all of them, the outage rules as one).
+    // "group:red" and "group:tidy" add up the reasons of one group of the findings page.
+    const group = p => Object.entries(p.reasons).reduce((sum, [r, n]) => sum + ((this.reasonTone(r) === "red") === (key === "group:red") ? n : 0), 0);
+    const read = p => key.startsWith("group:") ? (p.reasons ? group(p) : undefined)
+      : key.startsWith("reason:") ? (p.reasons ? p.reasons[key.slice(7)] || 0 : undefined)
+      : key.startsWith("class:") ? (p.classes ? p.classes[key.slice(6)] || 0 : undefined)
       : key.startsWith("lead:") ? (p.lead_classes ? p.lead_classes[key.slice(5)] || 0 : undefined) : p[key];
-    const points = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
+    const stored = (this.series?.points || []).filter(p => Number.isFinite(read(p)));
+    // An hour of slack for the day a clock change makes 23 or 25 hours long.
+    const end = stored.length ? Date.parse(stored[stored.length - 1].at) : 0;
+    const points = stored.filter(p => end - Date.parse(p.at) <= SPARK_DAYS * 864e5 + 36e5);
     if (points.length < SPARK_MIN_POINTS) return `<span class="spark-hint">${this.t("sparkBuilding")}</span>`;
     const values = points.map(read), n = values.length;
     const first = values[0], last = values[n - 1], change = last - first;
     const days = Math.max(1, Math.round((new Date(points[n - 1].at) - new Date(points[0].at)) / 864e5));
     const w = 200, h = 36, pad = 4;
     let lo = Math.min(...values), hi = Math.max(...values);
-    const span = key === "health" ? 1 : Math.max(4, hi * 0.1); // the state of the house moves in tenths of a percent
+    const span = key === "health" ? 1 : Math.max(4, hi * 0.1); // the state of the house moves in tenths of a point
     if (hi - lo < span) { const mid = (hi + lo) / 2; lo = mid - span / 2; hi = mid + span / 2; }
     const x = i => pad + ((w - 2 * pad) * i) / (n - 1), y = v => h - pad - ((h - 2 * pad) * (v - lo)) / (hi - lo);
     const tone = !rising || !change ? "" : (change > 0) === (rising === "bad") ? "red" : "ok";
@@ -13953,14 +15318,18 @@ class AreaAssignMixin {
     return [...(this.polSel || [])].map(key => items.find(i => i.key === key)).filter(Boolean).map(i => ({ id: i.object_id, type: i.object_type }));
   }
 
-  // The bar over the policy list: how many are ticked and what can be done with them.
+  // The bar over the policy list: how many are ticked and what can be done with them, both from the first tick on.
   polSelBar(total = 0) {
     const n = this.polSel?.size || 0;
-    return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-pol-sel-clear ${n ? "" : "disabled"}>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
+    return `<div class="toolbar${n ? "" : " nosel"}">${n ? `<button class="btn quiet" data-pol-sel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span>` : ""}<span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
   }
 
+  // Only entities and devices can be ticked: the action for several at once assigns an area. A greyed box says why.
   polSelBox(item) {
-    if (item.ignored || !["entity", "device"].includes(item.object_type)) return "";
+    if (item.ignored || !["entity", "device"].includes(item.object_type)) {
+      const why = this.t(item.ignored ? "polSelHidden" : "polSelOnlyArea");
+      return `<input type="checkbox" class="selbox" disabled title="${this.esc(why)}" aria-label="${this.esc(`${item.name}: ${why}`)}">`;
+    }
     return `<input type="checkbox" class="selbox" data-pol-sel="${this.esc(item.key)}" ${this.polSel?.has(item.key) ? "checked" : ""} aria-label="${this.esc(item.name)}">`;
   }
 
@@ -14103,7 +15472,7 @@ Object.assign(TEXT.de, {
   bkKind_device: "Akku eines Geräts", bkKind_storage: "Speicher", bkKind_vehicle: "Fahrzeug", bkKind_other: "Sonstiges",
   bkProposed: "Vermutlich keine Wechselbatterie", bkProposedHint: "Geräte, die auch Leistung, Energie oder Ladevorgang melden. Sie zählen nicht in Niedrigstand und Prognose, bis du sie bestätigst oder zurückholst.",
   bkMine: "Keine Wechselbatterie", bkMineHint: "Von dir oder aus einem Vorschlag bestätigt.",
-  bkAll: "Alle bestätigen", bkAsk: "{n} Sensoren als keine Wechselbatterie speichern?", bkYes: "Ja, speichern", bkNo: "Abbrechen",
+  bkTakeN: "Übernehmen ({n})",
   bkWhy: "Gerät meldet auch {list}", bkWhyMower: "Gerät ist ein Mähroboter", bkWhyVacuum: "Gerät ist ein Staubsauger",
   bkSig_power: "Leistung", bkSig_energy: "Energie", bkSig_energy_storage: "Speicher", bkSig_current: "Strom", bkSig_battery_charging: "Ladevorgang", bkSig_plug: "Stecker",
   bkFailed: "Das hat nicht geklappt: {detail}", bkColReason: "Grund", bkColKind: "Art",
@@ -14113,7 +15482,7 @@ Object.assign(TEXT.en, {
   bkKind_device: "A device's own pack", bkKind_storage: "Storage", bkKind_vehicle: "Vehicle", bkKind_other: "Other",
   bkProposed: "Probably not a replaceable battery", bkProposedHint: "Devices that also report power, energy or charging. They do not count in lowest level and forecast until you confirm them or bring them back.",
   bkMine: "Not a replaceable battery", bkMineHint: "Set by you or confirmed from a proposal.",
-  bkAll: "Confirm all", bkAsk: "Save {n} sensors as not a replaceable battery?", bkYes: "Yes, save", bkNo: "Cancel",
+  bkTakeN: "Confirm ({n})",
   bkWhy: "Device also reports {list}", bkWhyMower: "Device is a mowing robot", bkWhyVacuum: "Device is a vacuum",
   bkSig_power: "power", bkSig_energy: "energy", bkSig_energy_storage: "storage", bkSig_current: "current", bkSig_battery_charging: "charging", bkSig_plug: "plug",
   bkFailed: "That did not work: {detail}", bkColReason: "Reason", bkColKind: "Kind",
@@ -14168,27 +15537,45 @@ class BatteryKindMixin {
       { key: "name", label: "btColName", dir: "asc", get: o => this.batteryName(o).title },
       { key: "level", label: "btColLevel", dir: "asc", get: o => level(o) ?? 1e3 },
     ];
+    // Proposals are picked with boxes and confirmed together; "Correct" stays in the row, "It is a battery" sits in the menu.
+    const sel = (this.bkSel ||= new Set());
+    for (const id of [...sel]) if (!proposed.some(o => o.object_id === id)) sel.delete(id);
+    const pickCol = items => ({ key: "sel", label: "selectPage", narrow: true, sortable: false,
+      allBox: page => { const ids = (this._bkVisible = page.map(o => o.object_id)), n = ids.filter(id => sel.has(id)).length; return `<input type="checkbox" class="selbox" data-bk-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
+      cell: o => `<input type="checkbox" class="selbox" data-bk-sel="${this.esc(o.object_id)}" ${sel.has(o.object_id) ? "checked" : ""} aria-label="${this.esc(this.batteryName(o).title)}">` });
+    const menu = o => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-bk-back="${this.esc(o.object_id)}"><ha-icon icon="mdi:battery-outline"></ha-icon>${this.t("bkBack")}</button></div></details>`;
     const table = (id, items, kindOf, mineRow) => this.sysList(id, items, {
       sort: "name", sorts, tie: o => o.object_id, text: o => [this.batteryName(o).title, o.object_id, mineRow ? "" : this.bkWhy(o)].join(" "),
       rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(o).title)}"`,
       columns: [
+        ...(mineRow ? [] : [pickCol(items)]),
         { key: "name", label: "btColName", dir: "asc", cell: o => this.nameCell(this.batteryName(o).title, o.object_id) },
         ...(mineRow ? [] : [{ key: "why", label: "bkColReason", sortable: false, cell: o => this.esc(this.bkWhy(o)) }]),
         { key: "level", label: "btColLevel", dir: "asc", cell: o => (level(o) === null ? "—" : `${level(o)} %`) },
         { key: "kind", label: "bkColKind", sortable: false, cell: o => this.bkSelect(o, kindOf(o), mineRow ? "data-bk-change" : "data-bk-proposal") },
-        { key: "act", label: "btColAct", sortable: false, cell: o => `${mineRow ? "" : `<button class="btn small" data-bk-accept="${this.esc(o.object_id)}">${this.t("bkConfirm")}</button>`}<button class="btn quiet" data-bk-back="${this.esc(o.object_id)}">${this.t("bkBack")}</button>` },
+        { key: "act", label: "btColAct", sortable: false, cell: o => `<span class="remact">${mineRow ? "" : `<button class="btn small" data-bk-accept="${this.esc(o.object_id)}">${this.t("bkConfirm")}</button>`}${menu(o)}</span>` },
       ],
     });
-    const ask = this.bkAsk ? `<div class="bkask" role="alert"><strong>${this.t("bkAsk", { n: this.formatNumber(proposed.length) })}</strong><button class="btn small primary" data-bk-all-yes>${this.t("bkYes")}</button><button class="btn small" data-bk-all-no>${this.t("bkNo")}</button></div>` : "";
-    const all = proposed.length > 1 && !this.bkAsk ? `<div class="bkall"><button class="btn small" data-bk-all>${this.t("bkAll")}</button></div>` : "";
+    const n = sel.size;
+    const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("bk_proposed", n, "data-bk-clear")}<span class="toolgap"></span><button type="button" class="btn" data-bk-take ${n ? "" : "disabled"}><ha-icon icon="mdi:check"></ha-icon>${this.t("bkTakeN", { n: this.formatNumber(n) })}</button></div>`;
+    const shown = this.selOnly?.bk_proposed ? proposed.filter(o => sel.has(o.object_id)) : proposed;
     const parts = [];
-    if (proposed.length) parts.push(this.fold("bk_proposed", { tone: "warn", title: this.t("bkProposed"), sub: this.t("bkProposedHint"), pill: this.formatNumber(proposed.length) }, `${all}${ask}${table("bk_proposed", proposed, o => o.battery_suggest?.kind || "other", false)}`, true));
+    if (proposed.length) parts.push(this.fold("bk_proposed", { tone: "warn", title: this.t("bkProposed"), sub: this.t("bkProposedHint"), pill: this.formatNumber(proposed.length) }, `${tools}${table("bk_proposed", shown, o => this.bkPick?.[o.object_id] || o.battery_suggest?.kind || "other", false)}`, true));
     if (mine.length) parts.push(this.fold("bk_mine", { tone: "mute", title: this.t("bkMine"), sub: this.t("bkMineHint"), pill: this.formatNumber(mine.length) }, table("bk_mine", mine, o => o.battery_kind, true), false));
     return `<div class="panel">${parts.join("")}${this.bkMessage ? `<p class="factnote pad" role="status">${this.esc(this.bkMessage)}</p>` : ""}</div>`;
   }
 
+  // Confirms the picked proposals with the kind their row shows (the proposal, or what was chosen there).
+  bkTakePicked() {
+    const { proposed } = this.batteryKindItems(), sel = this.bkSel || new Set();
+    const items = proposed.filter(o => sel.has(o.object_id)).map(o => ({ entity_id: o.object_id, kind: this.bkPick?.[o.object_id] || o.battery_suggest?.kind || "other" }));
+    if (!items.length) return;
+    sel.clear();
+    this.batterySetKinds(items);
+  }
+
   async batterySetKinds(items) {
-    this.bkMessage = ""; this.bkAsk = false;
+    this.bkMessage = "";
     this._btEpoch = (this._btEpoch || 0) + 1;  // a forecast that is still on its way was asked for before and is dropped
     try {
       await this._hass.callWS({ type: "ha_housekeeper/battery_kind_set", items });
@@ -14212,12 +15599,14 @@ class BatteryKindMixin {
     }));
     root.querySelectorAll("[data-bk-change]").forEach(el => el.addEventListener("change", () => this.batterySetKinds([{ entity_id: el.dataset.bkChange, kind: el.value }])));
     root.querySelectorAll("[data-bk-back]").forEach(el => el.addEventListener("click", () => this.batterySetKinds([{ entity_id: el.dataset.bkBack, kind: "keep" }])));
-    root.querySelector("[data-bk-all]")?.addEventListener("click", () => { this.bkAsk = true; this.render(); });
-    root.querySelector("[data-bk-all-no]")?.addEventListener("click", () => { this.bkAsk = false; this.render(); });
-    root.querySelector("[data-bk-all-yes]")?.addEventListener("click", () => {
-      const items = [...root.querySelectorAll("[data-bk-proposal]")].map(s => ({ entity_id: s.dataset.bkProposal, kind: s.value }));
-      this.batterySetKinds(items);
-    });
+    // The kind chosen in a row is kept, so a pick on another page is confirmed with what its row says.
+    root.querySelectorAll("[data-bk-proposal]").forEach(el => el.addEventListener("change", () => { (this.bkPick ||= {})[el.dataset.bkProposal] = el.value; }));
+    const sel = () => (this.bkSel ||= new Set());
+    root.querySelectorAll("[data-bk-sel]").forEach(el => el.onchange = () => { this.pickRows("bk_proposed", el.dataset.bkSel, el.checked, sel(), this._bkVisible); this.render(); });
+    const page = root.querySelector("[data-bk-page]");
+    if (page) { page.indeterminate = page.hasAttribute("data-partial"); page.onchange = ev => { (this._bkVisible || []).forEach(id => (ev.target.checked ? sel().add(id) : sel().delete(id))); this.render(); }; }
+    root.querySelector("[data-bk-clear]")?.addEventListener("click", () => { sel().clear(); this.render(); });
+    root.querySelector("[data-bk-take]")?.addEventListener("click", () => this.bkTakePicked());
   }
 }
 
@@ -14227,7 +15616,7 @@ Object.assign(TEXT.de, {
   sysTabMisc: "Sonstiges", sysTabMiscHint: "Karten, Blueprints, übrige Ordner", sysSecOther: "Weitere Ordner und Dateien in /config", sysNoOther: "Außer den bekannten Orten wurde unter /config nichts Messbares gefunden.", sysOtherMore: "Dazu {n} kleinere Einträge mit zusammen {size}.", sysKindFolder: "Ordner", sysKindFile: "Datei",
  
   haMenu: "Seitenleiste von Home Assistant öffnen",
-  storage: "Speicher & System", storageSubtitle: "Belegung von Datenträger, Arbeitsspeicher und CPU und die größten Speicherverbraucher. Liest nur; es wird nichts geändert und nichts gespeichert.",
+  storage: "Speicher & System", storageSubtitle: "Belegung von Datenträger, Arbeitsspeicher und CPU, die größten Speicherverbraucher und die Dauer der letzten Starts. Ändert nichts, speichert nur die Startzeiten.",
   dataflow: "Zugriffe & Datenfluss", dataflowSubtitle: "Welche Integrationen auf System, Funk, Kameras oder den Standort zugreifen, welche Daten ins Internet schicken und welche Rechte die Apps haben. Liest nur.",
   sysRefresh: "Aktualisieren", sysRefreshHint: "Liest nur die Daten dieser Seite neu. Der Inventar-Scan oben bleibt unberührt.", sysReading: "Wird gelesen …", sysAsOf: "Stand {time}", sysFree: "{n} frei", sysSwapLabel: "Swap", sysChecked: "{n} Integrationen geprüft", accTabHigh: "{n} hoch", accTabOpen: "{n} offen",
   sysOvTitle: "System", sysOvHint: "Datenträger, Speicher und Prozessor jetzt", sysFreeOf: "{free} frei von {total}",
@@ -14241,13 +15630,13 @@ Object.assign(TEXT.de, {
     sysTabCards: "Custom Cards", sysTabCardsHint: "Dashboard-Ressourcen", sysTabBlueprints: "Blueprints", sysTabBlueprintsHint: "Größe der Dateien", sysNoSupervisor: "nur mit Supervisor",
   cardStatus_missing: "Datei fehlt", cardStatus_external: "extern", cardStatus_unused: "ungenutzt", cardStatus_used: "genutzt", cardStatus_unknown: "unbekannt",
   cardStatusHint_missing: "Die lokale Datei gibt es nicht mehr; die Karte lädt nicht.", cardStatusHint_external: "Eine externe Adresse; Housekeeper prüft sie nicht.", cardStatusHint_unused: "Kein Dashboard nutzt eine Karte aus dieser Datei. Ein Hinweis, kein Urteil: Hilfsmodule werden anders gebraucht.", cardStatusHint_used: "Ein Dashboard nutzt eine Karte aus dieser Datei.", cardStatusHint_unknown: "Aus der Datei lassen sich keine Kartennamen lesen; ob sie gebraucht wird, ist offen.",
-  sysColCategory: "Kategorie", sysColPlace: "Bereich", sysColSize: "Größe", sysColShare: "Anteil", sysColIntegration: "Integration", sysColApp: "App", sysColState: "Status", sysColCpu: "CPU", sysColRam: "RAM", sysColData: "Daten",
+  sysColCategory: "Kategorie", sysCat_system: "System", sysCat_addons_data: "Daten der Apps", sysCat_addons_config: "Konfiguration der Apps", sysCat_homeassistant: "Home-Assistant-Konfiguration", sysCat_media: "Medien", sysCat_share: "Freigaben", sysCat_ssl: "Zertifikate", sysCat_backup: "Backups", sysColPlace: "Bereich", sysColSize: "Größe", sysColShare: "Anteil", sysColIntegration: "Integration", sysColApp: "App", sysColState: "Status", sysColCpu: "CPU", sysColRam: "RAM", sysColData: "Daten",
   sysColUrl: "Ressource", sysColType: "Typ", sysColName: "Name", sysColDomain: "Art", sysColAuthor: "Autor",
   sysTarget_recorder_db: "Recorder-Datenbank", sysTarget_backups: "Backups", sysTarget_custom_components: "Custom Components", sysTarget_media: "Medien", sysTarget_www: "www (lokale Web-Dateien)", sysTarget_image: "Bilder-Upload", sysTarget_tts: "TTS-Cache", sysTarget_blueprints: "Blueprints", sysTarget_themes: "Themes", sysTarget_deps: "Python-Abhängigkeiten (deps)", sysTarget_custom_cards: "Custom Cards",
   sysFolder: "Ordner", sysFolderHint: "Gezählt wird der ganze Ordner der Karte.", sysExternal: "extern oder nicht gefunden", sysAppRunning: "läuft", sysAppStopped: "gestoppt",
   sysNoCategories: "Der Supervisor hat keine Aufteilung geliefert.", sysNoConsumers: "Unter /config wurde nichts Messbares gefunden.", sysNoCards: "Keine Dashboard-Ressourcen eingetragen.", sysNoBlueprints: "Keine Blueprints vorhanden.",
   sysTruncated: "Die Messung der Ordner wurde nach 20 Sekunden abgebrochen. Die Größen sind Mindestwerte, einzelne Einträge können fehlen.",
-  sysFootnote: "Datenträger, Kategorien und Apps kommen unter Home Assistant OS und Supervised vom Supervisor, sonst steht dort das Dateisystem, auf dem /config liegt. Die Größen unter /config zählt Housekeeper selbst, ohne Verknüpfungen zu folgen; die Recorder-Datenbank zählt mit ihren -wal- und -shm-Dateien. Eine Custom Card aus HACS zählt mit ihrem ganzen Ordner und wird aus „www“ herausgerechnet, damit nichts doppelt zählt. Die CPU-Last ist ein Mittel über 0,4 Sekunden. Es wird nichts geändert und nichts gespeichert.",
+  sysFootnote: "Datenträger, Kategorien und Apps kommen unter Home Assistant OS und Supervised vom Supervisor, sonst steht dort das Dateisystem, auf dem /config liegt. Die Größen unter /config zählt Housekeeper selbst, ohne Verknüpfungen zu folgen; die Recorder-Datenbank zählt mit ihren -wal- und -shm-Dateien. Eine Custom Card aus HACS zählt mit ihrem ganzen Ordner und wird aus „www“ herausgerechnet, damit nichts doppelt zählt. Die CPU-Last ist ein Mittel über 0,4 Sekunden. Es wird nichts geändert; gespeichert werden nur die Startzeiten.",
 
   accHint: "Systemzugriffe und Cloud-Datenfluss der Integrationen, Rechte der Apps", accLoading: "Die Integrationen werden eingeordnet …",
   accSumTotal: "Integrationen geprüft", accSumAccess: "Mit Systemzugriff", accSumHigh: "Hohes Risiko", accSumExternal: "Cloud-Datenfluss",
@@ -14283,7 +15672,7 @@ Object.assign(TEXT.de, {
   secNone: "Keine Integration mit gespeicherten Zugangsdaten erkannt.", secOpen: "{name} in Home Assistant öffnen",
   secSumDisabled: "Deaktivierte Integrationen", secSumDisabledSub: "Zugangsdaten bleiben gespeichert", secStateDisabled: "deaktiviert, mit Wert",
   secSumReauth: "Anmeldung nötig", secSumReauthSub: "Integration verlangt neuen Login", secReauth: "Anmeldung nötig",
-  todoReauthOne: "Anmeldung nötig: {name}", todoReauthMany: "Anmeldung nötig: {n} Integrationen", todoReauthFollowers: "{n} Entitäten fallen aus", todoReauthPill: "Neu anmelden",
+  todoReauthOne: "Anmeldung nötig: {name}", todoReauthMany: "Anmeldung nötig: {n} Integrationen", todoReauthPill: "Neu anmelden",
   flowsTitle: "Offen in Home Assistant", flowsNote: "Information, kein Befund", flowsOpenHa: "In Home Assistant öffnen", flowsCount_discovered: "{n} gefundene Geräte", flowsCount_reconfigure: "{n} Neukonfiguration", flowDiscovered: "Gefunden über {source}", flowReconfigure: "Möchte neu konfiguriert werden", flowPillDiscovered: "Entdeckt", flowPillReconfigure: "Neu konfigurieren",
   entryReauth: "Neue Anmeldung offen", cause_entry_reauth: "Die Integration hat Home Assistant um eine neue Anmeldung gebeten. Bis sie erledigt ist, liefert sie keine Daten.", hint_entry_reauth: "In den Integrationen bei diesem Eintrag „Neu authentifizieren“ wählen und die Zugangsdaten eingeben.",
   secTabAccounts: "Konten", secAccHint: "Benutzer dieses Home Assistant ohne Systemkonten; ein Klick öffnet die Benutzerverwaltung",
@@ -14305,7 +15694,7 @@ Object.assign(TEXT.en, {
   sysTabMisc: "Other", sysTabMiscHint: "cards, blueprints, remaining folders", sysSecOther: "Other folders and files in /config", sysNoOther: "Apart from the known places, nothing measurable was found under /config.", sysOtherMore: "Plus {n} smaller entries totalling {size}.", sysKindFolder: "Folder", sysKindFile: "File",
  
   haMenu: "Open the Home Assistant sidebar",
-  storage: "Storage & system", storageSubtitle: "Use of disk, memory and CPU and the largest consumers of space. Only reads; nothing is changed and nothing is stored.",
+  storage: "Storage & system", storageSubtitle: "Use of disk, memory and CPU, the largest consumers of space and how long the last starts took. Changes nothing, only stores the start times.",
   dataflow: "Access & data flow", dataflowSubtitle: "Which integrations reach the system, radios, cameras or the location, which send data to the internet and which rights the apps have. Only reads.",
   sysRefresh: "Refresh", sysRefreshHint: "Reads only the data of this page again. The inventory scan above is not touched.", sysReading: "Reading …", sysAsOf: "As of {time}", sysFree: "{n} free", sysSwapLabel: "Swap", sysChecked: "{n} integrations checked", accTabHigh: "{n} high", accTabOpen: "{n} open",
   sysOvTitle: "System", sysOvHint: "Disk, memory and processor right now", sysFreeOf: "{free} free of {total}",
@@ -14319,13 +15708,13 @@ Object.assign(TEXT.en, {
     sysTabCards: "Custom cards", sysTabCardsHint: "dashboard resources", sysTabBlueprints: "Blueprints", sysTabBlueprintsHint: "size of the files", sysNoSupervisor: "only with a Supervisor",
   cardStatus_missing: "File missing", cardStatus_external: "external", cardStatus_unused: "unused", cardStatus_used: "used", cardStatus_unknown: "unknown",
   cardStatusHint_missing: "The local file is gone; the card does not load.", cardStatusHint_external: "An external address; Housekeeper does not check it.", cardStatusHint_unused: "No dashboard uses a card from this file. A hint, not a verdict: helper modules are used in other ways.", cardStatusHint_used: "A dashboard uses a card from this file.", cardStatusHint_unknown: "No card names can be read from the file; whether it is needed is open.",
-  sysColCategory: "Category", sysColPlace: "Area", sysColSize: "Size", sysColShare: "Share", sysColIntegration: "Integration", sysColApp: "App", sysColState: "State", sysColCpu: "CPU", sysColRam: "RAM", sysColData: "Data",
+  sysColCategory: "Category", sysCat_system: "System", sysCat_addons_data: "App data", sysCat_addons_config: "App configuration", sysCat_homeassistant: "Home Assistant configuration", sysCat_media: "Media", sysCat_share: "Shared folder", sysCat_ssl: "Certificates", sysCat_backup: "Backups", sysColPlace: "Area", sysColSize: "Size", sysColShare: "Share", sysColIntegration: "Integration", sysColApp: "App", sysColState: "State", sysColCpu: "CPU", sysColRam: "RAM", sysColData: "Data",
   sysColUrl: "Resource", sysColType: "Type", sysColName: "Name", sysColDomain: "Kind", sysColAuthor: "Author",
   sysTarget_recorder_db: "Recorder database", sysTarget_backups: "Backups", sysTarget_custom_components: "Custom components", sysTarget_media: "Media", sysTarget_www: "www (local web files)", sysTarget_image: "Image upload", sysTarget_tts: "TTS cache", sysTarget_blueprints: "Blueprints", sysTarget_themes: "Themes", sysTarget_deps: "Python dependencies (deps)", sysTarget_custom_cards: "Custom cards",
   sysFolder: "Folder", sysFolderHint: "The whole folder of the card is counted.", sysExternal: "external or not found", sysAppRunning: "running", sysAppStopped: "stopped",
   sysNoCategories: "The Supervisor did not send a breakdown.", sysNoConsumers: "Nothing measurable was found under /config.", sysNoCards: "No dashboard resources registered.", sysNoBlueprints: "No blueprints.",
   sysTruncated: "The folder measurement stopped after 20 seconds. The sizes are minimums and some entries may be missing.",
-  sysFootnote: "On Home Assistant OS and Supervised, the disk, the categories and the apps come from the Supervisor; otherwise the file system /config lies on is shown. Housekeeper counts the sizes under /config itself without following links; the recorder database counts with its -wal and -shm files. A custom card from HACS counts with its whole folder and is taken out of \"www\" so nothing counts twice. The CPU load is an average over 0.4 seconds. Nothing is changed and nothing is stored.",
+  sysFootnote: "On Home Assistant OS and Supervised, the disk, the categories and the apps come from the Supervisor; otherwise the file system /config lies on is shown. Housekeeper counts the sizes under /config itself without following links; the recorder database counts with its -wal and -shm files. A custom card from HACS counts with its whole folder and is taken out of \"www\" so nothing counts twice. The CPU load is an average over 0.4 seconds. Nothing is changed; only the start times are stored.",
 
   accHint: "System access and cloud data flow of the integrations, rights of the apps", accLoading: "Classifying the integrations …",
   accSumTotal: "Integrations checked", accSumAccess: "With system access", accSumHigh: "High risk", accSumExternal: "Cloud data flow",
@@ -14361,7 +15750,7 @@ Object.assign(TEXT.en, {
   secNone: "No integration with stored credentials found.", secOpen: "Open {name} in Home Assistant",
   secSumDisabled: "Disabled integrations", secSumDisabledSub: "credentials stay stored", secStateDisabled: "disabled, with a value",
   secSumReauth: "Login needed", secSumReauthSub: "integration asks to sign in again", secReauth: "login needed",
-  todoReauthOne: "Login needed: {name}", todoReauthMany: "Login needed: {n} integrations", todoReauthFollowers: "{n} entities are down", todoReauthPill: "Sign in again",
+  todoReauthOne: "Login needed: {name}", todoReauthMany: "Login needed: {n} integrations", todoReauthPill: "Sign in again",
   flowsTitle: "Open in Home Assistant", flowsNote: "information, not a finding", flowsOpenHa: "Open in Home Assistant", flowsCount_discovered: "{n} devices found", flowsCount_reconfigure: "{n} to reconfigure", flowDiscovered: "Found via {source}", flowReconfigure: "Wants to be set up again", flowPillDiscovered: "Discovered", flowPillReconfigure: "Reconfigure",
   entryReauth: "New login open", cause_entry_reauth: "The integration has asked Home Assistant for a new login. Until it is done, it delivers no data.", hint_entry_reauth: "Under integrations, choose “Reauthenticate” on this entry and enter the credentials.",
   secTabAccounts: "Accounts", secAccHint: "Users of this Home Assistant without system accounts; a click opens the user settings",
@@ -14389,7 +15778,7 @@ const BATTERY_GROUP_DAYS = 14;
 
 Object.assign(TEXT.de, {
   btColName: "Gerät", btColArea: "Bereich", btColType: "Typ", btColLevel: "Stand", btColSlope: "Verbrauch", btColLeft: "Leer in", btColAct: "Aktion", btColDate: "Datum", btTypeChange: "Typ ändern", btLevelOk: "in Ordnung",
-  btSlopeDay: "{n} %/Tag", btVoltDay: "{n} V/Tag", btSlopeStable: "stabil", btLeftLow: "unter Grenze", btLeftDays: "{n} Tage", btLeftFar: "> {n} Tage", btLeftStable: "nicht absehbar",
+  btSlopeDay: "{n} %/Tag", btVoltDay: "{n} V/Tag", btSlopeStable: "stabil", btLeftLow: "jetzt", btLeftLowHint: "Schon unter der Grenze", btLeftDays: "{n} Tage", btLeftFar: "> {n} Tage", btLeftStable: "nicht absehbar",
   btFilterSoon: "Bald leer", btFilterUntyped: "Ohne Typ", btAllTypes: "Alle Typen",
   needNone: "Keine Batterie ist unter ihrer Grenze oder erreicht sie laut Prognose in den nächsten 30 Tagen.", needUntyped: "ohne Typ", needUntypedHint: "Typ in der Tabelle setzen", needNow: "Jetzt niedrig",
   btTableNote: "Prognose nur bis 90 Tage, aus den letzten fünf Wochen: eine Schätzung, keine Zusage. Ohne Prognose: {unknown} (zu wenige Tage oder stabil). Nach einem Wechsel zählt nur der Verlauf danach.",
@@ -14399,7 +15788,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   btColName: "Device", btColArea: "Area", btColType: "Type", btColLevel: "Level", btColSlope: "Drain", btColLeft: "Empty in", btColAct: "Action", btColDate: "Date", btTypeChange: "Change type", btLevelOk: "ok",
-  btSlopeDay: "{n} %/day", btVoltDay: "{n} V/day", btSlopeStable: "stable", btLeftLow: "below limit", btLeftDays: "{n} days", btLeftFar: "> {n} days", btLeftStable: "no forecast",
+  btSlopeDay: "{n} %/day", btVoltDay: "{n} V/day", btSlopeStable: "stable", btLeftLow: "now", btLeftLowHint: "Already below the limit", btLeftDays: "{n} days", btLeftFar: "> {n} days", btLeftStable: "no forecast",
   btFilterSoon: "Empty soon", btFilterUntyped: "No type", btAllTypes: "All types",
   needNone: "No battery is below its limit or forecast to reach it within 30 days.", needUntyped: "no type", needUntypedHint: "set the type in the table", needNow: "Low now",
   btTableNote: "Forecast only up to 90 days, from the last five weeks: an estimate, not a promise. No forecast for {unknown} (too few days or stable). After a change only the time since counts.",
@@ -14441,6 +15830,7 @@ class BatteryTableMixin {
 
   batteryLevelCell(row, limit) {
     const { item, level, low, volt } = row;
+    if (row.unavailable) return `<span class="pill warn" title="${this.esc(this.t("batteryUnavailableSub"))}">${this.t("batteryUnavailableShort")}</span>`;
     if (volt && volt.percent !== undefined) {
       const tone = low ? (volt.percent <= limit / 2 ? "red" : "amber") : volt.percent <= limit * 2 ? "amber" : "green";
       return `<div class="lvl"><div class="bar"><i style="width:${Math.max(2, Math.min(100, volt.percent))}%;background:var(--hk-${tone})"></i></div><span class="lvlnum ${low ? "red" : ""}">${volt.percent} %<small>${this.esc(this.voltNum(level))}</small></span></div>`;
@@ -14462,7 +15852,8 @@ class BatteryTableMixin {
 
   batteryLeftCell(row) {
     const fc = row.fc;
-    if (row.low) return `<b class="red">${this.t("btLeftLow")}</b>`;
+    // Already below the limit: it is empty for the purpose of the list now; the tooltip says why.
+    if (row.low) return `<b class="red" title="${this.esc(this.t("btLeftLowHint"))}">${this.t("btLeftLow")}</b>`;
     if (!fc) return `<span class="muted">—</span>`;
     if (fc.state === "falling") return `<b class="${fc.days <= BATTERY_SOON_DAYS ? "red" : fc.days <= BATTERY_NEED_DAYS ? "amber" : ""}">${this.t("btLeftDays", { n: fc.days })}</b>`;
     if (fc.state === "far") return `<span class="muted">${this.t("btLeftFar", { n: BATTERY_FAR_DAYS })}</span>`;
@@ -14537,8 +15928,9 @@ class BatteryTableMixin {
     }
     const byDays = (x, y) => x.days - y.days || this.batteryName(x.item).title.localeCompare(this.batteryName(y.item).title);
     const windows = [];
-    const now = rows.filter(r => r.low).sort(byDays);
-    if (now.length) windows.push({ id: "bt_now", tone: "red", title: this.t("needNow"), list: now });
+    // The batteries that are low now come first, in a fold of their own like the windows after them.
+    const now = rows.filter(r => r.low).sort((x, y) => this.batteryName(x.item).title.localeCompare(this.batteryName(y.item).title));
+    if (now.length) windows.push({ id: "bt_now", tone: "red", title: this.t("needNow"), sub: "", list: now });
     for (const [slot, list] of [...slots].sort((x, y) => x[0] - y[0])) {
       const from = slot * BATTERY_GROUP_DAYS, to = Math.min(from + BATTERY_GROUP_DAYS - 1, BATTERY_FAR_DAYS);
       windows.push({ id: `bt_${from}`, tone: from <= BATTERY_SOON_DAYS - 1 ? "red" : from <= 41 ? "warn" : "ok", title: this.t("fcWindow", { from, to }), sub: list.length > 1 ? this.t("fcTogether") : "", list: list.sort(byDays) });
@@ -14547,7 +15939,7 @@ class BatteryTableMixin {
     const columns = [
       { key: "name", label: "btColName", sortable: false, cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
       { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item) || "—") },
-      { key: "type", label: "btColType", sortable: false, cell: r => (r.type ? `<span class="pill">${this.esc(r.type)}</span>` : `<span class="muted">${this.t("btTypeNone")}</span>`) },
+      { key: "type", label: "btColType", sortable: false, cell: r => this.batteryTypeCell(r) }, // the same cell as in the list: a missing type is a button
       { key: "level", label: "btColLevel", sortable: false, cell: r => this.batteryLevelCell(r, this.data.meta.low_battery_percent ?? 20) },
       { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDate(new Date(Date.now() + r.days * 86400000).toISOString()).split(",")[0])) },
       { key: "left", label: "btColLeft", sortable: false, cell: r => this.batteryLeftCell(r) },
@@ -14562,9 +15954,11 @@ class BatteryTableMixin {
 // SystemMixin: the pages "Storage & system", "Access & data flow" and "Credentials" under Operation and Security; mixed in by 99-register.js.
 // All three only read. A page loads on its first visit; its refresh button reads again.
 // A page and the WebSocket command it asks.
-const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories" };
+const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories", starts: "starts" };
 // What a tile of the credentials page opens: [tab, list, state filter]; "" clears the filters.
 const SEC_SHOWS = { "": ["entries", "seclist", ""], gap: ["entries", "seclist", "gap"], reauth: ["entries", "seclist", "reauth"], disabled: ["entries", "seclist", "disabled"], nomfa: ["accounts", "secusers", "nomfa"], tokens: ["tokens", "sectokens", ""] };
+Object.assign(TEXT.de, { sysPending: "Die Größen der Ordner, Apps und Karten werden gerade zum ersten Mal gelesen und erscheinen gleich. CPU, Arbeitsspeicher und Datenträger sind schon aktuell." });
+Object.assign(TEXT.en, { sysPending: "The sizes of the folders, apps and cards are being read for the first time and appear shortly. CPU, memory and disk are already current." });
 const SYS_WARN_PERCENT = 75, SYS_RED_PERCENT = 90;
 
 class SystemMixin {
@@ -14579,6 +15973,7 @@ class SystemMixin {
     const st = this.sysState(name);
     st.loading = true; st.error = ""; st.requested = true; this.render();
     const extra = name !== "storage" ? {} : fresh ? { fresh: true } : quick ? { quick: true } : {};
+    if (name === "storage" && fresh) this.sysLoad("starts");
     try {
       st.data = await this._hass.callWS({ type: `ha_housekeeper/${SYS_COMMANDS[name]}`, ...extra });
       // The sizes carry the time they were read; the rest of the page is live.
@@ -14651,11 +16046,11 @@ class SystemMixin {
   }
 
   // One sortable, searchable list with paging and CSV export: the way every list of Housekeeper works.
-  // opt: { sort, dir, sorts, text, tie, filters, filterFns, columns, exportName, header, rows, empty, cls, rowAttrs }
+  // opt: { sort, dir, sorts, text, tie, filters, filterFns, columns, exportName, header, rows, empty, cls, rowAttrs, bare }; `bare` leaves out search, view and export (a list inside another list).
   sysList(id, items, opt) {
     this.lvState(id, opt.sort, opt.dir || "asc");
     if (opt.exportName) this.setExporter(id, opt.exportName, opt.header, () => refined.map(opt.rows));
-    const bar = items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
+    const bar = !opt.bare && (items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean)) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
     const refined = this.refine(id, items, { text: opt.text, filters: opt.filterFns || {}, sorts: opt.sorts, tie: opt.tie });
     const pg = this.paginate(id, refined, opt.pageSizes);
     this.lv[id].shown = refined.length;
@@ -14679,22 +16074,25 @@ class SystemMixin {
         { label: this.t("sysRam"), value: this.esc(this.sysPercent(ram.percent)), sub: ramSub || this.esc(this.t("sysUnknown")), tone: this.sysTone(ram.percent), spark: `${this.sysMeter(ram.percent)}${this.sysLine(r.history, 2)}` },
         { label: this.t("sysCpu"), value: this.esc(this.sysPercent(cpu.percent)), sub: cpuSub || this.esc(this.t("sysUnknown")), tone: this.sysTone(cpu.percent), spark: `${this.sysMeter(cpu.percent)}${this.sysLine(r.history, 3)}` },
         swap.total ? { label: this.t("sysSwapLabel"), value: this.esc(this.sysPercent(swap.percent)), sub: of(swap.used, swap.total), hint: this.t("sysSwapHint"), tone: "mute", spark: `${this.sysMeter(swap.percent)}${this.sysLine(r.history, 4)}` } : null,
+        this.startTile(),
       ]);
       const cats = r.categories?.children || [];
       const sup = Boolean(r.supervisor) && cats.length > 0;
       const miss = r.cards.some(c => c.status === "missing");
+      const starts = this.sysEnsure("starts");
       const chips = [
         ...(sup ? [["category", "sysByCategory", cats.length]] : []),
         ["folder", "sysByFolder", r.breakdown.length],
         ["misc", "sysByMisc", r.cards.length + r.blueprints.length + (r.other || []).length + (r.other_rest?.count || 0)],
+        ["starts", "sysByStarts", starts.data ? starts.data.starts.length : undefined],
       ];
       const tabs = chips.map(([id, key, n]) => ({ id, label: this.t(key), count: n, tone: id === "misc" && miss ? "red" : "" }));
       const by = this.viewTabOf("storage", tabs, chips[0][0]);
       const choice = this.viewTabBar("storage", tabs, by);
       const title = key => `<h3 class="syssec">${this.esc(this.t(key))}</h3>`;
       const apps = `<p class="factnote">${this.t("sysAppsHint")} <button type="button" class="link" data-view="components">${this.t("components")}</button></p>`;
-      const list = by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats) : this.sysConsumers(r.breakdown)}${apps}`;
-      const cut = r.truncated ? `<p class="factnote">${this.esc(this.t("sysTruncated"))}</p>` : "";
+      const list = by === "starts" ? `${title("sysHeadStarts")}${this.sysStarts()}<p class="factnote">${this.t("startsNote")}</p>` : by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats, r.categories?.used) : this.sysConsumers(r.breakdown)}${apps}`;
+      const cut = r.pending ? `<p class="factnote">${this.esc(this.t("sysPending"))}</p>` : r.truncated ? `<p class="factnote">${this.esc(this.t("sysTruncated"))}</p>` : "";
       return `<div class="stack">${head}${tiles}<div class="panel">${choice}${cut}${list}${this.howCounted("sysFootnote")}</div></div>`;
     });
   }
@@ -14708,15 +16106,24 @@ class SystemMixin {
 
   sysBySize() { return [{ key: "size", label: "sysColSize", dir: "desc", get: x => x.bytes ?? null }]; }
 
-  sysCategories(cats) {
+  // The categories of the disk in words, with the name the system gives them below; the share is against the space
+  // in use, as bar and number, like the tables of the database.
+  sysCategories(cats, used = cats.reduce((sum, c) => sum + (c.bytes || 0), 0)) {
     const max = Math.max(0, ...cats.map(c => c.bytes));
+    const label = c => { const key = `sysCat_${c.id}`, text = this.t(key); return text === key ? c.label : text; };
+    const share = c => (used ? Math.round((c.bytes || 0) / used * 100) : 0);
     return this.sysList("syscat", cats, {
-      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: c => c.label }],
-      text: c => `${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
-      columns: [{ key: "name", label: "sysColCategory", cell: c => this.nameCell(c.label, c.id !== c.label ? c.id : "") }, ...this.sysSizeColumns(max)],
-      exportName: "storage-categories", header: [this.t("sysColCategory"), "ID", "Bytes"], rows: c => [c.label, c.id, c.bytes],
+      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: label }],
+      text: c => `${label(c)} ${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
+      columns: [
+        { key: "name", label: "sysColCategory", cell: c => this.nameCell(label(c), label(c) !== c.label ? c.label : "") },
+        this.sysSizeColumns(max)[0],
+        { key: "share", label: "sysColShare", sortable: false, cell: c => `<span class="dbshare">${this.sysShare(c.bytes || 0, used)}<b>${this.esc(`${this.formatNumber(share(c))} %`)}</b></span>` },
+      ],
+      exportName: "storage-categories", header: [this.t("sysColCategory"), "ID", "Bytes", "%"], rows: c => [label(c), c.id, c.bytes, share(c)],
     });
   }
+
 
   sysConsumers(items) {
     const max = Math.max(0, ...items.map(x => x.bytes));
@@ -14755,8 +16162,11 @@ class SystemMixin {
 
   // Everything that is not a place of its own: the dashboard cards, the blueprints and the other entries under /config.
   sysMisc(r) {
-    const part = (title, body, count, index) => this.fold(`sysmisc_${index}`, { tone: index === 0 && r.cards.some(c => c.status === "missing") ? "red" : "mute", title: this.esc(this.t(title)), pill: this.formatNumber(count) }, body, index === 0);
     const other = r.other || [];
+    const sum = items => items.reduce((total, x) => total + (x.bytes || 0), 0);
+    const bytes = [sum(r.cards), sum(r.blueprints), sum(other) + (r.other_rest?.bytes || 0)], max = Math.max(...bytes);
+    // Always folded; the row itself shows what the part takes, as a bar against the largest part.
+    const part = (title, body, count, index) => this.fold(`sysmisc_${index}`, { tone: index === 0 && r.cards.some(c => c.status === "missing") ? "red" : "mute", title: this.esc(this.t(title)), pill: this.formatNumber(count), meter: `<span class="dbshare">${this.sysShare(bytes[index], max)}<b>${this.esc(this.formatBytes(bytes[index]))}</b></span>` }, body, false);
     return `${part("sysTabCards", this.sysCards(r.cards), r.cards.length, 0)}${part("sysTabBlueprints", this.sysBlueprints(r.blueprints), r.blueprints.length, 1)}${part("sysSecOther", this.sysOther(other, r.other_rest), other.length + (r.other_rest?.count || 0), 2)}`;
   }
 
@@ -15183,8 +16593,9 @@ class SystemMixin {
     root.querySelectorAll("[data-sec-show]").forEach(el => el.onclick = () => {
       const [tab, list, value] = SEC_SHOWS[el.dataset.secShow] || SEC_SHOWS[""];
       (this.viewTab ||= {}).secrets = tab;
+      // A tile shows what it counts: the list starts without the search and the other filters kept before.
       const st = this.lvState(list, "name", "asc");
-      st.f = value ? { ...st.f, state: value } : {};
+      st.q = ""; st.f = value ? { state: value } : {};
       this.persistLv(list); this.pages = {}; this.render();
     });
     root.querySelector("[data-ha-menu]")?.addEventListener("click", () => this.toggleHaSidebar());
@@ -15199,14 +16610,14 @@ class SystemMixin {
 // PolicyRowMixin: a row of the rule violations folds open to its reasons and actions: rename one entity, give
 // one entity or device an area, open it, hide it. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  polOpenRow: "Details aufklappen", polCloseRow: "Details zuklappen", polWhy: "Warum", polActRename: "Umbenennen", polOpenObject: "Objekt öffnen", polToCleanup: "Zum Aufräumen",
-  polNameFree: "frei", polNameTaken: "vergeben von {name} ({id})", polNameTakenDead: "vergeben: {id} ist nicht mehr verfügbar. Aufräumen gibt den Namen frei.", polNameSame: "unverändert",
-  polSuggestHint: "Vorschläge:", polRecommended: "empfohlen", polPickHint: "Wähle einen Vorschlag oder tippe eine ID.", polNoSuggest: "Kein freier Vorschlag aus Name und Bereich. Tippe eine ID.", polSuggTaken: "{id} ist vergeben: {why}", polExpectedNote: "Die ID beginnt hier mit „{prefix}“.",
+  polOpenRow: "Details aufklappen", polCloseRow: "Details zuklappen", polWhy: "Warum", polActRename: "Umbenennen", polOpenObject: "Objekt öffnen", polRowMenu: "Weitere Aktionen", polToCleanup: "Zum Bereinigen",
+  polNameFree: "frei", polNameTaken: "vergeben von {name} ({id})", polNameTakenDead: "vergeben, {id} ist nicht mehr verfügbar. Bereinigen gibt den Namen frei.", polNameSame: "unverändert",
+  polSuggestHint: "Vorschläge:", polRecommended: "empfohlen", polPickHint: "Wähle einen Vorschlag oder tippe eine ID.", polNoSuggest: "Kein freier Vorschlag aus Name und Bereich. Tippe eine ID.", polSuggTaken: "{id}: {why}", polExpectedNote: "Die ID beginnt hier mit „{prefix}“.",
 });
 Object.assign(TEXT.en, {
-  polOpenRow: "Show details", polCloseRow: "Hide details", polWhy: "Why", polActRename: "Rename", polOpenObject: "Open object", polToCleanup: "To the clean-up",
-  polNameFree: "free", polNameTaken: "taken by {name} ({id})", polNameTakenDead: "taken: {id} is no longer available. Cleaning up frees the name.", polNameSame: "unchanged",
-  polSuggestHint: "Suggestions:", polRecommended: "recommended", polPickHint: "Pick a suggestion or type an ID.", polNoSuggest: "No free suggestion from the name and the area. Type an ID.", polSuggTaken: "{id} is taken: {why}", polExpectedNote: "Here the ID starts with “{prefix}”.",
+  polOpenRow: "Show details", polCloseRow: "Hide details", polWhy: "Why", polActRename: "Rename", polOpenObject: "Open object", polRowMenu: "More actions", polToCleanup: "To the clean-up",
+  polNameFree: "free", polNameTaken: "taken by {name} ({id})", polNameTakenDead: "taken, {id} is no longer available. Cleaning up frees the name.", polNameSame: "unchanged",
+  polSuggestHint: "Suggestions:", polRecommended: "recommended", polPickHint: "Pick a suggestion or type an ID.", polNoSuggest: "No free suggestion from the name and the area. Type an ID.", polSuggTaken: "{id}: {why}", polExpectedNote: "Here the ID starts with “{prefix}”.",
 });
 
 const POL_RENAME_RULES = ["entity_id_suffix", "entity_id_address", "naming_scheme"];
@@ -15228,10 +16639,15 @@ class PolicyRowMixin {
     return String(text || "").toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
   }
 
-  // The draft of one row starts empty, so the person picks a suggestion or types an ID on purpose.
+  // The draft of one row starts empty; until the person picks or types, the field shows the recommended free name.
   polDraft(item) {
     const edits = (this.polEdits ||= {});
-    return edits[item.key] ||= { value: "", area: "" };
+    return edits[item.key] ||= { value: "", area: "", touched: false };
+  }
+
+  polValue(item) {
+    const d = this.polDraft(item);
+    return d.touched ? d.value : this.polSuggestions(item).list[0] || "";
   }
 
   // Whether the new ID can be used: "bad" (characters), "same" (no change), "taken" (by `other`) or "free".
@@ -15266,13 +16682,13 @@ class PolicyRowMixin {
   }
 
   polRenameBlock(item) {
-    const d = this.polDraft(item), c = this.polCheckText(item, d.value), key = this.esc(item.key);
-    const blocked = !["free"].includes(this.polNameCheck(item, d.value).state) || this.planBusy;
+    const value = this.polValue(item), c = this.polCheckText(item, value), key = this.esc(item.key);
+    const blocked = !["free"].includes(this.polNameCheck(item, value).state) || this.planBusy;
     const { list, taken } = this.polSuggestions(item);
     const hint = c.dead ? `<button type="button" class="btn small" data-jump="cleanup">${this.t("polToCleanup")}</button>` : "";
-    const chips = list.map((v, i) => `<button type="button" class="btn small mono${d.value === v ? " on" : ""}" data-pol-sugg="${key}|${this.esc(v)}" aria-pressed="${d.value === v}">${this.esc(v)}${i === 0 ? ` <small>${this.t("polRecommended")}</small>` : ""}</button>`).join("");
+    const chips = list.length > 1 ? list.map((v, i) => `<button type="button" class="btn small mono${value === v ? " on" : ""}" data-pol-sugg="${key}|${this.esc(v)}" aria-pressed="${value === v}">${this.esc(v)}${i === 0 ? ` <small>${this.t("polRecommended")}</small>` : ""}</button>`).join("") : "";
     const why = taken ? `<small class="factnote">${this.t("polSuggTaken", { id: taken, why: this.polCheckText(item, taken).text })}</small>` : "";
-    return `<div class="poledit"><label for="pol-id-${key}"><strong>${this.t("deNewId")}</strong></label><div class="inline"><span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="pol-id-${key}" data-pol-id="${key}" value="${this.esc(d.value)}" placeholder="${this.esc(this.t("deNewId"))}" autocomplete="off" spellcheck="false"><span class="polcheck ${c.tone}" data-pol-check="${key}" role="status">${this.esc(c.text)}</span><button type="button" class="btn primary small" data-pol-rename-go="${key}" ${blocked ? "disabled" : ""}>${this.t("deRename")}</button>${hint}</div>${chips ? `<div class="inline"><small class="factnote">${this.t("polSuggestHint")}</small>${chips}</div>` : ""}${why}<small class="factnote">${this.t("deRenameNote")}</small></div>`;
+    return `<div class="poledit"><div class="inline"><span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="pol-id-${key}" data-pol-id="${key}" value="${this.esc(value)}" aria-label="${this.esc(this.t("deNewId"))}" placeholder="${this.esc(this.t("deNewId"))}" autocomplete="off" spellcheck="false"><button type="button" class="btn primary small" data-pol-rename-go="${key}" ${blocked ? "disabled" : ""}>${this.t("deRename")}</button>${hint}</div><span class="polcheck bad" data-pol-check="${key}" role="status">${this.esc(c.tone === "bad" ? c.text : "")}</span>${chips ? `<div class="inline"><small class="factnote">${this.t("polSuggestHint")}</small>${chips}</div>` : ""}${why}<small class="factnote"><ha-icon icon="mdi:information-outline"></ha-icon> ${this.t("deRenameNote")}</small></div>`;
   }
 
   polAreaBlock(item) {
@@ -15282,13 +16698,12 @@ class PolicyRowMixin {
     return `<div class="poledit"><label for="pol-area-${key}"><strong>${this.t("deArea")}</strong></label><div class="inline"><select id="pol-area-${key}" data-pol-area="${key}"><option value="">${this.t("areaSuggest")}</option>${areas.map(a => `<option value="${this.esc(a.object_id)}" ${d.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select><button type="button" class="btn primary small" data-pol-area-go="${key}" ${this.planBusy || !obj ? "disabled" : ""}>${this.t("deAssign")}</button></div><small class="factnote">${this.t("areaNote")}</small></div>`;
   }
 
-  // The folded-open part of a row: why, the fix that belongs to the rule, then open and hide (or show) side by side.
-  polDetail(item, hide) {
-    const why = `<div><h4>${this.t("polWhy")}</h4><p>${this.t(`polDesc_${item.rule}`)}${item.expected ? ` ${this.t("polExpectedNote", { prefix: item.expected })}` : ""}</p></div>`;
+  // The folded-open part of a row: why, then the fix that belongs to the rule. Open and hide sit in the row's menu.
+  polDetail(item) {
+    const why = `<p class="polwhy">${this.t(`polDesc_${item.rule}`)}${item.expected ? ` ${this.t("polExpectedNote", { prefix: item.expected })}` : ""}</p>`;
     const fix = item.ignored ? "" : item.object_type === "entity" && POL_RENAME_RULES.includes(item.rule) ? this.polRenameBlock(item)
       : ["entity", "device"].includes(item.object_type) && POL_AREA_RULES.includes(item.rule) ? this.polAreaBlock(item) : "";
-    const open = ["recorder", "system", "user"].includes(item.object_type) ? "" : `<button type="button" class="btn small" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}">${this.t("polOpenObject")}</button>`;
-    return `<div class="poldetail">${why}${fix}${open || hide ? `<div class="acts">${open}${hide}</div>` : ""}</div>`;
+    return `<div class="poldetail">${why}${fix}</div>`;
   }
 
   // The key of a row holds "|" itself, so a pick is cut at the last one.
@@ -15306,34 +16721,34 @@ class PolicyRowMixin {
     root.querySelectorAll("[data-pol-open]").forEach(el => el.addEventListener("click", () => toggle(el.dataset.polOpen)));
     // A click anywhere on the row folds it too; buttons, fields and the opened part keep their own clicks.
     root.querySelectorAll("[data-pol-row]").forEach(el => el.addEventListener("click", ev => {
-      if (ev.target.closest("button, a, input, select, label, textarea, .poldetail")) return;
+      if (ev.target.closest("button, a, input, select, label, textarea, .poldetail, .rowmenu")) return;
       toggle(el.dataset.polRow);
     }));
     const find = key => (this.policies?.rules || []).flatMap(r => r.items.map(i => ({ ...i, rule: r.id }))).find(i => i.key === key);
     const refresh = (key, item) => {
-      const d = this.polDraft(item), c = this.polCheckText(item, d.value);
+      const value = this.polValue(item), c = this.polCheckText(item, value);
       const span = root.querySelector(`[data-pol-check="${CSS.escape(key)}"]`), go = root.querySelector(`[data-pol-rename-go="${CSS.escape(key)}"]`);
-      if (span) { span.textContent = c.text; span.className = `polcheck ${c.tone}`; }
-      root.querySelectorAll(`[data-pol-sugg^="${CSS.escape(key)}|"]`).forEach(b => { const on = b.dataset.polSugg.slice(key.length + 1) === d.value; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
-      if (go) go.disabled = this.polNameCheck(item, d.value).state !== "free" || !!this.planBusy;
+      if (span) span.textContent = c.tone === "bad" ? c.text : "";
+      root.querySelectorAll(`[data-pol-sugg^="${CSS.escape(key)}|"]`).forEach(b => { const on = b.dataset.polSugg.slice(key.length + 1) === value; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); });
+      if (go) go.disabled = this.polNameCheck(item, value).state !== "free" || !!this.planBusy;
     };
     root.querySelectorAll("[data-pol-id]").forEach(el => el.addEventListener("input", () => {
       const item = find(el.dataset.polId);
       if (!item) return;
-      this.polDraft(item).value = el.value.trim().toLowerCase();
+      Object.assign(this.polDraft(item), { value: el.value.trim().toLowerCase(), touched: true });
       refresh(el.dataset.polId, item);
     }));
     root.querySelectorAll("[data-pol-sugg]").forEach(el => el.addEventListener("click", () => {
       const { key, value } = this.polSuggSplit(el.dataset.polSugg), item = find(key);
       if (!item) return;
-      const draft = this.polDraft(item);
-      draft.value = draft.value === value ? "" : value;
+      Object.assign(this.polDraft(item), { value, touched: true });
       this.render();
     }));
     root.querySelectorAll("[data-pol-rename-go]").forEach(el => el.addEventListener("click", () => {
       const item = find(el.dataset.polRenameGo);
-      if (!item || this.polNameCheck(item, this.polDraft(item).value).state !== "free") return;
-      this.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: `${item.object_id.split(".")[0]}.${this.polDraft(item).value}` });
+      const value = item && this.polValue(item);
+      if (!item || this.polNameCheck(item, value).state !== "free") return;
+      this.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: `${item.object_id.split(".")[0]}.${value}` });
     }));
     root.querySelectorAll("[data-pol-area]").forEach(el => el.addEventListener("change", () => { const item = find(el.dataset.polArea); if (item) this.polDraft(item).area = el.value; }));
     root.querySelectorAll("[data-pol-area-go]").forEach(el => el.addEventListener("click", () => {
@@ -15342,6 +16757,189 @@ class PolicyRowMixin {
       const area = this.polDraft(item).area;
       this.makeDetailPlan({ kind: "set_area", object_id: item.object_id, ...(area ? { target: area } : {}) });
     }));
+  }
+}
+
+// StartsMixin: the tab "Starts" of Storage & system and its tile: how long the last starts of Home Assistant took, and how long
+// each integration needed to set up. Mixed into the panel in 99-register.js; the data is `ha_housekeeper/starts` (newest first).
+Object.assign(TEXT.de, {
+  sysByStarts: "Starts", sysHeadStarts: "Frühere Starts", sysTileStart: "Letzter Start", startsMin: "Min.",
+  startsTileLoaded: "bis alles geladen {x}", startsTileNone: "Wird beim nächsten Start gemessen.", startsTileCap: "letzte {n} Starts · Schnitt {avg}",
+  startsBuilding: "Der Verlauf entsteht mit weiteren Starts.",
+  startsEmpty: "Noch kein Start gemessen. Der erste erscheint, wenn Home Assistant das nächste Mal gestartet und die Anlaufphase vorbei ist.",
+  startColAt: "Start", startColTotal: "Gesamt", startColLoaded: "Alles geladen", startColSlowest: "Langsamste Integration", startColShare: "Im Vergleich",
+  startsCrash: "nach Absturz", startsCrashHint: "Der Start davor hat sich nie abgemeldet: Absturz, Stromausfall oder beendeter Prozess.", startsDown: "{x} aus", startsDownHint: "So lange war Home Assistant vor diesem Start aus (vom letzten Lebenszeichen an).", startsUnit_s: "s", startsUnit_m: "Min.", startsUnit_h: "Std.", startsUnit_d: "Tage",
+  startsUpdate: "nach Update", startsUpdateHint: "Die Version von Home Assistant war eine andere als beim Start davor.",
+  startsFromHk: "ab Housekeeper", startsFromHkHint: "Der Beginn des Prozesses ließ sich nicht lesen; die Zeit zählt ab dem Einrichten von Housekeeper und ist deshalb kürzer als der ganze Start.",
+  startsOpen: "Integrationen dieses Starts zeigen", startsClose: "Integrationen dieses Starts verbergen",
+  startsLoadingHint: "Beim Speichern dieses Starts war die Einrichtung noch nicht fertig; die Zeit ist ein Mindestwert.",
+  startsEntries: "{n} Einträge", startsOwn: "eigene", startsOwnHint: "Eigene Integration, nicht von Home Assistant mitgeliefert.", startsOpenObject: "Öffnet die Seite dieser Integration",
+  startsVsMore: "{x} langsamer als üblich", startsVsLess: "{x} schneller als üblich", startsVsSame: "wie üblich", startsVsSlow: "wie üblich langsam",
+  startsVsAvg: "Schnitt der letzten {n} Starts: {x}", startsVsNone: "Zu wenige frühere Starts zum Vergleichen.",
+  startsHaVersion: "Home Assistant {v}", startsDetailHead: "Einrichtung je Integration, langsamste zuerst", startsColInt: "Integration", startsColState: "Status", startsColTime: "Dauer", startsColVs: "Vergleich",
+  startsMore: "{n} weitere unter einer Sekunde", startsNoItems: "Für diesen Start liegen keine Zeiten je Integration vor.",
+  startState_loaded: "geladen", startState_setup_error: "Fehler", startState_setup_retry: "Wiederholung", startState_not_loaded: "nicht geladen",
+  startState_migration_error: "Fehler", startState_failed_unload: "Fehler", startState_setup_in_progress: "lädt",
+  startsNote: "Der Balken vergleicht in der Tabelle mit dem längsten Start, in der Liste mit der langsamsten Integration dieses Starts. Die Zeit je Integration misst Home Assistant selbst, vom Beginn bis zum Ende ihrer Einrichtung. Integrationen starten gleichzeitig; die Zeiten ergeben deshalb nicht die Dauer des Starts. „Alles geladen“ ist der Moment, in dem keine Integration mehr geladen hat. Aufgenommen wird ein Start, wenn die Anlaufphase vorbei ist.",
+});
+Object.assign(TEXT.en, {
+  sysByStarts: "Starts", sysHeadStarts: "Earlier starts", sysTileStart: "Last start", startsMin: "min",
+  startsTileLoaded: "everything loaded after {x}", startsTileNone: "Measured at the next start.", startsTileCap: "last {n} starts · average {avg}",
+  startsBuilding: "The line appears with more starts.",
+  startsEmpty: "No start measured yet. The first one appears after Home Assistant has started the next time and the warm-up is over.",
+  startColAt: "Start", startColTotal: "Total", startColLoaded: "All loaded", startColSlowest: "Slowest integration", startColShare: "Compared",
+  startsCrash: "after crash", startsCrashHint: "The start before never signed off: a crash, a power cut or a killed process.", startsDown: "{x} down", startsDownHint: "How long Home Assistant was down before this start (from its last sign of life).", startsUnit_s: "s", startsUnit_m: "min", startsUnit_h: "h", startsUnit_d: "days",
+  startsUpdate: "after update", startsUpdateHint: "The version of Home Assistant was a different one than at the start before.",
+  startsFromHk: "from Housekeeper", startsFromHkHint: "The start of the process could not be read; the time counts from the set-up of Housekeeper and is therefore shorter than the whole start.",
+  startsOpen: "Show the integrations of this start", startsClose: "Hide the integrations of this start",
+  startsLoadingHint: "The set-up was not finished when this start was saved; the time is a minimum.",
+  startsEntries: "{n} entries", startsOwn: "custom", startsOwnHint: "A custom integration, not shipped with Home Assistant.", startsOpenObject: "Opens the page of this integration",
+  startsVsMore: "{x} slower than usual", startsVsLess: "{x} faster than usual", startsVsSame: "as usual", startsVsSlow: "as usual, and slow",
+  startsVsAvg: "Average of the last {n} starts: {x}", startsVsNone: "Too few earlier starts to compare with.",
+  startsHaVersion: "Home Assistant {v}", startsDetailHead: "Set-up per integration, slowest first", startsColInt: "Integration", startsColState: "Status", startsColTime: "Time", startsColVs: "Comparison",
+  startsMore: "{n} more under a second", startsNoItems: "There are no times per integration for this start.",
+  startState_loaded: "loaded", startState_setup_error: "Error", startState_setup_retry: "Retrying", startState_not_loaded: "not loaded",
+  startState_migration_error: "Error", startState_failed_unload: "Error", startState_setup_in_progress: "loading",
+  startsNote: "The bar compares with the longest start in the table, and with the slowest integration of this start in the list. Home Assistant itself measures the time per integration, from the beginning to the end of its set-up. Integrations start at the same time, so the times do not add up to the length of the start. \"All loaded\" is the moment no integration was loading any more. A start is recorded when the warm-up is over.",
+});
+
+class StartsMixin {
+  startList() { return this.sysState("starts").data?.starts || []; }
+
+  // 228 s as "3:48 Min."; under a minute in seconds.
+  startClock(seconds) {
+    if (!Number.isFinite(seconds)) return "–";
+    const total = Math.round(seconds);
+    if (total < 60) return `${this.formatNumber(total)} s`;
+    return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")} ${this.t("startsMin")}`;
+  }
+
+  // The set-up of one integration in seconds: a decimal under ten, whole above.
+  startSeconds(seconds) {
+    const n = Number(seconds) || 0;
+    return `${this.formatNumber(n < 10 ? Math.round(n * 10) / 10 : Math.round(n))} s`;
+  }
+
+  // The pause before a start: seconds, minutes, hours or days, whichever fits.
+  startPause(seconds) {
+    const n = Number(seconds) || 0, u = k => this.t(`startsUnit_${k}`), f = v => this.formatNumber(Math.round(v * 10) / 10);
+    if (n < 90) return `${f(n)} ${u("s")}`;
+    if (n < 5400) return `${f(n / 60)} ${u("m")}`;
+    if (n < 172800) return `${f(n / 3600)} ${u("h")}`;
+    return `${f(n / 86400)} ${u("d")}`;
+  }
+
+  startName(item) { return item.title || item.domain; }
+
+  startSlowest(start) { return (start.items || []).find(i => i.seconds > 0) || null; }
+
+  // The fourth tile of the page: the last start as a figure, a bar against the longest start, the line of the last starts.
+  startTile() {
+    const starts = this.startList();
+    const label = this.t("sysTileStart");
+    const last = starts[0];
+    if (!last || !Number.isFinite(last.boot_s)) return { label, value: "–", sub: this.esc(this.t("startsTileNone")), tone: "mute" };
+    const times = starts.map(s => s.boot_s).filter(Number.isFinite).reverse();
+    const before = times.slice(0, -1), avg = times.reduce((a, b) => a + b, 0) / times.length;
+    const tone = before.length >= 2 && last.boot_s > (before.reduce((a, b) => a + b, 0) / before.length) * 1.25 ? "warn" : "ok";
+    const width = Math.max(2, Math.round((last.boot_s / Math.max(...times)) * 100));
+    const meter = `<span class="sysmeter ${tone}" role="img" aria-label="${this.esc(this.startClock(last.boot_s))}"><i style="width:${width}%"></i></span>`;
+    const sub = Number.isFinite(last.loaded_s) ? this.esc(this.t("startsTileLoaded", { x: this.startClock(last.loaded_s) })) : "";
+    return { label, value: this.esc(this.startClock(last.boot_s)), sub, tone, spark: `${meter}${this.startLine(times, avg)}` };
+  }
+
+  startLine(values, avg) {
+    const rows = values.slice(-12), n = rows.length;
+    if (n < 3) return `<span class="spark-hint">${this.t("startsBuilding")}</span>`;
+    const w = 200, h = 36, pad = 4;
+    let lo = Math.min(...rows), hi = Math.max(...rows);
+    if (hi - lo < 10) { const mid = (hi + lo) / 2; lo = Math.max(0, mid - 5); hi = lo + 10; }
+    const x = i => pad + ((w - 2 * pad) * i) / (n - 1), y = v => h - pad - ((h - 2 * pad) * (v - lo)) / (hi - lo);
+    const cap = this.t("startsTileCap", { n: this.formatNumber(n), avg: this.startClock(avg) });
+    return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="${this.esc(cap)}"><polyline fill="none" stroke="var(--hk-muted)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="${rows.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}"/><line class="spark-end sys-spark-end" x1="${x(n - 1).toFixed(1)}" y1="${y(rows[n - 1]).toFixed(1)}" x2="${x(n - 1).toFixed(1)}" y2="${y(rows[n - 1]).toFixed(1)}"/></svg><span class="spark-cap">${this.esc(cap)}</span>`;
+  }
+
+  startKey(start) { return `start:${start.at}`; }
+
+  startState(item) {
+    if (!item.state) return `<span class="muted">–</span>`;
+    const key = `startState_${item.state}`, text = this.t(key);
+    const tone = item.state === "loaded" ? "ok" : item.state === "setup_retry" ? "warn" : item.state === "not_loaded" || item.state === "setup_in_progress" ? "mute" : "red";
+    const hint = item.state === "setup_in_progress" ? ` title="${this.esc(this.t("startsLoadingHint"))}"` : "";
+    if (item.state === "loaded") return `<span class="startok"><ha-icon icon="mdi:check"></ha-icon>${this.esc(text === key ? item.state : text)}</span>`;
+    return `<span class="pill ${tone}"${hint}>${this.esc(text === key ? item.state : text)}</span>`;
+  }
+
+  // What an integration usually needs: the average of its set-up in up to five earlier starts; null under two.
+  startUsual(start, item) {
+    const list = this.startList(), older = list.slice(list.indexOf(start) + 1, list.indexOf(start) + 6);
+    const times = older.map(o => (o.items || []).find(i => i.domain === item.domain)).filter(Boolean).map(i => i.seconds);
+    return times.length < 2 ? null : { avg: times.reduce((a, b) => a + b, 0) / times.length, n: times.length };
+  }
+
+  // The set-up of one integration against its usual time, as words.
+  startCompare(start, item) {
+    const usual = this.startUsual(start, item);
+    if (!usual) return `<span class="muted" title="${this.esc(this.t("startsVsNone"))}">–</span>`;
+    const delta = item.seconds - usual.avg, edge = Math.max(5, usual.avg * 0.25);
+    const [tone, text] = delta >= edge ? ["warn", this.t("startsVsMore", { x: this.startSeconds(delta) })]
+      : delta <= -edge ? ["ok", this.t("startsVsLess", { x: this.startSeconds(-delta) })]
+      : ["mute", this.t(usual.avg >= 30 ? "startsVsSlow" : "startsVsSame")];
+    const hint = this.t("startsVsAvg", { n: this.formatNumber(usual.n), x: this.startSeconds(usual.avg) });
+    if (tone === "mute") return `<span class="muted" title="${this.esc(hint)}">${this.esc(text)}</span>`;
+    return `<span class="pill ${tone}" title="${this.esc(hint)}">${this.esc(text)}</span>`;
+  }
+
+  // One integration of a start: name (a link to its page where the scan knows it), entries, origin, reason, state, time.
+  startRow(start, i, max, known) {
+    const group = known.get(i.domain);
+    const link = group ? ` data-object="${this.esc(`integration:${i.domain}`)}" tabindex="0" role="button" title="${this.esc(this.t("startsOpenObject"))}"` : "";
+    const sub = [i.title ? i.domain : "", i.entries > 1 ? this.t("startsEntries", { n: this.formatNumber(i.entries) }) : ""].filter(Boolean).map(x => this.esc(x)).join(" · ");
+    const own = group?.custom ? ` <span class="pill mute" title="${this.esc(this.t("startsOwnHint"))}">${this.t("startsOwn")}</span>` : "";
+    const reason = i.reason ? `<small class="muted cut" title="${this.esc(i.reason)}">${this.esc(i.reason)}</small>` : "";
+    const name = `<span class="startname"><strong class="cut">${this.esc(this.startName(i))}${own}</strong>${sub ? `<span class="id cut">${sub}</span>` : ""}${reason}</span>`;
+    return `<div class="startint${group ? " link" : ""}"${link}>${name}<span>${this.startState(i)}</span><b>${this.esc(this.startSeconds(i.seconds))}</b><span>${this.startCompare(start, i)}</span>${this.sysShare(i.seconds, max)}</div>`;
+  }
+
+  // The integrations of one start: those that took a second or more, and every one that did not load.
+  startDetail(start) {
+    if (!(this.bhOpen || []).includes(this.startKey(start))) return "";
+    const items = start.items || [];
+    const shown = items.filter(i => i.seconds >= 1 || (i.state && !["loaded", "not_loaded"].includes(i.state)));
+    const max = Math.max(0, ...shown.map(i => i.seconds));
+    const known = new Map(this.compIntegrations().map(g => [g.domain, g]));
+    const rows = shown.map(i => this.startRow(start, i, max, known)).join("");
+    const rest = items.length - shown.length;
+    const head = `<div class="startint starthead"><span>${this.t("startsColInt")}</span><span>${this.t("startsColState")}</span><span>${this.t("startsColTime")}</span><span>${this.t("startsColVs")}</span><span></span></div>`;
+    const body = shown.length ? `<div class="sectionlabel">${this.t("startsDetailHead")} <span class="pill mute">${this.formatNumber(shown.length)}</span></div>${head}${rows}${rest > 0 ? `<p class="factnote">${this.t("startsMore", { n: this.formatNumber(rest) })}</p>` : ""}` : `<p class="factnote">${this.t("startsNoItems")}</p>`;
+    return `<tr class="static remhist startdet"><td colspan="5">${body}</td></tr>`;
+  }
+
+  sysStarts() {
+    const starts = this.startList();
+    if (!starts.length) return `<div class="emptymsg">${this.t("startsEmpty")}</div>`;
+    const open = s => (this.bhOpen || []).includes(this.startKey(s));
+    const max = Math.max(0, ...starts.map(s => s.boot_s || 0));
+    const slowest = s => { const i = this.startSlowest(s); return i ? `${this.startName(i)} · ${this.startSeconds(i.seconds)}` : "–"; };
+    const sorts = [
+      { key: "at", label: "startColAt", dir: "desc", get: s => s.at },
+      { key: "total", label: "startColTotal", dir: "desc", get: s => s.boot_s ?? null },
+      { key: "loaded", label: "startColLoaded", dir: "desc", get: s => s.loaded_s ?? null },
+    ];
+    return this.sysList("sysstarts", starts, {
+      sort: "at", dir: "desc", sorts, text: s => `${this.formatDate(s.at)} ${s.version || ""} ${slowest(s)}`, tie: s => s.at, empty: "startsEmpty",
+      rowAttrs: s => `data-bh-row="${this.esc(this.startKey(s))}" tabindex="0" role="button" aria-expanded="${open(s)}"`,
+      after: s => this.startDetail(s),
+      columns: [
+        { key: "at", label: "startColAt", dir: "desc", cell: s => `<div class="statcell">${this.expandBtn("data-bh-more", this.startKey(s), open(s), this.t(open(s) ? "startsClose" : "startsOpen"))}<div><strong>${this.esc(this.formatDate(s.at))}</strong>${s.version ? `<small>${this.esc(this.t("startsHaVersion", { v: s.version }))}</small>` : ""}${Number.isFinite(s.down_s) ? `<small title="${this.esc(this.t("startsDownHint"))}">${this.esc(this.t("startsDown", { x: this.startPause(s.down_s) }))}</small>` : ""}${s.unclean ? ` <span class="pill red" title="${this.esc(this.t("startsCrashHint"))}">${this.t("startsCrash")}</span>` : ""}${s.update ? ` <span class="pill warn" title="${this.esc(this.t("startsUpdateHint"))}">${this.t("startsUpdate")}</span>` : ""}</div></div>` },
+        { key: "total", label: "startColTotal", dir: "desc", cell: s => `${this.esc(this.startClock(s.boot_s))}${s.boot_from === "housekeeper" ? ` <span class="pill mute" title="${this.esc(this.t("startsFromHkHint"))}">${this.t("startsFromHk")}</span>` : ""}` },
+        { key: "loaded", label: "startColLoaded", dir: "desc", cell: s => this.esc(this.startClock(s.loaded_s)) },
+        { key: "slowest", label: "startColSlowest", sortable: false, cell: s => this.esc(slowest(s)) },
+        { key: "share", label: "startColShare", sortable: false, cell: s => this.sysShare(s.boot_s || 0, max) },
+      ],
+      exportName: "storage-starts", header: [this.t("startColAt"), "Home Assistant", this.t("startColTotal"), this.t("startColLoaded"), this.t("startColSlowest")],
+      rows: s => [s.at, s.version || "", s.boot_s ?? "", s.loaded_s ?? "", slowest(s)],
+    });
   }
 }
 
@@ -15371,7 +16969,19 @@ class HistoryTabMixin {
     const plans = this.plansOf(item);
     const head = `<div class="panelhead"><div><h2>${this.t("histPlans")}</h2><p>${this.t("histPlansHint")}</p></div></div>`;
     if (this.journal === null || this.journal === undefined) return `<section class="panel">${head}${this.skeleton("histPlansLoading")}</section>`;
-    const rows = plans.map(plan => `<div class="row jrow"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.formatDate(plan.created_at))}</strong><small>${this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 })}</small></span><span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span><button class="btn small" data-plan-open="${this.esc(plan.plan_id)}">${this.t("openPlan")}</button></div>`).join("");
+    // A small table like the Journal: date, state, result and follow-up; a click on a row opens the plan.
+    const fuState = plan => plan.followup?.state ?? plan.followup ?? "";
+    const rows = plans.length ? this.sysList("histplans", plans, {
+      sort: "date", dir: "desc", tie: plan => plan.plan_id, empty: "histPlansNone",
+      sorts: [{ key: "date", label: "journalColDate", dir: "desc", get: plan => plan.created_at || "" }],
+      rowAttrs: plan => `data-plan-open="${this.esc(plan.plan_id)}" tabindex="0" role="button" aria-label="${this.esc(this.formatDate(plan.created_at))}"`,
+      columns: [
+        { key: "date", label: "journalColDate", dir: "desc", cell: plan => `<span class="statcell"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><strong>${this.esc(this.formatDate(plan.created_at))}</strong></span>` },
+        { key: "status", label: "sortStatus", sortable: false, cell: plan => `<span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status || "dry_run"}`)}</span>` },
+        { key: "total", label: "journalColActions", sortable: false, cell: plan => `<span class="jsum">${this.esc(this.t("planSummary", { total: plan.summary?.total ?? 0, ok: plan.summary?.ok ?? 0, review: plan.summary?.review ?? 0, blocked: plan.summary?.blocked ?? 0 }))}</span>` },
+        { key: "follow", label: "journalColFollow", sortable: false, cell: plan => (fuState(plan) ? `<span class="pill ${this.followupTone(fuState(plan))}">${this.t(`fu_${fuState(plan)}`)}</span>` : "–") },
+      ],
+    }) : "";
     return `<section class="panel">${head}${rows || `<div class="emptymsg"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon>${this.t("histPlansNone")}</div>`}</section>`;
   }
 
@@ -15510,17 +17120,6 @@ class BrokenCardsMixin {
   brokenGroupRow(g) {
     const p = g.members[0].evidence[0].place;
     return this.check(this.t("brokenCardLabel"), "red", [...this.placeParts(p), this.t("brokenCount", { n: g.members.length })].join(" · "), this.t("missing"));
-  }
-
-  findingGroup(g) {
-    const f = g.members[0], p = f.evidence[0].place, object = this.findObject(this.findingKey(f));
-    const keys = g.members.map(m => m.key), n = keys.length, id = `bg:${g.group}`, open = this.foldOpen(id, false);
-    (this._findGroups ||= {})[g.group] = keys;
-    const orphan = this.isOrphan(p);
-    const title = `${object?.name || f.object_id}${p.view != null ? ` › ${p.view}` : ""}`;
-    const sub = [...this.placeParts({ card: p.card, section: p.section }), this.t("brokenCount", { n })].join(" · ");
-    const head = `<div class="rowwrap"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(g.group)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"><button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile red"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}${orphan ? ` · ${this.esc(this.t("brokenOrphanShort"))}` : ""}</small></span><span class="pill red">${n}</span></button></div>`;
-    return `<div class="fold${open ? " open" : ""}">${head}${open ? `<div class="foldbody">${orphan ? `<div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div>` : ""}${g.members.map(m => this.findingRow(m, true)).join("")}</div>` : ""}</div>`;
   }
 }
 
@@ -15897,8 +17496,10 @@ class IntegrationPageMixin {
     const docs = /^https:\/\//.test(item.documentation || "") ? `<a class="btn" href="${this.esc(item.documentation)}" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:book-open-variant"></ha-icon>${this.t("intDocs")}</a>` : "";
     const folder = item.custom ? `<section class="panel"><div class="panelhead"><h2>${this.t("intFolder")}</h2></div><div class="facts">${fact("intFolder", this.esc(item.integration_dir || `custom_components/${item.domain}`))}${size ? fact("intFolderSize", this.esc(this.formatBytes(size.bytes))) : ""}</div></section>` : "";
     const hacs = item.hacs ? this.intHacsCard(item.hacs) : "";
-    const rows = this.objectTable(`intentries-${item.object_id}`, this.intEntries(item).map(e => ({ key: `config_entry:${e.object_id}`, type: "config_entry", name: e.name || e.object_id, sub: "", tone: this.tone(e.status), state: e.status, stateLabel: this.statusLabel(e.status), pill: this.pill(e.status), entities: e.entity_count || 0, devices: e.device_count || 0 })), {
-      min: 8, extras: [
+    const rows = this.objectTable(`intentries-${item.object_id}`, this.intEntries(item).map(e => ({ key: `config_entry:${e.object_id}`, type: "config_entry", name: e.name || e.object_id, sub: "", tone: this.tone(e.status), state: e.status, stateLabel: this.statusLabel(e.status), pill: this.pill(e.status), pause: this.apCanPause(e.object_id, e.state) ? e.object_id : "", entities: e.entity_count || 0, devices: e.device_count || 0 })), {
+      min: 8, sort: "status", statusFirst: true, stripe: true,
+      menu: r => [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(this.haPath({ object_type: "config_entry", domain: item.domain }))}"`], ...(r.pause ? [null, ["mdi:pause-circle-outline", "apSend", `data-ap-send="${this.esc(r.pause)}"`]] : [])],
+      extras: [
         { key: "entities", label: "objColEntities", dir: "desc", get: r => r.entities, cell: r => this.formatNumber(r.entities) },
         { key: "devices", label: "objColDevices", dir: "desc", get: r => r.devices, cell: r => this.formatNumber(r.devices) },
       ],
@@ -15933,7 +17534,7 @@ class IntegrationPageMixin {
 
   intUsedCard(item) {
     const used = this.intUsedBy(item);
-    const rows = this.objectTable(`intused-${item.object_id}`, used.map(o => ({ key: this.objectKey(o), type: o.object_type, name: o.name || o.object_id, sub: o.object_id, tone: this.tone(o.status), state: o.status, stateLabel: this.statusLabel(o.status), pill: this.pill(o.status) })), { empty: this.t("intNoUsed") });
+    const rows = this.objectTable(`intused-${item.object_id}`, used.map(o => ({ key: this.objectKey(o), type: o.object_type, name: o.name || o.object_id, sub: o.object_id, tone: this.tone(o.status), state: o.status, stateLabel: this.statusLabel(o.status), pill: this.pill(o.status) })), { empty: this.t("intNoUsed"), menu: true, stripe: true, sort: "status" });
     return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("intUsedTitle")}</h2></div>${rows}</section></div>`;
   }
 
@@ -16034,7 +17635,7 @@ class EntityStateMixin {
 
 // Texts for the home functions page (Hausfunktionen); merged into TEXT before the panel is registered.
 Object.assign(TEXT.de, {
-  monitor: "Hausfunktionen", monitorSubtitle: "Wichtige Funktionen und ihr zuletzt geprüfter Zustand.",
+  monitor: "Hausfunktionen", monitorListTitle: "Deine Funktionen", monitorSubtitle: "Wichtige Funktionen und ihr zuletzt geprüfter Zustand.",
   monitorAdd: "Funktion hinzufügen", monitorEdit: "Bearbeiten", monitorEditTitle: "Funktion bearbeiten", monitorDelete: "Löschen",
   monitorEmpty: "Noch keine Funktion. Lege zum Beispiel einen Wasseralarm oder eine Türklingel an.",
   monitorProblem: "Beeinträchtigt", monitorUnverified: "Unbekannt", monitorOk: "Unauffällig", monitorDisabled: "Deaktiviert",
@@ -16075,7 +17676,7 @@ Object.assign(TEXT.de, {
   monitorReason_unknown: "Zustand unbekannt", monitorReason_status_unknown: "Zustand nicht lesbar",
 });
 Object.assign(TEXT.en, {
-  monitor: "Home functions", monitorSubtitle: "Important functions and their last checked state.",
+  monitor: "Home functions", monitorListTitle: "Your functions", monitorSubtitle: "Important functions and their last checked state.",
   monitorAdd: "Add function", monitorEdit: "Edit", monitorEditTitle: "Edit function", monitorDelete: "Delete",
   monitorEmpty: "No function yet. Add a water alarm or a doorbell, for example.",
   monitorProblem: "Impaired", monitorUnverified: "Unknown", monitorOk: "No known fault", monitorDisabled: "Disabled",
@@ -20766,7 +22367,7 @@ class MonitorMixin {
     const reasonOf = item => {
       const key = item.incident_open && item.state === "unverified" ? item.last_problem_key : item.reason_key;
       const object = key ? this.findObject(key)?.name || key : "";
-      const detail = item.incident_open && item.state === "unverified" ? `${this.t("monitorUnresolved")}: ${this.monitorReason(item.last_problem_reason)}` : this.monitorReason(item.reason);
+      const detail = item.incident_open && item.state === "unverified" ? `${this.t("monitorUnresolved")}: ${this.monitorReason(item.last_problem_reason)}` : this.apMonitorReason(key, item.reason);
       return [object, detail].filter(Boolean).join(" · ");
     };
     const sorts = [
@@ -20782,14 +22383,24 @@ class MonitorMixin {
       filterFns: { state: (item, v) => (v === "disabled" ? item.enabled === false || item.state === "disabled" : item.state === v || (v === "problem" && item.incident_open)) },
       rowAttrs: item => `data-monitor-open="${this.esc(item.id)}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"`,
       columns: [
-        { key: "name", label: "sortName", dir: "asc", cell: item => this.nameCell(item.name, item.description || "") },
+        // The description is text a person wrote, not an ID: a plain line below the name.
+        { key: "name", label: "sortName", dir: "asc", cell: item => `${this.nameCell(item.name, "")}${item.description ? `<small class="muted u-block">${this.esc(item.description)}</small>` : ""}` },
         { key: "state", label: "sysColState", dir: "asc", cell: item => `<span class="pill ${toneOf(item)}">${this.monitorState(item)}</span>` },
         { key: "reason", label: "monitorColReason", sortable: false, cell: item => this.esc(reasonOf(item) || "—") },
         { key: "problem", label: "monitorColLastProblem", dir: "desc", cell: item => (item.last_problem_at ? `${this.esc(this.agoText(item.last_problem_at))}<small class="agestamp">${this.esc(this.formatDate(item.last_problem_at))}</small>` : "—") },
         { key: "scan", label: "monitorColScan", dir: "desc", cell: item => (item.scanned_at ? this.esc(this.formatDate(item.scanned_at)) : "—") },
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:home-heart"></ha-icon>${this.t("monitorEmpty")}</div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("monitor")}</h2><p>${this.t("monitorSubtitle")}</p></div><button class="btn primary" data-monitor-add><ha-icon icon="mdi:plus"></ha-icon>${this.t("monitorAdd")}</button></div>${list}</section>`;
+    // How many are in which state, as tiles that filter the list; the page head already names and explains the view.
+    const all = this.monitorFunctions(), n = test => all.filter(test).length;
+    const problem = n(i => i.enabled !== false && (i.state === "problem" || i.incident_open)), unverified = n(i => i.enabled !== false && i.state === "unverified" && !i.incident_open), ok = n(i => i.enabled !== false && i.state === "ok" && !i.incident_open), off = n(i => i.enabled === false || i.state === "disabled");
+    const tiles = all.length ? this.sumTiles([
+      { label: this.t("monitorProblem"), value: this.formatNumber(problem), tone: problem ? "red" : "ok", lf: ["monitor", "state", "problem"] },
+      { label: this.t("monitorUnverified"), value: this.formatNumber(unverified), tone: unverified ? "warn" : "ok", lf: ["monitor", "state", "unverified"] },
+      { label: this.t("monitorOk"), value: this.formatNumber(ok), tone: "ok", lf: ["monitor", "state", "ok"] },
+      off ? { label: this.t("monitorDisabled"), value: this.formatNumber(off), tone: "mute", lf: ["monitor", "state", "disabled"] } : null,
+    ]) : "";
+    return `<div class="stack">${tiles}<section class="panel"><div class="panelhead"><div><h2>${this.t("monitorListTitle")}</h2></div><button class="btn primary" data-monitor-add><ha-icon icon="mdi:plus"></ha-icon>${this.t("monitorAdd")}</button></div>${list}</section></div>`;
   }
 
   monitorDetail() {
@@ -20947,7 +22558,8 @@ class MonitorMixin {
     const matches = query.length < 2 ? [] : available.filter(o => `${o.name} ${o.object_id} ${o.aliases?.join?.(" ") || ""} ${this.monitorObjectContext(o)}`.toLowerCase().includes(query));
     const grouped = groups.map(([kind]) => [kind, matches.filter(o => typeOf(o) === kind)]);
     const candidates = grouped.flatMap(([kind, items]) => !this.monitorType || this.monitorType === kind ? items.slice(0, this.monitorType ? 50 : 10) : []);
-    const tabs = [["", "monitorTypeAll"], ...groups].map(([kind, label]) => `<button class="btn small ${this.monitorType === kind || !this.monitorType && !kind ? "primary" : "quiet"}" type="button" data-monitor-type="${kind}" aria-pressed="${this.monitorType === kind || !this.monitorType && !kind}">${this.t(label)}</button>`).join("");
+    // The type of the search results as chips, like the status chips of the findings page.
+    const tabs = [["", "monitorTypeAll"], ...groups].map(([kind, label]) => { const on = this.monitorType === kind || (!this.monitorType && !kind); return `<button class="chip${on ? " active" : ""}" type="button" data-monitor-type="${kind}" aria-pressed="${on}">${this.t(label)}</button>`; }).join("");
     const selected = form.members.map((member, i) => {
       const object = this.findObject(member.object_key);
       const kind = member.object_key.split(":")[0];
@@ -21280,6 +22892,220 @@ Object.assign(TEXT.sk, {
   "optDefault": "Predvolené {n} · {min}–{max}",
   "whyLevel": "{n} objektov · {level} · {weight}"
 });
+
+// ObjectGroupsMixin: the grouped findings list. Every finding stands below the object it belongs to (an entity with a
+// device below the device, everything else below itself), from one finding on. A cause (integration, app, device that
+// is down, missing target) is the head of its object, and the objects it explains hang below it:
+// app › integration › device › findings. Mixed into the panel in 99-register.js.
+Object.assign(TEXT.de, {
+  ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
+  ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
+  ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{n} Befunde an {m} Objekten", ogViewCount1: "{n} Befunde an 1 Objekt", ogViewCountOne: "1 Befund an 1 Objekt", ogViewOutages: "{o} Ausfälle mit {n} Befunden", ogViewOutage1: "1 Ausfall mit {n} Befunden", ogViewOutageOne: "1 Ausfall mit 1 Befund",
+  ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", certSpanHint: "Sicherheit des unsichersten bis zum sichersten Befund dieses Objekts", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
+});
+Object.assign(TEXT.en, {
+  ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
+  ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
+  ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{n} findings on {m} objects", ogViewCount1: "{n} findings on 1 object", ogViewCountOne: "1 finding on 1 object", ogViewOutages: "{o} outages with {n} findings", ogViewOutage1: "1 outage with {n} findings", ogViewOutageOne: "1 outage with 1 finding",
+  ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", certSpanHint: "Certainty of the least to the most certain finding of this object", ogOf: "Device {name}", fselPart: "{n} of {m}",
+});
+
+const OG_NO_VALUE = ["unavailable", "unknown"];
+
+class ObjectGroupsMixin {
+  // The object a finding belongs to in the grouped list: an entity with a device belongs to the device, all else to itself.
+  ownerKey(f) {
+    const key = this.findingKey(f);
+    if (key.startsWith("entity:")) {
+      const device = this.findObject(key)?.device_id;
+      if (device && this.findObject(`device:${device}`)) return `device:${device}`;
+    }
+    return key;
+  }
+
+  causeById(id) {
+    if (!this._causeMap || this._causeMapOf !== this.data?.causes) { this._causeMapOf = this.data?.causes; this._causeMap = new Map(this.causeList().map(c => [c.id, c])); }
+    return this._causeMap.get(id);
+  }
+
+  // A follow-up is explained by a cause: an outage below it, and also the own finding of a cause that hangs below
+  // another one (a device that is down because its integration is). It is not counted again.
+  isFollowUp(f) {
+    if (!f.cause_id) return false;
+    return !CAUSE_OWN_RULES.includes(f.rule_id) || Boolean(this.causeById(f.cause_id)?.parent_id);
+  }
+
+  // In the flat list a finding of an entity names the device it belongs to.
+  ownerNote(f) {
+    const owner = this.ownerKey(f);
+    if (!this.showFollowers || owner === this.findingKey(f)) return "";
+    return ` · ${this.esc(this.t("ogOf", { name: this.findObject(owner)?.name || owner.slice(7) }))}`;
+  }
+
+  // The tree of the grouped list: the visible findings below their objects, the objects below their causes.
+  // `all` is the list without the filters, for "2 of 6 findings match"; `keepCauses` keeps a cause that explains
+  // nothing visible (the open list without filters shows every outage).
+  objectTree(list, all, keepCauses) {
+    const nodes = new Map();
+    const node = key => {
+      let n = nodes.get(key);
+      if (!n) { n = { key, findings: [], kids: [], parent: null, cause: null, total: 0 }; nodes.set(key, n); }
+      return n;
+    };
+    const causeKey = c => (c.virtual ? `cause:${c.id}` : `${c.object_type}:${c.object_id}`);
+    for (const f of list) node(this.ownerKey(f)).findings.push(f);
+    for (const f of all) node(this.ownerKey(f)).total += 1;
+    for (const c of this.causeList()) node(causeKey(c)).cause = c;
+    for (const n of nodes.values()) {
+      let above = n.cause?.parent_id && this.causeById(n.cause.parent_id);
+      if (!above) {
+        // An object whose findings a cause explains hangs below it; with several, below the one that explains most.
+        const ids = [...new Set(n.findings.map(f => f.cause_id).filter(id => id && id !== n.cause?.id))];
+        above = ids.map(id => this.causeById(id)).filter(Boolean).sort((a, b) => this.causeTotal(b) - this.causeTotal(a))[0];
+      }
+      if (!above) continue;
+      const parent = node(causeKey(above));
+      let up = parent, loop = false;
+      while (up) { if (up === n) { loop = true; break; } up = up.parent; }
+      if (!loop) n.parent = parent;
+    }
+    for (const n of nodes.values()) if (n.parent) n.parent.kids.push(n);
+    const count = n => (n._count ??= n.findings.length + n.kids.reduce((s, k) => s + count(k), 0));
+    const keep = n => count(n) > 0 || (keepCauses && n.cause);
+    const prune = n => { n.kids = n.kids.filter(keep); n.kids.forEach(prune); return n; };
+    return [...nodes.values()].filter(n => !n.parent && keep(n)).map(prune);
+  }
+
+  // Every finding of a node and the nodes below it.
+  nodeFindings(n) { return [...n.findings, ...n.kids.flatMap(k => this.nodeFindings(k))]; }
+  nodeTotal(n) { return n.total + n.kids.reduce((s, k) => s + this.nodeTotal(k), 0); }
+  nodeOwn(n) { return n.cause?.finding_key && this.data.findings.find(f => f.key === n.cause.finding_key); }
+
+  // What the columns of a head show: the worst impact; certainty and since as the own value, the value of the one
+  // finding, or the span. `pick` is the end of a span a sort uses: "desc" the high one, "asc" the low one.
+  nodeFacts(n) {
+    if (n._facts) return n._facts;
+    const list = this.nodeFindings(n), own = this.nodeOwn(n), one = own || (list.length === 1 ? list[0] : null);
+    const rank = Math.max(IMPACT_RANK[n.cause?.impact] ?? 0, ...list.map(f => IMPACT_RANK[f.impact] ?? 0));
+    const impact = Object.keys(IMPACT_RANK).find(k => IMPACT_RANK[k] === rank) || "none";
+    const conf = one ? [one.confidence, one.confidence] : [Math.min(...list.map(f => f.confidence ?? 0)), Math.max(...list.map(f => f.confidence ?? 0))];
+    const times = (one ? [one.first_detected_at] : list.map(f => f.first_detected_at)).filter(Boolean).sort();
+    return (n._facts = { list, own, one, impact, conf: list.length || own ? conf : [null, null], since: [times[0] || null, times[times.length - 1] || null] });
+  }
+
+  nodeName(n) { return n.cause ? n.cause.name : this.findObject(n.key)?.name || n.key.slice(n.key.indexOf(":") + 1); }
+
+  // The line below the head: the cause and what it explains, or what the object has, by kind; a filter and a mark say so.
+  nodeSub(n) {
+    const f = this.nodeFacts(n), parts = [];
+    if (n.cause) {
+      const total = this.causeTotal(n.cause);
+      if (total) parts.push(this.tCount("causeExplains", total));
+      parts.push(this.causeShort(n.cause));
+    }
+    const own = n.findings.filter(x => x !== f.own && !(n.cause && x.cause_id === n.cause.id));
+    if (!n.cause && f.list.length === 1 && !n.kids.length) {
+      const x = f.list[0], name = this.findObject(this.findingKey(x))?.name;
+      parts.push(this.findingKey(x) !== n.key && name ? `${name}: ${this.findingTitle(x)}` : this.findingTitle(x));
+    } else parts.push(...this.nodeKinds(n, own));
+    const total = this.nodeTotal(n);
+    if (total > f.list.length) parts.push(this.t("ogMatch", { n: this.formatNumber(f.list.length), m: this.formatNumber(total) }));
+    const object = this.findObject(n.key);
+    if (object?.mark) {
+      const hidden = this.data.findings.filter(x => x.ignored_by === "mark" && this.ownerKey(x) === n.key).length;
+      parts.push(hidden ? this.t(hidden === 1 ? "ogMarkHides1" : "ogMarkHides", { mark: this.markLine(object.mark), n: this.formatNumber(hidden) }) : this.markLine(object.mark));
+    }
+    return parts.filter(Boolean).join(" · ");
+  }
+
+  // "3 of 8 entities without a value · Orphaned (2) · Duplicate (1)": the outages of a device against the entities
+  // that say something about it, the rest by kind.
+  nodeKinds(n, list) {
+    const parts = [], rest = new Map();
+    let blank = list;
+    if (n.key.startsWith("device:")) {
+      const id = n.key.slice(7);
+      blank = list.filter(x => x.rule_id.startsWith("entity.") && OG_NO_VALUE.includes(x.classification));
+      if (blank.length) {
+        const m = (this.data.objects || []).filter(o => o.object_type === "entity" && o.device_id === id && ["active", "unavailable", "unknown"].includes(o.status)).length;
+        parts.push(this.t(blank.length === 1 ? "ogNoValue1" : "ogNoValue", { n: this.formatNumber(blank.length), m: this.formatNumber(Math.max(m, blank.length)) }));
+      }
+      blank = list.filter(x => !blank.includes(x));
+    }
+    for (const x of blank) { const label = this.reasonLabel(this.findingReason(x)); rest.set(label, (rest.get(label) || 0) + 1); }
+    for (const [label, count] of rest) parts.push(this.t("ogKind", { label, n: this.formatNumber(count) }));
+    return parts;
+  }
+
+  // Sort the nodes of one level by the column the list is sorted by; a span gives the end that fits the direction.
+  sortNodes(nodes) {
+    const st = this.lv.findings, desc = st.dir === "desc", sign = desc ? -1 : 1, { natural, ids } = this.collators();
+    const value = n => {
+      const f = this.nodeFacts(n);
+      switch (st.sort) {
+        case "name": return this.nodeName(n);
+        case "id": return n.key;
+        case "since": return f.since[desc ? 1 : 0];
+        case "certainty": return f.conf[desc ? 1 : 0];
+        case "rule": return f.own?.rule_id || f.list[0]?.rule_id || n.cause?.kind;
+        default: return (IMPACT_RANK[f.impact] ?? 0) + (f.conf[1] || 0) / 2;
+      }
+    };
+    return nodes.map(n => ({ n, v: value(n) })).sort((a, b) => {
+      const emptyA = a.v == null || a.v === "", emptyB = b.v == null || b.v === "";
+      if (emptyA !== emptyB) return emptyA ? 1 : -1;
+      const order = typeof a.v === "number" && typeof b.v === "number" ? a.v - b.v : natural.compare(String(a.v ?? ""), String(b.v ?? ""));
+      return order * sign || ids.compare(a.n.key, b.n.key);
+    }).map(x => x.n);
+  }
+
+  // Every fold id of the tree, for "Open all": also those below a closed head.
+  nodeFoldIds(nodes) { return nodes.flatMap(n => [`og:${n.key}`, ...this.nodeFoldIds(n.kids)]); }
+
+  // The rows of a node in the findings table: its head, and while open the nodes and findings below it, indented.
+  nodeRows(n, depth = 0) {
+    // An object with a single finding of its own is that finding's row: no head that says the same again.
+    if (!n.cause && !n.kids.length && n.findings.length === 1 && this.findingKey(n.findings[0]) === n.key && !n.key.startsWith("dashboard:")) return this.findingTableRow(n.findings[0], depth, false, true);
+    const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, false), object = this.findObject(n.key);
+    const keys = f.list.map(x => x.key);
+    (this._findGroups ||= {})[id] = keys;
+    const title = n.cause ? this.t(`cause_${n.cause.kind}`, { name: n.cause.name }) : this.nodeName(n);
+    const tone = n.cause ? "red" : this.tone(f.list[0]?.classification);
+    const type = n.cause ? n.cause.object_type : n.key.split(":")[0];
+    // The head of an outage selects only its own finding, never the follow-ups below it. The head of an object
+    // selects all findings of the object, those of its entities too, and is ticked while all of them are.
+    const pick = n.cause ? this.causeBox(n.cause) : keys.length ? `<input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(this.t("selectObjectFindings", { name: this.nodeName(n) }))}">` : "";
+    const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: this.nodeName(n) }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
+    const total = n.cause ? this.causeTotal(n.cause) : 0;
+    const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}`;
+    const link = object ? `<button type="button" class="finding-link" data-object="${this.esc(n.key)}">${label}</button>` : `<button type="button" class="finding-link" data-fold="${this.esc(id)}">${label}</button>`;
+    const conf = f.conf[0] == null ? "–" : f.conf[0] === f.conf[1] ? `${Math.round(f.conf[0] * 100)} %` : `<span title="${this.esc(this.t("certSpanHint"))}">${Math.round(f.conf[0] * 100)}–${Math.round(f.conf[1] * 100)} %</span>`;
+    const since = f.since[0] && f.since[1] && f.since[0] !== f.since[1] ? `${this.ageCell(f.since[0])}<small class="ognew">${this.esc(this.t("ogNew", { age: this.relTime(f.since[1]) }))}</small>` : this.ageCell(f.since[0]);
+    // What a person reads first: the reason in words, or how many findings the object has; the rule ID small below.
+    const rule = f.own ? `<span class="finding-label">${this.t("chip_outage")}</span><small class="finding-rule">${this.esc(f.own.rule_id)}</small>` : `<span class="finding-label">${this.esc(this.t(f.list.length === 1 ? "ogFindings1" : "ogFindings", { n: this.formatNumber(f.list.length) }))}</span>`;
+    const menu = n.cause ? this.causeMenu(n.cause, f.own) : f.list.length === 1 ? this.rowMenu(f.list[0]) : object && MARK_TYPES.includes(type) ? this.objectMenu(n.key) : "";
+    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol">${pick}</td><td><div class="finding-link-group">${fold}${link}</div></td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${conf}</td><td data-label="${this.t("sortSince")}">${since}</td><td data-label="${this.t("sortRuleGrouped")}">${rule}</td><td class="finding-action">${menu}</td></tr>`;
+    const decision = n.cause && f.own ? this.rowDecide(f.own) : "";
+    const decide = decision ? `<tr class="finding-detail"><td colspan="7">${decision}</td></tr>` : "";
+    if (!open) return head + decide;
+    const own = n.findings.filter(x => x !== f.own);
+    const cards = n.key.startsWith("dashboard:") ? this.groupBroken(own) : own;
+    const below = cards.map(x => (x.members ? this.cardRows(x, depth + 1) : this.findingTableRow(x, depth + 1))).join("");
+    return head + decide + this.sortNodes(n.kids).map(k => this.nodeRows(k, depth + 1)).join("") + below;
+  }
+
+  // A card of a dashboard with several broken references: a head of its own, the references below it.
+  cardRows(g, depth) {
+    const f = g.members[0], p = f.evidence[0].place, keys = g.members.map(m => m.key), id = `bg:${g.group}`, open = this.foldOpen(id, false);
+    (this._findGroups ||= {})[id] = keys;
+    const title = [...this.placeParts(p)].join(" › ") || f.object_id;
+    const sub = [this.t("brokenCount", { n: keys.length }), this.isOrphan(p) ? this.t("brokenOrphanShort") : ""].filter(Boolean).join(" · ");
+    const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: title }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
+    const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol"><input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(title)}"></td><td><div class="finding-link-group">${fold}<button type="button" class="finding-link" data-fold="${this.esc(id)}">${this.tile("dashboard", "red")}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(sub)}</small></span></button></div></td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || "–"}</td><td data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `${Math.round(f.confidence * 100)} %`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRuleGrouped")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule">${this.esc(f.rule_id)}</small></td><td class="finding-action"></td></tr>`;
+    const hint = open && this.isOrphan(p) ? `<tr class="finding-detail"><td colspan="7"><div class="hintbox"><ha-icon icon="mdi:lightbulb-on-outline"></ha-icon><div><p>${this.esc(this.t("brokenOrphan", { missing: p.card_missing, total: p.card_refs }))}</p></div></div></td></tr>` : "";
+    return head + hint + (open ? g.members.map(m => this.findingTableRow(m, depth + 1, true)).join("") : "");
+  }
+}
 
 // Slovak translations for panel strings added in upstream releases through v1.9.0.
 // Keep interpolation names identical to English.
@@ -22018,6 +23844,598 @@ Object.assign(TEXT.sk, {
   "noteSrcAgent": "Zapísané cez Prístup AI"
 });
 
+// Slovak localization of new upstream UI texts (part 1/4).
+Object.assign(TEXT.sk, {
+  "actOutagesOpen": "Ďalšie výpadky",
+  "allObjectTypes": "Všetky typy objektov",
+  "apAllow": "Znova povoliť",
+  "apAttempts": "neúspešné pokusy",
+  "apAttemptsHint": "Po tomto počte neúspešných pokusov o nastavenie sa spustí pozastavenie.",
+  "apAttemptsTitle": "Počet neúspešných pokusov pred pozastavením",
+  "apConfirmText": "Integrácia {name} sa vypne a bude sa v intervaloch opakovane skúšať, najviac {days} dní.",
+  "apConfirmTitle": "Pozastaviť {name}?",
+  "apConfirmYes": "Pozastaviť",
+  "apEnd": "Ukončiť pozastavenie",
+  "apExhausted": "Ďalšie pokusy sa skončili, vyžaduje sa kontrola",
+  "apFailures": "{n} neúspešných pokusov",
+  "apHead": "Automaticky pozastavovať opakované zlyhania",
+  "apHeadSub": "Pozastaví zdroje údajov, ktorým opakovane zlyháva nastavenie, a neskôr ich skúša znova. Ručné pozastavenie tento prepínač nepotrebuje.",
+  "apHours": "hodiny",
+  "apHoursHint": "Neúspešné pokusy musia nastať počas tohto obdobia.",
+  "apHoursTitle": "Časové okno",
+  "apHouse": "Pozastavovať aj integrácie potrebné pre domácu funkciu",
+  "apHouseFn": "zabezpečuje domácu funkciu",
+  "apHouseHint": "Vypnuté: integrácia, od ktorej závisí domáca funkcia, sa automaticky nepozastaví.",
+  "apLog": "História",
+  "apLog_back": "opäť dostupná",
+  "apLog_ended": "pozastavenie ukončené",
+  "apLog_exhausted": "pozastavenie trvá, treba skontrolovať",
+  "apLog_paused": "pozastavená",
+  "apLog_tried": "neúspešný pokus",
+  "apLogWhat": "Udalosť",
+  "apLogWhen": "Kedy",
+  "apLogWho": "Integrácia",
+  "apManual": "Ručne pozastaviť integráciu",
+  "apManualHint": "Keď už vieš, že práve teraz má problém.",
+  "apMore": "Služby",
+  "apNever": "Nikdy nepozastavovať",
+  "apNeverPill": "nikdy nepozastavená",
+  "apNext": "ďalší pokus o {span}",
+  "apNoWatched": "Žiadna integrácia nespĺňa podmienky: len cloudové zdroje a dátové entity.",
+  "apPause": "Pozastaviť",
+  "apPaused": "Pozastavené",
+  "apPausedNow": "Pozastavená na {span}",
+  "apPick": "Vyhľadať integráciu",
+  "apPlan": "Opakované pokusy: 3 × 1 h, 3 × 3 h, 12 × 6 h, potom denne, najviac {days} dní od začiatku pozastavenia. Potom zostane pozastavená a Housekeeper ťa upozorní.",
+  "apReasonAuto": "{n} neúspešných pokusov",
+  "apReasonManual": "pozastavená tebou",
+  "apReasonPaused": "pozastavená automaticky",
+  "apSend": "Poslať do automatického pozastavenia",
+  "apSendHint": "Dočasná porucha? Automatické pozastavenie uľaví zdroju.",
+  "apSettings": "Nastavenia",
+  "apSettingsSub": "Pozastaví po {a} neúspešných pokusoch počas {h} h",
+  "apSince": "Trvá {span}",
+  "apStatusOff": "Vypnuté · sledovaných by bolo {n} služieb",
+  "apStatusOn": "Zapnuté · sledované služby: {n}",
+  "apSwitch": "Automaticky pozastavovať",
+  "apTab": "Automatické pozastavenie",
+  "apTileHint": "{n} kandidátov · pozastavuje opakované zlyhania a neskôr skúša znova",
+  "apTodoCheck": "Treba skontrolovať",
+  "apTodoExhaustedHint": "Pozastavenie trvá · skontroluj log, aktualizáciu a zdroj",
+  "apTodoExhaustedMany": "{n} neúspešných pozastavení vyžaduje kontrolu",
+  "apTodoExhaustedOne": "{name}: {days} dní bez úspechu, treba skontrolovať",
+  "apTodoHint": "Pokus {n} z {total}, ďalší o {span} · trvá {since}",
+  "apTodoMany": "Pozastavené integrácie: {n}",
+  "apTodoOne": "{name} je pozastavená",
+  "apTry": "Pokus {n} z {total}",
+  "apTryNow": "Skúsiť teraz",
+  "apWarnControl": "Integrácia má entity, ktoré niečo ovládajú alebo oznamujú. Počas pozastavenia nebudú dostupné v Home Assistante.",
+  "apWarnHouse": "Závisí od nej domáca funkcia.",
+  "apWatched": "Sledované služby",
+  "apWatchedHint": "Dátové zdroje bez ovládacích funkcií, ktoré možno automaticky pozastaviť",
+  "apWatching": "Pod dohľadom",
+  "apWatchingHint": "Dátové zdroje, pri ktorých sa práve zaznamenávajú neúspešné pokusy",
+  "apWindow": "{n} z {limit} neúspešných pokusov za {hours} h",
+  "apWindowOff": "pozastavilo by sa pri {limit}",
+  "apWouldPause": "Automatické pozastavenie by ju pozastavilo",
+  "batteryUnavailable": "Nedostupné",
+  "batteryUnavailableShort": "nedostupné",
+  "batteryUnavailableSub": "nehlási žiadne údaje, často pre vybitú batériu",
+  "bh_external": "Mimo Home Assistanta",
+  "bhAgeDaysAgo": "{n} dní",
+  "bhExternalAsk": "Zálohuješ aj mimo Home Assistanta, napríklad Docker volume alebo celý hostiteľský systém? Môžeš to tu uviesť.",
+  "bhExternalClear": "Odvolať potvrdenie",
+  "bhExternalForm": "Housekeeper tieto zálohy nevidí ani nekontroluje. Vynechá sa kontrola rozvrhu, veku, umiestnenia, veľkosti, uchovávania, šifrovania a núdzovej súpravy. Záloha, ktorú Housekeeper vytvára pred zmenami, zostáva zachovaná v zálohovacom priečinku Home Assistanta.",
+  "bhExternalOpen": "Zálohujem inde",
+  "bhExternalPill": "Externá",
+  "bhExternalSave": "Potvrdiť",
+  "bhExternalShort": "Mimo Home Assistanta",
+  "bhExternalText": "Potvrdené {date}. Housekeeper tieto zálohy nevidí a nekontroluje ich vek ani obsah.",
+  "bhTargetsMissed": "Je nastavené aj {remote}, ale najnovšia záloha je iba lokálna ({local}). Skontroluj, či sa nahrávanie podarilo.",
+  "bhTileBackup": "Zálohy",
+  "bhTileFree": "Voľné miesto",
+  "bhTileNotes": "{n} upozornení",
+  "bhTileNotes1": "1 upozornenie",
+  "bhTileOwn": "Zálohy Housekeepera",
+  "bhTileProblems": "{n} problémov",
+  "bhTileProblems1": "1 problém",
+  "bkTakeN": "Potvrdiť ({n})",
+  "btLeftLowHint": "Už pod limitom",
+  "cause_device_novalue": "Všetkých {n} entít zariadenia nemalo hodnotu počas {span}. Zariadenie je zvyčajne v pohotovostnom režime alebo vypnuté.",
+  "causeExplains1": "vysvetľuje ďalší 1 nález",
+  "causeFollowers1": "1 následný nález",
+  "causeN_automation1": "1 automatizácia",
+  "causeN_dashboard1": "1 dashboard",
+  "causeN_entity1": "1 entita",
+  "causeN_script1": "1 skript",
+  "certSpanHint": "Miera istoty od najmenej po najviac potvrdený nález tohto objektu",
+  "cfColAction": "Rozhodnutie",
+  "cfKnown": "Označiť ako známe",
+  "cfKnownNote": "Označené ako známe: nezapočítava sa do hodnotenia.",
+  "cfReport": "Znova nahlasovať",
+  "changesHa": "mení Home Assistant",
+  "cleanupColAction": "Akcia",
+  "cleanupColHeld": "V karanténe od",
+  "cleanupColReason": "Dôvod",
+  "corrFilterOne": "{what} ({n})",
+  "corrShowN": "Zobraziť {n} nálezov v zozname",
+  "cuDevices": "{n} zariadení",
+  "cuDevices1": "1 zariadenie",
+  "cuEntities": "{n} entít",
+  "cuEntities1": "1 entita",
+  "cuHeld": "{n} v karanténe",
+  "cuHeld1": "1 v karanténe",
+  "cuHeldReady": "{n} v karanténe · {ready} pripravených",
+  "cuStats": "{n} štatistík",
+  "cuStats1": "1 štatistika",
+  "cuUnused": "{n} objektov",
+  "cuUnused1": "1 objekt",
+  "dbAbout": "približne {size}",
+  "dbCheckRunning": "Prebieha",
+  "dbCheckRunningSub": "môže trvať niekoľko minút",
+  "dbCheckState_damaged": "Poškodená"
+});
+
+// Slovak localization of new upstream UI texts (part 2/4).
+Object.assign(TEXT.sk, {
+  "dbCheckState_failed": "Nedokončené",
+  "dbCheckState_never": "Nikdy nekontrolované",
+  "dbCheckState_ok": "V poriadku",
+  "dbColBytes": "Bajty",
+  "dbColPct": "Podiel",
+  "dbColTable": "Tabuľka",
+  "dbTable_event_data": "Údaje udalostí",
+  "dbTable_event_types": "Typy udalostí",
+  "dbTable_events": "Udalosti",
+  "dbTable_migration_changes": "Migrácie",
+  "dbTable_recorder_runs": "Spustenia Recordera",
+  "dbTable_schema_changes": "Zmeny schémy",
+  "dbTable_state_attributes": "Atribúty stavov",
+  "dbTable_states": "Stavy",
+  "dbTable_states_meta": "Entity stavov",
+  "dbTable_statistics": "Dlhodobé štatistiky (hodiny)",
+  "dbTable_statistics_meta": "Štatistické rady",
+  "dbTable_statistics_runs": "Spustenia štatistík",
+  "dbTable_statistics_short_term": "Krátkodobé štatistiky (5 minút)",
+  "dbTablesAt": "Stav k {at}.",
+  "dbTablesHint": "Údaje a indexy jednotlivých tabuliek podľa servera.",
+  "dbTablesHintSqlite": "Údaje a indexy jednotlivých tabuliek; merané raz denne.",
+  "dbTablesMore": "Ďalších tabuliek: {n}",
+  "dbTablesTitle": "Najväčšie tabuľky",
+  "dbTileCheck": "Integrita",
+  "dbTileEstimated": "odhad ({dialect})",
+  "dbTileGrowthShare": "{pct} % veľkosti za deň",
+  "dbTileServer": "podľa servera ({dialect})",
+  "dbWhatToDo": "Čo s tým?",
+  "decAllLink": "Všetky výnimky a značky",
+  "decAllMarks": "Všetky druhy",
+  "decAllStates": "Všetky",
+  "decChange": "Zmeniť stav",
+  "decColEffect": "Účinok teraz",
+  "decColNow": "Aktuálne",
+  "decColStatus": "Stav",
+  "decColUntil": "Do",
+  "decDue": "{n} na kontrolu",
+  "decideKindHint_ignore": "Nezaujíma ma to. Dôvod je nepovinný.",
+  "decideKindHint_keep": "Je to zámer. Neupozorňovať, kým to nezmením. Vyžaduje dôvod.",
+  "decideKindHint_snooze": "Vyriešim neskôr. Po uplynutí času sa opäť zobrazí na kontrolu.",
+  "decLabelsKpi": "Objekty so štítkom",
+  "decLastSeen": "naposledy videné {when}",
+  "decMarksHint": "Označenia objektu: úmyselne offline, sezónny, rezervný, neodstraňovať, nahradený. Platia aj pri budúcich výpadkoch; značka zariadenia sa vzťahuje aj na jeho entity. Nájdeš tu všetky značky vrátane tých, ktoré práve nič neskrývajú.",
+  "decMarksKpi": "Značky",
+  "decMarksNone": "Zatiaľ žiadna značka. Pridáš ju pri náleze alebo na stránke objektu.",
+  "decMarksTitle": "Značky",
+  "decNowAll": "Teraz: všetky",
+  "decNowDue": "znovu otvorené",
+  "decNowFilter_due": "Znovu otvoriť",
+  "decNowFilter_gone": "Objekt zmizol",
+  "decNowFilter_hides": "Skrýva",
+  "decNowFilter_quiet": "Ešte potrebné?",
+  "decNowFilter_rests": "Neaktívne",
+  "decNowGone": "objekt už neexistuje",
+  "decNowHides": "skrýva",
+  "decNowQuiet": "nezaznamenané {n} dní – je to ešte potrebné?",
+  "decNowRests": "neaktívne",
+  "decOpenObject": "Otvoriť objekt",
+  "decRemove": "Odstrániť rozhodnutie",
+  "decRemoveN": "Odstrániť rozhodnutie ({n})",
+  "decRestHead": "Neaktívne · nález práve chýba ({n})",
+  "decReviewDue": "{n} termínov kontroly uplynulo",
+  "decReviewDueShort": "Termín kontroly uplynul",
+  "decRuleHides": "Skryté nálezy: {n}",
+  "decRulesKpi": "Pravidlá výnimiek",
+  "decStatusHint": "Tvoje rozhodnutia pri jednotlivých nálezoch: známe, odložené, skryté. Vzťahujú sa iba na konkrétny nález; nový nález na tom istom objekte sa otvorí znova. Najskôr sa zobrazia tie po termíne. Ak nález dočasne zmizne, rozhodnutie zostáva uložené a použije sa znovu po jeho návrate.",
+  "decStatusKpi": "Nálezy s vlastným stavom",
+  "decStatusNone": "Žiadny nález nemá samostatne nastavený stav.",
+  "decStatusTitle": "Nálezy s vlastným stavom",
+  "devAllNoValue": "všetkých {n} bez hodnoty",
+  "err_auto_pause_busy": "Práve prebieha pokus.",
+  "err_auto_pause_confirm_needed": "Integrácia niečo ovláda alebo zabezpečuje domácu funkciu: treba potvrdenie.",
+  "err_auto_pause_core": "Táto integrácia sa nikdy nepozastavuje.",
+  "err_auto_pause_disabled": "Integrácia je už vypnutá.",
+  "err_auto_pause_invalid": "Nepovolená hodnota.",
+  "err_auto_pause_not_found": "Integrácia sa nenašla.",
+  "err_auto_pause_not_paused": "Nie je pozastavená.",
+  "err_auto_pause_paused": "Už je pozastavená.",
+  "err_auto_pause_reauth": "Integrácia vyžaduje nové prihlásenie; pozastavenie nepomôže.",
+  "excCreate": "Pridať výnimku",
+  "excFor_areas": "Oblasť {name}",
+  "excFor_areas_n": "Ich oblastí: {n}",
+  "excFor_devices": "Zariadenie {name}",
+  "excFor_devices_n": "Ich zariadení: {n}",
+  "excFor_integrations": "Integrácia {name}",
+  "excFor_integrations_n": "Ich integrácií: {n}",
+  "excFor_objects": "Iba {name}",
+  "excFor_objects_n": "Iba tieto objekty ({n})",
+  "excForLabel": "Na čo sa vzťahuje",
+  "excForMore": "Jeden objekt s dôvodom alebo časovým obmedzením: na to slúži značka. Štítok, typ alebo iný výber:",
+  "excForSettings": "upraviť v nastaveniach",
+  "excForSub_areas": "všetky zariadenia a entity v oblasti",
+  "excForSub_devices": "vrátane všetkých jeho entít",
+  "excForSub_integrations": "všetky jej entity",
+  "exSugCount": "{count} návrhov",
+  "filterRemove": "Odstrániť filter {name}",
+  "filterResetAll": "Vymazať všetky filtre",
+  "findingsOnObjects": "na {m} objektoch",
+  "findingsOnObjects1": "na 1 objekte",
+  "followersFilter": "Následné nálezy výpadkov",
+  "fselPart": "{n} z {m}",
+  "fselStatus": "Nastaviť stav …",
+  "fselStatusChange": "Zmeniť stav …",
+  "goalExternal": "zálohované mimo Home Assistanta",
+  "goalsTab": "Ciele",
+  "group_care": "Údržba",
+  "group_open": "Otvorené",
+  "group_red": "Naliehavé",
+  "healthInfo": "Informácia",
+  "heldFilter": "Zadržané počas dovolenky ({n})",
+  "hiddenBy_label": "Štítok",
+  "hiddenBy_mark": "Značka",
+  "hiddenBy_rule": "Výnimka",
+  "hiddenBy_user": "Vlastný stav",
+  "hiddenByAll": "Všetky dôvody",
+  "hiddenMarkOpen": "Zobraziť značku",
+  "hiddenObjectOpen": "Otvoriť objekt",
+  "hiddenRuleOpen": "Otvoriť pravidlo",
+  "hint_device_novalue": "Ak je to zámer, pridaj zariadeniu značku „Úmyselne offline“. Housekeeper potom nehlási ani zariadenie, ani jeho entity.",
+  "hintCorr": "{n} incidentov po aktualizáciách",
+  "hintOften": "{n} návrhov na značky",
+  "hintsLabel": "Odporúčania",
+  "incClose": "Skryť podrobnosti",
+  "incColAt": "Kedy",
+  "incColFindings": "Nálezy",
+  "incColWatch": "Sledovanie",
+  "incColWhat": "Udalosť"
+});
+
+// Slovak localization of new upstream UI texts (part 3/4).
+Object.assign(TEXT.sk, {
+  "incOpen": "Zobraziť podrobnosti",
+  "inEnergyLocked": "Používa sa v paneli Energia, preto sa nedá odstrániť",
+  "lblN_area": "{n} oblastí",
+  "lblN_area1": "1 oblasť",
+  "lblN_automation": "{n} automatizácií",
+  "lblN_automation1": "1 automatizácia",
+  "lblN_device": "{n} zariadení",
+  "lblN_device1": "1 zariadenie",
+  "lblN_entity": "{n} entít",
+  "lblN_entity1": "1 entita",
+  "lblN_scene": "{n} scén",
+  "lblN_scene1": "1 scéna",
+  "lblN_script": "{n} skriptov",
+  "lblN_script1": "1 skript",
+  "markEffDue": "termín kontroly uplynul, už nič neskrýva",
+  "markEffHides": "skrytých nálezov: {n}",
+  "markEffKeep": "blokuje čistenie",
+  "markEffNone": "teraz nič neskrýva",
+  "markEffQuiet": "bez výpadku {n} dní – ešte je potrebná?",
+  "markOnDevice": "pri úplne nedostupných zariadeniach radšej na zariadení ako na každej entite",
+  "markOnDeviceSub": "na zariadení {name}",
+  "markQuietFilter": "Ešte potrebné?",
+  "monitorListTitle": "Tvoje funkcie",
+  "mtUpdates_1": "1 aktualizácia",
+  "mtUpdates_n": "{n} aktualizácií",
+  "navCount_batteries": "{n} slabých batérií",
+  "navCount_cleanup": "{n} v karanténe pripravených na odstránenie",
+  "navCount_findingsNav": "{n} otvorených nálezov",
+  "navCount_maintenance": "{n} nesplnených cieľov údržby",
+  "navCount_other": "{n} položiek na kontrolu",
+  "navCount_policies": "{n} porušení pravidiel",
+  "navCount_reminders": "{n} pripomienok po termíne",
+  "navCount_repair": "{n} chýb senzorov na opravu",
+  "noValue": "Bez hodnoty",
+  "oftenAllText": "Pridá sa {n} značiek „Úmyselne offline“, s rozpoznaným časovým oknom, ak existuje. Skryjú {hides} nálezov a dajú sa jednotlivo odstrániť.",
+  "oftenAllTitle": "Označiť vybrané návrhy?",
+  "oftenCardHint": "Pravidelne vypadávajú alebo strácajú hodnotu, napríklad v pohotovostnom režime. Značka „Úmyselne offline“ skryje ich nálezy na 90 dní.",
+  "oftenCardTitle": "Navrhované značky",
+  "oftenColFindings": "Nálezy",
+  "oftenColObject": "Objekt",
+  "oftenColPattern": "Vzorec",
+  "oftenCount": "{n} návrhov",
+  "oftenFindings": "{n} nálezov",
+  "oftenFindings1": "1 nález",
+  "oftenGroup": "{device}: {n} entít",
+  "oftenNone": "Nič nie je vybrané.",
+  "oftenReason": "Návrh: pravidelné výpadky",
+  "oftenRest": "ďalších {n} entít zostáva sledovaných",
+  "oftenRest1": "ďalšia entita zostáva sledovaná",
+  "oftenTake": "Označiť",
+  "oftenTakeN": "Označiť ({n})",
+  "ogFindings": "{n} nálezov",
+  "ogFindings1": "1 nález",
+  "ogKind": "{label} ({n})",
+  "ogMarkHides": "{mark} · skrytých výpadkov: {n}",
+  "ogMarkHides1": "{mark} · 1 skrytý výpadok",
+  "ogMatch": "Filtru zodpovedá {n} z {m} nálezov",
+  "ogNew": "najnovší: {age}",
+  "ogNoValue": "{n} z {m} entít bez hodnoty",
+  "ogNoValue1": "1 z {m} entít bez hodnoty",
+  "ogOf": "Zariadenie {name}",
+  "ogViewCount": "{n} nálezov na {m} objektoch",
+  "ogViewCount1": "{n} nálezov na 1 objekte",
+  "ogViewCountOf": "{n} z {total} nálezov na {m} objektoch",
+  "ogViewCountOf1": "{n} z {total} nálezov na 1 objekte",
+  "ogViewCountOne": "1 nález na 1 objekte",
+  "ogViewOutage1": "1 výpadok s {n} nálezmi",
+  "ogViewOutageOne": "1 výpadok s 1 nálezom",
+  "ogViewOutages": "{o} výpadkov s {n} nálezmi",
+  "outageApps1": "1 aplikácia",
+  "outageDevices1": "1 zariadenie",
+  "outageIntegrations1": "1 integrácia",
+  "outageMarkInstead": "Radšej pridať značku",
+  "outageServices1": "1 chýbajúca služba",
+  "outagesFilter": "Výpadky z prehľadu ({n})",
+  "outagesFilterHigh": "Výpadky ({n})",
+  "outagesFilterMedium": "Ďalšie výpadky ({n})",
+  "outageStatusHint": "Nastavenie stavu ukončí výpadok: {n} entít za ním sa potom započítava jednotlivo ako nedostupných. Ak je objekt vypnutý zámerne, vhodnejšia je značka; skryje výpadok aj jeho následky, aj nabudúce.",
+  "outageStatusHint1": "Nastavenie stavu ukončí výpadok: jeho entita sa potom započítava samostatne ako nedostupná. Ak je objekt vypnutý zámerne, vhodnejšia je značka; skryje výpadok aj jeho následky, aj nabudúce.",
+  "outageTargets1": "1 chýbajúci cieľ",
+  "ovFoundAt": "nájdené {age}",
+  "pf_backup_external": "Zálohuješ mimo Home Assistanta: pred aktualizáciou tam vytvor čerstvú zálohu",
+  "pointsOf100": "{n} zo 100",
+  "polRowMenu": "Ďalšie akcie",
+  "polSelHidden": "Skryté; najprv znova zobraziť",
+  "polSelOnlyArea": "Spoločne možno upraviť len entity a zariadenia (priradiť oblasť)",
+  "ratedObjects": "Hodnotené objekty",
+  "reasonProblem": "Automatizácia má problém",
+  "refersTo": "Odkazuje na {kind} {target}",
+  "relAttempts": "Približne {n} pokusov o nastavenie od {date}",
+  "relHintCloud": "{n} zlyhaní nastavenia za {days} dní pri nízkej dostupnosti. Integrácia načítava údaje cez internet, preto mohla byť služba alebo stránka nedostupná či zmenená. Pozri chybu v logu, skontroluj aktualizáciu integrácie a počkaj: Home Assistant skúša pripojenie sám.",
+  "relLongestSub": "najdlhší {d}",
+  "relPatternCell": "{from}–{to} h",
+  "relUnstableShownSub": "{n} najvýraznejších v zozname",
+  "remDoneN": "Hotové ({n})",
+  "runsCoverageLower1": "Posledných {days} dní · pri jednej položke „aspoň“: úložisko stôp bolo plné, niektoré spustenia môžu chýbať.",
+  "safeAi": "Prístup AI: {mode}",
+  "scanNewFilter": "Nové kritické nálezy ({n})",
+  "selectObjectFindings": "Vybrať všetky nálezy objektu {name}",
+  "sim_area_set": "{count} objektom sa priradí oblasť",
+  "sim_automations_deleted": "Odstráni sa {count} automatizácií",
+  "sim_backups_deleted": "Odstráni sa {count} záloh",
+  "sim_enabled": "Zapne sa {count} entít",
+  "sim_hidden": "Skryje sa {count} entít",
+  "sim_labeled": "{count} entitám sa priradí štítok",
+  "sim_refactored": "Prepíše sa {count} automatizácií",
+  "sim_reloaded": "Znova sa načíta {count} integrácií (na pár sekúnd budú nedostupné, nič sa neodstráni)",
+  "sim_unhidden": "Znova sa zobrazí {count} entít",
+  "sortRuleGrouped": "Nález",
+  "spaceAgain": "Znova zmerať miesto podľa entít",
+  "spaceAlone": "V {n} riadkoch sa zmenil iba tento atribút.",
+  "spaceAt": "Merané {when} · trvalo {took} s",
+  "spaceAttrsFailed": "Čítanie zlyhalo: {reason}",
+  "spaceAttrsHint": "Pri zmene atribútu Home Assistant vytvorí nový riadok atribútov, ktorý znovu obsahuje aj všetky ostatné atribúty. Označené sú tie, ktoré sa menia aspoň v polovici riadkov: spôsobujú vznik nových riadkov, aj keď samy zaberajú málo miesta.",
+  "spaceAttrsLoading": "Načítavajú sa atribúty …",
+  "spaceAttrsNewest": "najnovších {read} z {total} riadkov atribútov",
+  "spaceAttrsNone": "Pre túto entitu nie sú uložené žiadne atribúty.",
+  "spaceAttrsOpen": "Rozpis podľa atribútov",
+  "spaceAttrsRead": "Načítaných riadkov atribútov: {read}",
+  "spaceAttrsRest": "A ďalších {n} menších atribútov, spolu {pct} %.",
+  "spaceAttrsTitle": "Atribúty entity {name}",
+  "spaceColChanges": "Zmeny",
+  "spaceColKey": "Atribút",
+  "spaceColRows": "Stavy",
+  "spaceColShare": "Podiel",
+  "spaceColSize": "Miesto",
+  "spaceColVariants": "Riadky atribútov",
+  "spaceConstant": "nemenné"
+});
+
+// Slovak localization of new upstream UI texts (part 4/4).
+Object.assign(TEXT.sk, {
+  "spaceDriver": "vytvára nové riadky",
+  "spaceExAdd": "Označiť na vylúčenie",
+  "spaceExOn": "Označené na vylúčenie",
+  "spaceExWhere": "YAML v Recorder → Načítať",
+  "spaceFact": "Zabraté miesto",
+  "spaceFactRunning": "prebieha meranie ({pct} %)",
+  "spaceFailed": "Nedokončené ({pct} % načítaných). Zoznam obsahuje doteraz prečítané údaje.",
+  "spaceGoto": "Merať v Recorder → Databáza",
+  "spaceInterim": "Priebežné výsledky",
+  "spaceIntro": "Ktoré entity zaberajú miesto a ktoré ich atribúty k tomu prispievajú. Housekeeper na to prečíta celé tabuľky states a state_attributes. Beží na pozadí, môže trvať niekoľko minút a údaje iba číta.",
+  "spaceLeave": "Môžeš opustiť stránku.",
+  "spaceLeft": "zostáva približne {left}",
+  "spaceLeftUnknown": "odhaduje sa zostávajúci čas",
+  "spaceLoading": "Načítava sa …",
+  "spaceLook": "Pozrieť využitie miesta",
+  "spaceLoose": "Nepriradené: {size} v {n} riadkoch atribútov, ktoré už nepoužíva žiadny stav. Recorder ich odstráni pri ďalšom čistení.",
+  "spaceMore": "Zobrazené: {shown} najväčších z {total} entít.",
+  "spaceNotTop": "nepatrí medzi {n} najväčších",
+  "spacePhaseAttrs": "atribúty",
+  "spacePhaseStates": "stavy",
+  "spaceRunning": "Meranie · {pct} %",
+  "spaceScaled": "Spočítajú sa riadky a dĺžky údajov, potom sa rozdelia podľa veľkosti oboch tabuliek hlásenej databázou; výsledky sú odhady. Rovnaké atribúty sa počítajú raz, zdieľané sa rozdelia rovnomerne.",
+  "spaceScaledEstimated": "Spočítajú sa riadky a dĺžky údajov, potom sa rozdelia podľa veľkosti oboch tabuliek odhadovanej MariaDB/MySQL; výsledky sú orientačné. Rovnaké atribúty sa počítajú raz, zdieľané sa rozdelia rovnomerne.",
+  "spaceSeconds": "{n} sekúnd",
+  "spaceSplit": "stavy {states} · atribúty {attrs}",
+  "spaceStart": "Zmerať",
+  "spaceStop": "Zastaviť",
+  "spaceStopped": "Zastavené pri {pct} %. Zoznam obsahuje doteraz prečítané údaje.",
+  "spaceStopping": "Zastavuje sa · {pct} %",
+  "spaceTrim": "Skrátiť históriu",
+  "spaceUnscaled": "Databáza nehlási veľkosti tabuliek. Hodnoty sú namerané dĺžky údajov bez indexov a režijných dát, preto sú podhodnotené.",
+  "startColAt": "Spustenie",
+  "startColLoaded": "Všetko načítané",
+  "startColShare": "Porovnanie",
+  "startColSlowest": "Najpomalšia integrácia",
+  "startColTotal": "Celkovo",
+  "startsBuilding": "Časová os sa zobrazí po viacerých spusteniach.",
+  "startsClose": "Skryť integrácie tohto spustenia",
+  "startsColInt": "Integrácia",
+  "startsColState": "Stav",
+  "startsColTime": "Čas",
+  "startsColVs": "Porovnanie",
+  "startsCrash": "po páde",
+  "startsCrashHint": "Predchádzajúce spustenie sa neskončilo korektne: pád, výpadok elektriny alebo násilne ukončený proces.",
+  "startsDetailHead": "Načítanie jednotlivých integrácií, od najpomalšej",
+  "startsDown": "výpadok {x}",
+  "startsDownHint": "Ako dlho bol Home Assistant vypnutý pred týmto spustením (od poslednej zaznamenanej aktivity).",
+  "startsEmpty": "Zatiaľ sa nezmeralo žiadne spustenie. Prvé sa zobrazí po ďalšom spustení Home Assistanta a dokončení inicializácie.",
+  "startsEntries": "{n} záznamov",
+  "startsFromHk": "od Housekeepera",
+  "startsFromHkHint": "Začiatok procesu sa nepodarilo zistiť; čas sa počíta až od spustenia Housekeepera, preto je kratší než celé spustenie.",
+  "startsHaVersion": "Home Assistant {v}",
+  "startsLoadingHint": "Pri uložení spustenia ešte nebolo načítanie dokončené; uvedený čas je minimum.",
+  "startsMin": "min",
+  "startsMore": "ďalších {n} pod jednu sekundu",
+  "startsNoItems": "Pre toto spustenie nie sú časy jednotlivých integrácií.",
+  "startsNote": "Pruh porovnáva čas s najdlhším spustením v tabuľke a s najpomalšou integráciou daného spustenia. Home Assistant sám meria čas každej integrácie od začiatku do konca jej načítania. Integrácie sa načítavajú súbežne, takže súčet ich časov sa nerovná dĺžke spustenia. „Všetko načítané“ znamená okamih, keď sa už nenačítava žiadna integrácia. Spustenie sa zaznamená po dokončení inicializácie.",
+  "startsOpen": "Zobraziť integrácie tohto spustenia",
+  "startsOpenObject": "Otvorí stránku tejto integrácie",
+  "startsOwn": "vlastná",
+  "startsOwnHint": "Vlastná integrácia, ktorá nie je súčasťou Home Assistanta.",
+  "startState_failed_unload": "Chyba",
+  "startState_loaded": "načítaná",
+  "startState_migration_error": "Chyba",
+  "startState_not_loaded": "nenačítaná",
+  "startState_setup_error": "Chyba",
+  "startState_setup_in_progress": "načítava sa",
+  "startState_setup_retry": "Opakuje sa pokus",
+  "startsTileCap": "posledných {n} spustení · priemer {avg}",
+  "startsTileLoaded": "všetko načítané za {x}",
+  "startsTileNone": "Zmeria sa pri ďalšom spustení.",
+  "startsUnit_d": "dni",
+  "startsUnit_h": "h",
+  "startsUnit_m": "min",
+  "startsUnit_s": "s",
+  "startsUpdate": "po aktualizácii",
+  "startsUpdateHint": "Verzia Home Assistanta bola iná než pri predchádzajúcom spustení.",
+  "startsVsAvg": "Priemer posledných {n} spustení: {x}",
+  "startsVsLess": "o {x} rýchlejšie než zvyčajne",
+  "startsVsMore": "o {x} pomalšie než zvyčajne",
+  "startsVsNone": "Príliš málo starších spustení na porovnanie.",
+  "startsVsSame": "ako zvyčajne",
+  "startsVsSlow": "ako zvyčajne, no pomalé",
+  "stateDue": "Po termíne",
+  "statusAlso": "Navyše {what}",
+  "statusAnd": "{a} a {b}",
+  "statusJoin": " a ",
+  "statusMoreUrgent": "{first} a ďalších {n} naliehavých položiek",
+  "statusNoteBack": "Späť na otvorené",
+  "statusNoteText": "Zoznam zobrazuje stav „{status}“. Dlaždice vyššie počítajú otvorené nálezy; kliknutím sa vrátiš na „Otvorené“. ",
+  "statusNothingUrgent": "Nič naliehavé",
+  "statusPartCare": "{n} v údržbe",
+  "statusPartOpen": "{n} otvorených",
+  "statusScopeHint": "Platí len pre tieto nálezy; nový nález na rovnakom objekte sa znovu otvorí. Pre celý objekt použi značku alebo výnimku.",
+  "statusTitle": "Nastaviť stav · {n} nálezov",
+  "store_starts": "Časy spustenia",
+  "storeText_starts": "Ako dlho trvali posledné spustenia Home Assistanta a načítanie jednotlivých integrácií; uchovávajú sa rovnako dlho ako história.",
+  "stormSelEvent": "Typ udalosti tu nemožno vylúčiť, iba entity",
+  "stormSelIntegration": "Integráciu nemožno vylúčiť, iba jej entity: „{button}“",
+  "sumGroupCount": "{group} · {n}",
+  "sysByStarts": "Spustenia",
+  "sysCat_addons_config": "Konfigurácia aplikácií",
+  "sysCat_addons_data": "Údaje aplikácií",
+  "sysCat_backup": "Zálohy",
+  "sysCat_homeassistant": "Konfigurácia Home Assistanta",
+  "sysCat_media": "Médiá",
+  "sysCat_share": "Zdieľaný priečinok",
+  "sysCat_ssl": "Certifikáty",
+  "sysCat_system": "Systém",
+  "sysHeadStarts": "Predchádzajúce spustenia",
+  "sysPending": "Veľkosti priečinkov, aplikácií a kariet sa načítavajú prvýkrát a čoskoro sa zobrazia. Procesor, pamäť a disk už zobrazujú aktuálne údaje.",
+  "sysTileStart": "Posledné spustenie",
+  "topFindings": "Najdôležitejšie nálezy",
+  "topFindingsSub": "nepočítajú sa ako samostatné položky",
+  "vacBarNewRule": "Pridať pravidlo",
+  "vacBarNoRule": "bez pravidla",
+  "vacBarNothing": "momentálne nič nezadržiava",
+  "viewCountOf": "{n} z {total} nálezov",
+  "warmupDoneSlow": "najpomalšia integrácia: {name} ({s})",
+  "warmupDoneTook": "Spustenie trvalo {x}",
+  "warmupEarly": "Čakanie sa skončí skôr, ak už sa nič nenačítava.",
+  "warmupFewer": "menej",
+  "warmupSince": "počas {x}",
+  "whyGroup_care": "sú aktualizácie, pripomienky, ciele, karanténa a odstránené repozitáre HACS. Nemenia farbu kruhu.",
+  "whyGroup_open": "je stav, ktorý treba skontrolovať: stará kontrola, nejasný stav sledovanej funkcie alebo dochádzajúce miesto na disku.",
+  "whyGroup_red": "je to, čo teraz niečo narúša: výpadky s vysokou závažnosťou (dlhé alebo kritické), nové kritické nálezy, potreba opätovného prihlásenia, porucha sledovanej funkcie, problémy po vykonaní plánu, so zálohou či databázou alebo takmer plný disk.",
+  "whyHeadTitle": "Hlavný údaj",
+  "whyRingTitle": "Kruh"
+});
+
+// Updates for English UI strings that changed meaning after upstream v1.9.0.
+Object.assign(TEXT.sk, {
+  "healthGood": "V poriadku",
+  "healthCheck": "Otvorené",
+  "healthBad": "Naliehavé",
+  "healthHint": "Stav podľa nálezov objektov, vyjadrený bodmi zo 100",
+  "healthTip": "Stav v bodoch zo 100: každý objekt s nálezom odpočítava podľa dopadu 2, 1 alebo 0,5 bodu. Farba ukazuje, či treba niečo riešiť. Nález má {affected} z {base} objektov. Ďalšie podrobnosti zobrazíš kliknutím na kruh.",
+  "openFindings": "Nálezy",
+  "findingsSubtitle": "Čo Housekeeper našiel.",
+  "unused": "Nepoužívaná automatizácia",
+  "purgeOpen": "Vytvoriť náhľad",
+  "prepareDelete": "Vytvoriť náhľad ({count})",
+  "cleanup": "Upratovanie",
+  "unreferenced": "Bez odkazov",
+  "orphanStatsHint": "Dlhodobé štatistiky v Recordere, ku ktorým už neexistuje entita, napríklad po odstránení, premenovaní alebo výmene zariadenia. Zaberajú miesto. Ak bola entita premenovaná alebo nahradená, štatistiky možno preniesť na novú cez Opravy → Nahradiť merač. Ak je naozaj preč, vyber ju a vytvor plán; pred odstránením sa vytvorí záloha. Štatistiky používané v paneli Energia sa nedajú vybrať. Možní nástupcovia sa odhadujú podľa názvu a jednotky.",
+  "dbOvDetails": "Podrobnosti",
+  "maintHint": "Zálohy, aktualizácie, blueprinty a ciele",
+  "maintenanceSubtitle": "Skontroluj zálohy, dostupné aktualizácie vrátane kontrol pred nimi, blueprinty a ciele. Housekeeper údaje iba číta; odstraňuje výlučne vlastné zálohy a až po tvojom potvrdení.",
+  "relReauthOpen": "Otvoriť integráciu a jej nález",
+  "relUnstableMore": "Zobrazených {shown} najvýraznejších z {total} entít.",
+  "relColPattern": "Najčastejšie o",
+  "dbNoSize": "Veľkosť sa nedá zmerať (databáza: {dialect})",
+  "dbAdvice_wal_large": "Reštart Home Assistanta obyčajne zmenší súbor WAL. Ak zostane veľký aj potom, niečo môže držať databázu dlho otvorenú, napríklad doplnok SQLite Web. Zatvor ho a Home Assistanta reštartuj znova.",
+  "dbAdvice_growth": "Na karte „Záťaž zápisu“ zistíš, čo zapisuje najviac. Potom môžeš entity vylúčiť z Recordera alebo skrátiť uchovávanie.",
+  "dbFootnote": "Housekeeper iba číta. Veľkosť databázy sa zaznamená raz denne (iba číslo), z čoho sa odvodzuje rast. Medzera znamená aspoň {gap} minút bez jediného záznamu stavov za posledných {gapDays} dní; ak sa končí v čase výpadku Home Assistanta podľa jeho logu, považuje sa za reštart. Chýbajúce hodiny sa počítajú od {missing} za posledných {missingDays} dní. Housekeeper nič neopravuje ani nemaže. „Kontrola databázy“: {check}",
+  "cleanupAllClasses": "Všetky dôvody",
+  "sumGroupUrgent": "Poruchy",
+  "levelsHintText": "Výpadok sa stane nálezom po informatívnom limite a postupne stúpa cez nízku a strednú na vysokú závažnosť. Prehľad počíta výpadky od strednej úrovne a od vysokej ich označuje ako naliehavé. Informatívne a nízke nálezy sú na stránke nálezov. Limity nastavíš v nastaveniach.",
+  "openFindingsQuiet": "{n} z nich je informatívnych alebo nízkych",
+  "findingsOfFollow": "{n} z nich nadväzuje na výpadky",
+  "purgeOpenCount": "Vytvoriť náhľad ({n})",
+  "safeLast": "Posledný plán: {when}",
+  "safeUndo": "zmeny sa dajú vrátiť",
+  "safeNoUndo": "zmeny už nemožno vrátiť",
+  "healthScore": "Stav: {percent} bodov",
+  "safeMode_full": "Režim ochrany: štandardný",
+  "remTitle": "Tvoje pripomienky",
+  "remindersSubtitle": "Termíny pravidelne vykonávaných úloh.",
+  "freshNew": "Nové ({days} dní)",
+  "statusHealth": "Stav: {percent} bodov",
+  "healthWhy": "Ako sa to počíta?",
+  "whyStart": "Počiatočná hodnota · kontrolované objekty",
+  "whyWeight_high": "po 2",
+  "whyWeight_medium": "po 1",
+  "whyWeight_low": "po 0,5",
+  "whyTotal": "Zostáva",
+  "whyShare": "Stav",
+  "whyNote": "Každý objekt sa započítava raz podľa najhoršej úrovne a odpočítava 2, 1 alebo 0,5 bodu; následné nálezy príčiny sú samostatné objekty a započítavajú sa vlastnou úrovňou. Zvyšná hodnota sa prepočíta na 100 bodov a neklesne pod nulu. Farba ukazuje, či treba niečo riešiť: červená pri naliehavých položkách, žltá pri otvorených alebo objektoch s vysokým či stredným dopadom, inak zelená. Údržba (ciele, pripomienky, karanténa) farbu nemení. Skryté, známe a odložené nálezy sa nepočítajú.",
+  "setTabExceptions": "Výnimky a značky",
+  "setHintExceptions": "Stavy nálezov, značky, pravidlá a štítky.",
+  "journalSubtitle": "Všetky plány z Upratovania a Opráv: čo sa zmenilo, čo sa overilo, čo možno vrátiť a čo sa odstránilo.",
+  "cleanupNothing": "Nie je čo riešiť",
+  "covBar": "Kontrola dokončená",
+  "lblHow": "Ako vytvoriť chýbajúci štítok: v Home Assistante otvor Nastavenia → Oblasti, štítky a zóny → Štítky. Vytvor štítok s presne týmto názvom, potom vyber zariadenia alebo entity (aj viac naraz) a priraď ho. Následne zopakuj kontrolu.",
+  "findingNote": "Pridať záznam do denníka",
+  "storageSubtitle": "Využitie disku, pamäte a CPU, najväčší spotrebitelia miesta aj trvanie posledných spustení. Nič sa nemení, ukladajú sa iba časy spustení.",
+  "sysFootnote": "Na Home Assistant OS a Supervised sa disk, kategórie a aplikácie načítavajú zo Supervisora; inak sa zobrazuje súborový systém obsahujúci /config. Housekeeper spočíta veľkosti v /config bez nasledovania symbolických odkazov; databáza Recordera zahŕňa aj súbory -wal a -shm. Vlastná karta z HACS sa počíta s celým priečinkom a vylúči sa z www, aby sa nič nesčítalo dvakrát. Zaťaženie CPU je priemer za 0,4 sekundy. Nič sa nemení; ukladajú sa iba časy spustení.",
+  "btLeftLow": "teraz",
+  "polNameTakenDead": "obsadené, {id} už nie je dostupné. Vyčistením sa názov uvoľní.",
+  "polSuggTaken": "{id}: {why}"
+});
+// Remove obsolete keys from the current runtime dictionary. They are not used by the new panel.
+for (const key of Object.keys(TEXT.sk)) if (!Object.hasOwn(TEXT.en, key)) delete TEXT.sk[key];
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -22025,7 +24443,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this._hass = null;
     this.data = null;
     this.view = "overview";
-    this.findingFilter = ""; this.findingAfter = false; this.findingDue = false; this.showFollowers = false; this.findingWithFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
+    this.findingFilter = ""; this.findingAfter = false; this.findingFollowers = false; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.showFollowers = false; this.goals = null; this.goalsLoading = false; this.goalForm = null; this.decide = null; this.markForm = null;
     this.findingStatus = ""; this.bulk = null;
     this.batteryFilter = "all";
     this.monitorFilter = ""; this.monitorSelected = null; this.monitorForm = null; this.monitorQuery = ""; this.monitorError = "";
@@ -22075,7 +24493,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar, wasLanguage = this._hass?.language;
     this._hass = value;
     if (first) { this.load(false); this.loadUserPrefs(); }
-    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar || wasLanguage !== value?.language) this.render();
+    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar || (this.prefs.language === "auto" && wasLanguage !== value?.language)) this.render();
   }
 
   get hass() { return this._hass; }
@@ -22193,7 +24611,7 @@ class HAHousekeeperPanel extends HTMLElement {
     return Object.hasOwn(TEXT, detected) ? detected : "en";
   }
 
-  // Plural forms are optional; language dictionaries may also use ordinary strings.
+  // Some languages have several plural forms; English is the fallback.
   t(key, vars) {
     const value = TEXT[this.lang]?.[key] ?? TEXT.en[key] ?? key;
     let output = value;
@@ -22202,7 +24620,9 @@ class HAHousekeeperPanel extends HTMLElement {
       const category = Number.isFinite(count) ? new Intl.PluralRules(this.lang).select(count) : "other";
       output = value[category] ?? value.other ?? TEXT.en[key] ?? key;
     }
-    return vars ? String(output).replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : String(output);
+    let text = String(output);
+    if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, this.lang);
+    return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
   }
 
   esc(value) {
@@ -22612,7 +25032,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
     try { page = this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`; } catch (err) { page = this.renderFailed(err); }
-    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}${this.aiBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     let swapped = false;
@@ -22659,10 +25079,14 @@ class HAHousekeeperPanel extends HTMLElement {
     const view = params.get("view") === "storms" ? "recorder" : params.get("view"); // the load view moved into "Recorder"
     if (view && (view === "unreferenced" || NAV.some(([name]) => name === view))) this.view = view;
     else if (!params.get("object") && this.prefs.startView !== "overview") this.view = this.prefs.startView;
+    // A link into the findings (a notification, a repair issue) starts from the plain open list, like a jump in the panel:
+    // the filters this browser kept from before would change what the link promised.
+    if (this.view === "findingsNav") { this.clearFindingFilters(); this.findingStatus = ""; }
     if (params.get("filter")) { if (this.view === "monitor") this.monitorFilter = params.get("filter"); else this.findingFilter = params.get("filter"); }
     if (this.view === "monitor" && this.monitorFunctions().some(item => item.id === params.get("function"))) this.monitorSelected = params.get("function");
     this._pendingTab = params.get("tab");
     if (view && params.get("tab") && !params.get("object")) (this.viewTab ||= {})[this.view] = params.get("tab");
+    if (this.view === "settings" && params.get("tab")) this.settingsTab = params.get("tab"); // the settings keep their tab apart
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
@@ -22692,12 +25116,18 @@ class HAHousekeeperPanel extends HTMLElement {
     return Object.fromEntries(["exposure", "dataflow", "secrets", "runs"].map(v => [v, found[v] || undefined]));
   }
 
+  // What the number beside a page in the menu counts: the page opens as it was left, the number names its part.
+  navCountHint(view, n) {
+    const key = ["findingsNav", "batteries", "reminders", "cleanup", "repair", "maintenance", "policies"].includes(view) ? `navCount_${view}` : "navCount_other";
+    return this.t(key, { n: this.formatNumber(n) });
+  }
+
   topbar() {
     const missedGoals = (this.goals?.goals || []).filter(g => g.state === "missed").length;
     const violations = (this.policies?.rules || []).filter(r => r.enabled).reduce((n, r) => n + (r.count || 0), 0);
     const counts = this.data ? { findingsNav: this.findingTotal(), batteries: this.lowBatteries().length || undefined, reminders: (this.data.reminders || []).filter(r => r.state === "due").length || undefined, cleanup: this.readyQuarantine() || undefined, repair: this.counterScan?.items?.length || undefined, maintenance: missedGoals || undefined, policies: violations || undefined, ...this.viewCounts() } : {};
     // Settings is the gear alone in the bar (its name is the tooltip and the label for screen readers); in the list of the narrow bar it shows its name.
-    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em>${counts[view]}</em>` : ""}</button>`;
+    const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : ""}</button>`;
     const [direct, ...menus] = NAV_GROUPS;
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
@@ -22842,7 +25272,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   bind() {
     const root = this.shadowRoot;
-    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
+    root.querySelectorAll("[data-view]").forEach(el => el.onclick = () => { this.menuOpen = null; this.navOpen = false; this.view = el.dataset.view; this.pages = {}; this.findingScanNew = false; this.findingOutages = false; this.findingHeld = false; this.findingCause = ""; this.findingCorr = ""; this.selected = null; this.trail = []; this.viewTrail = []; this.graphTrail = []; this.graphOrigin = null; this.render(); if (this.view === "changes" && !this.compare) this.loadCompare(); });
     root.querySelectorAll("[data-menu]").forEach(el => el.onclick = () => { this.menuOpen = this.menuOpen === el.dataset.menu ? null : el.dataset.menu; this.render(); });
     this.bindQuick(root);
     root.querySelector("[data-navtoggle]")?.addEventListener("click", () => { this.navOpen = !this.navOpen; this.render(); });
@@ -22853,6 +25283,12 @@ class HAHousekeeperPanel extends HTMLElement {
         this.menuOpen = null; this.render();
       });
       root.addEventListener("click", ev => { this._shift = ev.shiftKey; }, true);
+      // Only one row menu (⋮) is open at a time: opening one closes the others. "toggle" does not bubble, so it is caught on the way down.
+      root.addEventListener("toggle", ev => {
+        const menu = ev.target;
+        if (!menu?.matches?.("details.rowmenu") || !menu.open) return;
+        root.querySelectorAll("details.rowmenu[open]").forEach(other => { if (other !== menu) other.open = false; });
+      }, true);
       // The column and export pop-ups close on a click elsewhere and on Escape.
       root.addEventListener("click", ev => {
         if (!this._colOpen && !this._expOpen) return;
@@ -22930,6 +25366,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-safe]").forEach(el => el.onclick = () => {
       if (el.dataset.safeKey === "mode") this.settingsTab = "protection";
       if (el.dataset.safeKey === "coverage") this.settingsTab = "info";
+      if (el.dataset.safeKey === "ai") this.settingsTab = "mcp";
       this.noteJump(el.dataset.safe); this.view = el.dataset.safe; this.pages = {}; this.selected = null;
       this.render();
     });
@@ -22938,12 +25375,30 @@ class HAHousekeeperPanel extends HTMLElement {
       ev?.stopPropagation(); // a jump inside a row that opens something else leaves that row alone
       this.noteJump(el.dataset.jump);
       this.view = el.dataset.jump; this.pages = {};
+      // A jump into the findings starts from the plain list of open findings, then sets its own filter: what was
+      // left from before (a status, a search, a filter of the list bar) would change the number the row said.
+      if (this.view === "findingsNav") { this.clearFindingFilters(); this.findingStatus = ""; }
+      this.findingScanNew = el.dataset.jumpScanNew !== undefined;
+      // The outages of one level ("high", "medium") or all of them.
+      this.findingOutages = el.dataset.jumpOutages !== undefined ? el.dataset.jumpOutages || true : false;
+      if (el.dataset.jumpCause) this.findingCause = el.dataset.jumpCause;
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
-      if (el.dataset.jumpFresh !== undefined) { this.findingStatus = ""; this.findingAfter = false; this.findingDue = false; }
+      // A list the jump counts starts without the search and filters kept from before; its own filter comes after.
+      for (const id of [el.dataset.jumpClear, el.dataset.jumpLf?.split("|")[0]].filter(Boolean)) {
+        if (this.lv?.[id]) { this.lv[id].q = ""; this.lv[id].f = {}; this.persistLv(id); } else (this._lfPending ||= {})[id] = {}; // not opened yet: the kept filters are not loaded
+      }
+      // The quarantine tab shows one kind at a time: the one that has something, entities first.
+      if (el.dataset.jumpTab === "quarantine") { this.quarantineType = this.quarantineRows("entity").length || !this.quarantineRows("device").length ? "entity" : "device"; this.cleanupKind = this.quarantineType === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); }
       if (el.dataset.jumpLf) { const [id, name, value] = el.dataset.jumpLf.split("|"); this.setListFilter(id, name, value); }
       if (el.dataset.jumpBattery) this.batteryFilter = el.dataset.jumpBattery;
+      // A row of "since the last scan" shows its own section against the last scan, whatever base was chosen there before.
+      if (el.dataset.jumpChanges) {
+        if (this.compareBaseline !== "previous") { this.compareBaseline = "previous"; this.compare = null; }
+        this.changesCat = el.dataset.jumpChanges; this.folds = { ...this.folds, [`chg_${el.dataset.jumpChanges}`]: true };
+        const st = this.lvState("changes", "", "asc"); st.q = ""; st.f = {}; this.persistLv("changes");
+      }
       if (el.dataset.filter !== undefined) { if (el.dataset.jump === "monitor") this.monitorFilter = el.dataset.filter; else this.findingFilter = el.dataset.filter; }
-      if (el.dataset.jump === "inventory") { this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
+      if (el.dataset.jump === "inventory") { if (!el.dataset.jumpLf) this.invState().q = ""; this.statusFilter = el.dataset.status || ""; this.typeFilter = el.dataset.type || ""; this.originFilter = ""; if (!el.dataset.jumpLf) this.labelFilter = ""; this.pages = {}; }
       this.render();
       if (this.view === "changes" && !this.compare) this.loadCompare();
     });
@@ -22961,26 +25416,38 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-exp-menu]").forEach(el => el.onclick = () => { this._expOpen = this._expOpen === el.dataset.expMenu ? "" : el.dataset.expMenu; this._colOpen = ""; this.render(); });
     root.querySelectorAll("[data-exp-fmt]").forEach(el => el.onclick = () => { const [id, fmt] = el.dataset.expFmt.split("|"); this._expOpen = ""; this.exportList(id, fmt); this.render(); });
     root.querySelectorAll("[data-exp-guided]").forEach(el => el.onclick = () => { this._expOpen = ""; this.xpOpen(); });
-    root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status, origin = ""] = el.dataset.invFilter.split("|"), same = (type || status) && this.typeFilter === type && this.statusFilter === status && this.originFilter === origin; this.typeFilter = same ? "" : type; this.statusFilter = same ? "" : status; this.originFilter = same ? "" : origin; this.pages = {}; (this.folds ||= {}).inv_types = !(this.typeFilter || this.statusFilter); this.render(); this.showList(); });
+    root.querySelectorAll("[data-inv-filter]").forEach(el => el.onclick = () => { const [type, status, origin = ""] = el.dataset.invFilter.split("|"), same = (type || status) && this.typeFilter === type && this.statusFilter === status && this.originFilter === origin;
+      // The numbers of the type table count every object of a type: the list starts without a search or label left over.
+      const st = this.invState(); st.q = ""; st.f = {}; this.persistLv("inventory");
+      this.typeFilter = same ? "" : type; this.statusFilter = same ? "" : status; this.originFilter = same ? "" : origin; this.pages = {}; (this.folds ||= {}).inv_types = !(this.typeFilter || this.statusFilter); this.render(); this.showList(); });
     root.querySelectorAll("[data-inv-more]").forEach(el => el.onclick = () => { this.invAllTypes = !this.invAllTypes; this.render(); });
     root.querySelectorAll("[data-type-jump]").forEach(el => el.onclick = () => { this.noteJump("inventory"); this.typeFilter = el.dataset.typeJump; this.statusFilter = ""; this.originFilter = ""; this.pages = {}; this.view = "inventory"; this.render(); });
-    root.querySelectorAll("[data-export]").forEach(el => el.onclick = () => this.exportFindings(el.dataset.export));
     this.bindFindingStatus(root);
     this.bindDetailActions(root);
-    root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter; this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
+    // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
+    root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter, st = this.lvState("batteries", "left", "asc"); st.q = ""; st.f = {}; this.persistLv("batteries"); this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
     root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
       const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
       try {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
         const finding = this.data.findings.find(f => f.key === key);
         if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
+        this.render();
+        await this.reloadAfterDecision();
+        return;
       } catch (err) { this.failed(err); }
       this.render();
     });
     root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
-    root.querySelector("[data-with-followers]")?.addEventListener("click", () => { this.findingWithFollowers = !this.findingWithFollowers; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
-    root.querySelector("[data-finding-due]")?.addEventListener("click", () => { this.findingDue = !this.findingDue; this.pages = {}; this.render(); });
+    root.querySelector("[data-finding-followers]")?.addEventListener("click", () => { const on = !this.findingFollowers; this.clearFindingFilters(); this.findingStatus = ""; this.findingFollowers = on; this.pages = {}; this.render(); this.showList(); });
+    // One note of the filters above the list: its ✕ takes off just that filter.
+    root.querySelectorAll("[data-fclear]").forEach(el => el.onclick = () => {
+      const key = el.dataset.fclear, st = this.lvState("findings", "impact", "desc");
+      if (key === "class") this.findingFilter = ""; else if (key === "followers") this.findingFollowers = false; else if (key === "after") this.findingAfter = false; else if (key === "scanNew") this.findingScanNew = false; else if (key === "outages") this.findingOutages = false; else if (key === "held") this.findingHeld = false; else if (key === "cause") this.findingCause = ""; else if (key === "corr") this.findingCorr = "";
+      else if (key === "q") st.q = ""; else if (key.startsWith("lf:")) { delete st.f[key.slice(3)]; this.persistLv("findings"); }
+      this.pages = {}; this.render();
+    });
     this.bindMarks(root);
     this.bindExceptions(root);
     this.bindMcp(root);
@@ -22988,11 +25455,13 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindNotes(root);
     this.bindConfirm(root);
     root.querySelectorAll("[data-health-why]").forEach(el => el.onclick = () => { this.healthWhy = !this.healthWhy; this.render(); });
-    root.querySelector("[data-todo-jump]")?.addEventListener("click", () => { const card = root.querySelector("#hk-todo-card"); card?.scrollIntoView?.({ block: "start", behavior: "smooth" }); card?.focus?.({ preventScroll: true }); });
+    // A name in the headline: its row of the to-do card, in view and focused.
+    root.querySelectorAll("[data-todo-go]").forEach(el => el.onclick = () => { const target = root.querySelector(`#hk-todo-card [data-todo="${el.dataset.todoGo}"]`) || root.querySelector("#hk-todo-card"); target?.scrollIntoView?.({ block: "center", behavior: "smooth" }); target?.focus?.({ preventScroll: true }); });
     this.bindExport(root);
     this.bindPlanWizard(root);
     this.bindExclude(root);
     this.bindEntityRecorder(root);
+    this.bindSpace(root);
     this.bindEntityTrim(root);
     this.bindScanPoints(root);
     this.bindKnown(root);
@@ -23015,7 +25484,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-decide-open]").forEach(el => el.onclick = () => this.openDecide(el.dataset.decideOpen, el.dataset.decidePreset));
     root.querySelectorAll("[data-decide-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
-      form.querySelector("[data-decide-kind]").onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; if (this.decide.kind === "snooze" && !Number(this.decide.days)) this.decide.days = 30; this.render(); };
+      form.querySelectorAll("[data-decide-kind]").forEach(el => el.onchange = ev => { this.decide.kind = ev.target.value; this.decide.error = ""; this.decide.days = this.decide.kind === "snooze" ? 30 : 0; this.render(); });
       form.querySelector("[data-decide-reason]").oninput = ev => { this.decide.reason = ev.target.value; };
       form.querySelector("[data-decide-days]").onchange = ev => { this.decide.days = Number(ev.target.value); };
       form.onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); this.decide = null; this.render(); } };
@@ -23030,8 +25499,10 @@ class HAHousekeeperPanel extends HTMLElement {
       this.pages = {}; this.persistLv(id); this.render(); this.showList();
     });
     root.querySelectorAll("[data-changes-cat]").forEach(el => el.onclick = () => { const v = el.dataset.changesCat; this.changesCat = this.changesCat === v ? "" : v; this.render(); this.showList(); });
-    root.querySelectorAll("[data-finding-reset]").forEach(el => el.onclick = () => { this.findingFilter = ""; this.findingAfter = false; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { const v = el.dataset.findingFilter; this.findingFilter = v && this.findingFilter === v ? "" : v; this.pages = {}; this.render(); this.showList(); });
+    root.querySelectorAll("[data-finding-reset]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.pages = {}; this.render(); });
+    // A tile starts from the plain list of its status, so a click on it always shows the number it says.
+    // The tiles count the open findings, so a tile always shows the open list.
+    root.querySelectorAll("[data-finding-filter]").forEach(el => el.onclick = () => { const v = el.dataset.findingFilter, same = v && this.findingFilter === v; this.clearFindingFilters(); this.findingStatus = ""; this.findingFilter = same ? "" : v; this.pages = {}; this.render(); this.showList(); });
     const searchField = (selector, setter) => {
       const input = root.querySelector(selector);
       if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };
@@ -23047,7 +25518,8 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.click) el.click(); else el.onclick?.();
     };
     root.querySelectorAll("tr[data-object], g[data-graph]").forEach(openByKey);
-    root.querySelectorAll("tr[data-plan-open], tr[data-rem-row], tr[data-note-edit]").forEach(openByKey);
+    root.querySelectorAll("div.startint[data-object]").forEach(openByKey);
+    root.querySelectorAll("tr[data-plan-open], tr[data-rem-row], tr[data-note-edit], tr[data-inc-row], tr[data-bh-row]").forEach(openByKey);
     root.querySelectorAll("g[data-graph-group]").forEach(openByKey);
     root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });
     root.querySelector("[data-graph-impact]")?.addEventListener("click", () => { this.graphImpact = !this.graphImpact; this.render(); });
@@ -23110,7 +25582,6 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-meter-pick]").forEach(el => el.onclick = () => { this.meterNew = el.dataset.meterPick; this.render(); });
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRows("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
-    root.querySelector("[data-purge-page]")?.addEventListener("click", () => { (this._purgePage || []).forEach(id => this.purgeSel.add(id)); this.render(); });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
     root.querySelectorAll("[data-meter-mode]").forEach(el => el.onclick = () => { this.meterMode = el.dataset.meterMode; this.render(); });
@@ -23120,6 +25591,12 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
     root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));
     root.querySelectorAll("[data-release-no]").forEach(el => el.onclick = () => { this.releaseConfirm = null; this.render(); });
+    root.querySelectorAll("[data-conflict-key]").forEach(el => el.onclick = async () => {
+      try {
+        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: el.dataset.conflictKey, ignored: el.dataset.conflictValue === "1" });
+        await this.loadRuns();
+      } catch (err) { this.failed(err); this.render(); }
+    });
     root.querySelector("[data-runs-refresh]")?.addEventListener("click", () => this.loadRuns());
     root.querySelector("[data-rel-compare]")?.addEventListener("click", () => { this.relCompare = !this.relCompare; this.reliability = null; this.loadReliability(); });
     root.querySelectorAll("[data-rel-window]").forEach(el => el.onclick = () => { this.relWindow = Number(el.dataset.relWindow); this.reliability = null; this.pages.relentries = 1; this.pages.relunstable = 1; this.loadReliability(); });
@@ -23128,6 +25605,8 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-storm-window]").forEach(el => el.onclick = () => { this.stormsWindow = Number(el.dataset.stormWindow); this.storms = null; this.pages.stormfind = 1; this.pages.stormentities = 1; this.loadStorms(); });
     root.querySelector("[data-storm-refresh]")?.addEventListener("click", () => this.loadStorms(true));
     root.querySelector("[data-rel-refresh]")?.addEventListener("click", () => this.loadReliability(true));
+    root.querySelector("[data-ap-refresh]")?.addEventListener("click", () => this.loadAutoPause());
+    this.bindAutoPause(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
@@ -23149,9 +25628,30 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-levels-ok]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.render(); });
     root.querySelector("[data-levels-go]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.noteJump("settings"); this.settingsTab = "scan"; this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
     this.bindOften(root);
-    root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.findingFilter = ""; this.findingAfter = false; this._impactOnce = el.dataset.whyLevel; this.render(); });
+    root.querySelectorAll("[data-why-level]").forEach(el => el.onclick = () => { this.noteJump("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.clearFindingFilters(); this.findingStatus = ""; this._impactOnce = el.dataset.whyLevel; this.render(); });
     root.querySelectorAll("[data-watch-mark]").forEach(el => el.onclick = async ev => { ev.stopPropagation(); const obj = this.findObject(el.dataset.watchMark); if (!obj) return; this._pendingTab = "actions"; await this.openObject(obj); this.openMark(el.dataset.watchMark); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
+    // The list of decisions: pick rows, then take the picked decisions away; a resting one makes nothing visible.
+    const decSel = () => (this.decSel ||= new Set());
+    root.querySelectorAll("[data-dec-sel]").forEach(el => el.onchange = () => { this.pickRows("decided", el.dataset.decSel, el.checked, decSel(), [...root.querySelectorAll("[data-dec-sel]")].map(x => x.dataset.decSel)); this.render(); });
+    const decPage = root.querySelector("[data-dec-page]");
+    if (decPage) { decPage.indeterminate = decPage.hasAttribute("data-partial"); decPage.onchange = ev => { root.querySelectorAll("[data-dec-sel]").forEach(x => (ev.target.checked ? decSel().add(x.dataset.decSel) : decSel().delete(x.dataset.decSel))); this.render(); }; }
+    root.querySelector("[data-dec-clear]")?.addEventListener("click", () => { decSel().clear(); this.render(); });
+    root.querySelector("[data-dec-remove]")?.addEventListener("click", async () => {
+      await this.runBulk([...decSel()], async key => { await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false }); decSel().delete(key); });
+      this.render();
+      await this.reloadAfterDecision();
+    });
+    // An incident row opens its details below it; a click on its menu or a link inside does not.
+    root.querySelectorAll("[data-inc-more], [data-inc-row]").forEach(el => el.addEventListener("click", ev => {
+      const inner = ev.target?.closest?.("button, select, input, a, label, summary, .menupop");
+      if (el.dataset.incRow !== undefined && inner && inner !== el && el.contains(inner)) return;
+      if (el.dataset.incMore !== undefined) ev.stopPropagation();
+      const id = el.dataset.incMore ?? el.dataset.incRow;
+      this.folds = { ...this.folds, [id]: !this.foldOpen(id, false) }; this.render();
+    }));
+    // The findings of one incident: the list below narrowed to them, from the plain open list.
+    root.querySelectorAll("[data-corr-show]").forEach(el => el.onclick = () => { this.clearFindingFilters(); this.findingStatus = ""; this.findingCorr = el.dataset.corrShow; this.pages = {}; this.render(); this.showList(); });
     root.querySelectorAll("[data-watch-go]").forEach(el => el.onclick = () => { this.noteJump?.("findingsNav"); this.view = "findingsNav"; this.pages = {}; this.selected = null; this.trail = []; this.folds = { ...this.folds, corr: true, [this.incidentFoldId(el.dataset.watchGo)]: true }; this.render(); });
     root.querySelectorAll("[data-fold]").forEach(el => el.onclick = () => { if (el.dataset.fold.startsWith("chg_")) this.changesCat = ""; this.folds = { ...this.folds, [el.dataset.fold]: el.getAttribute("aria-expanded") !== "true" }; this.render(); });
     root.querySelectorAll("[data-bh-clear]").forEach(el => el.onclick = () => this.loadBackup({ type: "ha_housekeeper/backup_attest", kind: el.dataset.bhClear, clear: true }));
@@ -23233,6 +25733,11 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-ld]").forEach(el => el.onclick = () => { const st = this.lv[el.dataset.ld]; st.dir = st.dir === "desc" ? "asc" : "desc"; this.persistLv(el.dataset.ld); this.pages = {}; this.render(); });
     root.querySelectorAll("[data-lpage]").forEach(el => el.onclick = () => { const [id, n] = el.dataset.lpage.split("|"); this.pages[id] = Number(n); this.render(); this.focusListPage(id); });
     root.querySelectorAll("[data-lpagesize]").forEach(el => el.onchange = () => { (this.listSizes ||= {})[el.dataset.lpagesize] = Number(el.value); this.pages[el.dataset.lpagesize] = 1; this.render(); });
+    root.querySelectorAll("[data-warmup]").forEach(box => box.addEventListener("click", ev => {
+      if (!ev.target?.closest?.("[data-warm-all]")) return;
+      this._warmAll = !this._warmAll;
+      box.innerHTML = this.warmupInner();
+    }));
     root.querySelectorAll("[data-bh-more], [data-bh-row]").forEach(el => el.addEventListener("click", ev => {
       const inner = ev.target?.closest?.("button, select, input, a, label");
       if (el.dataset.bhRow !== undefined && inner && inner !== el && el.contains(inner)) return;
@@ -23245,7 +25750,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, StartsMixin, AutoPauseMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

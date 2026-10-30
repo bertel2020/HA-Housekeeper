@@ -11,8 +11,8 @@ from typing import Any
 
 from homeassistant.components import frontend, panel_custom
 from homeassistant.components.http import StaticPathConfig
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform
+from homeassistant.const import __version__ as HA_VERSION
 from homeassistant.core import CoreState, HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.event import (
@@ -60,9 +60,11 @@ from .maintenance import recorder_costs
 from .outage_levels import thresholds_from_options
 from .queries import REFRESH_AGE, REFRESH_TICK, next_reply
 from .runs import run_key
+from .runtime import HousekeeperConfigEntry
 from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, retryable_gaps
 from .scan_trigger import ScanRefused
 from .services import async_register_services
+from .start_times import integration_rows, process_started
 from .system_usage import system_light
 from .watch import UPDATE_ENTITIES
 from .websocket_api import async_register as async_register_websocket
@@ -71,7 +73,7 @@ _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-PLATFORMS = [Platform.SENSOR, Platform.EVENT, Platform.BUTTON]
+PLATFORMS = [Platform.SENSOR, Platform.EVENT, Platform.BUTTON, Platform.SWITCH, Platform.NUMBER]
 
 
 async def _async_initial_scan(scanner: InventoryScanner) -> None:
@@ -90,7 +92,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) -> bool:
     """Set up HA Housekeeper from a config entry."""
     scanner = InventoryScanner(hass)
     # Home Assistant reports "started" while slow integrations are still adding entities, so scans
@@ -98,6 +100,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     booting = hass.state is not CoreState.running
     if booting:
         scanner.begin_boot()
+    # What the start took is recorded once Home Assistant runs and the warm-up is over; where the process
+    # start cannot be read, the set-up of this entry is the best beginning there is.
+    boot: dict[str, Any] = {
+        "process": await hass.async_add_executor_job(process_started) if booting else None,
+        "began": time.time(),
+        "record": False,
+        "mono": 0.0,
+        "epoch": 0.0,
+    }
+    if booting:
+        scanner.boot_anchor = boot["process"] or boot["began"]
     levels = thresholds_from_options(entry.options)
     scanner.outage_info_minutes = levels[CONF_OUTAGE_INFO_MINUTES]
     scanner.outage_low_hours = levels[CONF_OUTAGE_LOW_HOURS]
@@ -117,7 +130,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     scanner.watch_hours = entry.options.get(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS)
     scanner.monitor.retention_days = scanner.history.retention_days
     await scanner.async_initialize()
-    hass.data[DOMAIN]["scanner"] = scanner
+    entry.runtime_data = scanner
 
     frontend_dir = Path(__file__).parent / "frontend"
     bundle = frontend_dir / "ha-housekeeper-panel.js"
@@ -184,7 +197,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if final["done"]:
             return
         final["done"] = True
+        if boot["record"]:
+            boot["record"] = False
+            _record_start()
         entry.async_create_background_task(hass, _scan(), "HA Housekeeper final startup scan")
+
+    def _record_start() -> None:
+        anchor = boot["process"] or boot["began"]
+        boot_s = max(0.0, boot["epoch"] - anchor)
+        settled = scanner.settled_at
+        loaded_s = None if settled is None else boot_s + max(0.0, settled - boot["mono"])
+        began = next((e for e in reversed(scanner.events.events) if e.get("kind") == "start"), {})
+        try:
+            scanner.starts.record(
+                datetime.now(UTC),
+                HA_VERSION,
+                boot_s,
+                loaded_s,
+                "process" if boot["process"] else "housekeeper",
+                integration_rows(hass),
+                scanner.history.retention_days,
+                began.get("down_seconds"),
+                bool(began.get("unclean")),
+            )
+        except Exception:
+            _LOGGER.exception("The time of this start could not be recorded")
 
     # The warm-up ends early once no integration is loading any more (plus a buffer): look every few seconds.
     @callback
@@ -201,6 +238,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if not hass.data[DOMAIN].get("start_logged"):
             hass.data[DOMAIN]["start_logged"] = True
             scanner.events.record_start(datetime.now(UTC))
+            if booting:
+                boot.update(record=True, mono=time.monotonic(), epoch=time.time())
         if booting:
             scanner.begin_warmup(WARMUP_SECONDS)
             entry.async_on_unload(async_call_later(hass, WARMUP_SECONDS + 5, _final_scan))
@@ -276,6 +315,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     entry.async_on_unload(async_track_time_interval(hass, _sample_load, timedelta(minutes=5)))
     entry.async_on_unload(scanner.outage_scans.start())
+    entry.async_on_unload(scanner.auto_pause.start())
 
     # The vacation switch: look at the findings again when it moves, and once more when the grace
     # period after its end has passed. The switch can be chosen later in the panel, so the hook follows it.
@@ -453,16 +493,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def _async_options_updated(hass: HomeAssistant, entry: HousekeeperConfigEntry) -> None:
     """Reload so the new thresholds apply."""
     hass.data[DOMAIN]["keep_panel"] = True
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) -> bool:
     """Unload the integration."""
-    scanner = hass.data[DOMAIN].get("scanner")
-    if scanner is not None and scanner.cleanup.running:
+    scanner = entry.runtime_data
+    if scanner.cleanup.running:
         # The run is not tied to the entry: stop it after the current step and let it finish,
         # so the next setup does not load a journal that is still being written.
         scanner.cleanup.cancel()
@@ -471,8 +511,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unloaded:
         if not hass.data[DOMAIN].pop("keep_panel", False):
             frontend.async_remove_panel(hass, PANEL_URL)
-        hass.data[DOMAIN].pop("scanner", None)
-        if scanner is not None:
-            await scanner.cleanup.flush_journal()
+        await scanner.cleanup.flush_journal()
         async_clear_issues(hass)
     return unloaded

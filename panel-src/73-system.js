@@ -1,9 +1,11 @@
 // SystemMixin: the pages "Storage & system", "Access & data flow" and "Credentials" under Operation and Security; mixed in by 99-register.js.
 // All three only read. A page loads on its first visit; its refresh button reads again.
 // A page and the WebSocket command it asks.
-const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories" };
+const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories", starts: "starts" };
 // What a tile of the credentials page opens: [tab, list, state filter]; "" clears the filters.
 const SEC_SHOWS = { "": ["entries", "seclist", ""], gap: ["entries", "seclist", "gap"], reauth: ["entries", "seclist", "reauth"], disabled: ["entries", "seclist", "disabled"], nomfa: ["accounts", "secusers", "nomfa"], tokens: ["tokens", "sectokens", ""] };
+Object.assign(TEXT.de, { sysPending: "Die Größen der Ordner, Apps und Karten werden gerade zum ersten Mal gelesen und erscheinen gleich. CPU, Arbeitsspeicher und Datenträger sind schon aktuell." });
+Object.assign(TEXT.en, { sysPending: "The sizes of the folders, apps and cards are being read for the first time and appear shortly. CPU, memory and disk are already current." });
 const SYS_WARN_PERCENT = 75, SYS_RED_PERCENT = 90;
 
 class SystemMixin {
@@ -18,6 +20,7 @@ class SystemMixin {
     const st = this.sysState(name);
     st.loading = true; st.error = ""; st.requested = true; this.render();
     const extra = name !== "storage" ? {} : fresh ? { fresh: true } : quick ? { quick: true } : {};
+    if (name === "storage" && fresh) this.sysLoad("starts");
     try {
       st.data = await this._hass.callWS({ type: `ha_housekeeper/${SYS_COMMANDS[name]}`, ...extra });
       // The sizes carry the time they were read; the rest of the page is live.
@@ -90,11 +93,11 @@ class SystemMixin {
   }
 
   // One sortable, searchable list with paging and CSV export: the way every list of Housekeeper works.
-  // opt: { sort, dir, sorts, text, tie, filters, filterFns, columns, exportName, header, rows, empty, cls, rowAttrs }
+  // opt: { sort, dir, sorts, text, tie, filters, filterFns, columns, exportName, header, rows, empty, cls, rowAttrs, bare }; `bare` leaves out search, view and export (a list inside another list).
   sysList(id, items, opt) {
     this.lvState(id, opt.sort, opt.dir || "asc");
     if (opt.exportName) this.setExporter(id, opt.exportName, opt.header, () => refined.map(opt.rows));
-    const bar = items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
+    const bar = !opt.bare && (items.length >= 6 || this.lv[id].q || Object.values(this.lv[id].f).some(Boolean)) ? this.listBar(id, { table: true, dense: true, sorts: opt.sorts, filters: opt.filters || [] }) : "";
     const refined = this.refine(id, items, { text: opt.text, filters: opt.filterFns || {}, sorts: opt.sorts, tie: opt.tie });
     const pg = this.paginate(id, refined, opt.pageSizes);
     this.lv[id].shown = refined.length;
@@ -118,22 +121,25 @@ class SystemMixin {
         { label: this.t("sysRam"), value: this.esc(this.sysPercent(ram.percent)), sub: ramSub || this.esc(this.t("sysUnknown")), tone: this.sysTone(ram.percent), spark: `${this.sysMeter(ram.percent)}${this.sysLine(r.history, 2)}` },
         { label: this.t("sysCpu"), value: this.esc(this.sysPercent(cpu.percent)), sub: cpuSub || this.esc(this.t("sysUnknown")), tone: this.sysTone(cpu.percent), spark: `${this.sysMeter(cpu.percent)}${this.sysLine(r.history, 3)}` },
         swap.total ? { label: this.t("sysSwapLabel"), value: this.esc(this.sysPercent(swap.percent)), sub: of(swap.used, swap.total), hint: this.t("sysSwapHint"), tone: "mute", spark: `${this.sysMeter(swap.percent)}${this.sysLine(r.history, 4)}` } : null,
+        this.startTile(),
       ]);
       const cats = r.categories?.children || [];
       const sup = Boolean(r.supervisor) && cats.length > 0;
       const miss = r.cards.some(c => c.status === "missing");
+      const starts = this.sysEnsure("starts");
       const chips = [
         ...(sup ? [["category", "sysByCategory", cats.length]] : []),
         ["folder", "sysByFolder", r.breakdown.length],
         ["misc", "sysByMisc", r.cards.length + r.blueprints.length + (r.other || []).length + (r.other_rest?.count || 0)],
+        ["starts", "sysByStarts", starts.data ? starts.data.starts.length : undefined],
       ];
       const tabs = chips.map(([id, key, n]) => ({ id, label: this.t(key), count: n, tone: id === "misc" && miss ? "red" : "" }));
       const by = this.viewTabOf("storage", tabs, chips[0][0]);
       const choice = this.viewTabBar("storage", tabs, by);
       const title = key => `<h3 class="syssec">${this.esc(this.t(key))}</h3>`;
       const apps = `<p class="factnote">${this.t("sysAppsHint")} <button type="button" class="link" data-view="components">${this.t("components")}</button></p>`;
-      const list = by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats) : this.sysConsumers(r.breakdown)}${apps}`;
-      const cut = r.truncated ? `<p class="factnote">${this.esc(this.t("sysTruncated"))}</p>` : "";
+      const list = by === "starts" ? `${title("sysHeadStarts")}${this.sysStarts()}<p class="factnote">${this.t("startsNote")}</p>` : by === "misc" ? this.sysMisc(r) : `${title(by === "category" ? "sysHeadCategory" : "sysHeadFolder")}${by === "category" ? this.sysCategories(cats, r.categories?.used) : this.sysConsumers(r.breakdown)}${apps}`;
+      const cut = r.pending ? `<p class="factnote">${this.esc(this.t("sysPending"))}</p>` : r.truncated ? `<p class="factnote">${this.esc(this.t("sysTruncated"))}</p>` : "";
       return `<div class="stack">${head}${tiles}<div class="panel">${choice}${cut}${list}${this.howCounted("sysFootnote")}</div></div>`;
     });
   }
@@ -147,15 +153,24 @@ class SystemMixin {
 
   sysBySize() { return [{ key: "size", label: "sysColSize", dir: "desc", get: x => x.bytes ?? null }]; }
 
-  sysCategories(cats) {
+  // The categories of the disk in words, with the name the system gives them below; the share is against the space
+  // in use, as bar and number, like the tables of the database.
+  sysCategories(cats, used = cats.reduce((sum, c) => sum + (c.bytes || 0), 0)) {
     const max = Math.max(0, ...cats.map(c => c.bytes));
+    const label = c => { const key = `sysCat_${c.id}`, text = this.t(key); return text === key ? c.label : text; };
+    const share = c => (used ? Math.round((c.bytes || 0) / used * 100) : 0);
     return this.sysList("syscat", cats, {
-      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: c => c.label }],
-      text: c => `${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
-      columns: [{ key: "name", label: "sysColCategory", cell: c => this.nameCell(c.label, c.id !== c.label ? c.id : "") }, ...this.sysSizeColumns(max)],
-      exportName: "storage-categories", header: [this.t("sysColCategory"), "ID", "Bytes"], rows: c => [c.label, c.id, c.bytes],
+      sort: "size", dir: "desc", sorts: [...this.sysBySize(), { key: "name", label: "sysColCategory", dir: "asc", get: label }],
+      text: c => `${label(c)} ${c.label} ${c.id}`, tie: c => c.id, empty: "sysNoCategories",
+      columns: [
+        { key: "name", label: "sysColCategory", cell: c => this.nameCell(label(c), label(c) !== c.label ? c.label : "") },
+        this.sysSizeColumns(max)[0],
+        { key: "share", label: "sysColShare", sortable: false, cell: c => `<span class="dbshare">${this.sysShare(c.bytes || 0, used)}<b>${this.esc(`${this.formatNumber(share(c))} %`)}</b></span>` },
+      ],
+      exportName: "storage-categories", header: [this.t("sysColCategory"), "ID", "Bytes", "%"], rows: c => [label(c), c.id, c.bytes, share(c)],
     });
   }
+
 
   sysConsumers(items) {
     const max = Math.max(0, ...items.map(x => x.bytes));
@@ -194,8 +209,11 @@ class SystemMixin {
 
   // Everything that is not a place of its own: the dashboard cards, the blueprints and the other entries under /config.
   sysMisc(r) {
-    const part = (title, body, count, index) => this.fold(`sysmisc_${index}`, { tone: index === 0 && r.cards.some(c => c.status === "missing") ? "red" : "mute", title: this.esc(this.t(title)), pill: this.formatNumber(count) }, body, index === 0);
     const other = r.other || [];
+    const sum = items => items.reduce((total, x) => total + (x.bytes || 0), 0);
+    const bytes = [sum(r.cards), sum(r.blueprints), sum(other) + (r.other_rest?.bytes || 0)], max = Math.max(...bytes);
+    // Always folded; the row itself shows what the part takes, as a bar against the largest part.
+    const part = (title, body, count, index) => this.fold(`sysmisc_${index}`, { tone: index === 0 && r.cards.some(c => c.status === "missing") ? "red" : "mute", title: this.esc(this.t(title)), pill: this.formatNumber(count), meter: `<span class="dbshare">${this.sysShare(bytes[index], max)}<b>${this.esc(this.formatBytes(bytes[index]))}</b></span>` }, body, false);
     return `${part("sysTabCards", this.sysCards(r.cards), r.cards.length, 0)}${part("sysTabBlueprints", this.sysBlueprints(r.blueprints), r.blueprints.length, 1)}${part("sysSecOther", this.sysOther(other, r.other_rest), other.length + (r.other_rest?.count || 0), 2)}`;
   }
 
@@ -622,8 +640,9 @@ class SystemMixin {
     root.querySelectorAll("[data-sec-show]").forEach(el => el.onclick = () => {
       const [tab, list, value] = SEC_SHOWS[el.dataset.secShow] || SEC_SHOWS[""];
       (this.viewTab ||= {}).secrets = tab;
+      // A tile shows what it counts: the list starts without the search and the other filters kept before.
       const st = this.lvState(list, "name", "asc");
-      st.f = value ? { ...st.f, state: value } : {};
+      st.q = ""; st.f = value ? { state: value } : {};
       this.persistLv(list); this.pages = {}; this.render();
     });
     root.querySelector("[data-ha-menu]")?.addEventListener("click", () => this.toggleHaSidebar());

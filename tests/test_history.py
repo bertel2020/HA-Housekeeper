@@ -237,8 +237,8 @@ def test_series_carries_open_findings_classes_and_the_state_of_the_house_for_the
         )
     )
     points = history.series()["points"]
-    assert [(p["open"], p["health"]) for p in points] == [(0, 100.0), (2, 75.0)], (
-        "an object counts once, with its weight"
+    assert [(p["open"], p["health"]) for p in points] == [(0, 100.0), (2, 50.0)], (
+        "an object counts once, with its weight: medium takes off one"
     )
     assert points[0]["classes"] == {} and points[1]["classes"] == {
         "unused": 1,
@@ -267,6 +267,45 @@ def test_the_lead_series_leaves_out_the_follow_ups_of_a_cause(hass) -> None:
     history.record(snapshot)
     point = history.series()["points"][0]
     assert (point["open"], point["lead"], point["lead_classes"]) == (3, 2, {"unused": 2})
+    # The tiles count every open finding by its reason; what starts a chain is an outage whatever its class.
+    assert point["reasons"] == {"unused": 2, "outage": 1}
+
+
+def test_the_state_of_the_house_counts_the_followers_of_a_cause_as_objects(hass) -> None:
+    history = ScanHistory(hass)
+    snapshot = _snapshot(
+        "2026-10-06T08:00:00+00:00",
+        [("entity", "x.a", "active"), ("entity", "x.b", "active"), ("entity", "x.c", "active")],
+    )
+    finding = lambda object_id, **extra: {  # noqa: E731
+        "rule_id": "entity.unavailable",
+        "object_id": object_id,
+        "classification": "unavailable",
+        "impact": "low",
+        **extra,
+    }
+    snapshot["findings"] = [
+        finding("x.a"),
+        finding("x.b", cause_id="c1"),
+        finding("x.c", cause_id="c1"),
+    ]
+    history.record(snapshot)
+    point = history.series()["points"][0]
+    assert point["health"] == 50.0, "three objects, each taking off a half: the followers count too"
+
+
+def test_an_automation_is_rated_once_not_also_as_its_registry_entity(hass) -> None:
+    history = ScanHistory(hass)
+    snapshot = _snapshot(
+        "2026-10-06T08:00:00+00:00",
+        [
+            ("automation", "automation.a", "active"),
+            ("entity", "automation.a", "active"),
+            ("entity", "x.b", "active"),
+        ],
+    )
+    history.record(snapshot)
+    assert history.series()["points"][0]["rated"] == 2
 
 
 def test_a_pinned_scan_point_is_named_compared_kept_beyond_the_retention_and_deleted(hass) -> None:

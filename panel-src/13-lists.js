@@ -69,7 +69,7 @@ class ListsMixin {
   }
 
   // A short message at the bottom of the page for small actions; it goes away by itself.
-  toast(text, error = false) {
+  toast(text, error = false, ms = 0) {
     const root = this.shadowRoot;
     if (!root?.querySelector || typeof document === "undefined") return;
     try {
@@ -77,7 +77,7 @@ class ListsMixin {
       const el = document.createElement("div");
       el.className = error ? "toast bad" : "toast"; el.setAttribute("role", error ? "alert" : "status"); el.textContent = text;
       root.appendChild(el);
-      setTimeout(() => el.remove(), error ? 8000 : 2600);
+      setTimeout(() => el.remove(), ms || (error ? 8000 : 2600));
     } catch (_) { /* a missing message is no loss */ }
   }
 
@@ -105,6 +105,20 @@ class ListsMixin {
   }
 
   // Shows only what is ticked in a list (the box is the proof before something is deleted).
+  // What a selection offers (clear it, show only it, how many) appears with the first tick, as on the findings page;
+  // "only the selected" stays while it is on, so the way back is there.
+  // The menu behind the three dots of a row: [icon, label key, attributes] per entry; a null entry draws a line; attributes that start with href= make an external link. Nothing without entries.
+  rowMenuHtml(entries) {
+    const list = entries.filter((e, i, all) => e === null ? i > 0 && i < all.length - 1 && all[i - 1] !== null : true);
+    if (!list.some(Boolean)) return "";
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
+  }
+
+  selTools(id, count, clearAttr) {
+    if (!count) return this.selOnly?.[id] ? this.selOnlyButton(id, count) : "";
+    return `<button class="btn quiet" ${clearAttr}>${this.t("clearSelection")}</button>${this.selOnlyButton(id, count)}<span class="selcount" role="status">${this.t("selectedCount", { count })}</span>`;
+  }
+
   selOnlyButton(id, count) {
     const on = Boolean(this.selOnly?.[id]);
     return `<button class="btn quiet" data-sel-only="${this.esc(id)}" aria-pressed="${on}" ${count || on ? "" : "disabled"}>${this.t(on ? "showAll" : "showSelectedOnly")}</button>`;
@@ -137,7 +151,7 @@ class ListsMixin {
     requestAnimationFrame(() => this.shadowRoot?.querySelector(".filteron, .listbar")?.scrollIntoView?.({ block: "nearest" }));
   }
 
-  listBar(id, { sorts, filters = [], columns = [], dense = false, table = false }) {
+  listBar(id, { sorts, filters = [], columns = [], dense = false, table = false, note = true }) {
     const st = this.lv[id];
     for (const f of filters) if (st.f[f.name] && !f.options.some(([v]) => v === st.f[f.name])) delete st.f[f.name]; // a kept value this list no longer offers
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
@@ -145,8 +159,8 @@ class ListsMixin {
     const desc = st.dir === "desc";
     const sortOptions = sorts.map(x => `<option value="${x.key}" ${st.sort === x.key ? "selected" : ""}>${this.t(x.label)}${st.sort === x.key ? (desc ? " ↓" : " ↑") : ""}</option>`).join("");
     const on = filters.filter(f => st.f[f.name]).map(f => `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`);
-    const note = this.filterNote(on, `data-lf-set="${id}||"`);
-    return `${note}<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}" aria-label="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup${table ? " table-sort" : ""}"><select data-ls="${id}" aria-label="${this.t("sortBy")}" title="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}<span class="listbar-actions">${this.viewsControl(id)}${dense ? this.denseButton(id) : ""}${this.listTools(id, columns)}</span></div>`;
+    const noteHtml = note ? this.filterNote(on, `data-lf-set="${id}||"`) : ""; // a list with notes of its own leaves this out
+    return `${noteHtml}<div class="listbar"><input type="search" data-lq="${id}" value="${this.esc(st.q)}" placeholder="${this.t("searchList")}" aria-label="${this.t("searchList")}">${selects}${sorts.length ? `<span class="sortgroup${table ? " table-sort" : ""}"><select data-ls="${id}" aria-label="${this.t("sortBy")}" title="${this.t("sortBy")}">${sortOptions}</select><button class="dirbtn" data-ld="${id}" title="${this.t(desc ? "sortDescending" : "sortAscending")}" aria-label="${this.t(desc ? "sortDescending" : "sortAscending")}"><ha-icon icon="${desc ? "mdi:sort-descending" : "mdi:sort-ascending"}"></ha-icon></button></span>` : ""}<span class="listbar-actions">${this.viewsControl(id)}${dense ? this.denseButton(id) : ""}${this.listTools(id, columns)}</span></div>`;
   }
 
   // Column picker and export menu of a list; both are optional. `columns` are the switchable columns: { key, label }.
@@ -260,7 +274,7 @@ class ListsMixin {
     columns = columns.filter((c, i) => !i || !this.colHidden(id, c.key));
     const head = columns.map(c => {
       const on = st.sort === c.key, sortedHere = on || c.sortKeys?.includes(st.sort);
-      const inner = c.allBox ? c.allBox(rows) : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
+      const inner = c.allBox ? c.allBox(rows) : c.menu ? `<span class="sr-only">${this.t(c.label)}</span>` : c.narrow ? `<ha-icon icon="mdi:checkbox-marked-outline" title="${this.esc(this.t(c.label))}"></ha-icon><span class="sr-only">${this.t(c.label)}</span>` : c.sortable === false ? this.t(c.label) : `<button type="button" class="thbtn" data-lsort="${id}|${c.key}|${c.dir || "asc"}">${this.t(c.label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
       return `<th scope="col"${c.narrow ? ' class="selcol"' : ""} aria-sort="${sortedHere ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${c.headPrefix ? `<span class="headsel">${c.headPrefix()}${inner}</span>` : inner}${c.headSuffix ? c.headSuffix() : ""}</th>`;
     }).join("");
     const body = rows.map(item => {
@@ -273,9 +287,12 @@ class ListsMixin {
   // A table of objects (entities, entries, automations): name with id, type when mixed, state, plus extra columns.
   // rows: [{ key: "entity:light.a", type, name, sub, tone, state, stateLabel, pill, rank, open }]; open: false makes a row that opens nothing; bar: false leaves the bar to the caller (the header still sorts); extras: [{ key, label, dir, get, cell(row) }].
   // The bar shows from `min` rows on; a row opens its object.
-  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
+  // Options: menu(row) -> entries of rowMenuHtml (or true for the usual one of objectRowMenu) puts the three dots in a column of their own; stripe marks the red rows at their edge;
+  // sort: the first sort ("status" puts the problems on top, the names after them); statusFirst puts the state next to the name.
+  objectTable(id, rows, { extras = [], min = 6, bar: withBar = true, empty = "", menu = null, stripe = false, sort = "name", statusFirst = false, tile = row => this.tile(row.type, row.tone === "ok" ? "" : row.tone) } = {}) {
     if (!rows.length) return empty ? `<div class="emptymsg">${empty}</div>` : "";
-    this.lvState(id, "name", "asc");
+    this.lvState(id, sort, "asc");
+    if (menu === true) menu = r => this.objectRowMenu(r);
     const types = [...new Set(rows.map(r => r.type))].sort();
     const tones = ["red", "warn", "violet", "blue", "mute", "ok"], rank = r => (r.rank ?? tones.indexOf(r.tone));
     const sorts = [
@@ -290,16 +307,27 @@ class ListsMixin {
     ];
     const st = this.lv[id];
     const bar = withBar && (rows.length >= min || st.q) ? this.listBar(id, { table: true, dense: true, sorts, filters }) : "";
-    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => r.key });
+    const shown = this.refine(id, rows, { text: r => [r.name, r.sub, ...extras.map(x => String(x.get(r) ?? ""))].join(" "), filters: { type: (r, v) => r.type === v, state: (r, v) => r.state === v }, sorts, tie: r => (sort === "status" ? `${r.name}\u0000${r.key}` : r.key) });
     const pg = this.paginate(id, shown);
+    const stateCol = { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill };
     const columns = [
       { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${tile(r)}<div>${this.nameCell(r.name, r.sub)}</div></div>` },
+      ...(statusFirst ? [stateCol] : []),
       ...(types.length > 1 ? [{ key: "type", label: "sortType", dir: "asc", cell: r => this.esc(this.t(r.type)) }] : []),
       ...extras.map(x => ({ key: x.key, label: x.label, dir: x.dir || "asc", cell: x.cell })),
-      { key: "status", label: "sortStatus", dir: "asc", cell: r => r.pill },
+      ...(statusFirst ? [] : [stateCol]),
+      ...(menu && shown.some(r => this.rowMenuHtml(menu(r))) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml(menu(r)) }] : []),
     ];
-    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
+    const tone = r => (stripe && r.tone === "red" ? ' data-rowtone="red"' : "");
+    const table = shown.length ? this.listTable(id, columns, pg.rows, { cls: "objs", rowAttrs: r => (r.open === false ? 'class="static"' : `data-object="${this.esc(r.key)}" tabindex="0" role="button" aria-label="${this.esc(r.name)}"`) + tone(r) }) : `<div class="emptymsg">${this.noMatches(id)}</div>`;
     return `${bar}${table}${pg.footer}`;
+  }
+
+  // The usual menu of an object row: open it, open it in Home Assistant, show it in the dependency diagram.
+  objectRowMenu(r) {
+    const obj = r.open === false ? null : this.findObject(r.key), path = obj ? this.haPath(obj) : null;
+    if (!obj) return [];
+    return [["mdi:open-in-new", "polOpenObject", `data-object="${this.esc(r.key)}"`], path ? ["mdi:home-outline", "openInHA", `data-ha-path="${this.esc(path)}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(r.key)}"`]];
   }
 
   // The arrow of a row that unfolds in place (a history, a detail): the look of a fold's arrow, as a button of its own; attr is the data attribute the click handler listens to.
@@ -434,13 +462,17 @@ class ListsMixin {
     const from = (page - 1) * size;
     const rows = items.slice(from, from + size);
     if (items.length <= (own ? own[0] : 20)) return { rows, footer: "" };
-    const sizes = (own || [20, 50, 100]).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
-    const footer = `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + rows.length)} ${this.t("of")} ${this.formatNumber(items.length)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
-    return { rows, footer };
+    return { rows, footer: this.pageFooter(id, { page, count, from, shown: rows.length, total: items.length, size, own }) };
+  }
+
+  // The bar below a paged list: which rows of how many, the page size, and the way to the other pages.
+  pageFooter(id, { page, count, from, shown, total, size, own }) {
+    const sizes = (own || PAGE_SIZES).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
+    return `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + shown)} ${this.t("of")} ${this.formatNumber(total)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
   }
 
   // A fold: the head always shows, the body only while open. `def` is the state until the person toggles it.
-  // head: { tone, title, sub, pill }; the state lives in this.folds and survives a render.
+  // head: { tone, title, sub, pill, count }; the state lives in this.folds and survives a render.
   foldOpen(id, def) { return this.folds?.[id] ?? def; }
 
   // The size of the current view at the right end of a selection row: what the filters and search leave over.
@@ -448,8 +480,8 @@ class ListsMixin {
 
   fold(id, head, body, def, force) {
     const open = force ?? this.foldOpen(id, def);
-    const pill = head.pill ? `<span class="pill ${head.tone || "mute"}">${this.esc(head.pill)}</span>` : "";
-    const top = `<button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${head.tone || "mute"}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${head.sub ? `<small>${this.esc(head.sub)}</small>` : ""}</span>${pill}</button>`;
+    const pill = `${head.count ? `<span class="pill mute">${this.esc(head.count)}</span>` : ""}${head.pill ? `<span class="pill ${head.tone || "mute"}">${this.esc(head.pill)}</span>` : ""}`;
+    const top = `<button class="row foldhead" data-fold="${this.esc(id)}" aria-expanded="${open}"><span class="tile ${head.tone || "mute"}"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${head.title}</strong>${head.sub ? `<small>${this.esc(head.sub)}</small>` : ""}</span>${head.meter || ""}${pill}</button>`;
     return `<div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${body}</div>` : ""}</div>`;
   }
 }

@@ -85,13 +85,15 @@ class DiagnosisMixin {
     } else if (item.object_type === "device") {
       const ids = item.config_entry_ids || [];
       ids.forEach(id => rows.push(this.integrationCheck(id).row));
-      const down = this.data.findings.some(f => f.rule_id === "device.down" && f.object_id === item.object_id && !f.ignored);
-      rows.push(down ? this.check(t("entities"), "red", t("devAllDown", { n: this.formatNumber(item.entity_count) }), t("unavailable"))
+      const downFinding = this.data.findings.find(f => f.rule_id === "device.down" && f.object_id === item.object_id && !f.ignored), down = !!downFinding;
+      // A device in standby: its entities lost their values (unknown) rather than being unavailable.
+      const standby = downFinding?.evidence?.[0]?.kind === "all_entities_without_value";
+      rows.push(down ? this.check(t("entities"), "red", t(standby ? "devAllNoValue" : "devAllDown", { n: this.formatNumber(item.entity_count) }), t(standby ? "noValue" : "unavailable"))
         : this.check(t("entities"), item.entity_count ? "ok" : "warn", this.formatNumber(item.entity_count), item.entity_count ? t("present") : t("empty")));
       const downSince = down ? this.data.findings.find(f => f.rule_id === "device.down" && f.object_id === item.object_id)?.first_detected_at : null;
       if (down) {
-        cause = t("cause_device_unavailable", { n: this.formatNumber(item.entity_count), span: downSince ? this.spanText(Math.max(0, (Date.now() - Date.parse(downSince)) / 3600000)) : "?" });
-        hint = t("hint_device_unavailable");
+        cause = t(standby ? "cause_device_novalue" : "cause_device_unavailable", { n: this.formatNumber(item.entity_count), span: downSince ? this.spanText(Math.max(0, (Date.now() - Date.parse(downSince)) / 3600000)) : "?" });
+        hint = t(standby ? "hint_device_novalue" : "hint_device_unavailable");
         tone = "red";
       } else cause = item.status === "disabled" ? t("cause_device_off") : item.status === "empty" ? t("cause_device_empty") : t("cause_device_active");
     } else if (item.object_type === "config_entry") {
@@ -343,7 +345,7 @@ class DiagnosisMixin {
     const item = { ...base, ...(this.details.get(this.objectKey(base)) || {}) };
     const key = this.objectKey(item);
     if (["automation", "script"].includes(item.object_type)) { this.ensureRuns(); this.ensureQuality(); }
-    if (item.object_type === "config_entry" || item.object_type === "integration") this.ensureReliability();
+    if (item.object_type === "config_entry" || item.object_type === "integration") { this.ensureReliability(); this.ensureAutoPause(); }
     if (item.object_type === "integration" && item.custom && this.detailTab === "overview") this.sysEnsure("storage"); // the folder size
     if (item.object_type === "integration" && this.detailTab === "access") { this.sysEnsure("dataflow"); this.sysEnsure("secrets"); }
     // The reports of Access & data flow and Credentials are read when their tab is opened, not with the page.
@@ -358,11 +360,16 @@ class DiagnosisMixin {
     const tab = tabs.some(([id]) => id === this.detailTab) ? this.detailTab : "overview";
     const path = this.haPath(item), tone = this.tone(item.status) === "ok" ? "" : this.tone(item.status);
     const back = this.trail.length ? this.trail[this.trail.length - 1].name : this.t(this.view);
+    const ap = this.apPageParts(item.object_type === "config_entry" ? item.object_id : item.object_type === "integration" && item.entries?.length === 1 ? item.entries[0].object_id : "", item.state);
+    const moreInfo = (item.object_type === "entity" || item.object_type === "scene") && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : "";
+    const primary = moreInfo || ap.primary;
+    const exportable = ["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type);
+    const menu = [["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"`], exportable ? ["mdi:export-variant", "xpButton", `data-xp-from="${this.esc(key)}"`] : null, null, ...ap.menu];
     const summary = this.detailSummary(item, key).map(([label, value]) => `<span><small>${label}</small><b>${value}</b></span>`).join("");
     const tablist = tabs.map(([id, label, count, tone]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}${tone ? `<i class="tabdot ${tone}" aria-hidden="true"></i>` : ""}</button>`).join("");
     return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div><div class="headpills">${this.pill(item.status)}<span class="pill mute">${this.t(item.object_type)}</span></div><h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
-      <div class="actions">${(item.object_type === "entity" || item.object_type === "scene") && this.canMoreInfo(item.object_id) ? `<button class="btn primary" data-more-info="${this.esc(item.object_id)}"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("openEntity")}</button>` : ""}${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}<button class="btn" data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button>${["entity", "device", "area", "automation", "script", "scene", "dashboard"].includes(item.object_type) ? `<button class="btn" data-xp-from="${this.esc(key)}"><ha-icon icon="mdi:export-variant"></ha-icon>${this.t("xpButton")}</button>` : ""}</div></div>
+      <div class="actions">${ap.pill}${primary}${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}${this.rowMenuHtml(menu)}</div></div>
       <div class="panel sumline">${summary}</div>
       ${this.statusBand(item, key)}
       <div class="tabs" role="tablist" aria-label="${this.esc(this.t("tabsLabel"))}">${tablist}</div>

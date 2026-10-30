@@ -161,6 +161,14 @@ def test_a_failed_attempt_or_failed_target_is_a_problem() -> None:
     assert checks["last_run"]["level"] == "unknown"
 
 
+def test_a_running_backup_is_not_a_failed_attempt() -> None:
+    late = {"config": config(last_attempted=ago(minutes=5), last_completed=ago(hours=24))}
+    _, checks = judge({**state(), **late})
+    assert checks["last_run"]["values"]["failed_attempt"] is True  # unfinished and not running
+    _, checks = judge({**state(), **late, "running": True})
+    assert checks["last_run"]["level"] == "ok"
+
+
 def test_a_backup_only_on_the_local_target_is_a_note() -> None:
     _, checks = judge(state([backup(agents=("hassio.local",))]))
     assert checks["targets"]["level"] == "note"
@@ -396,6 +404,7 @@ async def test_the_attestations_survive_a_restart_and_reject_unknown_kinds(
         "emergency_kit": None,
         "restore_test": None,
         "encryption": None,
+        "external": None,
     }
     store.set("emergency_kit")
     store.set("restore_test", date(2026, 9, 1))
@@ -449,3 +458,21 @@ def test_the_next_backup_must_fit_on_the_local_target() -> None:
     assert judge(state(newest, disk_free=900))[1]["space"]["level"] == "problem"
     assert judge(state(newest, disk_free=None))[1]["space"]["level"] == "unknown"
     assert "space" not in judge(state([backup(5, agents=("cloud.cloud",))]))[1]
+
+
+def test_housekeeper_backups_never_count_as_the_backup_strategy() -> None:
+    own = backup(1, own=True, database=True, agents=("backup.local",))
+    report, checks = judge({**state([own]), "config": config(agent_ids=[])})
+    assert checks["setup"]["level"] == "problem" and checks["newest"]["level"] == "problem"
+    assert report["backup_count"] == 0 and report["backups"][0]["own"] is True
+    _, checks = judge(state([own, backup(10)]))
+    assert checks["newest"]["values"]["age_hours"] == 10
+
+
+def test_backups_made_outside_home_assistant_leave_out_its_checks() -> None:
+    own = backup(1, own=True, size=1000, agents=("backup.local",))
+    docker = {**state([own], disk_free=900), "config": config(agent_ids=[], recurrence="never")}
+    report, checks = judge(docker, attest={"external": ago(days=2)})
+    assert set(checks) == {"external", "space", "restore_test"}
+    assert checks["external"]["level"] == "ok" and checks["space"]["level"] == "problem"
+    assert report["own_count"] == 1 and report["attest"]["external"] == ago(days=2)

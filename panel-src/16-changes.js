@@ -68,7 +68,7 @@ class ChangesMixin {
     const lines = [
       `# ${this.t("weeklyTitle")}`, "",
       `${this.t("comparedWith")} ${this.formatDate(c.baseline_at)} → ${this.formatDate(this.data.meta.scanned_at)}`, "",
-      `- ${this.t("health")}: ${h.percent} %`,
+      `- ${this.t("health")}: ${this.t("pointsOf100", { n: h.percent })}`,
       ...[["statusChanges", c.status_changes], ["newFindings", c.new_findings], ["resolvedFindings", c.resolved_findings], ["endedFindings", c.ended_findings || { total: 0 }], ["newObjects", c.new_objects], ["removedObjects", c.removed_objects]].map(([label, part]) => `- ${this.t(label)}: ${part.total}`), "",
       ...list20(this.t("newFindings"), c.new_findings, f => `- ${this.findingTitle(f)}: ${name({ name: this.findObject(this.findingKey(f))?.name, object_id: f.object_id })}`),
       ...list20(this.t("resolvedFindings"), c.resolved_findings, f => `- ${this.findingTitle(f)}: ${f.object_id}`),
@@ -133,7 +133,7 @@ class ChangesMixin {
       const shown = items.filter(matches);
       if (items.length && !shown.length) return `<div class="emptymsg">${this.t("changesFiltered", { n: items.length })}</div>`;
       this.lvState(`changes-${id}`, sort, "asc");
-      return this.objectTable(`changes-${id}`, shown.map(toRow), { bar: false });
+      return this.objectTable(`changes-${id}`, shown.map(toRow), { bar: false, menu: true, stripe: true });
     };
     const objRow = (type, id, over) => {
       const key = `${type}:${id}`, obj = this.findObject(key);
