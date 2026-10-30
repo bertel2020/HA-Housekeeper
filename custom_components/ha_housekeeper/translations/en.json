@@ -27,6 +27,18 @@
           "stale_hours": "Report sensors without new values after (hours, 0 = off)",
           "history_days": "Keep histories for (days)",
           "watch_hours": "Watch after updates (hours, 0 = off)"
+        },
+        "data_description": {
+          "outage_info_minutes": "An entity or integration that is down this long becomes an info finding.",
+          "outage_low_hours": "From this duration the outage is a low finding.",
+          "outage_medium_hours": "From this duration the outage is a medium finding and counts in the sensors.",
+          "outage_high_hours": "From this duration the outage is a high finding; an outage that affects automations is high earlier.",
+          "unused_automation_days": "An automation that is switched off or has not run for this many days is reported as unused.",
+          "low_battery_percent": "A battery at or below this level is reported as low.",
+          "scan_interval_hours": "Housekeeper scans by itself at this interval; outages and updates add extra scans.",
+          "stale_hours": "A sensor that has sent no new value for this long is reported as no longer reporting.",
+          "history_days": "How long the history of the scans and of the home functions is kept.",
+          "watch_hours": "How long extra scans run after an update, to show what stopped working with it."
         }
       }
     },
@@ -61,6 +73,18 @@
     "database_damaged": {
       "title": "The recorder database is damaged",
       "description": "A check on {at} found damage in the recorder database: {first} Housekeeper deletes nothing from the recorder until a check comes back clean. Make a backup first, rebuild the affected indexes with REINDEX or restore a backup. [Open Housekeeper]({link})."
+    },
+    "backup_problem": {
+      "title": "Backup protection reports a problem",
+      "description": "Backup protection found {count} check(s) that need attention, for example no recent backup, a failed run or too little free space. [Open backup protection]({link}). Nothing is changed automatically."
+    },
+    "orphaned_statistics": {
+      "title": "{count} statistics without an entity",
+      "description": "Housekeeper found {count} statistics whose entity no longer exists. They take space in the database. [Show in Housekeeper]({link}). Nothing is changed automatically."
+    },
+    "auto_pause_exhausted": {
+      "title": "{title} paused for {days} days",
+      "description": "Housekeeper paused {title} after repeated failed setups and has tried it again for {days} days without success. It stays paused until you end the pause. [Open Auto-pause]({link})"
     }
   },
   "entity": {
@@ -106,6 +130,15 @@
           "cleanup": "Plan running",
           "starting": "Waiting for startup"
         }
+      },
+      "monitor": {
+        "name": "Home function {name}",
+        "state": {
+          "ok": "OK",
+          "problem": "Problem",
+          "unverified": "Unverified",
+          "disabled": "Disabled"
+        }
       }
     },
     "button": {
@@ -126,6 +159,43 @@
             }
           }
         }
+      }
+    },
+    "switch": {
+      "hint_orphaned_entities": {
+        "name": "Repair hint: orphaned entities"
+      },
+      "hint_unavailable_entities": {
+        "name": "Repair hint: unavailable entities"
+      },
+      "hint_broken_automations": {
+        "name": "Repair hint: broken references"
+      },
+      "hint_scan_health": {
+        "name": "Repair hint: scan problems"
+      },
+      "hint_database_damaged": {
+        "name": "Repair hint: damaged database"
+      },
+      "hint_backup_problem": {
+        "name": "Repair hint: backup problem"
+      },
+      "hint_orphaned_statistics": {
+        "name": "Repair hint: orphaned statistics"
+      }
+    },
+    "number": {
+      "hint_min_orphaned_entities": {
+        "name": "Repair hint only above: orphaned entities"
+      },
+      "hint_min_unavailable_entities": {
+        "name": "Repair hint only above: unavailable entities"
+      },
+      "hint_min_broken_automations": {
+        "name": "Repair hint only above: broken references"
+      },
+      "hint_min_orphaned_statistics": {
+        "name": "Repair hint only above: orphaned statistics"
       }
     }
   },
