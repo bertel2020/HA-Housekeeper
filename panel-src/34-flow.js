@@ -64,6 +64,7 @@ class FlowMixin {
 
   flowRefButton([type, id]) {
     const key = `${type}:${id}`, obj = this.findObject(key);
+    if (!obj && type === "entity" && (this.data?.meta?.state_only_entities || []).includes(id)) return `<span class="chip flowref" title="${this.esc(id)}">${this.esc(id)}</span>`; // only a state (zone.home, sun.sun), no registry entry
     return obj
       ? `<button class="chip flowref" data-object="${this.esc(key)}">${this.esc(obj.name || id)}</button>`
       : `<span class="chip flowref missing" title="${this.esc(id)}">${this.esc(id)} · ${this.t("missing")}</span>`;

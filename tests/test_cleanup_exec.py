@@ -1310,3 +1310,14 @@ async def test_a_reload_that_ends_in_a_sign_in_request_says_so(hass: HomeAssista
         ("entry_loaded", False),
         ("entry_reauth", False),
     ]
+
+
+async def test_entities_without_registry_entry_are_listed_as_state_only(
+    hass: HomeAssistant,
+) -> None:
+    scanner = await make_scanner(hass)
+    hass.states.async_set("zone.home", "0")
+    registered = orphan(hass, "registered")
+    snapshot = await scanner.async_scan()
+    assert "zone.home" in snapshot["meta"]["state_only_entities"]
+    assert registered.entity_id not in snapshot["meta"]["state_only_entities"]
