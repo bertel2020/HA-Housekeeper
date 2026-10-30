@@ -27,6 +27,18 @@
           "stale_hours": "Hlásiť senzory bez nových hodnôt po (hodiny, 0 = vypnuté)",
           "history_days": "Uchovávať históriu kontrol (dni)",
           "watch_hours": "Sledovať po aktualizácii (hodiny, 0 = vypnuté)"
+        },
+        "data_description": {
+          "outage_info_minutes": "Ak je entita alebo integrácia nedostupná aspoň takto dlho, vytvorí sa informačný nález.",
+          "outage_low_hours": "Od tohto trvania sa výpadok hodnotí ako nález s nízkou závažnosťou.",
+          "outage_medium_hours": "Od tohto trvania sa výpadok hodnotí ako nález so strednou závažnosťou a započítava sa do senzorov.",
+          "outage_high_hours": "Od tohto trvania sa výpadok hodnotí ako nález s vysokou závažnosťou. Výpadok ovplyvňujúci automatizácie sa takto hodnotí skôr.",
+          "unused_automation_days": "Vypnutá automatizácia alebo automatizácia, ktorá sa takto dlho nespustila, sa označí ako nepoužívaná.",
+          "low_battery_percent": "Batéria s touto alebo nižšou úrovňou nabitia sa označí ako slabá.",
+          "scan_interval_hours": "Housekeeper vykonáva pravidelné kontroly v tomto intervale. Výpadky a aktualizácie môžu spustiť ďalšie kontroly.",
+          "stale_hours": "Senzor, ktorý takto dlho neposlal novú hodnotu, sa označí ako neaktualizovaný.",
+          "history_days": "Ako dlho sa uchováva história kontrol a domácich funkcií.",
+          "watch_hours": "Ako dlho po aktualizácii prebiehajú dodatočné kontroly, aby sa odhalilo, čo po nej prestalo fungovať."
         }
       }
     },
@@ -61,6 +73,18 @@
     "database_damaged": {
       "title": "Databáza Recordera je poškodená",
       "description": "Kontrola z {at} zistila poškodenie databázy Recordera: {first} Housekeeper nebude nič mazať z Recordera, kým kontrola znova neprejde. Najprv vytvor zálohu, poškodené indexy obnov cez REINDEX alebo obnov zálohu. [Otvoriť Housekeeper]({link})."
+    },
+    "backup_problem": {
+      "title": "Ochrana záloh hlási problém",
+      "description": "Ochrana záloh našla {count} kontrol vyžadujúcich pozornosť, napríklad chýbajúcu nedávnu zálohu, neúspešné zálohovanie alebo málo voľného miesta. [Otvoriť ochranu záloh]({link}). Nič sa automaticky nemení."
+    },
+    "orphaned_statistics": {
+      "title": "Štatistiky bez entity: {count}",
+      "description": "Housekeeper našiel {count} štatistík, ktorých entity už neexistujú. Zaberajú miesto v databáze. [Zobraziť v Housekeeperi]({link}). Nič sa automaticky nemení."
+    },
+    "auto_pause_exhausted": {
+      "title": "Pozastavené: {title} ({days} dní)",
+      "description": "Housekeeper pozastavil {title} po opakovaných neúspešných nastaveniach a ďalších {days} dní to opakovane skúšal bez úspechu. Pozastavenie zostáva aktívne, kým ho neukončíš. [Otvoriť automatické pozastavenie]({link})"
     }
   },
   "entity": {
@@ -106,6 +130,15 @@
           "cleanup": "Prebieha plán",
           "starting": "Čaká sa na spustenie"
         }
+      },
+      "monitor": {
+        "name": "Domáca funkcia {name}",
+        "state": {
+          "ok": "V poriadku",
+          "problem": "Problém",
+          "unverified": "Neoverené",
+          "disabled": "Vypnuté"
+        }
       }
     },
     "button": {
@@ -126,6 +159,43 @@
             }
           }
         }
+      }
+    },
+    "switch": {
+      "hint_orphaned_entities": {
+        "name": "Odporúčanie na opravu: osirotené entity"
+      },
+      "hint_unavailable_entities": {
+        "name": "Odporúčanie na opravu: nedostupné entity"
+      },
+      "hint_broken_automations": {
+        "name": "Odporúčanie na opravu: neplatné odkazy"
+      },
+      "hint_scan_health": {
+        "name": "Odporúčanie na opravu: problémy kontrol"
+      },
+      "hint_database_damaged": {
+        "name": "Odporúčanie na opravu: poškodená databáza"
+      },
+      "hint_backup_problem": {
+        "name": "Odporúčanie na opravu: problém so zálohou"
+      },
+      "hint_orphaned_statistics": {
+        "name": "Odporúčanie na opravu: osirotené štatistiky"
+      }
+    },
+    "number": {
+      "hint_min_orphaned_entities": {
+        "name": "Minimálny počet pre odporúčanie: osirotené entity"
+      },
+      "hint_min_unavailable_entities": {
+        "name": "Minimálny počet pre odporúčanie: nedostupné entity"
+      },
+      "hint_min_broken_automations": {
+        "name": "Minimálny počet pre odporúčanie: neplatné odkazy"
+      },
+      "hint_min_orphaned_statistics": {
+        "name": "Minimálny počet pre odporúčanie: osirotené štatistiky"
       }
     }
   },
