@@ -28,7 +28,7 @@ Object.assign(TEXT.de, {
   excEmptyAlways: "Noch keine dauerhafte Regel", excEmptyAlwaysNext: "Zum Beispiel einen Bereich oder ein Label dauerhaft ausblenden.", excEmptyVacation: "Noch keine Regel für den Urlaubsmodus", excEmptyVacationNext: "Zum Beispiel das Gewächshaus ausblenden, solange du weg bist.", excVacNoEntity: "Ohne Entität für den Urlaubsmodus greifen diese Regeln nie. Wähle sie unten bei „Urlaubsmodus“.",
   excForLabel: "Wofür", excFor_objects: "Nur {name}", excFor_objects_n: "Nur diese {n} Objekte", excFor_devices: "Gerät {name}", excFor_devices_n: "Ihre {n} Geräte", excFor_areas: "Bereich {name}", excFor_areas_n: "Ihre {n} Bereiche", excFor_integrations: "Integration {name}", excFor_integrations_n: "Ihre {n} Integrationen",
   excForSub_devices: "mit allen seinen Entitäten", excForSub_areas: "alle Geräte und Entitäten im Bereich", excForSub_integrations: "alle ihre Entitäten",
-  excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist die Objekt-Notiz da. Label, Typ oder eine andere Auswahl:", excForSettings: "in den Einstellungen bearbeiten",
+  excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist die Objekt-Notiz da. Label, Typ oder eine andere Auswahl:", excForMoreShort: "Label, Typ oder eine andere Auswahl:", excNoteHint: "Für ein einzelnes Objekt ist die Objekt-Notiz besser: Sie kennt ein Zeitfenster und ein Prüfdatum und endet auf Wunsch von selbst.", excForSettings: "in den Einstellungen bearbeiten",
   excScope: "Gilt", excScope_always: "Immer", excScope_vacation: "Nur im Urlaubsmodus", excScopeChip_vacation: "nur im Urlaub", excScopeChip_always: "immer",
   excScopeHint: "Im Urlaubsmodus bleiben diese Objekte still, auch wenn ein Gerät kaputtgeht. Nach dem Urlaub zählt der Ausfall neu: mit eigener Frist deren Tage, sonst die Nachfrist.",
   excOverlap: "Diese Objekte trifft schon: {rules}. Im Urlaub gilt „Nicht melden“, danach wieder die Frist der anderen Regel, gezählt ab dem Ende des Urlaubs.",
@@ -71,7 +71,7 @@ Object.assign(TEXT.en, {
   excEmptyAlways: "No permanent rule yet", excEmptyAlwaysNext: "For example hide an area or a label for good.", excEmptyVacation: "No vacation mode rule yet", excEmptyVacationNext: "For example hide the greenhouse while you are away.", excVacNoEntity: "Without an entity for the vacation mode these rules never apply. Choose it below under “Vacation mode”.",
   excForLabel: "For what", excFor_objects: "Only {name}", excFor_objects_n: "Only these {n} objects", excFor_devices: "Device {name}", excFor_devices_n: "Their {n} devices", excFor_areas: "Area {name}", excFor_areas_n: "Their {n} areas", excFor_integrations: "Integration {name}", excFor_integrations_n: "Their {n} integrations",
   excForSub_devices: "with all its entities", excForSub_areas: "all devices and entities in the area", excForSub_integrations: "all its entities",
-  excForMore: "A single object with a reason or a time window: that is what an object note is for. Label, type or another choice:", excForSettings: "edit in the settings",
+  excForMore: "A single object with a reason or a time window: that is what an object note is for. Label, type or another choice:", excForMoreShort: "Label, type or another choice:", excNoteHint: "For a single object an object note is better: it knows a time window and a review date and ends by itself if you want.", excForSettings: "edit in the settings",
   excScope: "Applies", excScope_always: "Always", excScope_vacation: "Only in vacation mode", excScopeChip_vacation: "vacation only", excScopeChip_always: "always",
   excScopeHint: "In vacation mode these objects stay quiet, even if a device breaks. After the vacation the outage counts anew: with a delay of its own that delay, otherwise the grace period.",
   excOverlap: "These objects are already hit by: {rules}. In the vacation “Do not report” applies, afterwards the delay of the other rule, counted from the end of the vacation.",
@@ -334,12 +334,16 @@ class ExceptionsMixin {
     const what = f.scopes ? `${this.excScopeCards(f)}${scopeChips}`
       : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
       <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
-    const more = f.scopes ? `<small class="factnote">${this.t("excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
+    const single = f.here && f.scopeSel === "objects" && f.picks.length === 1 && this.markTargets().size > 0;
+    const noteHint = single ? `<div class="notice info outagehint"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t("excNoteHint"))}</p><button type="button" class="btn" data-fsel-state="mark"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button></div></div>` : "";
+    const more = f.scopes ? `<small class="factnote">${this.t(single ? "excForMoreShort" : "excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
     return `<form class="excform markform${f.here ? " actionarea" : ""}" data-exc-form>
       ${f.here ? `<header class="acthead"><strong>${this.t("excFormNew")}</strong><button type="button" class="iconbtn" data-exc-cancel aria-label="${this.esc(this.t("excCancel"))}" title="${this.esc(this.t("excCancel"))}"><ha-icon icon="mdi:close"></ha-icon></button></header>` : `<strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>`}
       ${what}
+      ${noteHint}
       <div class="excgrid">${action}
       ${f.scope !== "vacation" && f.action === "hide" ? `<label class="mfield"><span>${this.t("excReview")}</span><select data-exc-review>${[0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.review) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("excReviewNever")}</option>`).join("")}</select></label>` : ""}</div>
+      ${this.ruleEffect(f)}
       <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
       ${preview}${important}${more}${f.error ? this.notice("err", f.error) : ""}
       <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
@@ -516,7 +520,7 @@ class ExceptionsMixin {
       const search = form.querySelector("[data-exc-search]");
       if (search) search.oninput = ev => { f.search = ev.target.value; this.render(); this.shadowRoot.querySelector("[data-exc-search]")?.focus(); };
       const review = form.querySelector("[data-exc-review]");
-      if (review) review.onchange = ev => { f.review = Number(ev.target.value); };
+      if (review) review.onchange = ev => { f.review = Number(ev.target.value); this.render(); };
       form.querySelector("[data-exc-note]").oninput = ev => { f.error = ""; f.note = ev.target.value; };
       form.querySelectorAll("[data-exc-action]").forEach(el => el.onclick = () => { f.error = ""; f.action = el.dataset.excAction; this.render(); this.excPreview(); });
       const days = form.querySelector("[data-exc-days]");

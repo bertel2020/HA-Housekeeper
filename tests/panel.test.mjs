@@ -6509,6 +6509,11 @@ test("an exception is added from the menu of a finding or the selection bar, wit
   el.view = "findingsNav";
   assert.ok(el.findingsView().includes("data-exc-form"));
   assert.ok(el.findingsView().includes('data-exp-menu="findings"') && !el.findingsView().includes("data-export="), "the shared export button, no CSV and JSON chips");
+  // a rule on one object points to the object note, which can take over from the same selection
+  el.findSel = new Set([finding.key]);
+  assert.ok(el.excFormHtml(el.excForm).includes('data-fsel-state="mark"') && el.excFormHtml(el.excForm).includes('class="effect"'), "one object: the object note is offered");
+  el.findSel = new Set();
+  assert.ok(!el.excFormHtml(el.excForm).includes('data-fsel-state="mark"'), "nothing a note could take: no offer");
 });
 
 test("the status of the selection is set in one form; an exception from a finding offers its device, area and integration", async () => {
@@ -7907,4 +7912,5 @@ test("the effect line says what an action hides, whether cleanup stays away and 
   assert.deepEqual(cells(el.markEffectLine({ kind: "replaced", days: 30 }, false)).slice(1), ["allowed later", "after 30 days"]);
   assert.deepEqual(cells(el.ruleEffect({ action: "delay", days: 7, scope: "always" })).slice(1), ["not blocked", "after 7 days of outage"]);
   assert.ok(cells(el.ruleEffect({ action: "hide", scope: "vacation" }))[0].includes("in vacation mode only"));
+  assert.equal(cells(el.ruleEffect({ action: "hide", scope: "always", review: 90 }))[2], "only when you delete the rule · a task to check it after 90 days");
 });

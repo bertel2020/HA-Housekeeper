@@ -12,7 +12,7 @@ Object.assign(TEXT.de, {
   effMarkOne: "Ausfälle dieses Objekts, auch künftige", effMarkMany: "Ausfälle dieser Objekte, auch künftige", effMarkKeep: "nichts, der Ausfall wird weiter gemeldet",
   effMarkKeepDays: "Schutz endet nach {n} Tagen", effMarkKeepNever: "nie, der Schutz bleibt", effOutside: "außerhalb des Zeitfensters", effAutoEnd: "die Notiz endet, sobald das Objekt wieder meldet",
   effRuleHide: "alle Befundarten dieser Objekte", effRuleDelay: "nur Ausfälle (nicht verfügbar, unbekannt, veraltet)", effRuleVacation: "nur im Urlaubsmodus",
-  effRuleNever: "erst, wenn du die Regel löschst", effRuleVacationEnd: "nach dem Urlaubsmodus, mit Nachfrist", effRuleDelayBack: "nach {n} Tagen Ausfall",
+  effRuleNever: "erst, wenn du die Regel löschst", effRuleReview: "Aufgabe zur Prüfung nach {n} Tagen", effRuleVacationEnd: "nach dem Urlaubsmodus, mit Nachfrist", effRuleDelayBack: "nach {n} Tagen Ausfall",
   bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ganz ausgenommen", bandMark: "Objekt-Notiz: {kind}", bandRemoveMark: "Entfernen",
 });
 Object.assign(TEXT.en, {
@@ -22,7 +22,7 @@ Object.assign(TEXT.en, {
   effMarkOne: "outages of this object, future ones too", effMarkMany: "outages of these objects, future ones too", effMarkKeep: "nothing, the outage is still reported",
   effMarkKeepDays: "protection ends after {n} days", effMarkKeepNever: "never, the protection stays", effOutside: "outside the time window", effAutoEnd: "the note ends once the object reports again",
   effRuleHide: "all kinds of findings of these objects", effRuleDelay: "outages only (not available, unknown, stale)", effRuleVacation: "in vacation mode only",
-  effRuleNever: "only when you delete the rule", effRuleVacationEnd: "after vacation mode, with a grace period", effRuleDelayBack: "after {n} days of outage",
+  effRuleNever: "only when you delete the rule", effRuleReview: "a task to check it after {n} days", effRuleVacationEnd: "after vacation mode, with a grace period", effRuleDelayBack: "after {n} days of outage",
   bandChange: "Change", bandUndo: "Take back", bandByLabel: "Left out by a label", bandMark: "Object note: {kind}", bandRemoveMark: "Remove",
 });
 
@@ -59,7 +59,9 @@ class FindingStatusMixin {
   ruleEffect(f) {
     const vacation = f.scope === "vacation", delay = !vacation && f.action === "delay";
     const what = delay ? this.t("effRuleDelay") : `${this.t("effRuleHide")}${vacation ? ` · ${this.t("effRuleVacation")}` : ""}`;
-    const back = delay ? this.t("effRuleDelayBack", { n: Math.max(1, Number(f.days) || 7) }) : this.t(vacation ? "effRuleVacationEnd" : "effRuleNever");
+    const review = Number(f.review) || 0;
+    const back = delay ? this.t("effRuleDelayBack", { n: Math.max(1, Number(f.days) || 7) })
+      : [this.t(vacation ? "effRuleVacationEnd" : "effRuleNever"), !vacation && review ? this.t("effRuleReview", { n: review }) : ""].filter(Boolean).join(" · ");
     return this.effectLine(what, this.effectClean(delay ? "free" : "locked"), back);
   }
 
