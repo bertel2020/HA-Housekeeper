@@ -48,3 +48,19 @@ def test_slovak_audit_report_has_every_english_key() -> None:
     )
     translations = ast.literal_eval(dictionary)
     assert set(translations["sk"]) == set(translations["en"])
+
+def test_monitor_event_is_localized() -> None:
+    """The event entity must resolve its label from the HA language."""
+    event_source = (COMPONENT / "event.py").read_text(encoding="utf-8")
+    assert '_attr_translation_key = "monitor"' in event_source
+    expected_types = {
+        "beeintraechtigt",
+        "pruefung_unvollstaendig",
+        "pruefung_wieder_moeglich",
+        "wieder_unauffaellig",
+    }
+    for language in ("de", "en", "sk"):
+        source = COMPONENT / "translations" / f"{language}.json"
+        entity = json.loads(source.read_text(encoding="utf-8"))["entity"]["event"]["monitor"]
+        assert entity["name"]
+        assert set(entity["state_attributes"]["event_type"]["state"]) == expected_types
