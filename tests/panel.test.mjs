@@ -3797,6 +3797,18 @@ test("the selection bar sets a mark on every picked object that can carry one", 
   await el.commitBulk();
   assert.equal(calls.filter(c => c.includes("mark_set")).length, 2);
   assert.ok(calls[0].includes('"object_type":"entity"') && calls[0].includes('"kind":"seasonal"') && calls[0].includes('"days":30'));
+  // a time window travels with the mark; the same start and end is refused
+  calls.length = 0;
+  el.data = { ...DATA, objects: [obj("entity", "sensor.a")], findings: [f("entity.state_unavailable", "sensor.a")], causes: [] };
+  el.findSel = new Set(["entity.state_unavailable|sensor.a"]);
+  el.bulk = { kind: "mark", reason: "", days: 0, markKind: "seasonal", error: "", wmode: "time", from: "21:00", to: "21:00", grace: 60 };
+  assert.ok(el.bulkForm().includes("data-bulk-wmode") && el.bulkForm().includes("data-bulk-from"));
+  await el.commitBulk();
+  assert.equal(calls.filter(c => c.includes("mark_set")).length, 0); assert.equal(el.bulk.error, "markWindowSame");
+  el.bulk.to = "06:00";
+  await el.commitBulk();
+  const sentMark = JSON.parse(calls.find(c => c.includes("mark_set")));
+  assert.deepEqual([sentMark.window, sentMark.grace_minutes, sentMark.auto_clear], [{ mode: "time", from: "21:00", to: "06:00" }, 60, undefined]);
 });
 
 test("an object shows the rules it breaks on its overview, and nothing when there are none", () => {

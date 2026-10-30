@@ -273,13 +273,22 @@ class FindingStatusMixin {
 
   async commitMarkBulk() {
     const b = this.bulk, targets = this.markTargets(b.onDevice);
+    const kind = b.markKind || this.markKindsFor(targets)[0];
+    if (kind !== "keep" && b.wmode === "time" && (b.from || "21:00") === (b.to || "06:00")) { b.error = "markWindowSame"; this.render(); return; }
+    b.error = "";
     // One mark per object: several findings of the same device need it once.
     const objects = [...new Set(targets.values())];
     const failed = await this.runBulk(objects, async objectKey => {
       const [object_type, ...rest] = objectKey.split(":");
-      const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: b.markKind || this.markKindsFor(targets)[0], reason: b.reason.trim() };
+      const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind, reason: b.reason.trim() };
       if (Number(b.days)) msg.days = Number(b.days);
-      if (b.autoClear && msg.kind !== "keep") msg.auto_clear = true;
+      if (kind !== "keep" && b.wmode) {
+        msg.window = b.wmode === "sun" ? { mode: "sun" } : { mode: "time", from: b.from || "21:00", to: b.to || "06:00" };
+        msg.grace_minutes = Number(b.grace ?? 30);
+      } else if (b.autoClear && kind !== "keep") {
+        msg.auto_clear = true;
+        msg.grace_minutes = Number(b.grace ?? 30);
+      }
       await this._hass.callWS(msg);
       targets.forEach((k, key) => { if (k === objectKey) this.findSel.delete(key); });
     });
@@ -299,12 +308,13 @@ class FindingStatusMixin {
       const targets = this.markTargets(b.onDevice), kinds = this.markKindsFor(targets), devices = this.markDeviceCount();
       const objects = new Set(targets.values()).size;
       const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("markReview")}: ${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
+      const when = this.markWhen({ ...b, kind: b.markKind || kinds[0] }, "bulk");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
       return form(`${this.t("markTitle")} (${this.formatNumber(objects)})`, `${onDevice}<div class="statusrow">
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
-        ${(b.markKind || kinds[0]) === "keep" ? "" : `<label class="nw"><input type="checkbox" data-bulk-auto ${b.autoClear ? "checked" : ""}> ${this.esc(this.t("markAutoClear"))}</label>`}</div>`, save);
+        </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>`, save);
     }
     if (b.kind === "area") return this.areaForm();
     if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), this.statusFields(b, "bulk", b.state), save);
@@ -475,7 +485,12 @@ class FindingStatusMixin {
       const markKind = form.querySelector("[data-bulk-markkind]");
       if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; this.render(); };
       const autoClear = form.querySelector("[data-bulk-auto]");
-      if (autoClear) autoClear.onchange = ev => { this.bulk.autoClear = ev.target.checked; };
+      if (autoClear) autoClear.onchange = ev => { this.bulk.autoClear = ev.target.checked; this.render(); };
+      const wmode = form.querySelector("[data-bulk-wmode]");
+      if (wmode) wmode.onchange = ev => { this.bulk.wmode = ev.target.value; if (ev.target.value) this.bulk.autoClear = false; this.render(); };
+      [["from", "from"], ["to", "to"]].forEach(([name, field]) => { const el = form.querySelector(`[data-bulk-${name}]`); if (el) el.oninput = ev => { this.bulk[field] = ev.target.value; }; });
+      const grace = form.querySelector("[data-bulk-grace]");
+      if (grace) grace.onchange = ev => { this.bulk.grace = Number(ev.target.value); };
       form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = this.defaultDays(b.state); this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };

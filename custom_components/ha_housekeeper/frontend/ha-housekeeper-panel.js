@@ -9860,6 +9860,23 @@ class MarksMixin {
     return `${this.t(`mark_${mark.kind}`)}${window}${auto}${until}${mark.reason ? ` · ${mark.reason}` : ""}${mark.target ? ` → ${mark.target}` : ""}${mark.via === "mcp" ? ` · ${this.t("viaMcp")}` : ""}`;
   }
 
+  // The fields "when does the note apply" and "end by itself", shared by the form of one object and the one of a selection;
+  // p is the prefix of their data attributes ("mark" or "bulk"), f holds wmode, from, to, grace and autoClear.
+  markWhen(f, p) {
+    const field = (label, body) => `<label class="mfield"><span>${this.t(label)}</span>${body}</label>`;
+    const modes = ["", "time", "sun"].map(m => `<option value="${m}" ${(f.wmode || "") === m ? "selected" : ""}>${this.t(m === "time" ? "markWindowTime" : m === "sun" ? "markWindowSun" : "markWindowAlways")}</option>`).join("");
+    const graces = [0, 15, 30, 60, 120].map(n => `<option value="${n}" ${Number(f.grace ?? 30) === n ? "selected" : ""}>${this.t("markGraceMin", { n })}</option>`).join("");
+    const keep = f.kind === "keep", windowed = !keep && f.wmode, auto = !keep && f.autoClear;
+    const noSun = f.wmode === "sun" && this._hass?.states && !this._hass.states["sun.sun"];
+    const window = (keep ? "" : field("markWindowKind", `<select data-${p}-wmode>${modes}</select>`))
+      + (windowed && f.wmode === "time" ? field("markFrom", `<input type="time" data-${p}-from value="${this.esc(f.from || "21:00")}">`) + field("markTo", `<input type="time" data-${p}-to value="${this.esc(f.to || "06:00")}">`) : "")
+      + (windowed ? field("markGrace", `<select data-${p}-grace>${graces}</select>`) : "");
+    const autoBox = keep || f.wmode ? "" : `<div class="mrow"><label class="nw"><input type="checkbox" data-${p}-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label></div>`;
+    const graceBack = auto ? `<div class="mrow">${field("markGraceBack", `<select data-${p}-grace>${graces}</select>`)}</div>` : "";
+    const hints = `${auto ? `<small class="factnote">${this.t("markAutoClearHint")}</small>` : ""}${windowed ? `<small class="factnote">${this.t("markWindowHint")}</small>` : ""}${noSun ? this.notice("err", this.t("markNoSun")) : ""}`;
+    return { window, autoBox, graceBack, hints, windowed, auto };
+  }
+
   // The form to set or change a mark: labelled fields in two rows (what and why, then when it applies and when to review).
   markFormHtml(f, key) {
     const type = key.split(":")[0];
@@ -9867,23 +9884,15 @@ class MarksMixin {
     const field = (label, body, extra = "") => `<label class="mfield ${extra}"><span>${this.t(label)}</span>${body}</label>`;
     const kinds = allowed.map(k => `<option value="${k}" ${f.kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("");
     const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
-    const modes = ["", "time", "sun"].map(m => `<option value="${m}" ${f.wmode === m ? "selected" : ""}>${this.t(m === "time" ? "markWindowTime" : m === "sun" ? "markWindowSun" : "markWindowAlways")}</option>`).join("");
-    const graces = [0, 15, 30, 60, 120].map(n => `<option value="${n}" ${Number(f.grace) === n ? "selected" : ""}>${this.t("markGraceMin", { n })}</option>`).join("");
-    const windowed = f.kind !== "keep" && f.wmode, auto = f.kind !== "keep" && f.autoClear;
-    const noSun = f.wmode === "sun" && this._hass?.states && !this._hass.states["sun.sun"];
+    const when = this.markWhen(f, "mark");
     const row1 = field("markKind", `<select data-mark-kind>${kinds}</select>`)
       + (f.kind === "replaced" ? field("markTarget", `<input data-mark-target maxlength="255" autocomplete="off" value="${this.esc(f.target)}">`) : "")
       + field("markReason", `<input data-mark-reason maxlength="200" autocomplete="off" value="${this.esc(f.reason)}">`, "grow");
-    const row2 = (f.kind === "keep" ? "" : field("markWindowKind", `<select data-mark-wmode>${modes}</select>`))
-      + (windowed && f.wmode === "time" ? field("markFrom", `<input type="time" data-mark-from value="${this.esc(f.from)}">`) + field("markTo", `<input type="time" data-mark-to value="${this.esc(f.to)}">`) : "")
-      + (windowed ? field("markGrace", `<select data-mark-grace>${graces}</select>`) : "")
-      + field("markReview", `<select data-mark-days>${days}</select>`);
-    const row3 = f.kind === "keep" || f.wmode ? "" : `<label class="nw"><input type="checkbox" data-mark-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label>`;
-    const row4 = auto ? field("markGraceBack", `<select data-mark-grace>${graces}</select>`) : "";
-    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3 ? `<div class="mrow">${row3}</div>` : ""}${row4 ? `<div class="mrow">${row4}</div>` : ""}
+    const row2 = when.window + field("markReview", `<select data-mark-days>${days}</select>`);
+    const row3 = when.autoBox, row4 = when.graceBack;
+    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}${row4}
         <small class="factnote">${this.t(`markEffect_${f.kind}`)} ${this.t("markScopeHint")}</small>
-        ${auto ? `<small class="factnote">${this.t("markAutoClearHint")}</small>` : ""}
-        ${windowed ? `<small class="factnote">${this.t("markWindowHint")}</small>` : ""}${noSun ? `${this.notice("err", this.t("markNoSun"))}` : ""}
+        ${when.hints}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
         <div class="mbtns"><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div></form>`;
   }
@@ -12705,13 +12714,22 @@ class FindingStatusMixin {
 
   async commitMarkBulk() {
     const b = this.bulk, targets = this.markTargets(b.onDevice);
+    const kind = b.markKind || this.markKindsFor(targets)[0];
+    if (kind !== "keep" && b.wmode === "time" && (b.from || "21:00") === (b.to || "06:00")) { b.error = "markWindowSame"; this.render(); return; }
+    b.error = "";
     // One mark per object: several findings of the same device need it once.
     const objects = [...new Set(targets.values())];
     const failed = await this.runBulk(objects, async objectKey => {
       const [object_type, ...rest] = objectKey.split(":");
-      const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind: b.markKind || this.markKindsFor(targets)[0], reason: b.reason.trim() };
+      const msg = { type: "ha_housekeeper/mark_set", object_type, object_id: rest.join(":"), kind, reason: b.reason.trim() };
       if (Number(b.days)) msg.days = Number(b.days);
-      if (b.autoClear && msg.kind !== "keep") msg.auto_clear = true;
+      if (kind !== "keep" && b.wmode) {
+        msg.window = b.wmode === "sun" ? { mode: "sun" } : { mode: "time", from: b.from || "21:00", to: b.to || "06:00" };
+        msg.grace_minutes = Number(b.grace ?? 30);
+      } else if (b.autoClear && kind !== "keep") {
+        msg.auto_clear = true;
+        msg.grace_minutes = Number(b.grace ?? 30);
+      }
       await this._hass.callWS(msg);
       targets.forEach((k, key) => { if (k === objectKey) this.findSel.delete(key); });
     });
@@ -12731,12 +12749,13 @@ class FindingStatusMixin {
       const targets = this.markTargets(b.onDevice), kinds = this.markKindsFor(targets), devices = this.markDeviceCount();
       const objects = new Set(targets.values()).size;
       const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("markReview")}: ${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
+      const when = this.markWhen({ ...b, kind: b.markKind || kinds[0] }, "bulk");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
       return form(`${this.t("markTitle")} (${this.formatNumber(objects)})`, `${onDevice}<div class="statusrow">
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
-        ${(b.markKind || kinds[0]) === "keep" ? "" : `<label class="nw"><input type="checkbox" data-bulk-auto ${b.autoClear ? "checked" : ""}> ${this.esc(this.t("markAutoClear"))}</label>`}</div>`, save);
+        </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>`, save);
     }
     if (b.kind === "area") return this.areaForm();
     if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), this.statusFields(b, "bulk", b.state), save);
@@ -12907,7 +12926,12 @@ class FindingStatusMixin {
       const markKind = form.querySelector("[data-bulk-markkind]");
       if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; this.render(); };
       const autoClear = form.querySelector("[data-bulk-auto]");
-      if (autoClear) autoClear.onchange = ev => { this.bulk.autoClear = ev.target.checked; };
+      if (autoClear) autoClear.onchange = ev => { this.bulk.autoClear = ev.target.checked; this.render(); };
+      const wmode = form.querySelector("[data-bulk-wmode]");
+      if (wmode) wmode.onchange = ev => { this.bulk.wmode = ev.target.value; if (ev.target.value) this.bulk.autoClear = false; this.render(); };
+      [["from", "from"], ["to", "to"]].forEach(([name, field]) => { const el = form.querySelector(`[data-bulk-${name}]`); if (el) el.oninput = ev => { this.bulk[field] = ev.target.value; }; });
+      const grace = form.querySelector("[data-bulk-grace]");
+      if (grace) grace.onchange = ev => { this.bulk.grace = Number(ev.target.value); };
       form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = this.defaultDays(b.state); this.render(); });
       const days = form.querySelector("[data-bulk-days]");
       if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
