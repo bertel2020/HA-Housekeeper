@@ -112,6 +112,21 @@
       "scan": {
         "name": "Scan starten"
       }
+    },
+    "event": {
+      "monitor": {
+        "name": "Hausfunktionen",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "beeintraechtigt": "Beeinträchtigt",
+              "pruefung_unvollstaendig": "Prüfung unvollständig",
+              "pruefung_wieder_moeglich": "Prüfung wieder möglich",
+              "wieder_unauffaellig": "Wieder unauffällig"
+            }
+          }
+        }
+      }
     }
   },
   "services": {
