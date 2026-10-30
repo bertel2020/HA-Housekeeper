@@ -35,7 +35,7 @@ def test_every_open_finding_is_in_one_stage_and_a_follow_up_in_none() -> None:
 
 async def test_the_record_follows_the_cleanup_and_survives_a_reload(hass) -> None:
     store = FirstCleanupStore(hass)
-    assert store.offered(49) is False and store.offered(50) is True
+    assert store.offered(24) is False and store.offered(25) is True
     store.set_stage(2, True, NOW)
     assert store.state()["done"] == [], "nothing runs before it begins"
     store.begin(60, NOW)

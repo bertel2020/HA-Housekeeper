@@ -22,7 +22,7 @@ from .impact import RANK
 SAVE_DELAY = 10
 STAGES: Final = (1, 2, 3, 4, 5)
 CHAIN_MIN: Final = 3  # an outage with at least this many follow-ups is a "large chain"
-OFFER_MIN: Final = 50  # open findings from which the cleanup is offered
+OFFER_MIN: Final = 25  # open findings from which the cleanup is offered
 LATER_DAYS: Final = 90  # default time for the rest put off in stage 5
 BULK_LIMIT: Final = 1000  # findings put off in one step
 LOG_ACTIONS: Final = ("keep", "later", "skip", "mark", "nothanks", "later_all", "pick")
