@@ -1809,6 +1809,7 @@ class InventoryScanner:
         self.scan_coverage.counts("apps", apps=len(apps))
         self.scan_coverage.counts("statistics", statistics=len(statistics))
 
+        registered = {item["object_id"] for item in entities}
         lap("finalizing")
         _LOGGER.debug("Scan took %.2f s: %s", sum(timing.values()), timing)
         return {
@@ -1823,6 +1824,11 @@ class InventoryScanner:
                 "storage": storage,
                 "database": database,
                 "scanned_at": observed_at.isoformat(),
+                "state_only_entities": sorted(
+                    state.entity_id
+                    for state in self.hass.states.async_all()
+                    if state.entity_id not in registered
+                ),
                 "read_only": True,
                 "preliminary": preliminary,
                 "warmup_seconds_left": self.warmup_seconds_left,
