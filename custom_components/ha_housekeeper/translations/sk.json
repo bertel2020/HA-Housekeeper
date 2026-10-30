@@ -112,6 +112,21 @@
       "scan": {
         "name": "Spustiť kontrolu"
       }
+    },
+    "event": {
+      "monitor": {
+        "name": "Domáce funkcie",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "beeintraechtigt": "Narušené",
+              "pruefung_unvollstaendig": "Kontrola neúplná",
+              "pruefung_wieder_moeglich": "Kontrola je opäť možná",
+              "wieder_unauffaellig": "Opäť v poriadku"
+            }
+          }
+        }
+      }
     }
   },
   "services": {
