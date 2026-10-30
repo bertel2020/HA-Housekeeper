@@ -483,6 +483,7 @@ class FindingsMixin {
       <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
       <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
       ${this.reasonChips(kind)}
+      ${this.statusEffect(d, kind, p === "bulk")}
       ${kind === "keep" && d.critical ? `<small class="factnote">${this.t("statusCriticalHint")}</small>` : ""}
       <small class="factnote">${this.t("statusScopeHint")}</small>`;
   }

@@ -6,13 +6,63 @@ const DONE_PERIODS = [7, 30, 90], ACTIVE_PLAN = ["dry_run", "backup", "running"]
 const FINDING_STATES = ["known", "snoozed", "hidden"];
 
 Object.assign(TEXT.de, {
+  effWhat: "Blendet aus", effClean: "Aufräumen", effBack: "Kommt zurück", effLocked: "gesperrt", effFree: "nicht gesperrt", effLater: "später erlaubt",
+  effNever: "nicht von selbst", effDays: "nach {n} Tagen", effDaysWorse: "nach {n} Tagen, früher wenn es schlimmer wird", effDaysCheck: "nach {n} Tagen zur erneuten Prüfung",
+  effStatusOne: "diesen einen Befund", effStatusMany: "die gewählten Befunde",
+  effMarkOne: "Ausfälle dieses Objekts, auch künftige", effMarkMany: "Ausfälle dieser Objekte, auch künftige", effMarkKeep: "nichts, der Ausfall wird weiter gemeldet",
+  effMarkKeepDays: "Schutz endet nach {n} Tagen", effMarkKeepNever: "nie, der Schutz bleibt", effOutside: "außerhalb des Zeitfensters", effAutoEnd: "die Notiz endet, sobald das Objekt wieder meldet",
+  effRuleHide: "alle Befundarten dieser Objekte", effRuleDelay: "nur Ausfälle (nicht verfügbar, unbekannt, veraltet)", effRuleVacation: "nur im Urlaubsmodus",
+  effRuleNever: "erst, wenn du die Regel löschst", effRuleVacationEnd: "nach dem Urlaubsmodus, mit Nachfrist", effRuleDelayBack: "nach {n} Tagen Ausfall",
   bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ganz ausgenommen", bandMark: "Objekt-Notiz: {kind}", bandRemoveMark: "Entfernen",
 });
 Object.assign(TEXT.en, {
+  effWhat: "Hides", effClean: "Cleanup", effBack: "Comes back", effLocked: "blocked", effFree: "not blocked", effLater: "allowed later",
+  effNever: "not by itself", effDays: "after {n} days", effDaysWorse: "after {n} days, sooner if it gets worse", effDaysCheck: "after {n} days for a new look",
+  effStatusOne: "this one finding", effStatusMany: "the chosen findings",
+  effMarkOne: "outages of this object, future ones too", effMarkMany: "outages of these objects, future ones too", effMarkKeep: "nothing, the outage is still reported",
+  effMarkKeepDays: "protection ends after {n} days", effMarkKeepNever: "never, the protection stays", effOutside: "outside the time window", effAutoEnd: "the note ends once the object reports again",
+  effRuleHide: "all kinds of findings of these objects", effRuleDelay: "outages only (not available, unknown, stale)", effRuleVacation: "in vacation mode only",
+  effRuleNever: "only when you delete the rule", effRuleVacationEnd: "after vacation mode, with a grace period", effRuleDelayBack: "after {n} days of outage",
   bandChange: "Change", bandUndo: "Take back", bandByLabel: "Left out by a label", bandMark: "Object note: {kind}", bandRemoveMark: "Remove",
 });
 
 class FindingStatusMixin {
+  // "What it does" under the choice of an action: what it hides, whether cleanup stays away, when it comes back.
+  // The values are texts of the panel, already safe to put into the page.
+  effectLine(what, clean, back) {
+    const cell = (label, body) => `<div><dt>${this.t(label)}</dt><dd>${body}</dd></div>`;
+    return `<dl class="effect">${cell("effWhat", what)}${cell("effClean", clean)}${cell("effBack", back)}</dl>`;
+  }
+
+  effectClean(state) {
+    return `<span class="${state === "locked" ? "yes" : "no"}">${this.t(state === "locked" ? "effLocked" : state === "later" ? "effLater" : "effFree")}</span>`;
+  }
+
+  // The effect of a status: only the finding or findings go, cleanup is not blocked.
+  statusEffect(d, kind, many) {
+    const n = Number(d.days) || 0;
+    const back = !n ? this.t("effNever") : this.t(kind === "snooze" ? "effDaysWorse" : kind === "keep" ? "effDaysCheck" : "effDays", { n });
+    return this.effectLine(this.t(many ? "effStatusMany" : "effStatusOne"), this.effectClean("free"), back);
+  }
+
+  // The effect of an object note; f has kind, days, wmode and autoClear, as the forms hold them.
+  markEffectLine(f, many) {
+    const n = Number(f.days) || 0, keep = f.kind === "keep";
+    const what = this.t(keep ? "effMarkKeep" : many ? "effMarkMany" : "effMarkOne");
+    const clean = this.effectClean(f.kind === "replaced" ? "later" : "locked");
+    const back = keep ? this.t(n ? "effMarkKeepDays" : "effMarkKeepNever", { n })
+      : [n ? this.t("effDays", { n }) : "", f.wmode ? this.t("effOutside") : "", !f.wmode && f.autoClear ? this.t("effAutoEnd") : ""].filter(Boolean).join(" · ") || this.t("effNever");
+    return this.effectLine(what, clean, back);
+  }
+
+  // The effect of a rule, from its action, days and scope.
+  ruleEffect(f) {
+    const vacation = f.scope === "vacation", delay = !vacation && f.action === "delay";
+    const what = delay ? this.t("effRuleDelay") : `${this.t("effRuleHide")}${vacation ? ` · ${this.t("effRuleVacation")}` : ""}`;
+    const back = delay ? this.t("effRuleDelayBack", { n: Math.max(1, Number(f.days) || 7) }) : this.t(vacation ? "effRuleVacationEnd" : "effRuleNever");
+    return this.effectLine(what, this.effectClean(delay ? "free" : "locked"), back);
+  }
+
   // What the person decided about this object, above all tabs of its page: a decided finding (known, snoozed, hidden) and a mark.
   statusBand(item, key) {
     const change = this.hasActionsTab(item, key) ? `<button class="btn" data-detail-tab="actions">${this.t("bandChange")}</button>` : "";
@@ -314,7 +364,7 @@ class FindingStatusMixin {
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
-        </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>`, save);
+        </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}`, save);
     }
     if (b.kind === "area") return this.areaForm();
     if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), this.statusFields(b, "bulk", b.state), save);
@@ -493,7 +543,7 @@ class FindingStatusMixin {
       if (grace) grace.onchange = ev => { this.bulk.grace = Number(ev.target.value); };
       form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = this.defaultDays(b.state); this.render(); });
       const days = form.querySelector("[data-bulk-days]");
-      if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
+      if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); this.render(); };
     }
   }
 }

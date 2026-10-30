@@ -4849,8 +4849,8 @@ test("a new object note proposes a review in 365 days and says what its kind doe
   el.openMark("entity:sensor.new");
   assert.equal(el.markForm.days, 365);
   const html = el.markFormHtml({ ...el.markForm, kind: "keep" }, "entity:sensor.new");
-  assert.ok(html.includes("Do not remove") && html.includes("still reported") && html.includes("single finding"));
-  assert.ok(el.markFormHtml({ ...el.markForm, kind: "spare" }, "entity:sensor.new").includes("keeps cleanup away"));
+  assert.ok(html.includes("Do not remove") && html.includes("still reported") && html.includes("single finding") && html.includes("protection ends after 365 days"));
+  assert.ok(el.markFormHtml({ ...el.markForm, kind: "spare" }, "entity:sensor.new").includes(">blocked<"), "an object note says that cleanup stays away");
 });
 
 test("the mark is a row of the Actions tab and a line of what is known, no longer a card under the dependencies", () => {
@@ -7896,4 +7896,15 @@ test("the protection card lists what each step allows and blocks, and a table th
   const rows = card.match(/<tr><td>[^<]*<\/td>(<td class="(yes|no)"[^>]*>[^<]*<\/td>){3}<\/tr>/g) || [];
   assert.equal(rows.length, 5);
   assert.ok(rows[1].match(/class="no"/g).length === 1 && rows[3].match(/class="no"/g).length === 2);
+});
+
+test("the effect line says what an action hides, whether cleanup stays away and when it comes back", () => {
+  const { el } = panel("en");
+  const cells = html => [...html.matchAll(/<dd>(.*?)<\/dd>/g)].map(m => m[1].replace(/<[^>]+>/g, ""));
+  assert.deepEqual(cells(el.statusEffect({ days: 90 }, "keep", false)), ["this one finding", "not blocked", "after 90 days for a new look"]);
+  assert.equal(cells(el.statusEffect({ days: 0 }, "ignore", true))[2], "not by itself");
+  assert.deepEqual(cells(el.markEffectLine({ kind: "seasonal", days: 0, wmode: "time" }, false)).slice(1), ["blocked", "outside the time window"]);
+  assert.deepEqual(cells(el.markEffectLine({ kind: "replaced", days: 30 }, false)).slice(1), ["allowed later", "after 30 days"]);
+  assert.deepEqual(cells(el.ruleEffect({ action: "delay", days: 7, scope: "always" })).slice(1), ["not blocked", "after 7 days of outage"]);
+  assert.ok(cells(el.ruleEffect({ action: "hide", scope: "vacation" }))[0].includes("in vacation mode only"));
 });

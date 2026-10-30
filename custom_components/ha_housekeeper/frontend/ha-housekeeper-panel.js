@@ -1529,7 +1529,7 @@ class StylesMixin {
       .viewcmp td.yes{color:var(--hk-green);font-weight:700}.viewcmp td.no{color:color-mix(in srgb,var(--hk-amber) 70%,var(--hk-text));font-weight:600}.modefoot{display:flex;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1))}
       .stickyhead{position:sticky;top:0;z-index:30}.modeopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:12px 16px 16px}.modeopt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);cursor:pointer}.modeopt.on{border-color:var(--hk-blue);box-shadow:0 0 0 1px var(--hk-blue)}.modeopt input{position:absolute;opacity:0;pointer-events:none}.modeopt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.modepanel{border-left:4px solid var(--hk-blue)}.bulkform{padding:0 14px 10px}.safebar{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:6px clamp(16px,2.4vw,32px);border-bottom:1px solid var(--hk-border);background:var(--hk-surface);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}
       .vacbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 16px;background:var(--hk-soft,#e6f0f8);border-bottom:1px solid var(--hk-border);border-left:4px solid #2f6fa3;font-size:14px}.vacbar b{color:#2f6fa3}.vacbar .sp{flex:1}.vacbar a{color:#2f6fa3;font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}.vacbar.warn{border-left-color:var(--hk-amber,#b57a0c)}.vacbar.warn b{color:var(--hk-amber,#b57a0c)}.vacbar.after{border-left-color:var(--hk-accent,#1d4a3f)}.vacbar.after b{color:var(--hk-accent,#1d4a3f)}
-      .excform{display:grid;gap:14px;padding:14px 16px;border-top:2px solid var(--hk-blue);border-bottom:1px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface))}.excform .mfield{display:grid;gap:6px;min-width:0}.excform .mfield>span{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.excform .chip{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.excform .chip ha-icon{--mdc-icon-size:14px}.excform input[data-exc-search],.excform input[data-exc-note]{width:100%;box-sizing:border-box}.excact{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.excact input{width:5em}.excprev{border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.excprev>summary{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;list-style:none}.excprev>summary::-webkit-details-marker{display:none}.excprev>summary::after{content:"";margin-left:auto;width:7px;height:7px;border:solid var(--hk-muted);border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-2px);transition:transform .15s}.excprev[open]>summary::after{transform:rotate(-135deg)}.excprev>.factnote{display:block;padding:0 12px 10px}.excprev .hits{max-height:140px;overflow:auto;padding:8px 12px;border-top:1px solid var(--hk-border);background:var(--hk-surface)}.excprev .chip.hit{display:inline-flex;align-items:center;gap:6px;color:var(--hk-text);cursor:default}.excprev .chip.hit em{font-style:normal;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.excprev .hitx{all:unset;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;cursor:pointer;color:var(--hk-muted)}.excprev .hitx:hover{background:var(--hk-soft);color:var(--hk-text)}.excprev .hitx ha-icon{--mdc-icon-size:14px}.excnum{display:flex;gap:8px;align-items:center}.excnum input{width:6em}
+      .excform{display:grid;gap:14px;padding:14px 16px;border-top:2px solid var(--hk-blue);border-bottom:1px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface))}.excform .mfield{display:grid;gap:6px;min-width:0}.excform .mfield>span{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.excform .chip{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.excform .chip ha-icon{--mdc-icon-size:14px}.excform input[data-exc-search],.excform input[data-exc-note]{width:100%;box-sizing:border-box}.excact{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.excact input{width:5em}.effect{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:0;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-border);overflow:hidden}.effect>div{padding:8px 12px;min-width:0;background:var(--hk-soft)}.effect dt{font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:var(--hk-muted)}.effect dd{margin:2px 0 0;font-size:calc(13px*var(--hk-fs,1))}.effect .yes{font-weight:600;color:color-mix(in srgb,var(--hk-amber) 70%,var(--hk-text))}.effect .no{font-weight:600;color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}@media(max-width:700px){.effect{grid-template-columns:1fr}}.excprev{border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.excprev>summary{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;list-style:none}.excprev>summary::-webkit-details-marker{display:none}.excprev>summary::after{content:"";margin-left:auto;width:7px;height:7px;border:solid var(--hk-muted);border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-2px);transition:transform .15s}.excprev[open]>summary::after{transform:rotate(-135deg)}.excprev>.factnote{display:block;padding:0 12px 10px}.excprev .hits{max-height:140px;overflow:auto;padding:8px 12px;border-top:1px solid var(--hk-border);background:var(--hk-surface)}.excprev .chip.hit{display:inline-flex;align-items:center;gap:6px;color:var(--hk-text);cursor:default}.excprev .chip.hit em{font-style:normal;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.excprev .hitx{all:unset;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;cursor:pointer;color:var(--hk-muted)}.excprev .hitx:hover{background:var(--hk-soft);color:var(--hk-text)}.excprev .hitx ha-icon{--mdc-icon-size:14px}.excnum{display:flex;gap:8px;align-items:center}.excnum input{width:6em}
       .excgroup .setrow small{display:block}
       .labrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.8fr) 10rem;gap:12px 16px;align-items:start;padding:14px 16px;border-top:1px solid var(--hk-border)}.labrow code{padding:2px 8px;border-radius:7px;background:var(--hk-soft);border:1px solid var(--hk-border);user-select:all}.labrow .factnote{margin:4px 0 0}.labfx{display:grid;gap:4px;margin:0;padding:0;list-style:none;font-size:calc(13px*var(--hk-fs,1));line-height:1.45}.labfx li{display:grid;grid-template-columns:8px minmax(0,1fr);column-gap:8px;align-items:baseline}.labfx li::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--hk-green);align-self:start;margin-top:.45em}.labfx li.note{color:var(--hk-muted)}.labfx li.note::before{background:none;border:1.5px solid var(--hk-muted);box-sizing:border-box}.labrow .labscope{margin:0 0 6px}.labrow .actions{display:grid;gap:6px;justify-items:end}.labrow .statcell{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.labrow .statcell .iconbtn{--mdc-icon-size:16px}.labfoot{display:grid;gap:8px}@media(max-width:760px){.labrow{grid-template-columns:minmax(0,1fr)}.labrow .actions{justify-items:start}}
       .excrules td:nth-child(n+4),.excrules th:nth-child(n+4){width:1%;white-space:nowrap}.excrules .excacts{display:inline-flex;gap:2px}input[data-vac-entity]{width:min(100%,20em);box-sizing:border-box}.formfoot{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding:12px 16px}.vacdirty{color:var(--hk-amber);font-size:calc(12px*var(--hk-fs,1));font-weight:600}
@@ -3391,6 +3391,7 @@ class FindingsMixin {
       <div class="statusrow"><input data-${p}-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(kind === "keep" ? "decideReasonNeeded" : "decideReason"))}">
       <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
       ${this.reasonChips(kind)}
+      ${this.statusEffect(d, kind, p === "bulk")}
       ${kind === "keep" && d.critical ? `<small class="factnote">${this.t("statusCriticalHint")}</small>` : ""}
       <small class="factnote">${this.t("statusScopeHint")}</small>`;
   }
@@ -9829,7 +9830,7 @@ Object.assign(TEXT.de, {
   markWindowKind: "Wann gilt die Objekt-Notiz", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
   markOutside: "Objekt-Notiz gilt gerade nicht: wird überwacht", markWindowHint: "Außerhalb des Zeitfensters meldet Housekeeper den Befund wieder, und ein Ausfall zählt erst ab dem Ende des Fensters plus Anlaufzeit.",
-  markHiddenHint: "Ausgeblendet durch eine Objekt-Notiz am Objekt.", markScopeHint: "Gilt für das Objekt und künftige Ausfälle. Für einen einzelnen Befund: Ist so gewollt.", markEffect_expected_offline: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_seasonal: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_spare: "Blendet den Ausfall aus und hält zugleich das Aufräumen fern.", markEffect_replaced: "Blendet den Ausfall aus; das Objekt darf später aufgeräumt werden.", markEffect_keep: "Der Ausfall wird weiter gemeldet. Housekeeper schlägt das Objekt nie zum Aufräumen vor.", reason_marked_keep: "Trägt eine Objekt-Notiz, die das Aufräumen ausschließt, oder das Label housekeeper_keep.",
+  markHiddenHint: "Ausgeblendet durch eine Objekt-Notiz am Objekt.", markScopeHint: "Gilt für das Objekt und künftige Ausfälle. Für einen einzelnen Befund: Ist so gewollt.", reason_marked_keep: "Trägt eine Objekt-Notiz, die das Aufräumen ausschließt, oder das Label housekeeper_keep.",
   markAutoClear: "Automatisch aufheben, sobald sich das Objekt wieder meldet", markGraceBack: "Wartezeit", markAutoClearHint: "Die Objekt-Notiz verschwindet von selbst, wenn das Objekt nach einem Ausfall wieder meldet und die Wartezeit lang durchgehend in Ordnung bleibt. Eine Objekt-Notiz, die vorab bei einem laufenden Objekt gesetzt wird, bleibt bis zum ersten Ausfall.", markAutoClearLine: "wird bei Rückmeldung aufgehoben",
 });
 Object.assign(TEXT.en, {
@@ -9840,7 +9841,7 @@ Object.assign(TEXT.en, {
   markWindowKind: "When the object note applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
   markOutside: "Object note does not apply right now: watched", markWindowHint: "Outside the window Housekeeper reports the finding again, and an outage counts only from the end of the window plus the grace period.",
-  markHiddenHint: "Hidden by an object note on the object.", markScopeHint: "Applies to the object and future outages. For a single finding: Intended.", markEffect_expected_offline: "Hides the outage and keeps cleanup away at the same time.", markEffect_seasonal: "Hides the outage and keeps cleanup away at the same time.", markEffect_spare: "Hides the outage and keeps cleanup away at the same time.", markEffect_replaced: "Hides the outage; the object may be cleaned up later.", markEffect_keep: "The outage is still reported. Housekeeper never proposes the object for cleanup.", reason_marked_keep: "Carries an object note that rules out cleanup, or the label housekeeper_keep.",
+  markHiddenHint: "Hidden by an object note on the object.", markScopeHint: "Applies to the object and future outages. For a single finding: Intended.", reason_marked_keep: "Carries an object note that rules out cleanup, or the label housekeeper_keep.",
   markAutoClear: "Remove automatically once the object reports again", markGraceBack: "Wait", markAutoClearHint: "The object note disappears by itself when the object reports again after an outage and stays fine for the whole wait. An object note set in advance on an object that works stays until its first outage.", markAutoClearLine: "ends when it reports again",
 });
 
@@ -9891,7 +9892,7 @@ class MarksMixin {
     const row2 = when.window + field("markReview", `<select data-mark-days>${days}</select>`);
     const row3 = when.autoBox, row4 = when.graceBack;
     return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}${row4}
-        <small class="factnote">${this.t(`markEffect_${f.kind}`)} ${this.t("markScopeHint")}</small>
+        ${this.markEffectLine(f, false)}<small class="factnote">${this.t("markScopeHint")}</small>
         ${when.hints}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
         <div class="mbtns"><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div></form>`;
@@ -10040,7 +10041,7 @@ class MarksMixin {
       form.onsubmit = ev => { ev.preventDefault(); this.commitMark(); };
       form.querySelector("[data-mark-kind]").onchange = ev => { this.markForm.kind = ev.target.value; this.render(); };
       form.querySelector("[data-mark-reason]").oninput = ev => { this.markForm.reason = ev.target.value; };
-      form.querySelector("[data-mark-days]").onchange = ev => { this.markForm.days = Number(ev.target.value); };
+      form.querySelector("[data-mark-days]").onchange = ev => { this.markForm.days = Number(ev.target.value); this.render(); };
       const wmode = form.querySelector("[data-mark-wmode]");
       if (wmode) wmode.onchange = ev => { this.markForm.wmode = ev.target.value; if (ev.target.value) this.markForm.autoClear = false; this.render(); };
       [["from", "from"], ["to", "to"]].forEach(([name, field]) => { const el = form.querySelector(`[data-mark-${name}]`); if (el) el.oninput = ev => { this.markForm[field] = ev.target.value; }; });
@@ -12447,13 +12448,63 @@ const DONE_PERIODS = [7, 30, 90], ACTIVE_PLAN = ["dry_run", "backup", "running"]
 const FINDING_STATES = ["known", "snoozed", "hidden"];
 
 Object.assign(TEXT.de, {
+  effWhat: "Blendet aus", effClean: "Aufräumen", effBack: "Kommt zurück", effLocked: "gesperrt", effFree: "nicht gesperrt", effLater: "später erlaubt",
+  effNever: "nicht von selbst", effDays: "nach {n} Tagen", effDaysWorse: "nach {n} Tagen, früher wenn es schlimmer wird", effDaysCheck: "nach {n} Tagen zur erneuten Prüfung",
+  effStatusOne: "diesen einen Befund", effStatusMany: "die gewählten Befunde",
+  effMarkOne: "Ausfälle dieses Objekts, auch künftige", effMarkMany: "Ausfälle dieser Objekte, auch künftige", effMarkKeep: "nichts, der Ausfall wird weiter gemeldet",
+  effMarkKeepDays: "Schutz endet nach {n} Tagen", effMarkKeepNever: "nie, der Schutz bleibt", effOutside: "außerhalb des Zeitfensters", effAutoEnd: "die Notiz endet, sobald das Objekt wieder meldet",
+  effRuleHide: "alle Befundarten dieser Objekte", effRuleDelay: "nur Ausfälle (nicht verfügbar, unbekannt, veraltet)", effRuleVacation: "nur im Urlaubsmodus",
+  effRuleNever: "erst, wenn du die Regel löschst", effRuleVacationEnd: "nach dem Urlaubsmodus, mit Nachfrist", effRuleDelayBack: "nach {n} Tagen Ausfall",
   bandChange: "Ändern", bandUndo: "Wieder aufnehmen", bandByLabel: "Per Label ganz ausgenommen", bandMark: "Objekt-Notiz: {kind}", bandRemoveMark: "Entfernen",
 });
 Object.assign(TEXT.en, {
+  effWhat: "Hides", effClean: "Cleanup", effBack: "Comes back", effLocked: "blocked", effFree: "not blocked", effLater: "allowed later",
+  effNever: "not by itself", effDays: "after {n} days", effDaysWorse: "after {n} days, sooner if it gets worse", effDaysCheck: "after {n} days for a new look",
+  effStatusOne: "this one finding", effStatusMany: "the chosen findings",
+  effMarkOne: "outages of this object, future ones too", effMarkMany: "outages of these objects, future ones too", effMarkKeep: "nothing, the outage is still reported",
+  effMarkKeepDays: "protection ends after {n} days", effMarkKeepNever: "never, the protection stays", effOutside: "outside the time window", effAutoEnd: "the note ends once the object reports again",
+  effRuleHide: "all kinds of findings of these objects", effRuleDelay: "outages only (not available, unknown, stale)", effRuleVacation: "in vacation mode only",
+  effRuleNever: "only when you delete the rule", effRuleVacationEnd: "after vacation mode, with a grace period", effRuleDelayBack: "after {n} days of outage",
   bandChange: "Change", bandUndo: "Take back", bandByLabel: "Left out by a label", bandMark: "Object note: {kind}", bandRemoveMark: "Remove",
 });
 
 class FindingStatusMixin {
+  // "What it does" under the choice of an action: what it hides, whether cleanup stays away, when it comes back.
+  // The values are texts of the panel, already safe to put into the page.
+  effectLine(what, clean, back) {
+    const cell = (label, body) => `<div><dt>${this.t(label)}</dt><dd>${body}</dd></div>`;
+    return `<dl class="effect">${cell("effWhat", what)}${cell("effClean", clean)}${cell("effBack", back)}</dl>`;
+  }
+
+  effectClean(state) {
+    return `<span class="${state === "locked" ? "yes" : "no"}">${this.t(state === "locked" ? "effLocked" : state === "later" ? "effLater" : "effFree")}</span>`;
+  }
+
+  // The effect of a status: only the finding or findings go, cleanup is not blocked.
+  statusEffect(d, kind, many) {
+    const n = Number(d.days) || 0;
+    const back = !n ? this.t("effNever") : this.t(kind === "snooze" ? "effDaysWorse" : kind === "keep" ? "effDaysCheck" : "effDays", { n });
+    return this.effectLine(this.t(many ? "effStatusMany" : "effStatusOne"), this.effectClean("free"), back);
+  }
+
+  // The effect of an object note; f has kind, days, wmode and autoClear, as the forms hold them.
+  markEffectLine(f, many) {
+    const n = Number(f.days) || 0, keep = f.kind === "keep";
+    const what = this.t(keep ? "effMarkKeep" : many ? "effMarkMany" : "effMarkOne");
+    const clean = this.effectClean(f.kind === "replaced" ? "later" : "locked");
+    const back = keep ? this.t(n ? "effMarkKeepDays" : "effMarkKeepNever", { n })
+      : [n ? this.t("effDays", { n }) : "", f.wmode ? this.t("effOutside") : "", !f.wmode && f.autoClear ? this.t("effAutoEnd") : ""].filter(Boolean).join(" · ") || this.t("effNever");
+    return this.effectLine(what, clean, back);
+  }
+
+  // The effect of a rule, from its action, days and scope.
+  ruleEffect(f) {
+    const vacation = f.scope === "vacation", delay = !vacation && f.action === "delay";
+    const what = delay ? this.t("effRuleDelay") : `${this.t("effRuleHide")}${vacation ? ` · ${this.t("effRuleVacation")}` : ""}`;
+    const back = delay ? this.t("effRuleDelayBack", { n: Math.max(1, Number(f.days) || 7) }) : this.t(vacation ? "effRuleVacationEnd" : "effRuleNever");
+    return this.effectLine(what, this.effectClean(delay ? "free" : "locked"), back);
+  }
+
   // What the person decided about this object, above all tabs of its page: a decided finding (known, snoozed, hidden) and a mark.
   statusBand(item, key) {
     const change = this.hasActionsTab(item, key) ? `<button class="btn" data-detail-tab="actions">${this.t("bandChange")}</button>` : "";
@@ -12755,7 +12806,7 @@ class FindingStatusMixin {
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
-        </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>`, save);
+        </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}`, save);
     }
     if (b.kind === "area") return this.areaForm();
     if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), this.statusFields(b, "bulk", b.state), save);
@@ -12934,7 +12985,7 @@ class FindingStatusMixin {
       if (grace) grace.onchange = ev => { this.bulk.grace = Number(ev.target.value); };
       form.querySelectorAll("[data-bulk-kind]").forEach(el => el.onchange = () => { const b = this.bulk; b.state = el.value; b.error = ""; b.days = this.defaultDays(b.state); this.render(); });
       const days = form.querySelector("[data-bulk-days]");
-      if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); };
+      if (days) days.onchange = ev => { this.bulk.days = Number(ev.target.value); this.render(); };
     }
   }
 }
@@ -22482,7 +22533,7 @@ class HAHousekeeperPanel extends HTMLElement {
       form.onsubmit = ev => { ev.preventDefault(); this.commitDecide(); };
       form.querySelectorAll("[data-decide-kind]").forEach(el => el.onchange = ev => { this.decideKindSet(ev.target.value); });
       form.querySelector("[data-decide-reason]").oninput = ev => { this.decide.reason = ev.target.value; };
-      form.querySelector("[data-decide-days]").onchange = ev => { this.decide.days = Number(ev.target.value); };
+      form.querySelector("[data-decide-days]").onchange = ev => { this.decide.days = Number(ev.target.value); this.render(); };
       form.onkeydown = ev => { if (ev.key === "Escape") { ev.preventDefault(); this.decide = null; this.render(); } };
     });
     root.querySelectorAll("[data-reason-chip]").forEach(el => el.onclick = ev => {
