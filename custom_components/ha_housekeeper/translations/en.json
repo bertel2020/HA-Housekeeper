@@ -112,6 +112,21 @@
       "scan": {
         "name": "Start scan"
       }
+    },
+    "event": {
+      "monitor": {
+        "name": "Home functions",
+        "state_attributes": {
+          "event_type": {
+            "state": {
+              "beeintraechtigt": "Impaired",
+              "pruefung_unvollstaendig": "Check incomplete",
+              "pruefung_wieder_moeglich": "Check possible again",
+              "wieder_unauffaellig": "Back to normal"
+            }
+          }
+        }
+      }
     }
   },
   "services": {
