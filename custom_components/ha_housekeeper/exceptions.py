@@ -52,6 +52,7 @@ GRACE_MAX = 720
 GERMAN_NAMES = ("urlaubsmodus", "urlaub")  # helpers offered as the vacation switch, in this order
 ENGLISH_NAMES = ("vacation_mode", "vacation", "holiday_mode", "holiday")
 KEYWORD_MAX = 60
+PREVIEW_HITS_MAX = 200  # objects the preview lists by name; the count is always complete
 AVAILABILITY = frozenset({"unavailable", "unknown", "stale"})  # what a delay rule holds back
 
 
@@ -295,7 +296,7 @@ def preview(
     """
     names = {i["object_id"]: i["name"] for i in snapshot.get("objects", []) if i.get("name")}
     counts = {"hide": 0, "hold": 0, "due": 0}
-    objects: set[str] = set()
+    objects: dict[str, int] = {}
     overlap: set[str] = set()
     important: list[dict[str, str]] = []
     drafts = rule if isinstance(rule, list) else [rule]
@@ -314,11 +315,23 @@ def preview(
         if result is None:
             continue
         counts[result["state"]] += 1
-        objects.add(object_id)
+        objects[object_id] = objects.get(object_id, 0) + 1
         overlap.update(r["id"] for r in others or [] if r["id"] not in own and matches(r, found))
         if result["state"] != "due" and finding.get("impact") == "high" and len(important) < 5:
             important.append({"object_id": object_id, "name": names.get(object_id, object_id)})
-    return {**counts, "objects": len(objects), "important": important, "overlap": sorted(overlap)}
+    hits = [
+        {"object_id": object_id, "name": names.get(object_id, object_id), "findings": n}
+        for object_id, n in sorted(
+            objects.items(), key=lambda kv: names.get(kv[0], kv[0]).casefold()
+        )
+    ]
+    return {
+        **counts,
+        "objects": len(objects),
+        "hits": hits[:PREVIEW_HITS_MAX],
+        "important": important,
+        "overlap": sorted(overlap),
+    }
 
 
 class ExceptionStore:

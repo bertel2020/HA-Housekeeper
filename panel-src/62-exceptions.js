@@ -18,7 +18,7 @@ Object.assign(TEXT.de, {
   excWinner: "Passen mehrere Regeln, schlägt „Nicht melden“ die Fristen; bei mehreren Fristen gilt die längste.",
   excRuleArea: "Bereich {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Erst melden nach {n} Tagen", excRuleHideLine: "Nicht melden",
   excEffectHide: "{objects} Objekte, {n} Befunde ausgeblendet", excEffectDelay: "{hold} Befunde zurückgehalten, {due} fällig", excEffectNone: "Trifft gerade nichts",
-  excPreview: "Vorschau", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
+  excPreview: "Vorschau", excHitDrop: "{name} aus der Regel nehmen", excHitsMore: "… und {n} weitere Objekte", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
   excOn: "Regel aktiv", excOnN: "Einschalten ({n})", excOffN: "Ausschalten ({n})", excRenewN: "Frist verlängern ({n})", excDeleteN: "Löschen ({n})", excDue: "Frist abgelaufen", exceptions: "Ausnahmen", exceptionsSubtitle: "Was Housekeeper still hält und wann es wieder nachfragt.", excTabRules: "Ausnahmeregeln", excTileRulesHint: "Was still bleibt oder später gemeldet wird.", excTileVacationHint: "Regeln nur für den Urlaub.", excTileFindingsHint: "Ist so gewollt, Später, Fehlalarm.", excTileObjectsHint: "Objekt-Notizen mit Prüfdatum.", excTabVacation: "Urlaubsmodus", excTabFindings: "Entscheidungen", excTabObjects: "Objekt-Notizen", navCount_exceptions: "{n} zu prüfen", excReview: "Prüfen in", excReviewNever: "Nie", excReviewOn: "prüfen am {date}", excReviewDue: "Prüfdatum erreicht", excReviewNone: "ohne Prüfdatum", excTodoDue: "Regeln zu prüfen", excTodoHint: "Das Prüfdatum ist erreicht; die Regeln wirken weiter", excRenew: "Weiter so", excNoteNeeded: "Bei „Nicht melden“ auf eine ganze Domain braucht die Regel einen Grund (Notiz).",
@@ -61,7 +61,7 @@ Object.assign(TEXT.en, {
   excWinner: "Where several rules match, “Do not report” beats the delays; of several delays the longest counts.",
   excRuleArea: "Area {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Report only after {n} days", excRuleHideLine: "Do not report",
   excEffectHide: "{objects} objects, {n} findings hidden", excEffectDelay: "{hold} findings held back, {due} due", excEffectNone: "Matches nothing right now",
-  excPreview: "Preview", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
+  excPreview: "Preview", excHitDrop: "Remove {name} from the rule", excHitsMore: "… and {n} more objects", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
   excOn: "Rule active", excOnN: "Switch on ({n})", excOffN: "Switch off ({n})", excRenewN: "Renew time ({n})", excDeleteN: "Delete ({n})", excDue: "Time has passed", exceptions: "Exceptions", exceptionsSubtitle: "What Housekeeper keeps quiet about, and when it asks again.", excTabRules: "Exception rules", excTileRulesHint: "What stays quiet or is reported later.", excTileVacationHint: "Rules for the vacation only.", excTileFindingsHint: "Intended, Later, False alarm.", excTileObjectsHint: "Object notes with a review date.", excTabVacation: "Vacation mode", excTabFindings: "Decisions", excTabObjects: "Object notes", navCount_exceptions: "{n} to review", excReview: "Review in", excReviewNever: "Never", excReviewOn: "review on {date}", excReviewDue: "Review date reached", excReviewNone: "no review date", excTodoDue: "Rules to review", excTodoHint: "The review date has been reached; the rules keep working", excRenew: "Keep going", excNoteNeeded: "“Do not report” for a whole domain needs a reason (note).",
@@ -316,8 +316,15 @@ class ExceptionsMixin {
       : `${search}<div class="chips bare">${shown.map(x => chip(x.id, f.targets.includes(x.id))).join("") || `<small class="factnote">${this.t("excNoTargets")}</small>`}</div>`;
     const kinds = ["any", "area", "label", "integration", "domain", "device", "entity"].map(k => `<button type="button" class="chip${f.kind === k ? " active" : ""}" data-exc-kind="${k}" aria-pressed="${f.kind === k}">${this.t(`excKind_${k}`)}</button>`).join("");
     const pv = f.preview;
-    const preview = pv ? `<div class="excprev" role="status"><strong>${this.t("excPreview")}:</strong> ${f.action === "delay" ? this.t("excPreviewDelay", { hold: pv.hold, due: pv.due }) : this.t("excPreviewHide", { objects: pv.objects, n: pv.hide })}
-        ${pv.overlap?.length ? `<br><small class="factnote">${this.esc(this.t("excOverlap", { rules: pv.overlap.map(id => { const r = this.exc.rules.find(x => x.id === id); return r ? this.excRuleName(r) : id; }).join(", ") }))}</small>` : ""}</div>` : "";
+    const sum = pv ? `<strong>${this.t("excPreview")}:</strong> ${f.action === "delay" ? this.t("excPreviewDelay", { hold: pv.hold, due: pv.due }) : this.t("excPreviewHide", { objects: pv.objects, n: pv.hide })}` : "";
+    const canDrop = f.scopeSel === "objects" && f.picks.length > 1;
+    const hits = (pv?.hits || []).map(h => {
+      const pick = canDrop && f.picks.find(p => p.id === h.object_id);
+      return `<span class="chip hit" title="${this.esc(h.object_id)}">${this.esc(h.name)} <em>${h.findings}</em>${pick ? `<button type="button" class="hitx" data-exc-pick="${this.esc(`${pick.kind}:${pick.id}`)}" aria-label="${this.esc(this.t("excHitDrop", { name: h.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`;
+    }).join("");
+    const hitsMore = pv && pv.objects > (pv.hits || []).length ? `<small class="factnote">${this.t("excHitsMore", { n: pv.objects - pv.hits.length })}</small>` : "";
+    const preview = pv ? `<details class="excprev" data-exc-prev role="status"${f.prevOpen ? " open" : ""}><summary>${sum}</summary>${hits ? `<div class="hits chips bare">${hits}</div>${hitsMore}` : ""}
+        ${pv.overlap?.length ? `<small class="factnote">${this.esc(this.t("excOverlap", { rules: pv.overlap.map(id => { const r = this.exc.rules.find(x => x.id === id); return r ? this.excRuleName(r) : id; }).join(", ") }))}</small>` : ""}</details>` : "";
     const important = pv?.important?.length ? this.notice("warn", this.t("excImportant", { names: pv.important.map(x => x.name).join(", ") })) : "";
     const action = f.scope === "vacation" ? `<small class="factnote">${this.t("excScopeHint")}</small>`
       : `<div class="mfield"><span>${this.t("excAction")}</span><div class="excact"><button type="button" class="chip${f.action === "hide" ? " active" : ""}" data-exc-action="hide" aria-pressed="${f.action === "hide"}">${this.t("excAction_hide")}</button><button type="button" class="chip${f.action === "delay" ? " active" : ""}" data-exc-action="delay" aria-pressed="${f.action === "delay"}">${this.t("excAction_delay")}</button>
@@ -334,8 +341,8 @@ class ExceptionsMixin {
       <div class="excgrid">${action}
       ${f.scope !== "vacation" && f.action === "hide" ? `<label class="mfield"><span>${this.t("excReview")}</span><select data-exc-review>${[0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.review) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("excReviewNever")}</option>`).join("")}</select></label>` : ""}</div>
       <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
-      ${f.here ? "" : preview}${important}${more}${f.error ? this.notice("err", f.error) : ""}
-      <div class="mbtns">${f.here ? preview : ""}<button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
+      ${preview}${important}${more}${f.error ? this.notice("err", f.error) : ""}
+      <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
   }
 
   // The rules a form makes: one, or with "all types" one per kind of the objects picked.
@@ -500,6 +507,7 @@ class ExceptionsMixin {
     root.querySelectorAll("[data-exc-form]").forEach(form => {
       const f = this.excForm;
       form.onsubmit = ev => { ev.preventDefault(); this.commitException(); };
+      form.querySelector("[data-exc-prev]")?.addEventListener("toggle", ev => { f.prevOpen = ev.target.open; });
       form.querySelectorAll("[data-exc-for-pick]").forEach(el => el.onchange = () => { const s = f.scopes.find(x => x.id === el.value); f.scopeSel = s.id; f.picks = s.picks; f.error = ""; f.preview = null; this.render(); this.excPreview(); });
       form.querySelectorAll("[data-exc-scope-set]").forEach(el => el.onclick = () => { f.scope = el.dataset.excScopeSet; (this.viewTab ||= {}).exceptions = f.scope === "vacation" ? "vacation" : "rules"; f.error = ""; this.render(); this.excPreview(); });
       const settings = form.querySelector("[data-exc-settings]");
@@ -515,6 +523,8 @@ class ExceptionsMixin {
       if (days) days.onchange = ev => { f.error = ""; f.days = ev.target.value; this.excPreview(); };
       form.querySelectorAll("[data-exc-pick]").forEach(el => el.onclick = () => {
         f.error = ""; f.picks = f.picks.filter(p => `${p.kind}:${p.id}` !== el.dataset.excPick);
+        const own = f.scopes?.find(x => x.id === f.scopeSel);
+        if (own) own.picks = f.picks;
         this.render(); this.excPreview();
       });
       form.querySelectorAll("[data-exc-target]").forEach(el => el.onclick = () => {
