@@ -52,10 +52,10 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   set hass(value) {
-    const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar;
+    const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar, wasLanguage = this._hass?.language;
     this._hass = value;
     if (first) { this.load(false); this.loadUserPrefs(); }
-    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar) this.render();
+    else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar || (this.prefs.language === "auto" && wasLanguage !== value?.language)) this.render();
   }
 
   get hass() { return this._hass; }
@@ -168,12 +168,21 @@ class HAHousekeeperPanel extends HTMLElement {
 
   get lang() {
     const chosen = this.prefs?.language;
-    if (chosen === "de" || chosen === "en") return chosen;
-    return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en";
+    if (chosen && Object.hasOwn(TEXT, chosen)) return chosen;
+    const detected = String(this._hass?.language || "en").toLowerCase().split(/[-_]/)[0];
+    return Object.hasOwn(TEXT, detected) ? detected : "en";
   }
 
+  // Some languages have several plural forms; English is the fallback.
   t(key, vars) {
-    let text = TEXT[this.lang][key] || TEXT.en[key] || key;
+    const value = TEXT[this.lang]?.[key] ?? TEXT.en[key] ?? key;
+    let output = value;
+    if (value && typeof value === "object") {
+      const count = Number(vars?.count ?? vars?.n);
+      const category = Number.isFinite(count) ? new Intl.PluralRules(this.lang).select(count) : "other";
+      output = value[category] ?? value.other ?? TEXT.en[key] ?? key;
+    }
+    let text = String(output);
     if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, this.lang);
     return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
   }

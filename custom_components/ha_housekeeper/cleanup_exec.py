@@ -143,6 +143,7 @@ _LOGGER = logging.getLogger(__name__)
 LOGBOOK_DEVICE = {
     "de": ("Gerät „{}“ {}", ("vergessen", "entfernt")),
     "en": ("Device “{}” {}", ("forgotten", "removed")),
+    "sk": ("Zariadenie „{}“ {}", ("zabudnuté", "odstránené")),
 }
 
 LOGBOOK_KINDS = ("remove_device", "forget_device")  # written to the logbook when done
