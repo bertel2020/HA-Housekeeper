@@ -3624,7 +3624,7 @@ test("a mark can be set and cleared on the detail page and hides nothing in the 
   el.openMark("entity:sensor.b");
   el.markForm.kind = "seasonal"; el.markForm.reason = " Winter "; el.markForm.days = 90;
   await el.commitMark();
-  assert.equal(JSON.stringify(sent.find(m => m.type === "ha_housekeeper/mark_set")), JSON.stringify({ type: "ha_housekeeper/mark_set", object_type: "entity", object_id: "sensor.b", kind: "seasonal", reason: "Winter", days: 90 }));
+  assert.equal(JSON.stringify(sent.find(m => m.type === "ha_housekeeper/mark_set")), JSON.stringify({ type: "ha_housekeeper/mark_set", object_type: "entity", object_id: "sensor.b", kind: "seasonal", reason: "Winter", days: 90, auto_clear: true, grace_minutes: 30 }));
   assert.equal(el.markForm, null);
   assert.ok(el.markCard(el.selected).includes("Seasonal") && el.markCard(el.selected).includes("data-mark-clear"));
   await el.clearMark("entity:sensor.b");
