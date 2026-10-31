@@ -3775,7 +3775,7 @@ test("the selection bar can mark a device that is down once instead of each of i
   assert.equal(el.markDeviceCount(), 1);
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
   el.bulk = { kind: "mark", reason: "", days: 0, markKind: "", error: "", onDevice: true };
-  assert.ok(el.bulkForm().includes("data-bulk-ondevice") && el.bulkForm().includes("(1)"));
+  assert.ok(el.bulkForm().includes("data-bulk-ondevice") && el.bulkForm().includes("· 1 objects"));
   await el.commitBulk();
   assert.deepEqual(calls.filter(c => c.type === "ha_housekeeper/mark_set").map(c => `${c.object_type}:${c.object_id}`), ["device:tv"]);
   assert.equal(el.findSel.size, 0);
