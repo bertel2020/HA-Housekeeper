@@ -4,6 +4,32 @@
 >
 > **Beta of 2.0:** The pre-release [2.0.0-beta.1](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.1) is there to try: findings by topic with a page of its own, "Fix", a guided tour for cleaning up, the view "Simple" or "Full" and new names for the outcomes. In HACS (from Home Assistant 2026.11: Marketplace) it shows under "Redownload" with beta versions switched on. A normal update stays on 1.x.
 
+## 1.14.0 - 2026-10-31
+
+### Neu
+
+- **Objekt-Notiz mit Ende:** Eine Objekt-Notiz kann von selbst enden, sobald das Objekt wieder meldet.
+  - Eine neue Notiz endet standardmäßig von selbst.
+  - Die Wartezeit ist ein eigenes Feld neben der Option und heißt „Warten“.
+
+### Behoben
+
+- **Ablauf einer Automation:** Eine Entität, die nur als Zustand existiert (etwa `zone.home`), wird im Reiter „Ablauf“ nicht mehr als fehlend gemeldet.
+- **Neue Regel:** Die Karten von „Wofür“ werden nicht mehr vom vollbreiten Eingabefeld gequetscht.
+
+### English
+
+#### New
+
+- **Object note with an end:** An object note can end by itself once the object reports again.
+  - A new note ends by itself by default.
+  - The wait is a field of its own next to the option and is called “Wait”.
+
+#### Fixed
+
+- **Flow of an automation:** An entity that only exists as a state (such as `zone.home`) is no longer reported as missing in the “Flow” tab.
+- **New rule:** The cards of “For what” are no longer squeezed by the full-width input field.
+
 ## 1.13.0 - 2026-10-26
 
 ### Neu
