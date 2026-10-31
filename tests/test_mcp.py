@@ -365,6 +365,16 @@ async def test_a_finding_that_points_at_a_sensitive_entity_stays_out(hass: HomeA
     )
 
 
+async def test_a_slow_steady_caller_stays_under_the_read_limit(hass: HomeAssistant) -> None:
+    store = McpStore(hass)
+    start = datetime(2026, 1, 1, tzinfo=UTC)
+    for i in range(120):  # one read every two seconds merges into a single line
+        store.log("u", "status", "read", {}, "ok", now=start + timedelta(seconds=2 * i))
+    end = start + timedelta(seconds=240)
+    assert len(store.entries) == 1 and store.entries[0]["n"] == 120
+    assert store.reads_since(60, end) == 30
+
+
 async def test_summary_names_the_heaviest_groups(hass: HomeAssistant) -> None:
     scanner = scanner_with(hass, 40)
     scanner.mcp.enabled = True

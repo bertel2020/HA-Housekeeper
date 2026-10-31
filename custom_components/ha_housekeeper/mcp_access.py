@@ -9,6 +9,7 @@ never the content of an answer. Many reads in a row from one caller are one line
 
 from __future__ import annotations
 
+from collections import deque
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -22,6 +23,7 @@ ENTRY_LIMIT = 2000
 KEEP_DAYS = 90
 MERGE_SECONDS = 60  # reads of one caller within this time are one line
 PARAM_TEXT = 60
+READ_WINDOW_SECONDS = 60  # the window the read limit counts in
 KINDS = ("read", "write", "denied")
 WRITE_LIMIT_CHOICES = (50, 100, 200, 500)  # changes allowed in five minutes
 READ_LIMIT_CHOICES = (60, 120, 300)  # reads allowed per minute
@@ -57,6 +59,8 @@ class McpStore:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, MCP_STORAGE_KEY)
         self.enabled = False
         self.write = False
+        # The time of each read, for the limit: the log merges reads, so it cannot tell when they were.
+        self._read_times: deque[datetime] = deque(maxlen=max(READ_LIMIT_CHOICES) * 2)
         self.fix = False
         self.hide_sensitive = True
         self.auto_off_hours = 0
@@ -176,6 +180,8 @@ class McpStore:
     ) -> None:
         """Add a call. A read or a refusal that repeats within a minute only counts up."""
         now = now or datetime.now(UTC)
+        if kind == "read":
+            self._read_times.append(now)
         last = self.entries[-1] if self.entries else None
         if (
             last is not None
@@ -218,16 +224,10 @@ class McpStore:
             if (kind is None or e["kind"] == kind) and (not only_failed or e["result"] != "ok")
         ]
 
-    def reads_since(self, seconds: int, now: datetime | None = None) -> int:
-        """How many reads the log holds from the last seconds (a merged line counts all its calls)."""
+    def reads_since(self, seconds: int = READ_WINDOW_SECONDS, now: datetime | None = None) -> int:
+        """How many reads came in the last seconds, counted one by one (after a restart from zero)."""
         start = (now or datetime.now(UTC)) - timedelta(seconds=seconds)
-        return sum(
-            e["n"]
-            for e in self.entries
-            if e["kind"] == "read"
-            and (seen := _time(e.get("last") or e["at"])) is not None
-            and seen >= start
-        )
+        return sum(1 for seen in self._read_times if seen >= start)
 
     def writes_since(self, minutes: int, now: datetime | None = None) -> int:
         """How many changes the log holds from the last minutes (an undo is a change too)."""
