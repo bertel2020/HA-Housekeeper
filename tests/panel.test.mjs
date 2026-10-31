@@ -5547,12 +5547,27 @@ test("the credential page opens with what to check, and every fold names its ent
   let html = shadow.innerHTML;
   assert.ok(["findings", "entries", "accounts", "tokens"].every(tab => html.includes(`data-view-tab="secrets|${tab}"`)), "the cards are the tabs");
   assert.ok(html.includes("Zu prüfen") && html.includes("Anmeldung nötig") && html.includes("Felder ohne Wert") && html.includes("Deaktiviert, mit gespeichertem Wert") && html.includes("Admin ohne Zwei-Faktor"));
-  assert.ok(html.includes("von 2 Admins haben keinen zweiten Faktor"), "the fold counts the admins");
-  el.folds = { sec_reauth: true, sec_disabled: true, sec_nomfa: true }; el.render();
+  assert.ok(html.includes("Admin von außen erreichbar, ohne Zwei-Faktor") && html.includes("von 2 Admins können sich auch von außen anmelden"), "the fold counts the admins that can sign in from outside");
+  assert.ok(!html.includes("Konto lange nicht angemeldet"), "a guest without tokens is not worth a fold");
+  el.folds = { sec_reauth: true, sec_disabled: true, sec_nomfa_out: true }; el.render();
   html = shadow.innerHTML;
   assert.ok(html.includes("Netatmo") && html.includes("Alte Kamera"), "the folds list the entries they are about");
   assert.ok(html.includes("&lt;b&gt;Partner&lt;/b&gt;") && !html.includes("Roberto</strong>") && !html.includes("Gast</strong>"), "only the admin without two-factor, escaped");
   assert.ok(html.includes('data-ha-path="/config/users"'), "a row opens the users in Home Assistant");
+});
+
+test("empty fields that are meant so lose the colour, can be taken back and have a filter", () => {
+  const { el, shadow } = systemPanel("de");
+  el._sys.secrets.data = { ...SECRETS, entries: SECRETS.entries.map(e => (e.entry_id === "c1" ? { ...e, gap_known: { at: "2026-10-31T10:00:00+00:00" } } : { ...e, gap_known: null })) };
+  el.view = "secrets";
+  (el.viewTab ||= {}).secrets = "entries";
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes('data-sec-known="c1|0"') && html.includes("Wieder hervorheben"), "the way back is there");
+  assert.ok(html.includes('class="pill mute">1 von 2'), "the empty field is not highlighted");
+  el.lvState("seclist", "name", "asc").f.state = "gapknown"; el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("&lt;i&gt;Demo") && !html.includes("Netatmo</"), "the filter keeps only the ones meant so");
 });
 
 test("the accounts tab lists everybody with role and two-factor", () => {

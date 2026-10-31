@@ -1,5 +1,6 @@
 """WebSocket commands for storage and system, and for system access and data flow. Read-only, but for
-the note that an access is meant to be so, which Housekeeper keeps in its own storage."""
+the notes that an access, or the empty fields of an integration, are meant to be so, which Housekeeper
+keeps in its own storage."""
 
 from __future__ import annotations
 
@@ -166,7 +167,33 @@ async def websocket_sensitive_fields(
 ) -> None:
     """Which config entries hold credentials, of what kind and whether set, and the accounts.
     Never a value."""
-    connection.send_result(msg["id"], _versioned(await sensitive_fields(hass)))
+    result = await sensitive_fields(hass)
+    scanner.access_state.annotate_secrets(result.get("entries", []))
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/secret_known",
+        vol.Required("entry_id"): str,
+        vol.Required("known"): bool,
+    }
+)
+@callback
+@with_scanner
+def websocket_secret_known(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Say that the empty credential fields of an integration are meant so, or take that back.
+    Housekeeper's own data only."""
+    if not scanner.access_state.set_secret_known(msg["entry_id"], msg["known"], datetime.now(UTC)):
+        connection.send_error(msg["id"], "not_found", "Unknown integration entry")
+        return
+    connection.send_result(msg["id"], {"entry_id": msg["entry_id"], "known": msg["known"]})
 
 
 @websocket_api.require_admin
@@ -200,6 +227,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_starts)
     websocket_api.async_register_command(hass, websocket_access)
     websocket_api.async_register_command(hass, websocket_access_known)
+    websocket_api.async_register_command(hass, websocket_secret_known)
     websocket_api.async_register_command(hass, websocket_sensitive_fields)
     websocket_api.async_register_command(hass, websocket_open_flows)
     websocket_api.async_register_command(hass, websocket_hacs_repositories)

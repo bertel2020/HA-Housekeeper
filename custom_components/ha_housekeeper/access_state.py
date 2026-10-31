@@ -4,6 +4,8 @@ Stored by Housekeeper only, per integration entry: the level it was given, when 
 (empty for the first look: that is "before tracking", never new) and, when somebody said so, that
 its access is meant to be so. Never a value, a detail of an access or a name, only the entry id and
 a level. A level that rises lifts the decision, and a rise is shown for a while like a new entry.
+The credentials page keeps its own decisions apart (``secret_known``): the empty fields of an entry
+that are meant to be so, with how many were empty then; more of them lifts the decision.
 """
 
 from __future__ import annotations
@@ -34,6 +36,10 @@ class AccessState:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, ACCESS_STATE_STORAGE_KEY)
         self._seen: dict[str, dict[str, str]] = {}
         self._known: dict[str, dict[str, str]] = {}
+        self._secret_known: dict[str, dict[str, Any]] = {}
+        self._secret_empty: dict[
+            str, int
+        ] = {}  # what the last look at the credentials found; not saved
         self._tracking = False  # until a first look: what is found is "before tracking"
 
     async def async_load(self) -> None:
@@ -56,6 +62,14 @@ class AccessState:
                     "at": _clock(entry.get("at")),
                     "reason": _clock(entry.get("reason"))[:REASON_LIMIT],
                 }
+        raw = data.get("secret_known")
+        for key, entry in (raw if isinstance(raw, dict) else {}).items():
+            if (
+                isinstance(key, str)
+                and isinstance(entry, dict)
+                and isinstance(entry.get("empty"), int)
+            ):
+                self._secret_known[key] = {"at": _clock(entry.get("at")), "empty": entry["empty"]}
         self._tracking = bool(self._seen)
 
     def annotate(self, entries: list[dict[str, Any]], now: datetime) -> None:
@@ -128,5 +142,47 @@ class AccessState:
         self._save()
         return True
 
+    def annotate_secrets(self, entries: list[dict[str, Any]]) -> None:
+        """Add ``gap_known`` to each credential entry: when its empty fields were said to be meant so."""
+        changed = False
+        for entry in entries:
+            key, fields = entry.get("entry_id"), entry.get("fields")
+            if not isinstance(key, str) or not isinstance(fields, list):
+                continue
+            empty = sum(1 for f in fields if f.get("set") is False)
+            self._secret_empty[key] = empty
+            known = self._secret_known.get(key)
+            if known and empty > known["empty"]:
+                del self._secret_known[key]
+                known = None
+                changed = True
+            entry["gap_known"] = {"at": known["at"]} if known else None
+        present = {e.get("entry_id") for e in entries}
+        if present:
+            for key in self._secret_known.keys() - present:
+                del self._secret_known[key]
+                changed = True
+        if changed:
+            self._save()
+
+    def set_secret_known(self, key: str, known: bool, now: datetime) -> bool:
+        """Say that the empty fields of an entry are meant so, or take that back; False for an unknown entry."""
+        empty = self._secret_empty.get(key)
+        if empty is None:
+            return False
+        if known:
+            self._secret_known[key] = {"at": now.isoformat(), "empty": empty}
+        else:
+            self._secret_known.pop(key, None)
+        self._save()
+        return True
+
     def _save(self) -> None:
-        self._store.async_delay_save(lambda: {"seen": self._seen, "known": self._known}, SAVE_DELAY)
+        self._store.async_delay_save(
+            lambda: {
+                "seen": self._seen,
+                "known": self._known,
+                "secret_known": self._secret_known,
+            },
+            SAVE_DELAY,
+        )

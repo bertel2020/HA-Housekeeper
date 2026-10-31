@@ -574,16 +574,19 @@ class SystemMixin {
       // A switched-off integration keeps what it stored; worth a look only when a value is set.
       const kept = e => e.disabled && count(e, true) > 0;
       const state = e => (count(e, false) === 0 ? "set" : count(e, true) === 0 ? "empty" : "part");
-      const stateCell = e => `${e.fields.length ? `<span class="pill ${{ set: "ok", part: "warn", empty: "warn" }[state(e)]}">${this.esc(this.t("secState", { n: count(e, true), total: e.fields.length }))}</span>` : ""}${e.reauth ? `<span class="pill red">${this.t("secReauth")}</span>` : ""}`;
+      // Empty fields that are meant so lose the colour.
+      const stateCell = e => `${e.fields.length ? `<span class="pill ${e.gap_known && state(e) !== "set" ? "mute" : { set: "ok", part: "warn", empty: "warn" }[state(e)]}">${this.esc(this.t("secState", { n: count(e, true), total: e.fields.length }))}</span>` : ""}${e.reauth ? `<span class="pill red">${this.t("secReauth")}</span>` : ""}`;
       const kindNames = e => kinds(e).map(k => this.t(`secKind_${k}`));
       const names = e => e.fields.map(f => f.key).join(", ");
       const admins = users.filter(u => u.active && u.admin), noMfa = admins.filter(u => !u.mfa);
       const oldTokens = tokens.filter(x => x.old || !x.account_active);
       const finds = [
         { kind: "reauth", tone: "red", level: "warn", list: entries.filter(e => e.reauth), table: "entries" },
-        { kind: "gap", tone: "warn", level: "warn", list: entries.filter(e => state(e) !== "set"), table: "entries" },
+        { kind: "gap", tone: "warn", level: "warn", list: entries.filter(e => state(e) !== "set" && !e.gap_known), table: "entries" },
         { kind: "disabled", tone: "warn", level: "warn", list: entries.filter(kept), table: "entries" },
-        { kind: "nomfa", tone: "warn", level: "warn", list: r.accounts ? noMfa : [], table: "users", extra: admins.length },
+        { kind: "nomfa_out", tone: "red", level: "warn", list: r.accounts ? noMfa.filter(u => !u.local_only) : [], table: "users", extra: admins.length },
+        { kind: "nomfa", tone: "warn", level: "warn", list: r.accounts ? noMfa.filter(u => u.local_only) : [], table: "users", extra: admins.length },
+        { kind: "inactive", tone: "warn", level: "warn", list: r.accounts ? users.filter(u => u.inactive && (u.admin || u.token_count > 0)) : [], table: "users", extra: 0 },
         { kind: "tokens", tone: "warn", level: "warn", list: r.tokens ? oldTokens : [], table: "tokens" },
       ].filter(f => f.list.length);
       const tabs = [
@@ -602,28 +605,38 @@ class SystemMixin {
         { key: "name", label: "accColIntegration", cell: e => `<div class="statcell"><span class="tile mute"><ha-icon icon="mdi:key-outline"></ha-icon></span><div>${this.accIntegrationCell(e)}${e.fields.length ? `<details class="rowdetails"><summary>${this.t("secFieldsN", { n: e.fields.length })}</summary><small class="u-dim u-block">${this.esc(names(e))}</small></details>` : ""}</div></div>` },
         { key: "kind", label: "secColKind", sortable: false, cell: e => this.accPills(kindNames(e)) },
         { key: "state", label: "secColState", dir: "desc", cell: stateCell },
-        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.rowMenuHtml([["mdi:open-in-new", "secOpenMenu", `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(e.domain)}`)}"`]]) },
+        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.rowMenuHtml([
+          ["mdi:open-in-new", "secOpenMenu", `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(e.domain)}`)}"`],
+          ...(state(e) !== "set" ? [e.gap_known ? ["mdi:undo-variant", "secUnknown", `data-sec-known="${this.esc(e.entry_id)}|0"`] : ["mdi:check-circle-outline", "secKnown", `data-sec-known="${this.esc(e.entry_id)}|1"`]] : []),
+        ]) },
       ];
       const entryList = (id, list, bare) => this.sysList(id, list, {
         sort: "name", dir: "asc", cls: "acc", tie: e => e.entry_id, bare,
         sorts: [{ key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }, { key: "state", label: "secColState", dir: "desc", get: e => (e.reauth ? 3 : ({ empty: 2, part: 1, set: 0 })[state(e)]) }],
         filters: [
           { name: "kind", all: this.t("secAllKinds"), options: ["password", "token", "api_key", "secret", "webhook", "pin"].map(k => [k, this.t(`secKind_${k}`)]) },
-          { name: "state", all: this.t("secAllStates"), options: [["reauth", this.t("secReauth")], ["disabled", this.t("secStateDisabled")], ["gap", this.t("secStateGap")], ["set", this.t("secStateSet")], ["part", this.t("secStatePart")], ["empty", this.t("secStateEmpty")]] },
+          { name: "state", all: this.t("secAllStates"), options: [["reauth", this.t("secReauth")], ["disabled", this.t("secStateDisabled")], ["gap", this.t("secStateGap")], ["gapknown", this.t("secStGapKnown")], ["set", this.t("secStateSet")], ["part", this.t("secStatePart")], ["empty", this.t("secStateEmpty")]] },
         ],
-        filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "reauth" ? Boolean(e.reauth) : v === "disabled" ? kept(e) : v === "gap" ? state(e) !== "set" : state(e) === v) },
+        filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "reauth" ? Boolean(e.reauth) : v === "disabled" ? kept(e) : v === "gap" ? state(e) !== "set" : v === "gapknown" ? Boolean(e.gap_known) && state(e) !== "set" : state(e) === v) },
         text: e => `${e.domain} ${e.title} ${names(e)} ${kindNames(e).join(" ")}`, empty: "secNone",
         rowAttrs: () => 'class="static"', columns: entryColumns,
-        exportName: bare ? undefined : "credential-fields", header: [this.t("accColIntegration"), "Domain", this.t("secColKind"), this.t("secColFields"), this.t("secColSetCount"), this.t("secColEmptyCount")],
-        rows: e => [e.title, e.domain, kindNames(e).join("; "), names(e), count(e, true), count(e, false)],
+        exportName: bare ? undefined : "credential-fields", header: [this.t("accColIntegration"), "Domain", this.t("secColKind"), this.t("secColFields"), this.t("secColSetCount"), this.t("secColEmptyCount"), this.t("secStGapKnown")],
+        rows: e => [e.title, e.domain, kindNames(e).join("; "), names(e), count(e, true), count(e, false), e.gap_known && state(e) !== "set" ? this.t("secStGapKnown") : ""],
       });
       if (open === "entries") return `<div class="stack">${head}${nav}${panel("secListTitle", "secListHint", entryList("seclist", entries, false), "secFootnote")}</div>`;
       // To check: one fold per thing that stands out, with the entries, accounts or tokens it is about.
-      const body = f => (f.table === "users" ? this.secAccounts(f.list, "secfind_nomfa", true) : f.table === "tokens" ? this.secTokens(f.list, "secfind_tokens", true) : entryList(`secfind_${f.kind}`, f.list, true));
+      const body = f => (f.table === "users" ? this.secAccounts(f.list, `secfind_${f.kind}`, true) : f.table === "tokens" ? this.secTokens(f.list, "secfind_tokens", true) : entryList(`secfind_${f.kind}`, f.list, true));
       const folds = finds.map(f => this.fold(`sec_${f.kind}`, { tone: f.tone, title: this.t(`secFindT_${f.kind}`), sub: this.t(`secFindX_${f.kind}`, { n: this.formatNumber(f.list.length), fields: this.formatNumber(f.kind === "gap" ? f.list.reduce((n, e) => n + count(e, false), 0) : 0), admins: this.formatNumber(f.extra || 0) }), pill: this.t("expoWarn") }, `<p class="factnote foldadvice">${this.t(`secFindA_${f.kind}`)}</p>${body(f)}`, false)).join("");
       const rows = finds.length ? `<h3 class="expohd">${this.t("expoToCheck")}</h3>${folds}` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("secFindNone")}</div>`;
       return `<div class="stack">${head}${nav}<div class="panel">${rows}${this.howCounted("secFootnote")}</div></div>`;
     });
+  }
+
+  async setSecretKnown(entryId, known) {
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/secret_known", entry_id: entryId, known });
+      await this.sysLoad("secrets", true);
+    } catch (err) { this.failed(err); }
   }
 
   // The people of this Home Assistant: role, two-factor login and last login. A click opens the user settings.
@@ -681,6 +694,7 @@ class SystemMixin {
       this.render();
     }));
     root.querySelectorAll("[data-sys-refresh]").forEach(el => el.onclick = () => this.sysLoad(el.dataset.sysRefresh, true));
+    root.querySelectorAll("[data-sec-known]").forEach(el => el.addEventListener("click", ev => { ev.stopPropagation(); const [id, on] = el.dataset.secKnown.split("|"); this.setSecretKnown(id, on === "1"); }));
     root.querySelectorAll("[data-acc-known]").forEach(el => el.addEventListener("click", ev => { ev.stopPropagation(); const [id, on] = el.dataset.accKnown.split("|"); this.setAccessKnown(id, on === "1"); }));
     // A tap on the (i) shows its text for a few seconds, as touch has no hover.
     root.querySelectorAll(".infotip").forEach(el => el.addEventListener("click", () => {

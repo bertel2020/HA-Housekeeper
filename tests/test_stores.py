@@ -65,7 +65,11 @@ GARBAGE = [
     {"enabled": {"entity_area": "yes", "unknown_rule": True, "device_area": 1}},
     {"since": 3, "items": {"automation.a": {"days": "no", "seen": 5}}},
     {"sizes": {"2026-10-08": "big", "x": -4}, "heartbeat": 5, "versions": "v"},
-    {"seen": "no", "known": {"a": 5, "b": {"level": "huge"}}},
+    {
+        "seen": "no",
+        "known": {"a": 5, "b": {"level": "huge"}},
+        "secret_known": {"a": 5, "b": {"empty": "x"}},
+    },
 ]
 
 
@@ -457,3 +461,27 @@ async def test_the_access_page_marks_what_is_new_and_lifts_a_decision_when_the_l
     assert look(whole, then + timedelta(days=31))["b"]["change"] == "raised"
     store.set_known("b", True, "", then)
     assert look(whole, then + timedelta(days=33))["b"]["known"] is not None
+
+
+async def test_empty_credential_fields_meant_so_are_lifted_when_more_fields_are_empty(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = AccessState(hass)
+    await store.async_load()
+    now = datetime(2026, 10, 1, tzinfo=UTC)
+
+    def look(empty: int) -> dict:
+        entry = {"entry_id": "a", "fields": [{"set": False}] * empty + [{"set": True}]}
+        store.annotate_secrets([entry])
+        return entry
+
+    assert not store.set_secret_known("a", True, now), (
+        "an entry that was never looked at is unknown"
+    )
+    look(2)
+    assert store.set_secret_known("a", True, now)
+    assert look(2)["gap_known"] == {"at": now.isoformat()} and look(1)["gap_known"] is not None
+    assert look(3)["gap_known"] is None, "one more empty field lifts the decision"
+    store.set_secret_known("a", True, now)
+    store.annotate_secrets([{"entry_id": "b", "fields": []}])
+    assert look(2)["gap_known"] is None, "a decision of an entry that went away is forgotten"
