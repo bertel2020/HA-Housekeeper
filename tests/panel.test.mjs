@@ -7939,7 +7939,7 @@ test("the form of the selection lists what it acts on, and a finding can be take
   el.findSel = new Set(["k1", "k2"]);
   el.bulk = { kind: "status", state: "keep", reason: "", days: 90, markKind: "", error: "" };
   const html = el.bulkForm();
-  assert.ok(html.includes("2 findings selected") && html.includes("Alpha") && html.includes("Beta") && html.includes('data-bulk-drop="k1"'));
+  assert.ok(html.includes("2 findings affected") && html.includes("Alpha") && html.includes("Beta") && html.includes('data-bulk-drop="k1"'));
   el.findSel = new Set(["k1"]);
   assert.ok(!el.bulkForm().includes("data-bulk-drop"), "the last one cannot be taken out");
 });
@@ -7951,7 +7951,7 @@ test("the area form lists the devices and entities the plan will change", () => 
   el.polSel = new Set(["i1", "i2"]);
   el.bulk = { kind: "area", area: "", error: "" };
   const html = el.areaForm();
-  assert.ok(html.includes("2 devices and entities selected") && html.includes("Hue bridge") && html.includes("light.a") && !html.includes("data-bulk-drop"));
+  assert.ok(html.includes("2 devices and entities affected") && html.includes("Hue bridge") && html.includes("light.a") && !html.includes("data-bulk-drop"));
 });
 
 test("the note form of the selection lists the objects it will mark", () => {
@@ -7961,7 +7961,7 @@ test("the note form of the selection lists the objects it will mark", () => {
   el.findSel = new Set(["k1", "k2"]);
   el.bulk = { kind: "mark", state: "keep", reason: "", days: 0, markKind: "", error: "" };
   const html = el.bulkForm();
-  assert.ok(html.includes("2 objects selected") && html.includes("Alpha") && html.includes("Beta"));
+  assert.ok(html.includes("2 objects affected") && html.includes("Alpha") && html.includes("Beta"));
 });
 
 test("the kinds of an object note are tiles that say what each does, and when it applies are chips", () => {

@@ -386,7 +386,7 @@ class FindingStatusMixin {
         </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}${this.coverHint(this.selectionFacts().picked, ["user", "label", "rule"])}`, save);
     }
     if (b.kind === "area") return this.areaForm();
-    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), `${this.pickedBlock(this.pickedFindingRows(this.statusKeys()), "pickedFindings", true)}${this.statusFields(b, "bulk", b.state)}`, save);
+    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), `${this.pickedBlock(this.pickedFindingRows(this.statusKeys()), "pickedFindings", true, this.t("pickedOfObjects", { n: this.formatNumber(new Set(this.pickedFindingRows(this.statusKeys()).map(r => r.name)).size) }))}${this.statusFields(b, "bulk", b.state)}`, save);
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="actionarea">${this.actionHead(this.t("state_label"), cancel)}<small>${this.t("labelNone")}</small></div>`;
@@ -399,16 +399,16 @@ class FindingStatusMixin {
   }
 
   // What a form of the selection acts on, folded under its title: rows of { key, name, sub }; with drop, each can be taken out of the selection again.
-  pickedBlock(rows, noun, drop) {
+  pickedBlock(rows, noun, drop, sub = "") {
     const n = rows.length, b = this.bulk, open = b.pickedOpen ?? n <= 5;
-    const chips = rows.slice(0, PICKED_MAX).map(r => `<span class="chip hit" title="${this.esc(r.key)}">${this.esc(r.name)}${r.sub ? ` <em>${this.esc(r.sub)}</em>` : ""}${drop && n > 1 ? `<button type="button" class="hitx" data-bulk-drop="${this.esc(r.key)}" aria-label="${this.esc(this.t("pickedDrop", { name: r.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`).join("");
+    const chips = rows.slice(0, PICKED_MAX).map(r => `<span class="chip hit" title="${this.esc(r.tip || r.key)}">${this.esc(r.name)}${r.sub ? ` <em>${this.esc(r.sub)}</em>` : ""}${drop && n > 1 ? `<button type="button" class="hitx" data-bulk-drop="${this.esc(r.key)}" aria-label="${this.esc(this.t("pickedDrop", { name: r.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`).join("");
     const more = n > PICKED_MAX ? `<small class="factnote">${this.t("pickedMore", { n: this.formatNumber(n - PICKED_MAX) })}</small>` : "";
-    return `<details class="excprev" data-bulk-picked${open ? " open" : ""}><summary>${this.t(noun, { n: this.formatNumber(n) })}</summary><div class="hits chips bare">${chips}</div>${more}</details>`;
+    return `<details class="excprev" data-bulk-picked${open ? " open" : ""}><summary><b>${this.t(noun, { n: this.formatNumber(n) })}</b>${sub ? `<span class="sub">· ${this.esc(sub)}</span>` : ""}</summary><div class="hits chips bare">${chips}</div>${more}</details>`;
   }
 
   pickedFindingRows(keys) {
     return keys.map(key => this.data.findings.find(f => f.key === key)).filter(Boolean)
-      .map(f => ({ key: f.key, name: this.findObject(this.findingKey(f))?.name || f.object_id, sub: this.findingTitle(f) }));
+      .map(f => ({ key: f.key, name: this.findObject(this.findingKey(f))?.name || f.object_id, sub: this.statusLabel(f.classification), tip: this.findingTitle(f) }));
   }
 
   // The frame every action under the selection bar shares: a title with a close button above, cancel and save below.
@@ -590,7 +590,7 @@ Object.assign(TEXT.de, {
   markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Deine Entscheidung", hiddenBy_mark: "Objekt-Notiz", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
   coverBy_user: "deine Entscheidung ({n})", coverBy_label: "das Label „Ignorieren“ ({n})", coverBy_rule: "eine Regel ({n})", coverMark: "Schon ausgeblendet durch {by}. Die Objekt-Notiz gilt daneben und schützt das Objekt vor dem Aufräumen.", coverRule: "Schon ausgeblendet durch {by}. Die Regel gilt daneben.",
   also_label: "das Label „Ignorieren“", also_rule: "eine Regel", alsoMark: "die Objekt-Notiz „{kind}“", alsoLine: "Würde auch greifen: {by}", alsoUndo: "Würde auch greifen: {by}. Ohne deine Entscheidung bliebe er trotzdem ausgeblendet",
-  pickedFindings: "{n} Befunde ausgewählt", pickedObjects: "{n} Objekte ausgewählt", pickedDevEnt: "{n} Geräte und Entitäten ausgewählt", kind_device: "Gerät", kind_entity: "Entität", pickedDrop: "{name} aus der Auswahl nehmen", pickedMore: "… und {n} weitere",
+  pickedFindings: "{n} Befunde betroffen", pickedOfObjects: "von {n} Objekten", pickedObjects: "{n} Objekte betroffen", pickedObjectsSub: "Befunde nimmst du in der Liste heraus", pickedDevEnt: "{n} Geräte und Entitäten betroffen", kind_device: "Gerät", kind_entity: "Entität", pickedDrop: "{name} aus der Auswahl nehmen", pickedMore: "… und {n} weitere",
   statusKeepHint: "Das Objekt kann beim Aufräumen trotzdem vorgeschlagen werden. Soll es nicht gelöscht werden, setze eine Objekt-Notiz „{kind}“.", actMenu: "Aktionen", actDecide: "Befunde entscheiden …", actDecideSub: "Nur diese {n} Befunde · Fehlalarm, gewollt oder später", actMark: "Objekt-Notiz setzen …", actMarkSub: "Diese {n} Objekte, auch künftig · Objekt-Notiz", actRule: "Regel für diese Objekte …", actRuleSub: "Gruppe per Regel · {n} Objekte, Ausnahme",
   fselMarkClear: "Objekt-Notiz entfernen", fselMarksCleared: "{n} Objekt-Notizen entfernt", fselNothing: "Für diese Auswahl gibt es keine Sammelaktion.", hiddenMarkOpen: "Objekt-Notiz ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
@@ -606,7 +606,7 @@ Object.assign(TEXT.en, {
   markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Your decision", hiddenBy_mark: "Object note", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
   coverBy_user: "your decision ({n})", coverBy_label: "the label “Ignore” ({n})", coverBy_rule: "a rule ({n})", coverMark: "Already hidden by {by}. The object note applies besides and keeps the object from the cleanup.", coverRule: "Already hidden by {by}. The rule applies besides.",
   also_label: "the label “Ignore”", also_rule: "a rule", alsoMark: "the object note “{kind}”", alsoLine: "Would also apply: {by}", alsoUndo: "Would also apply: {by}. Without your decision it would stay hidden anyway",
-  pickedFindings: "{n} findings selected", pickedObjects: "{n} objects selected", pickedDevEnt: "{n} devices and entities selected", kind_device: "Device", kind_entity: "Entity", pickedDrop: "Take {name} out of the selection", pickedMore: "… and {n} more",
+  pickedFindings: "{n} findings affected", pickedOfObjects: "of {n} objects", pickedObjects: "{n} objects affected", pickedObjectsSub: "take findings out in the list", pickedDevEnt: "{n} devices and entities affected", kind_device: "Device", kind_entity: "Entity", pickedDrop: "Take {name} out of the selection", pickedMore: "… and {n} more",
   statusKeepHint: "The object can still be suggested in the cleanup. To keep it from being deleted, set the object note “{kind}”.", actMenu: "Actions", actDecide: "Decide on findings …", actDecideSub: "Only these {n} findings · false alarm, intended or later", actMark: "Set object note …", actMarkSub: "These {n} objects, also in future · object note", actRule: "Rule for these objects …", actRuleSub: "A group by rule · {n} objects, exception",
   fselMarkClear: "Remove object note", fselMarksCleared: "{n} object notes removed", fselNothing: "No bulk action fits this selection.", hiddenMarkOpen: "View object note", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
