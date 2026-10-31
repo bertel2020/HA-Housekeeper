@@ -4813,7 +4813,7 @@ test("a rule that does not report gets a review in 180 days, shows when it is du
   const past = new Date(Date.now() - 86400000).toISOString(), soon = new Date(Date.now() + 5 * 86400000).toISOString();
   const rule = (over) => ({ id: "r1", kind: "domain", targets: ["media_player"], action: "hide", scope: "always", enabled: true, note: "", ...over });
   assert.ok(el.excRuleCells(rule({ review_at: past, review_days: 180 })).find(c => c.key === "acts").cell().includes("data-exc-renew"), "renewing sits in the row menu");
-  assert.ok(el.excReviewLine(rule({ review_at: soon, review_days: 180 })).includes("review on"));
+  assert.ok(el.excReviewLine(rule({ review_at: soon, review_days: 180 })).includes("remind on"));
   assert.ok(el.excReviewLine(rule({})).includes("no review date"));
   assert.equal(el.excReviewLine(rule({ scope: "vacation" })), "");
   el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [], days_max: 365 };
