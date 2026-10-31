@@ -9900,7 +9900,7 @@ class MarksMixin {
     const row2 = when.window + field("markReview", `<select data-mark-days>${days}</select>`);
     const row3 = when.autoBox, row4 = when.graceBack;
     return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}${row4}
-        ${this.markEffectLine(f, false)}<small class="factnote">${this.t("markScopeHint")}</small>
+        ${this.markEffectLine(f, false)}${this.coverHint(this.data.findings.filter(x => this.findingKey(x) === key), ["user", "label", "rule"])}<small class="factnote">${this.t("markScopeHint")}</small>
         ${when.hints}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
         <div class="mbtns"><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div></form>`;
@@ -12495,6 +12495,14 @@ class FindingStatusMixin {
     return this.effectLine(this.t(many ? "effStatusMany" : "effStatusOne"), this.effectClean("free"), back);
   }
 
+  // Says that findings are hidden already by a way that ranks above the one being set: status, then label, then rule, then note.
+  coverHint(findings, ranks) {
+    const by = {};
+    for (const f of findings) if (f && f.ignored && ranks.includes(f.ignored_by)) by[f.ignored_by] = (by[f.ignored_by] || 0) + 1;
+    const parts = ranks.filter(k => by[k]).map(k => this.t(`coverBy_${k}`, { n: this.formatNumber(by[k]) }));
+    return parts.length ? this.notice("warn", this.t(ranks.includes("rule") ? "coverMark" : "coverRule", { by: parts.join(", ") })) : "";
+  }
+
   // "Intended" does not keep the object from the cleanup: the object note "Do not delete" does. Said where the two are mixed up.
   keepHint(d, many) {
     const f = this.data.findings.find(x => x.key === d.key);
@@ -12823,7 +12831,7 @@ class FindingStatusMixin {
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
-        </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}`, save);
+        </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}${this.coverHint(this.selectionFacts().picked, ["user", "label", "rule"])}`, save);
     }
     if (b.kind === "area") return this.areaForm();
     if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), this.statusFields(b, "bulk", b.state), save);
@@ -13015,6 +13023,7 @@ Object.assign(TEXT.de, {
   decNoticeText: "„Bekannt“ heißt jetzt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“. {n} Befunde mit „Ist so gewollt“ hatten keine Frist; sie werden nach {days} Tagen unter „Fällig“ noch einmal vorgelegt. Die Frist lässt sich je Befund ändern.", decNoticeText1: "„Bekannt“ heißt jetzt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“. Ein Befund mit „Ist so gewollt“ hatte keine Frist; er wird nach {days} Tagen unter „Fällig“ noch einmal vorgelegt. Die Frist lässt sich ändern.", decNoticeOk: "Verstanden",
   statusScopeHint: "Gilt nur für diese Befunde. Ein neuer Befund am selben Objekt ist wieder offen.", reasonChipsLabel: "Gründe zur Auswahl", reasonChip1: "Absichtlich so", reasonChip2: "Wird ersetzt", reasonChip3: "Nicht relevant", reasonChip4: "Saisonal", reasonChipf1: "Messwert falsch", reasonChipf2: "Gerät wird anders genutzt", reasonChipf3: "Regel passt nicht",
   markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Deine Entscheidung", hiddenBy_mark: "Objekt-Notiz", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
+  coverBy_user: "deine Entscheidung ({n})", coverBy_label: "das Label „Ignorieren“ ({n})", coverBy_rule: "eine Regel ({n})", coverMark: "Schon ausgeblendet durch {by}. Die Objekt-Notiz gilt daneben und schützt das Objekt vor dem Aufräumen.", coverRule: "Schon ausgeblendet durch {by}. Die Regel gilt daneben.",
   statusKeepHint: "Das Objekt kann beim Aufräumen trotzdem vorgeschlagen werden. Soll es nicht gelöscht werden, setze eine Objekt-Notiz „{kind}“.", actMenu: "Aktionen", actDecide: "Befunde entscheiden …", actDecideSub: "Nur diese {n} Befunde · Fehlalarm, gewollt oder später", actMark: "Objekt-Notiz setzen …", actMarkSub: "Diese {n} Objekte, auch künftig · Objekt-Notiz", actRule: "Regel für diese Objekte …", actRuleSub: "Gruppe per Regel · {n} Objekte, Ausnahme",
   fselMarkClear: "Objekt-Notiz entfernen", fselMarksCleared: "{n} Objekt-Notizen entfernt", fselNothing: "Für diese Auswahl gibt es keine Sammelaktion.", hiddenMarkOpen: "Objekt-Notiz ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
@@ -13028,6 +13037,7 @@ Object.assign(TEXT.en, {
   decNoticeText: "“Known” is now “Intended”, “Snoozed” is now “Later”. {n} findings marked Intended had no time; they are shown again under “Due” after {days} days. The time can be changed for each finding.", decNoticeText1: "“Known” is now “Intended”, “Snoozed” is now “Later”. One finding marked Intended had no time; it is shown again under “Due” after {days} days. The time can be changed.", decNoticeOk: "Understood",
   statusScopeHint: "Applies to these findings only. A new finding on the same object is open again.", reasonChipsLabel: "Ready-made reasons", reasonChip1: "On purpose", reasonChip2: "Being replaced", reasonChip3: "Not relevant", reasonChip4: "Seasonal", reasonChipf1: "Value is wrong", reasonChipf2: "Device is used differently", reasonChipf3: "Rule does not fit",
   markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Your decision", hiddenBy_mark: "Object note", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
+  coverBy_user: "your decision ({n})", coverBy_label: "the label “Ignore” ({n})", coverBy_rule: "a rule ({n})", coverMark: "Already hidden by {by}. The object note applies besides and keeps the object from the cleanup.", coverRule: "Already hidden by {by}. The rule applies besides.",
   statusKeepHint: "The object can still be suggested in the cleanup. To keep it from being deleted, set the object note “{kind}”.", actMenu: "Actions", actDecide: "Decide on findings …", actDecideSub: "Only these {n} findings · false alarm, intended or later", actMark: "Set object note …", actMarkSub: "These {n} objects, also in future · object note", actRule: "Rule for these objects …", actRuleSub: "A group by rule · {n} objects, exception",
   fselMarkClear: "Remove object note", fselMarksCleared: "{n} object notes removed", fselNothing: "No bulk action fits this selection.", hiddenMarkOpen: "View object note", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
@@ -14559,6 +14569,7 @@ Object.assign(TEXT.de, {
   excEmptyAlways: "Noch keine dauerhafte Regel", excEmptyAlwaysNext: "Zum Beispiel einen Bereich oder ein Label dauerhaft ausblenden.", excEmptyVacation: "Noch keine Regel für den Urlaubsmodus", excEmptyVacationNext: "Zum Beispiel das Gewächshaus ausblenden, solange du weg bist.", excVacNoEntity: "Ohne Entität für den Urlaubsmodus greifen diese Regeln nie. Wähle sie unten bei „Urlaubsmodus“.",
   excForLabel: "Wofür", excFor_objects: "Nur {name}", excFor_objects_n: "Nur diese {n} Objekte", excFor_devices: "Gerät {name}", excFor_devices_n: "Ihre {n} Geräte", excFor_areas: "Bereich {name}", excFor_areas_n: "Ihre {n} Bereiche", excFor_integrations: "Integration {name}", excFor_integrations_n: "Ihre {n} Integrationen",
   excForSub_devices: "mit allen seinen Entitäten", excForSub_areas: "alle Geräte und Entitäten im Bereich", excForSub_integrations: "alle ihre Entitäten",
+  coverRulePrev: "{n} Befunde sind schon durch eine Entscheidung oder das Label „Ignorieren“ ausgeblendet. Die Regel gilt daneben.",
   excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist die Objekt-Notiz da. Label, Typ oder eine andere Auswahl:", excForMoreShort: "Label, Typ oder eine andere Auswahl:", excNoteHint: "Für nur dieses eine Objekt gibt es die Objekt-Notiz: Sie kennt ein Zeitfenster und ein Prüfdatum und endet auf Wunsch von selbst.", excForSettings: "in den Einstellungen bearbeiten",
   excScope: "Gilt", excScope_always: "Immer", excScope_vacation: "Nur im Urlaubsmodus", excScopeChip_vacation: "nur im Urlaub", excScopeChip_always: "immer",
   excScopeHint: "Im Urlaubsmodus bleiben diese Objekte still, auch wenn ein Gerät kaputtgeht. Nach dem Urlaub zählt der Ausfall neu: mit eigener Frist deren Tage, sonst die Nachfrist.",
@@ -14602,6 +14613,7 @@ Object.assign(TEXT.en, {
   excEmptyAlways: "No permanent rule yet", excEmptyAlwaysNext: "For example hide an area or a label for good.", excEmptyVacation: "No vacation mode rule yet", excEmptyVacationNext: "For example hide the greenhouse while you are away.", excVacNoEntity: "Without an entity for the vacation mode these rules never apply. Choose it below under “Vacation mode”.",
   excForLabel: "For what", excFor_objects: "Only {name}", excFor_objects_n: "Only these {n} objects", excFor_devices: "Device {name}", excFor_devices_n: "Their {n} devices", excFor_areas: "Area {name}", excFor_areas_n: "Their {n} areas", excFor_integrations: "Integration {name}", excFor_integrations_n: "Their {n} integrations",
   excForSub_devices: "with all its entities", excForSub_areas: "all devices and entities in the area", excForSub_integrations: "all its entities",
+  coverRulePrev: "{n} findings are already hidden by a decision or the label “Ignore”. The rule applies besides.",
   excForMore: "A single object with a reason or a time window: that is what an object note is for. Label, type or another choice:", excForMoreShort: "Label, type or another choice:", excNoteHint: "For just this one object there is the object note: it knows a time window and a review date and ends by itself if you want.", excForSettings: "edit in the settings",
   excScope: "Applies", excScope_always: "Always", excScope_vacation: "Only in vacation mode", excScopeChip_vacation: "vacation only", excScopeChip_always: "always",
   excScopeHint: "In vacation mode these objects stay quiet, even if a device breaks. After the vacation the outage counts anew: with a delay of its own that delay, otherwise the grace period.",
@@ -14876,7 +14888,7 @@ class ExceptionsMixin {
       ${f.scope !== "vacation" && f.action === "hide" ? `<label class="mfield"><span>${this.t("excReview")}</span><select data-exc-review>${[0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.review) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("excReviewNever")}</option>`).join("")}</select></label>` : ""}</div>
       ${this.ruleEffect(f)}
       <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
-      ${preview}${important}${more}${f.error ? this.notice("err", f.error) : ""}
+      ${preview}${important}${pv?.covered ? this.notice("warn", this.t("coverRulePrev", { n: this.formatNumber(pv.covered) })) : ""}${more}${f.error ? this.notice("err", f.error) : ""}
       <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
   }
 

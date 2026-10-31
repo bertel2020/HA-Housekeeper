@@ -7915,3 +7915,11 @@ test("the effect line says what an action hides, whether cleanup stays away and 
   assert.ok(cells(el.ruleEffect({ action: "hide", scope: "vacation" }))[0].includes("in vacation mode only"));
   assert.equal(cells(el.ruleEffect({ action: "hide", scope: "always", review: 90 }))[2], "only when you delete the rule · a task to check it after 90 days");
 });
+
+test("a note or rule says when a way of a higher rank hides the findings already", () => {
+  const { el } = panel("en");
+  const hidden = [{ ignored: true, ignored_by: "user" }, { ignored: true, ignored_by: "rule" }, { ignored: false }];
+  const note = el.coverHint(hidden, ["user", "label", "rule"]), rule = el.coverHint(hidden, ["user", "label"]);
+  assert.ok(note.includes("your decision (1)") && note.includes("a rule (1)") && note.includes("keeps the object from the cleanup"));
+  assert.ok(rule.includes("your decision (1)") && !rule.includes("a rule") && el.coverHint([{ ignored: false }], ["user"]) === "");
+});

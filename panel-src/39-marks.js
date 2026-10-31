@@ -69,7 +69,7 @@ class MarksMixin {
     const row2 = when.window + field("markReview", `<select data-mark-days>${days}</select>`);
     const row3 = when.autoBox, row4 = when.graceBack;
     return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}${row4}
-        ${this.markEffectLine(f, false)}<small class="factnote">${this.t("markScopeHint")}</small>
+        ${this.markEffectLine(f, false)}${this.coverHint(this.data.findings.filter(x => this.findingKey(x) === key), ["user", "label", "rule"])}<small class="factnote">${this.t("markScopeHint")}</small>
         ${when.hints}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
         <div class="mbtns"><button type="button" class="btn quiet" data-mark-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div></form>`;

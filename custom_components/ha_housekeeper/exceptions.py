@@ -306,13 +306,15 @@ def preview(
         if drafts[0]["scope"] == "vacation"
         else vacation
     )
+    covered = 0
     for finding in snapshot.get("findings", []):
-        if finding.get("ignored_by") not in (None, "rule"):
-            continue
         object_id = finding["object_id"]
         found = traits(hass, "entity" if "." in object_id else "device", object_id)
         result = verdict(drafts, found, finding, now, on) if found is not None else None
         if result is None:
+            continue
+        if finding.get("ignored_by") not in (None, "rule"):
+            covered += finding["ignored_by"] in ("user", "label")  # hidden ahead of any rule
             continue
         counts[result["state"]] += 1
         objects[object_id] = objects.get(object_id, 0) + 1
@@ -329,6 +331,7 @@ def preview(
         **counts,
         "objects": len(objects),
         "hits": hits[:PREVIEW_HITS_MAX],
+        "covered": covered,
         "important": important,
         "overlap": sorted(overlap),
     }
