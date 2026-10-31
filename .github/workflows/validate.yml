@@ -37,8 +37,7 @@ jobs:
         run: ruff check custom_components tests
       - name: Check formatting
         run: ruff format --check custom_components tests
-      - name: Check types (a few modules, does not block)
-        continue-on-error: true
+      - name: Check types (a few modules)
         run: mypy
       - name: Run tests
         run: python -m pytest -q --asyncio-mode=auto
