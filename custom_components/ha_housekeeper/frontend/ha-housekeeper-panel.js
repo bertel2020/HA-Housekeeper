@@ -17026,6 +17026,8 @@ Object.assign(TEXT.de, {
   secKnown: "Leere Felder sind gewollt", secUnknown: "Wieder hervorheben", secStGapKnown: "Leere Felder gewollt",
   secFindT_nomfa_out: "Admin von außen erreichbar, ohne Zwei-Faktor", secFindX_nomfa_out: "{n} von {admins} Admins können sich auch von außen anmelden und haben keinen zweiten Faktor.", secFindA_nomfa_out: "Das ist das größte Risiko der Konten: Zwei-Faktor im eigenen Profil einschalten oder das Konto auf das Heimnetz beschränken.",
   secFindT_inactive: "Konto lange nicht angemeldet", secFindX_inactive: "{n} Konten, die Admin sind oder Langzeit-Tokens haben, haben sich lange nicht angemeldet.", secFindA_inactive: "Ein Konto, das niemand nutzt, in Home Assistant entfernen oder seine Tokens löschen.",
+  secReachCloud: "Cloud", secReachCloudTitle: "Die Integration sendet auch Daten in die Cloud", secReachSystem: "Systemzugriff", secReachSystemTitle: "Die Integration hat auch Zugriff auf System, Funk, Kamera oder Standort", secStNew: "Neu gespeichert", secStReach: "Mit Cloud- oder Systemzugriff", secColReach: "Reichweite",
+  secFindT_new: "Neu gespeicherte Zugangsdaten", secFindX_new: "{n} Integrationen speichern seit den letzten 14 Tagen Zugangsdaten.", secFindA_new: "Prüfe, ob du die Integration selbst eingerichtet hast.",
   secListTitle: "Integrationen", secListHint: "Art der Zugangsdaten und ob ein Wert hinterlegt ist",
   secColKind: "Art", secColFields: "Felder", secColState: "Hinterlegt", secColOpen: "In Home Assistant", secColSetCount: "Felder mit Wert", secColEmptyCount: "Felder ohne Wert",
   secStateGap: "mit leeren Feldern", secState: "{n} von {total}", secStateSet: "alle hinterlegt", secStatePart: "teilweise", secStateEmpty: "nichts hinterlegt", secAllKinds: "Alle Arten", secAllStates: "Alle Zustände",
@@ -17115,6 +17117,8 @@ Object.assign(TEXT.en, {
   secKnown: "Empty fields are meant so", secUnknown: "Highlight again", secStGapKnown: "Empty fields meant so",
   secFindT_nomfa_out: "Admin reachable from outside, without two-factor", secFindX_nomfa_out: "{n} of {admins} admins can also sign in from outside and have no second factor.", secFindA_nomfa_out: "This is the biggest risk among the accounts: switch two-factor on in the own profile or limit the account to the home network.",
   secFindT_inactive: "Account not signed in for a long time", secFindX_inactive: "{n} accounts that are admins or hold long-lived tokens have not signed in for a long time.", secFindA_inactive: "Remove an account nobody uses in Home Assistant, or delete its tokens.",
+  secReachCloud: "Cloud", secReachCloudTitle: "The integration also sends data to the cloud", secReachSystem: "System access", secReachSystemTitle: "The integration also has access to the system, radio, camera or location", secStNew: "Newly stored", secStReach: "With cloud or system access", secColReach: "Reach",
+  secFindT_new: "Newly stored credentials", secFindX_new: "{n} integrations have stored credentials for the last 14 days.", secFindA_new: "Check that you set the integration up yourself.",
   secListTitle: "Integrations", secListHint: "Kind of credentials and whether a value is set",
   secColKind: "Kind", secColFields: "Fields", secColState: "Set", secColOpen: "In Home Assistant", secColSetCount: "Fields with a value", secColEmptyCount: "Fields without a value",
   secStateGap: "with empty fields", secState: "{n} of {total}", secStateSet: "all set", secStatePart: "partly", secStateEmpty: "nothing set", secAllKinds: "All kinds", secAllStates: "All states",
@@ -17931,10 +17935,14 @@ class SystemMixin {
       const stateCell = e => `${e.fields.length ? `<span class="pill ${e.gap_known && state(e) !== "set" ? "mute" : { set: "ok", part: "warn", empty: "warn" }[state(e)]}">${this.esc(this.t("secState", { n: count(e, true), total: e.fields.length }))}</span>` : ""}${e.reauth ? `<span class="pill red">${this.t("secReauth")}</span>` : ""}`;
       const kindNames = e => kinds(e).map(k => this.t(`secKind_${k}`));
       const names = e => e.fields.map(f => f.key).join(", ");
+      // What a leak would reach besides the account: the integration also sends data to the cloud or has access to the system.
+      const reachOf = e => [e.reach?.cloud ? this.t("secReachCloud") : "", e.reach?.system ? this.t("secReachSystem") : ""].filter(Boolean);
+      const reachPills = e => `${e.secret_new ? ` <span class="pill warn" title="${this.esc(this.formatDate(e.secret_new))}">${this.t("accNewPill")}</span>` : ""}${e.reach?.cloud ? ` <span class="pill mute" title="${this.esc(this.t("secReachCloudTitle"))}">${this.t("secReachCloud")}</span>` : ""}${e.reach?.system ? ` <span class="pill mute" title="${this.esc(this.t("secReachSystemTitle"))}">${this.t("secReachSystem")}</span>` : ""}`;
       const admins = users.filter(u => u.active && u.admin), noMfa = admins.filter(u => !u.mfa);
       const oldTokens = tokens.filter(x => x.old || !x.account_active);
       const finds = [
         { kind: "reauth", tone: "red", level: "warn", list: entries.filter(e => e.reauth), table: "entries" },
+        { kind: "new", tone: "mute", level: "hint", list: entries.filter(e => e.secret_new), table: "entries" },
         { kind: "gap", tone: "warn", level: "warn", list: entries.filter(e => state(e) !== "set" && !e.gap_known), table: "entries" },
         { kind: "disabled", tone: "warn", level: "warn", list: entries.filter(kept), table: "entries" },
         { kind: "nomfa_out", tone: "red", level: "warn", list: r.accounts ? noMfa.filter(u => !u.local_only) : [], table: "users", extra: admins.length },
@@ -17955,7 +17963,7 @@ class SystemMixin {
       if (open === "accounts") return `<div class="stack">${head}${nav}${panel("secTabAccounts", "secAccHint", this.secAccounts(users), "secAccFootnote")}</div>`;
       // The name of an entry with its fields folded away; a click on the row opens nothing, the three dots lead into Home Assistant.
       const entryColumns = [
-        { key: "name", label: "accColIntegration", cell: e => `<div class="statcell"><span class="tile mute"><ha-icon icon="mdi:key-outline"></ha-icon></span><div>${this.accIntegrationCell(e)}${e.fields.length ? `<details class="rowdetails"><summary>${this.t("secFieldsN", { n: e.fields.length })}</summary><small class="u-dim u-block">${this.esc(names(e))}</small></details>` : ""}</div></div>` },
+        { key: "name", label: "accColIntegration", cell: e => `<div class="statcell"><span class="tile mute"><ha-icon icon="mdi:key-outline"></ha-icon></span><div>${this.accIntegrationCell(e)}${reachPills(e)}${e.fields.length ? `<details class="rowdetails"><summary>${this.t("secFieldsN", { n: e.fields.length })}</summary><small class="u-dim u-block">${this.esc(names(e))}</small></details>` : ""}</div></div>` },
         { key: "kind", label: "secColKind", sortable: false, cell: e => this.accPills(kindNames(e)) },
         { key: "state", label: "secColState", dir: "desc", cell: stateCell },
         { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.rowMenuHtml([
@@ -17968,18 +17976,18 @@ class SystemMixin {
         sorts: [{ key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }, { key: "state", label: "secColState", dir: "desc", get: e => (e.reauth ? 3 : ({ empty: 2, part: 1, set: 0 })[state(e)]) }],
         filters: [
           { name: "kind", all: this.t("secAllKinds"), options: ["password", "token", "api_key", "secret", "webhook", "pin"].map(k => [k, this.t(`secKind_${k}`)]) },
-          { name: "state", all: this.t("secAllStates"), options: [["reauth", this.t("secReauth")], ["disabled", this.t("secStateDisabled")], ["gap", this.t("secStateGap")], ["gapknown", this.t("secStGapKnown")], ["set", this.t("secStateSet")], ["part", this.t("secStatePart")], ["empty", this.t("secStateEmpty")]] },
+          { name: "state", all: this.t("secAllStates"), options: [["reauth", this.t("secReauth")], ["disabled", this.t("secStateDisabled")], ["gap", this.t("secStateGap")], ["gapknown", this.t("secStGapKnown")], ["new", this.t("secStNew")], ["reach", this.t("secStReach")], ["set", this.t("secStateSet")], ["part", this.t("secStatePart")], ["empty", this.t("secStateEmpty")]] },
         ],
-        filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "reauth" ? Boolean(e.reauth) : v === "disabled" ? kept(e) : v === "gap" ? state(e) !== "set" : v === "gapknown" ? Boolean(e.gap_known) && state(e) !== "set" : state(e) === v) },
+        filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "reauth" ? Boolean(e.reauth) : v === "disabled" ? kept(e) : v === "gap" ? state(e) !== "set" : v === "gapknown" ? Boolean(e.gap_known) && state(e) !== "set" : v === "new" ? Boolean(e.secret_new) : v === "reach" ? reachOf(e).length > 0 : state(e) === v) },
         text: e => `${e.domain} ${e.title} ${names(e)} ${kindNames(e).join(" ")}`, empty: "secNone",
         rowAttrs: () => 'class="static"', columns: entryColumns,
-        exportName: bare ? undefined : "credential-fields", header: [this.t("accColIntegration"), "Domain", this.t("secColKind"), this.t("secColFields"), this.t("secColSetCount"), this.t("secColEmptyCount"), this.t("secStGapKnown")],
-        rows: e => [e.title, e.domain, kindNames(e).join("; "), names(e), count(e, true), count(e, false), e.gap_known && state(e) !== "set" ? this.t("secStGapKnown") : ""],
+        exportName: bare ? undefined : "credential-fields", header: [this.t("accColIntegration"), "Domain", this.t("secColKind"), this.t("secColFields"), this.t("secColSetCount"), this.t("secColEmptyCount"), this.t("secStGapKnown"), this.t("secColReach")],
+        rows: e => [e.title, e.domain, kindNames(e).join("; "), names(e), count(e, true), count(e, false), e.gap_known && state(e) !== "set" ? this.t("secStGapKnown") : "", reachOf(e).join("; ")],
       });
       if (open === "entries") return `<div class="stack">${head}${nav}${panel("secListTitle", "secListHint", entryList("seclist", entries, false), "secFootnote")}</div>`;
       // To check: one fold per thing that stands out, with the entries, accounts or tokens it is about.
       const body = f => (f.table === "users" ? this.secAccounts(f.list, `secfind_${f.kind}`, true) : f.table === "tokens" ? this.secTokens(f.list, "secfind_tokens", true) : entryList(`secfind_${f.kind}`, f.list, true));
-      const folds = finds.map(f => this.fold(`sec_${f.kind}`, { tone: f.tone, title: this.t(`secFindT_${f.kind}`), sub: this.t(`secFindX_${f.kind}`, { n: this.formatNumber(f.list.length), fields: this.formatNumber(f.kind === "gap" ? f.list.reduce((n, e) => n + count(e, false), 0) : 0), admins: this.formatNumber(f.extra || 0) }), pill: this.t("expoWarn") }, `<p class="factnote foldadvice">${this.t(`secFindA_${f.kind}`)}</p>${body(f)}`, false)).join("");
+      const folds = finds.map(f => this.fold(`sec_${f.kind}`, { tone: f.tone, title: this.t(`secFindT_${f.kind}`), sub: this.t(`secFindX_${f.kind}`, { n: this.formatNumber(f.list.length), fields: this.formatNumber(f.kind === "gap" ? f.list.reduce((n, e) => n + count(e, false), 0) : 0), admins: this.formatNumber(f.extra || 0) }), pill: this.t(f.tone === "mute" ? "expoHint2" : "expoWarn") }, `<p class="factnote foldadvice">${this.t(`secFindA_${f.kind}`)}</p>${body(f)}`, false)).join("");
       const rows = finds.length ? `<h3 class="expohd">${this.t("expoToCheck")}</h3>${folds}` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("secFindNone")}</div>`;
       return `<div class="stack">${head}${nav}<div class="panel">${rows}${this.howCounted("secFootnote")}</div></div>`;
     });

@@ -5570,6 +5570,20 @@ test("empty fields that are meant so lose the colour, can be taken back and have
   assert.ok(html.includes("&lt;i&gt;Demo") && !html.includes("Netatmo</"), "the filter keeps only the ones meant so");
 });
 
+test("a credential row says when it is new and what else it reaches, and the filters know both", () => {
+  const { el, shadow } = systemPanel("de");
+  el._sys.secrets.data = { ...SECRETS, entries: SECRETS.entries.map(e => (e.entry_id === "c1" ? { ...e, secret_new: "2026-10-30T00:00:00+00:00", reach: { cloud: true, system: false } } : { ...e, reach: null })) };
+  el.view = "secrets";
+  el.folds = { sec_new: true };
+  el.render();
+  let html = shadow.innerHTML;
+  assert.ok(html.includes("Neu gespeicherte Zugangsdaten") && html.includes('title="Die Integration sendet auch Daten in die Cloud">Cloud'), "the fold and the cross reference are there");
+  (el.viewTab ||= {}).secrets = "entries";
+  el.lvState("seclist", "name", "asc").f.state = "reach"; el.render();
+  html = shadow.innerHTML;
+  assert.ok(html.includes("&lt;i&gt;Demo") && !html.includes("Netatmo</"), "the filter keeps only what reaches the cloud or the system");
+});
+
 test("the accounts tab lists everybody with role and two-factor", () => {
   const { el, shadow } = systemPanel("de");
   el.view = "secrets";

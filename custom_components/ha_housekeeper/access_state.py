@@ -37,9 +37,9 @@ class AccessState:
         self._seen: dict[str, dict[str, str]] = {}
         self._known: dict[str, dict[str, str]] = {}
         self._secret_known: dict[str, dict[str, Any]] = {}
-        self._secret_empty: dict[
-            str, int
-        ] = {}  # what the last look at the credentials found; not saved
+        self._secret_seen: dict[str, str] = {}  # first look at an entry that stores credentials
+        self._secret_tracking = False  # until a first look at the credentials: nothing is new
+        self._secret_empty: dict[str, int] = {}  # what the last look found; not saved
         self._tracking = False  # until a first look: what is found is "before tracking"
 
     async def async_load(self) -> None:
@@ -70,6 +70,11 @@ class AccessState:
                 and isinstance(entry.get("empty"), int)
             ):
                 self._secret_known[key] = {"at": _clock(entry.get("at")), "empty": entry["empty"]}
+        seen = data.get("secret_seen")
+        for key, at in (seen if isinstance(seen, dict) else {}).items():
+            if isinstance(key, str) and isinstance(at, str):
+                self._secret_seen[key] = at
+        self._secret_tracking = data.get("secret_tracking") is True
         self._tracking = bool(self._seen)
 
     def annotate(self, entries: list[dict[str, Any]], now: datetime) -> None:
@@ -114,6 +119,13 @@ class AccessState:
             self._save()
 
     @staticmethod
+    def _recent(stamp: str, now: datetime) -> bool:
+        try:
+            return now - datetime.fromisoformat(stamp) <= timedelta(days=NEW_DAYS)
+        except ValueError:
+            return False
+
+    @staticmethod
     def _change(seen: dict[str, str], level: str, now: datetime) -> tuple[str | None, str | None]:
         if level == "low":
             return None, None
@@ -142,9 +154,12 @@ class AccessState:
         self._save()
         return True
 
-    def annotate_secrets(self, entries: list[dict[str, Any]]) -> None:
-        """Add ``gap_known`` to each credential entry: when its empty fields were said to be meant so."""
-        changed = False
+    def annotate_secrets(self, entries: list[dict[str, Any]], now: datetime) -> None:
+        """Add ``gap_known`` (when its empty fields were said to be meant so) and ``secret_new``
+        (since when it stores credentials, for ``NEW_DAYS``) to each credential entry."""
+        changed = not self._secret_tracking
+        tracking = self._secret_tracking  # the first look is before tracking: nothing is new
+        self._secret_tracking = True
         for entry in entries:
             key, fields = entry.get("entry_id"), entry.get("fields")
             if not isinstance(key, str) or not isinstance(fields, list):
@@ -157,10 +172,18 @@ class AccessState:
                 known = None
                 changed = True
             entry["gap_known"] = {"at": known["at"]} if known else None
+            if fields and key not in self._secret_seen and len(self._secret_seen) < ITEM_LIMIT:
+                self._secret_seen[key] = now.isoformat() if tracking else ""
+                changed = True
+            first = self._secret_seen.get(key, "")
+            entry["secret_new"] = first if first and self._recent(first, now) else None
         present = {e.get("entry_id") for e in entries}
         if present:
             for key in self._secret_known.keys() - present:
                 del self._secret_known[key]
+                changed = True
+            for key in self._secret_seen.keys() - present:
+                del self._secret_seen[key]
                 changed = True
         if changed:
             self._save()
@@ -183,6 +206,8 @@ class AccessState:
                 "seen": self._seen,
                 "known": self._known,
                 "secret_known": self._secret_known,
+                "secret_seen": self._secret_seen,
+                "secret_tracking": self._secret_tracking,
             },
             SAVE_DELAY,
         )

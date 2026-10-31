@@ -261,3 +261,33 @@ def test_webhooks_are_open_unless_local_only_and_never_show_the_id() -> None:
         ("automation.a", True),
     ]
     assert "SECRET" not in str(found)
+
+
+async def test_the_credential_page_gets_the_reach_and_can_mark_empty_fields_as_meant_so(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    from homeassistant.setup import async_setup_component
+
+    from custom_components.ha_housekeeper import async_setup
+
+    entry = MockConfigEntry(domain="alexa_media", title="Alexa", data={"password": PASSWORD})
+    entry.add_to_hass(hass)
+    assert await async_setup(hass, {})
+    attach_scanner(hass, InventoryScanner(hass))
+    assert await async_setup_component(hass, "websocket_api", {})
+    client = await hass_ws_client(hass)
+
+    await client.send_json_auto_id({"type": f"{DOMAIN}/sensitive_fields"})
+    answer = await client.receive_json()
+    row = next(e for e in answer["result"]["entries"] if e["entry_id"] == entry.entry_id)
+    assert set(row["reach"]) == {"cloud", "system"} and row["gap_known"] is None
+    assert PASSWORD not in json.dumps(answer), "the cross reference carries no value"
+
+    await client.send_json_auto_id(
+        {"type": f"{DOMAIN}/secret_known", "entry_id": entry.entry_id, "known": True}
+    )
+    assert (await client.receive_json())["success"] is True
+    await client.send_json_auto_id(
+        {"type": f"{DOMAIN}/secret_known", "entry_id": "nope", "known": True}
+    )
+    assert (await client.receive_json())["error"]["code"] == "not_found"

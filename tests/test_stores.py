@@ -472,7 +472,7 @@ async def test_empty_credential_fields_meant_so_are_lifted_when_more_fields_are_
 
     def look(empty: int) -> dict:
         entry = {"entry_id": "a", "fields": [{"set": False}] * empty + [{"set": True}]}
-        store.annotate_secrets([entry])
+        store.annotate_secrets([entry], now)
         return entry
 
     assert not store.set_secret_known("a", True, now), (
@@ -483,5 +483,26 @@ async def test_empty_credential_fields_meant_so_are_lifted_when_more_fields_are_
     assert look(2)["gap_known"] == {"at": now.isoformat()} and look(1)["gap_known"] is not None
     assert look(3)["gap_known"] is None, "one more empty field lifts the decision"
     store.set_secret_known("a", True, now)
-    store.annotate_secrets([{"entry_id": "b", "fields": []}])
+    store.annotate_secrets([{"entry_id": "b", "fields": []}], now)
     assert look(2)["gap_known"] is None, "a decision of an entry that went away is forgotten"
+
+
+async def test_credentials_stored_since_the_last_look_are_new_for_a_while(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = AccessState(hass)
+    await store.async_load()
+    then = datetime(2026, 10, 1, tzinfo=UTC)
+
+    def look(keys: list[str], now: datetime) -> dict[str, dict]:
+        entries = [{"entry_id": key, "fields": [{"set": True}]} for key in keys]
+        store.annotate_secrets(entries, now)
+        return {e["entry_id"]: e for e in entries}
+
+    assert look(["a"], then)["a"]["secret_new"] is None, "the first look is before tracking"
+    later = look(["a", "b"], then + timedelta(days=1))
+    assert (later["a"]["secret_new"], later["b"]["secret_new"]) == (
+        None,
+        (then + timedelta(days=1)).isoformat(),
+    )
+    assert look(["a", "b"], then + timedelta(days=20))["b"]["secret_new"] is None, "news ages"

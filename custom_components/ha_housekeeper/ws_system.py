@@ -12,7 +12,7 @@ import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 
-from .access import access_report
+from .access import access_report, entry_reports
 from .access_state import REASON_LIMIT
 from .const import DOMAIN
 from .hacs import hacs_repositories
@@ -168,7 +168,21 @@ async def websocket_sensitive_fields(
     """Which config entries hold credentials, of what kind and whether set, and the accounts.
     Never a value."""
     result = await sensitive_fields(hass)
-    scanner.access_state.annotate_secrets(result.get("entries", []))
+    scanner.access_state.annotate_secrets(result.get("entries", []), datetime.now(UTC))
+    try:
+        reach = {item["entry_id"]: item for item in await entry_reports(hass)}
+    except Exception:  # noqa: BLE001 - the credentials stay readable without the cross reference
+        reach = {}
+    for item in result.get("entries", []):
+        found = reach.get(item["entry_id"])
+        item["reach"] = (
+            {
+                "cloud": bool(found["external"]),
+                "system": bool(found["access"] or found["gps"] or found["camera"]),
+            }
+            if found
+            else None
+        )
     connection.send_result(msg["id"], _versioned(result))
 
 
