@@ -1790,14 +1790,14 @@ class CleanupRunner:
                 older = await count_older(self.hass, [object_id], action["keep_days"])
                 rows = None if older is None else older[object_id]["rows"]
             else:
-                found = await count_trim(
+                trimmed = await count_trim(
                     self.hass,
                     object_id,
                     action.get("keep_days"),
                     action.get("range"),
                     action.get("tables") or ["states"],
                 )
-                rows = None if found is None else found["rows"]
+                rows = None if trimmed is None else trimmed["rows"]
             if rows is None or not recorder_ready(self.hass):
                 return "no_recorder"
             if not rows:
@@ -2045,14 +2045,14 @@ class CleanupRunner:
                     older = await count_older(self.hass, [object_id], action["keep_days"])
                     ok = older is not None and not older[object_id]["rows"]
                 else:
-                    found = await count_trim(
+                    trimmed = await count_trim(
                         self.hass,
                         object_id,
                         action.get("keep_days"),
                         action.get("range"),
                         action.get("tables") or ["states"],
                     )
-                    ok = found is not None and not found["rows"]
+                    ok = trimmed is not None and not trimmed["rows"]
                 checks.append({"check": "history_trimmed", "object_id": object_id, "ok": ok})
             elif kind in PURGE_KINDS:
                 gone = object_id not in await statistics_left(self.hass, [object_id])
@@ -2409,13 +2409,15 @@ class CleanupRunner:
         entry = registry.async_get(action["object_id"])
         if entry is None:
             raise StepAbort("entity_gone")
-        changes = {
+        field_changes: dict[str, Any] = {
             "disable": {"disabled_by": er.RegistryEntryDisabler.USER},
             "enable": {"disabled_by": None},
             "hide": {"hidden_by": er.RegistryEntryHider.USER},
             "unhide": {"hidden_by": None},
-        }[action["target"]]
-        updated = registry.async_update_entity(action["object_id"], **changes)
+        }
+        updated = registry.async_update_entity(
+            action["object_id"], **field_changes[action["target"]]
+        )
         return {
             "before": registry_fingerprint(entry),
             "after": registry_fingerprint(updated),

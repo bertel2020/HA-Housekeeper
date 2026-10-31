@@ -409,7 +409,9 @@ def _delete_trim(
                 result = session.execute(
                     delete(model).where(model.metadata_id == stat_meta, model.start_ts < end)
                 )
-                deleted[name] = int(result.rowcount or 0)
+                deleted[name] = int(
+                    getattr(result, "rowcount", 0) or 0
+                )  # a delete answers with a CursorResult
         meta = session.execute(
             select(StatesMeta.metadata_id).where(StatesMeta.entity_id == entity_id)
         ).scalar()
