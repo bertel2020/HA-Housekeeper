@@ -348,6 +348,7 @@ def apply_marks(
     for finding in findings:
         finding.pop("mark", None)
         finding.pop("mark_outside_window", None)
+        finding["also"] = [x for x in finding.get("also", []) if x["by"] != "mark"]
         if finding.get("rule_id") in ("config_entry.not_loaded", "config_entry.reauth"):
             keys = (mark_key("config_entry", finding["object_id"]),)
         elif finding.get("rule_id") == "device.down":
@@ -378,5 +379,8 @@ def apply_marks(
                 finding["mark_outside_window"] = True
             elif not finding["ignored"]:
                 finding["ignored_by"], finding["ignored"], finding["mark"] = "mark", True, mark
+                break
+            elif finding.get("ignored_by") != "mark":
+                finding["also"].append({"by": "mark", "kind": mark["kind"]})
                 break
     return covered

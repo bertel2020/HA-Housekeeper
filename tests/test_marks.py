@@ -57,6 +57,16 @@ def test_a_mark_hides_unavailable_findings_of_the_object_and_its_device_only() -
     assert findings[0]["mark"]["kind"] == "seasonal"
 
 
+def test_a_mark_is_listed_beside_the_way_that_hides_the_finding_ahead_of_it() -> None:
+    objects, findings = _world()
+    findings[0].update(ignored=True, ignored_by="user", also=[])
+    apply_marks(objects, findings, {"entity:sensor.a": _mark("seasonal")}, NOW)
+    assert findings[0]["ignored_by"] == "user" and findings[0]["also"] == [
+        {"by": "mark", "kind": "seasonal"}
+    ]
+    assert findings[1]["ignored_by"] is None and findings[1]["also"] == []
+
+
 def test_a_mark_that_ran_out_brings_the_finding_back_as_due() -> None:
     objects, findings = _world()
     apply_marks(objects, findings, {"entity:sensor.a": _mark("expected_offline", -1)}, NOW)

@@ -7923,3 +7923,11 @@ test("a note or rule says when a way of a higher rank hides the findings already
   assert.ok(note.includes("your decision (1)") && note.includes("a rule (1)") && note.includes("keeps the object from the cleanup"));
   assert.ok(rule.includes("your decision (1)") && !rule.includes("a rule") && el.coverHint([{ ignored: false }], ["user"]) === "");
 });
+
+test("the band of an object names the other ways that would hide a hidden finding as well", () => {
+  const { el } = panel("en");
+  const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "k1", object_id: "sensor.a", ignored: true, ignored_by: "user", ignore_info: { kind: "keep" }, also: [{ by: "rule" }, { by: "mark", kind: "seasonal" }] };
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "A" }], findings: [finding] };
+  const band = el.statusBand({ object_type: "entity", object_id: "sensor.a" }, "entity:sensor.a");
+  assert.ok(band.includes("Would also apply: a rule, the object note “Seasonal”") && band.includes("stay hidden anyway"));
+});

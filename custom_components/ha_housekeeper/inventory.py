@@ -1997,27 +1997,35 @@ class InventoryScanner:
             "recurring_devices": recurring,
         }
 
+    def _label_hides(self, finding: dict[str, Any], registry: Any) -> bool:
+        """Whether the ignore label sits on the object or on its device."""
+        entry = registry.async_get(finding["object_id"])
+        if entry is not None and IGNORE_LABEL in entry.labels:
+            return True
+        # The label on a device also hides the device's own findings and those of its entities.
+        device_id = entry.device_id if entry is not None else finding["object_id"]
+        device = dr.async_get(self.hass).async_get(device_id) if device_id else None
+        return device is not None and IGNORE_LABEL in device.labels
+
     def _ignored_by(self, finding: dict[str, Any], registry: Any) -> str | None:
         """Return why a finding is hidden: by the user, or by the ignore label."""
         if self.ignored.is_ignored(finding["key"]):
             return "user"
-        entry = registry.async_get(finding["object_id"])
-        if entry is not None and IGNORE_LABEL in entry.labels:
-            return "label"
-        # The label on a device also hides the device's own findings and those of its entities.
-        device_id = entry.device_id if entry is not None else finding["object_id"]
-        device = dr.async_get(self.hass).async_get(device_id) if device_id else None
-        if device is not None and IGNORE_LABEL in device.labels:
-            return "label"
-        return None
+        return "label" if self._label_hides(finding, registry) else None
 
     def _mark_ignored(self, finding: dict[str, Any], registry: Any) -> None:
         """Set what hides a finding, the decision behind it and whether one ran out."""
         finding["ignored_by"] = self._ignored_by(finding, registry)
         finding["ignore_rule"] = None
         finding["rule_due"] = False
+        # What would hide it as well, behind the way that wins; the notes add theirs later.
+        finding["also"] = []
+        if finding["ignored_by"] == "user" and self._label_hides(finding, registry):
+            finding["also"].append({"by": "label"})
         if finding["ignored_by"] is None:
             self._apply_exception(finding)
+        elif (result := self._exception_result(finding)) and result["state"] != "due":
+            finding["also"].append({"by": "rule", "rule": result["rule"].get("id")})
         finding["ignored"] = finding["ignored_by"] is not None
         info = self.ignored.info(finding["key"])
         finding["ignore_info"] = info if finding["ignored_by"] == "user" else None
@@ -2083,20 +2091,24 @@ class InventoryScanner:
             )
         return apply_causes(objects, edges, findings)
 
-    def _apply_exception(self, finding: dict[str, Any]) -> None:
-        """Let the exception rules hide or hold back a finding, or mark it as due after a delay."""
+    def _exception_result(self, finding: dict[str, Any]) -> dict[str, Any] | None:
+        """What the exception rules say about a finding, or None if none applies."""
         if not self.exceptions.rules:
-            return
+            return None
         if finding["rule_id"] == "config_entry.not_loaded":
             found = entry_traits(self.hass, finding["object_id"])
         else:
             kind = "entity" if "." in finding["object_id"] else "device"
             found = traits(self.hass, kind, finding["object_id"])
         if found is None:
-            return
-        result = verdict(
+            return None
+        return verdict(
             self.exceptions.rules, found, finding, datetime.now(UTC), self.exceptions.vacation()
         )
+
+    def _apply_exception(self, finding: dict[str, Any]) -> None:
+        """Let the exception rules hide or hold back a finding, or mark it as due after a delay."""
+        result = self._exception_result(finding)
         if result is None:
             return
         finding["ignore_rule"] = {
