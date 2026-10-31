@@ -1,4 +1,10 @@
 // UnusedMixin: methods of the panel element, mixed into the class in 99-register.js.
+Object.assign(TEXT.de, {
+  statOpen: "Details zeigen", statClose: "Details schließen", statFullId: "Statistik-ID", statRefs: "Noch genannt in", statRefsNone: "Nichts im Scan nennt diese ID noch. Das Löschen betrifft keine Automation, kein Skript und keine Karte, die der Scan kennt.", statRefsSome: "Der Scan findet diese ID noch an {n} Stellen. Vor dem Löschen dort prüfen.", statSuccTitle: "Mögliche Nachfolger", statNoSuccessor: "Keine ähnliche aktive Entität gefunden.",
+});
+Object.assign(TEXT.en, {
+  statOpen: "Show details", statClose: "Hide details", statFullId: "Statistic ID", statRefs: "Still named in", statRefsNone: "Nothing in the scan names this ID any more. Deleting it affects no automation, script or card the scan knows.", statRefsSome: "The scan still finds this ID in {n} places. Check them before deleting.", statSuccTitle: "Possible successors", statNoSuccessor: "No similar active entity found.",
+});
 class UnusedMixin {
   batteryRows() {
     const rows = [];
@@ -77,6 +83,24 @@ class UnusedMixin {
     return successors.length ? `${this.t("statSuccessors")} ${successors.map(s => s.object_id).join(", ")}` : null;
   }
 
+  statKey(o) { return o.statistic_id; }
+
+  // The row under an open statistic: the full ID, where the scan still names it, and entities it may have become.
+  statDetail(o) {
+    if (!(this.statOpen || []).includes(this.statKey(o))) return "";
+    const t = (k, v) => this.t(k, v), field = (label, value, cls = "") => `<div${cls ? ` class="${cls}"` : ""}><small>${t(label)}</small>${value}</div>`;
+    const refs = this.mergePlaces(this.edgesTo(`entity:${o.statistic_id}`).map(e => ({ other: e.source, label: t(e.relation), edge: e })));
+    const refLine = x => {
+      const obj = this.findObject(x.other), name = this.esc(obj?.name || x.other.split(":").slice(1).join(":"));
+      const places = x.places.filter(Boolean), note = `${this.esc(x.label)}${places.length ? ` · ${this.esc(places.join(", "))}` : ""}`;
+      return `<li>${obj ? `<button class="linklike" data-object="${this.esc(x.other)}">${name}</button>` : name}<span class="muted">${note}</span></li>`;
+    };
+    const refsHtml = refs.length ? `<p class="factnote">${t("statRefsSome", { n: refs.length })}</p><ul>${refs.map(refLine).join("")}</ul>` : `<span class="muted">${t("statRefsNone")}</span>`;
+    const successors = this.statSuccessors(o);
+    const succHtml = successors.length ? successors.map(s => `<button class="linklike" data-object="entity:${this.esc(s.object_id)}">${this.esc(s.object_id)}</button>`).join(", ") : `<span class="muted">${t("statNoSuccessor")}</span>`;
+    return `<tr class="static remhist"><td colspan="7"><div class="bhgrid">${field("statFullId", `<code>${this.esc(o.statistic_id)}</code>`, "wide")}${field("statRefs", refsHtml, "wide")}${field("statSuccTitle", succHtml, "wide")}</div></td></tr>`;
+  }
+
   // When the statistic last received a value: read on the first visit of the list, never during a scan.
   async loadOrphanLast(refresh = false) {
     this.orphanLastLoading = true; this.render();
@@ -142,7 +166,7 @@ class UnusedMixin {
     };
     const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">${this.t("loadingShort")}</span>`; };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}<div>${this.nameCell(o.statistic_id, "", "div", this.statSuccessorText(o))}${this.statSuccessorLine(o)}</div></div>` },
+      { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}${this.expandBtn("data-stat-more", this.statKey(o), (this.statOpen || []).includes(this.statKey(o)), this.t((this.statOpen || []).includes(this.statKey(o)) ? "statClose" : "statOpen"))}<div>${this.nameCell(o.statistic_id, "", "div", this.statSuccessorText(o))}${this.statSuccessorLine(o)}</div></div>` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
       { key: "first", label: "utFirst", dir: "asc", cell: firstCell },
@@ -151,7 +175,7 @@ class UnusedMixin {
       { key: "energy", label: "utEnergy", sortable: false, cell: o => (o.in_energy ? `<span class="pill warn" title="${this.esc(this.t("inEnergyLocked"))}">${this.t("inEnergy")}</span>` : "") },
     ];
     const empty = this.data.meta.recorder_available ? (all.length ? this.noMatches("orphanstats") : this.t("noOrphanStats")) : this.t("noRecorder");
-    const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
+    const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: o => `data-stat-row="${this.esc(this.statKey(o))}" tabindex="0" role="button" aria-expanded="${(this.statOpen || []).includes(this.statKey(o))}"`, after: o => this.statDetail(o) }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
     return `<div class="stack">${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
   }
 
