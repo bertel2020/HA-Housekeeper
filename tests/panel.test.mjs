@@ -6906,3 +6906,19 @@ test("a start compares each integration with its usual time and links to the one
   assert.match(row, /data-object="integration:alexa_devices"/);
   assert.match(row, />custom</);
 });
+
+test("an orphaned statistic opens to show where the scan still names it and what it may have become", () => {
+  const { el, shadow } = panel("en", { setTimeout: () => 0 });
+  el._hass = { language: "en", callWS: async () => ({ available: false, busy: false, last: {} }) };
+  const auto = { object_type: "automation", object_id: "a1", name: "Lights", status: "active" };
+  const entity = { object_type: "entity", object_id: "sensor.old_power_2", name: "Power 2", status: "active", unit: "W" };
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [auto, entity], findings: [],
+    edges: [{ source: "automation:a1", target: "entity:sensor.old_power", relation: "triggers", location: "trigger 1" }],
+    orphaned_statistics: [{ statistic_id: "sensor.old_power", unit: "W", has_sum: false, has_mean: true, in_energy: false }] };
+  el.view = "unreferenced"; el.unrefTab = "statistics";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("Still named in"));
+  el.statOpen = ["sensor.old_power"];
+  el.render();
+  assert.ok(shadow.innerHTML.includes("Still named in") && shadow.innerHTML.includes('data-object="automation:a1"') && shadow.innerHTML.includes('data-object="entity:sensor.old_power_2"'));
+});

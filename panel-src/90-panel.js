@@ -1298,6 +1298,13 @@ class HAHousekeeperPanel extends HTMLElement {
       this.bhOpen = open.includes(key) ? open.filter(x => x !== key) : [...open, key];
       this.render();
     }));
+    root.querySelectorAll("[data-stat-more], [data-stat-row]").forEach(el => el.addEventListener("click", ev => {
+      const inner = ev.target?.closest?.("button, select, input, a, label");
+      if (el.dataset.statRow !== undefined && inner && inner !== el && el.contains(inner)) return;
+      const key = el.dataset.statMore ?? el.dataset.statRow, open = this.statOpen || [];
+      this.statOpen = open.includes(key) ? open.filter(x => x !== key) : [...open, key];
+      this.render();
+    }));
     root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });
   }
 }
