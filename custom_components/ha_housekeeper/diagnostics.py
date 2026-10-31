@@ -16,6 +16,33 @@ from homeassistant.core import HomeAssistant
 from .backup_health import collect
 from .runtime import HousekeeperConfigEntry, loaded_scanner
 
+# Meta fields that are plain numbers, flags, codes or fixed-shape aggregates.
+_META_KEEP = (
+    "scan_timing", "coverage", "coverage_retry_minutes", "storage", "database", "scanned_at",
+    "read_only", "preliminary", "warmup_seconds_left", "warmup_booting", "warmup_pending",
+    "warmup_done", "warmup_total", "warmup_settling", "outage_info_minutes", "outage_low_hours",
+    "outage_medium_hours", "outage_high_hours", "unused_automation_days", "version", "notify",
+    "mcp", "protection", "protection_migrated", "protection_rules", "recorder_available",
+    "orphaned_statistics", "quarantined", "recurring_devices", "quarantine_days", "ha_version",
+    "hacs_available", "hacs_store", "scan_interval_hours", "low_battery_percent", "stale_hours",
+    "history_days", "watch_hours", "low_batteries", "object_count", "status_counts",
+    "marked_status_counts", "type_counts", "exception_rules", "exception_rules_due",
+)  # fmt: skip
+# Lists of ids or names that are reduced to how many there were.
+_META_COUNT = ("unchecked", "state_only_entities", "warmup_names", "repairs", "hacs_removed")
+_VACATION_KEEP = ("active", "missing", "ended_at", "grace_hours", "held", "rules")
+
+
+def diagnostic_meta(meta: dict[str, Any]) -> dict[str, Any]:
+    """The scan meta without any id or name: a list allowed by name, so a new field stays out."""
+    result = {key: meta[key] for key in _META_KEEP if key in meta}
+    result.update({key: len(meta.get(key) or []) for key in _META_COUNT})
+    vacation = meta.get("vacation")
+    result["vacation"] = {key: vacation.get(key) for key in _VACATION_KEEP} if vacation else None
+    watch = meta.get("watch")
+    result["watch"] = {"samples": watch["samples"], "new": watch["new"]} if watch else None
+    return result
+
 
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: HousekeeperConfigEntry
@@ -45,15 +72,7 @@ async def async_get_config_entry_diagnostics(
         "scan_status": {**scanner.status, "last_error": error.split(":", 1)[0] if error else None},
         # Without the error text: it can name entities or paths.
         "scan_health": {**scanner.health_report(), "error": None},
-        # The ids of unread dashboards are left out, only how many there were.
-        "meta": (
-            {
-                **{k: v for k, v in snapshot["meta"].items() if k != "unchecked"},
-                "unchecked": len(snapshot["meta"].get("unchecked") or []),
-            }
-            if snapshot
-            else None
-        ),
+        "meta": diagnostic_meta(snapshot["meta"]) if snapshot else None,
         # Backup flags only, no names or ids: shows how a backup tool marks its backups.
         "backups": (
             [
