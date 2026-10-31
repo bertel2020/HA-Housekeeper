@@ -162,7 +162,7 @@ class FixMixin {
     if (this.fixPreselect) { this.fixPreselect = false; below.forEach(x => this.findSel.add(x.key)); }
     const picked = below.filter(x => this.findSel.has(x.key)).length, off = picked ? "" : "disabled";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("fixCollectTitle")}</h2><p>${picked ? this.t("fixPickCount", { picked, total: below.length }) : this.t("fixPickNone")}</p></div></div>${rows}
-      <div class="fixpickbar"><button type="button" class="btn quiet" data-fix-pick-all="${this.esc(below.map(x => x.key).join("|"))}">${this.t("fixPickAll")}</button><span class="fixpickact"><button type="button" class="btn" data-fsel-state="status" ${off}>${this.t("fselStatus")}</button><button type="button" class="btn" data-fsel-state="mark" ${off}>${this.t("markSet")}</button></span></div>${this.bulkForm()}</section>`;
+      <div class="fixpickbar"><button type="button" class="btn quiet" data-fix-pick-all="${this.esc(below.map(x => x.key).join("|"))}">${this.t("fixPickAll")}</button><span class="fixpickact"><button type="button" class="btn" data-fsel-state="status" ${off}>${this.t("actDecide")}</button><button type="button" class="btn" data-fsel-state="mark" ${off}>${this.t("markSet")}</button></span></div>${this.bulkForm()}</section>`;
   }
 
   // Step 4: a quick look at the object for 15 minutes, then the next regular scan decides; a whole new scan is the second button.
