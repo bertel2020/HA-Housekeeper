@@ -6530,7 +6530,8 @@ test("the status of the selection is set in one form; an exception from a findin
   assert.ok(el.findingRowContent(el.data.findings[0]).subtitle.includes("Your decision"), "the row says why it is hidden");
   el.exc = { rules: [], areas: [{ id: "hall", name: "Hall" }], labels: [], integrations: [{ id: "hue", name: "Philips Hue" }], domains: [], devices: [], entities: [] };
   await el.openExceptionFor(["entity:light.a"]);
-  assert.equal(el.excForm.scopes.map(s => `${s.id}:${s.picks.map(p => p.id).join()}`).join(" "), "objects:light.a devices:d1 areas:hall integrations:hue");
+  assert.equal(el.excForm.scopes.map(s => `${s.id}:${s.picks.map(p => p.id).join()}`).join(" "), "devices:d1 areas:hall integrations:hue", "one entity: its own rule is the object note, the rule starts at the device");
+  assert.ok(el.excForm.noteFor);
 });
 
 test("the headline names what is urgent, the to-do card has the same groups, and both add up", () => {

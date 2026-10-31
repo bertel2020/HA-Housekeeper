@@ -28,7 +28,7 @@ Object.assign(TEXT.de, {
   excEmptyAlways: "Noch keine dauerhafte Regel", excEmptyAlwaysNext: "Zum Beispiel einen Bereich oder ein Label dauerhaft ausblenden.", excEmptyVacation: "Noch keine Regel für den Urlaubsmodus", excEmptyVacationNext: "Zum Beispiel das Gewächshaus ausblenden, solange du weg bist.", excVacNoEntity: "Ohne Entität für den Urlaubsmodus greifen diese Regeln nie. Wähle sie unten bei „Urlaubsmodus“.",
   excForLabel: "Wofür", excFor_objects: "Nur {name}", excFor_objects_n: "Nur diese {n} Objekte", excFor_devices: "Gerät {name}", excFor_devices_n: "Ihre {n} Geräte", excFor_areas: "Bereich {name}", excFor_areas_n: "Ihre {n} Bereiche", excFor_integrations: "Integration {name}", excFor_integrations_n: "Ihre {n} Integrationen",
   excForSub_devices: "mit allen seinen Entitäten", excForSub_areas: "alle Geräte und Entitäten im Bereich", excForSub_integrations: "alle ihre Entitäten",
-  excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist die Objekt-Notiz da. Label, Typ oder eine andere Auswahl:", excForMoreShort: "Label, Typ oder eine andere Auswahl:", excNoteHint: "Für ein einzelnes Objekt ist die Objekt-Notiz besser: Sie kennt ein Zeitfenster und ein Prüfdatum und endet auf Wunsch von selbst.", excForSettings: "in den Einstellungen bearbeiten",
+  excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist die Objekt-Notiz da. Label, Typ oder eine andere Auswahl:", excForMoreShort: "Label, Typ oder eine andere Auswahl:", excNoteHint: "Für nur dieses eine Objekt gibt es die Objekt-Notiz: Sie kennt ein Zeitfenster und ein Prüfdatum und endet auf Wunsch von selbst.", excForSettings: "in den Einstellungen bearbeiten",
   excScope: "Gilt", excScope_always: "Immer", excScope_vacation: "Nur im Urlaubsmodus", excScopeChip_vacation: "nur im Urlaub", excScopeChip_always: "immer",
   excScopeHint: "Im Urlaubsmodus bleiben diese Objekte still, auch wenn ein Gerät kaputtgeht. Nach dem Urlaub zählt der Ausfall neu: mit eigener Frist deren Tage, sonst die Nachfrist.",
   excOverlap: "Diese Objekte trifft schon: {rules}. Im Urlaub gilt „Nicht melden“, danach wieder die Frist der anderen Regel, gezählt ab dem Ende des Urlaubs.",
@@ -71,7 +71,7 @@ Object.assign(TEXT.en, {
   excEmptyAlways: "No permanent rule yet", excEmptyAlwaysNext: "For example hide an area or a label for good.", excEmptyVacation: "No vacation mode rule yet", excEmptyVacationNext: "For example hide the greenhouse while you are away.", excVacNoEntity: "Without an entity for the vacation mode these rules never apply. Choose it below under “Vacation mode”.",
   excForLabel: "For what", excFor_objects: "Only {name}", excFor_objects_n: "Only these {n} objects", excFor_devices: "Device {name}", excFor_devices_n: "Their {n} devices", excFor_areas: "Area {name}", excFor_areas_n: "Their {n} areas", excFor_integrations: "Integration {name}", excFor_integrations_n: "Their {n} integrations",
   excForSub_devices: "with all its entities", excForSub_areas: "all devices and entities in the area", excForSub_integrations: "all its entities",
-  excForMore: "A single object with a reason or a time window: that is what an object note is for. Label, type or another choice:", excForMoreShort: "Label, type or another choice:", excNoteHint: "For a single object an object note is better: it knows a time window and a review date and ends by itself if you want.", excForSettings: "edit in the settings",
+  excForMore: "A single object with a reason or a time window: that is what an object note is for. Label, type or another choice:", excForMoreShort: "Label, type or another choice:", excNoteHint: "For just this one object there is the object note: it knows a time window and a review date and ends by itself if you want.", excForSettings: "edit in the settings",
   excScope: "Applies", excScope_always: "Always", excScope_vacation: "Only in vacation mode", excScopeChip_vacation: "vacation only", excScopeChip_always: "always",
   excScopeHint: "In vacation mode these objects stay quiet, even if a device breaks. After the vacation the outage counts anew: with a delay of its own that delay, otherwise the grace period.",
   excOverlap: "These objects are already hit by: {rules}. In the vacation “Do not report” applies, afterwards the delay of the other rule, counted from the end of the vacation.",
@@ -334,7 +334,7 @@ class ExceptionsMixin {
     const what = f.scopes ? `${this.excScopeCards(f)}${scopeChips}`
       : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
       <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
-    const single = f.here && f.scopeSel === "objects" && f.picks.length === 1 && this.markTargets().size > 0;
+    const single = f.here && (f.noteFor || (f.scopeSel === "objects" && f.picks.length === 1)) && this.markTargets().size > 0;
     const noteHint = single ? `<div class="notice info outagehint"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t("excNoteHint"))}</p><button type="button" class="btn" data-fsel-state="mark"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button></div></div>` : "";
     const more = f.scopes ? `<small class="factnote">${this.t(single ? "excForMoreShort" : "excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
     return `<form class="excform markform${f.here ? " actionarea" : ""}" data-exc-form>
@@ -390,9 +390,12 @@ class ExceptionsMixin {
       ["integrations", uniq(objects.flatMap(domains).filter(Boolean).map(id => ({ kind: "integration", id, name: named(this.exc?.integrations, id) })))],
     ].filter(([, picks], i, all) => picks.length && !all.slice(0, i).some(([, other]) => other.length === picks.length && other.every(p => picks.some(q => q.kind === p.kind && q.id === p.id))))
       .map(([id, picks]) => ({ id, picks }));
+    // One entity gets its object note for itself: the rule starts at its device, area or integration. Without any, the rule for it stays.
+    const noteFor = objects.length === 1 && objects[0].object_type === "entity" && scopes.length > 1;
+    if (noteFor) scopes.splice(scopes.findIndex(x => x.id === "objects"), 1);
     if (!scopes.length) return;
     this.bulk = null;
-    this.excForm = { id: "", kind: "any", targets: [], picks: scopes[0].picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true, scopes, scopeSel: scopes[0].id };
+    this.excForm = { id: "", kind: "any", targets: [], picks: scopes[0].picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true, scopes, scopeSel: scopes[0].id, noteFor };
     this.render();
     this.shadowRoot?.querySelector?.("[data-exc-form]")?.scrollIntoView?.({ block: "nearest" });
     this.excPreview();
