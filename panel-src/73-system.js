@@ -280,6 +280,15 @@ class SystemMixin {
 
   accAppWhy(a) { return a.risk ? this.accWhy(a.risk, a.access.filter(x => x.level === a.risk).map(x => this.accAppRight(x)), "accWhyLowApp") : ""; }
 
+  // The level with the reason under it, so touch sees it too; the pointer still gets it as a tooltip.
+  accRiskCell(e) {
+    const why = this.accEntryWhy(e);
+    return `${this.accRiskPill(e.risk, why)}${why ? `<small class="u-dim u-block">${this.esc(why)}</small>` : ""}`;
+  }
+
+  // The states a list can be narrowed to besides the level.
+  accStateFn(e, v) { return v === "disabled" ? Boolean(e.disabled) : v === "custom" ? e.access.some(a => a.kind === "custom_code") : true; }
+
   accIntegrationCell(e) {
     const disabled = e.disabled ? ` <span class="pill mute">${this.t("accDisabled")}</span>` : "";
     return `${this.nameCell(e.title || e.domain, e.domain)}${disabled}`;
@@ -305,17 +314,19 @@ class SystemMixin {
       const flows = e => e.flows.map(f => this.t(`accFlow_${f}`));
       const base = {
         tie: e => e.entry_id, rowAttrs: e => this.accRowAttrs(e), cls: "acc",
-        filters: [{ name: "risk", all: this.t("accAllRisks"), options: risks }], filterFns: { risk: (e, v) => e.risk === v },
+        filters: [{ name: "risk", all: this.t("accAllRisks"), options: risks }],
+        filterFns: { risk: (e, v) => e.risk === v, state: (e, v) => this.accStateFn(e, v) },
         text: e => `${e.domain} ${e.title} ${this.accAccessLabels(e).join(" ")} ${flows(e).join(" ")}`,
       };
       const sorts = [{ key: "risk", label: "accColRisk", dir: "asc", get: e => riskOrder[e.risk] }, { key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }];
       const sysTable = this.sysList("accsys", sys, {
         ...base, sort: "risk", sorts, empty: "accNoneSys",
+        filters: [...base.filters, { name: "state", all: this.t("accAllStates"), options: ["disabled", "custom"].map(v => [v, `${this.t(v === "disabled" ? "accStDisabled" : "accKind_custom_code")} (${this.formatNumber(sys.filter(e => this.accStateFn(e, v)).length)})`]) }],
         columns: [
           { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
           { key: "access", label: "accColAccess", sortable: false, cell: e => this.accPills(this.accAccessLabels(e), "warn") },
           { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e)) },
-          { key: "risk", label: "accColRisk", cell: e => this.accRiskPill(e.risk, this.accEntryWhy(e)) },
+          { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
         ],
         exportName: "system-access", header: [this.t("accColIntegration"), "Domain", this.t("accColAccess"), this.t("accColFlow"), this.t("accColRisk")], rows: e => [e.title, e.domain, this.accAccessLabels(e).join("; "), flows(e).join("; "), this.t(`accRisk_${e.risk}`)],
       });
@@ -331,7 +342,7 @@ class SystemMixin {
           { key: "target", label: "accColTarget", sortable: false, cell: e => this.accPills(target(e)) },
           { key: "iot", label: "accColIot", sortable: false, cell: e => this.esc(iot(e)) },
           { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e), "mute") },
-          { key: "risk", label: "accColRisk", cell: e => this.accRiskPill(e.risk, this.accEntryWhy(e)) },
+          { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
         ],
         exportName: "cloud-data-flow", header: [this.t("accColIntegration"), "Domain", this.t("accColTarget"), this.t("accColIot"), this.t("accColFlow"), this.t("accColRisk")], rows: e => [e.title, e.domain, target(e).join("; "), iot(e), flows(e).join("; "), this.t(`accRisk_${e.risk}`)],
       });

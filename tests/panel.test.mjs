@@ -5496,6 +5496,7 @@ test("access and data flow show one list at a time, chosen by the tiles, and the
   assert.ok(!html.includes('class="sumtiles"'), "the tabs carry the numbers, there is no second row of key figures");
   assert.ok(html.includes("Radio/device (Zigbee)") && html.includes('class="pill red" title="High because: Radio/device (Zigbee)">High'));
   assert.ok(html.includes("Risk: High = access to the system"), "the legend says what the levels mean");
+  assert.ok(html.includes('<small class="u-dim u-block">High because: Radio/device (Zigbee)</small>'), "the reason is written under the level");
   assert.ok(!html.includes("cloud, polls"), "the cloud list is not open by default");
   el.pickViewTab("dataflow|cloud");
   html = shadow.innerHTML;

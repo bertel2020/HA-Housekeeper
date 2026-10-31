@@ -16984,7 +16984,7 @@ Object.assign(TEXT.de, {
   accHint: "Systemzugriffe und Cloud-Datenfluss der Integrationen, Rechte der Apps", accLoading: "Die Integrationen werden eingeordnet …",
   accSumTotal: "Integrationen geprüft", accSumAccess: "Mit Systemzugriff", accSumHigh: "Hohes Risiko", accSumExternal: "Cloud-Datenfluss",
   accSysTitle: "Systemzugriffe & Datenfluss", accSysHint: "Integrationen mit Zugriff auf System, Funk, Hardware, Kamera oder Standort", accCloudTitle: "Cloud-Datenfluss", accCloudHint: "Diese Integrationen tauschen Daten mit externen oder Cloud-Diensten aus.",
-  accColIntegration: "Integration", accColAccess: "Systemzugriff", accColFlow: "Datenfluss", accColRisk: "Risiko", accColTarget: "Ziel", accColIot: "IoT-Klasse", accAllRisks: "Alle Risiken",
+  accColIntegration: "Integration", accColAccess: "Systemzugriff", accColFlow: "Datenfluss", accColRisk: "Risiko", accColTarget: "Ziel", accColIot: "IoT-Klasse", accAllRisks: "Alle Risiken", accAllStates: "Alle Zustände", accStDisabled: "Deaktiviert, mit Zugriff",
   accRisk_high: "Hoch", accRisk_medium: "Mittel", accRisk_low: "Niedrig",
   accKind_system_root: "System/Root-Zugriff", accKind_shell: "Shell-Ausführung", accKind_radio: "Funk/Gerät", accKind_hardware: "Hardware", accKind_network: "Netzwerk", accKind_database: "Datenbank", accKind_camera: "Kamera", accKind_location: "GPS/Standort", accKind_geocoding: "Geocoding", accKind_weather: "Wetter (standortabhängig)", accKind_cloud_api: "Cloud-API", accKind_cloud: "Cloud",
   accFlow_local: "lokal", accFlow_external: "extern", accFlow_cloud: "Cloud", accFlow_system: "System", accFlow_database: "Datenbank", accFlow_network: "Netzwerk", accFlow_gps: "GPS", accFlow_storage: "Speicher", accFlow_phone: "Telefon", accFlow_push: "Push",
@@ -17062,7 +17062,7 @@ Object.assign(TEXT.en, {
   accHint: "System access and cloud data flow of the integrations, rights of the apps", accLoading: "Classifying the integrations …",
   accSumTotal: "Integrations checked", accSumAccess: "With system access", accSumHigh: "High risk", accSumExternal: "Cloud data flow",
   accSysTitle: "System access & data flow", accSysHint: "Integrations that reach the system, radios, hardware, cameras or the location", accCloudTitle: "Cloud data flow", accCloudHint: "These integrations exchange data with external or cloud services.",
-  accColIntegration: "Integration", accColAccess: "System access", accColFlow: "Data flow", accColRisk: "Risk", accColTarget: "Target", accColIot: "IoT class", accAllRisks: "All risks",
+  accColIntegration: "Integration", accColAccess: "System access", accColFlow: "Data flow", accColRisk: "Risk", accColTarget: "Target", accColIot: "IoT class", accAllRisks: "All risks", accAllStates: "All states", accStDisabled: "Disabled, with access",
   accRisk_high: "High", accRisk_medium: "Medium", accRisk_low: "Low",
   accKind_system_root: "System/root access", accKind_shell: "Shell commands", accKind_radio: "Radio/device", accKind_hardware: "Hardware", accKind_network: "Network", accKind_database: "Database", accKind_camera: "Camera", accKind_location: "GPS/location", accKind_geocoding: "Geocoding", accKind_weather: "Weather (location based)", accKind_cloud_api: "Cloud API", accKind_cloud: "Cloud",
   accFlow_local: "local", accFlow_external: "external", accFlow_cloud: "cloud", accFlow_system: "system", accFlow_database: "database", accFlow_network: "network", accFlow_gps: "GPS", accFlow_storage: "storage", accFlow_phone: "phone", accFlow_push: "push",
@@ -17604,6 +17604,15 @@ class SystemMixin {
 
   accAppWhy(a) { return a.risk ? this.accWhy(a.risk, a.access.filter(x => x.level === a.risk).map(x => this.accAppRight(x)), "accWhyLowApp") : ""; }
 
+  // The level with the reason under it, so touch sees it too; the pointer still gets it as a tooltip.
+  accRiskCell(e) {
+    const why = this.accEntryWhy(e);
+    return `${this.accRiskPill(e.risk, why)}${why ? `<small class="u-dim u-block">${this.esc(why)}</small>` : ""}`;
+  }
+
+  // The states a list can be narrowed to besides the level.
+  accStateFn(e, v) { return v === "disabled" ? Boolean(e.disabled) : v === "custom" ? e.access.some(a => a.kind === "custom_code") : true; }
+
   accIntegrationCell(e) {
     const disabled = e.disabled ? ` <span class="pill mute">${this.t("accDisabled")}</span>` : "";
     return `${this.nameCell(e.title || e.domain, e.domain)}${disabled}`;
@@ -17629,17 +17638,19 @@ class SystemMixin {
       const flows = e => e.flows.map(f => this.t(`accFlow_${f}`));
       const base = {
         tie: e => e.entry_id, rowAttrs: e => this.accRowAttrs(e), cls: "acc",
-        filters: [{ name: "risk", all: this.t("accAllRisks"), options: risks }], filterFns: { risk: (e, v) => e.risk === v },
+        filters: [{ name: "risk", all: this.t("accAllRisks"), options: risks }],
+        filterFns: { risk: (e, v) => e.risk === v, state: (e, v) => this.accStateFn(e, v) },
         text: e => `${e.domain} ${e.title} ${this.accAccessLabels(e).join(" ")} ${flows(e).join(" ")}`,
       };
       const sorts = [{ key: "risk", label: "accColRisk", dir: "asc", get: e => riskOrder[e.risk] }, { key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }];
       const sysTable = this.sysList("accsys", sys, {
         ...base, sort: "risk", sorts, empty: "accNoneSys",
+        filters: [...base.filters, { name: "state", all: this.t("accAllStates"), options: ["disabled", "custom"].map(v => [v, `${this.t(v === "disabled" ? "accStDisabled" : "accKind_custom_code")} (${this.formatNumber(sys.filter(e => this.accStateFn(e, v)).length)})`]) }],
         columns: [
           { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
           { key: "access", label: "accColAccess", sortable: false, cell: e => this.accPills(this.accAccessLabels(e), "warn") },
           { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e)) },
-          { key: "risk", label: "accColRisk", cell: e => this.accRiskPill(e.risk, this.accEntryWhy(e)) },
+          { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
         ],
         exportName: "system-access", header: [this.t("accColIntegration"), "Domain", this.t("accColAccess"), this.t("accColFlow"), this.t("accColRisk")], rows: e => [e.title, e.domain, this.accAccessLabels(e).join("; "), flows(e).join("; "), this.t(`accRisk_${e.risk}`)],
       });
@@ -17655,7 +17666,7 @@ class SystemMixin {
           { key: "target", label: "accColTarget", sortable: false, cell: e => this.accPills(target(e)) },
           { key: "iot", label: "accColIot", sortable: false, cell: e => this.esc(iot(e)) },
           { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e), "mute") },
-          { key: "risk", label: "accColRisk", cell: e => this.accRiskPill(e.risk, this.accEntryWhy(e)) },
+          { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
         ],
         exportName: "cloud-data-flow", header: [this.t("accColIntegration"), "Domain", this.t("accColTarget"), this.t("accColIot"), this.t("accColFlow"), this.t("accColRisk")], rows: e => [e.title, e.domain, target(e).join("; "), iot(e), flows(e).join("; "), this.t(`accRisk_${e.risk}`)],
       });
