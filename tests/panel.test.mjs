@@ -5513,52 +5513,42 @@ test("access and data flow show one list at a time, chosen by the tiles, and the
 test("the credential overview shows kind and set or empty, links to Home Assistant and has no value to show", () => {
   const { el, shadow } = systemPanel("de");
   el.view = "secrets";
+  (el.viewTab ||= {}).secrets = "entries";
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("Passwort") && html.includes("Token") && html.includes("1 von 2"));
-  assert.ok(html.includes('data-ha-path="/config/integrations/integration/demo_cloud"'), "a row opens the integration in Home Assistant");
+  assert.ok(html.includes('data-ha-path="/config/integrations/integration/demo_cloud"') && html.includes("In Home Assistant öffnen"), "the three dots of a row open the integration in Home Assistant");
   assert.ok(html.includes("&lt;i&gt;Demo&lt;/i&gt;") && !html.includes("<i>Demo</i>"), "titles are escaped");
   assert.ok(!/reveal|credential_reveal/i.test(html), "nothing to reveal");
+  assert.ok(!html.includes('class="sumtiles'), "the cards are the tabs, there is no second row of key figures");
+  assert.ok(html.includes("<summary>Felder (") && !html.includes('class="muted">password'), "the field names are folded away");
   assert.ok(!html.includes('class="filteron"'), "no filter note by default");
   el.lvState("seclist", "name", "asc").f.state = "gap"; el.render();
-  assert.ok(shadow.innerHTML.includes('class="filteron"') && shadow.innerHTML.includes('data-lf-set="seclist||"') && !shadow.innerHTML.includes('class="pill warn" data-sec-show'), "the filter shows once, as the shared note of the list");
+  assert.ok(shadow.innerHTML.includes('class="filteron"') && shadow.innerHTML.includes('data-lf-set="seclist||"'), "the filter shows once, as the shared note of the list");
 });
 
-test("the credential page shows the accounts with role and two-factor, and its tile opens them filtered", () => {
+test("the credential page opens with what to check, and every fold names its entries, accounts or tokens", () => {
   const { el, shadow } = systemPanel("de");
   el.view = "secrets";
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Admins ohne Zwei-Faktor") && html.includes("von 2 Admins") && html.includes('data-sec-show="nomfa"'));
-  assert.equal((html.match(/class="sumtiles even"/g) || []).length, 2, "two even rows of tiles");
-  const tile = { dataset: { secShow: "nomfa" } };
-  const kept = el.lvState("secusers", "name", "asc"); kept.q = "zzz"; kept.f = { role: "user" };
-  el.bindSystem({ querySelectorAll: selector => (selector === "[data-sec-show]" ? [tile] : []), querySelector: () => null });
-  tile.onclick();
-  assert.equal(`${kept.q}|${Object.keys(kept.f).join()}`, "|state", "the tile starts without the search and other filters kept before");
+  assert.ok(["findings", "entries", "accounts", "tokens"].every(tab => html.includes(`data-view-tab="secrets|${tab}"`)), "the cards are the tabs");
+  assert.ok(html.includes("Zu prüfen") && html.includes("Anmeldung nötig") && html.includes("Felder ohne Wert") && html.includes("Deaktiviert, mit gespeichertem Wert") && html.includes("Admin ohne Zwei-Faktor"));
+  assert.ok(html.includes("von 2 Admins haben keinen zweiten Faktor"), "the fold counts the admins");
+  el.folds = { sec_reauth: true, sec_disabled: true, sec_nomfa: true }; el.render();
   html = shadow.innerHTML;
+  assert.ok(html.includes("Netatmo") && html.includes("Alte Kamera"), "the folds list the entries they are about");
   assert.ok(html.includes("&lt;b&gt;Partner&lt;/b&gt;") && !html.includes("Roberto</strong>") && !html.includes("Gast</strong>"), "only the admin without two-factor, escaped");
   assert.ok(html.includes('data-ha-path="/config/users"'), "a row opens the users in Home Assistant");
 });
 
-test("an integration that asks for a new login is marked and has a tile of its own", () => {
+test("the accounts tab lists everybody with role and two-factor", () => {
   const { el, shadow } = systemPanel("de");
   el.view = "secrets";
-  el.lvState("seclist", "name", "asc").f.state = "reauth";
+  (el.viewTab ||= {}).secrets = "accounts";
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(html.includes('data-sec-show="reauth"') && html.includes('class="pill red">Anmeldung nötig'));
-  assert.ok(html.includes("Netatmo") && !html.includes("&lt;i&gt;Demo"), "the filter keeps only the one asking");
-});
-
-test("a disabled integration that still holds a value has a tile and a filter", () => {
-  const { el, shadow } = systemPanel("de");
-  el.view = "secrets";
-  el.lvState("seclist", "name", "asc").f.state = "disabled";
-  el.render();
-  const html = shadow.innerHTML;
-  assert.ok(html.includes("Deaktivierte Integrationen") && html.includes('data-sec-show="disabled"'));
-  assert.ok(html.includes("Alte Kamera") && !html.includes("Netatmo</"), "the filter keeps only the disabled one");
+  assert.ok(html.includes("&lt;b&gt;Partner&lt;/b&gt;") && html.includes("Roberto</strong>") && html.includes("Gast</strong>"));
 });
 
 test("the credential page lists the long-lived tokens by age and never more than name, account and age", () => {

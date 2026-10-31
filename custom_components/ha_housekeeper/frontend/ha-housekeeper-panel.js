@@ -17010,6 +17010,12 @@ Object.assign(TEXT.de, {
   secrets: "Zugangsdaten", secretsSubtitle: "Welche Integrationen Zugangsdaten gespeichert haben, von welcher Art und ob ein Wert hinterlegt ist, und die Konten mit Rolle und Zwei-Faktor. Werte zeigt Housekeeper nie. Liest nur.",
   secHint: "Gespeicherte Zugangsdaten der Integrationen, ohne Werte", secLoading: "Die Integrationen werden durchgesehen …",
   secSumEntries: "Integrationen mit Zugangsdaten", secSumEntriesSub: "{n} Felder mit Wert", secSumEmpty: "Felder ohne Wert", secSumEmptySub: "Feld vorhanden, aber leer",
+  secTabFindings: "Auffälligkeiten", secTabFindingsHint: "Was du prüfen solltest", secTabAccountsHint: "Rolle, Zwei-Faktor und letzter Login", secFieldsN: "Felder ({n})", secOpenMenu: "In Home Assistant öffnen", secFindNone: "Nichts Auffälliges bei den Zugangsdaten.",
+  secFindT_reauth: "Anmeldung nötig", secFindX_reauth: "{n} Integrationen bitten Home Assistant um eine neue Anmeldung.", secFindA_reauth: "Die Integration über das Menü ⋮ in Home Assistant öffnen und dort neu anmelden.",
+  secFindT_gap: "Felder ohne Wert", secFindX_gap: "{fields} Felder sind vorhanden, aber leer (bei {n} Integrationen).", secFindA_gap: "Ein leeres Feld kann gewollt sein, etwa ein optionales Passwort. Prüfe, ob die Integration noch funktioniert.",
+  secFindT_disabled: "Deaktiviert, mit gespeichertem Wert", secFindX_disabled: "{n} abgeschaltete Integrationen behalten ihre Zugangsdaten.", secFindA_disabled: "Wer eine Integration nicht mehr braucht, entfernt sie in Home Assistant; dann sind auch ihre Zugangsdaten weg.",
+  secFindT_nomfa: "Admin ohne Zwei-Faktor", secFindX_nomfa: "{n} von {admins} Admins haben keinen zweiten Faktor.", secFindA_nomfa: "Zwei-Faktor schaltet jeder Admin im eigenen Profil ein.",
+  secFindT_tokens: "Langzeit-Tokens alt oder wirkungslos", secFindX_tokens: "{n} Tokens sind alt oder gehören zu einem abgeschalteten Konto.", secFindA_tokens: "Nicht mehr benutzte Tokens im Profil des Kontos löschen. Home Assistant merkt sich nicht, wann ein Token zuletzt benutzt wurde.",
   secListTitle: "Integrationen", secListHint: "Art der Zugangsdaten und ob ein Wert hinterlegt ist",
   secColKind: "Art", secColFields: "Felder", secColState: "Hinterlegt", secColOpen: "In Home Assistant", secColSetCount: "Felder mit Wert", secColEmptyCount: "Felder ohne Wert",
   secStateGap: "mit leeren Feldern", secState: "{n} von {total}", secStateSet: "alle hinterlegt", secStatePart: "teilweise", secStateEmpty: "nichts hinterlegt", secAllKinds: "Alle Arten", secAllStates: "Alle Zustände",
@@ -17088,6 +17094,12 @@ Object.assign(TEXT.en, {
   secrets: "Credentials", secretsSubtitle: "Which integrations store credentials, of what kind, and whether a value is set, and the accounts with role and two-factor. Housekeeper never shows the values. Only reads.",
   secHint: "Stored credentials of the integrations, without values", secLoading: "Looking through the integrations …",
   secSumEntries: "Integrations with credentials", secSumEntriesSub: "{n} fields with a value", secSumEmpty: "Fields without a value", secSumEmptySub: "field exists but is empty",
+  secTabFindings: "Findings", secTabFindingsHint: "What you should check", secTabAccountsHint: "Role, two-factor and last login", secFieldsN: "Fields ({n})", secOpenMenu: "Open in Home Assistant", secFindNone: "Nothing unusual about the credentials.",
+  secFindT_reauth: "Sign-in needed", secFindX_reauth: "{n} integrations ask Home Assistant for a new sign-in.", secFindA_reauth: "Open the integration in Home Assistant through the menu ⋮ and sign in again there.",
+  secFindT_gap: "Fields without a value", secFindX_gap: "{fields} fields exist but are empty (in {n} integrations).", secFindA_gap: "An empty field can be meant so, for example an optional password. Check that the integration still works.",
+  secFindT_disabled: "Disabled, with a stored value", secFindX_disabled: "{n} switched-off integrations keep their credentials.", secFindA_disabled: "If you no longer need an integration, remove it in Home Assistant; its credentials go with it.",
+  secFindT_nomfa: "Admin without two-factor", secFindX_nomfa: "{n} of {admins} admins have no second factor.", secFindA_nomfa: "Every admin switches two-factor on in their own profile.",
+  secFindT_tokens: "Long-lived tokens old or useless", secFindX_tokens: "{n} tokens are old or belong to a switched-off account.", secFindA_tokens: "Delete tokens that are no longer used in the profile of the account. Home Assistant does not record when a token was last used.",
   secListTitle: "Integrations", secListHint: "Kind of credentials and whether a value is set",
   secColKind: "Kind", secColFields: "Fields", secColState: "Set", secColOpen: "In Home Assistant", secColSetCount: "Fields with a value", secColEmptyCount: "Fields without a value",
   secStateGap: "with empty fields", secState: "{n} of {total}", secStateSet: "all set", secStatePart: "partly", secStateEmpty: "nothing set", secAllKinds: "All kinds", secAllStates: "All states",
@@ -17329,7 +17341,6 @@ class BatteryTableMixin {
 // A page and the WebSocket command it asks.
 const SYS_COMMANDS = { storage: "system_usage", dataflow: "access", secrets: "sensitive_fields", flows: "open_flows", hacs: "hacs_repositories", starts: "starts" };
 // What a tile of the credentials page opens: [tab, list, state filter]; "" clears the filters.
-const SEC_SHOWS = { "": ["entries", "seclist", ""], gap: ["entries", "seclist", "gap"], reauth: ["entries", "seclist", "reauth"], disabled: ["entries", "seclist", "disabled"], nomfa: ["accounts", "secusers", "nomfa"], tokens: ["tokens", "sectokens", ""] };
 Object.assign(TEXT.de, { sysPending: "Die Größen der Ordner, Apps und Karten werden gerade zum ersten Mal gelesen und erscheinen gleich. CPU, Arbeitsspeicher und Datenträger sind schon aktuell." });
 Object.assign(TEXT.en, { sysPending: "The sizes of the folders, apps and cards are being read for the first time and appear shortly. CPU, memory and disk are already current." });
 const SYS_WARN_PERCENT = 75, SYS_RED_PERCENT = 90;
@@ -17872,41 +17883,47 @@ class SystemMixin {
   // ---------------------------------------------------------------- Credentials
 
   // Which integrations hold credentials, of what kind, and whether a value is set, and the accounts. Never a value.
-  // Tiles in even rows of three; each one opens its tab with its filter.
+  // The cards are the tabs, as on the other pages of Security; "To check" comes first, then the lists.
   secretsView() {
     return this.sysFrame("secrets", "secLoading", (r, head) => {
       const entries = r.entries || [], users = r.accounts || [], tokens = r.tokens || [];
       const count = (e, set) => e.fields.filter(f => f.set === set).length;
       const kinds = e => [...new Set(e.fields.map(f => f.kind))];
-      const empty = entries.reduce((n, e) => n + count(e, false), 0), reauth = entries.filter(e => e.reauth).length;
       // A switched-off integration keeps what it stored; worth a look only when a value is set.
-      const kept = e => e.disabled && count(e, true) > 0, disabled = entries.filter(kept).length;
-      const tabs = [{ id: "entries", label: this.t("secListTitle"), count: entries.length }, ...(r.accounts ? [{ id: "accounts", label: this.t("secTabAccounts"), count: users.length }] : []), ...(r.tokens ? [{ id: "tokens", label: this.t("secTabTokens"), count: tokens.length }] : [])];
-      const open = this.viewTabOf("secrets", tabs, "entries");
-      const on = (tab, list, value) => open === tab && (value ? this.lv?.[list]?.f?.state === value : !Object.values(this.lv?.[list]?.f || {}).some(Boolean));
-      const admins = users.filter(u => u.active && u.admin), noMfa = admins.filter(u => !u.mfa);
-      const tile = (label, value, sub, tone, show, active) => ({ label: this.t(label), value: this.esc(this.formatNumber(value)), sub: this.esc(sub), tone, attr: ["data-sec-show", show], active });
-      const rowOne = [
-        tile("secSumEntries", entries.length, this.t("secSumEntriesSub", { n: this.formatNumber(entries.reduce((n, e) => n + count(e, true), 0)) }), "mute", "", on("entries", "seclist")),
-        tile("secSumEmpty", empty, this.t("secSumEmptySub"), empty ? "warn" : "ok", "gap", on("entries", "seclist", "gap")),
-        tile("secSumReauth", reauth, this.t("secSumReauthSub"), reauth ? "red" : "ok", "reauth", on("entries", "seclist", "reauth")),
-      ];
-      const old = tokens.filter(x => x.old || !x.account_active).length;
-      const rowTwo = [
-        tile("secSumDisabled", disabled, this.t("secSumDisabledSub"), disabled ? "warn" : "ok", "disabled", on("entries", "seclist", "disabled")),
-        r.accounts && tile("secSumNoMfa", noMfa.length, this.t("secSumNoMfaSub", { n: this.formatNumber(admins.length) }), noMfa.length ? "warn" : "ok", "nomfa", on("accounts", "secusers", "nomfa")),
-        r.tokens && tile("secSumTokens", tokens.length, this.t("secSumTokensSub", { n: this.formatNumber(old) }), old ? "warn" : "mute", "tokens", on("tokens", "sectokens")),
-      ];
-      const tiles = `<div class="tilerows"><div class="sumgrouphead">${this.t("secListTitle")}</div>${this.sumTiles(rowOne, "even")}${this.sumTiles(rowTwo, "even")}</div>`;
-      const bar = tabs.length > 1 ? this.viewTabBar("secrets", tabs, open) : "";
-      if (open === "tokens") return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secTabTokens")}</h2><p>${this.t("secTokHint")}</p></div></div>${this.secTokens(tokens)}${this.howCounted("secTokFootnote")}</div></div>`;
-      if (open === "accounts") return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secTabAccounts")}</h2><p>${this.t("secAccHint")}</p></div></div>${this.secAccounts(users)}${this.howCounted("secAccFootnote")}</div></div>`;
+      const kept = e => e.disabled && count(e, true) > 0;
       const state = e => (count(e, false) === 0 ? "set" : count(e, true) === 0 ? "empty" : "part");
       const stateCell = e => `${e.fields.length ? `<span class="pill ${{ set: "ok", part: "warn", empty: "warn" }[state(e)]}">${this.esc(this.t("secState", { n: count(e, true), total: e.fields.length }))}</span>` : ""}${e.reauth ? `<span class="pill red">${this.t("secReauth")}</span>` : ""}`;
       const kindNames = e => kinds(e).map(k => this.t(`secKind_${k}`));
       const names = e => e.fields.map(f => f.key).join(", ");
-      const table = this.sysList("seclist", entries, {
-        sort: "name", dir: "asc", cls: "acc", tie: e => e.entry_id,
+      const admins = users.filter(u => u.active && u.admin), noMfa = admins.filter(u => !u.mfa);
+      const oldTokens = tokens.filter(x => x.old || !x.account_active);
+      const finds = [
+        { kind: "reauth", tone: "red", level: "warn", list: entries.filter(e => e.reauth), table: "entries" },
+        { kind: "gap", tone: "warn", level: "warn", list: entries.filter(e => state(e) !== "set"), table: "entries" },
+        { kind: "disabled", tone: "warn", level: "warn", list: entries.filter(kept), table: "entries" },
+        { kind: "nomfa", tone: "warn", level: "warn", list: r.accounts ? noMfa : [], table: "users", extra: admins.length },
+        { kind: "tokens", tone: "warn", level: "warn", list: r.tokens ? oldTokens : [], table: "tokens" },
+      ].filter(f => f.list.length);
+      const tabs = [
+        { id: "findings", icon: "mdi:shield-alert-outline", label: this.t("secTabFindings"), hint: this.t("secTabFindingsHint"), count: finds.length, tone: finds.some(f => f.tone === "red") ? "red" : finds.length ? "warn" : "ok" },
+        { id: "entries", icon: "mdi:key-outline", label: this.t("secListTitle"), hint: this.t("secSumEntriesSub", { n: this.formatNumber(entries.reduce((n, e) => n + count(e, true), 0)) }), count: entries.length, tone: "ok" },
+        ...(r.accounts ? [{ id: "accounts", icon: "mdi:account-outline", label: this.t("secTabAccounts"), hint: this.t("secTabAccountsHint"), count: users.length, tone: noMfa.length ? "warn" : "ok", ...(noMfa.length ? { pill: this.t("secStateNoMfa"), pillTone: "warn" } : {}) }] : []),
+        ...(r.tokens ? [{ id: "tokens", icon: "mdi:key-chain-variant", label: this.t("secTabTokens"), hint: this.t("secSumTokensSub", { n: this.formatNumber(oldTokens.length) }), count: tokens.length, tone: oldTokens.length ? "warn" : "ok" }] : []),
+      ];
+      const open = this.viewTabOf("secrets", tabs, finds.length ? "findings" : "entries");
+      const nav = this.navTiles("secrets", tabs, open, this.t("secListTitle"), true);
+      const panel = (title, hint, body, note) => `<div class="panel"><div class="panelhead"><div><h2>${this.t(title)}</h2><p>${this.t(hint)}</p></div></div>${body}${this.howCounted(note)}</div>`;
+      if (open === "tokens") return `<div class="stack">${head}${nav}${panel("secTabTokens", "secTokHint", this.secTokens(tokens), "secTokFootnote")}</div>`;
+      if (open === "accounts") return `<div class="stack">${head}${nav}${panel("secTabAccounts", "secAccHint", this.secAccounts(users), "secAccFootnote")}</div>`;
+      // The name of an entry with its fields folded away; a click on the row opens nothing, the three dots lead into Home Assistant.
+      const entryColumns = [
+        { key: "name", label: "accColIntegration", cell: e => `<div class="statcell"><span class="tile mute"><ha-icon icon="mdi:key-outline"></ha-icon></span><div>${this.accIntegrationCell(e)}${e.fields.length ? `<details class="rowdetails"><summary>${this.t("secFieldsN", { n: e.fields.length })}</summary><small class="u-dim u-block">${this.esc(names(e))}</small></details>` : ""}</div></div>` },
+        { key: "kind", label: "secColKind", sortable: false, cell: e => this.accPills(kindNames(e)) },
+        { key: "state", label: "secColState", dir: "desc", cell: stateCell },
+        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.rowMenuHtml([["mdi:open-in-new", "secOpenMenu", `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(e.domain)}`)}"`]]) },
+      ];
+      const entryList = (id, list, bare) => this.sysList(id, list, {
+        sort: "name", dir: "asc", cls: "acc", tie: e => e.entry_id, bare,
         sorts: [{ key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }, { key: "state", label: "secColState", dir: "desc", get: e => (e.reauth ? 3 : ({ empty: 2, part: 1, set: 0 })[state(e)]) }],
         filters: [
           { name: "kind", all: this.t("secAllKinds"), options: ["password", "token", "api_key", "secret", "webhook", "pin"].map(k => [k, this.t(`secKind_${k}`)]) },
@@ -17914,29 +17931,27 @@ class SystemMixin {
         ],
         filterFns: { kind: (e, v) => kinds(e).includes(v), state: (e, v) => (v === "reauth" ? Boolean(e.reauth) : v === "disabled" ? kept(e) : v === "gap" ? state(e) !== "set" : state(e) === v) },
         text: e => `${e.domain} ${e.title} ${names(e)} ${kindNames(e).join(" ")}`, empty: "secNone",
-        rowAttrs: e => `data-ha-path="${this.esc(`/config/integrations/integration/${encodeURIComponent(e.domain)}`)}" tabindex="0" role="link" aria-label="${this.esc(this.t("secOpen", { name: e.title || e.domain }))}"`,
-        columns: [
-          { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
-          { key: "kind", label: "secColKind", sortable: false, cell: e => this.accPills(kindNames(e)) },
-          { key: "fields", label: "secColFields", sortable: false, cell: e => `<span class="muted">${this.esc(names(e))}</span>` },
-          { key: "state", label: "secColState", dir: "desc", cell: stateCell },
-          { key: "open", label: "secColOpen", sortable: false, cell: () => `<ha-icon icon="mdi:open-in-new"></ha-icon>` },
-        ],
-        exportName: "credential-fields", header: [this.t("accColIntegration"), "Domain", this.t("secColKind"), this.t("secColFields"), this.t("secColSetCount"), this.t("secColEmptyCount")],
+        rowAttrs: () => 'class="static"', columns: entryColumns,
+        exportName: bare ? undefined : "credential-fields", header: [this.t("accColIntegration"), "Domain", this.t("secColKind"), this.t("secColFields"), this.t("secColSetCount"), this.t("secColEmptyCount")],
         rows: e => [e.title, e.domain, kindNames(e).join("; "), names(e), count(e, true), count(e, false)],
       });
-      return `<div class="stack">${head}${tiles}<div class="panel">${bar}<div class="panelhead"><div><h2>${this.t("secListTitle")}</h2><p>${this.t("secListHint")}</p></div></div>${table}${this.howCounted("secFootnote")}</div></div>`;
+      if (open === "entries") return `<div class="stack">${head}${nav}${panel("secListTitle", "secListHint", entryList("seclist", entries, false), "secFootnote")}</div>`;
+      // To check: one fold per thing that stands out, with the entries, accounts or tokens it is about.
+      const body = f => (f.table === "users" ? this.secAccounts(f.list, "secfind_nomfa", true) : f.table === "tokens" ? this.secTokens(f.list, "secfind_tokens", true) : entryList(`secfind_${f.kind}`, f.list, true));
+      const folds = finds.map(f => this.fold(`sec_${f.kind}`, { tone: f.tone, title: this.t(`secFindT_${f.kind}`), sub: this.t(`secFindX_${f.kind}`, { n: this.formatNumber(f.list.length), fields: this.formatNumber(f.kind === "gap" ? f.list.reduce((n, e) => n + count(e, false), 0) : 0), admins: this.formatNumber(f.extra || 0) }), pill: this.t("expoWarn") }, `<p class="factnote foldadvice">${this.t(`secFindA_${f.kind}`)}</p>${body(f)}`, false)).join("");
+      const rows = finds.length ? `<h3 class="expohd">${this.t("expoToCheck")}</h3>${folds}` : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("secFindNone")}</div>`;
+      return `<div class="stack">${head}${nav}<div class="panel">${rows}${this.howCounted("secFootnote")}</div></div>`;
     });
   }
 
   // The people of this Home Assistant: role, two-factor login and last login. A click opens the user settings.
-  secAccounts(users) {
+  secAccounts(users, id = "secusers", bare = false) {
     const roles = u => [u.owner ? this.t("secRoleOwner") : "", this.t(u.admin ? "secRoleAdmin" : "secRoleUser"), u.local_only ? this.t("secRoleLocal") : "", u.active ? "" : this.t("secRoleOff")].filter(Boolean);
     const mfa = u => `<span class="pill ${u.mfa ? "ok" : u.admin && u.active ? "warn" : "mute"}">${this.t(u.mfa ? "secMfaOn" : "secMfaOff")}</span>`;
     const login = u => (!u.logins && u.token_count ? this.t("secLoginTokens") : u.last_login ? this.formatDate(u.last_login) : this.t("secLoginNever"));
     const state = u => (u.active && u.admin && !u.mfa ? "nomfa" : u.inactive ? "inactive" : "");
-    return this.sysList("secusers", users, {
-      sort: "name", dir: "asc", cls: "acc", tie: u => u.id,
+    return this.sysList(id, users, {
+      sort: "name", dir: "asc", cls: "acc", tie: u => u.id, bare,
       sorts: [{ key: "name", label: "secColAccount", dir: "asc", get: u => u.name }, { key: "login", label: "secColLogin", dir: "desc", get: u => u.last_login || "" }],
       filters: [{ name: "state", all: this.t("secAllStates"), options: [["nomfa", this.t("secStateNoMfa")], ["inactive", this.t("secStateInactive")]] }],
       filterFns: { state: (u, v) => state(u) === v || (v === "inactive" && u.inactive) },
@@ -17955,11 +17970,11 @@ class SystemMixin {
   }
 
   // The long-lived tokens by name, account and age. Home Assistant does not record their use, so the age is all there is.
-  secTokens(tokens) {
+  secTokens(tokens, id = "sectokens", bare = false) {
     const state = x => (!x.account_active ? "dead" : x.old ? "old" : "");
     const hint = x => ({ dead: this.t("secTokDead"), old: this.t("secTokOld") })[state(x)] || "";
-    return this.sysList("sectokens", tokens, {
-      sort: "age", dir: "desc", cls: "acc", tie: x => `${x.account} ${x.name} ${x.created}`,
+    return this.sysList(id, tokens, {
+      sort: "age", dir: "desc", cls: "acc", tie: x => `${x.account} ${x.name} ${x.created}`, bare,
       sorts: [{ key: "age", label: "secColAge", dir: "desc", get: x => x.days }, { key: "name", label: "secColToken", dir: "asc", get: x => x.name }, { key: "account", label: "secColAccount", dir: "asc", get: x => x.account }],
       filters: [{ name: "state", all: this.t("secAllStates"), options: [["old", this.t("secTokOld")], ["dead", this.t("secTokDead")]] }],
       filterFns: { state: (x, v) => state(x) === v },
@@ -17991,15 +18006,6 @@ class SystemMixin {
       this._tipHide = globalThis.setTimeout?.(() => this.hideTip(), 6000);
     }));
     root.querySelectorAll("[data-detail-tab-go]").forEach(el => el.onclick = () => { this.detailTab = el.dataset.detailTabGo; this.render(); });
-    // A key figure of the credential overview opens its tab and sets its state filter, or clears all filters.
-    root.querySelectorAll("[data-sec-show]").forEach(el => el.onclick = () => {
-      const [tab, list, value] = SEC_SHOWS[el.dataset.secShow] || SEC_SHOWS[""];
-      (this.viewTab ||= {}).secrets = tab;
-      // A tile shows what it counts: the list starts without the search and the other filters kept before.
-      const st = this.lvState(list, "name", "asc");
-      st.q = ""; st.f = value ? { state: value } : {};
-      this.persistLv(list); this.pages = {}; this.render();
-    });
     root.querySelector("[data-ha-menu]")?.addEventListener("click", () => this.toggleHaSidebar());
     // Rows that lead into Home Assistant (apps) open with Enter and Space like the other rows.
     root.querySelectorAll("tr[data-ha-path]").forEach(el => el.onkeydown = ev => {

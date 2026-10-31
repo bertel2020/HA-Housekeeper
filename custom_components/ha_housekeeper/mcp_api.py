@@ -196,6 +196,30 @@ def withheld(scanner: InventoryScanner) -> set[str]:
     }
 
 
+def finding_filter(scanner: InventoryScanner, skip: set[str]) -> Callable[[dict[str, Any]], bool]:
+    """Whether a finding is kept back: its object, the object it points at or a suggestion is sensitive.
+
+    An id of a sensitive domain counts too when its entity is gone, as in a broken reference.
+    """
+    if not scanner.mcp.hide_sensitive:
+        return lambda _finding: False
+
+    def sensitive(ref: Any) -> bool:
+        return isinstance(ref, str) and (ref in skip or ref.partition(".")[0] in SENSITIVE_DOMAINS)
+
+    def withheld_finding(finding: dict[str, Any]) -> bool:
+        return any(
+            sensitive(ref)
+            for ref in (
+                finding["object_id"],
+                finding.get("affected_object"),
+                *(finding.get("suggestions") or []),
+            )
+        )
+
+    return withheld_finding
+
+
 def _snapshot(scanner: InventoryScanner) -> dict[str, Any]:
     snapshot = scanner.snapshot
     if snapshot is None:
@@ -219,16 +243,13 @@ def status(
     }
     if snapshot is not None:
         skip = withheld(scanner)
-        active = [
-            f for f in snapshot["findings"] if not f.get("ignored") and f["object_id"] not in skip
-        ]
+        kept_back = finding_filter(scanner, skip)
+        active = [f for f in snapshot["findings"] if not f.get("ignored") and not kept_back(f)]
         result.update(
             scanned_at=snapshot["meta"]["scanned_at"],
             preliminary=bool(snapshot["meta"].get("preliminary")),
             findings=len(active),
-            hidden=sum(
-                1 for f in snapshot["findings"] if f.get("ignored") and f["object_id"] not in skip
-            ),
+            hidden=sum(1 for f in snapshot["findings"] if f.get("ignored") and not kept_back(f)),
             by_level=dict(Counter(f.get("impact") or "none" for f in active)),
         )
     return result
@@ -244,10 +265,11 @@ def summary(
     """The few things to look at first: findings grouped by rule, the heaviest groups, a few examples."""
     snapshot = _snapshot(scanner)
     skip = withheld(scanner)
+    kept_back = finding_filter(scanner, skip)
     objects = {o["object_id"]: o for o in snapshot["objects"]}
     groups: dict[str, list[dict[str, Any]]] = {}
     for finding in snapshot["findings"]:
-        if finding.get("ignored") or finding["object_id"] in skip:
+        if finding.get("ignored") or kept_back(finding):
             continue
         groups.setdefault(finding["rule_id"], []).append(finding)
 
@@ -299,6 +321,7 @@ def findings(
     floor = RANK[data["level"]] if "level" in data else 0
     mode = data["ignored"]
     skip = withheld(scanner)
+    kept_back = finding_filter(scanner, skip)
     kept = 0
     rows: list[tuple[dict[str, Any], dict[str, Any]]] = []
     for finding in snapshot["findings"]:
@@ -322,7 +345,7 @@ def findings(
             and needle not in str(target.get("name") or "").lower()
         ):
             continue
-        if finding["object_id"] in skip:
+        if kept_back(finding):
             kept += 1  # it matches the filters, but is not given out
             continue
         rows.append((finding, target))
@@ -413,6 +436,7 @@ def object_card(
     snapshot = _snapshot(scanner)
     kind, ident = data["object_type"], data["object_id"]
     skip = withheld(scanner)
+    kept_back = finding_filter(scanner, skip)
     if kind == "entity" and ident in skip:
         raise McpError("withheld")
     me = f"{kind}:{ident}"
@@ -424,7 +448,7 @@ def object_card(
     card.update(type=kind, id=ident, name=clean_text(item.get("name")))
     if item.get("labels"):
         card["labels"] = [clean_text(label, 40) for label in item["labels"][:10]]
-    found = [f for f in snapshot["findings"] if f["object_id"] == ident]
+    found = [f for f in snapshot["findings"] if f["object_id"] == ident and not kept_back(f)]
     best = max(
         (RANK.get(f.get("impact") or "none", 0) for f in found if not f.get("ignored")), default=0
     )
@@ -482,11 +506,12 @@ def finding_fix_options(
     """The ways to fix one finding, the recommended one first. Only names them; nothing is changed."""
     snapshot = _snapshot(scanner)
     skip = withheld(scanner)
+    kept_back = finding_filter(scanner, skip)
     finding = next(
         (
             f
             for f in snapshot["findings"]
-            if f["key"] == data["key"] and f["object_id"] not in skip and not f.get("ignored")
+            if f["key"] == data["key"] and not kept_back(f) and not f.get("ignored")
         ),
         None,
     )
@@ -518,11 +543,12 @@ async def finding_fix_plan(
 
     snapshot = _snapshot(scanner)
     skip = withheld(scanner)
+    kept_back = finding_filter(scanner, skip)
     finding = next(
         (
             f
             for f in snapshot["findings"]
-            if f["key"] == data["key"] and f["object_id"] not in skip and not f.get("ignored")
+            if f["key"] == data["key"] and not kept_back(f) and not f.get("ignored")
         ),
         None,
     )
@@ -611,9 +637,8 @@ def finding_decide(
     ):
         raise McpError("days_required_critical")
     skip = withheld(scanner)
-    if skip and any(
-        f["key"] == key and f["object_id"] in skip for f in _snapshot(scanner)["findings"]
-    ):
+    kept_back = finding_filter(scanner, skip)
+    if skip and any(f["key"] == key and kept_back(f) for f in _snapshot(scanner)["findings"]):
         raise McpError("finding_not_found")
     previous = scanner.ignored.entry(key)
     if not scanner.set_finding_ignored(

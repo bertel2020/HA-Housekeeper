@@ -335,6 +335,36 @@ async def test_sensitive_objects_stay_out_of_every_answer(hass: HomeAssistant) -
     )
 
 
+async def test_a_finding_that_points_at_a_sensitive_entity_stays_out(hass: HomeAssistant) -> None:
+    scanner = scanner_with(hass, 3)
+    scanner.mcp.enabled = True
+    scanner.snapshot["findings"].append(
+        {
+            "key": "automation.missing_entity|automation.night|lock.gone",
+            "rule_id": "automation.missing_entity",
+            "object_id": "automation.night",
+            "affected_object": "lock.gone",  # the lock is deleted, so it is not in the objects
+            "classification": "broken",
+            "impact": "high",
+        }
+    )
+    listed = await mcp_api.run(hass, scanner, "findings", {"limit": 50}, None)
+    assert "lock.gone" not in json.dumps(listed) and listed["withheld"] == 1
+    with pytest.raises(mcp_api.McpError) as options:
+        await mcp_api.run(
+            hass,
+            scanner,
+            "finding_fix_options",
+            {"key": "automation.missing_entity|automation.night|lock.gone"},
+            None,
+        )
+    assert options.value.reason == "finding_not_found"
+    scanner.mcp.hide_sensitive = False
+    assert "lock.gone" in json.dumps(
+        await mcp_api.run(hass, scanner, "findings", {"limit": 50}, None)
+    )
+
+
 async def test_summary_names_the_heaviest_groups(hass: HomeAssistant) -> None:
     scanner = scanner_with(hass, 40)
     scanner.mcp.enabled = True
