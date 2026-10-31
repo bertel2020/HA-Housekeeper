@@ -380,17 +380,17 @@ class FindingStatusMixin {
       const when = this.markWhen({ ...b, kind: b.markKind || kinds[0] }, "bulk");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
       const names = [...new Set(targets.values())].map(k => ({ key: k, name: this.findObject(k)?.name || k.split(":").slice(1).join(":"), sub: "" }));
-      return form(this.t("markBulkTitle", { n: this.formatNumber(objects) }), `${this.pickedBlock(names, "pickedObjects", false, this.t("pickedObjectsSub"))}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="markform"><div class="mrow">${when.window}</div></div><div class="statusrow">
+      return form(this.t("markBulkTitle", { n: this.formatNumber(objects) }), `${this.pickedBlock(names, "pickedObjects", "data-bulk-dropobj")}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="markform"><div class="mrow">${when.window}</div></div><div class="statusrow">
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
         </div><div class="markform">${when.autoBox}${when.graceBack}${when.hints}</div>${this.coverHint(this.selectionFacts().picked, ["user", "label", "rule"])}${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}`, save);
     }
     if (b.kind === "area") return this.areaForm();
-    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), `${this.pickedBlock(this.pickedFindingRows(this.statusKeys()), "pickedFindings", true, this.t("pickedOfObjects", { n: this.formatNumber(new Set(this.pickedFindingRows(this.statusKeys()).map(r => r.name)).size) }))}${this.statusFields(b, "bulk", b.state)}`, save);
+    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), `${this.pickedBlock(this.pickedFindingRows(this.statusKeys()), "pickedFindings", "data-bulk-drop", this.t("pickedOfObjects", { n: this.formatNumber(new Set(this.pickedFindingRows(this.statusKeys()).map(r => r.name)).size) }))}${this.statusFields(b, "bulk", b.state)}`, save);
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="actionarea">${this.actionHead(this.t("state_label"), cancel)}<small>${this.t("labelNone")}</small></div>`;
-      return form(this.t("state_label"), `${this.pickedBlock(this.pickedFindingRows([...this.findSel]), "pickedFindings", true)}<div class="statusrow"><select data-bulk-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${b.label === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select></div>`,
+      return form(this.t("state_label"), `${this.pickedBlock(this.pickedFindingRows([...this.findSel]), "pickedFindings", "data-bulk-drop")}<div class="statusrow"><select data-bulk-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${b.label === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select></div>`,
         `<button type="submit" class="btn primary" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("refactorPlan")}</button>`);
     }
     const days = [7, 30, 90, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("decideDays", { n })}</option>`).join("");
@@ -401,7 +401,7 @@ class FindingStatusMixin {
   // What a form of the selection acts on, folded under its title: rows of { key, name, sub }; with drop, each can be taken out of the selection again.
   pickedBlock(rows, noun, drop, sub = "") {
     const n = rows.length, b = this.bulk, open = b.pickedOpen ?? n <= 5;
-    const chips = rows.slice(0, PICKED_MAX).map(r => `<span class="chip hit" title="${this.esc(r.tip || r.key)}">${this.esc(r.name)}${r.sub ? ` <em>${this.esc(r.sub)}</em>` : ""}${drop && n > 1 ? `<button type="button" class="hitx" data-bulk-drop="${this.esc(r.key)}" aria-label="${this.esc(this.t("pickedDrop", { name: r.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`).join("");
+    const chips = rows.slice(0, PICKED_MAX).map(r => `<span class="chip hit" title="${this.esc(r.tip || r.key)}">${this.esc(r.name)}${r.sub ? ` <em>${this.esc(r.sub)}</em>` : ""}${drop && n > 1 ? `<button type="button" class="hitx" ${drop}="${this.esc(r.key)}" aria-label="${this.esc(this.t("pickedDrop", { name: r.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`).join("");
     const more = n > PICKED_MAX ? `<small class="factnote">${this.t("pickedMore", { n: this.formatNumber(n - PICKED_MAX) })}</small>` : "";
     return `<details class="excprev" data-bulk-picked${open ? " open" : ""}><summary><b>${this.t(noun, { n: this.formatNumber(n) })}</b>${sub ? `<span class="sub">· ${this.esc(sub)}</span>` : ""}</summary><div class="hits chips bare">${chips}</div>${more}</details>`;
   }
@@ -554,6 +554,11 @@ class FindingStatusMixin {
     root.querySelector("[data-dnotice-ok]")?.addEventListener("click", () => this.dismissDecisionNotice());
     root.querySelector("[data-bulk-picked]")?.addEventListener("toggle", ev => { if (this.bulk) this.bulk.pickedOpen = ev.target.open; });
     root.querySelectorAll("[data-bulk-drop]").forEach(el => el.onclick = () => { this.findSel.delete(el.dataset.bulkDrop); if (!this.findSel.size) this.bulk = null; this.render(); });
+    root.querySelectorAll("[data-bulk-dropobj]").forEach(el => el.onclick = () => {
+      for (const [key, object] of this.markTargets(this.bulk?.onDevice)) if (object === el.dataset.bulkDropobj) this.findSel.delete(key);
+      if (!this.findSel.size) this.bulk = null;
+      this.render();
+    });
     root.querySelectorAll("[data-bulk-cancel]").forEach(el => el.onclick = () => { this.bulk = null; this.render(); });
     const form = root.querySelector("[data-bulk-form]");
     if (form) {

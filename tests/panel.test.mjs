@@ -7971,3 +7971,12 @@ test("the kinds of an object note are tiles that say what each does, and when it
   const timed = el.markFormHtml({ kind: "seasonal", reason: "", target: "", days: 0, wmode: "time", from: "21:00", to: "06:00", grace: 30 }, "entity:sensor.a");
   assert.ok(timed.includes('type="radio" class="sr-only" name="mark-wmode"') && timed.includes("data-mark-from"));
 });
+
+test("an object of the note form can be taken out of the selection with all its findings", () => {
+  const { el } = panel("en");
+  const f = (key, id) => ({ rule_id: "entity.state_unavailable", classification: "unavailable", key, object_id: id, ignored: false });
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "Alpha" }, { object_type: "entity", object_id: "sensor.b", name: "Beta" }], findings: [f("k1", "sensor.a"), f("k2", "sensor.b")] };
+  el.findSel = new Set(["k1", "k2"]);
+  el.bulk = { kind: "mark", state: "keep", reason: "", days: 0, markKind: "", error: "" };
+  assert.ok(el.bulkForm().includes('data-bulk-dropobj="entity:sensor.a"'));
+});
