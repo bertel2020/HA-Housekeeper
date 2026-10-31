@@ -7963,3 +7963,11 @@ test("the note form of the selection lists the objects it will mark", () => {
   const html = el.bulkForm();
   assert.ok(html.includes("2 objects selected") && html.includes("Alpha") && html.includes("Beta"));
 });
+
+test("the kinds of an object note are tiles that say what each does, and when it applies are chips", () => {
+  const { el } = panel("en");
+  const html = el.markFormHtml({ kind: "keep", reason: "", target: "", days: 0, wmode: "", from: "21:00", to: "06:00", grace: 30 }, "entity:sensor.a");
+  assert.ok(html.includes('data-mark-kind') && html.includes("Hides nothing, only protects from the cleanup") && !html.includes("<select data-mark-kind"));
+  const timed = el.markFormHtml({ kind: "seasonal", reason: "", target: "", days: 0, wmode: "time", from: "21:00", to: "06:00", grace: 30 }, "entity:sensor.a");
+  assert.ok(timed.includes('type="radio" class="sr-only" name="mark-wmode"') && timed.includes("data-mark-from"));
+});

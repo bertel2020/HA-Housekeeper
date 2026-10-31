@@ -3,7 +3,7 @@ Object.assign(TEXT.de, {
   decideTabStatus: "Status", decideTabMark: "Objekt-Notiz",
   markTitle: "Objekt-Notiz", markHint: "Halte fest, warum das Objekt so ist, wie es ist, zum Beispiel absichtlich offline. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“, eine kaputte Referenz bleibt sichtbar. Nur in Housekeeper, Home Assistant bleibt unverändert.",
   markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Erinnern in", markNever: "Nie", marksSetN: "Objekt-Notiz setzen ({n})", marksSetTitle: "Objekt-Notiz für {n} Entitäten", markShowHidden: "Die ausgeblendeten Befunde zeigen", markColKind: "Art", markColReason: "Begründung", markColReview: "Prüfen am", marksSet: "Objekt-Notiz setzen …", marksReviewN: "Prüfdatum ändern ({n})", marksKindN: "Art ändern ({n})", marksRemoveN: "Objekt-Notiz entfernen ({n})", marksReviewTitle: "Neues Prüfdatum für {n} Objekt-Notizen", marksKindTitle: "Neue Art für {n} Objekt-Notizen", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "erinnern {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
-  mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Nicht löschen", mark_replaced: "Wird ersetzt",
+  mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", markKindSub_expected_offline: "Das Objekt ist oft oder lange aus, und das ist normal.", markKindSub_seasonal: "Nur in einer Jahreszeit oder zu festen Zeiten in Betrieb.", markKindSub_spare: "Liegt bereit, wird nicht ständig gebraucht.", markKindSub_keep: "Blendet nichts aus, schützt nur vor dem Aufräumen.", markKindSub_replaced: "Ein neues Objekt übernimmt; dann folgt das Ziel.", mark_keep: "Nicht löschen", mark_replaced: "Wird ersetzt",
   markWindowKind: "Wann gilt die Objekt-Notiz", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
   markOutside: "Objekt-Notiz gilt gerade nicht: wird überwacht", markWindowHint: "Außerhalb des Zeitfensters meldet Housekeeper den Befund wieder, und ein Ausfall zählt erst ab dem Ende des Fensters plus Anlaufzeit.",
@@ -14,7 +14,7 @@ Object.assign(TEXT.en, {
   decideTabStatus: "Status", decideTabMark: "Object note",
   markTitle: "Object note", markHint: "Note why the object is the way it is, for example offline on purpose. Housekeeper then stops reporting it as “not available”; a broken reference stays visible. Only in Housekeeper, Home Assistant stays unchanged.",
   markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Remind in", markNever: "Never", marksSetN: "Set object note ({n})", marksSetTitle: "Object note for {n} entities", markShowHidden: "Show the hidden findings", markColKind: "Kind", markColReason: "Reason", markColReview: "Review on", marksSet: "Set an object note …", marksReviewN: "Change review date ({n})", marksKindN: "Change kind ({n})", marksRemoveN: "Remove object note ({n})", marksReviewTitle: "New review date for {n} object notes", marksKindTitle: "New kind for {n} object notes", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "remind {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
-  mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Do not delete", mark_replaced: "Being replaced",
+  mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", markKindSub_expected_offline: "The object is often or long off, and that is normal.", markKindSub_seasonal: "Only runs in a season or at fixed times.", markKindSub_spare: "Stands by, not needed all the time.", markKindSub_keep: "Hides nothing, only protects from the cleanup.", markKindSub_replaced: "A new object takes over; the target follows.", mark_keep: "Do not delete", mark_replaced: "Being replaced",
   markWindowKind: "When the object note applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
   markOutside: "Object note does not apply right now: watched", markWindowHint: "Outside the window Housekeeper reports the finding again, and an outage counts only from the end of the window plus the grace period.",
@@ -42,11 +42,11 @@ class MarksMixin {
   // p is the prefix of their data attributes ("mark" or "bulk"), f holds wmode, from, to, grace and autoClear.
   markWhen(f, p) {
     const field = (label, body) => `<label class="mfield"><span>${this.t(label)}</span>${body}</label>`;
-    const modes = ["", "time", "sun"].map(m => `<option value="${m}" ${(f.wmode || "") === m ? "selected" : ""}>${this.t(m === "time" ? "markWindowTime" : m === "sun" ? "markWindowSun" : "markWindowAlways")}</option>`).join("");
+    const modes = ["", "time", "sun"].map(m => `<label class="chip${(f.wmode || "") === m ? " active" : ""}"><input type="radio" class="sr-only" name="${p}-wmode" value="${m}" data-${p}-wmode ${(f.wmode || "") === m ? "checked" : ""}>${this.t(m === "time" ? "markWindowTime" : m === "sun" ? "markWindowSun" : "markWindowAlways")}</label>`).join("");
     const graces = [0, 15, 30, 60, 120].map(n => `<option value="${n}" ${Number(f.grace ?? 30) === n ? "selected" : ""}>${this.t("markGraceMin", { n })}</option>`).join("");
     const keep = f.kind === "keep", windowed = !keep && f.wmode, auto = !keep && f.autoClear;
     const noSun = f.wmode === "sun" && this._hass?.states && !this._hass.states["sun.sun"];
-    const window = (keep ? "" : field("markWindowKind", `<select data-${p}-wmode>${modes}</select>`))
+    const window = (keep ? "" : `<div class="mfield"><span>${this.t("markWindowKind")}</span><div class="chips bare" role="radiogroup">${modes}</div></div>`)
       + (windowed && f.wmode === "time" ? field("markFrom", `<input type="time" data-${p}-from value="${this.esc(f.from || "21:00")}">`) + field("markTo", `<input type="time" data-${p}-to value="${this.esc(f.to || "06:00")}">`) : "")
       + (windowed ? field("markGrace", `<select data-${p}-grace>${graces}</select>`) : "");
     const autoBox = keep || f.wmode ? "" : `<div class="mrow"><label class="nw"><input type="checkbox" data-${p}-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label></div>`;
@@ -55,20 +55,25 @@ class MarksMixin {
     return { window, autoBox, graceBack, hints, windowed, auto };
   }
 
+  // The kinds of a mark as tiles with what each one does; one radio per kind carries the attribute that the handlers look for.
+  markKindTiles(kinds, current, attr, name) {
+    const icons = { expected_offline: "mdi:power-plug-off-outline", seasonal: "mdi:snowflake", spare: "mdi:package-variant-closed", keep: "mdi:shield-check-outline", replaced: "mdi:swap-horizontal" };
+    const tile = k => `<label class="statusopt green${current === k ? " on" : ""}"><input type="radio" name="${name}" value="${k}" ${attr} ${current === k ? "checked" : ""}><i class="stico"><ha-icon icon="${icons[k]}"></ha-icon></i><span><b>${this.t(`mark_${k}`)}</b><small>${this.t(`markKindSub_${k}`)}</small></span></label>`;
+    return `<div class="mfield"><span>${this.t("markKind")}</span><div class="statusopts markkinds" role="radiogroup">${kinds.map(tile).join("")}</div></div>`;
+  }
+
   // The form to set or change a mark: labelled fields in two rows (what and why, then when it applies and when to review).
   markFormHtml(f, key) {
     const type = key.split(":")[0];
     const allowed = ["config_entry", "app"].includes(type) ? ["expected_offline", "seasonal", "spare"] : ["expected_offline", "seasonal", "spare", "keep", "replaced"];
     const field = (label, body, extra = "") => `<label class="mfield ${extra}"><span>${this.t(label)}</span>${body}</label>`;
-    const kinds = allowed.map(k => `<option value="${k}" ${f.kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("");
     const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
     const when = this.markWhen(f, "mark");
-    const row1 = field("markKind", `<select data-mark-kind>${kinds}</select>`)
-      + (f.kind === "replaced" ? field("markTarget", `<input data-mark-target maxlength="255" autocomplete="off" value="${this.esc(f.target)}">`) : "")
+    const row1 = (f.kind === "replaced" ? field("markTarget", `<input data-mark-target maxlength="255" autocomplete="off" value="${this.esc(f.target)}">`) : "")
       + field("markReason", `<input data-mark-reason maxlength="200" autocomplete="off" value="${this.esc(f.reason)}">`, "grow");
     const row2 = when.window + field("markReview", `<select data-mark-days>${days}</select>`);
     const row3 = when.autoBox, row4 = when.graceBack;
-    return `<form class="pad markform" data-mark-form="${this.esc(key)}"><div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}${row4}
+    return `<form class="pad markform" data-mark-form="${this.esc(key)}">${this.markKindTiles(allowed, f.kind, "data-mark-kind", "mark-kind")}<div class="mrow">${row1}</div><div class="mrow">${row2}</div>${row3}${row4}
         ${this.markEffectLine(f, false)}${this.coverHint(this.data.findings.filter(x => this.findingKey(x) === key), ["user", "label", "rule"])}<small class="factnote">${this.t("markScopeHint")}</small>
         ${when.hints}
         ${f.error ? `${this.notice("err", f.error)}` : ""}
@@ -216,11 +221,10 @@ class MarksMixin {
     root.querySelectorAll("[data-mark-cancel]").forEach(el => el.onclick = () => { this.markForm = null; this.fcMarkCtx = null; this.render(); });
     root.querySelectorAll("[data-mark-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitMark(); };
-      form.querySelector("[data-mark-kind]").onchange = ev => { this.markForm.kind = ev.target.value; this.render(); };
+      form.querySelectorAll("[data-mark-kind]").forEach(el => el.onchange = () => { this.markForm.kind = el.value; this.render(); });
       form.querySelector("[data-mark-reason]").oninput = ev => { this.markForm.reason = ev.target.value; };
       form.querySelector("[data-mark-days]").onchange = ev => { this.markForm.days = Number(ev.target.value); this.render(); };
-      const wmode = form.querySelector("[data-mark-wmode]");
-      if (wmode) wmode.onchange = ev => { this.markForm.wmode = ev.target.value; if (ev.target.value) this.markForm.autoClear = false; this.render(); };
+      form.querySelectorAll("[data-mark-wmode]").forEach(el => el.onchange = () => { this.markForm.wmode = el.value; if (el.value) this.markForm.autoClear = false; this.render(); });
       [["from", "from"], ["to", "to"]].forEach(([name, field]) => { const el = form.querySelector(`[data-mark-${name}]`); if (el) el.oninput = ev => { this.markForm[field] = ev.target.value; }; });
       const auto = form.querySelector("[data-mark-auto]");
       if (auto) auto.onchange = ev => { this.markForm.autoClear = ev.target.checked; this.render(); };

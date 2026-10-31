@@ -380,8 +380,7 @@ class FindingStatusMixin {
       const when = this.markWhen({ ...b, kind: b.markKind || kinds[0] }, "bulk");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
       const names = [...new Set(targets.values())].map(k => ({ key: k, name: this.findObject(k)?.name || k.split(":").slice(1).join(":"), sub: "" }));
-      return form(`${this.t("markTitle")} (${this.formatNumber(objects)})`, `${this.pickedBlock(names, "pickedObjects", false)}${onDevice}<div class="statusrow">
-        <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
+      return form(`${this.t("markTitle")} (${this.formatNumber(objects)})`, `${this.pickedBlock(names, "pickedObjects", false)}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="statusrow">
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
         </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}${this.coverHint(this.selectionFacts().picked, ["user", "label", "rule"])}`, save);
@@ -567,12 +566,10 @@ class FindingStatusMixin {
       if (area) area.onchange = ev => { this.bulk.area = ev.target.value; };
       const onDevice = form.querySelector("[data-bulk-ondevice]");
       if (onDevice) onDevice.onchange = ev => { this.bulk.onDevice = ev.target.checked; this.render(); };
-      const markKind = form.querySelector("[data-bulk-markkind]");
-      if (markKind) markKind.onchange = ev => { this.bulk.markKind = ev.target.value; this.render(); };
+      form.querySelectorAll("[data-bulk-markkind]").forEach(el => el.onchange = () => { this.bulk.markKind = el.value; this.render(); });
       const autoClear = form.querySelector("[data-bulk-auto]");
       if (autoClear) autoClear.onchange = ev => { this.bulk.autoClear = ev.target.checked; this.render(); };
-      const wmode = form.querySelector("[data-bulk-wmode]");
-      if (wmode) wmode.onchange = ev => { this.bulk.wmode = ev.target.value; if (ev.target.value) this.bulk.autoClear = false; this.render(); };
+      form.querySelectorAll("[data-bulk-wmode]").forEach(el => el.onchange = () => { this.bulk.wmode = el.value; if (el.value) this.bulk.autoClear = false; this.render(); });
       [["from", "from"], ["to", "to"]].forEach(([name, field]) => { const el = form.querySelector(`[data-bulk-${name}]`); if (el) el.oninput = ev => { this.bulk[field] = ev.target.value; }; });
       const grace = form.querySelector("[data-bulk-grace]");
       if (grace) grace.onchange = ev => { this.bulk.grace = Number(ev.target.value); };
