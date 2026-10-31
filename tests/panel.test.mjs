@@ -4526,7 +4526,7 @@ test("the export wizard builds CSV, Markdown and JSON from the chosen fields onl
     { object_type: "automation", object_id: "auto1", name: "Evening", status: "active" },
   ], edges: [{ source: "automation:auto1", target: "entity:light.a", relation: "TRIGGERS_ON", confidence: "certain" }] };
   el._rev = (el._rev || 0) + 1;
-  el._hass = { language: "en", states: { "light.a": { state: "on", attributes: { brightness: 200, access_token: "SECRET", friendly_name: "A" } }, "sensor.b": { state: "5", attributes: {} } } };
+  el._hass = { language: "en", states: { "light.a": { state: "on", attributes: { brightness: 200, access_token: "SECRET", friendly_name: "A", data: { access_token: "NESTED" } } }, "sensor.b": { state: "5", attributes: {} } } };
   assert.equal(JSON.stringify([...el.xpEntitiesOf("device:d1")].sort()), JSON.stringify(["light.a", "light.c", "sensor.b"]));
   assert.equal(JSON.stringify(el.xpEntitiesOf("automation:auto1")), JSON.stringify(["light.a"]));
   el.xpOpen(["light.a", "sensor.b"]);
@@ -4540,10 +4540,10 @@ test("the export wizard builds CSV, Markdown and JSON from the chosen fields onl
   // attributes: offered without the sensitive one, written only when ticked
   el.xp.g.attr = true;
   assert.deepEqual(el.xpOfferedAttrs(), ["brightness", "friendly_name"]);
-  el.xp.attrs.add("brightness"); el.xp.g.state = true; el.xp.fmt = "json";
+  el.xp.attrs.add("brightness"); el.xp.attrs.add("data"); el.xp.g.state = true; el.xp.fmt = "json";
   const json = JSON.parse(el.xpBuild().text);
   assert.equal(json[0].attributes.brightness, 200); assert.equal(json[0].state, "on"); assert.deepEqual(json[0].used_by, ["Evening"]);
-  assert.ok(!JSON.stringify(json).includes("SECRET"));
+  assert.ok(!JSON.stringify(json).includes("SECRET") && !JSON.stringify(json).includes("NESTED"));
   // Markdown: grouped by area, markdown characters in names escaped
   el.xp.fmt = "md";
   const md = el.xpBuild().text;

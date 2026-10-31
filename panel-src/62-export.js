@@ -12,13 +12,13 @@ Object.assign(TEXT.de, {
   xpPresetMin: "Minimal", xpPresetDoc: "Dokumentation", xpPresetState: "Mit Zuständen", xpMyTemplates: "Meine Vorlagen", xpTplDelete: "Vorlage „{name}“ löschen",
   xpGBasis: "Basis", xpGBasisD: "Entity-ID, Name, Domain, Status", xpGZuord: "Zuordnung", xpGZuordD: "Bereich, Gerät, Integration, Geräteklasse, Einheit",
   xpGRel: "Wer verwendet was", xpGRelD: "Automationen, Skripte, Szenen und Dashboards, die die Entität nutzen", xpGState: "Aktueller Zustand", xpGStateD: "Aus, weil Werte privat sein können.",
-  xpGAttr: "Attribute", xpGAttrD: "Nur die, die du anhakst. Namen, die nach Zugangsdaten oder Standort aussehen, werden nicht angeboten.", xpNoAttrs: "Die gewählten Entitäten haben keine anbietbaren Attribute.",
+  xpGAttr: "Attribute", xpGAttrD: "Nur die, die du anhakst. Namen, die nach Zugangsdaten oder Standort aussehen, und verschachtelte Werte werden nicht angeboten.", xpNoAttrs: "Die gewählten Entitäten haben keine anbietbaren Attribute.",
   xpFormatTitle: "Format und Datenschutz", xpFormatHint: "Alles passiert in diesem Browser. Es wird nichts hochgeladen.",
   xpFmtCsv: "CSV", xpFmtCsvD: "Tabelle, für Tabellenkalkulationen", xpFmtMd: "Markdown", xpFmtMdD: "lesbar, nach Bereich gruppiert", xpFmtJson: "JSON", xpFmtJsonD: "für Skripte und Werkzeuge",
   xpPh: "Namen und IDs durch Platzhalter ersetzen", xpPhD: "Für Exporte, die du weitergibst. Zustände und Attribute werden nicht ersetzt.", xpSort: "Nach Bereich und Name sortieren",
   xpSaveTpl: "Einstellungen als Vorlage speichern", xpTplName: "Name der Vorlage", xpTplSave: "Speichern", xpTplSaved: "Vorlage „{name}“ gespeichert (nur in diesem Browser).", xpTplFull: "Es sind höchstens 10 Vorlagen möglich.",
   xpPreviewTitle: "Vorschau", xpPreviewHint: "So sieht die Datei aus. Prüfe sie, bevor du sie weitergibst.", xpSummary: "{n} Entitäten, {c} Angaben", xpSize: "{n} Zeichen",
-  xpTruncated: "Die Vorschau ist gekürzt; die Datei enthält alles.", xpSafe: "Nur die gewählten Angaben. Zugangsdaten und Attribute ohne Haken werden nie ausgegeben.",
+  xpTruncated: "Die Vorschau ist gekürzt; die Datei enthält alles.", xpSafe: "Nur die gewählten Angaben. Attribute ohne Haken werden nicht ausgegeben. Zugangsdaten erkennt der Export nur am Namen; prüfe die Datei, bevor du sie weitergibst.",
   xpCopy: "Kopieren", xpCopied: "Kopiert", xpDownload: "Herunterladen",
 });
 Object.assign(TEXT.en, {
@@ -33,13 +33,13 @@ Object.assign(TEXT.en, {
   xpPresetMin: "Minimal", xpPresetDoc: "Documentation", xpPresetState: "With states", xpMyTemplates: "My templates", xpTplDelete: "Delete template “{name}”",
   xpGBasis: "Basics", xpGBasisD: "Entity ID, name, domain, status", xpGZuord: "Placement", xpGZuordD: "Area, device, integration, device class, unit",
   xpGRel: "Who uses what", xpGRelD: "Automations, scripts, scenes and dashboards that use the entity", xpGState: "Current state", xpGStateD: "Off, because values can be private.",
-  xpGAttr: "Attributes", xpGAttrD: "Only the ones you tick. Names that look like credentials or locations are not offered.", xpNoAttrs: "The chosen entities have no attributes that can be offered.",
+  xpGAttr: "Attributes", xpGAttrD: "Only the ones you tick. Names that look like credentials or locations, and nested values, are not offered.", xpNoAttrs: "The chosen entities have no attributes that can be offered.",
   xpFormatTitle: "Format and privacy", xpFormatHint: "Everything happens in this browser. Nothing is uploaded.",
   xpFmtCsv: "CSV", xpFmtCsvD: "table, for spreadsheets", xpFmtMd: "Markdown", xpFmtMdD: "readable, grouped by area", xpFmtJson: "JSON", xpFmtJsonD: "for scripts and tools",
   xpPh: "Replace names and IDs with placeholders", xpPhD: "For exports you pass on. States and attributes are not replaced.", xpSort: "Sort by area and name",
   xpSaveTpl: "Save these settings as a template", xpTplName: "Template name", xpTplSave: "Save", xpTplSaved: "Template “{name}” saved (in this browser only).", xpTplFull: "At most 10 templates are possible.",
   xpPreviewTitle: "Preview", xpPreviewHint: "This is what the file looks like. Check it before you pass it on.", xpSummary: "{n} entities, {c} fields", xpSize: "{n} characters",
-  xpTruncated: "The preview is shortened; the file holds everything.", xpSafe: "Only the chosen fields. Credentials and attributes without a tick are never written.",
+  xpTruncated: "The preview is shortened; the file holds everything.", xpSafe: "Only the chosen fields. Attributes without a tick are not written. The export spots credentials by name only; check the file before you pass it on.",
   xpCopy: "Copy", xpCopied: "Copied", xpDownload: "Download",
 });
 
@@ -111,10 +111,15 @@ class ExportMixin {
     x.fmt = ["csv", "md", "json"].includes(t.fmt) ? t.fmt : "csv"; x.ph = Boolean(t.ph); x.sort = t.sort !== false;
   }
 
+  // A name that looks sensitive or a nested value (a mapping or a list) is neither offered nor written.
+  xpAttrAllowed(key, value) {
+    return !XP_SENSITIVE_ATTR.test(key) && (value === null || typeof value !== "object");
+  }
+
   // Attribute names of the chosen entities, most common first, without the ones that look sensitive.
   xpOfferedAttrs() {
     const counts = {};
-    for (const id of this.xp.sel) for (const k of Object.keys(this._hass?.states?.[id]?.attributes || {})) if (!XP_SENSITIVE_ATTR.test(k)) counts[k] = (counts[k] || 0) + 1;
+    for (const id of this.xp.sel) for (const [k, v] of Object.entries(this._hass?.states?.[id]?.attributes || {})) if (this.xpAttrAllowed(k, v)) counts[k] = (counts[k] || 0) + 1;
     return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 30).map(([k]) => k);
   }
 
@@ -147,7 +152,7 @@ class ExportMixin {
       }
       const live = this._hass?.states?.[o.object_id];
       if (g.state) row.state = live ? live.state : "";
-      if (attrs.length) row.attributes = Object.fromEntries(attrs.filter(k => live && k in live.attributes).map(k => [k, live.attributes[k]]));
+      if (attrs.length) row.attributes = Object.fromEntries(attrs.filter(k => live && k in live.attributes && this.xpAttrAllowed(k, live.attributes[k])).map(k => [k, live.attributes[k]]));
       return row;
     });
   }
