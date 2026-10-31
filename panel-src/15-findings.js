@@ -378,16 +378,23 @@ class FindingsMixin {
     const pageBox = `<label class="selall"><input type="checkbox" class="selbox" data-fsel-page ${whole && onPage === whole ? "checked" : ""} ${onPage && onPage < whole ? "data-partial" : ""}> ${this.t("selectPage")}</label>`;
     if (!n) return `<div class="toolbar selhead">${pageBox}<span class="toolgap"></span>${total}</div>${exc}`;
     const decidable = facts.open.length + facts.user.length, one = set => [...set][0];
+    // The three ways to settle findings sit in one menu, each with what it reaches; the forms behind them are unchanged.
+    const item = (icon, label, attr, sub) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon><span>${this.t(label)}<small>${sub}</small></span></button>`;
+    const nf = k => this.formatNumber(k);
+    const actions = [
+      decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', this.t("actDecideSub", { n: nf(decidable) })) : "",
+      marks ? item("mark", "actMark", 'data-fsel-state="mark"', this.t("actMarkSub", { n: nf(marks) })) : "",
+      excs ? `${decidable || marks ? '<hr class="menusep">' : ""}${item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) }))}` : "",
+    ].join("");
+    const menu = actions ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${actions}</div></details>` : "";
     const buttons = [
       facts.user.length ? btn("mdi:eye-outline", "findUnhide", `class="btn${facts.open.length ? "" : " accent"}" data-fsel-unhide`, part(facts.user.length)) : "",
-      decidable ? btn("status", facts.open.length ? "fselStatus" : "fselStatusChange", 'data-fsel-state="status"', part(decidable)) : "",
       facts.mark.length ? btn("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", part(facts.mark.length)) : "",
       facts.owners.size === 1 ? btn("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
       facts.rules.size === 1 ? btn("exc", "hiddenRuleOpen", `data-exc-goto="${this.esc(one(facts.rules))}"`) : "",
       facts.objects.size === 1 ? btn("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
-      marks ? btn("mark", "markSet", 'data-fsel-state="mark"', part(marks)) : "",
-      excs ? btn("exc", "excCreate", "data-fsel-exc", part(excs)) : "",
       labels ? btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels)) : "",
+      menu,
     ].join("");
     return `<div class="toolbar selhead">${pageBox}<span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><button class="btn quiet selclear" data-fsel-clear>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns">${buttons || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
   }
