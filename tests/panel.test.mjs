@@ -5510,6 +5510,19 @@ test("access and data flow show one list at a time, chosen by the tiles, and the
   assert.ok(!html.includes("Hue</strong>"), "an integration without access or cloud is not listed");
 });
 
+test("the list of system access starts with what is new, disabled or custom code, and each row carries the symbol of its access", () => {
+  const { el, shadow } = systemPanel("de");
+  const vyper = { entry_id: "E5", domain: "moonraker", title: "Vyper", iot_class: "local_push", disabled: true, access: [{ kind: "custom_code", detail: null }], flows: [], gps: false, camera: true, external: false, risk: "high", risk_reasons: ["custom_code", "camera"], change: "new", change_at: "2026-10-30T00:00:00+00:00", known: null };
+  el._sys.dataflow.data = { ...ACCESS, entries: [...ACCESS.entries, vyper] };
+  el.view = "dataflow";
+  el.folds = { acc_new: true };
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("Zu prüfen") && html.includes("Neu oder Stufe gestiegen") && html.includes("Deaktiviert, mit Zugriff") && html.includes("Fremdcode mit vollen Rechten") && html.includes("Alle Systemzugriffe"));
+  assert.ok(html.includes("Vyper") && html.includes('icon="mdi:cctv"') && html.includes('icon="mdi:radio-tower"'), "the rows carry the symbol of what they reach");
+  assert.ok(!html.includes(">Datenfluss<"), "the data flow column belongs to the cloud tab");
+});
+
 test("the credential overview shows kind and set or empty, links to Home Assistant and has no value to show", () => {
   const { el, shadow } = systemPanel("de");
   el.view = "secrets";

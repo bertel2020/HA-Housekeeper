@@ -303,6 +303,14 @@ class SystemMixin {
   // The states a list can be narrowed to besides the level.
   accStateFn(e, v) { return v === "disabled" ? Boolean(e.disabled) : v === "custom" ? e.access.some(a => a.kind === "custom_code") : v === "new" ? Boolean(e.change) : v === "known" ? Boolean(e.known) : true; }
 
+  // The symbol of what an integration reaches, in the tile of its row; the colour follows the level unless it is meant to be so.
+  accNameCell(e) {
+    const kinds = new Set(e.access.map(a => a.kind));
+    const icon = e.camera || kinds.has("camera") ? "mdi:cctv" : e.gps || kinds.has("location") ? "mdi:map-marker-outline" : kinds.has("radio") ? "mdi:radio-tower" : kinds.has("shell") || kinds.has("system_root") ? "mdi:console" : kinds.has("custom_code") ? "mdi:code-braces" : e.external ? "mdi:cloud-outline" : "mdi:shield-key-outline";
+    const tone = e.known ? "mute" : { high: "red", medium: "warn" }[e.risk] || "mute";
+    return `<div class="statcell"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><div>${this.accIntegrationCell(e)}</div></div>`;
+  }
+
   accIntegrationCell(e) {
     const disabled = e.disabled ? ` <span class="pill mute">${this.t("accDisabled")}</span>` : "";
     const change = e.change ? ` <span class="pill warn" title="${this.esc(this.formatDate(e.change_at))}">${this.t(e.change === "new" ? "accNewPill" : "accRaisedPill")}</span>` : "";
@@ -334,16 +342,16 @@ class SystemMixin {
         text: e => `${e.domain} ${e.title} ${this.accAccessLabels(e).join(" ")} ${flows(e).join(" ")}`,
       };
       const sorts = [{ key: "risk", label: "accColRisk", dir: "asc", get: e => riskOrder[e.risk] }, { key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }];
+      const sysColumns = [
+        { key: "name", label: "accColIntegration", cell: e => this.accNameCell(e) },
+        { key: "access", label: "accColAccess", sortable: false, cell: e => this.accPills(this.accAccessLabels(e), "warn") },
+        { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
+        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.accRowMenu(e) },
+      ];
       const sysTable = this.sysList("accsys", sys, {
         ...base, sort: "risk", sorts, empty: "accNoneSys",
         filters: [...base.filters, { name: "state", all: this.t("accAllStates"), options: ["new", "disabled", "custom", "known"].map(v => [v, `${this.t({ new: "accStNew", disabled: "accStDisabled", custom: "accKind_custom_code", known: "accStKnown" }[v])} (${this.formatNumber(sys.filter(e => this.accStateFn(e, v)).length)})`]) }],
-        columns: [
-          { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
-          { key: "access", label: "accColAccess", sortable: false, cell: e => this.accPills(this.accAccessLabels(e), "warn") },
-          { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e)) },
-          { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
-          { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.accRowMenu(e) },
-        ],
+        columns: sysColumns,
         exportName: "system-access", header: [this.t("accColIntegration"), "Domain", this.t("accColAccess"), this.t("accColFlow"), this.t("accColRisk"), this.t("accColState")], rows: e => [e.title, e.domain, this.accAccessLabels(e).join("; "), flows(e).join("; "), this.t(`accRisk_${e.risk}`), [e.change ? this.t(e.change === "new" ? "accNewPill" : "accRaisedPill") : "", e.known ? this.t("accStKnown") : "", e.disabled ? this.t("accDisabled") : ""].filter(Boolean).join("; ")],
       });
       const target = e => {
@@ -354,7 +362,7 @@ class SystemMixin {
       const cloudTable = this.sysList("acccloud", cloud, {
         ...base, sort: "name", sorts, empty: "accNoneCloud",
         columns: [
-          { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
+          { key: "name", label: "accColIntegration", cell: e => this.accNameCell(e) },
           { key: "target", label: "accColTarget", sortable: false, cell: e => this.accPills(target(e)) },
           { key: "iot", label: "accColIot", sortable: false, cell: e => this.esc(iot(e)) },
           { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e), "mute") },
@@ -388,9 +396,21 @@ class SystemMixin {
         : open === "inbound" ? panel("accin", `${this.accInboundTable(inbound)}<p class="factnote">${this.t("accInNote")}</p>`, "accInLegend")
         : open === "cloud" ? panel("acccloud", cloudTable)
         : open === "apps" ? panel("accapps", this.accAppsTable(appList, risks, sorts.find(x => x.key === "risk")), "accLegendApps")
-        : panel("accsys", sysTable);
+        : panel("accsys", `${this.accChecks(sys, sysColumns, base)}${sysTable}`);
       return `<div class="stack">${head}${this.navTiles("dataflow", tabs, open, this.t("dataflow"), true)}${body}</div>`;
     }, e => `<span>${this.esc(this.t("sysChecked", { n: this.formatNumber((e.entries || []).length) }))}</span>`);
+  }
+
+  // To check, over the list of system access: what is new or risen, what is disabled but still set up, custom code with full rights.
+  accChecks(sys, columns, base) {
+    const found = [
+      { kind: "new", tone: "red", list: sys.filter(e => e.change) },
+      { kind: "disabled", tone: "warn", list: sys.filter(e => e.disabled) },
+      { kind: "custom", tone: "mute", list: sys.filter(e => !e.known && e.access.some(a => a.kind === "custom_code")) },
+    ].filter(f => f.list.length);
+    if (!found.length) return "";
+    const folds = found.map(f => this.fold(`acc_${f.kind}`, { tone: f.tone, title: this.t(`accFindT_${f.kind}`), sub: this.t(`accFindX_${f.kind}`, { n: this.formatNumber(f.list.length) }), pill: this.t(f.tone === "mute" ? "expoHint2" : "expoWarn") }, `<p class="factnote foldadvice">${this.t(`accFindA_${f.kind}`)}</p>${this.sysList(`accfind_${f.kind}`, f.list, { sort: "risk", cls: "acc", tie: e => e.entry_id, bare: true, empty: "accNoneSys", rowAttrs: base.rowAttrs, text: base.text, sorts: [{ key: "risk", label: "accColRisk", dir: "asc", get: e => ({ high: 0, medium: 1, low: 2 })[e.risk] }], columns })}`, false)).join("");
+    return `<h3 class="expohd">${this.t("expoToCheck")}</h3>${folds}<h3 class="expohd">${this.t("accAllSys")}</h3>`;
   }
 
   // Ways in from outside. A row opens the app, the integration, the cloud settings or the webhook tab.

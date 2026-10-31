@@ -16986,7 +16986,9 @@ Object.assign(TEXT.de, {
   accHint: "Systemzugriffe und Cloud-Datenfluss der Integrationen, Rechte der Apps", accLoading: "Die Integrationen werden eingeordnet …",
   accSumTotal: "Integrationen geprüft", accSumAccess: "Mit Systemzugriff", accSumHigh: "Hohes Risiko", accSumExternal: "Cloud-Datenfluss",
   accSysTitle: "Systemzugriffe & Datenfluss", accSysHint: "Integrationen mit Zugriff auf System, Funk, Hardware, Kamera oder Standort", accCloudTitle: "Cloud-Datenfluss", accCloudHint: "Diese Integrationen tauschen Daten mit externen oder Cloud-Diensten aus.",
-  accColIntegration: "Integration", accColAccess: "Systemzugriff", accColFlow: "Datenfluss", accColRisk: "Risiko", accColTarget: "Ziel", accColIot: "IoT-Klasse", accAllRisks: "Alle Risiken", accAllStates: "Alle Zustände", accStNew: "Neu oder Stufe gestiegen", accStKnown: "Gewollt", accNewPill: "Neu", accRaisedPill: "Stufe gestiegen", accKnown: "Ist so gewollt", accUnknown: "Wieder hervorheben", accKnownSince: "gewollt seit {date}", accColState: "Zustand", accStDisabled: "Deaktiviert, mit Zugriff",
+  accColIntegration: "Integration", accColAccess: "Systemzugriff", accColFlow: "Datenfluss", accColRisk: "Risiko", accColTarget: "Ziel", accColIot: "IoT-Klasse", accFindT_new: "Neu oder Stufe gestiegen", accFindX_new: "{n} Integrationen sind in den letzten 14 Tagen dazugekommen oder haben mehr Zugriff.", accFindA_new: "Prüfe, ob du die Integration kennst. Mit „Ist so gewollt“ im Zeilenmenü verliert sie die Farbe, bis ihre Stufe wieder steigt.",
+  accFindT_disabled: "Deaktiviert, mit Zugriff", accFindX_disabled: "{n} abgeschaltete Integrationen sind eingerichtet und wären beim Einschalten sofort wieder aktiv.", accFindA_disabled: "Wer eine Integration nicht mehr braucht, entfernt sie in Home Assistant.",
+  accFindT_custom: "Fremdcode mit vollen Rechten", accFindX_custom: "{n} Integrationen laufen ohne Prüfung durch Home Assistant.", accFindA_custom: "Das ist bei HACS-Integrationen üblich. Prüfe, ob du der Quelle vertraust.", accAllSys: "Alle Systemzugriffe", accAllRisks: "Alle Risiken", accAllStates: "Alle Zustände", accStNew: "Neu oder Stufe gestiegen", accStKnown: "Gewollt", accNewPill: "Neu", accRaisedPill: "Stufe gestiegen", accKnown: "Ist so gewollt", accUnknown: "Wieder hervorheben", accKnownSince: "gewollt seit {date}", accColState: "Zustand", accStDisabled: "Deaktiviert, mit Zugriff",
   accRisk_high: "Hoch", accRisk_medium: "Mittel", accRisk_low: "Niedrig",
   accKind_system_root: "System/Root-Zugriff", accKind_shell: "Shell-Ausführung", accKind_radio: "Funk/Gerät", accKind_hardware: "Hardware", accKind_network: "Netzwerk", accKind_database: "Datenbank", accKind_camera: "Kamera", accKind_location: "GPS/Standort", accKind_geocoding: "Geocoding", accKind_weather: "Wetter (standortabhängig)", accKind_cloud_api: "Cloud-API", accKind_cloud: "Cloud",
   accFlow_local: "lokal", accFlow_external: "extern", accFlow_cloud: "Cloud", accFlow_system: "System", accFlow_database: "Datenbank", accFlow_network: "Netzwerk", accFlow_gps: "GPS", accFlow_storage: "Speicher", accFlow_phone: "Telefon", accFlow_push: "Push",
@@ -17070,7 +17072,9 @@ Object.assign(TEXT.en, {
   accHint: "System access and cloud data flow of the integrations, rights of the apps", accLoading: "Classifying the integrations …",
   accSumTotal: "Integrations checked", accSumAccess: "With system access", accSumHigh: "High risk", accSumExternal: "Cloud data flow",
   accSysTitle: "System access & data flow", accSysHint: "Integrations that reach the system, radios, hardware, cameras or the location", accCloudTitle: "Cloud data flow", accCloudHint: "These integrations exchange data with external or cloud services.",
-  accColIntegration: "Integration", accColAccess: "System access", accColFlow: "Data flow", accColRisk: "Risk", accColTarget: "Target", accColIot: "IoT class", accAllRisks: "All risks", accAllStates: "All states", accStNew: "New or level risen", accStKnown: "Meant to be so", accNewPill: "New", accRaisedPill: "Level risen", accKnown: "Meant to be so", accUnknown: "Highlight again", accKnownSince: "meant to be so since {date}", accColState: "State", accStDisabled: "Disabled, with access",
+  accColIntegration: "Integration", accColAccess: "System access", accColFlow: "Data flow", accColRisk: "Risk", accColTarget: "Target", accColIot: "IoT class", accFindT_new: "New or level risen", accFindX_new: "{n} integrations were added in the last 14 days or gained access.", accFindA_new: "Check that you know the integration. “Meant to be so” in the row menu takes its colour off until its level rises again.",
+  accFindT_disabled: "Disabled, with access", accFindX_disabled: "{n} switched-off integrations are set up and would be active again as soon as they are switched on.", accFindA_disabled: "If you no longer need an integration, remove it in Home Assistant.",
+  accFindT_custom: "Custom code with full rights", accFindX_custom: "{n} integrations run without a check by Home Assistant.", accFindA_custom: "That is usual for HACS integrations. Check that you trust the source.", accAllSys: "All system access", accAllRisks: "All risks", accAllStates: "All states", accStNew: "New or level risen", accStKnown: "Meant to be so", accNewPill: "New", accRaisedPill: "Level risen", accKnown: "Meant to be so", accUnknown: "Highlight again", accKnownSince: "meant to be so since {date}", accColState: "State", accStDisabled: "Disabled, with access",
   accRisk_high: "High", accRisk_medium: "Medium", accRisk_low: "Low",
   accKind_system_root: "System/root access", accKind_shell: "Shell commands", accKind_radio: "Radio/device", accKind_hardware: "Hardware", accKind_network: "Network", accKind_database: "Database", accKind_camera: "Camera", accKind_location: "GPS/location", accKind_geocoding: "Geocoding", accKind_weather: "Weather (location based)", accKind_cloud_api: "Cloud API", accKind_cloud: "Cloud",
   accFlow_local: "local", accFlow_external: "external", accFlow_cloud: "cloud", accFlow_system: "system", accFlow_database: "database", accFlow_network: "network", accFlow_gps: "GPS", accFlow_storage: "storage", accFlow_phone: "phone", accFlow_push: "push",
@@ -17641,6 +17645,14 @@ class SystemMixin {
   // The states a list can be narrowed to besides the level.
   accStateFn(e, v) { return v === "disabled" ? Boolean(e.disabled) : v === "custom" ? e.access.some(a => a.kind === "custom_code") : v === "new" ? Boolean(e.change) : v === "known" ? Boolean(e.known) : true; }
 
+  // The symbol of what an integration reaches, in the tile of its row; the colour follows the level unless it is meant to be so.
+  accNameCell(e) {
+    const kinds = new Set(e.access.map(a => a.kind));
+    const icon = e.camera || kinds.has("camera") ? "mdi:cctv" : e.gps || kinds.has("location") ? "mdi:map-marker-outline" : kinds.has("radio") ? "mdi:radio-tower" : kinds.has("shell") || kinds.has("system_root") ? "mdi:console" : kinds.has("custom_code") ? "mdi:code-braces" : e.external ? "mdi:cloud-outline" : "mdi:shield-key-outline";
+    const tone = e.known ? "mute" : { high: "red", medium: "warn" }[e.risk] || "mute";
+    return `<div class="statcell"><span class="tile ${tone}"><ha-icon icon="${icon}"></ha-icon></span><div>${this.accIntegrationCell(e)}</div></div>`;
+  }
+
   accIntegrationCell(e) {
     const disabled = e.disabled ? ` <span class="pill mute">${this.t("accDisabled")}</span>` : "";
     const change = e.change ? ` <span class="pill warn" title="${this.esc(this.formatDate(e.change_at))}">${this.t(e.change === "new" ? "accNewPill" : "accRaisedPill")}</span>` : "";
@@ -17672,16 +17684,16 @@ class SystemMixin {
         text: e => `${e.domain} ${e.title} ${this.accAccessLabels(e).join(" ")} ${flows(e).join(" ")}`,
       };
       const sorts = [{ key: "risk", label: "accColRisk", dir: "asc", get: e => riskOrder[e.risk] }, { key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }];
+      const sysColumns = [
+        { key: "name", label: "accColIntegration", cell: e => this.accNameCell(e) },
+        { key: "access", label: "accColAccess", sortable: false, cell: e => this.accPills(this.accAccessLabels(e), "warn") },
+        { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
+        { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.accRowMenu(e) },
+      ];
       const sysTable = this.sysList("accsys", sys, {
         ...base, sort: "risk", sorts, empty: "accNoneSys",
         filters: [...base.filters, { name: "state", all: this.t("accAllStates"), options: ["new", "disabled", "custom", "known"].map(v => [v, `${this.t({ new: "accStNew", disabled: "accStDisabled", custom: "accKind_custom_code", known: "accStKnown" }[v])} (${this.formatNumber(sys.filter(e => this.accStateFn(e, v)).length)})`]) }],
-        columns: [
-          { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
-          { key: "access", label: "accColAccess", sortable: false, cell: e => this.accPills(this.accAccessLabels(e), "warn") },
-          { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e)) },
-          { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
-          { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.accRowMenu(e) },
-        ],
+        columns: sysColumns,
         exportName: "system-access", header: [this.t("accColIntegration"), "Domain", this.t("accColAccess"), this.t("accColFlow"), this.t("accColRisk"), this.t("accColState")], rows: e => [e.title, e.domain, this.accAccessLabels(e).join("; "), flows(e).join("; "), this.t(`accRisk_${e.risk}`), [e.change ? this.t(e.change === "new" ? "accNewPill" : "accRaisedPill") : "", e.known ? this.t("accStKnown") : "", e.disabled ? this.t("accDisabled") : ""].filter(Boolean).join("; ")],
       });
       const target = e => {
@@ -17692,7 +17704,7 @@ class SystemMixin {
       const cloudTable = this.sysList("acccloud", cloud, {
         ...base, sort: "name", sorts, empty: "accNoneCloud",
         columns: [
-          { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
+          { key: "name", label: "accColIntegration", cell: e => this.accNameCell(e) },
           { key: "target", label: "accColTarget", sortable: false, cell: e => this.accPills(target(e)) },
           { key: "iot", label: "accColIot", sortable: false, cell: e => this.esc(iot(e)) },
           { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e), "mute") },
@@ -17726,9 +17738,21 @@ class SystemMixin {
         : open === "inbound" ? panel("accin", `${this.accInboundTable(inbound)}<p class="factnote">${this.t("accInNote")}</p>`, "accInLegend")
         : open === "cloud" ? panel("acccloud", cloudTable)
         : open === "apps" ? panel("accapps", this.accAppsTable(appList, risks, sorts.find(x => x.key === "risk")), "accLegendApps")
-        : panel("accsys", sysTable);
+        : panel("accsys", `${this.accChecks(sys, sysColumns, base)}${sysTable}`);
       return `<div class="stack">${head}${this.navTiles("dataflow", tabs, open, this.t("dataflow"), true)}${body}</div>`;
     }, e => `<span>${this.esc(this.t("sysChecked", { n: this.formatNumber((e.entries || []).length) }))}</span>`);
+  }
+
+  // To check, over the list of system access: what is new or risen, what is disabled but still set up, custom code with full rights.
+  accChecks(sys, columns, base) {
+    const found = [
+      { kind: "new", tone: "red", list: sys.filter(e => e.change) },
+      { kind: "disabled", tone: "warn", list: sys.filter(e => e.disabled) },
+      { kind: "custom", tone: "mute", list: sys.filter(e => !e.known && e.access.some(a => a.kind === "custom_code")) },
+    ].filter(f => f.list.length);
+    if (!found.length) return "";
+    const folds = found.map(f => this.fold(`acc_${f.kind}`, { tone: f.tone, title: this.t(`accFindT_${f.kind}`), sub: this.t(`accFindX_${f.kind}`, { n: this.formatNumber(f.list.length) }), pill: this.t(f.tone === "mute" ? "expoHint2" : "expoWarn") }, `<p class="factnote foldadvice">${this.t(`accFindA_${f.kind}`)}</p>${this.sysList(`accfind_${f.kind}`, f.list, { sort: "risk", cls: "acc", tie: e => e.entry_id, bare: true, empty: "accNoneSys", rowAttrs: base.rowAttrs, text: base.text, sorts: [{ key: "risk", label: "accColRisk", dir: "asc", get: e => ({ high: 0, medium: 1, low: 2 })[e.risk] }], columns })}`, false)).join("");
+    return `<h3 class="expohd">${this.t("expoToCheck")}</h3>${folds}<h3 class="expohd">${this.t("accAllSys")}</h3>`;
   }
 
   // Ways in from outside. A row opens the app, the integration, the cloud settings or the webhook tab.
