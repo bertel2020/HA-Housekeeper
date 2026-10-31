@@ -46,7 +46,7 @@ class MarksMixin {
     const graces = [0, 15, 30, 60, 120].map(n => `<option value="${n}" ${Number(f.grace ?? 30) === n ? "selected" : ""}>${this.t("markGraceMin", { n })}</option>`).join("");
     const keep = f.kind === "keep", windowed = !keep && f.wmode, auto = !keep && f.autoClear;
     const noSun = f.wmode === "sun" && this._hass?.states && !this._hass.states["sun.sun"];
-    const window = (keep ? "" : `<div class="mfield"><span>${this.t("markWindowKind")}</span><div class="chips bare" role="radiogroup">${modes}</div></div>`)
+    const window = (keep ? "" : `<div class="mfield wide"><span>${this.t("markWindowKind")}</span><div class="chips bare" role="radiogroup">${modes}</div></div>`)
       + (windowed && f.wmode === "time" ? field("markFrom", `<input type="time" data-${p}-from value="${this.esc(f.from || "21:00")}">`) + field("markTo", `<input type="time" data-${p}-to value="${this.esc(f.to || "06:00")}">`) : "")
       + (windowed ? field("markGrace", `<select data-${p}-grace>${graces}</select>`) : "");
     const autoBox = keep || f.wmode ? "" : `<div class="mrow"><label class="nw"><input type="checkbox" data-${p}-auto ${f.autoClear ? "checked" : ""}> ${this.t("markAutoClear")}</label></div>`;
