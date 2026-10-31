@@ -28,6 +28,7 @@ Object.assign(TEXT.de, {
   excEmptyAlways: "Noch keine dauerhafte Regel", excEmptyAlwaysNext: "Zum Beispiel einen Bereich oder ein Label dauerhaft ausblenden.", excEmptyVacation: "Noch keine Regel für den Urlaubsmodus", excEmptyVacationNext: "Zum Beispiel das Gewächshaus ausblenden, solange du weg bist.", excVacNoEntity: "Ohne Entität für den Urlaubsmodus greifen diese Regeln nie. Wähle sie unten bei „Urlaubsmodus“.",
   excForLabel: "Wofür", excFor_objects: "Nur {name}", excFor_objects_n: "Nur diese {n} Objekte", excFor_devices: "Gerät {name}", excFor_devices_n: "Ihre {n} Geräte", excFor_areas: "Bereich {name}", excFor_areas_n: "Ihre {n} Bereiche", excFor_integrations: "Integration {name}", excFor_integrations_n: "Ihre {n} Integrationen",
   excForSub_objects_n: "einzeln ausgewählt", excForSub_devices: "mit allen seinen Entitäten", excForSub_areas: "alle Geräte und Entitäten im Bereich", excForSub_integrations: "alle ihre Entitäten",
+  excTitleN: "{n} Objekte",
   coverRulePrev: "{n} Befunde sind schon durch eine Entscheidung oder das Label „Ignorieren“ ausgeblendet. Die Regel gilt daneben.",
   excForMore: "Ein einzelnes Objekt mit Grund oder Zeitfenster: dafür ist die Objekt-Notiz da. Label, Typ oder eine andere Auswahl:", excForMoreShort: "Label, Typ oder eine andere Auswahl:", excNoteHint: "Für nur dieses eine Objekt gibt es die Objekt-Notiz: Sie kennt ein Zeitfenster und ein Prüfdatum und endet auf Wunsch von selbst.", excForSettings: "in den Einstellungen bearbeiten",
   excScope: "Gilt", excScope_always: "Immer", excScope_vacation: "Nur im Urlaubsmodus", excScopeChip_vacation: "nur im Urlaub", excScopeChip_always: "immer",
@@ -72,6 +73,7 @@ Object.assign(TEXT.en, {
   excEmptyAlways: "No permanent rule yet", excEmptyAlwaysNext: "For example hide an area or a label for good.", excEmptyVacation: "No vacation mode rule yet", excEmptyVacationNext: "For example hide the greenhouse while you are away.", excVacNoEntity: "Without an entity for the vacation mode these rules never apply. Choose it below under “Vacation mode”.",
   excForLabel: "For what", excFor_objects: "Only {name}", excFor_objects_n: "Only these {n} objects", excFor_devices: "Device {name}", excFor_devices_n: "Their {n} devices", excFor_areas: "Area {name}", excFor_areas_n: "Their {n} areas", excFor_integrations: "Integration {name}", excFor_integrations_n: "Their {n} integrations",
   excForSub_objects_n: "picked one by one", excForSub_devices: "with all its entities", excForSub_areas: "all devices and entities in the area", excForSub_integrations: "all its entities",
+  excTitleN: "{n} objects",
   coverRulePrev: "{n} findings are already hidden by a decision or the label “Ignore”. The rule applies besides.",
   excForMore: "A single object with a reason or a time window: that is what an object note is for. Label, type or another choice:", excForMoreShort: "Label, type or another choice:", excNoteHint: "For just this one object there is the object note: it knows a time window and a review date and ends by itself if you want.", excForSettings: "edit in the settings",
   excScope: "Applies", excScope_always: "Always", excScope_vacation: "Only in vacation mode", excScopeChip_vacation: "vacation only", excScopeChip_always: "always",
@@ -322,7 +324,7 @@ class ExceptionsMixin {
     const canDrop = f.scopeSel === "objects" && f.picks.length > 1;
     const hits = (pv?.hits || []).map(h => {
       const pick = canDrop && f.picks.find(p => p.id === h.object_id);
-      return `<span class="chip hit" title="${this.esc(h.object_id)}">${this.esc(h.name)} <em>${h.findings}</em>${pick ? `<button type="button" class="hitx" data-exc-pick="${this.esc(`${pick.kind}:${pick.id}`)}" aria-label="${this.esc(this.t("excHitDrop", { name: h.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`;
+      return `<span class="chip hit" title="${this.esc(h.object_id)}">${this.esc(h.name)} ${h.findings > 1 ? `<em>${h.findings}</em>` : ""}${pick ? `<button type="button" class="hitx" data-exc-pick="${this.esc(`${pick.kind}:${pick.id}`)}" aria-label="${this.esc(this.t("excHitDrop", { name: h.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`;
     }).join("");
     const hitsMore = pv && pv.objects > (pv.hits || []).length ? `<small class="factnote">${this.t("excHitsMore", { n: pv.objects - pv.hits.length })}</small>` : "";
     const preview = pv ? `<details class="excprev" data-exc-prev role="status"${f.prevOpen ?? (pv.hits || []).length <= 5 ? " open" : ""}><summary>${sum}</summary>${hits ? `<div class="hits chips bare">${hits}</div>${hitsMore}` : ""}
@@ -333,22 +335,21 @@ class ExceptionsMixin {
         ${f.action === "delay" ? `<input type="number" min="1" max="${this.exc.days_max || 365}" data-exc-days value="${this.esc(f.days)}" aria-label="${this.esc(this.t("excDays"))}"> <span>${this.t("excDays")}</span>` : ""}</div>
         ${f.action === "delay" ? `<small class="factnote">${this.t("excDelayHint")}</small>` : ""}</div>`;
     const scopeChips = `<div class="mfield"><span>${this.t("excScope")}</span><div class="chips bare">${["always", "vacation"].map(s => `<button type="button" class="chip${(f.scope || "always") === s ? " active" : ""}" data-exc-scope-set="${s}" aria-pressed="${(f.scope || "always") === s}">${this.t(`excScope_${s}`)}</button>`).join("")}</div></div>`;
-    const pvBlock = `${preview}${important}${pv?.covered ? this.notice("warn", this.t("coverRulePrev", { n: this.formatNumber(pv.covered) })) : ""}`;
-    const what = f.scopes ? `${this.excScopeCards(f)}${pvBlock}${scopeChips}`
+    const warn = `${important}${pv?.covered ? this.notice("warn", this.t("coverRulePrev", { n: this.formatNumber(pv.covered) })) : ""}`;
+    const what = f.scopes ? `${preview}${this.excScopeCards(f)}${scopeChips}`
       : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
       <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
     const single = f.here && (f.noteFor || (f.scopeSel === "objects" && f.picks.length === 1)) && this.markTargets().size > 0;
     const noteHint = single ? `<div class="notice info outagehint"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t("excNoteHint"))}</p><button type="button" class="btn" data-fsel-state="mark"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button></div></div>` : "";
+    const noteField = `<label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>`;
     const more = f.scopes ? `<small class="factnote">${this.t(single ? "excForMoreShort" : "excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
     return `<form class="excform markform${f.here ? " actionarea" : ""}" data-exc-form>
-      ${f.here ? `<header class="acthead"><strong>${this.t("excFormNew")}</strong><button type="button" class="iconbtn" data-exc-cancel aria-label="${this.esc(this.t("excCancel"))}" title="${this.esc(this.t("excCancel"))}"><ha-icon icon="mdi:close"></ha-icon></button></header>` : `<strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>`}
+      ${f.here ? `<header class="acthead"><strong>${this.t("excFormNew")}${pv ? ` · ${this.t("excTitleN", { n: this.formatNumber(pv.objects) })}` : ""}</strong><button type="button" class="iconbtn" data-exc-cancel aria-label="${this.esc(this.t("excCancel"))}" title="${this.esc(this.t("excCancel"))}"><ha-icon icon="mdi:close"></ha-icon></button></header>` : `<strong>${this.t(f.id ? "excFormEdit" : "excFormNew")}</strong>`}
       ${what}
       ${noteHint}
       <div class="excgrid">${action}
       ${f.scope !== "vacation" && f.action === "hide" ? `<label class="mfield"><span>${this.t("excReview")}</span><select data-exc-review>${[0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(f.review) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : this.t("excReviewNever")}</option>`).join("")}</select></label>` : ""}</div>
-      ${this.ruleEffect(f)}
-      <label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>
-      ${f.scopes ? "" : pvBlock}${more}${f.error ? this.notice("err", f.error) : ""}
+      ${f.scopes ? `${noteField}${warn}${this.ruleEffect(f)}` : `${this.ruleEffect(f)}${noteField}${preview}${warn}`}${more}${f.error ? this.notice("err", f.error) : ""}
       <div class="mbtns"><button type="button" class="btn quiet" data-exc-cancel>${this.t("excCancel")}</button><button type="submit" class="btn primary">${this.t("excSave")}</button></div></form>`;
   }
 
