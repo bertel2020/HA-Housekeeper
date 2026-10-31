@@ -13,6 +13,7 @@ from homeassistant.core import HomeAssistant  # noqa: E402
 from pytest_homeassistant_custom_component.common import async_fire_time_changed  # noqa: E402
 
 from custom_components.ha_housekeeper import const  # noqa: E402
+from custom_components.ha_housekeeper.access_state import AccessState  # noqa: E402
 from custom_components.ha_housekeeper.backup_health import AttestStore  # noqa: E402
 from custom_components.ha_housekeeper.cleanup import JournalStore  # noqa: E402
 from custom_components.ha_housekeeper.events import EventLog  # noqa: E402
@@ -42,6 +43,7 @@ STORES = [
     (PolicyStore, const.POLICIES_STORAGE_KEY),
     (ReplyStore, const.REPLIES_STORAGE_KEY),
     (FirstSeenStore, const.FIRST_SEEN_STORAGE_KEY),
+    (AccessState, const.ACCESS_STATE_STORAGE_KEY),
     (VisitStore, const.VISITS_STORAGE_KEY),
     (WorkStore, const.WORK_STORAGE_KEY),
     (FirstCleanupStore, const.FIRST_CLEANUP_STORAGE_KEY),
@@ -63,6 +65,7 @@ GARBAGE = [
     {"enabled": {"entity_area": "yes", "unknown_rule": True, "device_area": 1}},
     {"since": 3, "items": {"automation.a": {"days": "no", "seen": 5}}},
     {"sizes": {"2026-10-08": "big", "x": -4}, "heartbeat": 5, "versions": "v"},
+    {"seen": "no", "known": {"a": 5, "b": {"level": "huge"}}},
 ]
 
 
@@ -426,3 +429,31 @@ async def test_data_written_by_1x_loads_again(hass: HomeAssistant, hass_storage)
     await store.async_load()
     assert store.entry("a")["until"] and store.entry("b")["impact_at"] is None
     assert store.notice == {"count": 1, "days": 90}
+
+
+async def test_the_access_page_marks_what_is_new_and_lifts_a_decision_when_the_level_rises(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    store = AccessState(hass)
+    await store.async_load()
+    then = datetime(2026, 10, 1, tzinfo=UTC)
+
+    def look(levels: dict[str, str], now: datetime) -> dict[str, dict]:
+        entries = [{"entry_id": key, "risk": level} for key, level in levels.items()]
+        store.annotate(entries, now)
+        return {e["entry_id"]: e for e in entries}
+
+    first = look({"a": "high", "b": "low"}, then)
+    assert first["a"]["change"] is None, "the first look is before tracking, nothing is new"
+    later = look({"a": "high", "b": "low", "c": "high", "d": "low"}, then + timedelta(days=1))
+    assert (later["c"]["change"], later["d"]["change"]) == ("new", None), "a low entry is not news"
+    assert store.set_known("a", True, "my radio", then) and not store.set_known("x", True, "", then)
+    whole = {"a": "high", "b": "low", "c": "high"}
+    assert look(whole, then + timedelta(days=2))["a"]["known"]["reason"] == "my radio"
+    assert look(whole, then + timedelta(days=30))["c"]["change"] is None, "news ages"
+    store.set_known("b", True, "", then)
+    whole["b"] = "medium"
+    assert look(whole, then + timedelta(days=31))["b"]["known"] is None, "a rise lifts the decision"
+    assert look(whole, then + timedelta(days=31))["b"]["change"] == "raised"
+    store.set_known("b", True, "", then)
+    assert look(whole, then + timedelta(days=33))["b"]["known"] is not None

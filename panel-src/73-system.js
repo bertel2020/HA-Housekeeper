@@ -281,17 +281,33 @@ class SystemMixin {
   accAppWhy(a) { return a.risk ? this.accWhy(a.risk, a.access.filter(x => x.level === a.risk).map(x => this.accAppRight(x)), "accWhyLowApp") : ""; }
 
   // The level with the reason under it, so touch sees it too; the pointer still gets it as a tooltip.
+  // An access that is meant to be so keeps its level but loses the colour.
   accRiskCell(e) {
     const why = this.accEntryWhy(e);
-    return `${this.accRiskPill(e.risk, why)}${why ? `<small class="u-dim u-block">${this.esc(why)}</small>` : ""}`;
+    const pill = e.known ? `<span class="pill mute"${why ? ` title="${this.esc(why)}"` : ""}>${this.t(`accRisk_${e.risk}`)}</span>` : this.accRiskPill(e.risk, why);
+    const known = e.known ? `<small class="u-dim u-block">${this.esc(this.t("accKnownSince", { date: this.formatDate(e.known.at).split(",")[0] }))}${e.known.reason ? ` · ${this.esc(e.known.reason)}` : ""}</small>` : "";
+    return `${pill}${known || (why ? `<small class="u-dim u-block">${this.esc(why)}</small>` : "")}`;
+  }
+
+  // The three dots of a row: say that the access is meant to be so, or take that back.
+  accRowMenu(e) {
+    return this.rowMenuHtml([e.known ? ["mdi:undo-variant", "accUnknown", `data-acc-known="${this.esc(e.entry_id)}|0"`] : ["mdi:check-circle-outline", "accKnown", `data-acc-known="${this.esc(e.entry_id)}|1"`]]);
+  }
+
+  async setAccessKnown(entryId, known) {
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/access_known", entry_id: entryId, known });
+      await this.sysLoad("dataflow", true);
+    } catch (err) { this.failed(err); }
   }
 
   // The states a list can be narrowed to besides the level.
-  accStateFn(e, v) { return v === "disabled" ? Boolean(e.disabled) : v === "custom" ? e.access.some(a => a.kind === "custom_code") : true; }
+  accStateFn(e, v) { return v === "disabled" ? Boolean(e.disabled) : v === "custom" ? e.access.some(a => a.kind === "custom_code") : v === "new" ? Boolean(e.change) : v === "known" ? Boolean(e.known) : true; }
 
   accIntegrationCell(e) {
     const disabled = e.disabled ? ` <span class="pill mute">${this.t("accDisabled")}</span>` : "";
-    return `${this.nameCell(e.title || e.domain, e.domain)}${disabled}`;
+    const change = e.change ? ` <span class="pill warn" title="${this.esc(this.formatDate(e.change_at))}">${this.t(e.change === "new" ? "accNewPill" : "accRaisedPill")}</span>` : "";
+    return `${this.nameCell(e.title || e.domain, e.domain)}${disabled}${change}`;
   }
 
   // A row opens the integration's page in Housekeeper when the inventory knows it.
@@ -321,14 +337,15 @@ class SystemMixin {
       const sorts = [{ key: "risk", label: "accColRisk", dir: "asc", get: e => riskOrder[e.risk] }, { key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }];
       const sysTable = this.sysList("accsys", sys, {
         ...base, sort: "risk", sorts, empty: "accNoneSys",
-        filters: [...base.filters, { name: "state", all: this.t("accAllStates"), options: ["disabled", "custom"].map(v => [v, `${this.t(v === "disabled" ? "accStDisabled" : "accKind_custom_code")} (${this.formatNumber(sys.filter(e => this.accStateFn(e, v)).length)})`]) }],
+        filters: [...base.filters, { name: "state", all: this.t("accAllStates"), options: ["new", "disabled", "custom", "known"].map(v => [v, `${this.t({ new: "accStNew", disabled: "accStDisabled", custom: "accKind_custom_code", known: "accStKnown" }[v])} (${this.formatNumber(sys.filter(e => this.accStateFn(e, v)).length)})`]) }],
         columns: [
           { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
           { key: "access", label: "accColAccess", sortable: false, cell: e => this.accPills(this.accAccessLabels(e), "warn") },
           { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e)) },
           { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
+          { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.accRowMenu(e) },
         ],
-        exportName: "system-access", header: [this.t("accColIntegration"), "Domain", this.t("accColAccess"), this.t("accColFlow"), this.t("accColRisk")], rows: e => [e.title, e.domain, this.accAccessLabels(e).join("; "), flows(e).join("; "), this.t(`accRisk_${e.risk}`)],
+        exportName: "system-access", header: [this.t("accColIntegration"), "Domain", this.t("accColAccess"), this.t("accColFlow"), this.t("accColRisk"), this.t("accColState")], rows: e => [e.title, e.domain, this.accAccessLabels(e).join("; "), flows(e).join("; "), this.t(`accRisk_${e.risk}`), [e.change ? this.t(e.change === "new" ? "accNewPill" : "accRaisedPill") : "", e.known ? this.t("accStKnown") : "", e.disabled ? this.t("accDisabled") : ""].filter(Boolean).join("; ")],
       });
       const target = e => {
         const named = e.access.filter(a => a.kind === "cloud_api" || a.kind === "cloud").map(a => `${this.t(`accKind_${a.kind}`)}${a.detail ? ` (${a.detail})` : ""}`);
@@ -641,6 +658,7 @@ class SystemMixin {
       this.render();
     }));
     root.querySelectorAll("[data-sys-refresh]").forEach(el => el.onclick = () => this.sysLoad(el.dataset.sysRefresh, true));
+    root.querySelectorAll("[data-acc-known]").forEach(el => el.addEventListener("click", ev => { ev.stopPropagation(); const [id, on] = el.dataset.accKnown.split("|"); this.setAccessKnown(id, on === "1"); }));
     // A tap on the (i) shows its text for a few seconds, as touch has no hover.
     root.querySelectorAll(".infotip").forEach(el => el.addEventListener("click", () => {
       this.showTip(el); globalThis.clearTimeout?.(this._tipHide);

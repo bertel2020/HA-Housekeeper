@@ -2,7 +2,7 @@
 const STORE_GROUPS = [
   ["history", ["observations", "history", "events", "runs", "replies", "load", "starts", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
   ["proof", ["journal", "activity", "attest"]],
-  ["yours", ["ignored", "exceptions", "marks", "often", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
+  ["yours", ["ignored", "access_state", "exceptions", "marks", "often", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
 ];
 
 Object.assign(TEXT.de, {
@@ -38,6 +38,7 @@ Object.assign(TEXT.de, {
   store_signals: "Signale", storeText_signals: "Welche Situationen schon als Ereignis gemeldet wurden, damit jede nur einmal gemeldet wird.",
   store_journal: "Journal", storeText_journal: "Pläne des Bereinigens mit Ergebnis und Rückgängig-Angaben. Nie ausgeführte Pläne kannst du löschen; ausgeführte bleiben als Nachweis. Alte Dateisnapshots werden verdichtet, wenn die Größenbegrenzung erreicht ist.",
   store_attest: "Backup-Bestätigungen", storeText_attest: "Zwei Angaben, die nur du kennst: Notfall-Set sicher verwahrt und eine Wiederherstellung ausprobiert.",
+  store_access_state: "Zugriffe: neu und gewollt", storeText_access_state: "Je Integration die Risikostufe, wann sie zuerst gesehen wurde und ob ihr Zugriff so gewollt ist. Nie ein Wert oder eine Einzelheit des Zugriffs.",
   store_ignored: "Entscheidungen zu Befunden", storeText_ignored: "Fehlalarm, ist so gewollt oder später, mit Grund. Bleibt, bis du es änderst.",
   store_exceptions: "Ausnahmeregeln", storeText_exceptions: "Regeln für Bereiche und Labels, deren Objekte nicht gemeldet werden.",
   store_marks: "Objekt-Notizen", storeText_marks: "Hinweise an Objekten: absichtlich offline, saisonal, Reserve, behalten.",
@@ -87,6 +88,7 @@ Object.assign(TEXT.en, {
   store_signals: "Signals", storeText_signals: "Which situations were already announced as an event, so each is announced once.",
   store_journal: "Journal", storeText_journal: "Cleanup plans with their result and undo details. You can delete plans that were never run; executed ones stay as the audit trail. Old file snapshots are condensed when the size limit is reached.",
   store_attest: "Backup confirmations", storeText_attest: "Two facts only you know: the emergency kit is stored safely and a restore was tried.",
+  store_access_state: "Access: new and meant to be so", storeText_access_state: "Per integration the risk level, when it was first seen and whether its access is meant to be so. Never a value or a detail of the access.",
   store_ignored: "Decisions about findings", storeText_ignored: "False alarm, intended or later, with the reason. Stays until you change it.",
   store_exceptions: "Exception rules", storeText_exceptions: "Rules for areas and labels whose objects are not reported.",
   store_marks: "Object notes", storeText_marks: "Notes on objects: offline on purpose, seasonal, spare, keep.",

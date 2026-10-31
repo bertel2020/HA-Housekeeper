@@ -27,6 +27,7 @@ from homeassistant.loader import IntegrationNotFound, async_get_integration, asy
 from homeassistant.util import dt as dt_util
 
 from . import followup
+from .access_state import AccessState
 from .activity import ActivityStore
 from .app_links import app_edges, stopped_app_findings
 from .auto_pause import AutoPause
@@ -913,6 +914,7 @@ def storage_sizes(hass: HomeAssistant) -> dict[str, dict[str, float]]:
 STORE_NAMES = (
     "observations",
     "first_seen",
+    "access_state",
     "visits",
     "work",
     "first_cleanup",
@@ -959,6 +961,7 @@ class InventoryScanner:
         self.hass = hass
         self.observations = ObservationStore(hass)
         self.first_seen = FirstSeenStore(hass)
+        self.access_state = AccessState(hass)
         self.visits = VisitStore(hass)
         self.work = WorkStore(hass)
         self.first_cleanup = FirstCleanupStore(hass)

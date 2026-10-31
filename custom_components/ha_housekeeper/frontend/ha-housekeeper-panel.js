@@ -1121,7 +1121,7 @@ Object.assign(TEXT.en, {
 const STORE_GROUPS = [
   ["history", ["observations", "history", "events", "runs", "replies", "load", "starts", "entry_states", "stale", "config_changes", "coverage", "scan_health", "signals"]],
   ["proof", ["journal", "activity", "attest"]],
-  ["yours", ["ignored", "exceptions", "marks", "often", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
+  ["yours", ["ignored", "access_state", "exceptions", "marks", "often", "notes", "reminders", "goals", "criteria", "batteries", "policies", "notify", "mcp", "protection", "refactor"]],
 ];
 
 Object.assign(TEXT.de, {
@@ -1157,6 +1157,7 @@ Object.assign(TEXT.de, {
   store_signals: "Signale", storeText_signals: "Welche Situationen schon als Ereignis gemeldet wurden, damit jede nur einmal gemeldet wird.",
   store_journal: "Journal", storeText_journal: "Pläne des Bereinigens mit Ergebnis und Rückgängig-Angaben. Nie ausgeführte Pläne kannst du löschen; ausgeführte bleiben als Nachweis. Alte Dateisnapshots werden verdichtet, wenn die Größenbegrenzung erreicht ist.",
   store_attest: "Backup-Bestätigungen", storeText_attest: "Zwei Angaben, die nur du kennst: Notfall-Set sicher verwahrt und eine Wiederherstellung ausprobiert.",
+  store_access_state: "Zugriffe: neu und gewollt", storeText_access_state: "Je Integration die Risikostufe, wann sie zuerst gesehen wurde und ob ihr Zugriff so gewollt ist. Nie ein Wert oder eine Einzelheit des Zugriffs.",
   store_ignored: "Entscheidungen zu Befunden", storeText_ignored: "Fehlalarm, ist so gewollt oder später, mit Grund. Bleibt, bis du es änderst.",
   store_exceptions: "Ausnahmeregeln", storeText_exceptions: "Regeln für Bereiche und Labels, deren Objekte nicht gemeldet werden.",
   store_marks: "Objekt-Notizen", storeText_marks: "Hinweise an Objekten: absichtlich offline, saisonal, Reserve, behalten.",
@@ -1206,6 +1207,7 @@ Object.assign(TEXT.en, {
   store_signals: "Signals", storeText_signals: "Which situations were already announced as an event, so each is announced once.",
   store_journal: "Journal", storeText_journal: "Cleanup plans with their result and undo details. You can delete plans that were never run; executed ones stay as the audit trail. Old file snapshots are condensed when the size limit is reached.",
   store_attest: "Backup confirmations", storeText_attest: "Two facts only you know: the emergency kit is stored safely and a restore was tried.",
+  store_access_state: "Access: new and meant to be so", storeText_access_state: "Per integration the risk level, when it was first seen and whether its access is meant to be so. Never a value or a detail of the access.",
   store_ignored: "Decisions about findings", storeText_ignored: "False alarm, intended or later, with the reason. Stays until you change it.",
   store_exceptions: "Exception rules", storeText_exceptions: "Rules for areas and labels whose objects are not reported.",
   store_marks: "Object notes", storeText_marks: "Notes on objects: offline on purpose, seasonal, spare, keep.",
@@ -16984,7 +16986,7 @@ Object.assign(TEXT.de, {
   accHint: "Systemzugriffe und Cloud-Datenfluss der Integrationen, Rechte der Apps", accLoading: "Die Integrationen werden eingeordnet …",
   accSumTotal: "Integrationen geprüft", accSumAccess: "Mit Systemzugriff", accSumHigh: "Hohes Risiko", accSumExternal: "Cloud-Datenfluss",
   accSysTitle: "Systemzugriffe & Datenfluss", accSysHint: "Integrationen mit Zugriff auf System, Funk, Hardware, Kamera oder Standort", accCloudTitle: "Cloud-Datenfluss", accCloudHint: "Diese Integrationen tauschen Daten mit externen oder Cloud-Diensten aus.",
-  accColIntegration: "Integration", accColAccess: "Systemzugriff", accColFlow: "Datenfluss", accColRisk: "Risiko", accColTarget: "Ziel", accColIot: "IoT-Klasse", accAllRisks: "Alle Risiken", accAllStates: "Alle Zustände", accStDisabled: "Deaktiviert, mit Zugriff",
+  accColIntegration: "Integration", accColAccess: "Systemzugriff", accColFlow: "Datenfluss", accColRisk: "Risiko", accColTarget: "Ziel", accColIot: "IoT-Klasse", accAllRisks: "Alle Risiken", accAllStates: "Alle Zustände", accStNew: "Neu oder Stufe gestiegen", accStKnown: "Gewollt", accNewPill: "Neu", accRaisedPill: "Stufe gestiegen", accKnown: "Ist so gewollt", accUnknown: "Wieder hervorheben", accKnownSince: "gewollt seit {date}", accColState: "Zustand", accStDisabled: "Deaktiviert, mit Zugriff",
   accRisk_high: "Hoch", accRisk_medium: "Mittel", accRisk_low: "Niedrig",
   accKind_system_root: "System/Root-Zugriff", accKind_shell: "Shell-Ausführung", accKind_radio: "Funk/Gerät", accKind_hardware: "Hardware", accKind_network: "Netzwerk", accKind_database: "Datenbank", accKind_camera: "Kamera", accKind_location: "GPS/Standort", accKind_geocoding: "Geocoding", accKind_weather: "Wetter (standortabhängig)", accKind_cloud_api: "Cloud-API", accKind_cloud: "Cloud",
   accFlow_local: "lokal", accFlow_external: "extern", accFlow_cloud: "Cloud", accFlow_system: "System", accFlow_database: "Datenbank", accFlow_network: "Netzwerk", accFlow_gps: "GPS", accFlow_storage: "Speicher", accFlow_phone: "Telefon", accFlow_push: "Push",
@@ -17062,7 +17064,7 @@ Object.assign(TEXT.en, {
   accHint: "System access and cloud data flow of the integrations, rights of the apps", accLoading: "Classifying the integrations …",
   accSumTotal: "Integrations checked", accSumAccess: "With system access", accSumHigh: "High risk", accSumExternal: "Cloud data flow",
   accSysTitle: "System access & data flow", accSysHint: "Integrations that reach the system, radios, hardware, cameras or the location", accCloudTitle: "Cloud data flow", accCloudHint: "These integrations exchange data with external or cloud services.",
-  accColIntegration: "Integration", accColAccess: "System access", accColFlow: "Data flow", accColRisk: "Risk", accColTarget: "Target", accColIot: "IoT class", accAllRisks: "All risks", accAllStates: "All states", accStDisabled: "Disabled, with access",
+  accColIntegration: "Integration", accColAccess: "System access", accColFlow: "Data flow", accColRisk: "Risk", accColTarget: "Target", accColIot: "IoT class", accAllRisks: "All risks", accAllStates: "All states", accStNew: "New or level risen", accStKnown: "Meant to be so", accNewPill: "New", accRaisedPill: "Level risen", accKnown: "Meant to be so", accUnknown: "Highlight again", accKnownSince: "meant to be so since {date}", accColState: "State", accStDisabled: "Disabled, with access",
   accRisk_high: "High", accRisk_medium: "Medium", accRisk_low: "Low",
   accKind_system_root: "System/root access", accKind_shell: "Shell commands", accKind_radio: "Radio/device", accKind_hardware: "Hardware", accKind_network: "Network", accKind_database: "Database", accKind_camera: "Camera", accKind_location: "GPS/location", accKind_geocoding: "Geocoding", accKind_weather: "Weather (location based)", accKind_cloud_api: "Cloud API", accKind_cloud: "Cloud",
   accFlow_local: "local", accFlow_external: "external", accFlow_cloud: "cloud", accFlow_system: "system", accFlow_database: "database", accFlow_network: "network", accFlow_gps: "GPS", accFlow_storage: "storage", accFlow_phone: "phone", accFlow_push: "push",
@@ -17605,17 +17607,33 @@ class SystemMixin {
   accAppWhy(a) { return a.risk ? this.accWhy(a.risk, a.access.filter(x => x.level === a.risk).map(x => this.accAppRight(x)), "accWhyLowApp") : ""; }
 
   // The level with the reason under it, so touch sees it too; the pointer still gets it as a tooltip.
+  // An access that is meant to be so keeps its level but loses the colour.
   accRiskCell(e) {
     const why = this.accEntryWhy(e);
-    return `${this.accRiskPill(e.risk, why)}${why ? `<small class="u-dim u-block">${this.esc(why)}</small>` : ""}`;
+    const pill = e.known ? `<span class="pill mute"${why ? ` title="${this.esc(why)}"` : ""}>${this.t(`accRisk_${e.risk}`)}</span>` : this.accRiskPill(e.risk, why);
+    const known = e.known ? `<small class="u-dim u-block">${this.esc(this.t("accKnownSince", { date: this.formatDate(e.known.at).split(",")[0] }))}${e.known.reason ? ` · ${this.esc(e.known.reason)}` : ""}</small>` : "";
+    return `${pill}${known || (why ? `<small class="u-dim u-block">${this.esc(why)}</small>` : "")}`;
+  }
+
+  // The three dots of a row: say that the access is meant to be so, or take that back.
+  accRowMenu(e) {
+    return this.rowMenuHtml([e.known ? ["mdi:undo-variant", "accUnknown", `data-acc-known="${this.esc(e.entry_id)}|0"`] : ["mdi:check-circle-outline", "accKnown", `data-acc-known="${this.esc(e.entry_id)}|1"`]]);
+  }
+
+  async setAccessKnown(entryId, known) {
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/access_known", entry_id: entryId, known });
+      await this.sysLoad("dataflow", true);
+    } catch (err) { this.failed(err); }
   }
 
   // The states a list can be narrowed to besides the level.
-  accStateFn(e, v) { return v === "disabled" ? Boolean(e.disabled) : v === "custom" ? e.access.some(a => a.kind === "custom_code") : true; }
+  accStateFn(e, v) { return v === "disabled" ? Boolean(e.disabled) : v === "custom" ? e.access.some(a => a.kind === "custom_code") : v === "new" ? Boolean(e.change) : v === "known" ? Boolean(e.known) : true; }
 
   accIntegrationCell(e) {
     const disabled = e.disabled ? ` <span class="pill mute">${this.t("accDisabled")}</span>` : "";
-    return `${this.nameCell(e.title || e.domain, e.domain)}${disabled}`;
+    const change = e.change ? ` <span class="pill warn" title="${this.esc(this.formatDate(e.change_at))}">${this.t(e.change === "new" ? "accNewPill" : "accRaisedPill")}</span>` : "";
+    return `${this.nameCell(e.title || e.domain, e.domain)}${disabled}${change}`;
   }
 
   // A row opens the integration's page in Housekeeper when the inventory knows it.
@@ -17645,14 +17663,15 @@ class SystemMixin {
       const sorts = [{ key: "risk", label: "accColRisk", dir: "asc", get: e => riskOrder[e.risk] }, { key: "name", label: "accColIntegration", dir: "asc", get: e => `${e.domain} ${e.title}` }];
       const sysTable = this.sysList("accsys", sys, {
         ...base, sort: "risk", sorts, empty: "accNoneSys",
-        filters: [...base.filters, { name: "state", all: this.t("accAllStates"), options: ["disabled", "custom"].map(v => [v, `${this.t(v === "disabled" ? "accStDisabled" : "accKind_custom_code")} (${this.formatNumber(sys.filter(e => this.accStateFn(e, v)).length)})`]) }],
+        filters: [...base.filters, { name: "state", all: this.t("accAllStates"), options: ["new", "disabled", "custom", "known"].map(v => [v, `${this.t({ new: "accStNew", disabled: "accStDisabled", custom: "accKind_custom_code", known: "accStKnown" }[v])} (${this.formatNumber(sys.filter(e => this.accStateFn(e, v)).length)})`]) }],
         columns: [
           { key: "name", label: "accColIntegration", cell: e => this.accIntegrationCell(e) },
           { key: "access", label: "accColAccess", sortable: false, cell: e => this.accPills(this.accAccessLabels(e), "warn") },
           { key: "flow", label: "accColFlow", sortable: false, cell: e => this.accPills(flows(e)) },
           { key: "risk", label: "accColRisk", cell: e => this.accRiskCell(e) },
+          { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.accRowMenu(e) },
         ],
-        exportName: "system-access", header: [this.t("accColIntegration"), "Domain", this.t("accColAccess"), this.t("accColFlow"), this.t("accColRisk")], rows: e => [e.title, e.domain, this.accAccessLabels(e).join("; "), flows(e).join("; "), this.t(`accRisk_${e.risk}`)],
+        exportName: "system-access", header: [this.t("accColIntegration"), "Domain", this.t("accColAccess"), this.t("accColFlow"), this.t("accColRisk"), this.t("accColState")], rows: e => [e.title, e.domain, this.accAccessLabels(e).join("; "), flows(e).join("; "), this.t(`accRisk_${e.risk}`), [e.change ? this.t(e.change === "new" ? "accNewPill" : "accRaisedPill") : "", e.known ? this.t("accStKnown") : "", e.disabled ? this.t("accDisabled") : ""].filter(Boolean).join("; ")],
       });
       const target = e => {
         const named = e.access.filter(a => a.kind === "cloud_api" || a.kind === "cloud").map(a => `${this.t(`accKind_${a.kind}`)}${a.detail ? ` (${a.detail})` : ""}`);
@@ -17965,6 +17984,7 @@ class SystemMixin {
       this.render();
     }));
     root.querySelectorAll("[data-sys-refresh]").forEach(el => el.onclick = () => this.sysLoad(el.dataset.sysRefresh, true));
+    root.querySelectorAll("[data-acc-known]").forEach(el => el.addEventListener("click", ev => { ev.stopPropagation(); const [id, on] = el.dataset.accKnown.split("|"); this.setAccessKnown(id, on === "1"); }));
     // A tap on the (i) shows its text for a few seconds, as touch has no hover.
     root.querySelectorAll(".infotip").forEach(el => el.addEventListener("click", () => {
       this.showTip(el); globalThis.clearTimeout?.(this._tipHide);
