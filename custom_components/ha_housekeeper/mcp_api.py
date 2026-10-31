@@ -638,7 +638,7 @@ def finding_decide(
         raise McpError("days_required_critical")
     skip = withheld(scanner)
     kept_back = finding_filter(scanner, skip)
-    if skip and any(f["key"] == key and kept_back(f) for f in _snapshot(scanner)["findings"]):
+    if any(f["key"] == key and kept_back(f) for f in _snapshot(scanner)["findings"]):
         raise McpError("finding_not_found")
     previous = scanner.ignored.entry(key)
     if not scanner.set_finding_ignored(
