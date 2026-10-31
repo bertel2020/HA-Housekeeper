@@ -7943,3 +7943,13 @@ test("the form of the selection lists what it acts on, and a finding can be take
   el.findSel = new Set(["k1"]);
   assert.ok(!el.bulkForm().includes("data-bulk-drop"), "the last one cannot be taken out");
 });
+
+test("the area form lists the devices and entities the plan will change", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "area", object_id: "hall", name: "Hall" }, { object_type: "device", object_id: "d1", name: "Hue bridge" }] };
+  el.policies = { rules: [{ id: "r", items: [{ key: "i1", object_id: "d1", object_type: "device" }, { key: "i2", object_id: "light.a", object_type: "entity" }] }] };
+  el.polSel = new Set(["i1", "i2"]);
+  el.bulk = { kind: "area", area: "", error: "" };
+  const html = el.areaForm();
+  assert.ok(html.includes("2 devices and entities selected") && html.includes("Hue bridge") && html.includes("light.a") && !html.includes("data-bulk-drop"));
+});

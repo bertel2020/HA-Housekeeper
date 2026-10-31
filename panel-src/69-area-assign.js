@@ -50,6 +50,7 @@ class AreaAssignMixin {
     const cancel = "data-bulk-cancel";
     if (!areas.length) return `<div class="actionarea">${this.actionHead(this.t("state_area"), cancel)}<small>${this.t("areaNone")}</small></div>`;
     return `<form class="actionarea" data-bulk-form>${this.actionHead(this.t("state_area"), cancel)}
+      ${this.pickedBlock(this.bulkTargets().filter(t => ["entity", "device"].includes(t.type)).map(t => ({ key: `${t.type}:${t.id}`, name: this.findObject(`${t.type}:${t.id}`)?.name || t.id, sub: this.t(`kind_${t.type}`) })), "pickedDevEnt", false)}
       <div class="statusrow"><select data-bulk-area aria-label="${this.esc(this.t("areaChoose"))}"><option value="">${this.t("areaSuggest")}</option>${areas.map(a => `<option value="${this.esc(a.object_id)}" ${b.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select></div>
       <small class="factnote">${this.t("areaNote")}</small>
       ${b.error ? `${this.notice("err", this.t(b.error))}` : ""}${this.actionFoot(cancel, `<button type="submit" class="btn primary" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("refactorPlan")}</button>`)}</form>`;
