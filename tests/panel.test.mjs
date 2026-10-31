@@ -7953,3 +7953,13 @@ test("the area form lists the devices and entities the plan will change", () => 
   const html = el.areaForm();
   assert.ok(html.includes("2 devices and entities selected") && html.includes("Hue bridge") && html.includes("light.a") && !html.includes("data-bulk-drop"));
 });
+
+test("the note form of the selection lists the objects it will mark", () => {
+  const { el } = panel("en");
+  const f = (key, id) => ({ rule_id: "entity.state_unavailable", classification: "unavailable", key, object_id: id, ignored: false });
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "Alpha" }, { object_type: "entity", object_id: "sensor.b", name: "Beta" }], findings: [f("k1", "sensor.a"), f("k2", "sensor.b")] };
+  el.findSel = new Set(["k1", "k2"]);
+  el.bulk = { kind: "mark", state: "keep", reason: "", days: 0, markKind: "", error: "" };
+  const html = el.bulkForm();
+  assert.ok(html.includes("2 objects selected") && html.includes("Alpha") && html.includes("Beta"));
+});
