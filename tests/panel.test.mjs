@@ -4849,7 +4849,7 @@ test("a new object note proposes a review in 365 days and says what its kind doe
   el.openMark("entity:sensor.new");
   assert.equal(el.markForm.days, 365);
   const html = el.markFormHtml({ ...el.markForm, kind: "keep" }, "entity:sensor.new");
-  assert.ok(html.includes("Do not remove") && html.includes("still reported") && html.includes("single finding") && html.includes("protection ends after 365 days"));
+  assert.ok(html.includes("Do not delete") && html.includes("still reported") && html.includes("single finding") && html.includes("protection ends after 365 days"));
   assert.ok(el.markFormHtml({ ...el.markForm, kind: "spare" }, "entity:sensor.new").includes(">blocked<"), "an object note says that cleanup stays away");
 });
 

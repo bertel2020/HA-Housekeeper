@@ -1136,7 +1136,7 @@ Object.assign(TEXT.de, {
   decStatusKpi: "Befunde mit Status", decMarksKpi: "Objekt-Notizen", decRulesKpi: "Ausnahmeregeln", decLabelsKpi: "Objekte mit Label", decReviewDueShort: "Prüfdatum erreicht", decRuleHides: "{n} Befunde ausgeblendet",
   decStatusTitle: "Entscheidungen zu Befunden", decStatusHint: "Was du an einzelnen Befunden entschieden hast: ist so gewollt, später, Fehlalarm. Gilt nur für diesen Befund; ein neuer Befund am selben Objekt ist wieder offen. Entscheidungen, deren Frist abgelaufen ist, stehen oben. Ist der Befund gerade nicht da, wartet die Entscheidung und gilt wieder, sobald er zurückkommt.", decColNow: "Wirkung", decNowAll: "Wirkung: alle", decNowHides: "blendet aus", decNowDue: "wieder offen", decNowRests: "wartet", decNowQuiet: "seit {n} Tagen nicht aufgetreten – noch nötig?", decNowGone: "Objekt gibt es nicht mehr", decNowFilter_hides: "Blendet aus", decNowFilter_due: "Wieder offen", decNowFilter_rests: "Wartet", decNowFilter_quiet: "Noch nötig?", decNowFilter_gone: "Objekt fehlt", decLastSeen: "zuletzt am {when}", decOpenObject: "Objekt öffnen", decRemove: "Entscheidung entfernen", decRemoveN: "Entscheidung entfernen ({n})", decRestHead: "Wartend · Befund gerade nicht da ({n})", decStatusNone: "Du hast noch zu keinem Befund etwas entschieden.",
   decAllStates: "Alle", decColStatus: "Status", decColUntil: "Bis", decChange: "Status ändern", decColEffect: "Wirkung",
-  decMarksTitle: "Objekt-Notizen", decMarksHint: "Aussagen über ein Objekt: Absichtlich offline, Saisonal, Reservegerät, Nicht entfernen oder Wird ersetzt. Sie gelten auch für künftige Ausfälle, am Gerät für seine Entitäten. Hier steht jede Objekt-Notiz, auch wenn sie gerade nichts ausblendet.", decMarksNone: "Noch keine Objekt-Notiz. Du setzt sie an einem Befund oder auf der Seite des Objekts.", decAllMarks: "Alle Arten",
+  decMarksTitle: "Objekt-Notizen", decMarksHint: "Aussagen über ein Objekt: Absichtlich offline, Saisonal, Reservegerät, Nicht löschen oder Wird ersetzt. Sie gelten auch für künftige Ausfälle, am Gerät für seine Entitäten. Hier steht jede Objekt-Notiz, auch wenn sie gerade nichts ausblendet.", decMarksNone: "Noch keine Objekt-Notiz. Du setzt sie an einem Befund oder auf der Seite des Objekts.", decAllMarks: "Alle Arten",
   markEffDue: "Prüfdatum erreicht, blendet nichts mehr aus", markEffKeep: "sperrt Bereinigen", markEffHides: "{n} Befunde ausgeblendet", markEffNone: "blendet nichts aus", markEffQuiet: "seit {n} Tagen ohne Ausfall – noch nötig?", markQuietFilter: "Noch nötig?",
   decAllLink: "Alle Entscheidungen",
   hidColObject: "Objekt", hidColFinding: "Befund",
@@ -1185,7 +1185,7 @@ Object.assign(TEXT.en, {
   decStatusKpi: "Findings with a status", decMarksKpi: "Object notes", decRulesKpi: "Exception rules", decLabelsKpi: "Objects with a label", decReviewDueShort: "Review date reached", decRuleHides: "{n} findings hidden",
   decStatusTitle: "Decisions on findings", decStatusHint: "What you decided about single findings: intended, later, false alarm. It applies to that finding only; a new finding on the same object is open again. Decisions whose time has run out come first. While the finding is away the decision waits and applies again as soon as it comes back.", decColNow: "Effect", decNowAll: "Effect: all", decNowHides: "hides", decNowDue: "open again", decNowRests: "waits", decNowQuiet: "not seen for {n} days – still needed?", decNowGone: "object is gone", decNowFilter_hides: "Hides", decNowFilter_due: "Open again", decNowFilter_rests: "Waits", decNowFilter_quiet: "Still needed?", decNowFilter_gone: "Object gone", decLastSeen: "last seen {when}", decOpenObject: "Open object", decRemove: "Remove decision", decRemoveN: "Remove decision ({n})", decRestHead: "Waiting · finding away right now ({n})", decStatusNone: "You haven’t decided anything about a finding yet.",
   decAllStates: "All", decColStatus: "Status", decColUntil: "Until", decChange: "Change status", decColEffect: "Effect",
-  decMarksTitle: "Object notes", decMarksHint: "Statements about an object: Offline on purpose, Seasonal, Spare device, Do not remove or Being replaced. They also apply to future outages, on a device to its entities. Every object note is listed here, also one that hides nothing right now.", decMarksNone: "No object note yet. You set one on a finding or on the page of the object.", decAllMarks: "All kinds",
+  decMarksTitle: "Object notes", decMarksHint: "Statements about an object: Offline on purpose, Seasonal, Spare device, Do not delete or Being replaced. They also apply to future outages, on a device to its entities. Every object note is listed here, also one that hides nothing right now.", decMarksNone: "No object note yet. You set one on a finding or on the page of the object.", decAllMarks: "All kinds",
   markEffDue: "review date reached, hides nothing any more", markEffKeep: "blocks cleanup", markEffHides: "{n} findings hidden", markEffNone: "hides nothing", markEffQuiet: "no outage for {n} days – still needed?", markQuietFilter: "Still needed?",
   decAllLink: "All decisions",
   hidColObject: "Object", hidColFinding: "Finding",
@@ -3399,6 +3399,7 @@ class FindingsMixin {
       <select data-${p}-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select></div>
       ${this.reasonChips(kind)}
       ${this.statusEffect(d, kind, p === "bulk")}
+      ${kind === "keep" ? this.keepHint(d, p === "bulk") : ""}
       ${kind === "keep" && d.critical ? `<small class="factnote">${this.t("statusCriticalHint")}</small>` : ""}
       <small class="factnote">${this.t("statusScopeHint")}</small>`;
   }
@@ -8811,7 +8812,7 @@ const SEARCH_WORDS = {
   look: "darstellung theme dunkel hell schrift farbe appearance dark light font",
   view: "ansicht einfach vollständig oberfläche view simple full interface",
   protection: "schutz schutzmodus sicherheit protection mode",
-  exceptions: "ausgeblendet ignoriert fehlalarm objekt-notiz notiz vermerk nicht anfassen nicht entfernen geschützt ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
+  exceptions: "ausgeblendet ignoriert fehlalarm objekt-notiz notiz vermerk nicht anfassen nicht entfernen nicht löschen geschützt ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
   goals: "ziele wartungsziele grenzen goals",
   backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
@@ -9833,7 +9834,7 @@ Object.assign(TEXT.de, {
   decideTabStatus: "Status", decideTabMark: "Objekt-Notiz",
   markTitle: "Objekt-Notiz", markHint: "Halte fest, warum das Objekt so ist, wie es ist, zum Beispiel absichtlich offline. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“, eine kaputte Referenz bleibt sichtbar. Nur in Housekeeper, Home Assistant bleibt unverändert.",
   markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Prüfen in", markNever: "Nie", marksSetN: "Objekt-Notiz setzen ({n})", marksSetTitle: "Objekt-Notiz für {n} Entitäten", markShowHidden: "Die ausgeblendeten Befunde zeigen", markColKind: "Art", markColReason: "Begründung", markColReview: "Prüfen am", marksSet: "Objekt-Notiz setzen …", marksReviewN: "Prüfdatum ändern ({n})", marksKindN: "Art ändern ({n})", marksRemoveN: "Objekt-Notiz entfernen ({n})", marksReviewTitle: "Neues Prüfdatum für {n} Objekt-Notizen", marksKindTitle: "Neue Art für {n} Objekt-Notizen", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "prüfen {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
-  mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Nicht entfernen", mark_replaced: "Wird ersetzt",
+  mark_expected_offline: "Absichtlich offline", mark_seasonal: "Saisonal", mark_spare: "Reservegerät", mark_keep: "Nicht löschen", mark_replaced: "Wird ersetzt",
   markWindowKind: "Wann gilt die Objekt-Notiz", markWindowAlways: "Immer", markWindowTime: "Zu festen Zeiten", markWindowSun: "Bei Dunkelheit (Sonnenstand)", markFrom: "Von", markTo: "Bis", markGrace: "Anlaufzeit nach dem Ende", markGraceMin: "{n} Min.", markWindowTimeLine: "{from}–{to} Uhr", markWindowSunLine: "bei Dunkelheit", markGraceLine: "danach {n} Min. Anlaufzeit", markWindowSame: "Von und Bis dürfen nicht gleich sein.",
   markNoSun: "In Home Assistant gibt es keine Entität sun.sun: ohne sie gilt „Bei Dunkelheit“ nie, der Befund bleibt sichtbar.",
   markOutside: "Objekt-Notiz gilt gerade nicht: wird überwacht", markWindowHint: "Außerhalb des Zeitfensters meldet Housekeeper den Befund wieder, und ein Ausfall zählt erst ab dem Ende des Fensters plus Anlaufzeit.",
@@ -9844,7 +9845,7 @@ Object.assign(TEXT.en, {
   decideTabStatus: "Status", decideTabMark: "Object note",
   markTitle: "Object note", markHint: "Note why the object is the way it is, for example offline on purpose. Housekeeper then stops reporting it as “not available”; a broken reference stays visible. Only in Housekeeper, Home Assistant stays unchanged.",
   markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Review in", markNever: "Never", marksSetN: "Set object note ({n})", marksSetTitle: "Object note for {n} entities", markShowHidden: "Show the hidden findings", markColKind: "Kind", markColReason: "Reason", markColReview: "Review on", marksSet: "Set an object note …", marksReviewN: "Change review date ({n})", marksKindN: "Change kind ({n})", marksRemoveN: "Remove object note ({n})", marksReviewTitle: "New review date for {n} object notes", marksKindTitle: "New kind for {n} object notes", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "review {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
-  mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Do not remove", mark_replaced: "Being replaced",
+  mark_expected_offline: "Offline on purpose", mark_seasonal: "Seasonal", mark_spare: "Spare device", mark_keep: "Do not delete", mark_replaced: "Being replaced",
   markWindowKind: "When the object note applies", markWindowAlways: "Always", markWindowTime: "At fixed times", markWindowSun: "In the dark (position of the sun)", markFrom: "From", markTo: "To", markGrace: "Grace period after the end", markGraceMin: "{n} min", markWindowTimeLine: "{from}–{to}", markWindowSunLine: "in the dark", markGraceLine: "then {n} min grace", markWindowSame: "From and to must not be the same.",
   markNoSun: "Home Assistant has no entity sun.sun: without it “In the dark” never applies and the finding stays visible.",
   markOutside: "Object note does not apply right now: watched", markWindowHint: "Outside the window Housekeeper reports the finding again, and an outage counts only from the end of the window plus the grace period.",
@@ -12494,6 +12495,13 @@ class FindingStatusMixin {
     return this.effectLine(this.t(many ? "effStatusMany" : "effStatusOne"), this.effectClean("free"), back);
   }
 
+  // "Intended" does not keep the object from the cleanup: the object note "Do not delete" does. Said where the two are mixed up.
+  keepHint(d, many) {
+    const f = this.data.findings.find(x => x.key === d.key);
+    const can = many ? this.markTargets().size > 0 : MARK_TYPES.includes(this.findObject(f ? this.findingKey(f) : "")?.object_type);
+    return can ? `<small class="factnote">${this.t("statusKeepHint", { kind: this.t("mark_keep") })}</small>` : "";
+  }
+
   // The effect of an object note; f has kind, days, wmode and autoClear, as the forms hold them.
   markEffectLine(f, many) {
     const n = Number(f.days) || 0, keep = f.kind === "keep";
@@ -13007,7 +13015,7 @@ Object.assign(TEXT.de, {
   decNoticeText: "„Bekannt“ heißt jetzt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“. {n} Befunde mit „Ist so gewollt“ hatten keine Frist; sie werden nach {days} Tagen unter „Fällig“ noch einmal vorgelegt. Die Frist lässt sich je Befund ändern.", decNoticeText1: "„Bekannt“ heißt jetzt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“. Ein Befund mit „Ist so gewollt“ hatte keine Frist; er wird nach {days} Tagen unter „Fällig“ noch einmal vorgelegt. Die Frist lässt sich ändern.", decNoticeOk: "Verstanden",
   statusScopeHint: "Gilt nur für diese Befunde. Ein neuer Befund am selben Objekt ist wieder offen.", reasonChipsLabel: "Gründe zur Auswahl", reasonChip1: "Absichtlich so", reasonChip2: "Wird ersetzt", reasonChip3: "Nicht relevant", reasonChip4: "Saisonal", reasonChipf1: "Messwert falsch", reasonChipf2: "Gerät wird anders genutzt", reasonChipf3: "Regel passt nicht",
   markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Deine Entscheidung", hiddenBy_mark: "Objekt-Notiz", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
-  actMenu: "Aktionen", actDecide: "Befunde entscheiden …", actDecideSub: "Nur diese {n} Befunde · Fehlalarm, gewollt oder später", actMark: "Objekt-Notiz setzen …", actMarkSub: "Diese {n} Objekte, auch künftig · Objekt-Notiz", actRule: "Regel für diese Objekte …", actRuleSub: "Gruppe per Regel · {n} Objekte, Ausnahme",
+  statusKeepHint: "Das Objekt kann beim Aufräumen trotzdem vorgeschlagen werden. Soll es nicht gelöscht werden, setze eine Objekt-Notiz „{kind}“.", actMenu: "Aktionen", actDecide: "Befunde entscheiden …", actDecideSub: "Nur diese {n} Befunde · Fehlalarm, gewollt oder später", actMark: "Objekt-Notiz setzen …", actMarkSub: "Diese {n} Objekte, auch künftig · Objekt-Notiz", actRule: "Regel für diese Objekte …", actRuleSub: "Gruppe per Regel · {n} Objekte, Ausnahme",
   fselMarkClear: "Objekt-Notiz entfernen", fselMarksCleared: "{n} Objekt-Notizen entfernt", fselNothing: "Für diese Auswahl gibt es keine Sammelaktion.", hiddenMarkOpen: "Objekt-Notiz ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
 });
@@ -13020,7 +13028,7 @@ Object.assign(TEXT.en, {
   decNoticeText: "“Known” is now “Intended”, “Snoozed” is now “Later”. {n} findings marked Intended had no time; they are shown again under “Due” after {days} days. The time can be changed for each finding.", decNoticeText1: "“Known” is now “Intended”, “Snoozed” is now “Later”. One finding marked Intended had no time; it is shown again under “Due” after {days} days. The time can be changed.", decNoticeOk: "Understood",
   statusScopeHint: "Applies to these findings only. A new finding on the same object is open again.", reasonChipsLabel: "Ready-made reasons", reasonChip1: "On purpose", reasonChip2: "Being replaced", reasonChip3: "Not relevant", reasonChip4: "Seasonal", reasonChipf1: "Value is wrong", reasonChipf2: "Device is used differently", reasonChipf3: "Rule does not fit",
   markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Your decision", hiddenBy_mark: "Object note", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
-  actMenu: "Actions", actDecide: "Decide on findings …", actDecideSub: "Only these {n} findings · false alarm, intended or later", actMark: "Set object note …", actMarkSub: "These {n} objects, also in future · object note", actRule: "Rule for these objects …", actRuleSub: "A group by rule · {n} objects, exception",
+  statusKeepHint: "The object can still be suggested in the cleanup. To keep it from being deleted, set the object note “{kind}”.", actMenu: "Actions", actDecide: "Decide on findings …", actDecideSub: "Only these {n} findings · false alarm, intended or later", actMark: "Set object note …", actMarkSub: "These {n} objects, also in future · object note", actRule: "Rule for these objects …", actRuleSub: "A group by rule · {n} objects, exception",
   fselMarkClear: "Remove object note", fselMarksCleared: "{n} object notes removed", fselNothing: "No bulk action fits this selection.", hiddenMarkOpen: "View object note", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
 });
@@ -20090,7 +20098,7 @@ class RoundMixin {
 }
 Object.assign(TEXT.de, {
   roundTitle: "Aufräum-Runde", roundSubtitle: "Alles Überflüssige auf einmal durchgehen.",
-  roundSafe: "Sicher entfernbar", roundSafeHint: "Nirgends verwendet, ohne Objekt-Notiz „Nicht entfernen“, nicht kritisch. Die Auswahl lässt sich ändern.",
+  roundSafe: "Sicher entfernbar", roundSafeHint: "Nirgends verwendet, ohne Objekt-Notiz „Nicht löschen“, nicht kritisch. Die Auswahl lässt sich ändern.",
   roundLook: "Erst ansehen", roundLookHint: "Verwendet, nur ein erster Schritt (erst deaktivieren) oder ein mögliches Duplikat: jedes einzeln entscheiden.",
   roundBlocked: "Jetzt nicht entfernbar", roundBlockedHint: "Der Plan würde es sperren. Du kannst es behalten.",
   roundRemove: "Entfernen", roundDelete: "Löschen", roundDisable: "Deaktivieren", roundMerge: "Zusammenführen", roundKeep: "Behalten", roundPickAll: "Alle wählen",
@@ -20100,7 +20108,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   roundTitle: "Cleanup round", roundSubtitle: "Go through everything unneeded at once.",
-  roundSafe: "Safe to remove", roundSafeHint: "Used nowhere, without the object note “Do not remove”, not critical. The selection can be changed.",
+  roundSafe: "Safe to remove", roundSafeHint: "Used nowhere, without the object note “Do not delete”, not critical. The selection can be changed.",
   roundLook: "Look first", roundLookHint: "Used, only a first step (disable first) or a possible duplicate: decide each one on its own.",
   roundBlocked: "Not removable now", roundBlockedHint: "The plan would block it. You can keep it.",
   roundRemove: "Remove", roundDelete: "Delete", roundDisable: "Disable", roundMerge: "Merge", roundKeep: "Keep", roundPickAll: "Pick all",
@@ -20945,7 +20953,7 @@ Object.assign(TEXT.de, {
   actFilter_all: "Alle", actFilter_decision: "Entscheidungen", actFilter_mark: "Objekt-Notizen", actFilter_plan: "Pläne", actFilter_note: "Logbuch", actFilter_auto: "Automatisch",
   actSource_cleanup: "Aufräumen", actSource_list: "Befundliste", actSource_plan: "Plan", actSource_mcp: "Dienst", actSource_system: "Housekeeper",
   act_decision: "Entscheidung", act_decision_ignore: "Als Fehlalarm festgehalten", act_decision_keep: "Als so gewollt festgehalten", act_decision_snooze: "Auf „Später“ gestellt", act_decision_unignore: "Wieder eingeblendet", act_decision_nothanks: "Vorschlag abgelehnt („Nein danke“)", act_decision_undo: "Entscheidung zurückgenommen",
-  act_mark: "Objekt-Notiz", act_mark_expected_offline: "Notiert: soll offline sein", act_mark_seasonal: "Notiert: saisonal", act_mark_spare: "Notiert: Reserve", act_mark_keep: "Notiert: nicht entfernen", act_mark_replaced: "Notiert: ersetzt", act_mark_clear: "Objekt-Notiz entfernt", act_mark_undo: "Objekt-Notiz zurückgenommen",
+  act_mark: "Objekt-Notiz", act_mark_expected_offline: "Notiert: soll offline sein", act_mark_seasonal: "Notiert: saisonal", act_mark_spare: "Notiert: Reserve", act_mark_keep: "Notiert: nicht löschen", act_mark_replaced: "Notiert: ersetzt", act_mark_clear: "Objekt-Notiz entfernt", act_mark_undo: "Objekt-Notiz zurückgenommen",
   act_plan: "Plan ausgeführt", act_plan_undo: "Plan zurückgenommen", act_note: "Logbuch", act_note_save: "Logbuch-Eintrag", act_note_delete: "Logbuch-Eintrag gelöscht", act_auto: "Von selbst", act_auto_lifted: "Von selbst zurück, weil es schlimmer wurde:",
 });
 Object.assign(TEXT.en, {
@@ -20957,7 +20965,7 @@ Object.assign(TEXT.en, {
   actFilter_all: "All", actFilter_decision: "Decisions", actFilter_mark: "Object notes", actFilter_plan: "Plans", actFilter_note: "Logbook", actFilter_auto: "Automatic",
   actSource_cleanup: "Cleanup", actSource_list: "Findings list", actSource_plan: "Plan", actSource_mcp: "Service", actSource_system: "Housekeeper",
   act_decision: "Decision", act_decision_ignore: "Marked as false alarm", act_decision_keep: "Kept as intended", act_decision_snooze: "Put on “Later”", act_decision_unignore: "Shown again", act_decision_nothanks: "Suggestion declined (“No thanks”)", act_decision_undo: "Decision undone",
-  act_mark: "Object note", act_mark_expected_offline: "Noted: should be offline", act_mark_seasonal: "Noted: seasonal", act_mark_spare: "Noted: spare", act_mark_keep: "Noted: do not remove", act_mark_replaced: "Noted: replaced", act_mark_clear: "Object note removed", act_mark_undo: "Object note undone",
+  act_mark: "Object note", act_mark_expected_offline: "Noted: should be offline", act_mark_seasonal: "Noted: seasonal", act_mark_spare: "Noted: spare", act_mark_keep: "Noted: do not delete", act_mark_replaced: "Noted: replaced", act_mark_clear: "Object note removed", act_mark_undo: "Object note undone",
   act_plan: "Plan run", act_plan_undo: "Plan undone", act_note: "Logbook", act_note_save: "Logbook entry", act_note_delete: "Logbook entry deleted", act_auto: "By itself", act_auto_lifted: "Back by itself because it got worse:",
 });
 

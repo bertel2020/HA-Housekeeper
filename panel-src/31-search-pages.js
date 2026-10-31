@@ -31,7 +31,7 @@ const SEARCH_WORDS = {
   look: "darstellung theme dunkel hell schrift farbe appearance dark light font",
   view: "ansicht einfach vollständig oberfläche view simple full interface",
   protection: "schutz schutzmodus sicherheit protection mode",
-  exceptions: "ausgeblendet ignoriert fehlalarm objekt-notiz notiz vermerk nicht anfassen nicht entfernen geschützt ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
+  exceptions: "ausgeblendet ignoriert fehlalarm objekt-notiz notiz vermerk nicht anfassen nicht entfernen nicht löschen geschützt ausnahmen regeln urlaub urlaubsmodus hidden ignored exceptions rules vacation",
   scan: "scan schwellen intervall tage benachrichtigung meldung ereignisse threshold interval notification message events",
   goals: "ziele wartungsziele grenzen goals",
   backup: "backup backups sicherung wiederherstellung restore emergency kit verschlüsselung ablage protection aufräumen löschen eigene housekeeper tidy delete own",
