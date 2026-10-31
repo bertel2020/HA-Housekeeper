@@ -7931,3 +7931,15 @@ test("the band of an object names the other ways that would hide a hidden findin
   const band = el.statusBand({ object_type: "entity", object_id: "sensor.a" }, "entity:sensor.a");
   assert.ok(band.includes("Would also apply: a rule, the object note “Seasonal”") && band.includes("stay hidden anyway"));
 });
+
+test("the form of the selection lists what it acts on, and a finding can be taken out of it", () => {
+  const { el } = panel("en");
+  const f = (key, id) => ({ rule_id: "entity.state_unavailable", classification: "unavailable", key, object_id: id, ignored: false });
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "Alpha" }, { object_type: "entity", object_id: "sensor.b", name: "Beta" }], findings: [f("k1", "sensor.a"), f("k2", "sensor.b")] };
+  el.findSel = new Set(["k1", "k2"]);
+  el.bulk = { kind: "status", state: "keep", reason: "", days: 90, markKind: "", error: "" };
+  const html = el.bulkForm();
+  assert.ok(html.includes("2 findings selected") && html.includes("Alpha") && html.includes("Beta") && html.includes('data-bulk-drop="k1"'));
+  el.findSel = new Set(["k1"]);
+  assert.ok(!el.bulkForm().includes("data-bulk-drop"), "the last one cannot be taken out");
+});

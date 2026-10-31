@@ -488,6 +488,7 @@ const SEARCH_DEBOUNCE_MS = 150;
 
 // What can carry a label: everything with an entry in the entity registry.
 // Objects whose page keeps reading on the overview and puts everything that changes something under the tab "Actions".
+const PICKED_MAX = 200;
 const MARK_TYPES = ["entity", "device", "config_entry", "app"];
 const ACTION_TYPES = ["entity", "device", "config_entry", "automation", "script", "scene"];
 // Objects whose overview sums up what is known in groups ("Known about …"); scenes keep the facts card.
@@ -12829,23 +12830,37 @@ class FindingStatusMixin {
       const days = [0, 30, 90, 180, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("markReview")}: ${n ? this.t("decideDays", { n }) : this.t("markNever")}</option>`).join("");
       const when = this.markWhen({ ...b, kind: b.markKind || kinds[0] }, "bulk");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
-      return form(`${this.t("markTitle")} (${this.formatNumber(objects)})`, `${onDevice}<div class="statusrow">
+      const names = [...new Set(targets.values())].map(k => ({ key: k, name: this.findObject(k)?.name || k.split(":").slice(1).join(":"), sub: "" }));
+      return form(`${this.t("markTitle")} (${this.formatNumber(objects)})`, `${this.pickedBlock(names, "pickedObjects", false)}${onDevice}<div class="statusrow">
         <select data-bulk-markkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
         </div><div class="markform"><div class="mrow">${when.window}</div>${when.autoBox}${when.graceBack}${when.hints}</div>${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}${this.coverHint(this.selectionFacts().picked, ["user", "label", "rule"])}`, save);
     }
     if (b.kind === "area") return this.areaForm();
-    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), this.statusFields(b, "bulk", b.state), save);
+    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), `${this.pickedBlock(this.pickedFindingRows(this.statusKeys()), "pickedFindings", true)}${this.statusFields(b, "bulk", b.state)}`, save);
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="actionarea">${this.actionHead(this.t("state_label"), cancel)}<small>${this.t("labelNone")}</small></div>`;
-      return form(this.t("state_label"), `<div class="statusrow"><select data-bulk-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${b.label === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select></div>`,
+      return form(this.t("state_label"), `${this.pickedBlock(this.pickedFindingRows([...this.findSel]), "pickedFindings", true)}<div class="statusrow"><select data-bulk-label aria-label="${this.esc(this.t("labelChoose"))}">${labels.map(l => `<option value="${this.esc(l.object_id)}" ${b.label === l.object_id ? "selected" : ""}>${this.esc(l.name)}</option>`).join("")}</select></div>`,
         `<button type="submit" class="btn primary" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("refactorPlan")}</button>`);
     }
     const days = [7, 30, 90, 365].map(n => `<option value="${n}" ${Number(b.days) === n ? "selected" : ""}>${this.t("decideDays", { n })}</option>`).join("");
     return form(this.t(`state_${b.kind}`), `<div class="statusrow"><input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("decideReason"))}" placeholder="${this.esc(this.t(b.kind === "known" ? "decideReasonNeeded" : "decideReason"))}">
       ${b.kind === "snoozed" ? `<select data-bulk-days aria-label="${this.esc(this.t("decideHow"))}">${days}</select>` : ""}</div>`, save);
+  }
+
+  // What a form of the selection acts on, folded under its title: rows of { key, name, sub }; with drop, each can be taken out of the selection again.
+  pickedBlock(rows, noun, drop) {
+    const n = rows.length, b = this.bulk, open = b.pickedOpen ?? n <= 5;
+    const chips = rows.slice(0, PICKED_MAX).map(r => `<span class="chip hit" title="${this.esc(r.key)}">${this.esc(r.name)}${r.sub ? ` <em>${this.esc(r.sub)}</em>` : ""}${drop && n > 1 ? `<button type="button" class="hitx" data-bulk-drop="${this.esc(r.key)}" aria-label="${this.esc(this.t("pickedDrop", { name: r.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`).join("");
+    const more = n > PICKED_MAX ? `<small class="factnote">${this.t("pickedMore", { n: this.formatNumber(n - PICKED_MAX) })}</small>` : "";
+    return `<details class="excprev" data-bulk-picked${open ? " open" : ""}><summary>${this.t(noun, { n: this.formatNumber(n) })}</summary><div class="hits chips bare">${chips}</div>${more}</details>`;
+  }
+
+  pickedFindingRows(keys) {
+    return keys.map(key => this.data.findings.find(f => f.key === key)).filter(Boolean)
+      .map(f => ({ key: f.key, name: this.findObject(this.findingKey(f))?.name || f.object_id, sub: this.findingTitle(f) }));
   }
 
   // The frame every action under the selection bar shares: a title with a close button above, cancel and save below.
@@ -12989,6 +13004,8 @@ class FindingStatusMixin {
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     root.querySelectorAll("[data-due-keep]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.keepOn(el.dataset.dueKeep); });
     root.querySelector("[data-dnotice-ok]")?.addEventListener("click", () => this.dismissDecisionNotice());
+    root.querySelector("[data-bulk-picked]")?.addEventListener("toggle", ev => { if (this.bulk) this.bulk.pickedOpen = ev.target.open; });
+    root.querySelectorAll("[data-bulk-drop]").forEach(el => el.onclick = () => { this.findSel.delete(el.dataset.bulkDrop); if (!this.findSel.size) this.bulk = null; this.render(); });
     root.querySelectorAll("[data-bulk-cancel]").forEach(el => el.onclick = () => { this.bulk = null; this.render(); });
     const form = root.querySelector("[data-bulk-form]");
     if (form) {
@@ -13027,6 +13044,7 @@ Object.assign(TEXT.de, {
   markOnDeviceSub: "am Gerät {name}", changesHa: "ändert Home Assistant", hiddenBy_user: "Deine Entscheidung", hiddenBy_mark: "Objekt-Notiz", hiddenBy_rule: "Ausnahme", hiddenBy_label: "Label", hiddenByAll: "Alle Gründe",
   coverBy_user: "deine Entscheidung ({n})", coverBy_label: "das Label „Ignorieren“ ({n})", coverBy_rule: "eine Regel ({n})", coverMark: "Schon ausgeblendet durch {by}. Die Objekt-Notiz gilt daneben und schützt das Objekt vor dem Aufräumen.", coverRule: "Schon ausgeblendet durch {by}. Die Regel gilt daneben.",
   also_label: "das Label „Ignorieren“", also_rule: "eine Regel", alsoMark: "die Objekt-Notiz „{kind}“", alsoLine: "Würde auch greifen: {by}", alsoUndo: "Würde auch greifen: {by}. Ohne deine Entscheidung bliebe er trotzdem ausgeblendet",
+  pickedFindings: "{n} Befunde ausgewählt", pickedObjects: "{n} Objekte ausgewählt", pickedDrop: "{name} aus der Auswahl nehmen", pickedMore: "… und {n} weitere",
   statusKeepHint: "Das Objekt kann beim Aufräumen trotzdem vorgeschlagen werden. Soll es nicht gelöscht werden, setze eine Objekt-Notiz „{kind}“.", actMenu: "Aktionen", actDecide: "Befunde entscheiden …", actDecideSub: "Nur diese {n} Befunde · Fehlalarm, gewollt oder später", actMark: "Objekt-Notiz setzen …", actMarkSub: "Diese {n} Objekte, auch künftig · Objekt-Notiz", actRule: "Regel für diese Objekte …", actRuleSub: "Gruppe per Regel · {n} Objekte, Ausnahme",
   fselMarkClear: "Objekt-Notiz entfernen", fselMarksCleared: "{n} Objekt-Notizen entfernt", fselNothing: "Für diese Auswahl gibt es keine Sammelaktion.", hiddenMarkOpen: "Objekt-Notiz ansehen", hiddenRuleOpen: "Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
@@ -13042,6 +13060,7 @@ Object.assign(TEXT.en, {
   markOnDeviceSub: "on the device {name}", changesHa: "changes Home Assistant", hiddenBy_user: "Your decision", hiddenBy_mark: "Object note", hiddenBy_rule: "Exception", hiddenBy_label: "Label", hiddenByAll: "All reasons",
   coverBy_user: "your decision ({n})", coverBy_label: "the label “Ignore” ({n})", coverBy_rule: "a rule ({n})", coverMark: "Already hidden by {by}. The object note applies besides and keeps the object from the cleanup.", coverRule: "Already hidden by {by}. The rule applies besides.",
   also_label: "the label “Ignore”", also_rule: "a rule", alsoMark: "the object note “{kind}”", alsoLine: "Would also apply: {by}", alsoUndo: "Would also apply: {by}. Without your decision it would stay hidden anyway",
+  pickedFindings: "{n} findings selected", pickedObjects: "{n} objects selected", pickedDrop: "Take {name} out of the selection", pickedMore: "… and {n} more",
   statusKeepHint: "The object can still be suggested in the cleanup. To keep it from being deleted, set the object note “{kind}”.", actMenu: "Actions", actDecide: "Decide on findings …", actDecideSub: "Only these {n} findings · false alarm, intended or later", actMark: "Set object note …", actMarkSub: "These {n} objects, also in future · object note", actRule: "Rule for these objects …", actRuleSub: "A group by rule · {n} objects, exception",
   fselMarkClear: "Remove object note", fselMarksCleared: "{n} object notes removed", fselNothing: "No bulk action fits this selection.", hiddenMarkOpen: "View object note", hiddenRuleOpen: "Open rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
