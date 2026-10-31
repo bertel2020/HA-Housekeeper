@@ -1,7 +1,7 @@
 // Texts for the exposure view; merged into TEXT.
 Object.assign(TEXT.de, {
   expoSumEntities: "Entitäten freigegeben", expoColName: "Name", expoColDomain: "Art", expoColArea: "Bereich", expoColAlso: "Auch freigegeben für", expoColAssistants: "Freigegeben für", expoAllDomains: "Alle Arten", expoAllAlso: "Alle Dienste", expoSumFindings: "Auffälligkeiten", expoTabFindings: "Auffälligkeiten", expoSourceHint: "{n} Entitäten sind für {name} freigegeben.", expoAlso: "auch: {list}", expoCapped: "Gezeigt werden die ersten {n}.", expoNoneFor: "Für diese Quelle ist nichts freigegeben.", expoInactiveText: "Nicht eingerichtet: es ist nichts freigegeben.",
-  exposure: "Freigaben", exposureSubtitle: "Welche Entitäten Sprachassistenten und Bridges erreichen können. Liest nur; es wird nichts geändert und nichts gespeichert.",
+  exposure: "Freigaben", exposureSubtitle: "Welche Entitäten Sprachassistenten und Bridges erreichen können. Die Seite liest nur; Änderungen laufen als Plan mit Vorschau und Rückgängig.",
   expoHint: "Assist, Alexa, Google Assistant und HomeKit", expoLoading: "Die Freigaben werden gelesen …",
   expoNone: "Nichts Auffälliges bei den Freigaben.", expoHint2: "Hinweis", expoWarn: "Prüfen",
   expoAssistants: "Assistenten und Bridges", expoFindings: "Auffälligkeiten",
@@ -15,13 +15,13 @@ Object.assign(TEXT.de, {
   expoText_webhook_orphan: "{n} Webhooks gehören zu „{domain}“, einer Integration, die nicht mehr eingerichtet ist. Die IDs zeigt Housekeeper bewusst nicht an.",
   expoAdvice_diagnostic_exposed: "Freigabe unter Einstellungen → Sprachassistenten → Entitäten zurücknehmen.",
   expoAdvice_sensitive_exposed: "Nur zur Kenntnis. Housekeeper ändert nichts.",
-  expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen.",
+  expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen. Der Knopf macht daraus einen Plan mit Vorschau.",
   expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
   expoAdvice_webhook_orphan: "Die Integration neu einrichten oder die Reste entfernen, falls sie nicht mehr gebraucht werden.",
   expoKind_google_without_pin: "Google öffnet ohne PIN", expoKind_auto_expose: "Neue Entitäten werden automatisch freigegeben",
   expoText_google_without_pin: "{n} Schlösser, Alarmanlagen, Garagentore, Tore oder Türen sind bei Google Assistant so eingestellt, dass er sie ohne PIN öffnet oder entschärft.",
   expoText_auto_expose: "{list} bekommt jede neue Entität von selbst freigegeben. Neue Geräte landen so ohne Zutun bei einem Cloud-Assistenten.",
-  expoAdvice_google_without_pin: "Unter Einstellungen → Sprachassistenten → Entität → Google Assistant die Bestätigung per PIN wieder einschalten.",
+  expoAdvice_google_without_pin: "Unter Einstellungen → Sprachassistenten → Entität → Google Assistant die Bestätigung per PIN wieder einschalten, oder mit dem Knopf als Plan mit Vorschau.",
   expoAdvice_auto_expose: "Unter Einstellungen → Sprachassistenten → Alexa bzw. Google Assistant „Neue Entitäten automatisch freigeben“ ausschalten, wenn neue Geräte erst geprüft werden sollen.",
   expoKind_llm_exposed: "Assist-Freigaben gehen an KI-Agenten", expoColIntegration: "Integration", expoColTarget: "Ziel", expoTarget_cloud: "Anbieter des Modells", expoTarget_external: "verbundene Programme",
   expoText_llm_exposed: "{n} Integrationen dürfen Home Assistant über Assist steuern. Namen, Bereiche und Zustände der {reach} Assist-Freigaben gehen dabei an den Anbieter des Sprachmodells oder an verbundene Programme.",
@@ -31,7 +31,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   expoSumEntities: "entities exposed", expoColName: "Name", expoColDomain: "Type", expoColArea: "Area", expoColAlso: "Also exposed to", expoColAssistants: "Exposed to", expoAllDomains: "All types", expoAllAlso: "All services", expoSumFindings: "Findings", expoTabFindings: "Findings", expoSourceHint: "{n} entities are exposed to {name}.", expoAlso: "also: {list}", expoCapped: "The first {n} are shown.", expoNoneFor: "Nothing is exposed to this source.", expoInactiveText: "Not set up: nothing is exposed.",
-  exposure: "Exposure", exposureSubtitle: "Which entities voice assistants and bridges can reach. Only reads; nothing is changed and nothing is stored.",
+  exposure: "Exposure", exposureSubtitle: "Which entities voice assistants and bridges can reach. The page only reads; changes run as a plan with preview and undo.",
   expoHint: "Assist, Alexa, Google Assistant and HomeKit", expoLoading: "Reading the exposure …",
   expoNone: "Nothing unusual in the exposure.", expoHint2: "Note", expoWarn: "Check",
   expoAssistants: "Assistants and bridges", expoFindings: "Findings",
@@ -45,17 +45,35 @@ Object.assign(TEXT.en, {
   expoText_webhook_orphan: "{n} webhooks belong to \"{domain}\", an integration that is no longer set up. Housekeeper deliberately does not show their ids.",
   expoAdvice_diagnostic_exposed: "Take the exposure back under Settings → Voice assistants → Entities.",
   expoAdvice_sensitive_exposed: "For your information only. Housekeeper changes nothing.",
-  expoAdvice_stale_exposed: "Clean up the entity or take the exposure back.",
+  expoAdvice_stale_exposed: "Clean up the entity or take the exposure back. The button makes a plan with a preview of it.",
   expoAdvice_alias_duplicate: "Rename one of them so voice commands are unambiguous.",
   expoAdvice_webhook_orphan: "Set the integration up again or remove the leftovers if they are no longer needed.",
   expoKind_google_without_pin: "Google opens without PIN", expoKind_auto_expose: "New entities are exposed automatically",
   expoText_google_without_pin: "{n} locks, alarm panels, garage doors, gates or doors are set so that Google Assistant opens or disarms them without a PIN.",
   expoText_auto_expose: "{list} gets every new entity exposed by itself. New devices thus reach a cloud assistant without anyone acting.",
-  expoAdvice_google_without_pin: "Turn the PIN confirmation back on under Settings → Voice assistants → entity → Google Assistant.",
+  expoAdvice_google_without_pin: "Turn the PIN confirmation back on under Settings → Voice assistants → entity → Google Assistant, or with the button as a plan with a preview.",
   expoAdvice_auto_expose: "Turn off \"Expose new entities\" under Settings → Voice assistants → Alexa or Google Assistant if new devices should be checked first.",
   expoKind_llm_exposed: "Assist exposure goes to AI agents", expoColIntegration: "Integration", expoColTarget: "Goes to", expoTarget_cloud: "provider of the model", expoTarget_external: "connected programs",
   expoText_llm_exposed: "{n} integrations may control Home Assistant through Assist. Names, areas and states of the {reach} Assist exposures go to the provider of the language model or to connected programs.",
   expoAdvice_llm_exposed: "For your information only. If you do not want this, turn off \"Control Home Assistant\" in the integration or expose less to Assist.",
   expoMore: "and {n} more", expoToCheck: "To check", expoToNote: "For your information",
   expoFootnote: "Housekeeper reads, per assistant, which entities Home Assistant exposes; for HomeKit only the stored entity filter of the bridge. Passwords, tokens, ports and webhook ids are never read or shown. If Alexa or Google Assistant is switched off in the Nabu Casa settings, it reaches nothing and is not judged. For Alexa and Google, Housekeeper also reads whether new entities are exposed automatically and, per entity, only whether Google may open it without a PIN; never the PIN itself. For AI conversation agents and the MCP server, Housekeeper only reads whether they may control Home Assistant through Assist, never prompt, model or key; Ollama and llama.cpp count as local and are not named. An integration that talks to a model in your own network (for example through its own address) is still listed under \"provider of the model\". If a source does not answer, it says \"cannot be checked\", never \"not exposed\". Voice names count as equal when they differ only in case, spaces or umlauts.",
+});
+
+// Changing the exposure: the buttons on two findings and the texts of the plan (kind set_exposure).
+Object.assign(TEXT.de, {
+  expoActRemove: "Freigaben entfernen …", expoActPin: "PIN wieder verlangen …",
+  expoPlanRemove: "aus {list} nehmen", expoPlanPin: "Google fragt wieder nach der PIN",
+  reason_filtered_by_yaml: "Ein Filter in der YAML-Konfiguration von Nabu Casa legt die Freigabe fest. Hier lässt sie sich nicht ändern.",
+  check_exposure_set: "Freigabe ist geändert", result_exposure: "Freigabe geändert", actKind_set_exposure: "Freigabe geändert",
+  confirmedSummaryExposure: "{count} Entitäten werden bei Assistenten abgewählt oder verlangen bei Google wieder die PIN. Alexa und Google synchronisieren sofort: Alexa-Routinen mit diesen Geräten können ausfallen, und ein Rückgängig stellt sie in der Alexa-App nicht wieder her. Die Freigabe selbst lässt sich zurücknehmen.",
+  sim_exposure_set: "{count} Entitäten ändern ihre Freigabe",
+});
+Object.assign(TEXT.en, {
+  expoActRemove: "Remove exposures …", expoActPin: "Ask for the PIN again …",
+  expoPlanRemove: "take out of {list}", expoPlanPin: "Google asks for the PIN again",
+  reason_filtered_by_yaml: "A filter in the YAML configuration of Nabu Casa decides what is exposed. It cannot be changed here.",
+  check_exposure_set: "Exposure is changed", result_exposure: "Exposure changed", actKind_set_exposure: "Exposure changed",
+  confirmedSummaryExposure: "{count} entities are taken out of assistants or ask for the PIN again at Google. Alexa and Google synchronise at once: Alexa routines with these devices may stop working, and an undo does not restore them in the Alexa app. The exposure itself can be taken back.",
+  sim_exposure_set: "{count} entities change their exposure",
 });

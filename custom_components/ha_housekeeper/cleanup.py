@@ -45,6 +45,9 @@ AREA_KINDS = frozenset({"set_area"})  # gives an entity or device without an are
 # Switches one entity between enabled and disabled or visible and hidden; the target says which way.
 STATE_KINDS = frozenset({"set_entity_state"})
 STATE_TARGETS = ("disable", "enable", "hide", "unhide")
+# Takes an entity out of the assistants it reaches ("remove"), or makes Google ask for the PIN again ("pin").
+EXPOSURE_KINDS = frozenset({"set_exposure"})
+EXPOSURE_TARGETS = ("remove", "pin")
 # What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
 RECORDER_CHOICES = ("keep", "statistics", "states")
 REFACTOR_KINDS = frozenset({"refactor_automation"})
@@ -65,6 +68,7 @@ ACTION_KINDS = (
     | LABEL_KINDS
     | AREA_KINDS
     | STATE_KINDS
+    | EXPOSURE_KINDS
     | RELOAD_KINDS
 )
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
@@ -384,6 +388,7 @@ BLOCKING_REASONS = frozenset(
         "in_energy",
         "entity_exists",
         "nothing_to_do",
+        "filtered_by_yaml",
         "refactor_disabled",
         "not_editable",
         "invalid_fix",
@@ -1040,6 +1045,40 @@ def judge_state_action(
     return action
 
 
+def judge_exposure_action(
+    object_id: str, target: str, name: str, info: dict[str, Any]
+) -> dict[str, Any]:
+    """Judge taking one entity out of its assistants, or giving Google its PIN back.
+
+    ``info`` is what ``exposure_edit.prepare`` found. Only what is set now is touched: an entity
+    that reaches no assistant (or whose lock Google already asks the PIN for) has nothing to do,
+    and an assistant a YAML filter of the cloud decides for cannot be changed from here.
+    """
+    action: dict[str, Any] = {
+        "kind": "set_exposure",
+        "object_id": object_id,
+        "object_type": "entity",
+        "name": name,
+        "target": target,
+        "assistants": list(info.get("assistants") or []),
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+    }
+    reasons = action["reasons"]
+    if not info.get("exists"):
+        reasons.append("not_found")
+    elif target not in EXPOSURE_TARGETS:
+        reasons.append("bad_state")
+    elif not action["assistants"]:
+        reasons.append("nothing_to_do")
+    elif info.get("filtered"):
+        reasons.append("filtered_by_yaml")
+    _verdict(action)
+    return action
+
+
 def judge_reload_action(entry_id: str, info: dict[str, Any]) -> dict[str, Any]:
     """Judge loading one integration entry anew; ``info`` is what the config entries hold now.
 
@@ -1238,6 +1277,7 @@ def build_plan(
     backup_data: dict[str, dict[str, Any]] | None = None,
     delete_data: dict[str, dict[str, Any]] | None = None,
     reload_data: dict[str, dict[str, Any]] | None = None,
+    exposure_data: dict[tuple[str, str], dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -1336,6 +1376,12 @@ def build_plan(
                 {**info, "marked_keep": item.get("marked_keep"), "critical": item.get("critical")},
                 _used_by(snapshot["edges"], f"entity:{object_id}"),
             )
+            action["fingerprint"] = info.get("fingerprint")
+        elif kind in EXPOSURE_KINDS:
+            target = request.get("target") or ""
+            info = (exposure_data or {}).get((object_id, target), {})
+            name = (objects.get(object_id) or {}).get("name") or object_id
+            action = judge_exposure_action(object_id, target, name, info)
             action["fingerprint"] = info.get("fingerprint")
         elif kind in LABEL_KINDS:
             label_id = request.get("target") or ""

@@ -15,6 +15,7 @@ from homeassistant.helpers import label_registry as lr
 from . import (
     area_assign,
     counter_repair,
+    exposure_edit,
     rename,
     ws_automations,
     ws_care,
@@ -32,6 +33,7 @@ from .cleanup import (
     AREA_KINDS,
     DELETE_AUTOMATION_KINDS,
     DELETE_BACKUP_KINDS,
+    EXPOSURE_KINDS,
     LABEL_KINDS,
     MAX_ACTIONS,
     MAX_MERGE,
@@ -845,6 +847,14 @@ async def _plan_from_requests(
                 "fingerprint": registry_fingerprint(entry) if entry else None,
             }
 
+    exposure_data = {
+        (action["object_id"], action.get("target") or ""): exposure_edit.prepare(
+            hass, action["object_id"], action.get("target") or ""
+        )
+        for action in requests
+        if action["kind"] in EXPOSURE_KINDS
+    }
+
     rename_data = {}
     for action in requests:
         if action["kind"] in RENAME_KINDS:
@@ -947,6 +957,7 @@ async def _plan_from_requests(
         backup_data=backup_data,
         delete_data=delete_data,
         reload_data=reload_data,
+        exposure_data=exposure_data,
     )
     await _add_history(hass, snapshot, plan)
     return plan

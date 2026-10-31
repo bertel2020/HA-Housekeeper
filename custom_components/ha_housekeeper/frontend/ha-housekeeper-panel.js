@@ -397,7 +397,7 @@ const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 const DONE_RESULTS = Object.fromEntries([
   ...REMOVAL_KINDS.map(kind => [kind, "removed"]), ...REPAIR_KINDS.map(kind => [kind, "repaired"]), ...PURGE_KINDS.map(kind => [kind, "purged"]),
   ["delete_automation", "purged"], ["replace_references", "replaced"], ["refactor_automation", "refactored"], ["migrate_meter", "migrated"],
-  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"],
+  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"],
 ]);
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
@@ -1432,7 +1432,7 @@ class ThemeMixin {
 // Texts for the exposure view; merged into TEXT.
 Object.assign(TEXT.de, {
   expoSumEntities: "Entitäten freigegeben", expoColName: "Name", expoColDomain: "Art", expoColArea: "Bereich", expoColAlso: "Auch freigegeben für", expoColAssistants: "Freigegeben für", expoAllDomains: "Alle Arten", expoAllAlso: "Alle Dienste", expoSumFindings: "Auffälligkeiten", expoTabFindings: "Auffälligkeiten", expoSourceHint: "{n} Entitäten sind für {name} freigegeben.", expoAlso: "auch: {list}", expoCapped: "Gezeigt werden die ersten {n}.", expoNoneFor: "Für diese Quelle ist nichts freigegeben.", expoInactiveText: "Nicht eingerichtet: es ist nichts freigegeben.",
-  exposure: "Freigaben", exposureSubtitle: "Welche Entitäten Sprachassistenten und Bridges erreichen können. Liest nur; es wird nichts geändert und nichts gespeichert.",
+  exposure: "Freigaben", exposureSubtitle: "Welche Entitäten Sprachassistenten und Bridges erreichen können. Die Seite liest nur; Änderungen laufen als Plan mit Vorschau und Rückgängig.",
   expoHint: "Assist, Alexa, Google Assistant und HomeKit", expoLoading: "Die Freigaben werden gelesen …",
   expoNone: "Nichts Auffälliges bei den Freigaben.", expoHint2: "Hinweis", expoWarn: "Prüfen",
   expoAssistants: "Assistenten und Bridges", expoFindings: "Auffälligkeiten",
@@ -1446,13 +1446,13 @@ Object.assign(TEXT.de, {
   expoText_webhook_orphan: "{n} Webhooks gehören zu „{domain}“, einer Integration, die nicht mehr eingerichtet ist. Die IDs zeigt Housekeeper bewusst nicht an.",
   expoAdvice_diagnostic_exposed: "Freigabe unter Einstellungen → Sprachassistenten → Entitäten zurücknehmen.",
   expoAdvice_sensitive_exposed: "Nur zur Kenntnis. Housekeeper ändert nichts.",
-  expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen.",
+  expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen. Der Knopf macht daraus einen Plan mit Vorschau.",
   expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
   expoAdvice_webhook_orphan: "Die Integration neu einrichten oder die Reste entfernen, falls sie nicht mehr gebraucht werden.",
   expoKind_google_without_pin: "Google öffnet ohne PIN", expoKind_auto_expose: "Neue Entitäten werden automatisch freigegeben",
   expoText_google_without_pin: "{n} Schlösser, Alarmanlagen, Garagentore, Tore oder Türen sind bei Google Assistant so eingestellt, dass er sie ohne PIN öffnet oder entschärft.",
   expoText_auto_expose: "{list} bekommt jede neue Entität von selbst freigegeben. Neue Geräte landen so ohne Zutun bei einem Cloud-Assistenten.",
-  expoAdvice_google_without_pin: "Unter Einstellungen → Sprachassistenten → Entität → Google Assistant die Bestätigung per PIN wieder einschalten.",
+  expoAdvice_google_without_pin: "Unter Einstellungen → Sprachassistenten → Entität → Google Assistant die Bestätigung per PIN wieder einschalten, oder mit dem Knopf als Plan mit Vorschau.",
   expoAdvice_auto_expose: "Unter Einstellungen → Sprachassistenten → Alexa bzw. Google Assistant „Neue Entitäten automatisch freigeben“ ausschalten, wenn neue Geräte erst geprüft werden sollen.",
   expoKind_llm_exposed: "Assist-Freigaben gehen an KI-Agenten", expoColIntegration: "Integration", expoColTarget: "Ziel", expoTarget_cloud: "Anbieter des Modells", expoTarget_external: "verbundene Programme",
   expoText_llm_exposed: "{n} Integrationen dürfen Home Assistant über Assist steuern. Namen, Bereiche und Zustände der {reach} Assist-Freigaben gehen dabei an den Anbieter des Sprachmodells oder an verbundene Programme.",
@@ -1462,7 +1462,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   expoSumEntities: "entities exposed", expoColName: "Name", expoColDomain: "Type", expoColArea: "Area", expoColAlso: "Also exposed to", expoColAssistants: "Exposed to", expoAllDomains: "All types", expoAllAlso: "All services", expoSumFindings: "Findings", expoTabFindings: "Findings", expoSourceHint: "{n} entities are exposed to {name}.", expoAlso: "also: {list}", expoCapped: "The first {n} are shown.", expoNoneFor: "Nothing is exposed to this source.", expoInactiveText: "Not set up: nothing is exposed.",
-  exposure: "Exposure", exposureSubtitle: "Which entities voice assistants and bridges can reach. Only reads; nothing is changed and nothing is stored.",
+  exposure: "Exposure", exposureSubtitle: "Which entities voice assistants and bridges can reach. The page only reads; changes run as a plan with preview and undo.",
   expoHint: "Assist, Alexa, Google Assistant and HomeKit", expoLoading: "Reading the exposure …",
   expoNone: "Nothing unusual in the exposure.", expoHint2: "Note", expoWarn: "Check",
   expoAssistants: "Assistants and bridges", expoFindings: "Findings",
@@ -1476,19 +1476,37 @@ Object.assign(TEXT.en, {
   expoText_webhook_orphan: "{n} webhooks belong to \"{domain}\", an integration that is no longer set up. Housekeeper deliberately does not show their ids.",
   expoAdvice_diagnostic_exposed: "Take the exposure back under Settings → Voice assistants → Entities.",
   expoAdvice_sensitive_exposed: "For your information only. Housekeeper changes nothing.",
-  expoAdvice_stale_exposed: "Clean up the entity or take the exposure back.",
+  expoAdvice_stale_exposed: "Clean up the entity or take the exposure back. The button makes a plan with a preview of it.",
   expoAdvice_alias_duplicate: "Rename one of them so voice commands are unambiguous.",
   expoAdvice_webhook_orphan: "Set the integration up again or remove the leftovers if they are no longer needed.",
   expoKind_google_without_pin: "Google opens without PIN", expoKind_auto_expose: "New entities are exposed automatically",
   expoText_google_without_pin: "{n} locks, alarm panels, garage doors, gates or doors are set so that Google Assistant opens or disarms them without a PIN.",
   expoText_auto_expose: "{list} gets every new entity exposed by itself. New devices thus reach a cloud assistant without anyone acting.",
-  expoAdvice_google_without_pin: "Turn the PIN confirmation back on under Settings → Voice assistants → entity → Google Assistant.",
+  expoAdvice_google_without_pin: "Turn the PIN confirmation back on under Settings → Voice assistants → entity → Google Assistant, or with the button as a plan with a preview.",
   expoAdvice_auto_expose: "Turn off \"Expose new entities\" under Settings → Voice assistants → Alexa or Google Assistant if new devices should be checked first.",
   expoKind_llm_exposed: "Assist exposure goes to AI agents", expoColIntegration: "Integration", expoColTarget: "Goes to", expoTarget_cloud: "provider of the model", expoTarget_external: "connected programs",
   expoText_llm_exposed: "{n} integrations may control Home Assistant through Assist. Names, areas and states of the {reach} Assist exposures go to the provider of the language model or to connected programs.",
   expoAdvice_llm_exposed: "For your information only. If you do not want this, turn off \"Control Home Assistant\" in the integration or expose less to Assist.",
   expoMore: "and {n} more", expoToCheck: "To check", expoToNote: "For your information",
   expoFootnote: "Housekeeper reads, per assistant, which entities Home Assistant exposes; for HomeKit only the stored entity filter of the bridge. Passwords, tokens, ports and webhook ids are never read or shown. If Alexa or Google Assistant is switched off in the Nabu Casa settings, it reaches nothing and is not judged. For Alexa and Google, Housekeeper also reads whether new entities are exposed automatically and, per entity, only whether Google may open it without a PIN; never the PIN itself. For AI conversation agents and the MCP server, Housekeeper only reads whether they may control Home Assistant through Assist, never prompt, model or key; Ollama and llama.cpp count as local and are not named. An integration that talks to a model in your own network (for example through its own address) is still listed under \"provider of the model\". If a source does not answer, it says \"cannot be checked\", never \"not exposed\". Voice names count as equal when they differ only in case, spaces or umlauts.",
+});
+
+// Changing the exposure: the buttons on two findings and the texts of the plan (kind set_exposure).
+Object.assign(TEXT.de, {
+  expoActRemove: "Freigaben entfernen …", expoActPin: "PIN wieder verlangen …",
+  expoPlanRemove: "aus {list} nehmen", expoPlanPin: "Google fragt wieder nach der PIN",
+  reason_filtered_by_yaml: "Ein Filter in der YAML-Konfiguration von Nabu Casa legt die Freigabe fest. Hier lässt sie sich nicht ändern.",
+  check_exposure_set: "Freigabe ist geändert", result_exposure: "Freigabe geändert", actKind_set_exposure: "Freigabe geändert",
+  confirmedSummaryExposure: "{count} Entitäten werden bei Assistenten abgewählt oder verlangen bei Google wieder die PIN. Alexa und Google synchronisieren sofort: Alexa-Routinen mit diesen Geräten können ausfallen, und ein Rückgängig stellt sie in der Alexa-App nicht wieder her. Die Freigabe selbst lässt sich zurücknehmen.",
+  sim_exposure_set: "{count} Entitäten ändern ihre Freigabe",
+});
+Object.assign(TEXT.en, {
+  expoActRemove: "Remove exposures …", expoActPin: "Ask for the PIN again …",
+  expoPlanRemove: "take out of {list}", expoPlanPin: "Google asks for the PIN again",
+  reason_filtered_by_yaml: "A filter in the YAML configuration of Nabu Casa decides what is exposed. It cannot be changed here.",
+  check_exposure_set: "Exposure is changed", result_exposure: "Exposure changed", actKind_set_exposure: "Exposure changed",
+  confirmedSummaryExposure: "{count} entities are taken out of assistants or ask for the PIN again at Google. Alexa and Google synchronise at once: Alexa routines with these devices may stop working, and an undo does not restore them in the Alexa app. The exposure itself can be taken back.",
+  sim_exposure_set: "{count} entities change their exposure",
 });
 
 // StylesMixin: methods of the panel element, mixed into the class in 99-register.js.
@@ -4317,6 +4335,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "add_label") ? "confirmedSummaryLabel"
       : executable.some(a => a.kind === "set_area") ? "confirmedSummaryArea"
       : executable.some(a => a.kind === "set_entity_state") ? "confirmedSummaryState"
+      : executable.some(a => a.kind === "set_exposure") ? "confirmedSummaryExposure"
       : executable.some(a => a.kind === "reload_integration") ? "confirmedSummaryReload"
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
@@ -4725,7 +4744,7 @@ class CleanupMixin {
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
-      const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
+      const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
@@ -8637,7 +8656,31 @@ const EXPO_DOMAIN_ICONS = {
   weather: "mdi:weather-partly-cloudy", remote: "mdi:remote", valve: "mdi:valve", siren: "mdi:bullhorn-outline", todo: "mdi:clipboard-list-outline", person: "mdi:account-outline",
 };
 
+// The findings that offer a plan: what it does and the name of its button.
+const EXPO_PLAN_KINDS = {
+  stale_exposed: { target: "remove", label: "expoActRemove" },
+  google_without_pin: { target: "pin", label: "expoActPin" },
+};
+
 class ExposureMixin {
+  // A plan for the entities of one finding; Housekeeper reads the live state again and judges each one.
+  async makeExposurePlan(kind) {
+    const f = this.exposure?.findings.find(x => x.kind === kind), spec = EXPO_PLAN_KINDS[kind];
+    const items = (f?.items || []).slice(0, MAX_PLAN_ACTIONS);
+    if (!spec || !items.length) return;
+    try {
+      if (!await this.newPlan(items.map(i => ({ kind: "set_exposure", object_id: i.entity_id, target: spec.target })))) return;
+      this._exposureRequested = false; // the view reads again when it is opened next
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
+  // The line under the name of an action in a plan.
+  expoPlanSub(a) {
+    const what = a.target === "pin" ? this.t("expoPlanPin") : this.t("expoPlanRemove", { list: this.expoAssistantList(a.assistants) || "?" });
+    return `${a.object_id} · ${what}`;
+  }
+
   async loadExposure() {
     this.exposureLoading = true; this.exposureError = ""; this.render();
     try { this.exposure = await this._hass.callWS({ type: "ha_housekeeper/exposure" }); this.exposureAt = new Date().toISOString(); }
@@ -8704,7 +8747,8 @@ class ExposureMixin {
       ],
     }) : "";
     const more = items.length && f.count > items.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - items.length) })}</p>` : "";
-    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${table}${agents}${more}`;
+    const act = EXPO_PLAN_KINDS[f.kind] && items.length ? `<div class="fbtns w300"><button class="btn" data-expo-plan="${f.kind}" ${this.planBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:shield-edit-outline"></ha-icon>${this.t(EXPO_PLAN_KINDS[f.kind].label)}</button></div>` : "";
+    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${act}${table}${agents}${more}`;
     const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
     return this.fold(`expo_${f.kind}`, head, body, false);
   }
@@ -11077,7 +11121,7 @@ class ExchangeMixin {
     if (s.remaining_uncertain) lines.push(this.t("simUncertain", { count: s.remaining_uncertain }));
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
     if (s.rows_counted) { const other = s.purge_rows - (s.purge_stat_rows || 0) - (s.purge_states_rows || 0); if (s.purge_stat_rows) lines.push(this.t("simPurgeStatRows", { count: this.formatNumber(s.purge_stat_rows) })); if (s.purge_states_rows) lines.push(this.t("simPurgeStateRows", { count: this.formatNumber(s.purge_states_rows) })); if (other > 0) lines.push(this.t("simPurgeRows", { count: this.formatNumber(other) })); if (s.history_states_kept === undefined) { if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); } else { if (s.history_states_kept) lines.push(this.t(plan.recorder_auto_purge === false ? "simKeptStatesForever" : plan.recorder_keep_days ? "simKeptStates" : "simKeptStatesOpen", { count: this.formatNumber(s.history_states_kept), days: plan.recorder_keep_days })); if (s.history_stats_kept) lines.push(this.t("simKeptStats", { count: this.formatNumber(s.history_stats_kept) })); } }
-    for (const key of ["reloaded", "labeled", "area_set", "refactored", "enabled", "hidden", "unhidden", "backups_deleted", "automations_deleted"]) if (s[key]) lines.push(this.t(`sim_${key}`, { count: s[key] }));
+    for (const key of ["reloaded", "labeled", "area_set", "exposure_set", "refactored", "enabled", "hidden", "unhidden", "backups_deleted", "automations_deleted"]) if (s[key]) lines.push(this.t(`sim_${key}`, { count: s[key] }));
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
     if (!lines.length) return "";
     return `<div class="simbox"><details ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary><ul class="simlist">${lines.map(l => `<li>${this.esc(l)}</li>`).join("")}</ul><p class="simlimits">${this.t("simLimits")}</p></details></div>`;
@@ -22742,6 +22786,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindAutoPause(root);
     this.bindCheckLog(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
+    root.querySelectorAll("[data-expo-plan]").forEach(el => el.addEventListener("click", () => this.makeExposurePlan(el.dataset.expoPlan)));
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });
     root.querySelectorAll("[data-policy-toggle]").forEach(el => el.onchange = () => this.changePolicy({ type: "ha_housekeeper/set_policy", rule: el.dataset.policyToggle, enabled: el.checked }));

@@ -62,7 +62,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.util.file import write_utf8_file_atomic
 from homeassistant.util.yaml import dump, parse_yaml
 
-from . import counter_repair, followup
+from . import counter_repair, exposure_edit, followup
 from . import refactor as refactor_module
 from . import rename as rename_module
 from .automation_delete import preview as preview_automation_delete
@@ -76,6 +76,7 @@ from .cleanup import (
     DELETE_CANDIDATE_RULES,
     DEVICE_KINDS,
     EXECUTABLE_KINDS,
+    EXPOSURE_KINDS,
     INTERNAL_RESULT_KEYS,
     LABEL_KINDS,
     METER_KINDS,
@@ -941,6 +942,8 @@ class CleanupRunner:
             return await self._rename_entity(action), "entity_renamed"
         if kind in STATE_KINDS:
             return self._set_entity_state(action), "entity_state_set"
+        if kind in EXPOSURE_KINDS:
+            return self._set_exposure(action), "exposure_set"
         if kind in RELOAD_KINDS:
             return await self._reload_integration(action), "integration_reloaded"
         if kind in LABEL_KINDS:
@@ -1725,6 +1728,13 @@ class CleanupRunner:
             ):
                 return "entity_changed"
             return None
+        if kind in EXPOSURE_KINDS:
+            now = exposure_edit.prepare(self.hass, object_id, action["target"])
+            if not now["exists"]:
+                return "entity_gone"
+            if action.get("fingerprint") is None or now["fingerprint"] != action["fingerprint"]:
+                return "entity_changed"
+            return "now_blocked" if now["filtered"] or not now["assistants"] else None
         if kind in LABEL_KINDS:
             entry = er.async_get(self.hass).async_get(object_id)
             if entry is None:
@@ -1979,6 +1989,11 @@ class CleanupRunner:
                 entry = registry.async_get(object_id)
                 ok = entry is not None and _state_reached(entry, action["target"])
                 checks.append({"check": "entity_state", "object_id": object_id, "ok": ok})
+            elif kind in EXPOSURE_KINDS:
+                ok = exposure_edit.reached(
+                    self.hass, object_id, action["target"], action["assistants"]
+                )
+                checks.append({"check": "exposure_set", "object_id": object_id, "ok": ok})
             elif kind in LABEL_KINDS:
                 entry = registry.async_get(object_id)
                 ok = entry is not None and action["target"] in entry.labels
@@ -2151,6 +2166,8 @@ class CleanupRunner:
                 outcome = self._unset_area(action["object_id"], result)
             elif kind in STATE_KINDS:
                 outcome = self._undo_entity_state(registry, action["object_id"], result)
+            elif kind in EXPOSURE_KINDS:
+                outcome = exposure_edit.undo(self.hass, action["object_id"], result)
             elif kind in LABEL_KINDS:
                 outcome = self._unlabel(registry, action["object_id"], result)
             elif kind in REPAIR_KINDS:
@@ -2386,6 +2403,11 @@ class CleanupRunner:
                 "hidden_by": _value(entry.hidden_by),
             },
         }
+
+    def _set_exposure(self, action: dict[str, Any]) -> dict[str, Any]:
+        return exposure_edit.apply(
+            self.hass, action["object_id"], action["target"], action["assistants"]
+        )
 
     @staticmethod
     def _undo_entity_state(registry: Any, object_id: str, result: dict[str, Any]) -> str:

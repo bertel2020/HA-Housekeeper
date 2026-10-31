@@ -1321,3 +1321,70 @@ async def test_entities_without_registry_entry_are_listed_as_state_only(
     snapshot = await scanner.async_scan()
     assert "zone.home" in snapshot["meta"]["state_only_entities"]
     assert registered.entity_id not in snapshot["meta"]["state_only_entities"]
+
+
+async def test_taking_an_entity_out_of_the_assistants_runs_is_verified_and_can_be_undone(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.components.homeassistant.exposed_entities import (
+        async_expose_entity,
+        async_get_entity_settings,
+        async_set_assistant_option,
+    )
+    from homeassistant.setup import async_setup_component
+
+    from custom_components.ha_housekeeper import exposure_edit
+
+    assert await async_setup_component(hass, "homeassistant", {})
+    entry = orphan(hass, "exposed")
+    other = orphan(hass, "quiet")
+    async_expose_entity(hass, "conversation", entry.entity_id, True)
+    async_expose_entity(hass, "cloud.alexa", entry.entity_id, True)
+    async_expose_entity(hass, "conversation", other.entity_id, False)
+    async_expose_entity(hass, "cloud.alexa", other.entity_id, False)
+    async_expose_entity(hass, "cloud.google_assistant", other.entity_id, False)
+    ids = (entry.entity_id, other.entity_id)
+
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    data = {(i, "remove"): exposure_edit.prepare(hass, i, "remove") for i in ids}
+    plan = build_plan(
+        snapshot,
+        [{"kind": "set_exposure", "object_id": i, "target": "remove"} for i in ids],
+        datetime.now(UTC),
+        exposure_data=data,
+    )
+    first, second = plan["actions"]
+    assert (first["verdict"], first["assistants"]) == ("ok", ["conversation", "cloud.alexa"])
+    assert (second["verdict"], second["reasons"]) == ("blocked", ["nothing_to_do"])
+    scanner.journal.add(plan)
+
+    await run(scanner, plan)
+    assert not exposure_edit.prepare(hass, entry.entity_id, "remove")["assistants"]
+    assert plan["status"] == "verified" and plan["verification"]["ok"] is True
+
+    result = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert result["results"] == [{"object_id": entry.entity_id, "outcome": "undone"}]
+    assert exposure_edit.prepare(hass, entry.entity_id, "remove")["assistants"] == [
+        "conversation",
+        "cloud.alexa",
+    ]
+
+    # Google asks for the PIN again; a change made since the run is left alone by the undo.
+    google = "cloud.google_assistant"
+    async_set_assistant_option(hass, google, entry.entity_id, "disable_2fa", True)
+    assert exposure_edit.prepare(hass, entry.entity_id, "pin")["assistants"] == [google]
+    pin = exposure_edit.apply(hass, entry.entity_id, "pin", [google])
+    assert async_get_entity_settings(hass, entry.entity_id)[google]["disable_2fa"] is False
+    async_expose_entity(hass, "conversation", entry.entity_id, False)
+    assert exposure_edit.undo(hass, entry.entity_id, pin) == "conflict_changed"
+
+    # A YAML filter of the cloud decides for itself: the step is blocked, never half done.
+    info = {**exposure_edit.prepare(hass, entry.entity_id, "remove"), "filtered": ["cloud.alexa"]}
+    blocked = build_plan(
+        snapshot,
+        [{"kind": "set_exposure", "object_id": entry.entity_id, "target": "remove"}],
+        datetime.now(UTC),
+        exposure_data={(entry.entity_id, "remove"): info},
+    )["actions"][0]
+    assert blocked["reasons"] == ["filtered_by_yaml"]

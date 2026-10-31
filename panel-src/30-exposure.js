@@ -7,7 +7,31 @@ const EXPO_DOMAIN_ICONS = {
   weather: "mdi:weather-partly-cloudy", remote: "mdi:remote", valve: "mdi:valve", siren: "mdi:bullhorn-outline", todo: "mdi:clipboard-list-outline", person: "mdi:account-outline",
 };
 
+// The findings that offer a plan: what it does and the name of its button.
+const EXPO_PLAN_KINDS = {
+  stale_exposed: { target: "remove", label: "expoActRemove" },
+  google_without_pin: { target: "pin", label: "expoActPin" },
+};
+
 class ExposureMixin {
+  // A plan for the entities of one finding; Housekeeper reads the live state again and judges each one.
+  async makeExposurePlan(kind) {
+    const f = this.exposure?.findings.find(x => x.kind === kind), spec = EXPO_PLAN_KINDS[kind];
+    const items = (f?.items || []).slice(0, MAX_PLAN_ACTIONS);
+    if (!spec || !items.length) return;
+    try {
+      if (!await this.newPlan(items.map(i => ({ kind: "set_exposure", object_id: i.entity_id, target: spec.target })))) return;
+      this._exposureRequested = false; // the view reads again when it is opened next
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
+  // The line under the name of an action in a plan.
+  expoPlanSub(a) {
+    const what = a.target === "pin" ? this.t("expoPlanPin") : this.t("expoPlanRemove", { list: this.expoAssistantList(a.assistants) || "?" });
+    return `${a.object_id} · ${what}`;
+  }
+
   async loadExposure() {
     this.exposureLoading = true; this.exposureError = ""; this.render();
     try { this.exposure = await this._hass.callWS({ type: "ha_housekeeper/exposure" }); this.exposureAt = new Date().toISOString(); }
@@ -74,7 +98,8 @@ class ExposureMixin {
       ],
     }) : "";
     const more = items.length && f.count > items.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - items.length) })}</p>` : "";
-    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${table}${agents}${more}`;
+    const act = EXPO_PLAN_KINDS[f.kind] && items.length ? `<div class="fbtns w300"><button class="btn" data-expo-plan="${f.kind}" ${this.planBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:shield-edit-outline"></ha-icon>${this.t(EXPO_PLAN_KINDS[f.kind].label)}</button></div>` : "";
+    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${act}${table}${agents}${more}`;
     const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
     return this.fold(`expo_${f.kind}`, head, body, false);
   }
