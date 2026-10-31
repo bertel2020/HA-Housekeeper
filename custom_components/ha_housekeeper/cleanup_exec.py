@@ -76,6 +76,7 @@ from .cleanup import (
     DELETE_CANDIDATE_RULES,
     DEVICE_KINDS,
     EXECUTABLE_KINDS,
+    EXPOSE_NEW_KINDS,
     EXPOSURE_KINDS,
     INTERNAL_RESULT_KEYS,
     LABEL_KINDS,
@@ -944,6 +945,8 @@ class CleanupRunner:
             return self._set_entity_state(action), "entity_state_set"
         if kind in EXPOSURE_KINDS:
             return self._set_exposure(action), "exposure_set"
+        if kind in EXPOSE_NEW_KINDS:
+            return exposure_edit.set_expose_new(self.hass, object_id, False), "expose_new_set"
         if kind in RELOAD_KINDS:
             return await self._reload_integration(action), "integration_reloaded"
         if kind in LABEL_KINDS:
@@ -1728,6 +1731,13 @@ class CleanupRunner:
             ):
                 return "entity_changed"
             return None
+        if kind in EXPOSE_NEW_KINDS:
+            now = exposure_edit.expose_new(self.hass, object_id)
+            if not now["exists"]:
+                return "entity_gone"
+            if action.get("fingerprint") is None or now["fingerprint"] != action["fingerprint"]:
+                return "entity_changed"
+            return None if now["on"] else "now_blocked"
         if kind in EXPOSURE_KINDS:
             now = exposure_edit.prepare(self.hass, object_id, action["target"])
             if not now["exists"]:
@@ -1989,6 +1999,15 @@ class CleanupRunner:
                 entry = registry.async_get(object_id)
                 ok = entry is not None and _state_reached(entry, action["target"])
                 checks.append({"check": "entity_state", "object_id": object_id, "ok": ok})
+            elif kind in EXPOSE_NEW_KINDS:
+                now = exposure_edit.expose_new(self.hass, object_id)
+                checks.append(
+                    {
+                        "check": "exposure_set",
+                        "object_id": object_id,
+                        "ok": now["exists"] and not now["on"],
+                    }
+                )
             elif kind in EXPOSURE_KINDS:
                 ok = exposure_edit.reached(
                     self.hass, object_id, action["target"], action["assistants"]
@@ -2166,6 +2185,8 @@ class CleanupRunner:
                 outcome = self._unset_area(action["object_id"], result)
             elif kind in STATE_KINDS:
                 outcome = self._undo_entity_state(registry, action["object_id"], result)
+            elif kind in EXPOSE_NEW_KINDS:
+                outcome = exposure_edit.undo_expose_new(self.hass, action["object_id"], result)
             elif kind in EXPOSURE_KINDS:
                 outcome = exposure_edit.undo(self.hass, action["object_id"], result)
             elif kind in LABEL_KINDS:

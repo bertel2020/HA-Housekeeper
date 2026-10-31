@@ -1251,6 +1251,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindAutoPause(root);
     this.bindCheckLog(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
+    root.querySelectorAll("[data-expo-one]").forEach(el => el.addEventListener("click", () => this.makeExposureOne(el.dataset.expoOne)));
     root.querySelectorAll("[data-expo-plan]").forEach(el => el.addEventListener("click", () => this.makeExposurePlan(el.dataset.expoPlan)));
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });

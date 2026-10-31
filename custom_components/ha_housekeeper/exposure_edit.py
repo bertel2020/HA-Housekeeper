@@ -15,7 +15,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
-from .exposure import ASSISTANTS, GOOGLE
+from .exposure import ASSISTANTS, CLOUD_ASSISTANTS, GOOGLE
 
 EXPOSE_OPTION = "should_expose"
 PIN_OPTION = "disable_2fa"
@@ -127,3 +127,38 @@ def reached(hass: HomeAssistant, entity_id: str, target: str, assistants: list[s
     """Is the entity out of ``assistants`` (or, for "pin", does Google ask for the PIN again)."""
     info = prepare(hass, entity_id, target)
     return info["exists"] and not set(assistants) & set(info["assistants"])
+
+
+def _store(hass: HomeAssistant) -> Any:
+    from homeassistant.components.homeassistant.const import DATA_EXPOSED_ENTITIES
+
+    return hass.data[DATA_EXPOSED_ENTITIES]
+
+
+def expose_new(hass: HomeAssistant, assistant: str) -> dict[str, Any]:
+    """Whether new entities are exposed to a cloud assistant by themselves; unreadable is "missing"."""
+    if assistant not in CLOUD_ASSISTANTS:
+        return {"exists": False}
+    try:
+        on = _store(hass).async_get_expose_new_entities(assistant) is True
+    except Exception:  # noqa: BLE001 - another Home Assistant version or not set up
+        return {"exists": False}
+    return {"exists": True, "on": on, "fingerprint": "on" if on else "off"}
+
+
+def set_expose_new(hass: HomeAssistant, assistant: str, value: bool) -> dict[str, Any]:
+    """Switch the automatic exposure of new entities; returns what undo needs."""
+    before = expose_new(hass, assistant)["fingerprint"]
+    _store(hass).async_set_expose_new_entities(assistant, value)
+    return {"before": before, "after": expose_new(hass, assistant)["fingerprint"]}
+
+
+def undo_expose_new(hass: HomeAssistant, assistant: str, result: dict[str, Any]) -> str:
+    """Put the switch back as it was; a change made since the run is left alone."""
+    now = expose_new(hass, assistant)
+    if not now["exists"]:
+        return "conflict_gone"
+    if now["fingerprint"] != result["after"]:
+        return "conflict_changed"
+    _store(hass).async_set_expose_new_entities(assistant, result["before"] == "on")
+    return "undone"

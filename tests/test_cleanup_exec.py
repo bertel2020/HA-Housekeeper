@@ -1388,3 +1388,43 @@ async def test_taking_an_entity_out_of_the_assistants_runs_is_verified_and_can_b
         exposure_data={(entry.entity_id, "remove"): info},
     )["actions"][0]
     assert blocked["reasons"] == ["filtered_by_yaml"]
+
+
+async def test_switching_off_the_automatic_exposure_of_new_entities_is_verified_and_undone(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.components.homeassistant.const import DATA_EXPOSED_ENTITIES
+    from homeassistant.setup import async_setup_component
+
+    from custom_components.ha_housekeeper import exposure_edit
+
+    assert await async_setup_component(hass, "homeassistant", {})
+    store = hass.data[DATA_EXPOSED_ENTITIES]
+    store.async_set_expose_new_entities("cloud.alexa", True)
+    store.async_set_expose_new_entities("cloud.google_assistant", False)
+    ids = ("cloud.alexa", "cloud.google_assistant")
+
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    plan = build_plan(
+        snapshot,
+        [{"kind": "set_expose_new", "object_id": i} for i in ids],
+        datetime.now(UTC),
+        expose_new_data={i: exposure_edit.expose_new(hass, i) for i in ids},
+    )
+    first, second = plan["actions"]
+    assert (first["verdict"], first["name"]) == ("ok", "Alexa")
+    assert (second["verdict"], second["reasons"]) == ("blocked", ["already_in_state"])
+    scanner.journal.add(plan)
+
+    await run(scanner, plan)
+    assert store.async_get_expose_new_entities("cloud.alexa") is False
+    assert plan["status"] == "verified" and plan["verification"]["ok"] is True
+
+    store.async_set_expose_new_entities("cloud.alexa", True)
+    conflict = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert conflict["results"] == [{"object_id": "cloud.alexa", "outcome": "conflict_changed"}]
+    store.async_set_expose_new_entities("cloud.alexa", False)
+    result = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert result["results"] == [{"object_id": "cloud.alexa", "outcome": "undone"}]
+    assert store.async_get_expose_new_entities("cloud.alexa") is True

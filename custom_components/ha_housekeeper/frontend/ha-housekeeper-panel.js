@@ -397,7 +397,7 @@ const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 const DONE_RESULTS = Object.fromEntries([
   ...REMOVAL_KINDS.map(kind => [kind, "removed"]), ...REPAIR_KINDS.map(kind => [kind, "repaired"]), ...PURGE_KINDS.map(kind => [kind, "purged"]),
   ["delete_automation", "purged"], ["replace_references", "replaced"], ["refactor_automation", "refactored"], ["migrate_meter", "migrated"],
-  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"],
+  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["set_expose_new", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"],
 ]);
 
 const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
@@ -1493,7 +1493,9 @@ Object.assign(TEXT.en, {
 
 // Changing the exposure: the buttons on two findings and the texts of the plan (kind set_exposure).
 Object.assign(TEXT.de, {
-  expoActRemove: "Freigaben entfernen …", expoActPin: "PIN wieder verlangen …",
+  expoActRemove: "Freigaben entfernen …", expoActPin: "PIN wieder verlangen …", expoActNewOff: "Neue nicht mehr automatisch freigeben …",
+  expoActRemoveOne: "Freigabe entfernen …", expoOpenNames: "Sprachnamen in Home Assistant öffnen", expoPlanNewOff: "neue Entitäten nicht mehr automatisch freigeben",
+  confirmedSummaryExposeNew: "Neue Entitäten werden bei {count} Assistenten nicht mehr automatisch freigegeben. Was schon freigegeben ist, bleibt freigegeben. Das lässt sich zurücknehmen.",
   expoPlanRemove: "aus {list} nehmen", expoPlanPin: "Google fragt wieder nach der PIN",
   reason_filtered_by_yaml: "Ein Filter in der YAML-Konfiguration von Nabu Casa legt die Freigabe fest. Hier lässt sie sich nicht ändern.",
   check_exposure_set: "Freigabe ist geändert", result_exposure: "Freigabe geändert", actKind_set_exposure: "Freigabe geändert",
@@ -1501,7 +1503,9 @@ Object.assign(TEXT.de, {
   sim_exposure_set: "{count} Entitäten ändern ihre Freigabe",
 });
 Object.assign(TEXT.en, {
-  expoActRemove: "Remove exposures …", expoActPin: "Ask for the PIN again …",
+  expoActRemove: "Remove exposures …", expoActPin: "Ask for the PIN again …", expoActNewOff: "Stop exposing new ones automatically …",
+  expoActRemoveOne: "Remove exposure …", expoOpenNames: "Open voice names in Home Assistant", expoPlanNewOff: "stop exposing new entities automatically",
+  confirmedSummaryExposeNew: "New entities are no longer exposed automatically at {count} assistants. What is exposed already stays exposed. This can be taken back.",
   expoPlanRemove: "take out of {list}", expoPlanPin: "Google asks for the PIN again",
   reason_filtered_by_yaml: "A filter in the YAML configuration of Nabu Casa decides what is exposed. It cannot be changed here.",
   check_exposure_set: "Exposure is changed", result_exposure: "Exposure changed", actKind_set_exposure: "Exposure changed",
@@ -4336,6 +4340,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "set_area") ? "confirmedSummaryArea"
       : executable.some(a => a.kind === "set_entity_state") ? "confirmedSummaryState"
       : executable.some(a => a.kind === "set_exposure") ? "confirmedSummaryExposure"
+      : executable.some(a => a.kind === "set_expose_new") ? "confirmedSummaryExposeNew"
       : executable.some(a => a.kind === "reload_integration") ? "confirmedSummaryReload"
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
@@ -4744,7 +4749,7 @@ class CleanupMixin {
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
-      const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
+      const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" || a.kind === "set_expose_new" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
@@ -8684,16 +8689,34 @@ const EXPO_DOMAIN_ICONS = {
 const EXPO_PLAN_KINDS = {
   stale_exposed: { target: "remove", label: "expoActRemove" },
   google_without_pin: { target: "pin", label: "expoActPin" },
+  auto_expose: { target: "off", label: "expoActNewOff", kind: "set_expose_new" },
+};
+
+// What the three dots of an entity row offer: one entity at a time for the sensitive ones, a jump to Home Assistant for voice names.
+const EXPO_ROW_MENU = {
+  sensitive_exposed: item => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${item.entity_id}"`]],
+  alias_duplicate: () => [["mdi:open-in-new", "expoOpenNames", 'data-ha-path="/config/voice-assistants/expose"']],
 };
 
 class ExposureMixin {
+  // One entity out of its assistants, as a plan of its own: the sensitive ones are never taken out in bulk.
+  async makeExposureOne(entityId) {
+    try {
+      if (!await this.newPlan([{ kind: "set_exposure", object_id: entityId, target: "remove" }])) return;
+      this._exposureRequested = false;
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   // A plan for the entities of one finding; Housekeeper reads the live state again and judges each one.
   async makeExposurePlan(kind) {
     const f = this.exposure?.findings.find(x => x.kind === kind), spec = EXPO_PLAN_KINDS[kind];
-    const items = (f?.items || []).slice(0, MAX_PLAN_ACTIONS);
-    if (!spec || !items.length) return;
+    const actions = spec?.kind === "set_expose_new"
+      ? (f?.assistants || []).map(object_id => ({ kind: spec.kind, object_id, target: spec.target }))
+      : (f?.items || []).slice(0, MAX_PLAN_ACTIONS).map(i => ({ kind: "set_exposure", object_id: i.entity_id, target: spec.target }));
+    if (!spec || !actions.length) return;
     try {
-      if (!await this.newPlan(items.map(i => ({ kind: "set_exposure", object_id: i.entity_id, target: spec.target })))) return;
+      if (!await this.newPlan(actions)) return;
       this._exposureRequested = false; // the view reads again when it is opened next
     } catch (err) { this.failed(err); }
     this.render();
@@ -8701,6 +8724,7 @@ class ExposureMixin {
 
   // The line under the name of an action in a plan.
   expoPlanSub(a) {
+    if (a.kind === "set_expose_new") return this.t("expoPlanNewOff");
     const what = a.target === "pin" ? this.t("expoPlanPin") : this.t("expoPlanRemove", { list: this.expoAssistantList(a.assistants) || "?" });
     return `${a.object_id} · ${what}`;
   }
@@ -8758,6 +8782,7 @@ class ExposureMixin {
         { key: "domain", label: "expoColDomain", dir: "asc", cell: item => this.esc(item.domain) },
         { key: "area", label: "expoColArea", dir: "asc", cell: item => (item.area ? this.esc(item.area) : `<span class="muted">—</span>`) },
         { key: "assistants", label: "expoColAssistants", sortable: false, cell: item => (item.assistants?.length ? this.esc(this.expoAssistantList(item.assistants)) : `<span class="muted">—</span>`) },
+        ...(EXPO_ROW_MENU[f.kind] ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(EXPO_ROW_MENU[f.kind](item)) }] : []),
       ],
     }) : "";
     const agents = f.integrations?.length ? this.sysList(`expofind_${f.kind}`, f.integrations, {
@@ -8771,7 +8796,7 @@ class ExposureMixin {
       ],
     }) : "";
     const more = items.length && f.count > items.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - items.length) })}</p>` : "";
-    const act = EXPO_PLAN_KINDS[f.kind] && items.length ? `<div class="fbtns w300"><button class="btn" data-expo-plan="${f.kind}" ${this.planBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:shield-edit-outline"></ha-icon>${this.t(EXPO_PLAN_KINDS[f.kind].label)}</button></div>` : "";
+    const act = EXPO_PLAN_KINDS[f.kind] && (items.length || f.assistants?.length) ? `<div class="fbtns w300"><button class="btn" data-expo-plan="${f.kind}" ${this.planBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:shield-edit-outline"></ha-icon>${this.t(EXPO_PLAN_KINDS[f.kind].label)}</button></div>` : "";
     const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${act}${table}${agents}${more}`;
     const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
     return this.fold(`expo_${f.kind}`, head, body, false);
@@ -22810,6 +22835,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindAutoPause(root);
     this.bindCheckLog(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
+    root.querySelectorAll("[data-expo-one]").forEach(el => el.addEventListener("click", () => this.makeExposureOne(el.dataset.expoOne)));
     root.querySelectorAll("[data-expo-plan]").forEach(el => el.addEventListener("click", () => this.makeExposurePlan(el.dataset.expoPlan)));
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());
     root.querySelector("[data-policy-hidden]")?.addEventListener("click", () => { this.policyShowHidden = !this.policyShowHidden; this.render(); });

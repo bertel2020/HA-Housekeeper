@@ -18,6 +18,7 @@ OTHER_KINDS = {
     "add_label": "labeled",
     "set_area": "area_set",
     "set_exposure": "exposure_set",
+    "set_expose_new": "exposure_set",
     "refactor_automation": "refactored",
 }
 STATE_KEYS = {"enable": "enabled", "hide": "hidden", "unhide": "unhidden"}

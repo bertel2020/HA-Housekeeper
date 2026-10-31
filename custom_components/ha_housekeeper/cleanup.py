@@ -48,6 +48,9 @@ STATE_TARGETS = ("disable", "enable", "hide", "unhide")
 # Takes an entity out of the assistants it reaches ("remove"), or makes Google ask for the PIN again ("pin").
 EXPOSURE_KINDS = frozenset({"set_exposure"})
 EXPOSURE_TARGETS = ("remove", "pin")
+# Stops a cloud assistant from exposing new entities by itself; what is exposed already stays.
+EXPOSE_NEW_KINDS = frozenset({"set_expose_new"})
+CLOUD_NAMES = {"cloud.alexa": "Alexa", "cloud.google_assistant": "Google Assistant"}
 # What happens to the recorder rows of a removed entity: nothing, its statistics, or also its states.
 RECORDER_CHOICES = ("keep", "statistics", "states")
 REFACTOR_KINDS = frozenset({"refactor_automation"})
@@ -69,6 +72,7 @@ ACTION_KINDS = (
     | AREA_KINDS
     | STATE_KINDS
     | EXPOSURE_KINDS
+    | EXPOSE_NEW_KINDS
     | RELOAD_KINDS
 )
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
@@ -1079,6 +1083,27 @@ def judge_exposure_action(
     return action
 
 
+def judge_expose_new_action(assistant: str, info: dict[str, Any]) -> dict[str, Any]:
+    """Judge switching off the automatic exposure of new entities of one cloud assistant."""
+    action: dict[str, Any] = {
+        "kind": "set_expose_new",
+        "object_id": assistant,
+        "object_type": "assistant",
+        "name": CLOUD_NAMES.get(assistant, assistant),
+        "target": "off",
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+    }
+    if not info.get("exists"):
+        action["reasons"].append("not_found")
+    elif not info.get("on"):
+        action["reasons"].append("already_in_state")
+    _verdict(action)
+    return action
+
+
 def judge_reload_action(entry_id: str, info: dict[str, Any]) -> dict[str, Any]:
     """Judge loading one integration entry anew; ``info`` is what the config entries hold now.
 
@@ -1278,6 +1303,7 @@ def build_plan(
     delete_data: dict[str, dict[str, Any]] | None = None,
     reload_data: dict[str, dict[str, Any]] | None = None,
     exposure_data: dict[tuple[str, str], dict[str, Any]] | None = None,
+    expose_new_data: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Create a dry-run plan for ``requested`` actions from the latest snapshot.
 
@@ -1376,6 +1402,10 @@ def build_plan(
                 {**info, "marked_keep": item.get("marked_keep"), "critical": item.get("critical")},
                 _used_by(snapshot["edges"], f"entity:{object_id}"),
             )
+            action["fingerprint"] = info.get("fingerprint")
+        elif kind in EXPOSE_NEW_KINDS:
+            info = (expose_new_data or {}).get(object_id, {})
+            action = judge_expose_new_action(object_id, info)
             action["fingerprint"] = info.get("fingerprint")
         elif kind in EXPOSURE_KINDS:
             target = request.get("target") or ""

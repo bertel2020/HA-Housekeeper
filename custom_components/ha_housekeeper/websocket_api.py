@@ -33,6 +33,7 @@ from .cleanup import (
     AREA_KINDS,
     DELETE_AUTOMATION_KINDS,
     DELETE_BACKUP_KINDS,
+    EXPOSE_NEW_KINDS,
     EXPOSURE_KINDS,
     LABEL_KINDS,
     MAX_ACTIONS,
@@ -855,6 +856,12 @@ async def _plan_from_requests(
         if action["kind"] in EXPOSURE_KINDS
     }
 
+    expose_new_data = {
+        action["object_id"]: exposure_edit.expose_new(hass, action["object_id"])
+        for action in requests
+        if action["kind"] in EXPOSE_NEW_KINDS
+    }
+
     rename_data = {}
     for action in requests:
         if action["kind"] in RENAME_KINDS:
@@ -958,6 +965,7 @@ async def _plan_from_requests(
         delete_data=delete_data,
         reload_data=reload_data,
         exposure_data=exposure_data,
+        expose_new_data=expose_new_data,
     )
     await _add_history(hass, snapshot, plan)
     return plan
