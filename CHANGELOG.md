@@ -1,5 +1,68 @@
 # Changelog
 
+## Unreleased (nach 2.0.0-beta.1)
+
+### Neu
+
+- **Objekt-Notiz mit Ende:** Eine Objekt-Notiz kann von selbst enden, sobald das Objekt wieder meldet. Die Wartezeit sitzt neben der Option und heißt „Warten“.
+- **Wirkungszeile:** Status, Objekt-Notiz und Regel zeigen vor dem Speichern, was ausgeblendet wird, ob das Aufräumen gesperrt ist und wann es zurückkommt.
+- **Schon ausgeblendet:** Hat ein Weg mit höherem Vorrang einen Befund schon ausgeblendet, sagt das Formular es. Ein ausgeblendeter Befund nennt die übrigen Wege, die ebenfalls greifen würden.
+- **Zugriffe & Datenfluss:** Der Grund für eine Stufe steht unter ihr. Die Liste lässt sich auf „Neu oder Stufe gestiegen“, „Deaktiviert, mit Zugriff“, „Fremdcode“ und „Gewollt“ eingrenzen; im Zeilenmenü „Ist so gewollt“ nimmt einem bekannten Zugriff die Farbe, bis seine Stufe steigt. Der Export hat eine Spalte „Zustand“.
+- **Zugangsdaten und Zugriffe im Look der übrigen Sicherheitsseiten:** Bei den Zugangsdaten sind die Karten die Reiter und die Seite beginnt mit „Zu prüfen“ (Anmeldung nötig, Felder ohne Wert, deaktiviert mit Wert, Admin ohne Zwei-Faktor, alte Tokens), die Feldnamen stehen aufgeklappt, der Sprung nach Home Assistant im Zeilenmenü. Die Zugriffe beginnen mit „Zu prüfen“ (neu, deaktiviert mit Zugriff, Fremdcode) und haben ein Symbol je Zeile.
+- **Zugangsdaten, mehr Auffälligkeiten:** „Leere Felder sind gewollt“ im Zeilenmenü nimmt einen Eintrag aus „Felder ohne Wert“, bis mehr Felder leer sind. Neue Falten: Admin von außen erreichbar ohne Zwei-Faktor, Konto lange nicht angemeldet.
+- **Freigaben ändern:** Bei „Freigabe für deaktivierte oder verwaiste Entitäten“ und „Google ohne PIN“ gibt es einen Knopf, der daraus einen Plan macht (Vorschau, Journal, Rückgängig): Freigaben entfernen, PIN wieder verlangen. Auch „Neue nicht mehr automatisch freigeben“ bei Alexa und Google, und bei sensiblen Entitäten im Zeilenmenü „Freigabe entfernen“, immer einzeln. Bei Alexa und Google wird sofort synchronisiert; Hinzufügen und HomeKit gibt es nicht.
+
+### Geändert
+
+- **Aufräumen:** Das Angebot erscheint schon ab 25 offenen Befunden statt ab 50.
+- **Befunde, Bedienung:**
+  - Die Auswahlleiste hat ein Menü „Aktionen“ statt dreier Knöpfe, die Einträge heißen „Befund entscheiden“, „Objekt-Notiz setzen“ und „Regel für dieses Objekt“.
+  - Die Regel für genau eine Entität entfällt, sie beginnt beim Gerät, Bereich oder der Integration. Für das einzelne Objekt gibt es die Objekt-Notiz.
+  - Beim Setzen einer Notiz für mehrere Objekte gibt es Zeitfenster und Selbstaufhebung wie bei einer einzelnen.
+  - Die Vorschau einer Regel nennt die betroffenen Objekte.
+  - Status, Objekt-Notiz und Regel haben dasselbe Gerüst: eine Übersicht der betroffenen Befunde oder Objekte (einzeln herausnehmbar), dann die Wahl als Kacheln, die Details und zuletzt die Wirkungszeile.
+  - Die Art der Objekt-Notiz sind Kacheln mit einer Erklärzeile, „Wann gilt die Objekt-Notiz“ sind Chips.
+  - „Ist so gewollt“ weist darauf hin, dass das Objekt beim Aufräumen trotzdem vorgeschlagen werden kann, und nennt die Objekt-Notiz „Nicht löschen“.
+  - „Nicht entfernen“ heißt „Nicht löschen“. Status: „Wieder melden nach“, Notiz und Regel: „Erinnern in“.
+  - „Nächste Schritte“ ist auf dem Smartphone eine wischbare Zeile mit kurzen Texten.
+
+### Behoben
+
+- **Anleitung:** Der Schutzmodus heißt dort wie in der Oberfläche Beobachten, Ändern und Alles.
+- **Ablauf einer Automation:** Eine Entität, die nur als Zustand existiert (etwa `zone.home`), wird im Reiter „Ablauf“ nicht mehr als fehlend gemeldet.
+- **Neue Regel:** Die Karten von „Wofür“ werden nicht mehr vom vollbreiten Eingabefeld gequetscht.
+
+### English
+
+#### New
+
+- **Object note with an end:** An object note can end by itself once the object reports again. The wait sits next to the option and is called “Wait”.
+- **Effect line:** Status, object note and rule show before saving what is hidden, whether the cleanup is blocked and when it comes back.
+- **Already hidden:** If a way of a higher rank has hidden a finding already, the form says so. A hidden finding names the other ways that would apply as well.
+- **Access & data flow:** The reason for a level is written under it. The list can be narrowed to “New or level risen”, “Disabled, with access”, “Custom code” and “Meant to be so”; “Meant to be so” in the row menu takes the colour off a known access until its level rises. The export has a “State” column.
+- **Credentials and access in the look of the other Security pages:** On the credentials page the cards are the tabs and the page starts with “To check” (sign-in needed, fields without a value, disabled with a value, admin without two-factor, old tokens), the field names are folded away and the jump to Home Assistant is in the row menu. The access page starts with “To check” (new, disabled with access, custom code) and has a symbol per row.
+- **Credentials, more findings:** “Empty fields are meant so” in the row menu takes an entry out of “Fields without a value” until more fields are empty. New folds: admin reachable from outside without two-factor, account not signed in for a long time.
+- **Change exposures:** The findings “Exposure of disabled or orphaned entities” and “Google without PIN” have a button that makes a plan of it (preview, journal, undo): remove exposures, ask for the PIN again. Also “Stop exposing new ones automatically” for Alexa and Google, and “Remove exposure” in the row menu of sensitive entities, always one at a time. Alexa and Google synchronise at once; there is no adding and no HomeKit.
+
+#### Changed
+
+- **Cleanup:** The offer shows from 25 open findings instead of 50.
+- **Findings, handling:**
+  - The selection bar has an “Actions” menu instead of three buttons; the entries are “Decide on finding”, “Set object note” and “Rule for this object”.
+  - A rule for exactly one entity is gone, it starts at the device, area or integration. A single object has the object note.
+  - The object note for several objects has a time window and self-ending like the one for a single object.
+  - The preview of a rule names the objects it affects.
+  - Status, object note and rule share one layout: an overview of the findings or objects affected (each can be taken out), then the choice as tiles, the details and finally the effect line.
+  - The kind of an object note is a set of tiles with an explanation, “When does the object note apply” is a row of chips.
+  - “Intended” points out that the object can still be suggested in the cleanup, and names the object note “Do not delete”.
+  - “Do not remove” is now “Do not delete”. Status: “Report again after”, note and rule: “Remind in”.
+  - “Next steps” is a swipeable line with short texts on a phone.
+
+#### Fixed
+
+- **Flow of an automation:** An entity that only exists as a state (such as `zone.home`) is no longer reported as missing in the “Flow” tab.
+- **New rule:** The cards of “For what” are no longer squeezed by the full-width input field.
+
 ## 2.0.0-beta.1 - 2026-10-26
 
 ### Neu
