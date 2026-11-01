@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 from collections import Counter
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -268,7 +268,8 @@ class MonitorSensor(SensorEntity):
             if not self._removed:
                 self._removed = True
                 registry = er.async_get(self.hass)
-                entity_id = registry.async_get_entity_id("sensor", DOMAIN, self.unique_id)
+                unique_id = cast(str, self.unique_id)
+                entity_id = registry.async_get_entity_id("sensor", DOMAIN, unique_id)
                 if entity_id:
                     registry.async_remove(entity_id)
                 self.hass.async_create_task(self.async_remove())

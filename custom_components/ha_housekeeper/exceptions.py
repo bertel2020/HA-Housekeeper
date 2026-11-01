@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import datetime, timedelta
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, cast
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
@@ -108,7 +108,7 @@ def clean_rule(raw: Any, now: datetime | None = None) -> dict[str, Any] | None:
     )
     review_at = raw.get("review_at") if review_days else None
     try:
-        datetime.fromisoformat(review_at)
+        datetime.fromisoformat(cast(str, review_at))
     except (TypeError, ValueError):
         review_at = (now + timedelta(days=review_days)).isoformat() if review_days and now else None
     rule_id = raw.get("id")
@@ -311,7 +311,7 @@ def preview(
         object_id = finding["object_id"]
         found = traits(hass, "entity" if "." in object_id else "device", object_id)
         result = verdict(drafts, found, finding, now, on) if found is not None else None
-        if result is None:
+        if result is None or found is None:
             continue
         if finding.get("ignored_by") not in (None, "rule"):
             covered += finding["ignored_by"] in ("user", "label")  # hidden ahead of any rule
@@ -473,7 +473,7 @@ class ExceptionStore:
                 blocking=True,
                 return_response=True,
             )
-            events = (result or {}).get(entity, {}).get("events", [])
+            events = cast(dict[str, Any], result or {}).get(entity, {}).get("events", [])
             self._keyword_hit = any(
                 word in str(event.get("summary") or "").casefold() for event in events
             )

@@ -9,7 +9,7 @@ variables, payloads or error texts.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
@@ -59,6 +59,11 @@ def _parse(value: Any) -> datetime | None:
     except ValueError:
         return None
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=UTC)
+
+
+def _stamp(value: Any) -> datetime:
+    """The time of a stored event, whose ``at`` was checked when the log was loaded."""
+    return cast(datetime, _parse(value))
 
 
 def detect(
@@ -218,7 +223,7 @@ class EventLog:
     ) -> None:
         """A check changed its level; ``cause`` holds the numbers behind it, never texts or names."""
         self.levels[f"{area}/{check}"] = new
-        fields = {"area": area, "check": check, "from": old, "to": new}
+        fields: dict[str, Any] = {"area": area, "check": check, "from": old, "to": new}
         if cause:
             fields["cause"] = cause
         horizon = (now - timedelta(days=CHECK_DAYS)).isoformat()
@@ -406,7 +411,7 @@ def flapping(events: list[dict[str, Any]], dismissed: dict[str, str], now: datet
     """Checks with at least ``FLAP_CHANGES`` changes within ``FLAP_WINDOW`` up to now."""
     counts: dict[str, int] = {}
     for event in _changes(events):
-        if change_id(event) in dismissed or now - _parse(event["at"]) > FLAP_WINDOW:
+        if change_id(event) in dismissed or now - _stamp(event["at"]) > FLAP_WINDOW:
             continue
         key = f"{event['area']}/{event['check']}"
         counts[key] = counts.get(key, 0) + 1
@@ -442,15 +447,15 @@ def check_log(
             by_key.setdefault(f"{event['area']}/{event['check']}", []).append(index)
     for indexes in by_key.values():
         for position, index in enumerate(indexes):
-            at = _parse(changes[index]["at"])
+            at = _stamp(changes[index]["at"])
             near = [
-                i for i in indexes[: position + 1] if at - _parse(changes[i]["at"]) <= FLAP_WINDOW
+                i for i in indexes[: position + 1] if at - _stamp(changes[i]["at"]) <= FLAP_WINDOW
             ]
             if len(near) >= FLAP_CHANGES:
                 flaps[index] = len(near)
             if changes[index]["to"] in ("problem", "note") and position + 1 < len(indexes):
                 lasted[index] = int(
-                    (_parse(changes[indexes[position + 1]]["at"]) - at).total_seconds()
+                    (_stamp(changes[indexes[position + 1]]["at"]) - at).total_seconds()
                 )
     entries: list[dict[str, Any]] = []
     runs = [i for i, e in enumerate(changes) if e["area"] == "backup" and e["check"] == "run"]
@@ -465,9 +470,9 @@ def check_log(
             and changes[following]["from"] == "running"
         ):
             run_end[index] = following
-    ended = {end for begin, end in run_end.items() if _parse(changes[begin]["at"]) >= since}
+    ended = {end for begin, end in run_end.items() if _stamp(changes[begin]["at"]) >= since}
     for index, event in enumerate(changes):
-        if _parse(event["at"]) < since or index in ended:
+        if _stamp(event["at"]) < since or index in ended:
             continue
         is_run = event["area"] == "backup" and event["check"] == "run"
         if is_run and event["to"] == "running":  # start and end of one backup are one line
@@ -475,7 +480,7 @@ def check_log(
             entry = {"at": event["at"], "kind": "backup_run", "id": change_id(event)}
             if end is not None:
                 entry["ended"] = end["at"]
-                entry["seconds"] = int((_parse(end["at"]) - _parse(event["at"])).total_seconds())
+                entry["seconds"] = int((_stamp(end["at"]) - _stamp(event["at"])).total_seconds())
             entries.append(entry)
             continue
         entry = {key: event[key] for key in ("at", "area", "check", "from", "to") if key in event}
@@ -516,11 +521,11 @@ def check_log(
         if event["kind"] != "start" or moment is None or moment < since:
             continue
         down = int(event.get("down_seconds") or 0)
-        near = [u for at, u in updates if abs(at - moment) <= START_NEAR and id(u) not in merged]
-        merged.update(id(u) for u in near)
+        taken = [u for at, u in updates if abs(at - moment) <= START_NEAR and id(u) not in merged]
+        merged.update(id(u) for u in taken)
         after: dict[str, int] = {}
         for change in changes:  # what turned bad right after the start (false alarms not counted)
-            at = _parse(change["at"])
+            at = _stamp(change["at"])
             if (
                 moment <= at <= moment + START_NEAR
                 and change["to"] in ("problem", "note")
@@ -533,8 +538,8 @@ def check_log(
                 "kind": "start",
                 "down_seconds": down,
                 "gap": down >= GAP_SECONDS,
-                "reason": "update" if near else "crash" if event.get("unclean") else "restart",
-                **({"updates": near} if near else {}),
+                "reason": "update" if taken else "crash" if event.get("unclean") else "restart",
+                **({"updates": taken} if taken else {}),
                 **({"after": after} if after else {}),
                 **(
                     {"first_check_seconds": event["first_check_seconds"]}
@@ -555,7 +560,7 @@ def check_log(
     if begun is not None and begun > since:
         gaps.append((since, begun))  # before the first look nothing is known
     entries.sort(key=lambda e: e["at"], reverse=True)
-    shown = [e for e in changes if _parse(e["at"]) >= since]
+    shown = [e for e in changes if _stamp(e["at"]) >= since]
     problems = [
         e
         for e in shown
@@ -563,13 +568,13 @@ def check_log(
         and change_id(e) not in dismissed
         and not (e["area"] == "backup" and e["check"] == "run")
     ]
-    recurring = {}
+    recurring: dict[str, Any] = {}
     week = now - timedelta(days=7)
     for event in changes:
         if (
             event["to"] == "problem"
             and change_id(event) not in dismissed
-            and _parse(event["at"]) >= week
+            and _stamp(event["at"]) >= week
         ):
             key = f"{event['area']}/{event['check']}"
             recurring[key] = recurring.get(key, 0) + 1
@@ -585,7 +590,7 @@ def check_log(
                 {
                     f"{changes[i]['area']}/{changes[i]['check']}"
                     for i in flaps
-                    if _parse(changes[i]["at"]) >= since
+                    if _stamp(changes[i]["at"]) >= since
                 }
             ),
             "restarts": sum(1 for e in entries if e["kind"] == "start" and not e.get("updates")),
@@ -598,7 +603,7 @@ def check_log(
                 (
                     lasted[i]
                     for i in lasted
-                    if _parse(changes[i]["at"]) >= since and changes[i]["to"] == "problem"
+                    if _stamp(changes[i]["at"]) >= since and changes[i]["to"] == "problem"
                 ),
                 default=0,
             ),
@@ -635,10 +640,10 @@ def _strips(
         state = {}
         for check in current:
             first = next(
-                (e for e in mine if e["check"] == check and _parse(e["at"]) >= start), None
+                (e for e in mine if e["check"] == check and _stamp(e["at"]) >= start), None
             )
             state[check] = first["from"] if first else current[check]
-        points = [(max(_parse(e["at"]), start), e) for e in mine if _parse(e["at"]) >= start]
+        points = [(max(_stamp(e["at"]), start), e) for e in mine if _stamp(e["at"]) >= start]
         marks = [(start, None)] + points + [(now, None)]
         segments: list[dict[str, Any]] = []
         for (left, event), (right, _) in zip(marks, marks[1:], strict=False):

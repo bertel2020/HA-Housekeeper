@@ -24,8 +24,8 @@ from __future__ import annotations
 import hashlib
 import json
 from bisect import bisect_right
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Callable, Sequence
+from typing import Any, cast
 
 from homeassistant.core import HomeAssistant
 
@@ -297,6 +297,8 @@ def stats_changes(
         if reason:
             skipped.append({"finding": index, "reason": reason})
             continue
+        if b is None or e is None:  # told apart by ``reason`` above
+            continue
         for row in ordered:
             ts = row["ts"] + ref
             if not (b["ts"] + ref < ts < e["ts"] + ref) or row.get("state") is None:
@@ -357,7 +359,7 @@ def build_changes(
     state_rows: list[dict[str, Any]],
     mode: str,
 ) -> dict[str, Any]:
-    changes = {
+    changes: dict[str, Any] = {
         "states": state_changes(state_rows, findings, mode),
         "short_term": stats_changes(short_rows, "short_term", findings, mode),
         "long_term": stats_changes(long_rows, "long_term", findings, mode),
@@ -462,7 +464,7 @@ def range_bracket(
     return None
 
 
-def _same_all(old: list[float | None], new: list[float | None]) -> bool:
+def _same_all(old: Sequence[float | None], new: Sequence[float | None]) -> bool:
     return all(
         (a is None and b is None)
         or (a is not None and b is not None and abs(a - b) <= max(1e-9, 1e-9 * max(abs(a), abs(b))))
@@ -511,9 +513,9 @@ def measurement_changes(
             and current[r["id"]][0] is not None
         ]
         if len(inside) >= SLOT["long_term"] // SLOT["short_term"] - 2:
-            means = [v[0] for v in inside]
-            lows = [v[1] for v in inside if v[1] is not None]
-            highs = [v[2] for v in inside if v[2] is not None]
+            means = cast(list[float], [v[0] for v in inside])
+            lows = cast(list[float], [v[1] for v in inside if v[1] is not None])
+            highs = cast(list[float], [v[2] for v in inside if v[2] is not None])
             new = [sum(means) / len(means), min(lows or means), max(highs or means)]
         else:
             value = fixed_value(finding, row["ts"] + SLOT["long_term"] / 2, mode)
@@ -843,11 +845,15 @@ def _prepare_range(
     }
     if bracket is None and (counter or mode != "fixed"):
         return {**base, "error": "no_bracket"}, None
-    if counter and bracket[1] > bracket[3] + tolerance(bracket[1], bracket[3]):
+    if (
+        counter
+        and bracket is not None
+        and bracket[1] > bracket[3] + tolerance(bracket[1], bracket[3])
+    ):
         return {**base, "error": "bracket_not_good"}, None
-    if counter and mode == "fixed":
+    if counter and bracket is not None and mode == "fixed":
         tol = tolerance(bracket[1], bracket[3])
-        if not bracket[1] - tol <= fixed <= bracket[3] + tol:
+        if not bracket[1] - tol <= cast(float, fixed) <= bracket[3] + tol:
             return {**base, "error": "fixed_outside"}, None
     if counter:
         changes = build_changes([finding], short_rows, long_rows, state_rows, mode)
@@ -1192,7 +1198,8 @@ def undo_blocking(instance: Any, written: dict[str, Any]) -> str:
                 and all(_same(a, b) for a, b in zip(now, row["new"], strict=True))
             ]
             kept = [row for row in rows if row not in fine]
-            tails_fine, tails_kept = [], []
+            tails_fine: list[dict[str, Any]] = []
+            tails_kept: list[dict[str, Any]] = []
             for tail in block.get("tails", []):
                 probe = session.execute(select(model.sum).where(model.id == tail["probe"])).scalar()
                 (
@@ -1217,7 +1224,8 @@ def undo_blocking(instance: Any, written: dict[str, Any]) -> str:
             skipped += len(kept) + len(tails_kept)
             remaining["tables"][table] = {"cols": cols, "rows": kept, "tails": tails_kept}
         states = written.get("states") or []
-        fine_states, kept_states = [], []
+        fine_states: list[dict[str, Any]] = []
+        kept_states: list[dict[str, Any]] = []
         if states:
             model = models["states"]
             current_states = {

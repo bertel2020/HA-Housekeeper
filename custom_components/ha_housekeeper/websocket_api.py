@@ -807,7 +807,7 @@ async def _plan_from_requests(
         entry = devices.async_get(device_id)
         return (device_fingerprint(entry), device_support(hass, entry)) if entry else (None, {})
 
-    reference_data = {}
+    reference_data: dict[Any, tuple[str | None, list[dict[str, Any]]]] = {}
     for action in requests:
         if action["kind"] in REFERENCE_KINDS and action.get("target"):
             target_kind = action.get("target_kind") or "entity"
@@ -824,7 +824,7 @@ async def _plan_from_requests(
             if key not in meter_data and key[0] != key[1]:
                 meter_data[key] = await prepare_meter(hass, key[0], key[1], key[2])
 
-    counter_data = {}
+    counter_data: dict[Any, dict[str, Any]] = {}
     for action in requests:
         if action["kind"] in REPAIR_KINDS:
             key = counter_key(action)
@@ -865,9 +865,9 @@ async def _plan_from_requests(
     rename_data = {}
     for action in requests:
         if action["kind"] in RENAME_KINDS:
-            key = (action["object_id"], action.get("target") or "")
-            if key not in rename_data:
-                rename_data[key] = await rename.prepare(hass, snapshot, *key)
+            rename_key = (action["object_id"], action.get("target") or "")
+            if rename_key not in rename_data:
+                rename_data[rename_key] = await rename.prepare(hass, snapshot, *rename_key)
 
     state_data = {}
     for action in requests:
@@ -931,7 +931,7 @@ async def _plan_from_requests(
             )
 
     def statistic_exists(statistic_id: str) -> bool:
-        return registry.async_get(statistic_id) is not None or hass.states.get(statistic_id)
+        return registry.async_get(statistic_id) is not None or bool(hass.states.get(statistic_id))
 
     refactor_data = {}
     for action in requests:
@@ -1069,10 +1069,11 @@ async def websocket_plan_merge(
         connection.send_error(msg["id"], "warming_up", "Home Assistant is still starting")
         return
     ids = list(dict.fromkeys(msg["plan_ids"]))
-    plans = [scanner.journal.get(i) for i in ids]
-    if len(ids) < 2 or any(p is None for p in plans):
+    found_plans = [scanner.journal.get(i) for i in ids]
+    if len(ids) < 2 or any(p is None for p in found_plans):
         connection.send_error(msg["id"], "not_found", "Two or more known plans are needed")
         return
+    plans = [p for p in found_plans if p is not None]
     if any(p.get("executed") or p.get("run") for p in plans):
         connection.send_error(msg["id"], "plan_not_open", "Only open previews can be merged")
         return

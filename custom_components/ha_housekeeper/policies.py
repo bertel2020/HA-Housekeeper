@@ -341,7 +341,7 @@ def evaluate(
         "naming_scheme": lambda: _naming_scheme(entities, prefixes or {}),
         "state_rate": lambda: _state_rate(entities, rates or {}, limit),
     }
-    rules = []
+    rules: list[dict[str, Any]] = []
     for rule in RULES:
         if rule not in enabled:
             rules.append({"id": rule, "enabled": False, "count": 0, "ignored": 0, "items": []})
@@ -508,7 +508,7 @@ def _extra(
     extra: dict[str, Any] = {"battery_percent": battery_percent}
     if "label_unused" in store.enabled:
         used = {label for entry in registry.entities.values() for label in entry.labels}
-        used |= {label for dev in dr.async_get(hass).devices for label in dev.labels}
+        used |= {label for dev in dr.async_get(hass).devices.values() for label in dev.labels}
         used |= {label for area in ar.async_get(hass).async_list_areas() for label in area.labels}
         extra["used_labels"] = used
     if store.enabled & {"exposure_unused", "exposure_sensitive"}:

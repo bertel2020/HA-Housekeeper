@@ -254,16 +254,16 @@ def apply_causes(
         if finding["rule_id"] == APP_RULE:
             app_findings.setdefault(finding["object_id"], []).append(finding)
     for item in objects:
-        own = app_findings.get(item["object_id"]) if item["object_type"] == "app" else None
-        if not own:
+        app_own = app_findings.get(item["object_id"]) if item["object_type"] == "app" else None
+        if not app_own:
             continue
-        cause = _cause("app_down", item, [], users, [], own)
-        for finding in own:
-            below = integration_cause.get(finding.get("affected_object") or "")
-            if below is not None and below["parent_id"] is None:
-                below["parent_id"] = cause["id"]
-                cause["child_ids"].append(below["id"])
-        causes[cause["id"]] = cause
+        app_cause = _cause("app_down", item, [], users, [], app_own)
+        for app_finding in app_own:
+            hanging = integration_cause.get(app_finding.get("affected_object") or "")
+            if hanging is not None and hanging["parent_id"] is None:
+                hanging["parent_id"] = app_cause["id"]
+                app_cause["child_ids"].append(hanging["id"])
+        causes[app_cause["id"]] = app_cause
 
     # 4. Missing targets: every automation, script or dashboard that points to the same one.
     callers: dict[tuple[str, str], list[dict[str, Any]]] = {}
@@ -290,16 +290,16 @@ def apply_causes(
         if not entities or evidence.get("total") != len(entities):
             continue  # the list is cut short: the rest could have another cause
         owners = {by_object[e].get("cause_id") if e in by_object else None for e in entities}
-        cause = causes.get(owners.pop()) if len(owners) == 1 else None
-        if cause is None:
+        owner = causes.get(owners.pop() or "") if len(owners) == 1 else None
+        if owner is None:
             continue
-        finding["cause_id"] = cause["id"]
+        finding["cause_id"] = owner["id"]
         finding["topic"] = DOWN
-        cause["follower_count"] += 1
-        cause["total_followers"] += 1
-        if len(cause["follower_keys"]) < KEY_LIMIT:
-            cause["follower_keys"].append(finding["key"])
-        cause["impact"] = _top([cause["impact"], finding.get("impact", "none")])
+        owner["follower_count"] += 1
+        owner["total_followers"] += 1
+        if len(owner["follower_keys"]) < KEY_LIMIT:
+            owner["follower_keys"].append(finding["key"])
+        owner["impact"] = _top([owner["impact"], finding.get("impact", "none")])
 
     # The totals and the impact run up the chains: an app is as bad as the worst below it.
     def settle(cause: dict[str, Any]) -> None:

@@ -90,7 +90,7 @@ def _offsets() -> tuple[int, ...]:
 
 OFFSETS = _offsets()
 
-TEXTS = {
+TEXTS: dict[str, dict[str, Any]] = {
     "de": {
         "paused": (
             "HA Housekeeper: {title} pausiert",
@@ -366,7 +366,7 @@ class AutoPause:
         began = self.carry.get(entry_id)
         if status == "problem" and began and (since is None or began < since):
             return began
-        if status not in ("problem", "disabled") and self.carry.pop(entry_id, None):
+        if status not in ("problem", "disabled") and self.carry.pop(entry_id, None) is not None:
             self._save()
         return since
 

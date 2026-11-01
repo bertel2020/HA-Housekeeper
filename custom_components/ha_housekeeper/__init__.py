@@ -209,7 +209,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         boot_s = max(0.0, boot["epoch"] - anchor)
         settled = scanner.settled_at
         loaded_s = None if settled is None else boot_s + max(0.0, settled - boot["mono"])
-        began = next((e for e in reversed(scanner.events.events) if e.get("kind") == "start"), {})
+        began: dict[str, Any] = next(
+            (e for e in reversed(scanner.events.events) if e.get("kind") == "start"), {}
+        )
         try:
             scanner.starts.record(
                 datetime.now(UTC),

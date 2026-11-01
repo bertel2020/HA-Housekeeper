@@ -96,5 +96,5 @@ rules:
     status: exempt
     comment: No HTTP client.
   strict-typing:
-    status: todo
-    comment: mypy checks a few modules and does not block the CI.
+    status: done
+    comment: mypy checks every module of the integration and blocks the CI.

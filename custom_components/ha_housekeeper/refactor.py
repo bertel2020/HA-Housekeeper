@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import copy
 import json
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.components.automation.config import async_validate_config_item
 from homeassistant.core import HomeAssistant
@@ -251,7 +251,7 @@ def action_step(item: dict[str, Any], path: str) -> dict[str, Any] | None:
 
 def current_mode(item: dict[str, Any]) -> tuple[str, int | None]:
     """The mode of the automation and, for queued and parallel, its limit."""
-    mode = item.get("mode") if item.get("mode") in MODES else "single"
+    mode = cast(str, item["mode"]) if item.get("mode") in MODES else "single"
     return mode, (item.get("max", DEFAULT_MAX) if mode in ("queued", "parallel") else None)
 
 
@@ -313,12 +313,15 @@ def apply(
         ordered.setdefault("description", text)
         return ordered, [{"path": "description", "before": None, "after": text}]
     if fix == "remove_duplicate_triggers":
-        key = _trigger_key(new)
+        trigger_key = _trigger_key(new)
         positions = duplicates(new)
-        if key is None or not positions:
+        if trigger_key is None or not positions:
             raise ValueError("nothing_to_do")
-        diff = [{"path": f"{key}/{i}", "before": new[key][i], "after": None} for i in positions]
-        new[key] = [t for i, t in enumerate(new[key]) if i not in positions]
+        diff = [
+            {"path": f"{trigger_key}/{i}", "before": new[trigger_key][i], "after": None}
+            for i in positions
+        ]
+        new[trigger_key] = [t for i, t in enumerate(new[trigger_key]) if i not in positions]
         return new, diff
     if fix == "set_timeout":
         timeout, keep = values.get("timeout"), values.get("continue_on_timeout", True)
@@ -331,8 +334,9 @@ def apply(
         paths = waits_without_timeout(new)
         if not paths:
             raise ValueError("nothing_to_do")
-        key = _action_key(new)
-        steps = dict(_walk(new[key], key))
+        action_key = _action_key(new)
+        assert action_key is not None  # a wait without a timeout was found in it
+        steps = dict(_walk(new[action_key], action_key))
         diff = []
         for path in paths:
             steps[path]["timeout"] = timeout
@@ -378,17 +382,19 @@ def apply(
             diff.append({"path": place["path"], "before": place["tokens"], "after": rest})
         return new, diff
     if fix == "continue_on_error":
-        path = values.get("path")
+        step_path = values.get("path")
         step = (
-            action_step(new, path) if isinstance(path, str) and len(path) <= REFERENCE_MAX else None
+            action_step(new, step_path)
+            if isinstance(step_path, str) and len(step_path) <= REFERENCE_MAX
+            else None
         )
         if step is None:
             raise ValueError("invalid_fix")
         if step.get("continue_on_error") is True:
             raise ValueError("nothing_to_do")
-        before = step.get("continue_on_error")
+        was = step.get("continue_on_error")
         step["continue_on_error"] = True
-        return new, [{"path": f"{path}/continue_on_error", "before": before, "after": True}]
+        return new, [{"path": f"{step_path}/continue_on_error", "before": was, "after": True}]
     raise ValueError("invalid_fix")
 
 

@@ -314,8 +314,8 @@ def findings(
     """Findings, most important first, filtered and in pages of at most ``LIMIT_MAX``."""
     snapshot = _snapshot(scanner)
     objects: dict[str, dict[str, Any]] = {}
-    for item in snapshot["objects"]:
-        objects.setdefault(item["object_id"], item)
+    for obj in snapshot["objects"]:
+        objects.setdefault(obj["object_id"], obj)
     rule = data.get("rule", "").lower()
     needle = data.get("search", "").lower()
     floor = RANK[data["level"]] if "level" in data else 0
@@ -786,7 +786,7 @@ def audit(
 
 @dataclass(frozen=True)
 class Function:
-    handler: Callable[[InventoryScanner, dict[str, Any], str | None], dict[str, Any]]
+    handler: Callable[[InventoryScanner, dict[str, Any], str | None], Any]
     schema: vol.Schema
     kind: str = "read"  # read, write (Housekeeper's lists) or fix (a plan, never executed)
     logged: bool = True

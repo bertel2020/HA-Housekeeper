@@ -85,7 +85,7 @@ def ways_for(
         return _broken_ways(finding, refactor_enabled)
     if finding.get("topic") == FAILING_AUTOMATIONS:
         caused = bool(finding.get("cause_id"))
-        ways = [_way("fix_cause", "panel", True)] if caused else []
+        ways: list[dict[str, Any]] = [_way("fix_cause", "panel", True)] if caused else []
         ways.append(_way("open_editor", "panel", not caused))
         if finding["rule_id"] in ("automation.run_failing", "automation.never_ok"):
             ways.append(_way("catch_error", "panel", enabled=refactor_enabled))
@@ -101,7 +101,7 @@ def ways_for(
     if finding.get("topic") != DOWN:
         return []
     rule = finding["rule_id"]
-    ways: list[dict[str, Any]] = []
+    ways = []
     if rule == "config_entry.not_loaded":
         state = ((finding.get("evidence") or [{}])[0]).get("kind")
         domain = _domain(snapshot, finding["object_id"])
@@ -121,7 +121,7 @@ def ways_for(
         ways.append(_way("reauth", "link", True, path=page))
         ways.append(_way("mark", "panel"))
     elif rule == "device.down":
-        device = next(
+        device: dict[str, Any] = next(
             (
                 i
                 for i in snapshot.get("objects", [])

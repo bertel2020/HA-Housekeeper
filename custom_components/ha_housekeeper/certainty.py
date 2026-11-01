@@ -125,7 +125,11 @@ def apply_certainty(
             value += PATTERN
             notes.append({"code": "pattern", "delta": PATTERN, "hour": hour})
         since = _since(finding) if now is not None and level in (DERIVED, GUESSED) else None
-        if since is not None and now - since > LONG_FACTOR * _wait(finding["rule_id"], waits or {}):
+        if (
+            since is not None
+            and now is not None
+            and now - since > LONG_FACTOR * _wait(finding["rule_id"], waits or {})
+        ):
             value += LONG_LASTING
             notes.append({"code": "duration", "delta": LONG_LASTING, "days": (now - since).days})
         finding["confidence_base"] = LEVEL_VALUE[level]

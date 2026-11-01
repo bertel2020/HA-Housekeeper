@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import voluptuous as vol
 from homeassistant.components import websocket_api
@@ -73,7 +73,7 @@ async def websocket_automation_quality(
         return
     result = build_quality(
         snapshot,
-        runs,
+        cast(dict[str, Any], runs),
         runs["conflicts"]["items"],
         scanner.criteria,
         datetime.now(UTC).date(),

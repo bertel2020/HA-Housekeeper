@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import statistics
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
@@ -190,8 +190,8 @@ def _newest_check(
     dated = [item for item in backups if _parse(item["date"])]
     if not dated:
         return _check("newest", "problem", count=len(backups), age_hours=None, limit_hours=None)
-    newest = max(dated, key=lambda item: _parse(item["date"]))
-    age = _age_hours(_parse(newest["date"]), now)
+    newest = max(dated, key=lambda item: cast(datetime, _parse(item["date"])))
+    age = cast(float, _age_hours(_parse(newest["date"]), now))
     recurrence = config["recurrence"] if config else "never"
     limit = SCHEDULE_LIMIT_HOURS.get(recurrence)
     if limit is not None:
@@ -251,7 +251,7 @@ def _targets_check(newest: dict[str, Any] | None, recorded: str | None) -> dict[
 def _size_check(backups: list[dict[str, Any]]) -> dict[str, Any]:
     sized = sorted(
         (item for item in backups if _parse(item["date"]) and item["size"]),
-        key=lambda item: _parse(item["date"]),
+        key=lambda item: cast(datetime, _parse(item["date"])),
         reverse=True,
     )
     if len(sized) < 2:
@@ -349,7 +349,7 @@ def _remote_age_check(
         return None
     limit = SCHEDULE_LIMIT_HOURS.get(config["recurrence"] if config else "never")
     limit = limit or NO_SCHEDULE_NOTE_HOURS
-    rows = [
+    rows: list[dict[str, Any]] = [
         {"agent": agent, "age_hours": _age_hours(when, now)}
         for agent, when in sorted(newest_on.items())
     ]

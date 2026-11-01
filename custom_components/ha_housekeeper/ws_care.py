@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import time
 from datetime import UTC, date, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 import voluptuous as vol
 from homeassistant.components import websocket_api
@@ -803,7 +803,7 @@ async def websocket_goals(
             if scanner.runs.since
             else None
         )
-        measured = measure_goals(snapshot, backup, grown, rules, errors)
+        measured = measure_goals(snapshot, backup, grown, cast(list[dict[str, Any]], rules), errors)
         result = evaluate_goals(measured, scanner.goals.items)
     except Exception as err:
         connection.send_error(msg["id"], "goals_failed", f"{type(err).__name__}: {err}")
@@ -937,7 +937,14 @@ async def websocket_exceptions_preview(
     store = scanner.exceptions
     connection.send_result(
         msg["id"],
-        preview(hass, rules, snapshot, datetime.now(UTC), store.vacation(), store.rules),
+        preview(
+            hass,
+            cast(list[dict[str, Any]], rules),
+            snapshot,
+            datetime.now(UTC),
+            store.vacation(),
+            store.rules,
+        ),
     )
 
 

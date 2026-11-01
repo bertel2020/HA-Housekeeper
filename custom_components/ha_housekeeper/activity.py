@@ -202,9 +202,9 @@ class ActivityStore:
                 )
         known = {e["id"] for e in self._items}
         for row in rows:
-            entry = _clean({**row, "id": f"b{secrets.token_hex(5)}", "backfilled": True})
-            if entry and entry["id"] not in known:
-                self._items.append(entry)
+            fresh = _clean({**row, "id": f"b{secrets.token_hex(5)}", "backfilled": True})
+            if fresh and fresh["id"] not in known:
+                self._items.append(fresh)
         self._items.sort(key=lambda e: e["at"], reverse=True)
         del self._items[ITEM_LIMIT:]
         self._backfilled = True

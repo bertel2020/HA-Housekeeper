@@ -231,9 +231,9 @@ def turn_on_only(
             elif service.endswith((".turn_off", ".toggle")) or service.startswith("scene."):
                 off |= ids
     for entity_id in sorted(on - off):
-        item = entities.get(entity_id)
-        if item is not None and entity_id.split(".", 1)[0] in SWITCHABLE:
-            yield item
+        found = entities.get(entity_id)
+        if found is not None and entity_id.split(".", 1)[0] in SWITCHABLE:
+            yield found
 
 
 def referenced(edges: list[dict[str, Any]]) -> set[str]:

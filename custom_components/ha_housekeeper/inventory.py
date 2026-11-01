@@ -6,11 +6,11 @@ import asyncio
 import logging
 import time
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.config_entries import SOURCE_IGNORE, ConfigEntryState
 from homeassistant.const import __version__ as HA_VERSION
@@ -820,7 +820,7 @@ def _missing_findings(
     names that do exist. The first ``SUGGEST_LIMIT`` findings get them, so a huge broken config
     cannot make a scan slow.
     """
-    findings = [
+    findings: list[dict[str, Any]] = [
         {
             "rule_id": f"{domain}.missing_{reference['kind']}",
             "object_id": object_id,
@@ -1096,7 +1096,7 @@ class InventoryScanner:
                 self.load_failures.append(name)
         try:
             self.activity.backfill(
-                self.ignored.entries(), self.marks.items, self.notes.items, self.journal.plans()
+                self.ignored.entries(), self.marks.items, self.notes.items, self.journal.plans
             )
         except Exception:
             _LOGGER.exception("The earlier decisions could not be put into the activity")
@@ -1230,10 +1230,13 @@ class InventoryScanner:
                             for e in self.hass.config_entries.async_entries()
                         },
                         datetime.now(UTC),
-                        {
-                            e.entry_id: getattr(e, "_tries", None)
-                            for e in self.hass.config_entries.async_entries()
-                        },
+                        cast(
+                            dict[str, int],
+                            {
+                                e.entry_id: getattr(e, "_tries", None)
+                                for e in self.hass.config_entries.async_entries()
+                            },
+                        ),
                     )
                     self.events.observe_checks(
                         "services",
@@ -2134,7 +2137,7 @@ class InventoryScanner:
         ]
         for item in objects:
             found = traits(self.hass, item["object_type"], item["object_id"]) if hiding else None
-            item["excepted"] = bool(found) and any(r["enabled"] and _hits(r, found) for r in hiding)
+            item["excepted"] = bool(found and any(r["enabled"] and _hits(r, found) for r in hiding))
 
     def vacation_meta(self, findings: list[dict[str, Any]]) -> dict[str, Any] | None:
         """What the panel shows about the vacation mode; None while no switch is chosen."""
@@ -2286,8 +2289,9 @@ class InventoryScanner:
         finding = next(
             (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
         )
-        return bool(finding) and any(
-            fact.get("fact") == "critical" for fact in finding.get("impact_facts", [])
+        return bool(
+            finding
+            and any(fact.get("fact") == "critical" for fact in finding.get("impact_facts", []))
         )
 
     def restore_decision(self, key: str, entry: dict[str, Any] | None) -> None:
@@ -2536,7 +2540,7 @@ class InventoryScanner:
 
     def _existing_objects(self) -> dict[str, set[str]]:
         """Collect the IDs a reference may legitimately point to."""
-        registries = {
+        registries: dict[str, Any] = {
             "devices": dr.async_get(self.hass),
             "areas": ar.async_get(self.hass),
             "floors": fr.async_get(self.hass),
@@ -2558,7 +2562,7 @@ class InventoryScanner:
             existing["tag"] = {str(tag_id) for tag_id in tags}
         return existing
 
-    async def _blueprint_files(self) -> dict[str, set[str]] | None:
+    async def _blueprint_files(self) -> dict[str, Iterable[str]] | None:
         """The paths of every blueprint file, or None where they cannot be read (a gap, not "gone")."""
         if "blueprint" not in self.hass.config.components:
             self.scan_coverage.absent("blueprints", "not_set_up")
@@ -2895,7 +2899,7 @@ class InventoryScanner:
             annotate_findings(broken, config, references)
             findings.extend(broken)
             settings = getattr(dashboard, "config", None) or {}
-            views = config.get("views") if isinstance(config.get("views"), list) else []
+            views = config["views"] if isinstance(config.get("views"), list) else []
             dashboards.append(
                 {
                     "object_type": "dashboard",

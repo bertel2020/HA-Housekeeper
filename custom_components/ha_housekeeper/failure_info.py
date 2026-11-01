@@ -23,7 +23,7 @@ def item_id_of(snapshot: dict[str, Any], finding: dict[str, Any]) -> str | None:
     domain = finding["rule_id"].partition(".")[0]
     if domain == "script":
         return finding["object_id"].partition(".")[2] or None
-    item = next(
+    item: dict[str, Any] = next(
         (
             o
             for o in snapshot.get("objects", [])

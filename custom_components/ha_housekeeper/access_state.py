@@ -46,16 +46,14 @@ class AccessState:
         data = await self._store.async_load()
         if not isinstance(data, dict):
             return
-        for key, entry in (data.get("seen") if isinstance(data.get("seen"), dict) else {}).items():
+        for key, entry in (data["seen"] if isinstance(data.get("seen"), dict) else {}).items():
             if isinstance(key, str) and isinstance(entry, dict) and entry.get("level") in RANK:
                 self._seen[key] = {
                     "level": entry["level"],
                     "first": _clock(entry.get("first")),
                     "raised": _clock(entry.get("raised")),
                 }
-        for key, entry in (
-            data.get("known") if isinstance(data.get("known"), dict) else {}
-        ).items():
+        for key, entry in (data["known"] if isinstance(data.get("known"), dict) else {}).items():
             if isinstance(key, str) and isinstance(entry, dict) and entry.get("level") in RANK:
                 self._known[key] = {
                     "level": entry["level"],

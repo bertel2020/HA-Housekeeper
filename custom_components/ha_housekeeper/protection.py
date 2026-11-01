@@ -67,13 +67,14 @@ class ProtectionStore:
                 self.migrated_from = data.get("migrated_from")
                 return
             # Anything else that was saved is read as the strictest mode, never as an install that predates the mode.
-            self.mode = RETIRED_MODES.get(saved, DEFAULT_MODE)
+            self.mode = RETIRED_MODES.get(str(saved), DEFAULT_MODE)
             self.migrated_from = saved if saved in RETIRED_MODES else None
             self._save(0)
             return
         # No mode chosen yet. An install that already has scan data predates the mode and keeps
         # working as before; anything else starts read-only. Saved now so a restart cannot flip it.
-        seen = await Store(self._hass, STORAGE_VERSION, STORAGE_KEY).async_load()
+        legacy: Store[dict[str, Any]] = Store(self._hass, STORAGE_VERSION, STORAGE_KEY)
+        seen = await legacy.async_load()
         self.mode = LEGACY_MODE if seen is not None else DEFAULT_MODE
         self._save(0)
 

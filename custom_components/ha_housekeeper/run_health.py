@@ -166,14 +166,15 @@ def _failing(total: list[int], steps: dict[str, int]) -> dict[str, Any] | None:
         return None
     level = "red" if errors / runs >= FAIL_RED_RATE else "warn"
     top = max(steps.items(), key=lambda kv: kv[1]) if steps else None
-    repeated = top is not None and top[1] >= FAIL_MIN_ERRORS
+    top_step, top_count = top if top is not None else (None, 0)
+    repeated = top is not None and top_count >= FAIL_MIN_ERRORS
     return _finding(
         "failing",
         level,
         errors=errors,
         runs=runs,
-        step=top[0] if repeated else None,
-        step_count=top[1] if repeated else None,
+        step=top_step if repeated else None,
+        step_count=top_count if repeated else None,
     )
 
 
@@ -391,7 +392,7 @@ def evaluate(
         "since": since,
         "total": len(rows),
         "excluded": {"ignored": left_out},
-        "items": rows[:LIMIT],
+        "items": rows[:LIMIT],  # type: ignore[typeddict-item]
     }
 
 

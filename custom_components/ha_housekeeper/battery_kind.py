@@ -63,5 +63,5 @@ def apply_battery_kinds(objects: list[dict[str, Any]], kinds: dict[str, str]) ->
         item.pop("battery_suggest", None)
         if kind := kinds.get(item["object_id"]):
             item["battery_kind"] = kind
-        elif found := signals.get(item.get("device_id") or ""):
-            item["battery_suggest"] = {"kind": _guess(found), "signals": sorted(found)}
+        elif seen := signals.get(item.get("device_id") or ""):
+            item["battery_suggest"] = {"kind": _guess(seen), "signals": sorted(seen)}

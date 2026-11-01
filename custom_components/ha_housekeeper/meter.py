@@ -13,7 +13,7 @@ copied, so no existing value is ever overwritten.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 from homeassistant.core import HomeAssistant
 
@@ -52,9 +52,9 @@ def read_series(hass: HomeAssistant, statistic_id: str) -> tuple[dict[str, Any] 
         {statistic_id},
         "hour",
         None,
-        set(ROW_TYPES),
+        cast(Any, set(ROW_TYPES)),
     ).get(statistic_id, [])
-    return meta, sorted(rows, key=lambda row: row["start"])
+    return meta, sorted(cast(list[dict[Any, Any]], rows), key=lambda row: row["start"])
 
 
 def _flag(meta: dict[str, Any], key: str) -> Any:
@@ -182,7 +182,7 @@ def analyse(
             result["preview"] = {
                 "before": [_brief(row) for row in importable[-PREVIEW_ROWS:]],
                 "after": [
-                    {**_brief(row), "sum_after": (row.get("sum") or 0) + last["sum"]}
+                    {**(_brief(row) or {}), "sum_after": (row.get("sum") or 0) + last["sum"]}
                     for row in new_rows[:PREVIEW_ROWS]
                 ],
             }

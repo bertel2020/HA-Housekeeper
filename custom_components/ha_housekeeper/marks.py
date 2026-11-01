@@ -15,6 +15,7 @@ again for the grace period without a gap, it is taken away.
 
 from __future__ import annotations
 
+import builtins
 from datetime import UTC, datetime, time, timedelta
 from typing import Any
 
@@ -235,7 +236,7 @@ class MarkStore:
         self._save()
         return True
 
-    def settle(self, covered: set[str], now: datetime) -> list[str]:
+    def settle(self, covered: builtins.set[str], now: datetime) -> list[str]:
         """Follow the marks that end by themselves; the keys of the ones that just ended.
 
         ``covered`` holds the keys of the marks that have an outage under them. A mark is armed by
@@ -349,6 +350,7 @@ def apply_marks(
         finding.pop("mark", None)
         finding.pop("mark_outside_window", None)
         finding["also"] = [x for x in finding.get("also", []) if x["by"] != "mark"]
+        keys: tuple[str, ...]
         if finding.get("rule_id") in ("config_entry.not_loaded", "config_entry.reauth"):
             keys = (mark_key("config_entry", finding["object_id"]),)
         elif finding.get("rule_id") == "device.down":

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 import voluptuous as vol
 from homeassistant.components import websocket_api
@@ -88,7 +88,7 @@ async def websocket_reliability(
         connection.send_error(msg["id"], "reliability_failed", f"{type(err).__name__}: {err}")
         return
     now = datetime.now(UTC)
-    for row in result.get("entries", []):
+    for row in cast(list[dict[str, Any]], result.get("entries", [])):
         row["setup"] = scanner.entry_states.summary(row["entry_id"], now)
     result["keep_days"] = keep_days(hass)
     connection.send_result(msg["id"], _versioned(result))
