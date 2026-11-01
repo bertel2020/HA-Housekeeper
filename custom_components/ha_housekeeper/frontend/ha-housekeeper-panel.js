@@ -1496,7 +1496,7 @@ Object.assign(TEXT.en, {
 // Changing the exposure: the buttons on two findings and the texts of the plan (kind set_exposure).
 Object.assign(TEXT.de, {
   expoActRemove: "Freigaben entfernen …", expoActPin: "PIN wieder verlangen …", expoActNewOff: "Neue nicht mehr automatisch freigeben …",
-  expoActRemoveOne: "Freigabe entfernen …", expoOpenNames: "Sprachnamen in Home Assistant öffnen", expoPlanNewOff: "neue Entitäten nicht mehr automatisch freigeben",
+  expoActRemoveOne: "Freigabe entfernen …", expoActRemoveFrom: "Aus {name} entfernen …", expoOpenNames: "Sprachnamen in Home Assistant öffnen", expoPlanNewOff: "neue Entitäten nicht mehr automatisch freigeben",
   confirmedSummaryExposeNew: "Neue Entitäten werden bei {count} Assistenten nicht mehr automatisch freigegeben. Was schon freigegeben ist, bleibt freigegeben. Das lässt sich zurücknehmen.",
   expoPlanRemove: "aus {list} nehmen", expoPlanPin: "Google fragt wieder nach der PIN",
   reason_filtered_by_yaml: "Ein Filter in der YAML-Konfiguration von Nabu Casa legt die Freigabe fest. Hier lässt sie sich nicht ändern.",
@@ -1506,7 +1506,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   expoActRemove: "Remove exposures …", expoActPin: "Ask for the PIN again …", expoActNewOff: "Stop exposing new ones automatically …",
-  expoActRemoveOne: "Remove exposure …", expoOpenNames: "Open voice names in Home Assistant", expoPlanNewOff: "stop exposing new entities automatically",
+  expoActRemoveOne: "Remove exposure …", expoActRemoveFrom: "Remove from {name} …", expoOpenNames: "Open voice names in Home Assistant", expoPlanNewOff: "stop exposing new entities automatically",
   confirmedSummaryExposeNew: "New entities are no longer exposed automatically at {count} assistants. What is exposed already stays exposed. This can be taken back.",
   expoPlanRemove: "take out of {list}", expoPlanPin: "Google asks for the PIN again",
   reason_filtered_by_yaml: "A filter in the YAML configuration of Nabu Casa decides what is exposed. It cannot be changed here.",
@@ -8700,7 +8700,58 @@ const EXPO_ROW_MENU = {
   alias_duplicate: () => [["mdi:open-in-new", "expoOpenNames", 'data-ha-path="/config/voice-assistants/expose"']],
 };
 
+// The sources whose exposures Housekeeper can take back; a bridge (HomeKit) keeps its filter in its own settings.
+const EXPO_ASSISTANTS = ["conversation", "cloud.alexa", "cloud.google_assistant"];
+
 class ExposureMixin {
+  // The ticked entities of the list of one assistant.
+  expoSelOf(sourceId) { return ((this.expoSel ||= {})[sourceId] ||= new Set()); }
+
+  expoSelBox(sourceId, e) {
+    return `<input type="checkbox" class="selbox" data-expo-sel="${this.esc(`${sourceId}|${e.entity_id}`)}" ${this.expoSelOf(sourceId).has(e.entity_id) ? "checked" : ""} aria-label="${this.esc(e.name)}">`;
+  }
+
+  // The box in the head of the column ticks the entities of the page, as in the inventory.
+  expoHeadBox(sourceId, pageRows) {
+    const ids = pageRows.map(e => e.entity_id), sel = this.expoSelOf(sourceId), n = ids.filter(id => sel.has(id)).length;
+    return ids.length ? `<input type="checkbox" class="selbox" data-expo-sel-page="${this.esc(sourceId)}" ${n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">` : "";
+  }
+
+  // The bar over the table, as over the inventory: how many are ticked and what can be done with them.
+  expoSelBar(source, rows) {
+    const sel = this.expoSelOf(source.id), n = sel.size, tooMany = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
+    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n && !tooMany ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: source.label })}</button>`;
+    return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-expo-sel-all="${this.esc(source.id)}" ${rows.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(rows.length) })}</button><button class="btn quiet" data-expo-sel-clear="${this.esc(source.id)}" ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn}</div>${this.viewCount(rows.length)}</div>${tooMany ? `<small class="error errpad" role="alert">${this.esc(this.t("stateTooMany", { max: MAX_PLAN_ACTIONS }))}</small>` : ""}`;
+  }
+
+  bindExpoSel(root) {
+    root.querySelectorAll("[data-expo-sel]").forEach(el => {
+      el.onclick = ev => ev.stopPropagation();
+      el.onchange = () => { const [src, id] = el.dataset.expoSel.split("|"); this.expoSelOf(src)[el.checked ? "add" : "delete"](id); this.render(); };
+    });
+    const page = root.querySelector("[data-expo-sel-page]");
+    if (page) {
+      page.indeterminate = page.hasAttribute("data-partial");
+      page.onchange = () => { const src = page.dataset.expoSelPage, sel = this.expoSelOf(src); for (const id of this._expoPage?.[src] || []) sel[page.checked ? "add" : "delete"](id); this.render(); };
+    }
+    root.querySelector("[data-expo-sel-all]")?.addEventListener("click", ev => { const src = ev.currentTarget.dataset.expoSelAll, sel = this.expoSelOf(src); for (const id of this._expoRows?.[src] || []) sel.add(id); this.render(); });
+    root.querySelector("[data-expo-sel-clear]")?.addEventListener("click", ev => { this.expoSelOf(ev.currentTarget.dataset.expoSelClear).clear(); this.render(); });
+    root.querySelector("[data-expo-sel-plan]")?.addEventListener("click", ev => this.makeExposureFrom(ev.currentTarget.dataset.expoSelPlan));
+    root.querySelectorAll("[data-expo-from]").forEach(el => el.addEventListener("click", () => { const [src, id] = el.dataset.expoFrom.split("|"); this.makeExposureFrom(src, [id]); }));
+  }
+
+  // A plan that takes the ticked entities (or one) out of the one assistant whose list is open; the others keep them.
+  async makeExposureFrom(sourceId, ids) {
+    const list = (ids || [...this.expoSelOf(sourceId)]).slice(0, MAX_PLAN_ACTIONS);
+    if (!list.length) return;
+    try {
+      if (!await this.newPlan(list.map(object_id => ({ kind: "set_exposure", object_id, target: "remove", assistants: [sourceId] })))) return;
+      this.expoSelOf(sourceId).clear();
+      this._exposureRequested = false;
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   // One entity out of its assistants, as a plan of its own: the sensitive ones are never taken out in bulk.
   async makeExposureOne(entityId) {
     try {
@@ -8733,7 +8784,7 @@ class ExposureMixin {
 
   async loadExposure() {
     this.exposureLoading = true; this.exposureError = ""; this.render();
-    try { this.exposure = await this._hass.callWS({ type: "ha_housekeeper/exposure" }); this.exposureAt = new Date().toISOString(); }
+    try { this.exposure = await this._hass.callWS({ type: "ha_housekeeper/exposure" }); this.exposureAt = new Date().toISOString(); this.expoSel = {}; }
     catch (err) { this.exposureError = this.errText(err); }
     this.exposureLoading = false; this.render();
   }
@@ -8841,18 +8892,23 @@ class ExposureMixin {
     ] }) : "";
     const rows = all.length ? this.refine(id, all, { text: e => [e.name, e.entity_id, e.area].join(" "), filters: { domain: (e, v) => e.domain === v, also: (e, v) => e.others.includes(v) }, sorts, tie: e => e.entity_id }) : [];
     const pg = this.paginate(id, rows);
+    const editable = EXPO_ASSISTANTS.includes(source.id);
+    (this._expoRows ||= {})[source.id] = rows.map(e => e.entity_id);
+    (this._expoPage ||= {})[source.id] = pg.rows.map(e => e.entity_id);
     const columns = [
+      ...(editable ? [{ key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: () => this.expoHeadBox(source.id, pg.rows), cell: e => this.expoSelBox(source.id, e) }] : []),
       { key: "name", label: "expoColName", dir: "asc", cell: e => `<div class="statcell">${this.expoTile(e.entity_id)}<div>${this.nameCell(e.name, e.entity_id)}</div></div>` },
       { key: "domain", label: "expoColDomain", dir: "asc", cell: e => this.esc(e.domain) },
       { key: "area", label: "expoColArea", dir: "asc", cell: e => e.area ? this.esc(e.area) : `<span class="muted">—</span>` },
       { key: "also", label: "expoColAlso", dir: "desc", cell: e => e.others.length ? this.esc(this.expoAssistantList(e.others)) : `<span class="muted">—</span>` },
+      ...(editable ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.rowMenuHtml([["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-from="${this.esc(`${source.id}|${e.entity_id}`)}"`]]) }] : []),
     ];
     const table = rows.length ? this.listTable(id, columns, pg.rows, { cls: "expo", rowAttrs: e => `data-object="entity:${this.esc(e.entity_id)}" tabindex="0" role="button" aria-label="${this.esc(e.name)}"` }) : "";
     const none = all.length && !rows.length ? `<div class="emptymsg">${this.noMatches(id)}</div>` : "";
     const where = source.titles?.length ? ` (${this.esc(source.titles.join(", "))})` : "";
     const capped = r.exposed_total > (r.exposed_entities || []).length ? `<p class="factnote">${this.t("expoCapped", { n: this.formatNumber(r.exposed_entities.length) })}</p>` : "";
     const empty = all.length ? "" : `<div class="emptymsg">${this.t(source.status === "inactive" ? "expoInactiveText" : "expoNoneFor")}</div>`;
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.esc(source.label)}${where}</h2><p>${this.t("expoSourceHint", { n: this.formatNumber(source.count), name: this.esc(source.label) })}</p></div></div>${bar}${none}${empty}${table}${pg.footer}${capped}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.esc(source.label)}${where}</h2><p>${this.t("expoSourceHint", { n: this.formatNumber(source.count), name: this.esc(source.label) })}</p></div></div>${bar}${none}${empty}${editable && rows.length ? this.expoSelBar(source, rows) : ""}${table}${pg.footer}${capped}</div>`;
   }
 
   exposureView() {
@@ -22929,6 +22985,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindAutoPause(root);
     this.bindCheckLog(root);
     root.querySelector("[data-expo-refresh]")?.addEventListener("click", () => this.loadExposure());
+    this.bindExpoSel(root);
     root.querySelectorAll("[data-expo-one]").forEach(el => el.addEventListener("click", () => this.makeExposureOne(el.dataset.expoOne)));
     root.querySelectorAll("[data-expo-plan]").forEach(el => el.addEventListener("click", () => this.makeExposurePlan(el.dataset.expoPlan)));
     root.querySelector("[data-policy-refresh]")?.addEventListener("click", () => this.loadPolicies());

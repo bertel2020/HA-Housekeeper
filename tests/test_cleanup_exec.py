@@ -1428,3 +1428,42 @@ async def test_switching_off_the_automatic_exposure_of_new_entities_is_verified_
     result = await scanner.cleanup.undo(plan["plan_id"], None)
     assert result["results"] == [{"object_id": "cloud.alexa", "outcome": "undone"}]
     assert store.async_get_expose_new_entities("cloud.alexa") is True
+
+
+async def test_a_plan_limited_to_one_assistant_leaves_the_others_and_survives_a_renewal(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.components.homeassistant.exposed_entities import async_expose_entity
+    from homeassistant.setup import async_setup_component
+
+    from custom_components.ha_housekeeper import exposure_edit
+    from custom_components.ha_housekeeper.cleanup import merge_requests
+
+    assert await async_setup_component(hass, "homeassistant", {})
+    entry = orphan(hass, "two")
+    async_expose_entity(hass, "conversation", entry.entity_id, True)
+    async_expose_entity(hass, "cloud.alexa", entry.entity_id, True)
+
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    only = ["conversation"]
+    plan = build_plan(
+        snapshot,
+        [{"kind": "set_exposure", "object_id": entry.entity_id, "target": "remove"}],
+        datetime.now(UTC),
+        exposure_data={
+            (entry.entity_id, "remove"): exposure_edit.prepare(
+                hass, entry.entity_id, "remove", only
+            )
+        },
+    )
+    action = plan["actions"][0]
+    assert (action["assistants"], action["only"]) == (only, only)
+    assert merge_requests([plan])[0][0]["assistants"] == only, (
+        "a renewed plan keeps to the assistant"
+    )
+    scanner.journal.add(plan)
+
+    await run(scanner, plan)
+    assert exposure_edit.prepare(hass, entry.entity_id, "remove")["assistants"] == ["cloud.alexa"]
+    assert plan["status"] == "verified" and plan["verification"]["ok"] is True

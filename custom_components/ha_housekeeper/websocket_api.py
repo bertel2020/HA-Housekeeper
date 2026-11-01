@@ -850,7 +850,7 @@ async def _plan_from_requests(
 
     exposure_data = {
         (action["object_id"], action.get("target") or ""): exposure_edit.prepare(
-            hass, action["object_id"], action.get("target") or ""
+            hass, action["object_id"], action.get("target") or "", action.get("assistants") or ()
         )
         for action in requests
         if action["kind"] in EXPOSURE_KINDS
@@ -981,6 +981,9 @@ async def _plan_from_requests(
                     vol.Required("kind"): vol.In(sorted(ACTION_KINDS)),
                     vol.Required("object_id"): str,
                     vol.Optional("target"): str,
+                    vol.Optional("assistants"): vol.All(
+                        [vol.In(exposure_edit.ASSISTANTS)], vol.Length(min=1)
+                    ),
                     vol.Optional("target_kind"): vol.In(("entity", "area", "floor", "label")),
                     vol.Optional("mode"): vol.In((*METER_MODES, *counter_repair.RANGE_MODES)),
                     vol.Optional("range"): {

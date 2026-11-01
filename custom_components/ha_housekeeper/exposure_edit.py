@@ -56,8 +56,10 @@ def yaml_filter(hass: HomeAssistant, assistant: str) -> bool:
         return False
 
 
-def prepare(hass: HomeAssistant, entity_id: str, target: str) -> dict[str, Any]:
-    """What an entity holds now for ``target`` ("remove" or "pin")."""
+def prepare(
+    hass: HomeAssistant, entity_id: str, target: str, only: tuple[str, ...] | list[str] = ()
+) -> dict[str, Any]:
+    """What an entity holds now for ``target`` ("remove" or "pin"); with ``only`` just those assistants."""
     settings = _settings(hass, entity_id)
     if settings is None:
         return {"exists": False}
@@ -66,10 +68,11 @@ def prepare(hass: HomeAssistant, entity_id: str, target: str) -> dict[str, Any]:
     if target == "pin":
         assistants = [GOOGLE] if settings.get(GOOGLE, {}).get(PIN_OPTION) is True else []
     else:
-        assistants = exposed
+        assistants = [name for name in exposed if not only or name in only]
     return {
         "exists": True,
         "assistants": assistants,
+        "only": list(only),
         "filtered": [name for name in assistants if yaml_filter(hass, name)],
         "fingerprint": fingerprint(settings, exposed),
     }

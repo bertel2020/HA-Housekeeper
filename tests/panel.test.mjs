@@ -3241,6 +3241,26 @@ const EXPO = {
   ],
 };
 
+test("the list of an assistant ticks entities and takes them out of that assistant only, a bridge has no boxes", async () => {
+  const { el } = panel("de");
+  const calls = [];
+  el._hass = { language: "de", callWS: async msg => { calls.push(msg); return { plan_id: "p1", actions: [] }; } };
+  el.openNewPlan = () => {};
+  el.exposure = EXPO; el._exposureRequested = true;
+  el.viewTab = { exposure: "conversation" };
+  let html = el.exposureView();
+  assert.ok(html.includes('data-expo-sel="conversation|light.a"') && html.includes("data-expo-sel-page") && html.includes('data-expo-from="conversation|light.a"'), "boxes in the rows and the head, and the row menu");
+  assert.ok(html.includes("Aus Assist entfernen …") && html.includes("0 ausgewählt") && html.includes("Alle 2 Entitäten der Liste"), "the bar is that of the inventory");
+  el.expoSelOf("conversation").add("light.a");
+  html = el.exposureView();
+  assert.ok(html.includes("1 ausgewählt") && html.includes('data-expo-sel="conversation|light.a" checked'));
+  await el.makeExposureFrom("conversation");
+  assert.equal(JSON.stringify(calls.find(c => c.type.endsWith("/plan_create"))?.actions), JSON.stringify([{ kind: "set_exposure", object_id: "light.a", target: "remove", assistants: ["conversation"] }]));
+  assert.equal(el.expoSelOf("conversation").size, 0, "the selection is cleared once the plan is made");
+  el.viewTab = { exposure: "homekit" };
+  assert.ok(!el.exposureView().includes("data-expo-sel"), "the filter of a bridge is not changed from here");
+});
+
 test("the exposure view loads once, asks the backend and handles errors and an empty result", async () => {
   const { el } = panel("en");
   const calls = [];

@@ -63,7 +63,7 @@ Object.assign(TEXT.en, {
 // Changing the exposure: the buttons on two findings and the texts of the plan (kind set_exposure).
 Object.assign(TEXT.de, {
   expoActRemove: "Freigaben entfernen …", expoActPin: "PIN wieder verlangen …", expoActNewOff: "Neue nicht mehr automatisch freigeben …",
-  expoActRemoveOne: "Freigabe entfernen …", expoOpenNames: "Sprachnamen in Home Assistant öffnen", expoPlanNewOff: "neue Entitäten nicht mehr automatisch freigeben",
+  expoActRemoveOne: "Freigabe entfernen …", expoActRemoveFrom: "Aus {name} entfernen …", expoOpenNames: "Sprachnamen in Home Assistant öffnen", expoPlanNewOff: "neue Entitäten nicht mehr automatisch freigeben",
   confirmedSummaryExposeNew: "Neue Entitäten werden bei {count} Assistenten nicht mehr automatisch freigegeben. Was schon freigegeben ist, bleibt freigegeben. Das lässt sich zurücknehmen.",
   expoPlanRemove: "aus {list} nehmen", expoPlanPin: "Google fragt wieder nach der PIN",
   reason_filtered_by_yaml: "Ein Filter in der YAML-Konfiguration von Nabu Casa legt die Freigabe fest. Hier lässt sie sich nicht ändern.",
@@ -73,7 +73,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   expoActRemove: "Remove exposures …", expoActPin: "Ask for the PIN again …", expoActNewOff: "Stop exposing new ones automatically …",
-  expoActRemoveOne: "Remove exposure …", expoOpenNames: "Open voice names in Home Assistant", expoPlanNewOff: "stop exposing new entities automatically",
+  expoActRemoveOne: "Remove exposure …", expoActRemoveFrom: "Remove from {name} …", expoOpenNames: "Open voice names in Home Assistant", expoPlanNewOff: "stop exposing new entities automatically",
   confirmedSummaryExposeNew: "New entities are no longer exposed automatically at {count} assistants. What is exposed already stays exposed. This can be taken back.",
   expoPlanRemove: "take out of {list}", expoPlanPin: "Google asks for the PIN again",
   reason_filtered_by_yaml: "A filter in the YAML configuration of Nabu Casa decides what is exposed. It cannot be changed here.",

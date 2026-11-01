@@ -1065,6 +1065,7 @@ def judge_exposure_action(
         "name": name,
         "target": target,
         "assistants": list(info.get("assistants") or []),
+        "only": list(info.get("only") or []),
         "verdict": "blocked",
         "reasons": [],
         "used_by": [],
@@ -1564,6 +1565,10 @@ def merge_requests(
                 request["mode"] = action["mode"]
             if action.get("range"):
                 request["range"] = action["range"]
+            if action["kind"] in EXPOSURE_KINDS and action.get("only"):
+                request["assistants"] = action[
+                    "only"
+                ]  # a renewed plan keeps to the assistants asked for
             if action["kind"] in PURGE_KINDS:
                 request["states"] = bool(action.get("states"))
             if action.get("recorder"):
