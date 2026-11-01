@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (nach 2.0.0-beta.1)
+## 2.0.0-beta.2 - 2026-11-01
 
 ### Neu
 
@@ -30,6 +30,8 @@
 ### Behoben
 
 - **Anleitung:** Der Schutzmodus heißt dort wie in der Oberfläche Beobachten, Ändern und Alles.
+- **Bereichsvorschlag:** Er vergleicht jetzt mit den Nachbargeräten statt mit deren Kennungen.
+- **Aktivität:** Das Nachtragen früherer Einträge beim ersten Start lief nie und läuft jetzt.
 
 ### English
 
@@ -61,6 +63,8 @@
 #### Fixed
 
 - **Guide:** The protection mode is called there as in the interface: Watch, Change and Everything.
+- **Area suggestion:** It now compares with the sibling devices instead of with their IDs.
+- **Activity:** Taking over earlier entries at the first start never ran and does now.
 
 ## 1.14.0 - 2026-10-31
 
