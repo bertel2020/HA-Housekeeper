@@ -21,6 +21,7 @@ jobs:
           # Home Assistant 2026.8 and newer need Python 3.14.
           - name: Home Assistant 2026.8.3 (minimum)
             requirements: homeassistant==2026.8.3 pytest-homeassistant-custom-component==0.13.357
+            types: true
           - name: Home Assistant latest
             requirements: pytest-homeassistant-custom-component
     steps:
@@ -37,7 +38,10 @@ jobs:
         run: ruff check custom_components tests
       - name: Check formatting
         run: ruff format --check custom_components tests
+      # Types are checked against the pinned minimum only: newer Home Assistant versions change the
+      # types of their own API (a newer release brought a new schema library) without a change here.
       - name: Check types
+        if: matrix.types
         run: mypy
       - name: Run tests
         run: python -m pytest -q --asyncio-mode=auto
