@@ -90,8 +90,9 @@ class ExposureMixin {
       const obj = this.findObject(`entity:${item.entity_id}`);
       return { ...item, domain: item.entity_id.split(".")[0], area: obj ? this.areaName(obj) : "" };
     });
+    const act = EXPO_PLAN_KINDS[f.kind] && (items.length || f.assistants?.length) ? `<button type="button" class="btn" data-expo-plan="${f.kind}" ${this.planBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:shield-edit-outline"></ha-icon>${this.t(EXPO_PLAN_KINDS[f.kind].label)}</button>` : "";
     const table = items.length ? this.sysList(`expofind_${f.kind}`, items, {
-      sort: "name", tie: item => item.entity_id, empty: "expoNone",
+      lead: act, sort: "name", tie: item => item.entity_id, empty: "expoNone",
       sorts: [
         { key: "name", label: "expoColName", dir: "asc", get: item => item.name || item.entity_id },
         { key: "domain", label: "expoColDomain", dir: "asc", get: item => item.domain },
@@ -118,8 +119,7 @@ class ExposureMixin {
       ],
     }) : "";
     const more = items.length && f.count > items.length ? `<p class="factnote">${this.t("expoMore", { n: this.formatNumber(f.count - items.length) })}</p>` : "";
-    const act = EXPO_PLAN_KINDS[f.kind] && (items.length || f.assistants?.length) ? `<div class="foldact"><button class="btn" data-expo-plan="${f.kind}" ${this.planBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:shield-edit-outline"></ha-icon>${this.t(EXPO_PLAN_KINDS[f.kind].label)}</button></div>` : "";
-    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${act}${table}${agents}${more}`;
+    const body = `<p class="factnote foldadvice">${this.t(`expoAdvice_${f.kind}`)}</p>${items.length ? "" : act ? `<div class="toolbar"><span class="toolgap"></span>${act}</div>` : ""}${table}${agents}${more}`;
     const head = { tone, title: this.t(`expoKind_${f.kind}`), sub: this.expoFindingText(f), pill: this.t(f.level === "warn" ? "expoWarn" : "expoHint2") };
     return this.fold(`expo_${f.kind}`, head, body, false);
   }
