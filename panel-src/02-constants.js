@@ -121,7 +121,6 @@ const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"]
 // The reasons on the findings page: what needs a look first, and what is tidying up. Anything else counts as urgent.
 // The fixed order of the reason tiles, from the cause to what it does: faults first, then tidying up. Which group a
 // tile is in comes from its colour (see FAULT_REASONS), not from this list; a reason it does not name comes last.
-const FINDING_ORDER = ["outage", "unavailable", "stale", "broken_reference", "problem", "unknown", "orphaned", "unused", "possible_duplicate"];
 // Reasons shown red, as faults, besides the classes that are red anyway: a sensor that stopped reporting is mostly broken.
 const FAULT_REASONS = ["outage", "stale"];
 // The four topics of the findings page, in the order of the tiles: what is wrong, from the cause to the leftovers.

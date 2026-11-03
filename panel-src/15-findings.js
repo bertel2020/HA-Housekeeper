@@ -10,12 +10,10 @@ class FindingsMixin {
   // An outage is whatever starts a chain (integration not loaded or asking for a login, device down, app stopped);
   // what is left of "problem" then are automations and scripts that cannot work.
   findingReason(f) { return CAUSE_OWN_RULES.includes(f.rule_id) ? "outage" : f.classification; }
-  reasonLabel(r) { return r.startsWith("topic:") ? this.t(`topic_${r.slice(6)}`) : r === "group:red" ? this.t("sumGroupUrgent") : r === "group:tidy" ? this.t("sumGroupTidy") : r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
-  // The two groups of the tiles: red reasons are faults, the rest is tidying up.
-  findingTileGroup(f) { return this.reasonTone(this.findingReason(f)) === "red" ? "red" : "tidy"; }
-  // The tile filter: one reason (or rule), or a whole group as "group:red" / "group:tidy".
+  reasonLabel(r) { return r.startsWith("topic:") ? this.t(`topic_${r.slice(6)}`) : r === "outage" ? this.t("chip_outage") : r === "problem" ? this.t("reasonProblem") : this.statusLabel(r); }
+  // The tile filter: one reason (or rule), or a topic.
   findingTopic(f) { return f.topic || "unneeded"; }
-  matchesFindingFilter(f, filter = this.findingFilter) { return filter.startsWith("topic:") ? this.findingTopic(f) === filter.slice(6) : filter.startsWith("group:") ? this.findingTileGroup(f) === filter.slice(6) : this.findingReason(f) === filter || f.rule_id === filter; }
+  matchesFindingFilter(f, filter = this.findingFilter) { return filter.startsWith("topic:") ? this.findingTopic(f) === filter.slice(6) : this.findingReason(f) === filter || f.rule_id === filter; }
   reasonTone(r) { const tone = FAULT_REASONS.includes(r) ? "red" : this.tone(r); return tone === "red" ? "red" : tone === "warn" ? "warn" : "mute"; }
 
   // Impact first, then how sure the diagnosis is: the fraction keeps the certainty from outranking a level.
