@@ -570,6 +570,11 @@ class HAHousekeeperPanel extends HTMLElement {
     return value;
   }
 
+  // One finding by its key, without a search through all of them for every picked row.
+  findingByKey(key) {
+    return this.memo("findingByKey", [this.data?.findings?.length], () => new Map((this.data?.findings || []).map(f => [f.key, f]))).get(key);
+  }
+
   // Collators are created once per language; creating one per comparison is slow.
   collators() {
     if (this._collators?.lang !== this.lang) {

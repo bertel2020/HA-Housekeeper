@@ -282,7 +282,7 @@ class CheckLogMixin {
       { key: "time", label: "clColTime", dir: "desc", cell: r => this.esc(this.formatDate(r.e.at)) },
       { key: "area", label: "clColArea", dir: "asc", cell: r => `<span class="pill mute">${this.esc(r.areaName)}</span>` },
       { key: "level", label: "clColChange", dir: "desc", cell: r => this.clChangeCell(r) },
-      ...(refined.some(r => menu(r)) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu }] : []),
+      ...(refined.some(r => r.e.kind === "change" || menu(r)) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu }] : []),
     ];
     const tone = r => (r.e.dismissed ? "" : r.tone === "red" ? ' data-rowtone="red"' : r.tone === "warn" ? ' data-rowtone="warn"' : "");
     const [area, check] = (this.clCheck || "/").split("/");

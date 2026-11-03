@@ -34,7 +34,7 @@ class OftenMixin {
   }
 
   ensureOften() {
-    if (this._oftenRequested || !this._hass?.callWS) return;
+    if (this._oftenRequested || !this._hass?.callWS || Date.now() < (this._oftenRetryAt || 0)) return;
     this._oftenRequested = true;
     (async () => {
       try {
@@ -51,7 +51,7 @@ class OftenMixin {
         }
         try { globalThis.localStorage?.removeItem("ha_housekeeper.often"); } catch (_) { /* no storage */ }
         this.render();
-      } catch (_) { this._oftenRequested = false; }
+      } catch (_) { this._oftenRequested = false; this._oftenRetryAt = Date.now() + 30000; }  // asks again in half a minute, not with every drawing
     })();
   }
 
@@ -223,8 +223,11 @@ class OftenMixin {
   }
 
   // "Do not ask again" holds for the entities of a group, not for the device: another entity that fails later is asked about.
-  skipOften(key, source = "list") {
-    const keys = key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
+  skipOften(key, source = "list") { this.skipOftenMany([key], source); }
+
+  // Several at once: one answer to the server and one drawing, not one of each per key.
+  skipOftenMany(picked, source = "list") {
+    const keys = picked.flatMap(key => (key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]));
     for (const k of keys) (this._oftenSkip ||= {})[k] = Date.now();
     this.oftenSend(true, keys, source);
     this.render();
@@ -240,7 +243,7 @@ class OftenMixin {
     const pageBox = root.querySelector("[data-often-page]");
     if (pageBox) { pageBox.indeterminate = pageBox.hasAttribute("data-partial"); pageBox.onchange = ev => { (this._oftenVisible || []).forEach(k => (ev.target.checked ? sel().add(k) : sel().delete(k))); this.render(); }; }
     root.querySelector("[data-often-clear]")?.addEventListener("click", () => { sel().clear(); this.render(); });
-    root.querySelector("[data-often-skip-picked]")?.addEventListener("click", () => { const keys = [...sel()]; sel().clear(); keys.forEach(k => this.skipOften(k)); });
+    root.querySelector("[data-often-skip-picked]")?.addEventListener("click", () => { const keys = [...sel()]; sel().clear(); this.skipOftenMany(keys); });
     root.querySelector("[data-often-picked]")?.addEventListener("click", () => {
       const items = this.oftenSuggestions().filter(s => sel().has(s.key)), keys = items.map(s => s.key);
       if (!keys.length) return;

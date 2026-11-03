@@ -3292,7 +3292,7 @@ class FindingsMixin {
 
 
   // The selection of findings: decide several at once, or export just those. Kept across pages until cleared.
-  pickedFindings() { return [...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean); }
+  pickedFindings() { return [...this.findSel].map(key => this.findingByKey(key)).filter(Boolean); }
 
   // Where the picked findings stand: open, decided by the person, or hidden by a mark, a rule or a label. Every action of
   // the bar takes only the findings it fits; the button says how many when that is fewer than all.
@@ -7614,7 +7614,7 @@ class CheckLogMixin {
       { key: "time", label: "clColTime", dir: "desc", cell: r => this.esc(this.formatDate(r.e.at)) },
       { key: "area", label: "clColArea", dir: "asc", cell: r => `<span class="pill mute">${this.esc(r.areaName)}</span>` },
       { key: "level", label: "clColChange", dir: "desc", cell: r => this.clChangeCell(r) },
-      ...(refined.some(r => menu(r)) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu }] : []),
+      ...(refined.some(r => r.e.kind === "change" || menu(r)) ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu }] : []),
     ];
     const tone = r => (r.e.dismissed ? "" : r.tone === "red" ? ' data-rowtone="red"' : r.tone === "warn" ? ' data-rowtone="warn"' : "");
     const [area, check] = (this.clCheck || "/").split("/");
@@ -10297,7 +10297,7 @@ class OftenMixin {
   }
 
   ensureOften() {
-    if (this._oftenRequested || !this._hass?.callWS) return;
+    if (this._oftenRequested || !this._hass?.callWS || Date.now() < (this._oftenRetryAt || 0)) return;
     this._oftenRequested = true;
     (async () => {
       try {
@@ -10314,7 +10314,7 @@ class OftenMixin {
         }
         try { globalThis.localStorage?.removeItem("ha_housekeeper.often"); } catch (_) { /* no storage */ }
         this.render();
-      } catch (_) { this._oftenRequested = false; }
+      } catch (_) { this._oftenRequested = false; this._oftenRetryAt = Date.now() + 30000; }  // asks again in half a minute, not with every drawing
     })();
   }
 
@@ -10486,8 +10486,11 @@ class OftenMixin {
   }
 
   // "Do not ask again" holds for the entities of a group, not for the device: another entity that fails later is asked about.
-  skipOften(key, source = "list") {
-    const keys = key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key];
+  skipOften(key, source = "list") { this.skipOftenMany([key], source); }
+
+  // Several at once: one answer to the server and one drawing, not one of each per key.
+  skipOftenMany(picked, source = "list") {
+    const keys = picked.flatMap(key => (key.startsWith("group:") ? this.oftenMembers(key).map(e => `entity:${e}`) : [key]));
     for (const k of keys) (this._oftenSkip ||= {})[k] = Date.now();
     this.oftenSend(true, keys, source);
     this.render();
@@ -10503,7 +10506,7 @@ class OftenMixin {
     const pageBox = root.querySelector("[data-often-page]");
     if (pageBox) { pageBox.indeterminate = pageBox.hasAttribute("data-partial"); pageBox.onchange = ev => { (this._oftenVisible || []).forEach(k => (ev.target.checked ? sel().add(k) : sel().delete(k))); this.render(); }; }
     root.querySelector("[data-often-clear]")?.addEventListener("click", () => { sel().clear(); this.render(); });
-    root.querySelector("[data-often-skip-picked]")?.addEventListener("click", () => { const keys = [...sel()]; sel().clear(); keys.forEach(k => this.skipOften(k)); });
+    root.querySelector("[data-often-skip-picked]")?.addEventListener("click", () => { const keys = [...sel()]; sel().clear(); this.skipOftenMany(keys); });
     root.querySelector("[data-often-picked]")?.addEventListener("click", () => {
       const items = this.oftenSuggestions().filter(s => sel().has(s.key)), keys = items.map(s => s.key);
       if (!keys.length) return;
@@ -12969,7 +12972,7 @@ class FindingStatusMixin {
   markTargets(onDevice = false) {
     const out = new Map();
     for (const key of this.findSel) {
-      const finding = this.data.findings.find(f => f.key === key);
+      const finding = this.findingByKey(key);
       let objectKey = finding && this.findingKey(finding);
       // "On the device": only a device that is down completely, so the mark covers no entity that still works.
       const device = onDevice && objectKey?.startsWith("entity:") && this.findObject(objectKey)?.device_id;
@@ -13060,7 +13063,7 @@ class FindingStatusMixin {
   }
 
   pickedFindingRows(keys) {
-    return keys.map(key => this.data.findings.find(f => f.key === key)).filter(Boolean)
+    return keys.map(key => this.findingByKey(key)).filter(Boolean)
       .map(f => ({ key: f.key, name: this.findObject(this.findingKey(f))?.name || f.object_id, sub: this.statusLabel(f.classification), tip: this.findingTitle(f) }));
   }
 
@@ -22413,6 +22416,11 @@ class HAHousekeeperPanel extends HTMLElement {
     const value = build();
     cache.set(name, { data: this.data, rev: this._rev, deps, value });
     return value;
+  }
+
+  // One finding by its key, without a search through all of them for every picked row.
+  findingByKey(key) {
+    return this.memo("findingByKey", [this.data?.findings?.length], () => new Map((this.data?.findings || []).map(f => [f.key, f]))).get(key);
   }
 
   // Collators are created once per language; creating one per comparison is slow.

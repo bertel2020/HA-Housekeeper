@@ -322,7 +322,7 @@ class FindingStatusMixin {
   markTargets(onDevice = false) {
     const out = new Map();
     for (const key of this.findSel) {
-      const finding = this.data.findings.find(f => f.key === key);
+      const finding = this.findingByKey(key);
       let objectKey = finding && this.findingKey(finding);
       // "On the device": only a device that is down completely, so the mark covers no entity that still works.
       const device = onDevice && objectKey?.startsWith("entity:") && this.findObject(objectKey)?.device_id;
@@ -413,7 +413,7 @@ class FindingStatusMixin {
   }
 
   pickedFindingRows(keys) {
-    return keys.map(key => this.data.findings.find(f => f.key === key)).filter(Boolean)
+    return keys.map(key => this.findingByKey(key)).filter(Boolean)
       .map(f => ({ key: f.key, name: this.findObject(this.findingKey(f))?.name || f.object_id, sub: this.statusLabel(f.classification), tip: this.findingTitle(f) }));
   }
 

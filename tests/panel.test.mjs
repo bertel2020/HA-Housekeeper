@@ -6032,6 +6032,30 @@ test("the activity is loaded again when the data changed since it was shown", ()
   assert.equal(loads.length, 2, "not while it loads");
 });
 
+test("declining several suggestions is one answer and one drawing, and a failed question is not asked again at once", async () => {
+  const { el } = panel("en");
+  const sent = []; let renders = 0;
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); if (msg.type === "ha_housekeeper/often") throw new Error("offline"); return {}; } };
+  el.render = () => { renders++; };
+  el.skipOftenMany(["entity:a", "entity:b"]);
+  assert.equal(sent.filter(m => m.type.endsWith("/often_skip")).length, 1);
+  assert.equal(JSON.stringify(sent[0].keys), '["entity:a","entity:b"]');
+  assert.equal(renders, 1);
+  sent.length = 0;
+  el.ensureOften(); await new Promise(r => setTimeout(r, 0));
+  el.ensureOften(); el.ensureOften();
+  assert.equal(sent.filter(m => m.type === "ha_housekeeper/often").length, 1, "the second and third look do not ask again");
+});
+
+test("a finding is found by its key through one map", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [{ key: "a", rule_id: "r", object_id: "x" }, { key: "b", rule_id: "r", object_id: "y" }] };
+  assert.equal(el.findingByKey("b").object_id, "y");
+  assert.equal(el.findingByKey("zzz"), undefined);
+  el.findSel = new Set(["a", "gone"]);
+  assert.equal(JSON.stringify(el.pickedFindings().map(f => f.key)), '["a"]');
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

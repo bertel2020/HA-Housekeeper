@@ -350,7 +350,7 @@ class FindingsMixin {
 
 
   // The selection of findings: decide several at once, or export just those. Kept across pages until cleared.
-  pickedFindings() { return [...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean); }
+  pickedFindings() { return [...this.findSel].map(key => this.findingByKey(key)).filter(Boolean); }
 
   // Where the picked findings stand: open, decided by the person, or hidden by a mark, a rule or a label. Every action of
   // the bar takes only the findings it fits; the button says how many when that is fewer than all.
