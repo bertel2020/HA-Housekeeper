@@ -1080,6 +1080,8 @@ def judge_exposure_action(
         reasons.append("nothing_to_do")
     elif info.get("filtered"):
         reasons.append("filtered_by_yaml")
+    elif info.get("filter_unknown"):
+        reasons.append("filter_unknown")  # not blocking: the person is asked to look
     _verdict(action)
     return action
 

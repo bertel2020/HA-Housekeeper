@@ -1474,3 +1474,32 @@ async def test_a_plan_limited_to_one_assistant_leaves_the_others_and_survives_a_
     await run(scanner, plan)
     assert exposure_edit.prepare(hass, entry.entity_id, "remove")["assistants"] == ["cloud.alexa"]
     assert plan["status"] == "verified" and plan["verification"]["ok"] is True
+
+
+async def test_the_yaml_filter_of_the_cloud_is_read_from_its_configuration_and_unreadable_is_not_guessed(
+    hass: HomeAssistant,
+) -> None:
+    from types import SimpleNamespace
+
+    from custom_components.ha_housekeeper import exposure_edit
+    from custom_components.ha_housekeeper.cleanup import judge_exposure_action
+
+    assert exposure_edit.yaml_filter(hass, "cloud.alexa") is False, "no cloud: no filter"
+    client = SimpleNamespace(
+        alexa_user_config={"filter": SimpleNamespace(empty_filter=False)},
+        google_user_config={"filter": SimpleNamespace(empty_filter=True)},
+    )
+    hass.data["cloud"] = SimpleNamespace(client=client)
+    assert exposure_edit.yaml_filter(hass, "cloud.alexa") is True
+    assert exposure_edit.yaml_filter(hass, "cloud.google_assistant") is False
+    assert exposure_edit.yaml_filter(hass, "conversation") is False
+    client.alexa_user_config = {}
+    assert exposure_edit.yaml_filter(hass, "cloud.alexa") is None
+    info = {
+        "exists": True,
+        "assistants": ["cloud.alexa"],
+        "filtered": [],
+        "filter_unknown": ["cloud.alexa"],
+    }
+    action = judge_exposure_action("light.a", "remove", "A", info)
+    assert (action["verdict"], action["reasons"]) == ("review", ["filter_unknown"])

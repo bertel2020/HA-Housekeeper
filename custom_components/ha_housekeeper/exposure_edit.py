@@ -19,7 +19,7 @@ from .exposure import ASSISTANTS, CLOUD_ASSISTANTS, GOOGLE
 
 EXPOSE_OPTION = "should_expose"
 PIN_OPTION = "disable_2fa"
-# The cloud keeps the filter of a YAML setup here; with one, the exposure of the UI counts for nothing.
+# The cloud keeps the filter of a YAML setup in its configuration; with one, the exposure of the UI counts for nothing.
 FILTER_KEY = "filter"
 
 
@@ -42,18 +42,24 @@ def _exposed(hass: HomeAssistant, entity_id: str) -> list[str]:
     return [name for name in ASSISTANTS if async_should_expose(hass, name, entity_id)]
 
 
-def yaml_filter(hass: HomeAssistant, assistant: str) -> bool:
-    """True when a YAML filter of the Nabu Casa setup decides what ``assistant`` reaches.
+USER_CONFIG = {"cloud.alexa": "alexa_user_config", "cloud.google_assistant": "google_user_config"}
 
-    Read from the loaded cloud client; whatever cannot be read counts as no filter.
+
+def yaml_filter(hass: HomeAssistant, assistant: str) -> bool | None:
+    """Whether a YAML filter of the Nabu Casa setup decides what ``assistant`` reaches; ``None``: cannot tell.
+
+    The filter is part of the configuration the cloud client keeps from the start (not of the assistant
+    objects, which are made only when somebody asks). Without a cloud there is no filter; a cloud whose
+    configuration cannot be read is not guessed at.
     """
-    attribute = {"cloud.alexa": "_alexa_config", "cloud.google_assistant": "_google_config"}
-    client = getattr(hass.data.get("cloud"), "client", None)
-    config = getattr(client, attribute.get(assistant, ""), None)
-    try:
-        return config is not None and not config._config[FILTER_KEY].empty_filter  # noqa: SLF001
-    except Exception:  # noqa: BLE001 - another cloud version: judged as before
+    attribute = USER_CONFIG.get(assistant)
+    cloud = hass.data.get("cloud")
+    if attribute is None or cloud is None:
         return False
+    try:
+        return not getattr(cloud.client, attribute)[FILTER_KEY].empty_filter
+    except Exception:  # noqa: BLE001 - another cloud version: not guessed at
+        return None
 
 
 def prepare(
@@ -73,7 +79,8 @@ def prepare(
         "exists": True,
         "assistants": assistants,
         "only": list(only),
-        "filtered": [name for name in assistants if yaml_filter(hass, name)],
+        "filtered": [name for name in assistants if yaml_filter(hass, name) is True],
+        "filter_unknown": [name for name in assistants if yaml_filter(hass, name) is None],
         "fingerprint": fingerprint(settings, exposed),
     }
 
