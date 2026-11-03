@@ -13,6 +13,7 @@ from homeassistant.core import HomeAssistant  # noqa: E402
 from scanner_entry import attach_scanner  # noqa: E402
 
 from custom_components.ha_housekeeper.events import (  # noqa: E402
+    MAX_CHECK_EVENTS,
     MAX_EVENTS,
     EventLog,
     detect,
@@ -315,3 +316,14 @@ async def test_start_and_end_of_a_backup_are_one_line(hass: HomeAssistant) -> No
         ("backup_run", None),
     ]
     assert "ended" in lines[1] and "ended" not in lines[0]
+
+
+async def test_changes_of_checks_do_not_push_out_restarts_and_updates(hass: HomeAssistant) -> None:
+    log = EventLog(hass)
+    log.record("start", NOW)
+    log.record("plan", NOW, plan_id="p")
+    for number in range(MAX_CHECK_EVENTS + 50):
+        log.record_change("system", "memory", "ok", "note", NOW + timedelta(seconds=number))
+    kinds = [e["kind"] for e in log.events]
+    assert kinds.count("check_change") == MAX_CHECK_EVENTS
+    assert kinds.count("start") == 1 and kinds.count("plan") == 1

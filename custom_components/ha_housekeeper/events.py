@@ -16,9 +16,15 @@ from homeassistant.helpers.storage import Store
 
 from .const import EVENTS_STORAGE_KEY, STORAGE_VERSION
 
-SAVE_DELAY = 300  # seconds; coalesces writes, Home Assistant flushes the store when it stops
+# Seconds; coalesces writes, and Home Assistant flushes the store when it stops. It has to stay well below the
+# five minutes of the heartbeat: every beat delays a pending write, so a longer delay would never write at all
+# while Home Assistant runs, and a crash would leave the state of the last clean stop.
+SAVE_DELAY = 30
 SIZE_DAYS = 120  # daily database sizes kept for the growth hint
-MAX_EVENTS = 5000
+MAX_EVENTS = 5000  # starts, updates, plans and purges
+MAX_CHECK_EVENTS = (
+    2000  # changes of checks have a cap of their own: a flapping check must not push out a restart
+)
 EVENT_KINDS = (
     "ha_version",
     "os_version",
@@ -49,6 +55,24 @@ START_NEAR = timedelta(
     minutes=10
 )  # an update this close to a start is the reason for it; a change this soon follows it
 DISMISS_REASONS = ("backup_running", "restart", "maintenance", "test", "expected", "other")
+
+
+def capped(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The newest events of each class: changes of checks and everything else are counted apart."""
+    kept: list[dict[str, Any]] = []
+    checks = others = 0
+    for event in reversed(events):
+        if event["kind"] == "check_change":
+            checks += 1
+            if checks > MAX_CHECK_EVENTS:
+                continue
+        else:
+            others += 1
+            if others > MAX_EVENTS:
+                continue
+        kept.append(event)
+    kept.reverse()
+    return kept
 
 
 def _parse(value: Any) -> datetime | None:
@@ -125,11 +149,13 @@ class EventLog:
             return
         events = data.get("events")
         if isinstance(events, list):
-            self.events = [
-                e
-                for e in events
-                if isinstance(e, dict) and e.get("kind") in EVENT_KINDS and _parse(e.get("at"))
-            ][-MAX_EVENTS:]
+            self.events = capped(
+                [
+                    e
+                    for e in events
+                    if isinstance(e, dict) and e.get("kind") in EVENT_KINDS and _parse(e.get("at"))
+                ]
+            )
         versions = data.get("versions")
         if isinstance(versions, dict):
             self.versions = versions
@@ -211,11 +237,11 @@ class EventLog:
         self._save()
 
     def record(self, kind: str, now: datetime, **fields: Any) -> None:
-        """Append one event; the oldest fall out beyond the cap."""
+        """Append one event; the oldest of its class fall out beyond the cap."""
         if kind not in EVENT_KINDS:
             raise ValueError(kind)
         self.events.append({"at": now.isoformat(), "kind": kind, **fields})
-        del self.events[:-MAX_EVENTS]
+        self.events = capped(self.events)
         self._save()
 
     def record_change(
@@ -341,7 +367,7 @@ class EventLog:
         old = self.versions
         found = detect(old, ha_version, custom_versions, now, system)
         self.events.extend(found)
-        del self.events[:-MAX_EVENTS]
+        self.events = capped(self.events)
         self.versions = {"ha": ha_version, "entries": dict(custom_versions)}
         for key, _ in SYSTEM_KINDS:
             version = (system or {}).get(key) or old.get(key)
@@ -614,7 +640,7 @@ def check_log(
             if count >= 3
         ],
         "retention_days": CHECK_DAYS,
-        "max_events": MAX_EVENTS,
+        "max_events": MAX_CHECK_EVENTS,
     }
 
 
