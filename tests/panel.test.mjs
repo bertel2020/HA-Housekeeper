@@ -3904,7 +3904,7 @@ test("the cleanup journal notes recorder purges with backup, user and result", (
 test("the replace assistant takes proposals only on request, defaults the kind by statistics and stops on a doubled target", async () => {
   const calls = [];
   const { el } = panel("en", { setTimeout: () => 0 });
-  el.data = { objects: [{ object_type: "entity", object_id: "light.a", name: "A", status: "unavailable" }, { object_type: "entity", object_id: "sensor.b", name: "B", status: "unavailable" }], quarantine: [], findings: [], edges: [], meta: {} };
+  el.data = { objects: [{ object_type: "entity", object_id: "light.a", name: "A", status: "unavailable" }, { object_type: "entity", object_id: "sensor.b", name: "B", status: "unavailable" }, { object_type: "entity", object_id: "light.n", name: "N", status: "active" }, { object_type: "entity", object_id: "sensor.n", name: "SN", status: "active" }], quarantine: [], findings: [], edges: [], meta: {} };
   const cand = (id, score = 5) => ({ object_id: id, name: id, score, reasons: [], status: "active", unit: null });
   const result = { unknown: [], pairs: [
     { object_id: "light.a", name: "A", used: 2, has_statistics: false, unit: null, candidates: [cand("light.n")] },
@@ -3921,6 +3921,10 @@ test("the replace assistant takes proposals only on request, defaults the kind b
   assert.ok(el.rwCard().includes("Fix the errors") || el.rwSetupCard().includes("Fix the errors"));
   el.rwState().step = 2;
   assert.ok(/data-rw-create[^>]*disabled/.test(el.rwCard()), "no preview with an error in a row");
+  assert.ok(el.rwCard().includes('data-picker="rwt:light.a"'), "the target is the standard picker");
+  el.rwChoose("sensor.b", "");
+  assert.equal(el.pickerResults("rwt:sensor.b")[0].object_id, "sensor.n", "the proposal comes first when nothing is typed");
+  el.rwChoose("sensor.b", "light.n");
   el.rwChoose("sensor.b", "sensor.n");
   assert.equal(el.rwErrorCount(), 0);
   await el.rwCreatePlan();

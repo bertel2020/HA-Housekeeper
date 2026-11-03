@@ -1805,7 +1805,7 @@ class StylesMixin {
       @media(max-width:860px){.tablewrap.dense-list tr{padding-top:8px;padding-bottom:8px}.tablewrap.dense-list .namecell .id{display:block}}
       @media(min-width:861px){.listbar .sortgroup.table-sort{display:none}}.th-alt{margin-left:8px;padding-left:8px;border-left:1px solid var(--hk-border);color:var(--hk-blue-text)}
       .findings-table td{vertical-align:middle}.findings-table td:nth-child(2){min-width:260px;white-space:normal}.findings-table .finding-link{display:flex;align-items:flex-start;gap:10px;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer}.findings-table .finding-link .tile{flex:none}.findings-table .finding-name{display:grid;gap:2px;min-width:0}.findings-table .finding-name strong{overflow-wrap:anywhere}.findings-table .finding-name .id{margin:0;overflow-wrap:anywhere}.findings-table .finding-name small{color:var(--hk-muted);white-space:normal;overflow-wrap:anywhere}.findings-table .finding-label{display:block}.finding-rule{display:block;font-family:var(--hk-mono,monospace);font-size:calc(10.5px*var(--hk-fs,1));color:var(--hk-muted);overflow-wrap:anywhere}.findings-table td:nth-child(6) small{display:block;color:var(--hk-muted)}.findings-table .finding-action .rowmenu{margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{padding:0;white-space:normal}.findings-table .finding-group .rowwrap{border-bottom:0}.findings-table .finding-group .fold{border:0}.findings-table .finding-detail .pad{padding:10px 16px}.findings-table.dense-list .finding-name .id,.findings-table.dense-list .finding-name small,.findings-table.dense-list td:nth-child(6) small{display:none}.findings-table.dense-list .finding-link .tile{width:28px;height:28px}.findings-table.dense-list td{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-group>td,.findings-table.dense-list .finding-detail>td{padding:0}@media(max-width:860px){.findings-table tr.finding-data{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:4px 10px;align-items:start}.findings-table tr.finding-data td{grid-column:2;min-width:0}.findings-table tr.finding-data td.selcol{grid-column:1;grid-row:1;width:24px;min-width:24px;max-width:24px;padding:0}.findings-table tr.finding-data td:nth-child(2){grid-column:2;grid-row:1}.findings-table tr.finding-data td.finding-action{grid-column:3;grid-row:1}.findings-table tr.finding-data td:nth-child(n+3):not(.finding-action){display:inline-block;margin:0}.findings-table .finding-group>td,.findings-table .finding-detail>td{display:block}.findings-table.dense-list .finding-name .id{display:none}}@media(max-width:640px){.findings-table tr.finding-data{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:10px 12px}.findings-table tr.finding-data td{padding:0;border:0}.findings-table tr.finding-data td.selcol{order:0;flex:none}.findings-table tr.finding-data td:nth-child(2){order:1;flex:1 1 calc(100% - 80px);min-width:0}.findings-table tr.finding-data td.finding-action{order:2;flex:none}.findings-table tr.finding-data td:nth-child(n+3):not(.finding-action){order:3;display:inline-flex;align-items:center;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.findings-table tr.finding-data td:nth-child(3){margin-left:32px}.findings-table tr.finding-data td:nth-child(4):not(.finding-action),.findings-table tr.finding-data td:nth-child(5) small,.findings-table tr.finding-data .finding-rule{display:none}.findings-table tr.finding-data td[data-label]::before{display:none}.findings-table tr.finding-data td:nth-child(5)::before,.findings-table tr.finding-data td:nth-child(6)::before{display:inline;content:"·";margin:0}.findings-table tr.finding-data td:nth-child(6) .finding-label{display:inline}.findings-table .finding-name .id{display:none}}
-      .panel:has(.colpop),.panel:has(.viewform),.panel:has(.rowmenu[open]),.tablewrap:has(.rowmenu[open]){overflow:visible}tr:has(.rowmenu[open]){position:relative;z-index:25}.listbar-actions{display:flex;flex:1 1 auto;justify-content:flex-end;align-items:center;gap:8px;margin-left:auto;min-height:40px}.listbar-actions:empty{display:none}.listbar-actions>.dirbtn,.listbar-actions>.colwrap>.dirbtn{min-height:40px}.listbar-actions .viewwrap{z-index:30}.viewform{position:absolute;right:0;top:calc(100% + 8px);z-index:30;display:grid;gap:10px;width:min(320px,calc(100vw - 32px));box-sizing:border-box;padding:16px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 10px 30px rgba(0,0,0,.18)}.viewform strong{font-size:calc(15px*var(--hk-fs,1))}.viewform label{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.viewform input{box-sizing:border-box;width:100%;min-width:0;height:40px;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.viewform small{font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.viewform-actions{display:flex;justify-content:flex-end;gap:8px}.viewform-actions .btn{white-space:nowrap}.findings-table .finding-name{flex:1}.findings-table .finding-cause .finding-link>.pill{flex:none;align-self:center}.findings-table .finding-detail .rowwrap{border-bottom:1px solid var(--hk-border)}.findings-table .finding-detail .rowwrap:last-child{border-bottom:0}.findings-table.dense-list .finding-detail .row{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-detail .row-text small{display:none}.findings-table.dense-list .finding-detail .row .tile{width:28px;height:28px}.findings-table.dense-list .finding-detail .rowmenu>summary{width:28px;height:28px}@media(max-width:860px){.listbar-actions{margin-left:auto}.findings-table tr.finding-detail{padding:0}.findings-table .finding-detail>td{padding:0}}@media(max-width:560px){.listbar-actions{margin-left:auto}.listbar .sortgroup:not(.table-sort){margin-left:0}}
+      .panel:has(.colpop),.panel:has(.viewform),.panel:has(.rowmenu[open]),.tablewrap:has(.rowmenu[open]),.tablewrap:has(.quicklist){overflow:visible}.pairs .picker{min-width:260px}.pairs td select{width:100%;min-width:200px}tr:has(.rowmenu[open]){position:relative;z-index:25}.listbar-actions{display:flex;flex:1 1 auto;justify-content:flex-end;align-items:center;gap:8px;margin-left:auto;min-height:40px}.listbar-actions:empty{display:none}.listbar-actions>.dirbtn,.listbar-actions>.colwrap>.dirbtn{min-height:40px}.listbar-actions .viewwrap{z-index:30}.viewform{position:absolute;right:0;top:calc(100% + 8px);z-index:30;display:grid;gap:10px;width:min(320px,calc(100vw - 32px));box-sizing:border-box;padding:16px;border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface);box-shadow:0 10px 30px rgba(0,0,0,.18)}.viewform strong{font-size:calc(15px*var(--hk-fs,1))}.viewform label{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.viewform input{box-sizing:border-box;width:100%;min-width:0;height:40px;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.viewform small{font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.viewform-actions{display:flex;justify-content:flex-end;gap:8px}.viewform-actions .btn{white-space:nowrap}.findings-table .finding-name{flex:1}.findings-table .finding-cause .finding-link>.pill{flex:none;align-self:center}.findings-table .finding-detail .rowwrap{border-bottom:1px solid var(--hk-border)}.findings-table .finding-detail .rowwrap:last-child{border-bottom:0}.findings-table.dense-list .finding-detail .row{padding-top:5px;padding-bottom:5px}.findings-table.dense-list .finding-detail .row-text small{display:none}.findings-table.dense-list .finding-detail .row .tile{width:28px;height:28px}.findings-table.dense-list .finding-detail .rowmenu>summary{width:28px;height:28px}@media(max-width:860px){.listbar-actions{margin-left:auto}.findings-table tr.finding-detail{padding:0}.findings-table .finding-detail>td{padding:0}}@media(max-width:560px){.listbar-actions{margin-left:auto}.listbar .sortgroup:not(.table-sort){margin-left:0}}
       .findings-table .finding-link-group{display:flex;align-items:flex-start;gap:6px;min-width:0}.findings-table .finding-link-group .finding-link{flex:1;min-width:0}.findings-table .finding-fold{display:flex;align-items:center;justify-content:center;flex:none;width:24px;height:28px;padding:0;border:0;background:none;color:var(--hk-muted);cursor:pointer}.findings-table .finding-fold .foldarrow{margin:0}.findings-table .finding-fold:hover{color:var(--hk-text)}.finding-fold-gap{flex:none;width:24px}.findings-table tr.og.lvl1 .finding-link-group{padding-left:22px}.findings-table tr.og.lvl2 .finding-link-group{padding-left:44px}.findings-table tr.og.lvl3 .finding-link-group{padding-left:66px}.findings-table tr.og:not(.finding-cause){background:color-mix(in srgb,var(--hk-soft) 55%,transparent)}.findings-table .ognew{display:block;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1))}.chips .seg{display:inline-flex;flex-wrap:wrap;gap:4px}@media(max-width:860px){.findings-table tr.og.lvl1 .finding-link-group,.findings-table tr.og.lvl2 .finding-link-group,.findings-table tr.og.lvl3 .finding-link-group{padding-left:12px}}
       .planfootcol{flex-direction:column;align-items:stretch}.planfootcol>:first-child{flex:none}.planfootcol .planfootbtns{justify-content:flex-end;gap:10px}.planfootcol .planfootbtns .btn{min-width:150px;justify-content:center}.fold .planrow{padding:8px 16px}.fold .planrow small{margin-top:1px}
       .wmx{padding:12px 16px 14px;display:grid;gap:10px}.wmx .wtop{display:flex;gap:10px;align-items:center;color:var(--hk-amber)}.wmx .wtop strong{font-size:calc(15px*var(--hk-fs,1));color:var(--hk-text)}
@@ -13655,6 +13655,7 @@ Object.assign(TEXT.en, {
 // described by its name: where its text lives, which objects it may offer and what picking one does.
 class PickerMixin {
   pickerDef(name) {
+    if (name.startsWith("rwt:")) return this.rwPickerDef(name.slice(4));
     return {
       counter: {
         get: () => this.counterId || "", set: v => { this.counterId = v; }, min: 1, types: ["entity"],
@@ -20463,7 +20464,7 @@ class ReplaceWizardMixin {
     const out = [];
     const other = (rw.result?.pairs || []).find(p => p.object_id !== pair.object_id && rw.choices[p.object_id]?.target === choice.target);
     if (other) out.push({ tone: "red", text: this.t("rwErrDuplicate", { name: other.name }) });
-    const picked = pair.candidates.find(c => c.object_id === choice.target);
+    const picked = this.findObject(`entity:${choice.target}`);
     if (picked && picked.status !== "active") out.push({ tone: "warn", text: this.t("rwWarnGone") });
     if (picked && (picked.unit ?? "") !== (pair.unit ?? "")) out.push({ tone: "warn", text: this.t("rwWarnUnit", { old: pair.unit || "–", new: picked.unit || "–" }) });
     return out;
@@ -20489,6 +20490,7 @@ class ReplaceWizardMixin {
   rwChoose(id, target) {
     const rw = this.rwState(), pair = (rw.result?.pairs || []).find(p => p.object_id === id);
     if (!pair) return;
+    if (rw.texts) delete rw.texts[id];
     if (!target) { delete rw.choices[id]; return; }
     const kept = rw.choices[id]?.how;
     rw.choices[id] = { target, how: kept && this.rwHowsOf(pair).includes(kept) ? kept : this.rwDefaultHow(pair) };
@@ -20565,18 +20567,26 @@ class ReplaceWizardMixin {
 
   // -- step 2: set up ----------------------------------------------------------------------
 
+  // The field of one row is the standard picker (search, the likelier entities first when nothing is typed).
+  rwPickerDef(id) {
+    const rw = this.rwState(), pair = (rw.result?.pairs || []).find(p => p.object_id === id);
+    const found = new Map((pair?.candidates || []).map((c, i) => [c.object_id, { ...c, rank: i }]));
+    return {
+      get: () => (rw.texts && id in rw.texts ? rw.texts[id] : rw.choices[id]?.target || ""),
+      set: v => { (rw.texts ||= {})[id] = v; if (!v) delete rw.choices[id]; },
+      min: 0, browse: true, types: ["entity"], limit: 30,
+      sub: o => [o.object_id, found.get(o.object_id)?.rank === 0 && found.get(o.object_id).score > 0 ? this.t("rwSuggested") : "", (found.get(o.object_id)?.reasons || []).map(r => this.t(`exReason_${r}`)).join(", ")].filter(Boolean).join(" · "),
+      filter: o => o.status !== "disabled" && !rw.sel.has(o.object_id) && this.sameDomain(o, id) && (!rw.scope || o.platform === rw.scope),
+      rank: o => (found.has(o.object_id) ? found.get(o.object_id).rank : 99),
+      pick: o => { if (rw.texts) delete rw.texts[id]; this.rwChoose(id, o.object_id); },
+    };
+  }
+
   rwTargetCell(pair) {
-    const rw = this.rwState(), choice = rw.choices[pair.object_id] || {};
-    const options = pair.candidates.map((c, i) => {
-      const why = c.reasons.map(r => this.t(`exReason_${r}`)).join(", ");
-      return `<option value="${this.esc(c.object_id)}" ${choice.target === c.object_id ? "selected" : ""}>${this.esc(c.name)} (${this.esc(c.object_id)})${i === 0 && c.score > 0 ? ` · ${this.t("rwSuggested")}` : ""}${why ? ` · ${this.esc(why)}` : ""}</option>`;
-    }).join("");
-    const picked = pair.candidates.find(c => c.object_id === choice.target);
-    const tags = [
-      ...(picked ? picked.reasons.map(r => `<span class="tag">${this.esc(this.t(`exReason_${r}`))}</span>`) : []),
-      ...this.rwProblems(pair).map(p => `<span class="pill ${p.tone}">${this.esc(p.text)}</span>`),
-    ];
-    return `<select data-rw-target="${this.esc(pair.object_id)}" aria-label="${this.esc(pair.name)}"><option value="">${this.t("rwNoTarget")}</option>${options}</select>${tags.length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
+    const choice = this.rwState().choices[pair.object_id] || {};
+    const reasons = (pair.candidates.find(c => c.object_id === choice.target)?.reasons || []).map(r => `<span class="tag">${this.esc(this.t(`exReason_${r}`))}</span>`);
+    const tags = [...reasons, ...this.rwProblems(pair).map(p => `<span class="pill ${p.tone}">${this.esc(p.text)}</span>`)];
+    return `${this.pickerBox(`rwt:${pair.object_id}`, this.t("rwNoTarget"))}${tags.length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
   }
 
   rwHowCell(pair) {
@@ -20650,10 +20660,9 @@ class ReplaceWizardMixin {
     root.querySelector("[data-rw-scope]")?.addEventListener("change", ev => { rw().scope = ev.target.value; this.rwLoadPairs(); });
     root.querySelector("[data-rw-take]")?.addEventListener("click", () => { this.rwTakeAll(); this.render(); });
     root.querySelector("[data-rw-create]")?.addEventListener("click", () => this.rwCreatePlan());
-    root.querySelectorAll("[data-rw-target]").forEach(el => el.onchange = () => { this.rwChoose(el.dataset.rwTarget, el.value); this.render(); });
     root.querySelectorAll("[data-rw-how]").forEach(el => el.onchange = () => { const c = rw().choices[el.dataset.rwHow]; if (c) c.how = el.value; this.render(); });
     root.querySelectorAll("[data-rw-suggest]").forEach(el => el.onclick = () => { const p = (rw().result?.pairs || []).find(x => x.object_id === el.dataset.rwSuggest); if (p?.candidates[0]) this.rwChoose(p.object_id, p.candidates[0].object_id); this.render(); });
-    root.querySelectorAll("[data-rw-skip]").forEach(el => el.onclick = () => { delete rw().choices[el.dataset.rwSkip]; this.render(); });
+    root.querySelectorAll("[data-rw-skip]").forEach(el => el.onclick = () => { this.rwChoose(el.dataset.rwSkip, ""); this.render(); });
     root.querySelectorAll("[data-rw-how-open]").forEach(el => el.onclick = () => { rw().howOpen = el.dataset.rwHowOpen; this.render(); });
     root.querySelectorAll("[data-rw-how-pick]").forEach(el => el.onclick = () => { const c = rw().choices[rw().howOpen]; if (c) c.how = el.dataset.rwHowPick; rw().howOpen = ""; this.render(); });
     root.querySelectorAll("[data-act-replace-many]").forEach(el => el.onclick = () => this.rwStart([el.dataset.actReplaceMany]));

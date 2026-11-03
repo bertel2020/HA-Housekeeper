@@ -2,6 +2,7 @@
 // described by its name: where its text lives, which objects it may offer and what picking one does.
 class PickerMixin {
   pickerDef(name) {
+    if (name.startsWith("rwt:")) return this.rwPickerDef(name.slice(4));
     return {
       counter: {
         get: () => this.counterId || "", set: v => { this.counterId = v; }, min: 1, types: ["entity"],
