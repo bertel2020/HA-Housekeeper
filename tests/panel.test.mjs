@@ -6080,6 +6080,19 @@ test("a typed text is quoted the way the language of the panel does", () => {
   assert.equal(panel("de").el.quote("x"), "„x“");
 });
 
+test("a decision and a note hold for a year unless the object is critical, and then a decision for three months", async () => {
+  const { el } = panel("en");
+  assert.equal(el.defaultDays("keep"), 365);
+  assert.equal(el.keepDays(), 365);
+  assert.equal(el.keepDays(true), 90);
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return {}; } };
+  el.data = { ...DATA, findings: [{ key: "k1", rule_id: "entity.stale", object_id: "sensor.a", impact_facts: [{ fact: "critical", why: "kind" }] }, { key: "k2", rule_id: "entity.stale", object_id: "sensor.b" }] };
+  await el.roundKeepOne("k1"); await el.roundKeepOne("k2");
+  const days = sent.filter(m => m.type.endsWith("/ignore")).map(m => m.days);
+  assert.equal(JSON.stringify(days), "[90,365]");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

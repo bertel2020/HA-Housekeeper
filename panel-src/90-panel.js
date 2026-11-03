@@ -1312,7 +1312,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const unrefPage = root.querySelector("[data-unref-page]");
     if (unrefPage) { unrefPage.indeterminate = unrefPage.hasAttribute("data-partial"); unrefPage.onchange = ev => { root.querySelectorAll("[data-unref-sel]").forEach(x => (ev.target.checked ? unrefSel().add(x.dataset.unrefSel) : unrefSel().delete(x.dataset.unrefSel))); this.render(); }; }
     root.querySelector("[data-unref-clear]")?.addEventListener("click", () => { unrefSel().clear(); this.unrefBulk = null; this.render(); });
-    root.querySelector("[data-unref-bulk]")?.addEventListener("click", () => { this.unrefBulk = { markKind: "", reason: "", days: 365 }; this.render(); });
+    root.querySelector("[data-unref-bulk]")?.addEventListener("click", () => { this.unrefBulk = { markKind: "", reason: "", days: MARK_DAYS }; this.render(); });
     root.querySelector("[data-unref-kind]")?.addEventListener("change", ev => { this.unrefBulk.markKind = ev.target.value; });
     root.querySelector("[data-unref-reason]")?.addEventListener("input", ev => { this.unrefBulk.reason = ev.target.value; });
     root.querySelector("[data-unref-days]")?.addEventListener("change", ev => { this.unrefBulk.days = Number(ev.target.value); });
@@ -1324,7 +1324,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const markPage = root.querySelector("[data-mark-page]");
     if (markPage) { markPage.indeterminate = markPage.hasAttribute("data-partial"); markPage.onchange = ev => { root.querySelectorAll("[data-mark-sel]").forEach(x => (ev.target.checked ? markSel().add(x.dataset.markSel) : markSel().delete(x.dataset.markSel))); this.render(); }; }
     root.querySelector("[data-mark-selclear]")?.addEventListener("click", () => { markSel().clear(); this.markBulk = null; this.render(); });
-    root.querySelectorAll("[data-mark-bulk]").forEach(el => el.onclick = () => { this.markBulk = { kind: el.dataset.markBulk, days: 365, markKind: "" }; this.render(); });
+    root.querySelectorAll("[data-mark-bulk]").forEach(el => el.onclick = () => { this.markBulk = { kind: el.dataset.markBulk, days: MARK_DAYS, markKind: "" }; this.render(); });
     root.querySelector("[data-mark-bulk-remove]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmMarksRemove", { count: markSel().size }), () => this.removeMarks([...markSel()])));
     root.querySelector("[data-mark-bulkdays]")?.addEventListener("change", ev => { this.markBulk.days = Number(ev.target.value); });
     root.querySelector("[data-mark-bulkkind]")?.addEventListener("change", ev => { this.markBulk.markKind = ev.target.value; });

@@ -476,7 +476,7 @@ class FindingStatusMixin {
       const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind, reason: b.reason.trim() };
       if (kind === "snooze") msg.days = Number(b.days) || 30;
       else if (b.kind === "status" && Number(b.days)) msg.days = Number(b.days);
-      else if (b.kind === "status" && kind === "keep" && this.findingCritical(this.data.findings.find(f => f.key === key))) msg.days = this.defaultDays("keep");
+      else if (b.kind === "status" && kind === "keep" && this.findingCritical(this.data.findings.find(f => f.key === key))) msg.days = this.keepDays(true);
       await this._hass.callWS(msg);
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) {
@@ -561,7 +561,7 @@ class FindingStatusMixin {
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
     root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.excForm = this.excForm?.here ? null : this.excForm; this.bulk = { kind, state: "keep", autoClear: kind === "mark", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? 0 : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.excForm = this.excForm?.here ? null : this.excForm; this.bulk = { kind, state: "keep", autoClear: kind === "mark", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? MARK_DAYS : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     root.querySelectorAll("[data-due-keep]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.keepOn(el.dataset.dueKeep); });
     root.querySelector("[data-dnotice-ok]")?.addEventListener("click", () => this.dismissDecisionNotice());

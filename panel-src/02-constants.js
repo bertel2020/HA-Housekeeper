@@ -115,6 +115,9 @@ const SEARCH_DEBOUNCE_MS = 150;
 // Objects whose page keeps reading on the overview and puts everything that changes something under the tab "Actions".
 const PICKED_MAX = 200;
 const MARK_TYPES = ["entity", "device", "config_entry", "app"];
+// How long a decision or a note holds before it is looked at again, unless the person chooses otherwise: a year, and for a
+// critical object that was kept "as intended" without a date, three months.
+const KEEP_DAYS = 365, CRITICAL_KEEP_DAYS = 90, MARK_DAYS = 365;
 const ACTION_TYPES = ["entity", "device", "config_entry", "automation", "script", "scene"];
 // Objects whose overview sums up what is known in groups ("Known about …"); scenes keep the facts card.
 const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"];

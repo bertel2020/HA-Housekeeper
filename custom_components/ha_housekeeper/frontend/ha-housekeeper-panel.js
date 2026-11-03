@@ -490,6 +490,9 @@ const SEARCH_DEBOUNCE_MS = 150;
 // Objects whose page keeps reading on the overview and puts everything that changes something under the tab "Actions".
 const PICKED_MAX = 200;
 const MARK_TYPES = ["entity", "device", "config_entry", "app"];
+// How long a decision or a note holds before it is looked at again, unless the person chooses otherwise: a year, and for a
+// critical object that was kept "as intended" without a date, three months.
+const KEEP_DAYS = 365, CRITICAL_KEEP_DAYS = 90, MARK_DAYS = 365;
 const ACTION_TYPES = ["entity", "device", "config_entry", "automation", "script", "scene"];
 // Objects whose overview sums up what is known in groups ("Known about …"); scenes keep the facts card.
 const KNOWN_TYPES = ["entity", "device", "config_entry", "automation", "script"];
@@ -3384,7 +3387,10 @@ class FindingsMixin {
   findingCritical(f) { return Boolean(f) && (f.impact_facts || []).some(x => x.fact === "critical"); }
 
   // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after a year (a critical object: 90 days where the person chooses none), hidden for good.
-  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 365 : 0; }
+  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? KEEP_DAYS : 0; }
+
+  // The time for "intended": a critical object is looked at again sooner.
+  keepDays(critical = false) { return critical ? CRITICAL_KEEP_DAYS : KEEP_DAYS; }
 
   // What a failing automation rests on: the counts of the window.
   runLine(f) {
@@ -3476,7 +3482,7 @@ class FindingsMixin {
     if (!d) return;
     if (d.kind === "keep" && !d.reason.trim()) { d.error = "decideNeedReason"; this.render(); return; }
     if (d.kind === "snooze" && !Number(d.days)) d.days = 30;
-    if (d.kind === "keep" && d.critical && !Number(d.days)) d.days = 90;
+    if (d.kind === "keep" && d.critical && !Number(d.days)) d.days = this.keepDays(true);
     const keys = d.keys || [d.key], decided = [];
     // What was decided goes into the history of the cleanup, also when a later one of the same action failed.
     const record = () => {
@@ -10118,7 +10124,7 @@ class MarksMixin {
 
   openMark(key) {
     const item = this.findObject(key), mark = item?.mark;
-    this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: mark ? 0 : 365, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30, autoClear: mark ? Boolean(mark.auto_clear) : true };
+    this.markForm = { key, kind: mark?.kind || "expected_offline", reason: mark?.reason || "", days: mark ? 0 : MARK_DAYS, target: mark?.target || "", error: "", wmode: mark?.window?.mode || "", from: mark?.window?.from || "21:00", to: mark?.window?.to || "06:00", grace: mark?.grace ?? 30, autoClear: mark ? Boolean(mark.auto_clear) : true };
     this.render();
     this.shadowRoot?.querySelector?.("[data-mark-kind]")?.focus?.();
   }
@@ -13123,7 +13129,7 @@ class FindingStatusMixin {
       const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind, reason: b.reason.trim() };
       if (kind === "snooze") msg.days = Number(b.days) || 30;
       else if (b.kind === "status" && Number(b.days)) msg.days = Number(b.days);
-      else if (b.kind === "status" && kind === "keep" && this.findingCritical(this.data.findings.find(f => f.key === key))) msg.days = this.defaultDays("keep");
+      else if (b.kind === "status" && kind === "keep" && this.findingCritical(this.data.findings.find(f => f.key === key))) msg.days = this.keepDays(true);
       await this._hass.callWS(msg);
       const finding = this.data.findings.find(f => f.key === key);
       if (finding) {
@@ -13208,7 +13214,7 @@ class FindingStatusMixin {
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
     root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.excForm = this.excForm?.here ? null : this.excForm; this.bulk = { kind, state: "keep", autoClear: kind === "mark", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? 0 : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.excForm = this.excForm?.here ? null : this.excForm; this.bulk = { kind, state: "keep", autoClear: kind === "mark", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? MARK_DAYS : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     root.querySelectorAll("[data-due-keep]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.keepOn(el.dataset.dueKeep); });
     root.querySelector("[data-dnotice-ok]")?.addEventListener("click", () => this.dismissDecisionNotice());
@@ -20439,7 +20445,7 @@ class RoundMixin {
   async roundKeepOne(key) {
     const finding = this.data.findings.find(f => f.key === key);
     if (!finding) return null;
-    const days = this.defaultDays("keep");
+    const days = this.keepDays(this.findingCritical(finding));
     await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("roundKeepReason"), days });
     const target = this.findingKey(finding), [type, ...rest] = target.split(":");
     if (!["entity", "device"].includes(type) || this.findObject(target)?.mark) return null;
@@ -21054,7 +21060,7 @@ class FirstCleanupMixin {
   async fcDecide(keyOrKeys, kind) {
     const keys = [].concat(keyOrKeys), key = keys[0], list = keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean), f = list[0];
     if (!f) return;
-    const days = kind === "snooze" ? (this.fc?.later_days || 90) : this.defaultDays("keep"), reason = this.t(kind === "snooze" ? "fcLaterOneReason" : "fcKeepReason");
+    const days = kind === "snooze" ? (this.fc?.later_days || 90) : this.keepDays(list.some(x => this.findingCritical(x))), reason = this.t(kind === "snooze" ? "fcLaterOneReason" : "fcKeepReason");
     try {
       for (const x of list) {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: x.key, ignored: true, kind, reason, days, source: "cleanup" });
@@ -23157,7 +23163,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const unrefPage = root.querySelector("[data-unref-page]");
     if (unrefPage) { unrefPage.indeterminate = unrefPage.hasAttribute("data-partial"); unrefPage.onchange = ev => { root.querySelectorAll("[data-unref-sel]").forEach(x => (ev.target.checked ? unrefSel().add(x.dataset.unrefSel) : unrefSel().delete(x.dataset.unrefSel))); this.render(); }; }
     root.querySelector("[data-unref-clear]")?.addEventListener("click", () => { unrefSel().clear(); this.unrefBulk = null; this.render(); });
-    root.querySelector("[data-unref-bulk]")?.addEventListener("click", () => { this.unrefBulk = { markKind: "", reason: "", days: 365 }; this.render(); });
+    root.querySelector("[data-unref-bulk]")?.addEventListener("click", () => { this.unrefBulk = { markKind: "", reason: "", days: MARK_DAYS }; this.render(); });
     root.querySelector("[data-unref-kind]")?.addEventListener("change", ev => { this.unrefBulk.markKind = ev.target.value; });
     root.querySelector("[data-unref-reason]")?.addEventListener("input", ev => { this.unrefBulk.reason = ev.target.value; });
     root.querySelector("[data-unref-days]")?.addEventListener("change", ev => { this.unrefBulk.days = Number(ev.target.value); });
@@ -23169,7 +23175,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const markPage = root.querySelector("[data-mark-page]");
     if (markPage) { markPage.indeterminate = markPage.hasAttribute("data-partial"); markPage.onchange = ev => { root.querySelectorAll("[data-mark-sel]").forEach(x => (ev.target.checked ? markSel().add(x.dataset.markSel) : markSel().delete(x.dataset.markSel))); this.render(); }; }
     root.querySelector("[data-mark-selclear]")?.addEventListener("click", () => { markSel().clear(); this.markBulk = null; this.render(); });
-    root.querySelectorAll("[data-mark-bulk]").forEach(el => el.onclick = () => { this.markBulk = { kind: el.dataset.markBulk, days: 365, markKind: "" }; this.render(); });
+    root.querySelectorAll("[data-mark-bulk]").forEach(el => el.onclick = () => { this.markBulk = { kind: el.dataset.markBulk, days: MARK_DAYS, markKind: "" }; this.render(); });
     root.querySelector("[data-mark-bulk-remove]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmMarksRemove", { count: markSel().size }), () => this.removeMarks([...markSel()])));
     root.querySelector("[data-mark-bulkdays]")?.addEventListener("change", ev => { this.markBulk.days = Number(ev.target.value); });
     root.querySelector("[data-mark-bulkkind]")?.addEventListener("change", ev => { this.markBulk.markKind = ev.target.value; });

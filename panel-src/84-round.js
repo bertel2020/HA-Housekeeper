@@ -63,7 +63,7 @@ class RoundMixin {
   async roundKeepOne(key) {
     const finding = this.data.findings.find(f => f.key === key);
     if (!finding) return null;
-    const days = this.defaultDays("keep");
+    const days = this.keepDays(this.findingCritical(finding));
     await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("roundKeepReason"), days });
     const target = this.findingKey(finding), [type, ...rest] = target.split(":");
     if (!["entity", "device"].includes(type) || this.findObject(target)?.mark) return null;

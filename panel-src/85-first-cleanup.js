@@ -562,7 +562,7 @@ class FirstCleanupMixin {
   async fcDecide(keyOrKeys, kind) {
     const keys = [].concat(keyOrKeys), key = keys[0], list = keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean), f = list[0];
     if (!f) return;
-    const days = kind === "snooze" ? (this.fc?.later_days || 90) : this.defaultDays("keep"), reason = this.t(kind === "snooze" ? "fcLaterOneReason" : "fcKeepReason");
+    const days = kind === "snooze" ? (this.fc?.later_days || 90) : this.keepDays(list.some(x => this.findingCritical(x))), reason = this.t(kind === "snooze" ? "fcLaterOneReason" : "fcKeepReason");
     try {
       for (const x of list) {
         await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: x.key, ignored: true, kind, reason, days, source: "cleanup" });

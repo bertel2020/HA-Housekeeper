@@ -443,7 +443,10 @@ class FindingsMixin {
   findingCritical(f) { return Boolean(f) && (f.impact_facts || []).some(x => x.fact === "critical"); }
 
   // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after a year (a critical object: 90 days where the person chooses none), hidden for good.
-  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 365 : 0; }
+  defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? KEEP_DAYS : 0; }
+
+  // The time for "intended": a critical object is looked at again sooner.
+  keepDays(critical = false) { return critical ? CRITICAL_KEEP_DAYS : KEEP_DAYS; }
 
   // What a failing automation rests on: the counts of the window.
   runLine(f) {
@@ -535,7 +538,7 @@ class FindingsMixin {
     if (!d) return;
     if (d.kind === "keep" && !d.reason.trim()) { d.error = "decideNeedReason"; this.render(); return; }
     if (d.kind === "snooze" && !Number(d.days)) d.days = 30;
-    if (d.kind === "keep" && d.critical && !Number(d.days)) d.days = 90;
+    if (d.kind === "keep" && d.critical && !Number(d.days)) d.days = this.keepDays(true);
     const keys = d.keys || [d.key], decided = [];
     // What was decided goes into the history of the cleanup, also when a later one of the same action failed.
     const record = () => {
