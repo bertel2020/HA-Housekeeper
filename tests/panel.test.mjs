@@ -6852,9 +6852,9 @@ test("the status of the selection is set in one form; an exception from a findin
 test("the headline names what is urgent, the to-do card has the same groups, and both add up", () => {
   const { el } = panel("en");
   el.data = { ...DATA, regressions: [], criteria_alerts: [] };
-  const items = [{ key: "outages", tone: "red", area: "findings", label: "actOutages", count: 5 }, { key: "critical", tone: "red", area: "findings", label: "actNewCritical", count: 6 }, { key: "stale", tone: "warn", area: "state", text: "Old scan", scan: true }, { key: "updates", tone: "warn", area: "care", text: "Updates" }];
+  const items = [{ key: "outages", tone: "red", area: "findings", label: "actOutages", count: 5 }, { key: "critical", tone: "red", area: "findings", label: "actMissingTargets", count: 6 }, { key: "stale", tone: "warn", area: "state", text: "Old scan", scan: true }, { key: "updates", tone: "warn", area: "care", text: "Updates" }];
   el.todoItems = () => items;
-  assert.equal(el.statusHeadline(), "Outages (5) and New critical findings (6)");
+  assert.equal(el.statusHeadline(), "Outages (5) and Missing targets (6)");
   assert.ok(el.statusSubline(el.health()).includes("Plus 1 open and 1 in maintenance"));
   const card = el.todoCard();
   assert.ok(card.includes('data-todo="outages"') && card.includes("todogrp red") && card.includes("todogrp open") && card.includes('data-fold="todo_care"'), "every counted item is a row of its group");

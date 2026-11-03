@@ -14,7 +14,7 @@ Object.assign(TEXT.de, {
   clRecurring: "{what} wurde diese Woche {n}-mal zum Problem.", clRecurringMany: "{n} Prüfungen wurden diese Woche mindestens 3-mal zum Problem, zuletzt: {what}.", clRecurringOpen: "Zu den Zuverlässigkeits-Seiten", clFlapText_1: "1 Prüfung wechselt auffällig oft (mindestens 4 Wechsel in 3 Stunden). Ist das ein Fehlalarm, markiere die Zeilen im Menü.", clFlapText_n: "{n} Prüfungen wechseln auffällig oft (mindestens 4 Wechsel in 3 Stunden). Sind das Fehlalarme, markiere die Zeilen im Menü.", clFlapOnly: "Nur diese zeigen", clFlapAll: "Alle zeigen",
   clStrips: "Zustand je Bereich", clStripsHint: "Das Schlimmste aller Prüfungen eines Bereichs, über {days} Tage. Schraffiert: keine Daten (Home Assistant war aus oder der Verlauf noch nicht eingerichtet).",
   clLegendOk: "in Ordnung", clLegendNote: "Hinweis", clLegendProblem: "Problem", clLegendUnknown: "unbekannt", clLegendNone: "keine Daten",
-  clAreaAll: "Alle", clOnlyProblems: "Nur Probleme und Hinweise", clSearch: "Suchen nach Bereich, Prüfung oder Ursache",
+  clOnlyProblems: "Nur Probleme und Hinweise", 
   clArea_backup: "Backup-Schutz", clArea_database: "Datenbank", clArea_auto_pause: "Auto-Pause", clArea_system: "System", clArea_services: "Dienste", clArea_goals: "Ziele", clArea_scan: "Scan", clArea_config: "Konfiguration", clConfigEdited: "Konfiguration geändert",
   clCheck_backup_run: "Backup", clCheck_database_integrity: "Integritätsprüfung", clCheck_database_disk_low: "Plattenplatz", clCheck_database_wal_large: "WAL-Datei", clCheck_system_disk: "Speicherplatz", clCheck_system_memory: "Arbeitsspeicher", clCheck_services_setup: "Einrichtung der Integrationen", clCheck_scan_scan: "Läuft der Scan",
   clCheck_auto_pause_paused: "Pausiert", clCheck_auto_pause_exhausted: "Versuche aufgebraucht", clCheck_auto_pause_back: "Wieder aktiv", clCheck_auto_pause_ended: "Pause beendet",
@@ -29,12 +29,12 @@ Object.assign(TEXT.de, {
   clWhy_restart: "Ordentlich heruntergefahren und wieder gestartet", clWhy_update: "Nach einem Update", clDown: "war {span} aus", clMinShort: "Min.", clFirstCheck: "erste Prüfung nach {span}", clAfterFindings: "danach: {what}", clUpdateRestart: "{title} und neu gestartet", clUpdatesRestart: "{n} Updates, danach Neustart", clUpdName_core: "Home Assistant", clUpdName_os: "Betriebssystem", clUpdName_supervisor: "Supervisor", clUpdName_integration: "{domain}",
   clEmpty: "Noch keine Wechsel.", clEmptyNext: "Der Verlauf füllt sich, sobald eine Prüfung ihre Stufe ändert. Aufbewahrt werden {days} Tage, höchstens {max} Einträge.",
   clMarkAs_backup_running: "Fehlalarm: Backup lief gerade", clMarkAs_restart: "Fehlalarm: Neustart", clMarkAs_maintenance: "Fehlalarm: Wartung", clMarkAs_test: "Fehlalarm: Test", clMarkAs_expected: "Fehlalarm: ist so gewollt", clMarkAs_other: "Fehlalarm: anderer Grund",
-  clUnmark: "Markierung entfernen", clOpenCheck: "Prüfung öffnen", clOnlyCheck: "Nur diese Prüfung zeigen", clOnlyCheckOn: "Nur: {what}", clOnlyCheckOff: "Alle Prüfungen zeigen",
+  clUnmark: "Markierung entfernen", clOpenCheck: "Prüfung öffnen", clOnlyCheck: "Nur diese Prüfung zeigen", clOnlyCheckOn: "Nur: {what}", 
   clDismissed: "Fehlalarm · {reason}", clReason_backup_running: "Backup lief gerade", clReason_restart: "Neustart", clReason_maintenance: "Wartung", clReason_test: "Test", clReason_expected: "ist so gewollt", clReason_other: "anderer Grund",
   clMarkFailed: "Die Markierung konnte nicht gespeichert werden.",
-  clExpName: "verlauf", clExpTitle: "Verlauf der Prüfungen", clExpAt: "Zeit", clExpKind: "Art", clExpArea: "Bereich", clExpCheck: "Prüfung", clExpFrom: "von", clExpTo: "nach", clExpCause: "Ursache", clExpLasted: "Dauer (Sekunden)", clExpDismissed: "Fehlalarm",
-  clNoMatch: "Nichts gefunden.", clNoMatchNext: "Die Filter oder die Suche lassen keinen Eintrag übrig.",
-  clMore: "{shown} von {total} Einträgen gezeigt, der Export enthält alle des Zeitraums.", clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
+  clExpName: "verlauf", clExpAt: "Zeit", clExpKind: "Art", clExpArea: "Bereich", clExpCheck: "Prüfung", clExpFrom: "von", clExpTo: "nach", clExpCause: "Ursache", clExpLasted: "Dauer (Sekunden)", clExpDismissed: "Fehlalarm",
+  
+  clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
 });
 Object.assign(TEXT.en, {
   checklog: "History", checklogSubtitle: "When a check changed its level, with the numbers behind it, plus restarts, updates and edits of automations. Only times, numbers and identifiers are kept, never texts.",
@@ -44,7 +44,7 @@ Object.assign(TEXT.en, {
   clRecurring: "{what} turned into a problem {n} times this week.", clRecurringMany: "{n} checks turned into a problem at least 3 times this week, latest: {what}.", clRecurringOpen: "To the reliability pages", clFlapText_1: "1 check changes level unusually often (at least 4 changes in 3 hours). If that is a false alarm, mark the rows in the menu.", clFlapText_n: "{n} checks change level unusually often (at least 4 changes in 3 hours). If those are false alarms, mark the rows in the menu.", clFlapOnly: "Show only these", clFlapAll: "Show all",
   clStrips: "State per area", clStripsHint: "The worst of all checks of an area, over {days} days. Hatched: no data (Home Assistant was off or the history was not yet running).",
   clLegendOk: "OK", clLegendNote: "Note", clLegendProblem: "Problem", clLegendUnknown: "unknown", clLegendNone: "no data",
-  clAreaAll: "All", clOnlyProblems: "Only problems and notes", clSearch: "Search by area, check or cause",
+  clOnlyProblems: "Only problems and notes", 
   clArea_backup: "Backup protection", clArea_database: "Database", clArea_auto_pause: "Auto-pause", clArea_system: "System", clArea_services: "Services", clArea_goals: "Goals", clArea_scan: "Scan", clArea_config: "Configuration", clConfigEdited: "Configuration changed",
   clCheck_backup_run: "Backup", clCheck_database_integrity: "Integrity check", clCheck_database_disk_low: "Disk space", clCheck_database_wal_large: "WAL file", clCheck_system_disk: "Disk space", clCheck_system_memory: "Memory", clCheck_services_setup: "Setup of integrations", clCheck_scan_scan: "Scan runs",
   clCheck_auto_pause_paused: "Paused", clCheck_auto_pause_exhausted: "Attempts used up", clCheck_auto_pause_back: "Active again", clCheck_auto_pause_ended: "Pause ended",
@@ -59,12 +59,12 @@ Object.assign(TEXT.en, {
   clWhy_restart: "Shut down cleanly and started again", clWhy_update: "After an update", clDown: "was off for {span}", clMinShort: "min", clFirstCheck: "first check after {span}", clAfterFindings: "afterwards: {what}", clUpdateRestart: "{title} and restarted", clUpdatesRestart: "{n} updates, then restart", clUpdName_core: "Home Assistant", clUpdName_os: "Operating system", clUpdName_supervisor: "Supervisor", clUpdName_integration: "{domain}",
   clEmpty: "No changes yet.", clEmptyNext: "The history fills as soon as a check changes its level. It is kept for {days} days, at most {max} entries.",
   clMarkAs_backup_running: "False alarm: a backup was running", clMarkAs_restart: "False alarm: restart", clMarkAs_maintenance: "False alarm: maintenance", clMarkAs_test: "False alarm: test", clMarkAs_expected: "False alarm: as intended", clMarkAs_other: "False alarm: other reason",
-  clUnmark: "Remove the mark", clOpenCheck: "Open the check", clOnlyCheck: "Show only this check", clOnlyCheckOn: "Only: {what}", clOnlyCheckOff: "Show all checks",
+  clUnmark: "Remove the mark", clOpenCheck: "Open the check", clOnlyCheck: "Show only this check", clOnlyCheckOn: "Only: {what}", 
   clDismissed: "False alarm · {reason}", clReason_backup_running: "a backup was running", clReason_restart: "restart", clReason_maintenance: "maintenance", clReason_test: "test", clReason_expected: "as intended", clReason_other: "other reason",
   clMarkFailed: "The mark could not be saved.",
-  clExpName: "history", clExpTitle: "History of the checks", clExpAt: "Time", clExpKind: "Kind", clExpArea: "Area", clExpCheck: "Check", clExpFrom: "From", clExpTo: "To", clExpCause: "Cause", clExpLasted: "Lasted (seconds)", clExpDismissed: "False alarm",
-  clNoMatch: "Nothing found.", clNoMatchNext: "The filters or the search leave no entry.",
-  clMore: "{shown} of {total} entries shown; the export holds all of the period.", clRetention: "Kept: {days} days, at most {max} entries.", clLoadError: "The history could not be read.",
+  clExpName: "history", clExpAt: "Time", clExpKind: "Kind", clExpArea: "Area", clExpCheck: "Check", clExpFrom: "From", clExpTo: "To", clExpCause: "Cause", clExpLasted: "Lasted (seconds)", clExpDismissed: "False alarm",
+  
+  clRetention: "Kept: {days} days, at most {max} entries.", clLoadError: "The history could not be read.",
 });
 
 class CheckLogMixin {
