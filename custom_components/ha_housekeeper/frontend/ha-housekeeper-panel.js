@@ -3154,7 +3154,7 @@ class FindingsMixin {
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
     // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
     if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
-    if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
+    if (st.q?.trim()) notes.push(["q", this.quote(st.q.trim())]);
     for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
     if (!notes.length) return "";
     const chips = notes.map(([key, label]) => `<button type="button" class="chip fchip" data-fclear="${this.esc(key)}" aria-label="${this.esc(this.t("filterRemove", { name: label }))}">${this.esc(label)} <ha-icon icon="mdi:close"></ha-icon></button>`).join("");
@@ -18257,7 +18257,7 @@ Object.assign(TEXT.en, {
   viewAllPages: "all pages", viewAllColumns: "all columns", viewAllMenus: "all menu entries",
   viewLeft_simple: "Hidden: {list}. Reachable through the search, \"Fix\" and the notes of the overview.", viewLeft_full: "Hidden: nothing.",
   viewCmp_bar: "Bar", viewCmpS_bar: "{n} pages in {g} groups", viewCmpF_bar: "{n} pages in {g} groups",
-  viewCmp_overview: "Overview", viewCmpS_overview: "Status, to-do, backup and \"More notes\" from hidden pages", viewCmpF_overview: "plus clean-up, history, inventory, system, database",
+  viewCmp_overview: "Overview", viewCmpS_overview: "Status, to-do, backup and \"More notes\" from hidden pages", viewCmpF_overview: "plus cleanup, history, inventory, system, database",
   viewCmp_findings: "Findings table", viewCmpS_findings: "Name, topic, impact, since", viewCmpF_findings: "plus certainty, object ID, rule ID",
   viewCmp_menu: "Row menu", viewCmpS_menu: "Fix, status, open", viewCmpF_menu: "plus exception, label, object note, graph",
   viewCmp_detail: "Export, detail page", viewCmpS_detail: "CSV, Markdown; overview, actions", viewCmpF_detail: "plus JSON, relations, diagnosis, technical",
@@ -21298,7 +21298,7 @@ class ActivityMixin {
     const details = [
       e.source ? this.t(`actSource_${e.source}`) : "",
       e.by_name || "",
-      e.reason ? `„${e.reason}“` : "",
+      e.reason ? this.quote(e.reason) : "",
       e.until ? this.t("actUntil", { date: this.formatDate(e.until) }) : "",
       e.backfilled ? this.t("actTakenOver") : "",
     ].filter(Boolean).join(" · ");
@@ -22419,6 +22419,9 @@ class HAHousekeeperPanel extends HTMLElement {
     cache.set(name, { data: this.data, rev: this._rev, deps, value });
     return value;
   }
+
+  // A typed text in the quotation marks of the language of the panel.
+  quote(text) { return this.lang === "de" ? `„${text}“` : `“${text}”`; }
 
   // One finding by its key, without a search through all of them for every picked row.
   findingByKey(key) {

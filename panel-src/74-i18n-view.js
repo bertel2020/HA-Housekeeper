@@ -54,7 +54,7 @@ Object.assign(TEXT.en, {
   viewAllPages: "all pages", viewAllColumns: "all columns", viewAllMenus: "all menu entries",
   viewLeft_simple: "Hidden: {list}. Reachable through the search, \"Fix\" and the notes of the overview.", viewLeft_full: "Hidden: nothing.",
   viewCmp_bar: "Bar", viewCmpS_bar: "{n} pages in {g} groups", viewCmpF_bar: "{n} pages in {g} groups",
-  viewCmp_overview: "Overview", viewCmpS_overview: "Status, to-do, backup and \"More notes\" from hidden pages", viewCmpF_overview: "plus clean-up, history, inventory, system, database",
+  viewCmp_overview: "Overview", viewCmpS_overview: "Status, to-do, backup and \"More notes\" from hidden pages", viewCmpF_overview: "plus cleanup, history, inventory, system, database",
   viewCmp_findings: "Findings table", viewCmpS_findings: "Name, topic, impact, since", viewCmpF_findings: "plus certainty, object ID, rule ID",
   viewCmp_menu: "Row menu", viewCmpS_menu: "Fix, status, open", viewCmpF_menu: "plus exception, label, object note, graph",
   viewCmp_detail: "Export, detail page", viewCmpS_detail: "CSV, Markdown; overview, actions", viewCmpF_detail: "plus JSON, relations, diagnosis, technical",

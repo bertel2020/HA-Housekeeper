@@ -212,7 +212,7 @@ class FindingsMixin {
     if (this.findingHeld) notes.push(["held", this.t("heldFilter", { n: this.formatNumber(this.heldKeys().size) })]);
     // The note names the row of the overview it came from: Outages (high) or Further outages (the others).
     if (this.findingOutages) notes.push(["outages", this.t(this.findingOutages === "high" ? "outagesFilterHigh" : this.findingOutages === "medium" ? "outagesFilterMedium" : "outagesFilter", { n: this.formatNumber(this.countedOutages(this.findingOutages === true ? "" : this.findingOutages).length) })]);
-    if (st.q?.trim()) notes.push(["q", `„${st.q.trim()}“`]);
+    if (st.q?.trim()) notes.push(["q", this.quote(st.q.trim())]);
     for (const f of filters) if (st.f[f.name]) notes.push([`lf:${f.name}`, `${f.all}: ${(f.options.find(([v]) => v === st.f[f.name]) || [])[1] ?? st.f[f.name]}`]);
     if (!notes.length) return "";
     const chips = notes.map(([key, label]) => `<button type="button" class="chip fchip" data-fclear="${this.esc(key)}" aria-label="${this.esc(this.t("filterRemove", { name: label }))}">${this.esc(label)} <ha-icon icon="mdi:close"></ha-icon></button>`).join("");

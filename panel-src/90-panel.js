@@ -570,6 +570,9 @@ class HAHousekeeperPanel extends HTMLElement {
     return value;
   }
 
+  // A typed text in the quotation marks of the language of the panel.
+  quote(text) { return this.lang === "de" ? `„${text}“` : `“${text}”`; }
+
   // One finding by its key, without a search through all of them for every picked row.
   findingByKey(key) {
     return this.memo("findingByKey", [this.data?.findings?.length], () => new Map((this.data?.findings || []).map(f => [f.key, f]))).get(key);

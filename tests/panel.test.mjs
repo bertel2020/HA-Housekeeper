@@ -6075,6 +6075,11 @@ test("the steps have names, and a tile that acts at once is not a toggle", () =>
   assert.ok(el.fcAct('data-x="1"', "Keep", "hint", false, "", "", false, false).includes('aria-pressed="false"'), "a tile that is chosen or not says so");
 });
 
+test("a typed text is quoted the way the language of the panel does", () => {
+  assert.equal(panel("en").el.quote("x"), "“x”");
+  assert.equal(panel("de").el.quote("x"), "„x“");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

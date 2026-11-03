@@ -49,7 +49,7 @@ class ActivityMixin {
     const details = [
       e.source ? this.t(`actSource_${e.source}`) : "",
       e.by_name || "",
-      e.reason ? `„${e.reason}“` : "",
+      e.reason ? this.quote(e.reason) : "",
       e.until ? this.t("actUntil", { date: this.formatDate(e.until) }) : "",
       e.backfilled ? this.t("actTakenOver") : "",
     ].filter(Boolean).join(" · ");
