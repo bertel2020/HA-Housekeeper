@@ -7327,6 +7327,14 @@ test("keeping in the cleanup round leaves an existing note alone, sets none on a
   assert.deepEqual(calls.map(c => `${c.type.split("/")[1]}:${c.object_type}`), ["mark_clear:entity"]);
 });
 
+test("a cleanup round that was cut off says so", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [] };
+  el.round = { rows: [], picked: new Set(), error: "", limited: true, total: 2500 };
+  const html = el.roundView();
+  assert.ok(html.includes("2,500 objects are unneeded") || html.includes("2.500 objects are unneeded") || html.includes("2500 objects are unneeded"));
+});
+
 test("a finding someone started to fix is in work, and an expired start leaves a note", async () => {
   const { el } = panel("en");
   el.data = { ...DATA, findings: [] }; el.journal = [];

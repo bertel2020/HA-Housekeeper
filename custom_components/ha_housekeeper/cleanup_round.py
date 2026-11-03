@@ -10,6 +10,10 @@ from typing import Any, Final
 
 from .finding_topics import UNNEEDED
 
+ROUND_LIMIT: Final = (
+    1000  # objects judged in one round; the rest comes in the next, once these are dealt with
+)
+
 SAFE: Final = "safe"  # nothing uses it: the removal runs without a closer look
 LOOK: Final = "look"  # something needs a decision first: used, a first step only, or a duplicate
 BLOCKED: Final = "blocked"  # not removable now; the person can keep it

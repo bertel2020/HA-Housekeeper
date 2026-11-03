@@ -1106,6 +1106,29 @@ async def test_the_cleanup_round_judges_and_changes_nothing(
     assert registry.async_get(orphan.entity_id).disabled_by is None
 
 
+async def test_the_cleanup_round_judges_a_limited_number_and_says_how_many_there_are(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    from unittest.mock import patch
+
+    registry = er.async_get(hass)
+    for number in range(3):
+        registry.async_get_or_create(
+            domain="sensor",
+            platform="test",
+            unique_id=f"lim-{number}",
+            suggested_object_id=f"lim{number}",
+        )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    with patch("custom_components.ha_housekeeper.websocket_api.ROUND_LIMIT", 2):
+        await client.send_json_auto_id({"type": "ha_housekeeper/cleanup_round"})
+        reply = await client.receive_json()
+    result = reply["result"]
+    assert result["limited"] is True and result["total"] >= 3
+    assert len([r for r in result["rows"] if r["object_id"].startswith("sensor.lim")]) <= 2
+
+
 async def test_cleanup_is_locked_while_warming_up(hass: HomeAssistant, hass_ws_client) -> None:
     """Plans are neither created nor confirmed from preliminary data."""
     registry = er.async_get(hass)

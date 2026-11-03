@@ -20368,6 +20368,7 @@ class RoundMixin {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/cleanup_round" });
       if (this.round !== round) return;
       round.rows = reply?.rows || [];
+      round.limited = Boolean(reply?.limited); round.total = reply?.total || round.rows.length;
       if (this.fcWizOn()) {
         // In the cleanup nothing is marked on its own: what was marked on a card stays marked (the history knows).
         const marked = new Set(this.fcLogGet().filter(e => e.stage === 4 && e.action === "pick").flatMap(e => e.keys || [e.key]));
@@ -20403,7 +20404,7 @@ class RoundMixin {
     if (round.rows === null) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section>${back}</div>`;
     const rows = round.rows, by = group => rows.filter(r => r.group === group);
     const chosen = rows.filter(r => round.picked.has(r.finding_key) && r.kind !== "merge" && r.group !== "blocked");
-    const error = round.error ? this.notice("warn", this.esc(round.error)) : "";
+    const error = (round.error ? this.notice("warn", this.esc(round.error)) : "") + (round.limited ? this.notice("info", this.esc(this.t("roundLimited", { total: this.formatNumber(round.total), n: this.formatNumber(rows.length) }))) : "");
     const empty = rows.length ? "" : `<section class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("roundEmpty")}</div></section>`;
     const bar = chosen.length ? `<div class="mbtns"><button type="button" class="btn primary" data-round-plan ${this.planBusy ? "disabled" : ""}><ha-icon icon="mdi:clipboard-list-outline"></ha-icon>${this.t("roundPlan", { n: chosen.length })}</button></div><p class="factnote">${this.t("roundPlanHint")}</p>` : "";
     return `<div class="stack">${error}${empty}${this.roundGroup("roundSafe", "roundSafeHint", by("safe"), round.picked, true)}${this.roundGroup("roundLook", "roundLookHint", by("look"), round.picked, false)}${this.roundGroup("roundBlocked", "roundBlockedHint", by("blocked"), round.picked, false)}${bar ? `<section class="panel">${bar}</section>` : ""}${back}</div>`;
@@ -20443,6 +20444,7 @@ class RoundMixin {
   }
 }
 Object.assign(TEXT.de, {
+  roundLimited: "Es sind {total} Objekte überflüssig; die Runde zeigt die ersten Funde. Der Rest kommt, wenn diese erledigt sind.",
   roundTitle: "Aufräum-Runde", roundSubtitle: "Alles Überflüssige auf einmal durchgehen.",
   roundSafe: "Sicher entfernbar", roundSafeHint: "Nirgends verwendet, ohne Objekt-Notiz „Nicht löschen“, nicht kritisch. Die Auswahl lässt sich ändern.",
   roundLook: "Erst ansehen", roundLookHint: "Verwendet, nur ein erster Schritt (erst deaktivieren) oder ein mögliches Duplikat: jedes einzeln entscheiden.",
@@ -20453,6 +20455,7 @@ Object.assign(TEXT.de, {
   roundEmpty: "Nichts Überflüssiges offen.", roundKeepReason: "In der Aufräum-Runde behalten", fixWay_cleanup_round: "Aufräum-Runde", fixWayHint_cleanup_round: "Alles Überflüssige durchgehen: sicher Entfernbares gesammelt, den Rest einzeln, jeweils mit Behalten.", fixRoundStart: "Aufräum-Runde öffnen",
 });
 Object.assign(TEXT.en, {
+  roundLimited: "{total} objects are unneeded; the round shows the first ones. The rest comes once these are done.",
   roundTitle: "Cleanup round", roundSubtitle: "Go through everything unneeded at once.",
   roundSafe: "Safe to remove", roundSafeHint: "Used nowhere, without the object note “Do not delete”, not critical. The selection can be changed.",
   roundLook: "Look first", roundLookHint: "Used, only a first step (disable first) or a possible duplicate: decide each one on its own.",

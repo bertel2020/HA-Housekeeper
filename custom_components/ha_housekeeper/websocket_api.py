@@ -62,7 +62,7 @@ from .cleanup import (
     trim_is_plain,
 )
 from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable, reload_info
-from .cleanup_round import duplicate_rows, needs_first_step, removal_requests, sort_row
+from .cleanup_round import ROUND_LIMIT, duplicate_rows, needs_first_step, removal_requests, sort_row
 from .const import DOMAIN, OPTION_LIMITS
 from .device_pairs import pair_devices
 from .failure_info import error_hint, item_id_of, last_failure
@@ -377,12 +377,18 @@ async def websocket_cleanup_round(
     except Exception as err:
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
-    requests = removal_requests(snapshot)
+    if scanner.warming_up:
+        connection.send_error(msg["id"], "warming_up", "Home Assistant is still starting")
+        return
+    everything = removal_requests(snapshot)
+    requests = everything[:ROUND_LIMIT]
 
     async def judge(batch: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
         found: dict[str, dict[str, Any]] = {}
         for start in range(0, len(batch), MAX_ACTIONS):
-            plan = await _plan_from_requests(hass, snapshot, batch[start : start + MAX_ACTIONS])
+            plan = await _plan_from_requests(
+                hass, snapshot, batch[start : start + MAX_ACTIONS], with_history=False
+            )
             found.update({a["object_id"]: a for a in plan["actions"]})
         return found
 
@@ -398,7 +404,14 @@ async def websocket_cleanup_round(
         for r in requests
         if r["object_id"] in first
     ]
-    connection.send_result(msg["id"], {"rows": [*rows, *duplicate_rows(snapshot)]})
+    connection.send_result(
+        msg["id"],
+        {
+            "rows": [*rows, *duplicate_rows(snapshot)],
+            "total": len(everything),
+            "limited": len(everything) > len(requests),
+        },
+    )
 
 
 @websocket_api.require_admin
@@ -810,8 +823,13 @@ async def _plan_from_requests(
     snapshot: dict[str, Any],
     requests: list[dict[str, Any]],
     refactor_enabled: bool = False,
+    with_history: bool = True,
 ) -> dict[str, Any]:
-    """Judge ``requests`` against the snapshot and the live registries: a plan, not yet journaled."""
+    """Judge ``requests`` against the snapshot and the live registries: a plan, not yet journaled.
+
+    ``with_history`` counts the recorder rows a plan is about, for its end state; a judgement that
+    only sorts (the cleanup round) does without that.
+    """
     registry = er.async_get(hass)
 
     def fingerprint(object_id: str) -> str | None:
@@ -987,7 +1005,8 @@ async def _plan_from_requests(
         exposure_data=exposure_data,
         expose_new_data=expose_new_data,
     )
-    await _add_history(hass, snapshot, plan)
+    if with_history:
+        await _add_history(hass, snapshot, plan)
     return plan
 
 
