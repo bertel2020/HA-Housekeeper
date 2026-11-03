@@ -83,11 +83,11 @@ class RoundMixin {
     root.querySelectorAll("[data-round-one]").forEach(el => el.onclick = () => this.roundPlan([el.dataset.roundOne]));
     root.querySelector("[data-round-plan]")?.addEventListener("click", () => this.roundPlan([...this.round.picked]));
     root.querySelectorAll("[data-round-merge]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.roundMerge; this.replNew = el.dataset.roundInto; }));
-    root.querySelectorAll("[data-round-keep]").forEach(el => el.onclick = async () => {
+    root.querySelectorAll("[data-round-keep]").forEach(el => el.onclick = () => this.onlyOnce("roundKeep", async () => {
       try { await this.roundKeepOne(el.dataset.roundKeep); await this.refreshData(); this.round.rows = this.round.rows.filter(r => r.finding_key !== el.dataset.roundKeep); }
       catch (err) { this.round.error = this.errText(err); }
       this.render();
-    });
+    }));
   }
 }
 Object.assign(TEXT.de, {

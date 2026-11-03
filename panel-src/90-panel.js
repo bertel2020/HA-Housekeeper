@@ -416,6 +416,15 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   // The clipboard API needs HTTPS; over plain http or in some app web views it is missing, so fall back to a hidden textarea. Throws when neither works.
+  // Runs ``run`` unless the same action is still running: a second click on a button that waits for the
+  // server would do the same thing twice (two notes, two undos).
+  async onlyOnce(name, run) {
+    const busy = (this._onceBusy ||= new Set());
+    if (busy.has(name)) return undefined;
+    busy.add(name);
+    try { return await run(); } finally { busy.delete(name); }
+  }
+
   async copyText(text) {
     try { if (globalThis.navigator?.clipboard?.writeText) { await globalThis.navigator.clipboard.writeText(text); return; } } catch (_) { /* fall through */ }
     const area = document.createElement("textarea");

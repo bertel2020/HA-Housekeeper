@@ -87,12 +87,12 @@ class ActivityMixin {
     root.querySelector("[data-act-more]")?.addEventListener("click", () => this.loadActivity(false));
     root.querySelector("[data-act-retry]")?.addEventListener("click", () => this.loadActivity(true));
     root.querySelector("[data-act-csv]")?.addEventListener("click", () => this.activityCsv());
-    root.querySelectorAll("[data-act-undo]").forEach(el => el.onclick = async () => {
+    root.querySelectorAll("[data-act-undo]").forEach(el => el.onclick = () => this.onlyOnce("actUndo", async () => {
       try { await this._hass.callWS({ type: "ha_housekeeper/activity_undo", entry_id: el.dataset.actUndo }); }
       catch (err) { if (err?.code !== "not_found") { this.failed(err); this.render(); return; } }
       await this.refreshData?.();
       this.loadActivity(true);
-    });
+    }));
   }
 }
 Object.assign(TEXT.de, {

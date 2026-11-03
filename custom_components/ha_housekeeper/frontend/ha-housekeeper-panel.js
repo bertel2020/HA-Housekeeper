@@ -20436,11 +20436,11 @@ class RoundMixin {
     root.querySelectorAll("[data-round-one]").forEach(el => el.onclick = () => this.roundPlan([el.dataset.roundOne]));
     root.querySelector("[data-round-plan]")?.addEventListener("click", () => this.roundPlan([...this.round.picked]));
     root.querySelectorAll("[data-round-merge]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.roundMerge; this.replNew = el.dataset.roundInto; }));
-    root.querySelectorAll("[data-round-keep]").forEach(el => el.onclick = async () => {
+    root.querySelectorAll("[data-round-keep]").forEach(el => el.onclick = () => this.onlyOnce("roundKeep", async () => {
       try { await this.roundKeepOne(el.dataset.roundKeep); await this.refreshData(); this.round.rows = this.round.rows.filter(r => r.finding_key !== el.dataset.roundKeep); }
       catch (err) { this.round.error = this.errText(err); }
       this.render();
-    });
+    }));
   }
 }
 Object.assign(TEXT.de, {
@@ -20711,7 +20711,9 @@ class FirstCleanupMixin {
   }
 
   // Takes one entry of the log back: the decision is lifted, the mark cleared, the skip dropped; the card shows again.
-  async fcUndo(id) {
+  fcUndo(id) { return this.onlyOnce("fcUndo", () => this.fcUndoRun(id)); }
+
+  async fcUndoRun(id) {
     const log = this.fcLogGet(), i = log.findIndex(e => e.id === id);
     if (i < 0) return;
     const entry = log[i];
@@ -20945,7 +20947,9 @@ class FirstCleanupMixin {
     return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}${this.fcOftenInfo(first, r, this.fcRecOften(first))}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
   }
 
-  async fcTake(keys) {
+  fcTake(keys) { return this.onlyOnce("fcTake", () => this.fcTakeRun(keys)); }
+
+  async fcTakeRun(keys) {
     const targets = keys.flatMap(k => (k.startsWith("group:") ? this.oftenMembers(k).map(e => `entity:${e}`) : [k]));
     const rows = new Map((this.oftenSuggestions?.() || []).map(x => [x.key, this.oftenRowOf(x)]));
     await this.takeOften(keys);
@@ -21302,12 +21306,12 @@ class ActivityMixin {
     root.querySelector("[data-act-more]")?.addEventListener("click", () => this.loadActivity(false));
     root.querySelector("[data-act-retry]")?.addEventListener("click", () => this.loadActivity(true));
     root.querySelector("[data-act-csv]")?.addEventListener("click", () => this.activityCsv());
-    root.querySelectorAll("[data-act-undo]").forEach(el => el.onclick = async () => {
+    root.querySelectorAll("[data-act-undo]").forEach(el => el.onclick = () => this.onlyOnce("actUndo", async () => {
       try { await this._hass.callWS({ type: "ha_housekeeper/activity_undo", entry_id: el.dataset.actUndo }); }
       catch (err) { if (err?.code !== "not_found") { this.failed(err); this.render(); return; } }
       await this.refreshData?.();
       this.loadActivity(true);
-    });
+    }));
   }
 }
 Object.assign(TEXT.de, {
@@ -21546,7 +21550,9 @@ class FcRoundMixin {
     this.render();
   }
 
-  async fcRoundKeep(key, link, name) {
+  fcRoundKeep(key, link, name) { return this.onlyOnce("fcRoundKeep", () => this.fcRoundKeepRun(key, link, name)); }
+
+  async fcRoundKeepRun(key, link, name) {
     try {
       const marked = await this.roundKeepOne(key);
       this.round.rows = this.round.rows.filter(r => r.finding_key !== key);
@@ -22228,6 +22234,15 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   // The clipboard API needs HTTPS; over plain http or in some app web views it is missing, so fall back to a hidden textarea. Throws when neither works.
+  // Runs ``run`` unless the same action is still running: a second click on a button that waits for the
+  // server would do the same thing twice (two notes, two undos).
+  async onlyOnce(name, run) {
+    const busy = (this._onceBusy ||= new Set());
+    if (busy.has(name)) return undefined;
+    busy.add(name);
+    try { return await run(); } finally { busy.delete(name); }
+  }
+
   async copyText(text) {
     try { if (globalThis.navigator?.clipboard?.writeText) { await globalThis.navigator.clipboard.writeText(text); return; } } catch (_) { /* fall through */ }
     const area = document.createElement("textarea");

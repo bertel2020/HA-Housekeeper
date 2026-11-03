@@ -99,7 +99,9 @@ class FcRoundMixin {
     this.render();
   }
 
-  async fcRoundKeep(key, link, name) {
+  fcRoundKeep(key, link, name) { return this.onlyOnce("fcRoundKeep", () => this.fcRoundKeepRun(key, link, name)); }
+
+  async fcRoundKeepRun(key, link, name) {
     try {
       const marked = await this.roundKeepOne(key);
       this.round.rows = this.round.rows.filter(r => r.finding_key !== key);

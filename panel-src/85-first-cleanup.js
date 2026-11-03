@@ -243,7 +243,9 @@ class FirstCleanupMixin {
   }
 
   // Takes one entry of the log back: the decision is lifted, the mark cleared, the skip dropped; the card shows again.
-  async fcUndo(id) {
+  fcUndo(id) { return this.onlyOnce("fcUndo", () => this.fcUndoRun(id)); }
+
+  async fcUndoRun(id) {
     const log = this.fcLogGet(), i = log.findIndex(e => e.id === id);
     if (i < 0) return;
     const entry = log[i];
@@ -477,7 +479,9 @@ class FirstCleanupMixin {
     return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}${this.fcOftenInfo(first, r, this.fcRecOften(first))}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
   }
 
-  async fcTake(keys) {
+  fcTake(keys) { return this.onlyOnce("fcTake", () => this.fcTakeRun(keys)); }
+
+  async fcTakeRun(keys) {
     const targets = keys.flatMap(k => (k.startsWith("group:") ? this.oftenMembers(k).map(e => `entity:${e}`) : [k]));
     const rows = new Map((this.oftenSuggestions?.() || []).map(x => [x.key, this.oftenRowOf(x)]));
     await this.takeOften(keys);

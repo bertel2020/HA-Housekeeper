@@ -5929,6 +5929,21 @@ test("no text of the panel is defined twice in one block, where the later one wo
   assert.deepEqual(twice, []);
 });
 
+test("a second click on an action that is still running does nothing", async () => {
+  const { el } = panel("en");
+  let calls = 0;
+  const run = () => el.onlyOnce("x", async () => { calls++; await new Promise(r => setTimeout(r, 5)); return "done"; });
+  const results = await Promise.all([run(), run()]);
+  assert.deepEqual(results, ["done", undefined]);
+  assert.equal(calls, 1);
+  assert.equal(await run(), "done", "free again afterwards");
+  const noted = [];
+  el.takeOften = async keys => { noted.push(keys); await new Promise(r => setTimeout(r, 5)); };
+  el.oftenSuggestions = () => []; el.fcLogAdd = e => e; el.fcNotify = () => {}; el.render = () => {};
+  await Promise.all([el.fcTake(["a"]), el.fcTake(["a"])]);
+  assert.equal(noted.length, 1, "one note for a double click");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
