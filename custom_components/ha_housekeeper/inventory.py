@@ -2250,6 +2250,7 @@ class InventoryScanner:
                 via=via,
                 impact=(finding.get("impact_steady") or finding.get("impact")) if finding else None,
                 followers=self._followers_of(key),
+                critical=self.finding_is_critical(key),
             )
 
         # A decision whose finding is away right now (it rests) can be changed or taken away as well.
@@ -2322,10 +2323,9 @@ class InventoryScanner:
         finding = next(
             (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
         )
-        return bool(
-            finding
-            and any(fact.get("fact") == "critical" for fact in finding.get("impact_facts", []))
-        )
+        if finding is None:  # away right now: what was known when it was decided
+            return bool((self.ignored.entry(key) or {}).get("critical"))
+        return any(fact.get("fact") == "critical" for fact in finding.get("impact_facts", []))
 
     def stands_as_left(self, undo: dict[str, Any]) -> bool:
         """Whether the decision or mark of an undo is still the one its action left (older entries: yes)."""

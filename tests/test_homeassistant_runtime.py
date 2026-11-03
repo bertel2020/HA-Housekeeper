@@ -2219,3 +2219,28 @@ async def test_the_reads_of_the_cleanup_and_the_activity_carry_the_version_of_th
         reply = await client.receive_json()
         assert reply["success"], (command, reply)
         assert reply["result"]["schema"] == API_SCHEMA, command
+
+
+async def test_a_decision_that_is_away_right_now_still_needs_a_time_when_its_object_is_critical(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    snapshot["findings"] = [
+        {
+            "key": "k1",
+            "object_id": "lock.door",
+            "topic": "down",
+            "impact": "high",
+            "impact_facts": [{"fact": "critical", "why": "kind"}],
+            "classification": "x",
+            "rule_id": "entity.stale",
+            "object_type": "entity",
+        }
+    ]
+    assert scanner.set_finding_ignored("k1", True, kind="keep", reason="r", days=30)
+    assert scanner.ignored.entry("k1")["critical"] is True
+    snapshot["findings"] = []  # the lock works again: the decision rests
+    assert scanner.decision_problem("k1", "keep", False) == "days_required_critical"
+    assert scanner.decision_problem("k1", "keep", True) is None
+    assert scanner.decision_problem("other", "keep", False) is None

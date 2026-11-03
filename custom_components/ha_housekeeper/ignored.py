@@ -53,6 +53,8 @@ def _clean(value: Any) -> dict[str, Any] | None:
         "impact_at": impact if impact in RANK else None,
         "followers_at": followers if isinstance(followers, int) and followers >= 0 else None,
         "worse": worse if isinstance(worse, str) else None,
+        # The object was critical when this was decided: a finding that is away right now cannot say so again.
+        "critical": value.get("critical") is True,
     }
 
 
@@ -137,6 +139,7 @@ class IgnoreStore:
         via: str | None = None,
         impact: str | None = None,
         followers: int | None = None,
+        critical: bool = False,
     ) -> bool:
         """Record a decision; False when the store is full.
 
@@ -155,6 +158,7 @@ class IgnoreStore:
             "impact_at": impact if kind == "snooze" and impact in RANK else None,
             "followers_at": followers if kind == "snooze" else None,
             "worse": None,
+            "critical": critical,
         }
         self._save()
         return True
