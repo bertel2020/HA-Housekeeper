@@ -227,6 +227,16 @@ class FirstCleanupMixin {
     }
   }
 
+  // Clears the notes the cleanup set ("type:id"); only objects that can carry a note are asked, one that has none any more is fine.
+  async fcClearMarks(targets) {
+    for (const target of targets || []) {
+      const [object_type, ...rest] = target.split(":");
+      if (!MARK_TYPES.includes(object_type)) continue;
+      try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); }
+      catch (err) { if (err?.code !== "not_found") throw err; }
+    }
+  }
+
   // Takes one entry of the log back: the decision is lifted, the mark cleared, the skip dropped; the card shows again.
   async fcUndo(id) {
     const log = this.fcLogGet(), i = log.findIndex(e => e.id === id);
@@ -235,12 +245,11 @@ class FirstCleanupMixin {
     try {
       if (["keep", "later", "hidden"].includes(entry.action)) {
         await this.fcLift(entry.keys || [entry.key]);
-        if (entry.stage === 4) for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); } catch (err) { if (err?.code !== "not_found") throw err; } }
+        if (entry.stage === 4) await this.fcClearMarks(entry.targets);
       } else if (entry.action === "pick") (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
-      else if (entry.action === "mark") {
-        for (const target of entry.targets || []) { const [object_type, ...rest] = target.split(":"); try { await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":"), source: "cleanup" }); } catch (err) { if (err?.code !== "not_found") throw err; } }
-      } else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
+      else if (entry.action === "mark") await this.fcClearMarks(entry.targets);
+      else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
     } catch (err) { this.failed(err); this.render(); return; }
     log.splice(i, 1); this.fcLogCall({ action: "log_remove", entry_id: id });
     if (entry.stage === 4 && this.round && ["keep", "later"].includes(entry.action)) { this.round = { rows: null, picked: this.round.picked, error: "", single: this.round.single }; this.loadRound(); }

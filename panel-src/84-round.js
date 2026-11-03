@@ -56,14 +56,17 @@ class RoundMixin {
     return `<div class="stack">${error}${empty}${this.roundGroup("roundSafe", "roundSafeHint", by("safe"), round.picked, true)}${this.roundGroup("roundLook", "roundLookHint", by("look"), round.picked, false)}${this.roundGroup("roundBlocked", "roundBlockedHint", by("blocked"), round.picked, false)}${bar ? `<section class="panel">${bar}</section>` : ""}${back}</div>`;
   }
 
-  // "Keep": the decision "intended" with the usual 90 days, and for an entity or device also the mark that locks cleanup steps.
+  // "Keep": the decision "intended" with the usual 90 days, and for an entity or device that has no note yet also the
+  // note "do not delete" that locks cleanup steps. Returns the object that got the note ("type:id"), or null.
   async roundKeepOne(key) {
     const finding = this.data.findings.find(f => f.key === key);
-    if (!finding) return;
+    if (!finding) return null;
     const days = this.defaultDays("keep");
     await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: "keep", reason: this.t("roundKeepReason"), days });
-    const [type, ...rest] = this.findingKey(finding).split(":");
-    if (["entity", "device"].includes(type)) await this._hass.callWS({ type: "ha_housekeeper/mark_set", object_type: type, object_id: rest.join(":"), kind: "keep", reason: this.t("roundKeepReason") });
+    const target = this.findingKey(finding), [type, ...rest] = target.split(":");
+    if (!["entity", "device"].includes(type) || this.findObject(target)?.mark) return null;
+    await this._hass.callWS({ type: "ha_housekeeper/mark_set", object_type: type, object_id: rest.join(":"), kind: "keep", reason: this.t("roundKeepReason") });
+    return target;
   }
 
   async roundPlan(keys) {

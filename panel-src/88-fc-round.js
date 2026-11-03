@@ -52,8 +52,8 @@ class FcRoundMixin {
       ? this.fcAct(`data-fc-rmerge="${this.esc(r.object_id)}" data-into="${this.esc(r.duplicate_of || "")}"`, this.t("roundMerge"), this.t("fcRoundHint_merge"), false, "mdi:call-merge", "blue", rec.act === "merge")
       : this.fcAct(`data-fc-rpick="${this.esc(r.finding_key)}" data-name="${this.esc(r.name)}"`, this.t("fcRoundPick"), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue", rec.act === "pick");
     const acts = first
-      + this.fcAct(`data-fc-rkeep="${this.esc(r.finding_key)}" data-link="${this.esc(link)}" data-name="${this.esc(r.name)}"`, this.t("fcKeep"), this.t("fcKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green")
-      + this.fcAct(`data-fc-rlater="${this.esc(r.finding_key)}"`, this.t("fcLater"), this.t("fcLaterHint", { days: this.fc?.later_days || 90 }), false, "mdi:clock-outline", "amber", rec.act === "later");
+      + this.fcAct(`data-fc-rkeep="${this.esc(r.finding_key)}" data-link="${this.esc(link)}" data-name="${this.esc(r.name)}"`, this.t("fcKeep"), this.t("fcRoundKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green")
+      + this.fcAct(`data-fc-rlater="${this.esc(r.finding_key)}"`, this.t("fcLater"), this.t("fcRoundLaterHint", { days: this.fc?.later_days || 90 }), false, "mdi:clock-outline", "amber", rec.act === "later");
     const pill = `<span class="pill ${r.group === "safe" ? "ok" : "warn"}">${this.t(r.group === "safe" ? "fcRoundSafe" : "fcRoundLook")}</span>`;
     return `<section class="panel fccard${this.fcAnim(`4:${r.finding_key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile(r.object_type, "mute")}<div><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(link)}">${this.esc(r.name)}</button>` : this.esc(r.name)}</h3><small class="fcid">${this.esc(r.object_id)}</small></div></div><p class="fcwhat"><strong>${this.esc(finding ? this.findingTitle(finding) : this.t("fcRoundTitle"))}</strong></p><p class="fcchips">${pill}</p>${this.fcInfoHtml([...this.fcRoundRows(r, finding), this.fcRecRow(rec)], link)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.finding_key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
   }
@@ -101,9 +101,9 @@ class FcRoundMixin {
 
   async fcRoundKeep(key, link, name) {
     try {
-      await this.roundKeepOne(key);
+      const marked = await this.roundKeepOne(key);
       this.round.rows = this.round.rows.filter(r => r.finding_key !== key);
-      this.fcNotify(this.fcLogAdd({ stage: 4, action: "keep", key, keys: [key], n: 1, name, targets: [link] }));
+      this.fcNotify(this.fcLogAdd({ stage: 4, action: "keep", key, keys: [key], n: 1, name, targets: marked ? [marked] : [] }));
       await this.refreshData();
     } catch (err) { this.failed(err); }
     this.render();
@@ -126,6 +126,7 @@ class FcRoundMixin {
   }
 }
 Object.assign(TEXT.de, {
+  fcRoundKeepHint: "Der Befund bleibt und gilt {days} Tage als geprüft. Entität und Gerät bekommen die Objekt-Notiz „Nicht löschen“, eine vorhandene Notiz bleibt.", fcRoundLaterHint: "Der Befund verschwindet für {days} Tage und kommt dann wieder.",
   fcRoundTitle: "Überflüssig", fcRoundSafe: "Sicher entfernbar", fcRoundLook: "Erst ansehen", fcRoundPick: "Vormerken", fcRoundPickHint: "Zum Entfernen im Plan am Ende. Nichts läuft jetzt.", fcRoundPickAll: "Alle {n} vormerken",
   fcRoundSingle: "Einzeln ansehen", fcRoundSingleHint: "Jedes mit einer eigenen Karte.", fcRoundCollectTitle: "{n} Objekte sind sicher entfernbar", fcRoundCollectId: "Nirgends verwendet, nicht kritisch, ohne Objekt-Notiz",
   fcRoundAction: "Aktion", fcRoundUsed: "Verwendet", fcRoundSince: "Erkannt", fcRoundUndoRow: "Rückgängig", fcRoundWhat: "Was", fcRoundUnused: "Nirgends verwendet", fcRoundOldest: "der älteste {age}",
@@ -136,6 +137,7 @@ Object.assign(TEXT.de, {
   fcRoundPlanHint: "Zeigt jede Änderung zur Vorschau.", fcLogPick: "Vorgemerkt", fcSumPick: "{n} vorgemerkt",
 });
 Object.assign(TEXT.en, {
+  fcRoundKeepHint: "The finding stays and counts as checked for {days} days. An entity or device gets the object note “Do not delete”; a note it already has stays.", fcRoundLaterHint: "The finding disappears for {days} days and then comes back.",
   fcRoundTitle: "Unneeded", fcRoundSafe: "Safe to remove", fcRoundLook: "Look first", fcRoundPick: "Mark", fcRoundPickHint: "For removal in the plan at the end. Nothing runs now.", fcRoundPickAll: "Mark all {n}",
   fcRoundSingle: "One by one", fcRoundSingleHint: "Each with a card of its own.", fcRoundCollectTitle: "{n} objects are safe to remove", fcRoundCollectId: "Used nowhere, not critical, without an object note",
   fcRoundAction: "Action", fcRoundUsed: "Used", fcRoundSince: "Found", fcRoundUndoRow: "Undo", fcRoundWhat: "What", fcRoundUnused: "Used nowhere", fcRoundOldest: "the oldest {age}",

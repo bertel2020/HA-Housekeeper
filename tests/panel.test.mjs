@@ -7187,6 +7187,25 @@ test("the cleanup round sorts what the backend judged and keeps with the decisio
   assert.ok(kinds.includes("ignore:keep") && kinds.includes("mark_set:keep"));
 });
 
+test("keeping in the cleanup round leaves an existing note alone, sets none on an automation, and an undo asks only objects that can carry one", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return {}; } };
+  el.defaultDays = () => 90;
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.m", name: "M", mark: { kind: "expected_offline" } }, { object_type: "entity", object_id: "sensor.n", name: "N" }], findings: [
+    { key: "k1", rule_id: "entity.not_provided", object_id: "sensor.m", classification: "orphaned" },
+    { key: "k2", rule_id: "automation.stale", object_id: "automation.b", classification: "stale" },
+    { key: "k3", rule_id: "entity.not_provided", object_id: "sensor.n", classification: "orphaned" },
+  ] };
+  assert.equal(await el.roundKeepOne("k1"), null, "the note it already has stays");
+  assert.equal(await el.roundKeepOne("k2"), null, "an automation carries no note");
+  assert.equal(await el.roundKeepOne("k3"), "entity:sensor.n");
+  assert.deepEqual(calls.filter(c => c.type.endsWith("/mark_set")).map(c => c.object_id), ["sensor.n"]);
+  calls.length = 0;
+  await el.fcClearMarks(["automation:automation.b", "entity:sensor.n"]);
+  assert.deepEqual(calls.map(c => `${c.type.split("/")[1]}:${c.object_type}`), ["mark_clear:entity"]);
+});
+
 test("a finding someone started to fix is in work, and an expired start leaves a note", async () => {
   const { el } = panel("en");
   el.data = { ...DATA, findings: [] }; el.journal = [];
