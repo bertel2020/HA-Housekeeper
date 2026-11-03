@@ -128,10 +128,13 @@ class HAHousekeeperPanel extends HTMLElement {
     this.stopScanWatch();
     window.removeEventListener?.("popstate", this._onPop);
     window.removeEventListener?.("resize", this._onResize);
-    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer"]) {
+    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer"]) {
       if (this[name]) globalThis.clearTimeout?.(this[name]);
       this[name] = null;
     }
+    this.stopFixWatch?.();
+    if (this._dialogWatch) globalThis.clearInterval?.(this._dialogWatch);
+    this._dialogWatch = null;
   }
 
   // The browser's back button steps back inside the panel. One history entry is kept in front of
@@ -608,7 +611,7 @@ class HAHousekeeperPanel extends HTMLElement {
   hideTip() { if (this._tip) this._tip.hidden = true; }
 
   render() {
-    if (!this.shadowRoot) return;
+    if (!this.shadowRoot || this._gone) return;  // a timer or a late answer must not draw into a panel that was taken out
     this.trackVisit();
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;

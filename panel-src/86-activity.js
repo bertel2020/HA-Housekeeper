@@ -3,14 +3,16 @@
 // panel only reads it in pages and offers the undo the entry carries.
 const ACTIVITY_FILTERS = ["all", "decision", "mark", "plan", "note", "auto"];
 class ActivityMixin {
+  // Loaded when the tab is first shown, and again when the data changed since (a decision made elsewhere).
   ensureActivity() {
-    if (!this.activityState) this.loadActivity(true);
+    const state = this.activityState;
+    if (!state || (!state.loading && state.rev !== this._rev)) this.loadActivity(true);
   }
 
   async loadActivity(reset = true) {
     const old = reset ? null : this.activityState;
     const state = this.activityState = reset
-      ? { items: [], next: null, total: 0, loading: true, error: "", filter: old?.filter || this.activityFilter || "all", query: this.activityQuery || "" }
+      ? { items: [], next: null, total: 0, loading: true, error: "", filter: old?.filter || this.activityFilter || "all", query: this.activityQuery || "", rev: this._rev }
       : { ...old, loading: true };
     this.activityFilter = state.filter; this.activityQuery = state.query;
     const msg = { type: "ha_housekeeper/activity", query: state.query, kinds: state.filter === "all" ? ACTIVITY_FILTERS.filter(k => k !== "all" && k !== "auto") : [state.filter] };

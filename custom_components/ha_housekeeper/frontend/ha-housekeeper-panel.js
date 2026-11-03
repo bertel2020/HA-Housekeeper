@@ -20309,7 +20309,10 @@ class FixMixin {
       const requests = this.fixAllFindings().filter(x => x.rule_id.startsWith("automation.")).map(x => ({ kind: "refactor_automation", object_id: x.object_id, fix: "remove_reference", values: { reference: el.dataset.fixRemoveAll } }));
       if (requests.length) await this.fixPlan(requests);
     });
-    root.querySelectorAll("[data-fix-refactor-on]").forEach(el => el.onclick = async () => { await this._hass.callWS({ type: "ha_housekeeper/refactor_set", enabled: true }); this.loadFixWays(this.fixKey); });
+    root.querySelectorAll("[data-fix-refactor-on]").forEach(el => el.onclick = () => this.confirmAsk(this.t("fixRefactorOnAsk"), () => this.onlyOnce("refactorOn", async () => {
+      try { await this._hass.callWS({ type: "ha_housekeeper/refactor_set", enabled: true }); this.loadFixWays(this.fixKey); }
+      catch (err) { this.failed(err); }
+    }), { yes: this.t("fixRefactorOnYes"), danger: false }));
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
     root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { el.dataset.fixPickAll.split("|").forEach(k => this.findSel.add(k)); this.render(); });
     root.querySelectorAll("[data-fix-work-off]").forEach(el => el.onclick = () => this.fixWork(false));
@@ -20319,6 +20322,7 @@ class FixMixin {
   }
 }
 Object.assign(TEXT.de, {
+  fixRefactorOnAsk: "Der Umbau von Automationen ist noch experimentell. Er ändert nur auf einen bestätigten Plan hin und lässt sich zurücknehmen, gilt aber für alle Automationen. Einschalten?", fixRefactorOnYes: "Einschalten",
   fixNext: "Weiter", fixStepOf: "Schritt {n} von 3", fixObjectWays: "Am Objekt", fixMoreActionsHint: "Weitere Aktionen dieses Objekts, etwa austauschen oder Werte reparieren.", fixOtherWays: "Andere Wege ({n})", fixSelfDone: "Selbst erledigt: nachprüfen", fixRunNone: "Hier läuft noch nichts. Wähle bei „Entscheiden“ einen Weg: was Housekeeper selbst ausführen kann, zeigt sich zuerst als Vorschau, und erst dein Klick ändert etwas.", fixPickCount: "{picked} von {total} gewählt, dann ein Weg für alle.", fixPickNone: "Wähle mindestens eine Stelle, dann ein Weg für alle.",
   fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_automation1: "1 Automation", fixAllKind_script: "{n} Skripte", fixAllKind_script1: "1 Skript", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixAllKind_dashboard1: "1 Dashboard-Stelle", fixAllPlaces1: "1 Stelle verweist darauf", fixRemoveAll1: "Aus 1 Automation entfernen", fixRemoveAll: "Aus {n} Automationen entfernen",
   fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen und entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben",
@@ -20345,6 +20349,7 @@ Object.assign(TEXT.de, {
   fixWay_start_app: "App starten", fixWayHint_start_app: "Die App ist gestoppt, ihre Integration hängt vermutlich daran. In Home Assistant unter Einstellungen → Apps starten.",
 });
 Object.assign(TEXT.en, {
+  fixRefactorOnAsk: "Rebuilding automations is still experimental. It changes something only after a confirmed plan and can be undone, but it applies to all automations. Switch it on?", fixRefactorOnYes: "Switch on",
   fixNext: "Next", fixStepOf: "Step {n} of 3", fixObjectWays: "On the object", fixMoreActionsHint: "More actions of this object, such as exchanging it or repairing values.", fixOtherWays: "Other ways ({n})", fixSelfDone: "Did it myself: check", fixRunNone: "Nothing runs here yet. Choose a way under “Decide”: what Housekeeper can run itself shows as a preview first, and only your click changes anything.", fixPickCount: "{picked} of {total} chosen, then one way for all.", fixPickNone: "Choose at least one place, then one way for all.",
   fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_automation1: "1 automation", fixAllKind_script: "{n} scripts", fixAllKind_script1: "1 script", fixAllKind_dashboard: "{n} dashboard places", fixAllKind_dashboard1: "1 dashboard place", fixAllPlaces1: "1 place refers to it", fixRemoveAll1: "Remove from 1 automation", fixRemoveAll: "Remove from {n} automations",
   fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand and decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix",
@@ -21242,14 +21247,16 @@ Object.assign(TEXT.en, {
 // panel only reads it in pages and offers the undo the entry carries.
 const ACTIVITY_FILTERS = ["all", "decision", "mark", "plan", "note", "auto"];
 class ActivityMixin {
+  // Loaded when the tab is first shown, and again when the data changed since (a decision made elsewhere).
   ensureActivity() {
-    if (!this.activityState) this.loadActivity(true);
+    const state = this.activityState;
+    if (!state || (!state.loading && state.rev !== this._rev)) this.loadActivity(true);
   }
 
   async loadActivity(reset = true) {
     const old = reset ? null : this.activityState;
     const state = this.activityState = reset
-      ? { items: [], next: null, total: 0, loading: true, error: "", filter: old?.filter || this.activityFilter || "all", query: this.activityQuery || "" }
+      ? { items: [], next: null, total: 0, loading: true, error: "", filter: old?.filter || this.activityFilter || "all", query: this.activityQuery || "", rev: this._rev }
       : { ...old, loading: true };
     this.activityFilter = state.filter; this.activityQuery = state.query;
     const msg = { type: "ha_housekeeper/activity", query: state.query, kinds: state.filter === "all" ? ACTIVITY_FILTERS.filter(k => k !== "all" && k !== "auto") : [state.filter] };
@@ -21966,10 +21973,13 @@ class HAHousekeeperPanel extends HTMLElement {
     this.stopScanWatch();
     window.removeEventListener?.("popstate", this._onPop);
     window.removeEventListener?.("resize", this._onResize);
-    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer"]) {
+    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer"]) {
       if (this[name]) globalThis.clearTimeout?.(this[name]);
       this[name] = null;
     }
+    this.stopFixWatch?.();
+    if (this._dialogWatch) globalThis.clearInterval?.(this._dialogWatch);
+    this._dialogWatch = null;
   }
 
   // The browser's back button steps back inside the panel. One history entry is kept in front of
@@ -22446,7 +22456,7 @@ class HAHousekeeperPanel extends HTMLElement {
   hideTip() { if (this._tip) this._tip.hidden = true; }
 
   render() {
-    if (!this.shadowRoot) return;
+    if (!this.shadowRoot || this._gone) return;  // a timer or a late answer must not draw into a panel that was taken out
     this.trackVisit();
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;

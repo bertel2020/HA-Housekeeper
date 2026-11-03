@@ -6014,6 +6014,24 @@ test("a notice is escaped once, also where the text comes from the server or fro
   assert.equal(row, "a&quot;b");
 });
 
+test("the activity is loaded again when the data changed since it was shown", () => {
+  const { el } = panel("en");
+  const loads = [];
+  el.loadActivity = reset => loads.push(reset);
+  el._rev = 3;
+  el.ensureActivity();
+  assert.equal(loads.length, 1, "first time");
+  el.activityState = { items: [], loading: false, rev: 3 };
+  el.ensureActivity();
+  assert.equal(loads.length, 1, "nothing changed");
+  el._rev = 4;
+  el.ensureActivity();
+  assert.equal(loads.length, 2, "a decision was made elsewhere");
+  el.activityState = { items: [], loading: true, rev: 3 };
+  el.ensureActivity();
+  assert.equal(loads.length, 2, "not while it loads");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
@@ -7687,7 +7705,7 @@ test("the activity tab groups the entries by day, offers undo only where an entr
   el.activityState = { items: [
     { id: "a", at, kind: "decision", action: "snooze", key: "f1", name: "Audi", by_name: "Anna", source: "cleanup", undo: { type: "ignore", key: "f1" } },
     { id: "b", at, kind: "auto", action: "lifted", key: "f2", name: "Lamp", backfilled: true, undo: null },
-  ], next: at, total: 2, loading: false, filter: "all", query: "" };
+  ], next: at, total: 2, loading: false, filter: "all", query: "", rev: el._rev };
   el.view = "journal"; el.viewTab = { journal: "activity" }; el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes("Today") && html.includes("Put on “Later”"));
