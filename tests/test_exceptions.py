@@ -193,3 +193,18 @@ def test_a_config_entry_that_is_not_loaded_follows_the_rules_of_its_integration(
     assert verdict([_rule("integration", ["ipp"])], found, finding, NOW)["state"] == "hide"
     delay = [_rule("integration", ["ipp"], "delay", 7)]
     assert verdict(delay, found, finding, NOW)["state"] == "hold"
+
+
+def test_only_rules_that_are_on_and_past_their_review_date_are_to_review() -> None:
+    store = _store({})
+    day = timedelta(days=1)
+    rules = [
+        {"kind": "domain", "targets": ["media_player"], "review_days": 30, "note": "a"},
+        {"kind": "domain", "targets": ["light"], "review_days": 30, "note": "b"},
+        {"kind": "domain", "targets": ["fan"], "review_days": 0, "note": "c"},
+    ]
+    assert store.set_rules(rules, NOW) is None
+    later = NOW + 31 * day
+    assert store.due_rules(NOW) == 0 and store.due_rules(later) == 2, "no date: never due"
+    store.rules[1]["enabled"] = False
+    assert store.due_rules(later) == 1, "a rule that is off is not to review"
