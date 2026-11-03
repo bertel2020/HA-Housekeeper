@@ -241,6 +241,15 @@ class AutoPause:
                 _now(),
                 **({"domain": entry.domain} if entry else {}),
             )
+            # The level of the area follows what is paused now, not the last step: one that came back
+            # does not make the others look fine, and the last one back does not leave a mark behind.
+            states = list(self.paused.values())
+            events.levels["auto_pause/paused"] = (
+                "note" if any(not rec.get("exhausted") for rec in states) else "ok"
+            )
+            events.levels["auto_pause/exhausted"] = (
+                "problem" if any(rec.get("exhausted") for rec in states) else "ok"
+            )
 
     # --- start and stop -------------------------------------------------------------------------
 

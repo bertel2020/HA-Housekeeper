@@ -122,3 +122,25 @@ async def test_no_attempt_starts_while_home_assistant_is_starting(hass) -> None:
         pause._tick(NOW)
         assert started.called
     pause._unsub()
+
+
+async def test_the_central_log_shows_what_is_paused_now_and_not_the_last_step(hass) -> None:
+    from custom_components.ha_housekeeper.events import EventLog
+
+    entry, scanner, pause = _setup(hass)
+    scanner.events = EventLog(hass)
+    other = MockConfigEntry(domain="other", title="Other")
+    other.add_to_hass(hass)
+    pause.paused = {entry.entry_id: {"exhausted": False}, other.entry_id: {"exhausted": False}}
+    pause._note("paused", entry.entry_id)
+    assert scanner.events.levels["auto_pause/paused"] == "note"
+    pause.paused[other.entry_id]["exhausted"] = True
+    pause._note("exhausted", other.entry_id)
+    assert scanner.events.levels["auto_pause/exhausted"] == "problem"
+    del pause.paused[other.entry_id]
+    pause._note("ended", other.entry_id)
+    assert scanner.events.levels["auto_pause/exhausted"] == "ok", "the exhausted one is gone"
+    assert scanner.events.levels["auto_pause/paused"] == "note", "the other is still paused"
+    pause.paused.clear()
+    pause._note("back", entry.entry_id)
+    assert scanner.events.levels["auto_pause/paused"] == "ok"

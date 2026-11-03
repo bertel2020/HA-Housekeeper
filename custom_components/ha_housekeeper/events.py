@@ -291,6 +291,19 @@ class EventLog:
             elif old != level:
                 self.record_change(area, item["id"], old, level, now, **_cause(item))
 
+    def forget_checks(self, area: str, current: list[dict[str, Any]]) -> None:
+        """Drop the last level of the checks of ``area`` that are not among ``current`` any more.
+
+        For an area whose checks come and go (the goals): one that was deleted or switched off must not
+        keep showing its last level, and when it comes back its first look is no change.
+        """
+        keep = {f"{area}/{item['id']}" for item in current}
+        gone = [key for key in self.levels if key.startswith(f"{area}/") and key not in keep]
+        for key in gone:
+            del self.levels[key]
+        if gone:
+            self._save()
+
     def observe_findings(
         self, area: str, findings: list[dict[str, Any]], now: datetime, keep: tuple[str, ...] = ()
     ) -> None:

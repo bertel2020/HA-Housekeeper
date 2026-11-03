@@ -363,3 +363,15 @@ async def test_the_recent_events_can_leave_out_changes_of_checks_before_the_limi
         log.record_change("system", "memory", "ok", "note", NOW + timedelta(minutes=number + 1))
     assert [e["kind"] for e in log.recent(2, skip=("check_change",))] == ["start"]
     assert [e["kind"] for e in log.recent(2)] == ["check_change", "check_change"]
+
+
+async def test_a_check_that_is_not_there_any_more_does_not_keep_its_last_level(
+    hass: HomeAssistant,
+) -> None:
+    log = EventLog(hass)
+    log.observe_checks("goals", [{"id": "a", "level": "ok"}, {"id": "b", "level": "note"}], NOW)
+    log.observe_checks("system", [{"id": "disk", "level": "ok"}], NOW)
+    log.forget_checks("goals", [{"id": "a", "level": "ok"}])
+    assert set(log.levels) == {"goals/a", "system/disk"}
+    log.observe_checks("goals", [{"id": "b", "level": "problem"}], NOW + timedelta(hours=1))
+    assert [e["kind"] for e in log.events if e["kind"] == "check_change"] == [], "back: no change"

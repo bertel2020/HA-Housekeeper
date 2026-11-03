@@ -1360,7 +1360,9 @@ class InventoryScanner:
             evaluated = evaluate_goals(
                 measure_goals(snapshot, None, None, None, errors), self.goals.items
             )
-            self.events.observe_checks("goals", goal_checks(evaluated), datetime.now(UTC))
+            checks = goal_checks(evaluated)
+            self.events.observe_checks("goals", checks, datetime.now(UTC))
+            self.events.forget_checks("goals", checks)
         except Exception:  # noqa: BLE001 - the log must never fail a scan
             _LOGGER.debug("The goals could not be written to the central log", exc_info=True)
 
