@@ -2078,7 +2078,10 @@ class InventoryScanner:
             if c.get("finding_key")
         }
         lifted = self.ignored.review(
-            {key: (f.get("impact", "none"), followers.get(key, 0)) for key, f in held.items()},
+            {
+                key: (f.get("impact_steady", f.get("impact", "none")), followers.get(key, 0))
+                for key, f in held.items()
+            },
             datetime.now(UTC),
         )
         if not lifted:
@@ -2227,7 +2230,7 @@ class InventoryScanner:
                 until=until,
                 by=by,
                 via=via,
-                impact=finding.get("impact") if finding else None,
+                impact=(finding.get("impact_steady") or finding.get("impact")) if finding else None,
                 followers=self._followers_of(key),
             )
 
@@ -2350,7 +2353,7 @@ class InventoryScanner:
                 reason=reason,
                 until=now + timedelta(days=days),
                 by=by,
-                impact=finding.get("impact"),
+                impact=finding.get("impact_steady") or finding.get("impact"),
                 followers=self._followers_of(key),
             ):
                 continue
