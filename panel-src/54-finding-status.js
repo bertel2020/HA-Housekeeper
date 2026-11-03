@@ -137,8 +137,14 @@ class FindingStatusMixin {
     const on = this.view === "findingsNav";
     if (on && !this._visiting) {
       this._visiting = true;
-      if (this._visitNext) { this.visit = this._visitNext; this._visitNext = null; this._visitKeys = null; }
+      this.adoptVisit();
     } else if (!on && this._visiting) { this._visiting = false; this.leaveFindings(); }
+  }
+
+  // What the last leave recorded becomes the base of the visit that begins now.
+  adoptVisit() {
+    if (!this._visitNext) return;
+    this.visit = this._visitNext; this._visitNext = null; this._visitKeys = null;
   }
 
   async leaveFindings() {
@@ -179,7 +185,7 @@ class FindingStatusMixin {
   isWorseFinding(f) { return this.visitSets().worse.has(f.key); }
 
   // The entry the findings page opens at: what is new since the last visit, when there is something; otherwise all.
-  defaultFindingStatus() { return this.visit?.at && this.visitSets().all.size ? "new" : ""; }
+  defaultFindingStatus() { this.adoptVisit(); return this.visit?.at && this.visitSets().all.size ? "new" : ""; }
 
   // The outages the overview counts (every cause from medium on) with everything they explain: the jump of its row.
   // A finding belongs when its cause or one above it counts; quiet outages stay out, missing services are in.

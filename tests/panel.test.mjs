@@ -6690,6 +6690,16 @@ test("new since the last visit: new findings and findings that got worse, a foll
   assert.ok(el.findingsView().includes("Nothing new since"));
 });
 
+test("coming back to the findings does not open at \"new\" for what the visit before has shown", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [{ key: "k", rule_id: "device.down", object_id: "d", classification: "unavailable", confidence: 0.9, ignored: false, impact: "high", first_seen_at: "2026-10-20T00:00:00+00:00" }] };
+  el.visit = { at: "2026-10-10T00:00:00+00:00", state: {} }; el._visitKeys = null;
+  assert.equal(el.defaultFindingStatus(), "new");
+  el._visitNext = { at: "2026-10-30T00:00:00+00:00", state: {} }; // recorded when the page was left
+  assert.equal(el.defaultFindingStatus(), "", "the visit that just ended is the base now");
+  assert.equal(el._visitNext, null);
+});
+
 test("the vacation bar says why nothing is held back and offers no empty list", () => {
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, vacation: { entity: "input_boolean.away", active: true, held: 0, rules: 2 } } };
