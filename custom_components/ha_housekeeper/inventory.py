@@ -2276,7 +2276,9 @@ class InventoryScanner:
             until=(now + timedelta(days=days)).isoformat() if ignored and days else None,
             by=by,
             source=source,
-            undo={"type": "ignore", "key": key, "previous": previous} if ignored else None,
+            undo={"type": "ignore", "key": key, "previous": previous, "after": now.isoformat()}
+            if ignored
+            else None,
         )
 
     def _followers_of(self, key: str) -> int:
@@ -2293,6 +2295,17 @@ class InventoryScanner:
             finding
             and any(fact.get("fact") == "critical" for fact in finding.get("impact_facts", []))
         )
+
+    def stands_as_left(self, undo: dict[str, Any]) -> bool:
+        """Whether the decision or mark of an undo is still the one its action left (older entries: yes)."""
+        after = undo.get("after")
+        if after is None:
+            return True
+        if undo["type"] == "ignore":
+            current = self.ignored.entry(undo["key"])
+        else:
+            current = self.marks.items.get(undo["key"])
+        return bool(current) and current.get("at") == after
 
     def restore_decision(self, key: str, entry: dict[str, Any] | None) -> None:
         """Put the decision about a finding back as it was (``None``: there was none)."""
@@ -2405,7 +2418,12 @@ class InventoryScanner:
             until=until.isoformat() if until else None,
             by=by,
             source=via or source,
-            undo={"type": "mark", "key": mark_key(object_type, object_id), "previous": previous},
+            undo={
+                "type": "mark",
+                "key": mark_key(object_type, object_id),
+                "previous": previous,
+                "after": now.isoformat(),
+            },
         )
         self._refresh_marks()
         return None

@@ -2048,3 +2048,54 @@ async def test_first_cleanup_puts_the_rest_off_together_and_hides_nothing_else(
         "items"
     ]
     assert [(e["action"], e["source"]) for e in nothanks] == [("nothanks", "cleanup")]
+
+
+async def test_an_undo_in_the_activity_leaves_a_later_decision_alone(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """Undoing the older of two decisions on one finding would wipe the newer one: it is refused."""
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    snapshot["findings"] = [
+        {
+            "key": "k1",
+            "object_id": "sensor.d",
+            "topic": "down",
+            "impact": "low",
+            "classification": "x",
+            "rule_id": "entity.stale",
+            "object_type": "entity",
+        }
+    ]
+
+    async def call(payload):
+        await client.send_json_auto_id(payload)
+        return await client.receive_json()
+
+    for kind in ("snooze", "keep"):
+        reply = await call(
+            {
+                "type": "ha_housekeeper/ignore",
+                "finding_key": "k1",
+                "ignored": True,
+                "kind": kind,
+                "reason": "r",
+                "days": 30,
+            }
+        )
+        assert reply["success"], reply
+    items = (await call({"type": "ha_housekeeper/activity", "kinds": ["decision"]}))["result"][
+        "items"
+    ]
+    newer, older = items[0], items[1]
+    assert (newer["action"], older["action"]) == ("keep", "snooze")
+    reply = await call({"type": "ha_housekeeper/activity_undo", "entry_id": older["id"]})
+    assert reply["success"] is False and reply["error"]["code"] == "conflict_changed"
+    assert scanner.ignored.entry("k1")["kind"] == "keep"
+    assert (await call({"type": "ha_housekeeper/activity_undo", "entry_id": newer["id"]}))[
+        "success"
+    ]
+    assert (await call({"type": "ha_housekeeper/activity_undo", "entry_id": older["id"]}))[
+        "success"
+    ]
+    assert scanner.ignored.entry("k1") is None

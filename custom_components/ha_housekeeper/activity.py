@@ -58,6 +58,8 @@ def _clean(value: Any) -> dict[str, Any] | None:
             "type": undo["type"],
             "key": _text(undo.get("key")) or "",
             "previous": undo["previous"] if isinstance(undo.get("previous"), dict) else None,
+            # The time of the entry the action left behind: an undo applies only while it is still that one.
+            "after": _text(undo.get("after"), 40),
         }
         if isinstance(undo, dict) and undo.get("type") in UNDO_KINDS
         else None,
@@ -249,7 +251,11 @@ class ActivityStore:
         page = rows[:limit]
         return {
             "items": [
-                {**e, "undo": e["undo"] and {k: v for k, v in e["undo"].items() if k != "previous"}}
+                {
+                    **e,
+                    "undo": e["undo"]
+                    and {k: v for k, v in e["undo"].items() if k not in ("previous", "after")},
+                }
                 for e in page
             ],
             "next": f"{page[-1]['at']}|{page[-1]['id']}" if len(rows) > limit else None,
