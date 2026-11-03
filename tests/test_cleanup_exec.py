@@ -1290,7 +1290,45 @@ async def test_a_reload_that_raises_stops_the_plan(hass: HomeAssistant) -> None:
     with patch.object(hass.config_entries, "async_reload", AsyncMock(side_effect=ValueError)):
         await run(scanner, plan)
     assert plan["status"] != "verified"
-    assert "reload_failed" in str(plan)
+    result = plan["actions"][0]["result"]
+    assert result["state"] == "done" and result["stopped"] == "integration_reload_failed"
+
+
+async def test_a_reload_that_takes_too_long_is_not_cancelled_and_is_checked_afterwards(
+    hass: HomeAssistant,
+) -> None:
+    import asyncio
+    from unittest.mock import patch
+
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper import cleanup_exec
+    from custom_components.ha_housekeeper.cleanup_exec import reload_info
+
+    config = MockConfigEntry(domain="test")
+    config.add_to_hass(hass)
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    requests = [{"kind": "reload_integration", "object_id": config.entry_id}]
+    data = {config.entry_id: reload_info(hass, config.entry_id)}
+    plan = build_plan(snapshot, requests, datetime.now(UTC), reload_data=data)
+    scanner.journal.add(plan)
+    finished = []
+
+    async def slow(_entry_id: str) -> None:
+        await asyncio.sleep(0.05)
+        finished.append(True)  # reached only when nobody cancels it
+
+    with (
+        patch.object(cleanup_exec, "RELOAD_TIMEOUT", 0.01),
+        patch.object(hass.config_entries, "async_reload", slow),
+    ):
+        await run(scanner, plan)
+    result = plan["actions"][0]["result"]
+    assert result["state"] == "done" and result["stopped"] == "integration_reload_timeout"
+    assert plan["verification"]["checks"][0]["check"] == "entry_loaded"
+    await asyncio.sleep(0.1)
+    assert finished == [True]
 
 
 async def test_a_reload_that_ends_in_a_sign_in_request_says_so(hass: HomeAssistant) -> None:

@@ -2351,16 +2351,26 @@ class CleanupRunner:
         return "undone"
 
     async def _reload_integration(self, action: dict[str, Any]) -> dict[str, Any]:
-        """Load the entry anew; whatever it does afterwards is what the verification reports."""
+        """Load the entry anew; whatever it does afterwards is what the verification reports.
+
+        A reload that takes too long is waited for no longer but not cancelled: stopping it half way would
+        leave the entry in a state nobody chose. Either way the step counts as done, so the verification
+        looks at the entry.
+        """
         if not reload_info(self.hass, action["object_id"]).get("can_reload"):
             raise StepAbort("now_blocked")
-        try:
-            async with asyncio.timeout(RELOAD_TIMEOUT):
-                await self.hass.config_entries.async_reload(action["object_id"])
-        except TimeoutError as err:
-            raise StepAbort("reload_timeout") from err
-        except Exception as err:  # noqa: BLE001 - whatever the integration raises ends the plan
-            raise StepAbort("reload_failed") from err
+        task = self.hass.async_create_task(
+            self.hass.config_entries.async_reload(action["object_id"]),
+            f"{DOMAIN} reload of {action['object_id']}",
+        )
+        _, pending = await asyncio.wait({task}, timeout=RELOAD_TIMEOUT)
+        if pending:
+            task.add_done_callback(
+                lambda t: t.cancelled() or t.exception()
+            )  # nobody awaits it any more
+            raise StepAbort("integration_reload_timeout", {"irreversible": True})
+        if task.exception() is not None:  # whatever the integration raises ends the plan
+            raise StepAbort("integration_reload_failed", {"irreversible": True})
         return {"irreversible": True}
 
     def _verify_reload(self, entry_id: str) -> list[dict[str, Any]]:
