@@ -125,3 +125,19 @@ async def test_the_history_counts_the_objects_it_names_and_remembers_how_many_it
     assert state["log_dropped"] == 30 - len(state["log"]) > 0
     store.reset()
     assert store.state()["log_dropped"] == 0
+
+
+async def test_a_false_alarm_decided_on_a_card_stays_in_the_history(hass) -> None:
+    store = FirstCleanupStore(hass)
+    store.begin(60, NOW)
+    store.log_add(
+        {
+            "id": "h1",
+            "at": "2026-10-23T08:00:00+00:00",
+            "stage": 3,
+            "action": "hidden",
+            "key": "k1",
+            "keys": ["k1"],
+        }
+    )
+    assert [e["action"] for e in store.state()["log"]] == ["hidden"]
