@@ -2144,3 +2144,37 @@ async def test_putting_the_rest_off_is_one_line_in_the_activity_with_one_undo(
     assert reply["success"] and reply["result"] == {"undone": True, "restored": 2, "skipped": 1}
     assert scanner.ignored.entry("k0") is None and scanner.ignored.entry("k2") is None
     assert scanner.ignored.entry("k1")["kind"] == "keep"
+
+
+async def test_a_decision_that_needs_a_time_is_refused_without_one_for_the_panel_and_the_service(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    snapshot["findings"] = [
+        {
+            "key": "k1",
+            "object_id": "lock.door",
+            "topic": "down",
+            "impact": "high",
+            "impact_facts": [{"fact": "critical", "why": "kind"}],
+            "classification": "x",
+            "rule_id": "entity.stale",
+            "object_type": "entity",
+        }
+    ]
+    assert scanner.decision_problem("k1", "snooze", False) == "days_required"
+    assert scanner.decision_problem("k1", "keep", False) == "days_required_critical"
+    assert scanner.decision_problem("k1", "keep", True) is None
+    assert scanner.decision_problem("k1", "ignore", False) is None
+    await client.send_json_auto_id(
+        {
+            "type": "ha_housekeeper/ignore",
+            "finding_key": "k1",
+            "ignored": True,
+            "kind": "keep",
+            "reason": "r",
+        }
+    )
+    reply = await client.receive_json()
+    assert reply["success"] is False and reply["error"]["code"] == "days_required_critical"

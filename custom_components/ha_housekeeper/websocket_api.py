@@ -740,17 +740,15 @@ def websocket_ignore(
         if msg["kind"] == "keep" and not msg["reason"].strip():
             connection.send_error(msg["id"], "reason_required", "Keeping a finding needs a reason")
             return
-        if (
-            msg["kind"] == "keep"
-            and "days" not in msg
-            and scanner.finding_is_critical(msg["finding_key"])
-        ):
+        problem = scanner.decision_problem(msg["finding_key"], msg["kind"], "days" in msg)
+        if problem:
             connection.send_error(
-                msg["id"], "days_required_critical", "A critical object needs a review date"
+                msg["id"],
+                problem,
+                "A critical object needs a review date"
+                if problem == "days_required_critical"
+                else "Putting a finding off needs days",
             )
-            return
-        if msg["kind"] == "snooze" and "days" not in msg:
-            connection.send_error(msg["id"], "days_required", "Putting a finding off needs days")
             return
     if not scanner.set_finding_ignored(
         msg["finding_key"],

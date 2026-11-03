@@ -45,6 +45,9 @@ def scanner_with(hass: HomeAssistant, count: int = 600) -> SimpleNamespace:
         snapshot=snapshot,
         mcp=McpStore(hass),
         activity=SimpleNamespace(record=lambda *args, **kwargs: None),
+        decision_problem=lambda key, kind, has_days: (
+            "days_required" if kind == "snooze" and not has_days else None
+        ),
         version="1",
         warming_up=False,
         status={"running": False},

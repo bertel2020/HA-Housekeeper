@@ -92,20 +92,13 @@ class IgnoreStore:
             self._migrate(datetime.now(UTC))
 
     def _migrate(self, now: datetime) -> None:
-        """Once: "meant to be so" without a time gets a review date, and the panel says so.
+        """Once: remember that the file was looked at.
 
-        Only the ``until`` field is added; nothing is deleted, and an older version reads the file as before.
+        An older version let "meant to be so" go without a time, and so does this one: such an entry is
+        left as it is (a first 2.0 beta added a review date to each; those dates stay, and so does the note
+        about them until it is read).
         """
-        until = (now + timedelta(days=KEEP_REVIEW_DAYS)).isoformat()
-        count = 0
-        for entry in self._items.values():
-            if entry["kind"] == "keep" and not entry["until"]:
-                entry["until"] = until
-                count += 1
         self._migrated = True
-        self._notice = {"count": count, "days": KEEP_REVIEW_DAYS} if count else None
-        if count:  # with nothing to change, the flag goes into the next save anyway
-            self._save()
 
     @property
     def notice(self) -> dict[str, Any] | None:

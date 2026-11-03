@@ -2289,6 +2289,16 @@ class InventoryScanner:
         causes = (self._snapshot or {}).get("causes", [])
         return next((c["total_followers"] for c in causes if c.get("finding_key") == key), 0)
 
+    def decision_problem(self, key: str, kind: str, has_days: bool) -> str | None:
+        """Why a decision cannot be taken without a time (the same rule for the panel and the service)."""
+        if has_days:
+            return None
+        if kind == "snooze":
+            return "days_required"
+        if kind == "keep" and self.finding_is_critical(key):
+            return "days_required_critical"
+        return None
+
     def finding_is_critical(self, key: str) -> bool:
         """Whether the object of this finding is critical (label, lock, alarm, detector)."""
         finding = next(

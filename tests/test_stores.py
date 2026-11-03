@@ -313,7 +313,7 @@ async def test_previews_older_than_a_day_are_dropped_but_plans_that_ran_stay(
     assert [p["plan_id"] for p in journal.plans] == ["fresh", "ran"]
 
 
-async def test_a_keep_without_a_time_gets_a_review_date_once_and_a_later_that_gets_worse_is_lifted(
+async def test_a_keep_without_a_time_stays_so_a_stored_note_is_said_once_and_a_later_that_gets_worse_is_lifted(
     hass: HomeAssistant, hass_storage
 ) -> None:
     then = datetime(2026, 9, 1, tzinfo=UTC)
@@ -321,11 +321,15 @@ async def test_a_keep_without_a_time_gets_a_review_date_once_and_a_later_that_ge
     put(
         hass_storage,
         const.IGNORED_STORAGE_KEY,
-        {"items": {"k": {"kind": "keep", **entry}, "s": {"kind": "snooze", **entry}}},
+        {
+            "items": {"k": {"kind": "keep", **entry}, "s": {"kind": "snooze", **entry}},
+            "migrated": True,
+            "notice": {"count": 1},  # written by a beta that added review dates
+        },
     )
     store = IgnoreStore(hass)
     await store.async_load()
-    assert store.entry("k")["until"] and store.entry("s")["until"] is None
+    assert store.entry("k")["until"] is None and store.entry("s")["until"] is None
     assert store.notice == {"count": 1, "days": 90}
     await flush(hass)
     store.dismiss_notice()
@@ -414,7 +418,7 @@ async def test_work_starts_goes_on_expires_after_a_week_and_goes_with_its_findin
 
 
 async def test_data_written_by_1x_loads_again(hass: HomeAssistant, hass_storage) -> None:
-    """The way back 2.0 -> 1.x -> 2.0: 1.x drops the new fields, 2.0 reads what is left and migrates again."""
+    """The way back 2.0 -> 1.x -> 2.0: 1.x drops the new fields, 2.0 reads what is left and adds no date."""
     now = datetime.now(UTC)
     old = {
         "kind": "keep",
@@ -431,8 +435,8 @@ async def test_data_written_by_1x_loads_again(hass: HomeAssistant, hass_storage)
     )
     store = IgnoreStore(hass)
     await store.async_load()
-    assert store.entry("a")["until"] and store.entry("b")["impact_at"] is None
-    assert store.notice == {"count": 1, "days": 90}
+    assert store.entry("a")["until"] is None and store.entry("b")["impact_at"] is None
+    assert store.notice is None
 
 
 async def test_the_access_page_marks_what_is_new_and_lifts_a_decision_when_the_level_rises(
