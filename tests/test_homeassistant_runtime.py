@@ -2205,3 +2205,17 @@ async def test_a_decision_that_needs_a_time_is_refused_without_one_for_the_panel
     )
     reply = await client.receive_json()
     assert reply["success"] is False and reply["error"]["code"] == "days_required_critical"
+
+
+async def test_the_reads_of_the_cleanup_and_the_activity_carry_the_version_of_the_contract(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    from custom_components.ha_housekeeper.ws_common import API_SCHEMA
+
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    for command in ("cleanup_round", "first_cleanup", "activity", "often"):
+        await client.send_json_auto_id({"type": f"ha_housekeeper/{command}"})
+        reply = await client.receive_json()
+        assert reply["success"], (command, reply)
+        assert reply["result"]["schema"] == API_SCHEMA, command

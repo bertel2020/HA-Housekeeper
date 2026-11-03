@@ -300,7 +300,9 @@ def websocket_fix_ways(
         return
     connection.send_result(
         msg["id"],
-        {"ways": ways_for(finding, snapshot, refactor_enabled=scanner.refactor.enabled)},
+        _versioned(
+            {"ways": ways_for(finding, snapshot, refactor_enabled=scanner.refactor.enabled)}
+        ),
     )
 
 
@@ -334,7 +336,7 @@ async def websocket_failure_info(
     }
     connection.send_result(
         msg["id"],
-        {"failure": failure, "hint": error_hint((failure or {}).get("error"), down)},
+        _versioned({"failure": failure, "hint": error_hint((failure or {}).get("error"), down)}),
     )
 
 
@@ -406,11 +408,13 @@ async def websocket_cleanup_round(
     ]
     connection.send_result(
         msg["id"],
-        {
-            "rows": [*rows, *duplicate_rows(snapshot)],
-            "total": len(everything),
-            "limited": len(everything) > len(requests),
-        },
+        _versioned(
+            {
+                "rows": [*rows, *duplicate_rows(snapshot)],
+                "total": len(everything),
+                "limited": len(everything) > len(requests),
+            }
+        ),
     )
 
 
@@ -473,13 +477,15 @@ def _first_cleanup_reply(scanner: InventoryScanner) -> dict[str, Any]:
     snapshot = scanner.snapshot or {}
     stages = stage_keys(snapshot)
     open_count = sum(len(keys) for keys in stages.values())
-    return {
-        "state": scanner.first_cleanup.state(),
-        "offered": scanner.first_cleanup.offered(open_count),
-        "open": open_count,
-        "stages": {str(n): keys for n, keys in stages.items()},
-        "later_days": LATER_DAYS,
-    }
+    return _versioned(
+        {
+            "state": scanner.first_cleanup.state(),
+            "offered": scanner.first_cleanup.offered(open_count),
+            "open": open_count,
+            "stages": {str(n): keys for n, keys in stages.items()},
+            "later_days": LATER_DAYS,
+        }
+    )
 
 
 @websocket_api.require_admin
@@ -608,7 +614,7 @@ async def websocket_activity(
             user = await hass.auth.async_get_user(user_id)
             names[user_id] = user.name if user else None
         item["by_name"] = names.get(user_id) if user_id else None
-    connection.send_result(msg["id"], page)
+    connection.send_result(msg["id"], _versioned(page))
 
 
 @websocket_api.require_admin
@@ -673,7 +679,9 @@ def websocket_often(
     scanner: InventoryScanner,
 ) -> None:
     """The suggestions for marks that were answered "no thanks" and still hold."""
-    connection.send_result(msg["id"], {"skipped": scanner.often.view(datetime.now(UTC))})
+    connection.send_result(
+        msg["id"], _versioned({"skipped": scanner.often.view(datetime.now(UTC))})
+    )
 
 
 @websocket_api.require_admin
