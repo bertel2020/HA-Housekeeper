@@ -132,7 +132,7 @@ class FcRecommendMixin {
   // What the person can do for an outage Housekeeper cannot repair: look at the device, then let Housekeeper look again.
   fcCheckBlock(finding, rows) {
     const t = k => this.t(k), seen = this.fcCheck?.key === finding.key ? this.fcCheck.result : null;
-    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: this.esc(seen.detail || "") })) : this.notice("info", t("fixLiveUnknown"));
+    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: seen.detail || "" })) : this.notice("info", t("fixLiveUnknown"));
     return `<div class="fcways"><small class="fceyebrow">${t("fcCheckHead")}</small><ol class="fcchecklist"><li>${t("fcCheck1")}</li><li>${t("fcCheck2")}</li><li>${t("fcCheck3")}</li></ol><p class="fcfacts">${t("fcCheckThen")}</p>${verdict}<div class="fcplanbtns"><button type="button" class="btn primary" data-fc-looknow="${this.esc(finding.key)}"><ha-icon icon="mdi:magnify"></ha-icon>${t("fixLookNow")}</button></div>${rows}</div>`;
   }
 
@@ -198,7 +198,7 @@ class FcRecommendMixin {
       const ok = done && (!plan.verification || plan.verification.ok);
       head = t(undone ? "fcPlanUndone" : ok ? "fcPlanDone" : done ? "fcPlanCheckFailed" : "fcPlanAborted");
       const stop = acts.map(a => a.result?.state === "not_run" ? t(`abort_${a.result.reason}`) : a.result?.stopped ? t(`abort_${a.result.stopped}`) : "").filter(Boolean)[0];
-      const checks = plan.verification ? `<div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${t(`check_${c.check}`)}</span>`).join("")}</div>` : "";
+      const checks = plan.verification ? `<div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.esc(t(`check_${c.check}`))}</span>`).join("")}</div>` : "";
       body = `<ul class="fcplanrows">${rows}</ul>${checks}${stop ? `<p class="fcfacts">${this.esc(stop)}</p>` : ""}${this.undoMessage && undone ? `<p class="fcfacts">${this.esc(this.undoMessage)}</p>` : ""}`;
       btns = `${done ? `<button type="button" class="btn accent" data-fc-plan-undo><ha-icon icon="mdi:undo-variant"></ha-icon>${t("fcUndo")}</button>` : ""}<button type="button" class="btn primary" data-fc-plan-drop>${t("fcPlanOk")}</button>`;
     }

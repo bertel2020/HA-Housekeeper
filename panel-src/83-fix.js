@@ -174,7 +174,7 @@ class FixMixin {
     const live = this.fixLive, watching = this.fixWatchUntil && Date.now() < this.fixWatchUntil;
     let verdict = "";
     if (scanned) verdict = f ? this.notice("warn", this.t("fixStillOpen")) : this.notice("info", this.t("fixDone"));
-    else if (live) verdict = live.result === "fixed" ? this.notice("info", this.t("fixLooksFixed")) : live.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: this.esc(live.detail || "") })) : this.notice("info", this.t("fixLiveUnknown"));
+    else if (live) verdict = live.result === "fixed" ? this.notice("info", this.t("fixLooksFixed")) : live.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: live.detail || "" })) : this.notice("info", this.t("fixLiveUnknown"));
     const watch = watching ? `<p class="factnote">${this.t("fixWatching")}</p>` : "";
     return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-look><ha-icon icon="mdi:magnify"></ha-icon>${this.t("fixLookNow")}</button><button type="button" class="btn" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button>${f?.in_work ? `<button type="button" class="btn quiet" data-fix-work-off>${this.t("fixWorkOff")}</button>` : ""}</div>${watch}${verdict}`;
   }

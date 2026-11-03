@@ -36,7 +36,7 @@ class FcRoundMixin {
   fcRoundCards() {
     const queue = this.fcRoundQueue(), round = this.round, listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     if (queue === null) return `<section class="panel fcpanel"><div class="pad"><small>${this.t("loading")}</small></div></section>`;
-    if (round.error) return `<section class="panel fcpanel"><div class="pad">${this.notice("warn", this.esc(round.error))}</div></section>`;
+    if (round.error) return `<section class="panel fcpanel"><div class="pad">${this.notice("warn", round.error)}</div></section>`;
     const prevBtn = this.fcPrevButton(4);
     const picked = round.rows.filter(r => round.picked.has(r.finding_key));
     if (!queue.length) return this.fcRoundEnd(picked, prevBtn, listBtn);

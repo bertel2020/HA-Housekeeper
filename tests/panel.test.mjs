@@ -6003,6 +6003,17 @@ test("a profile that cannot be read is not taken for an empty one, so nothing is
   assert.ok(empty._userPrefsEmpty, "an answer without a value is an empty profile");
 });
 
+test("a notice is escaped once, also where the text comes from the server or from a person", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [] };
+  el.round = { rows: [], picked: new Set(), error: "it's <x-evil>", limited: false };
+  const html = el.roundView();
+  assert.ok(html.includes("it&#39;s &lt;x-evil&gt;") && !html.includes("&amp;"), "once, not twice");
+  assert.ok(!html.includes("<x-evil>"));
+  const row = el.esc("a\"b");
+  assert.equal(row, "a&quot;b");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

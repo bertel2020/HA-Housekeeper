@@ -7568,8 +7568,8 @@ class CheckLogMixin {
     const e = r.e;
     if (e.kind === "backup_run") return e.ended ? "" : `<span class="clstep"><span class="pill blue">${this.t("clLevel_running")}</span></span>`;
     if (e.kind !== "change") return "";
-    const pills = `<span class="pill ${CL_LEVEL_PILL[e.from] || "mute"}">${this.t(`clLevel_${e.from}`)}</span><ha-icon icon="mdi:arrow-right"></ha-icon><span class="pill ${CL_LEVEL_PILL[e.to] || "mute"}">${this.t(`clLevel_${e.to}`)}</span>`;
-    return `<span class="clstep">${e.dismissed ? `<span class="pill mute">${this.t("clDismissed", { reason: this.t(`clReason_${e.dismissed}`) })}</span>` : ""}${pills}</span>`;
+    const pills = `<span class="pill ${CL_LEVEL_PILL[e.from] || "mute"}">${this.esc(this.t(`clLevel_${e.from}`))}</span><ha-icon icon="mdi:arrow-right"></ha-icon><span class="pill ${CL_LEVEL_PILL[e.to] || "mute"}">${this.esc(this.t(`clLevel_${e.to}`))}</span>`;
+    return `<span class="clstep">${e.dismissed ? `<span class="pill mute">${this.t("clDismissed", { reason: this.esc(this.t(`clReason_${e.dismissed}`)) })}</span>` : ""}${pills}</span>`;
   }
 
   clDayName(iso) {
@@ -8717,7 +8717,7 @@ const EXPO_PLAN_KINDS = {
 
 // What the three dots of an entity row offer: one entity at a time for the sensitive ones, a jump to Home Assistant for voice names.
 const EXPO_ROW_MENU = {
-  sensitive_exposed: item => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${item.entity_id}"`]],
+  sensitive_exposed: (item, esc) => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${esc(item.entity_id)}"`]],
   alias_duplicate: () => [["mdi:open-in-new", "expoOpenNames", 'data-ha-path="/config/voice-assistants/expose"']],
 };
 
@@ -8741,7 +8741,7 @@ class ExposureMixin {
   // The bar over the table, as over the inventory: how many are ticked and what can be done with them.
   expoSelBar(source, rows) {
     const sel = this.expoSelOf(source.id), n = sel.size, tooMany = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
-    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n && !tooMany ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: source.label })}</button>`;
+    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n && !tooMany ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: this.esc(source.label) })}</button>`;
     return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-expo-sel-all="${this.esc(source.id)}" ${rows.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(rows.length) })}</button><button class="btn quiet" data-expo-sel-clear="${this.esc(source.id)}" ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn}</div>${this.viewCount(rows.length)}</div>${tooMany ? `<small class="error errpad" role="alert">${this.esc(this.t("stateTooMany", { max: MAX_PLAN_ACTIONS }))}</small>` : ""}`;
   }
 
@@ -8857,7 +8857,7 @@ class ExposureMixin {
         { key: "domain", label: "expoColDomain", dir: "asc", cell: item => this.esc(item.domain) },
         { key: "area", label: "expoColArea", dir: "asc", cell: item => (item.area ? this.esc(item.area) : `<span class="muted">—</span>`) },
         { key: "assistants", label: "expoColAssistants", sortable: false, cell: item => (item.assistants?.length ? this.esc(this.expoAssistantList(item.assistants)) : `<span class="muted">—</span>`) },
-        ...(EXPO_ROW_MENU[f.kind] ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(EXPO_ROW_MENU[f.kind](item)) }] : []),
+        ...(EXPO_ROW_MENU[f.kind] ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(EXPO_ROW_MENU[f.kind](item, v => this.esc(v))) }] : []),
       ],
     }) : "";
     const agents = f.integrations?.length ? this.sysList(`expofind_${f.kind}`, f.integrations, {
@@ -20243,7 +20243,7 @@ class FixMixin {
     const live = this.fixLive, watching = this.fixWatchUntil && Date.now() < this.fixWatchUntil;
     let verdict = "";
     if (scanned) verdict = f ? this.notice("warn", this.t("fixStillOpen")) : this.notice("info", this.t("fixDone"));
-    else if (live) verdict = live.result === "fixed" ? this.notice("info", this.t("fixLooksFixed")) : live.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: this.esc(live.detail || "") })) : this.notice("info", this.t("fixLiveUnknown"));
+    else if (live) verdict = live.result === "fixed" ? this.notice("info", this.t("fixLooksFixed")) : live.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: live.detail || "" })) : this.notice("info", this.t("fixLiveUnknown"));
     const watch = watching ? `<p class="factnote">${this.t("fixWatching")}</p>` : "";
     return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-look><ha-icon icon="mdi:magnify"></ha-icon>${this.t("fixLookNow")}</button><button type="button" class="btn" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button>${f?.in_work ? `<button type="button" class="btn quiet" data-fix-work-off>${this.t("fixWorkOff")}</button>` : ""}</div>${watch}${verdict}`;
   }
@@ -20424,7 +20424,7 @@ class RoundMixin {
     if (round.rows === null) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section>${back}</div>`;
     const rows = round.rows, by = group => rows.filter(r => r.group === group);
     const chosen = rows.filter(r => round.picked.has(r.finding_key) && r.kind !== "merge" && r.group !== "blocked");
-    const error = (round.error ? this.notice("warn", this.esc(round.error)) : "") + (round.limited ? this.notice("info", this.esc(this.t("roundLimited", { total: this.formatNumber(round.total), n: this.formatNumber(rows.length) }))) : "");
+    const error = (round.error ? this.notice("warn", round.error) : "") + (round.limited ? this.notice("info", this.t("roundLimited", { total: this.formatNumber(round.total), n: this.formatNumber(rows.length) })) : "");
     const empty = rows.length ? "" : `<section class="panel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("roundEmpty")}</div></section>`;
     const bar = chosen.length ? `<div class="mbtns"><button type="button" class="btn primary" data-round-plan ${this.planBusy ? "disabled" : ""}><ha-icon icon="mdi:clipboard-list-outline"></ha-icon>${this.t("roundPlan", { n: chosen.length })}</button></div><p class="factnote">${this.t("roundPlanHint")}</p>` : "";
     return `<div class="stack">${error}${empty}${this.roundGroup("roundSafe", "roundSafeHint", by("safe"), round.picked, true)}${this.roundGroup("roundLook", "roundLookHint", by("look"), round.picked, false)}${this.roundGroup("roundBlocked", "roundBlockedHint", by("blocked"), round.picked, false)}${bar ? `<section class="panel">${bar}</section>` : ""}${back}</div>`;
@@ -21070,10 +21070,10 @@ class FirstCleanupMixin {
   wizardView() {
     this.ensureFirstCleanup();
     const fc = this.fc;
-    if (!fc && this.fcLoadError) return `<div class="stack"><section class="panel"><div class="pad">${this.notice("err", this.esc(this.fcLoadError))}<button type="button" class="btn" data-fc-retry>${this.t("actRetry")}</button></div></section></div>`;
+    if (!fc && this.fcLoadError) return `<div class="stack"><section class="panel"><div class="pad">${this.notice("err", this.fcLoadError)}<button type="button" class="btn" data-fc-retry>${this.t("actRetry")}</button></div></section></div>`;
     if (!fc) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section></div>`;
     if (this.fcWiz.step === null) this.fcWizSet(this.fcResumeStep());
-    const n = this.fcWiz.step, error = fc.error ? this.notice("warn", this.esc(fc.error)) : "";
+    const n = this.fcWiz.step, error = fc.error ? this.notice("warn", fc.error) : "";
     if (n === 0) return `<div class="stack">${error}${this.fcWelcome()}</div>`;
     const state = fc.state || { done: [] }, left = this.fcStaged().length;
     const counter = `<span class="fccounter">${this.t("fcCounter", { start: this.formatNumber(state.start_count), now: this.formatNumber(left), d: this.formatNumber(this.fcDecided()) })}</span>`;
@@ -21507,7 +21507,7 @@ class FcRoundMixin {
   fcRoundCards() {
     const queue = this.fcRoundQueue(), round = this.round, listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     if (queue === null) return `<section class="panel fcpanel"><div class="pad"><small>${this.t("loading")}</small></div></section>`;
-    if (round.error) return `<section class="panel fcpanel"><div class="pad">${this.notice("warn", this.esc(round.error))}</div></section>`;
+    if (round.error) return `<section class="panel fcpanel"><div class="pad">${this.notice("warn", round.error)}</div></section>`;
     const prevBtn = this.fcPrevButton(4);
     const picked = round.rows.filter(r => round.picked.has(r.finding_key));
     if (!queue.length) return this.fcRoundEnd(picked, prevBtn, listBtn);
@@ -21755,7 +21755,7 @@ class FcRecommendMixin {
   // What the person can do for an outage Housekeeper cannot repair: look at the device, then let Housekeeper look again.
   fcCheckBlock(finding, rows) {
     const t = k => this.t(k), seen = this.fcCheck?.key === finding.key ? this.fcCheck.result : null;
-    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: this.esc(seen.detail || "") })) : this.notice("info", t("fixLiveUnknown"));
+    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: seen.detail || "" })) : this.notice("info", t("fixLiveUnknown"));
     return `<div class="fcways"><small class="fceyebrow">${t("fcCheckHead")}</small><ol class="fcchecklist"><li>${t("fcCheck1")}</li><li>${t("fcCheck2")}</li><li>${t("fcCheck3")}</li></ol><p class="fcfacts">${t("fcCheckThen")}</p>${verdict}<div class="fcplanbtns"><button type="button" class="btn primary" data-fc-looknow="${this.esc(finding.key)}"><ha-icon icon="mdi:magnify"></ha-icon>${t("fixLookNow")}</button></div>${rows}</div>`;
   }
 
@@ -21821,7 +21821,7 @@ class FcRecommendMixin {
       const ok = done && (!plan.verification || plan.verification.ok);
       head = t(undone ? "fcPlanUndone" : ok ? "fcPlanDone" : done ? "fcPlanCheckFailed" : "fcPlanAborted");
       const stop = acts.map(a => a.result?.state === "not_run" ? t(`abort_${a.result.reason}`) : a.result?.stopped ? t(`abort_${a.result.stopped}`) : "").filter(Boolean)[0];
-      const checks = plan.verification ? `<div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${t(`check_${c.check}`)}</span>`).join("")}</div>` : "";
+      const checks = plan.verification ? `<div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.esc(t(`check_${c.check}`))}</span>`).join("")}</div>` : "";
       body = `<ul class="fcplanrows">${rows}</ul>${checks}${stop ? `<p class="fcfacts">${this.esc(stop)}</p>` : ""}${this.undoMessage && undone ? `<p class="fcfacts">${this.esc(this.undoMessage)}</p>` : ""}`;
       btns = `${done ? `<button type="button" class="btn accent" data-fc-plan-undo><ha-icon icon="mdi:undo-variant"></ha-icon>${t("fcUndo")}</button>` : ""}<button type="button" class="btn primary" data-fc-plan-drop>${t("fcPlanOk")}</button>`;
     }

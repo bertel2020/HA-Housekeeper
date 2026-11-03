@@ -16,7 +16,7 @@ const EXPO_PLAN_KINDS = {
 
 // What the three dots of an entity row offer: one entity at a time for the sensitive ones, a jump to Home Assistant for voice names.
 const EXPO_ROW_MENU = {
-  sensitive_exposed: item => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${item.entity_id}"`]],
+  sensitive_exposed: (item, esc) => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${esc(item.entity_id)}"`]],
   alias_duplicate: () => [["mdi:open-in-new", "expoOpenNames", 'data-ha-path="/config/voice-assistants/expose"']],
 };
 
@@ -40,7 +40,7 @@ class ExposureMixin {
   // The bar over the table, as over the inventory: how many are ticked and what can be done with them.
   expoSelBar(source, rows) {
     const sel = this.expoSelOf(source.id), n = sel.size, tooMany = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
-    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n && !tooMany ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: source.label })}</button>`;
+    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n && !tooMany ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: this.esc(source.label) })}</button>`;
     return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-expo-sel-all="${this.esc(source.id)}" ${rows.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(rows.length) })}</button><button class="btn quiet" data-expo-sel-clear="${this.esc(source.id)}" ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn}</div>${this.viewCount(rows.length)}</div>${tooMany ? `<small class="error errpad" role="alert">${this.esc(this.t("stateTooMany", { max: MAX_PLAN_ACTIONS }))}</small>` : ""}`;
   }
 
@@ -156,7 +156,7 @@ class ExposureMixin {
         { key: "domain", label: "expoColDomain", dir: "asc", cell: item => this.esc(item.domain) },
         { key: "area", label: "expoColArea", dir: "asc", cell: item => (item.area ? this.esc(item.area) : `<span class="muted">—</span>`) },
         { key: "assistants", label: "expoColAssistants", sortable: false, cell: item => (item.assistants?.length ? this.esc(this.expoAssistantList(item.assistants)) : `<span class="muted">—</span>`) },
-        ...(EXPO_ROW_MENU[f.kind] ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(EXPO_ROW_MENU[f.kind](item)) }] : []),
+        ...(EXPO_ROW_MENU[f.kind] ? [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(EXPO_ROW_MENU[f.kind](item, v => this.esc(v))) }] : []),
       ],
     }) : "";
     const agents = f.integrations?.length ? this.sysList(`expofind_${f.kind}`, f.integrations, {

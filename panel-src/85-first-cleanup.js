@@ -582,10 +582,10 @@ class FirstCleanupMixin {
   wizardView() {
     this.ensureFirstCleanup();
     const fc = this.fc;
-    if (!fc && this.fcLoadError) return `<div class="stack"><section class="panel"><div class="pad">${this.notice("err", this.esc(this.fcLoadError))}<button type="button" class="btn" data-fc-retry>${this.t("actRetry")}</button></div></section></div>`;
+    if (!fc && this.fcLoadError) return `<div class="stack"><section class="panel"><div class="pad">${this.notice("err", this.fcLoadError)}<button type="button" class="btn" data-fc-retry>${this.t("actRetry")}</button></div></section></div>`;
     if (!fc) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section></div>`;
     if (this.fcWiz.step === null) this.fcWizSet(this.fcResumeStep());
-    const n = this.fcWiz.step, error = fc.error ? this.notice("warn", this.esc(fc.error)) : "";
+    const n = this.fcWiz.step, error = fc.error ? this.notice("warn", fc.error) : "";
     if (n === 0) return `<div class="stack">${error}${this.fcWelcome()}</div>`;
     const state = fc.state || { done: [] }, left = this.fcStaged().length;
     const counter = `<span class="fccounter">${this.t("fcCounter", { start: this.formatNumber(state.start_count), now: this.formatNumber(left), d: this.formatNumber(this.fcDecided()) })}</span>`;
