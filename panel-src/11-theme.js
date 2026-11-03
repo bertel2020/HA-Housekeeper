@@ -41,7 +41,7 @@ class ThemeMixin {
       this.prefs = prefs; this.pageSize = prefs.pageSize; this.pages = {};
       this.savePrefs(false);
       this.render();
-    } catch (_) { this._userPrefsEmpty = true; this.firstContact(); /* no user data available; local preferences stay */ }
+    } catch (_) { /* no answer is not an empty profile: the local preferences stay, and nothing is written over the stored ones */ }
   }
 
   savePrefs(sync = true) {

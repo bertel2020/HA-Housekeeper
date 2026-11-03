@@ -5985,6 +5985,23 @@ test("the note offered in a rule form is the one of the object the rule was open
   assert.ok(html.includes('data-exc-note-open="entity:sensor.z"') && !html.includes('data-fsel-state="mark"'));
 });
 
+test("a profile that cannot be read is not taken for an empty one, so nothing is written over it", async () => {
+  const { el } = panel("en");
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg.type); if (msg.type === "frontend/get_user_data") throw new Error("timeout"); return {}; } };
+  el._freshPrefs = true;
+  el.data = { ...DATA, meta: { ...DATA.meta, scanned_at: "2026-11-03T08:00:00+00:00" }, findings: [] };
+  el.render = () => {};
+  await el.loadUserPrefs();
+  assert.ok(!sent.includes("frontend/set_user_data"), "the stored profile is left alone");
+  assert.ok(!el._userPrefsEmpty);
+  const empty = panel("en").el;
+  empty._hass = { language: "en", callWS: async msg => { sent.push(msg.type); return msg.type === "frontend/get_user_data" ? {} : {}; } };
+  empty._freshPrefs = true; empty.data = el.data; empty.render = () => {};
+  await empty.loadUserPrefs();
+  assert.ok(empty._userPrefsEmpty, "an answer without a value is an empty profile");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
