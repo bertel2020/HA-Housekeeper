@@ -272,16 +272,17 @@ class SettingsMixin {
   // The form under the toolbar of the notes: a new review date or a new kind for all picked notes at once.
   markBulkForm(b, n) {
     const days = [30, 90, 180, 365, 0].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
+    const cancel = "data-mark-bulkcancel", save = `<button type="submit" class="btn primary">${this.t("saveOptions")}</button>`;
     if (b.kind === "review") {
-      return `<form class="polform bulkform" data-mark-bulkform><strong>${this.t("marksReviewTitle", { n: this.formatNumber(n) })}</strong>
-        <select data-mark-bulkdays aria-label="${this.esc(this.t("markReview"))}">${days}</select>
-        <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-bulkcancel>${this.t("cancelRun")}</button></form>`;
+      return `<form class="actionarea" data-mark-bulkform>${this.actionHead(this.t("marksReviewTitle", { n: this.formatNumber(n) }), cancel)}
+        <div class="statusrow"><select data-mark-bulkdays aria-label="${this.esc(this.t("markReview"))}">${days}</select></div>
+        ${this.actionFoot(cancel, save)}</form>`;
     }
     const kinds = this.markKindsFor(new Map([...this.markSel].map(k => [k, k])));
     const kind = b.markKind && kinds.includes(b.markKind) ? b.markKind : kinds[0];
-    return `<form class="polform bulkform" data-mark-bulkform><strong>${this.t("marksKindTitle", { n: this.formatNumber(n) })}</strong>
-      <select data-mark-bulkkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
-      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-bulkcancel>${this.t("cancelRun")}</button></form>`;
+    return `<form class="actionarea" data-mark-bulkform>${this.actionHead(this.t("marksKindTitle", { n: this.formatNumber(n) }), cancel)}
+      <div class="statusrow"><select data-mark-bulkkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select></div>
+      ${this.actionFoot(cancel, save)}</form>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.

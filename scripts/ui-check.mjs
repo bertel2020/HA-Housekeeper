@@ -51,6 +51,7 @@ const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", firstcleanup: "view=firstcleanup", inventory: "view=inventory", changes: "view=changes", monitor_editor: "view=monitor&editor=1",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
   attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", autopause: "view=autopause", checklog: "view=checklog", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  bulk_bat: "view=batteries&bulk=bat", bulk_unref: "view=unreferenced&bulk=unref", bulk_marks_review: "view=exceptions&bulk=marks-review", bulk_marks_kind: "view=exceptions&bulk=marks-kind",
 };
 const SCHEMES = ["light", "dark"];
 
@@ -273,6 +274,12 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
       { object_key: "automation:automation.a1", state: "ok", reason: "active" },
     ] };
     el.monitorQuery = "sensor";
+  }
+  if (q.get("bulk")) {
+    const ids = ["sensor.beispiel_1", "sensor.beispiel_2", "sensor.beispiel_3"], kind = q.get("bulk");
+    if (kind === "bat") { for (const o of el.data.objects) if (ids.includes(o.object_id)) { o.device_class = "battery"; o.status = "active"; o.state = "55"; o.unit = "%"; } el.batteryTrend = { available: true, rows: [], types: {}, custom_types: [] }; el.batSel = new Set(ids); el.batBulk = { type: "" }; }
+    else if (kind === "unref") { el.unrefSel = new Set(ids); el.unrefBulk = { days: 365, reason: "", markKind: "" }; }
+    else { el.viewTab = { ...(el.viewTab || {}), exceptions: "objects" }; el.markSel = new Set(el.data.objects.filter(o => o.mark).map(o => o.object_type + ":" + o.object_id)); el.markBulk = { kind: kind === "marks-kind" ? "kind" : "review", days: 365 }; }
   }
   if (q.get("graph")) { el.graphSelected = el.findObject(q.get("gobj")); el.graphDepth = 3; el.view = "graph"; }
   else if (q.get("object")) { await el.openObject(el.findObject(q.get("object"))); el.detailTab = q.get("tab") || "overview"; }

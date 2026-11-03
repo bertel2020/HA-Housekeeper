@@ -1558,7 +1558,7 @@ class StylesMixin {
       .sect{padding:14px 16px 6px;margin:0;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.05em;text-transform:uppercase;color:var(--hk-muted);font-weight:700}.viewdet{margin:4px 16px 12px;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);box-shadow:var(--hk-sh1),var(--hk-hi)}.viewcmp{margin:4px 16px 12px}.viewcmp td:first-child{font-weight:600;white-space:nowrap}
       .modelbl{margin-top:4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase;color:var(--hk-muted);font-weight:700}.viewchips i.okchip{border-color:color-mix(in srgb,var(--hk-green) 40%,var(--hk-border));color:color-mix(in srgb,var(--hk-green) 55%,var(--hk-text))}.viewchips i.nochip{border-color:color-mix(in srgb,var(--hk-amber) 45%,var(--hk-border));color:color-mix(in srgb,var(--hk-amber) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-amber) 8%,transparent)}
       .viewcmp td.yes{color:var(--hk-green);font-weight:700}.viewcmp td.no{color:color-mix(in srgb,var(--hk-amber) 70%,var(--hk-text));font-weight:600}.modefoot{display:flex;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1))}
-      .stickyhead{position:sticky;top:0;z-index:30}.modeopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:12px 16px 16px}.modeopt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);cursor:pointer}.modeopt.on{border-color:var(--hk-blue);box-shadow:0 0 0 1px var(--hk-blue)}.modeopt input{position:absolute;opacity:0;pointer-events:none}.modeopt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.modepanel{border-left:4px solid var(--hk-blue)}.bulkform{padding:0 14px 10px}.safebar{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:6px clamp(16px,2.4vw,32px);border-bottom:1px solid var(--hk-border);background:var(--hk-surface);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}
+      .stickyhead{position:sticky;top:0;z-index:30}.modeopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:12px 16px 16px}.modeopt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);cursor:pointer}.modeopt.on{border-color:var(--hk-blue);box-shadow:0 0 0 1px var(--hk-blue)}.modeopt input{position:absolute;opacity:0;pointer-events:none}.modeopt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.modepanel{border-left:4px solid var(--hk-blue)}.safebar{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:6px clamp(16px,2.4vw,32px);border-bottom:1px solid var(--hk-border);background:var(--hk-surface);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}
       .vacbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 16px;background:var(--hk-soft,#e6f0f8);border-bottom:1px solid var(--hk-border);border-left:4px solid #2f6fa3;font-size:14px}.vacbar b{color:#2f6fa3}.vacbar .sp{flex:1}.vacbar a{color:#2f6fa3;font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}.vacbar.warn{border-left-color:var(--hk-amber,#b57a0c)}.vacbar.warn b{color:var(--hk-amber,#b57a0c)}.vacbar.after{border-left-color:var(--hk-accent,#1d4a3f)}.vacbar.after b{color:var(--hk-accent,#1d4a3f)}
       .excform{display:grid;gap:14px;padding:14px 16px;border-top:2px solid var(--hk-blue);border-bottom:1px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface))}.excform .mfield{display:grid;gap:6px;min-width:0}.excform .mfield>span{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.excform .chip{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.excform .chip ha-icon{--mdc-icon-size:14px}.excform input[data-exc-search],.excform input[data-exc-note]{width:100%;box-sizing:border-box}.excact{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.excact input{width:5em}.effect{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:0;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-border);overflow:hidden}.effect>div{padding:8px 12px;min-width:0;background:var(--hk-soft)}.effect dt{font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:var(--hk-muted)}.effect dd{margin:2px 0 0;font-size:calc(13px*var(--hk-fs,1))}.effect .yes{font-weight:600;color:color-mix(in srgb,var(--hk-amber) 70%,var(--hk-text))}.effect .no{font-weight:600;color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}@media(max-width:700px){.effect{grid-template-columns:1fr}}.excprev{border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.excprev>summary{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;list-style:none}.excprev>summary::-webkit-details-marker{display:none}
 .excprev>summary::before{display:none}
@@ -4058,16 +4058,17 @@ class SettingsMixin {
   // The form under the toolbar of the notes: a new review date or a new kind for all picked notes at once.
   markBulkForm(b, n) {
     const days = [30, 90, 180, 365, 0].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
+    const cancel = "data-mark-bulkcancel", save = `<button type="submit" class="btn primary">${this.t("saveOptions")}</button>`;
     if (b.kind === "review") {
-      return `<form class="polform bulkform" data-mark-bulkform><strong>${this.t("marksReviewTitle", { n: this.formatNumber(n) })}</strong>
-        <select data-mark-bulkdays aria-label="${this.esc(this.t("markReview"))}">${days}</select>
-        <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-bulkcancel>${this.t("cancelRun")}</button></form>`;
+      return `<form class="actionarea" data-mark-bulkform>${this.actionHead(this.t("marksReviewTitle", { n: this.formatNumber(n) }), cancel)}
+        <div class="statusrow"><select data-mark-bulkdays aria-label="${this.esc(this.t("markReview"))}">${days}</select></div>
+        ${this.actionFoot(cancel, save)}</form>`;
     }
     const kinds = this.markKindsFor(new Map([...this.markSel].map(k => [k, k])));
     const kind = b.markKind && kinds.includes(b.markKind) ? b.markKind : kinds[0];
-    return `<form class="polform bulkform" data-mark-bulkform><strong>${this.t("marksKindTitle", { n: this.formatNumber(n) })}</strong>
-      <select data-mark-bulkkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
-      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-mark-bulkcancel>${this.t("cancelRun")}</button></form>`;
+    return `<form class="actionarea" data-mark-bulkform>${this.actionHead(this.t("marksKindTitle", { n: this.formatNumber(n) }), cancel)}
+      <div class="statusrow"><select data-mark-bulkkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select></div>
+      ${this.actionFoot(cancel, save)}</form>`;
   }
 
   // Numbers only, no names, ids or attributes: safe to attach to an issue on GitHub.
@@ -5960,11 +5961,12 @@ class UnusedMixin {
   unrefBulkForm(b, n) {
     const kinds = this.markKindsFor(new Map([["entity:x", "entity:x"]]));
     const days = [0, 30, 90, 180, 365].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
-    return `<form class="polform bulkform" data-unref-form><strong>${this.t("marksSetTitle", { n: this.formatNumber(n) })}</strong>
-      <select data-unref-kind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
+    const cancel = "data-unref-cancel";
+    return `<form class="actionarea" data-unref-form>${this.actionHead(this.t("marksSetTitle", { n: this.formatNumber(n) }), cancel)}
+      <div class="statusrow"><select data-unref-kind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
       <input data-unref-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
-      <select data-unref-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
-      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-unref-cancel>${this.t("cancelRun")}</button></form>`;
+      <select data-unref-days aria-label="${this.esc(this.t("markReview"))}">${days}</select></div>
+      ${this.actionFoot(cancel, `<button type="submit" class="btn primary">${this.t("saveOptions")}</button>`)}</form>`;
   }
 
   async commitUnrefBulk() {
@@ -17403,9 +17405,10 @@ class BatteryTableMixin {
   // The form under the toolbar of the batteries: one type for all picked ones.
   batteryBulkForm(b, n) {
     const options = this.batteryTypeChoices().map(o => `<option value="${this.esc(o)}" ${b.type === o ? "selected" : ""}>${this.esc(o)}</option>`).join("");
-    return `<form class="polform bulkform" data-bat-form><strong>${this.t("btTypeSetTitle", { n: this.formatNumber(n) })}</strong>
-      <select data-bat-type aria-label="${this.esc(this.t("btTypeSet"))}"><option value="">–</option>${options}</select>
-      <button type="submit" class="btn primary" ${b.type ? "" : "disabled"}>${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-bat-cancel>${this.t("cancelRun")}</button></form>`;
+    const cancel = "data-bat-cancel";
+    return `<form class="actionarea" data-bat-form>${this.actionHead(this.t("btTypeSetTitle", { n: this.formatNumber(n) }), cancel)}
+      <div class="statusrow"><select data-bat-type aria-label="${this.esc(this.t("btTypeSet"))}"><option value="">–</option>${options}</select></div>
+      ${this.actionFoot(cancel, `<button type="submit" class="btn primary" ${b.type ? "" : "disabled"}>${this.t("saveOptions")}</button>`)}</form>`;
   }
 
   async commitBatteryBulk() {
@@ -23155,7 +23158,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-bat-clear]")?.addEventListener("click", () => { batSel().clear(); this.batBulk = null; this.render(); });
     root.querySelector("[data-bat-bulk]")?.addEventListener("click", () => { this.batBulk = { type: "" }; this.render(); });
     root.querySelector("[data-bat-type]")?.addEventListener("change", ev => { this.batBulk.type = ev.target.value; this.render(); });
-    root.querySelector("[data-bat-cancel]")?.addEventListener("click", () => { this.batBulk = null; this.render(); });
+    root.querySelectorAll("[data-bat-cancel]").forEach(el => el.addEventListener("click", () => { this.batBulk = null; this.render(); }));
     root.querySelector("[data-bat-form]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitBatteryBulk(); });
     // The unreferenced entities: pick rows, then one object note for all of them.
     const unrefSel = () => (this.unrefSel ||= new Set());
@@ -23167,7 +23170,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-unref-kind]")?.addEventListener("change", ev => { this.unrefBulk.markKind = ev.target.value; });
     root.querySelector("[data-unref-reason]")?.addEventListener("input", ev => { this.unrefBulk.reason = ev.target.value; });
     root.querySelector("[data-unref-days]")?.addEventListener("change", ev => { this.unrefBulk.days = Number(ev.target.value); });
-    root.querySelector("[data-unref-cancel]")?.addEventListener("click", () => { this.unrefBulk = null; this.render(); });
+    root.querySelectorAll("[data-unref-cancel]").forEach(el => el.addEventListener("click", () => { this.unrefBulk = null; this.render(); }));
     root.querySelector("[data-unref-form]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitUnrefBulk(); });
     // The list of object notes: pick rows, then change the review date or the kind of the picked notes, or take them away.
     const markSel = () => (this.markSel ||= new Set());
@@ -23179,7 +23182,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-mark-bulk-remove]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmMarksRemove", { count: markSel().size }), () => this.removeMarks([...markSel()])));
     root.querySelector("[data-mark-bulkdays]")?.addEventListener("change", ev => { this.markBulk.days = Number(ev.target.value); });
     root.querySelector("[data-mark-bulkkind]")?.addEventListener("change", ev => { this.markBulk.markKind = ev.target.value; });
-    root.querySelector("[data-mark-bulkcancel]")?.addEventListener("click", () => { this.markBulk = null; this.render(); });
+    root.querySelectorAll("[data-mark-bulkcancel]").forEach(el => el.addEventListener("click", () => { this.markBulk = null; this.render(); }));
     root.querySelector("[data-mark-bulkform]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitMarkBulkEdit(); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
     // The list of decisions: pick rows, then take the picked decisions away; a resting one makes nothing visible.

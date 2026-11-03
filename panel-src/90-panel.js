@@ -1304,7 +1304,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-bat-clear]")?.addEventListener("click", () => { batSel().clear(); this.batBulk = null; this.render(); });
     root.querySelector("[data-bat-bulk]")?.addEventListener("click", () => { this.batBulk = { type: "" }; this.render(); });
     root.querySelector("[data-bat-type]")?.addEventListener("change", ev => { this.batBulk.type = ev.target.value; this.render(); });
-    root.querySelector("[data-bat-cancel]")?.addEventListener("click", () => { this.batBulk = null; this.render(); });
+    root.querySelectorAll("[data-bat-cancel]").forEach(el => el.addEventListener("click", () => { this.batBulk = null; this.render(); }));
     root.querySelector("[data-bat-form]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitBatteryBulk(); });
     // The unreferenced entities: pick rows, then one object note for all of them.
     const unrefSel = () => (this.unrefSel ||= new Set());
@@ -1316,7 +1316,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-unref-kind]")?.addEventListener("change", ev => { this.unrefBulk.markKind = ev.target.value; });
     root.querySelector("[data-unref-reason]")?.addEventListener("input", ev => { this.unrefBulk.reason = ev.target.value; });
     root.querySelector("[data-unref-days]")?.addEventListener("change", ev => { this.unrefBulk.days = Number(ev.target.value); });
-    root.querySelector("[data-unref-cancel]")?.addEventListener("click", () => { this.unrefBulk = null; this.render(); });
+    root.querySelectorAll("[data-unref-cancel]").forEach(el => el.addEventListener("click", () => { this.unrefBulk = null; this.render(); }));
     root.querySelector("[data-unref-form]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitUnrefBulk(); });
     // The list of object notes: pick rows, then change the review date or the kind of the picked notes, or take them away.
     const markSel = () => (this.markSel ||= new Set());
@@ -1328,7 +1328,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-mark-bulk-remove]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmMarksRemove", { count: markSel().size }), () => this.removeMarks([...markSel()])));
     root.querySelector("[data-mark-bulkdays]")?.addEventListener("change", ev => { this.markBulk.days = Number(ev.target.value); });
     root.querySelector("[data-mark-bulkkind]")?.addEventListener("change", ev => { this.markBulk.markKind = ev.target.value; });
-    root.querySelector("[data-mark-bulkcancel]")?.addEventListener("click", () => { this.markBulk = null; this.render(); });
+    root.querySelectorAll("[data-mark-bulkcancel]").forEach(el => el.addEventListener("click", () => { this.markBulk = null; this.render(); }));
     root.querySelector("[data-mark-bulkform]")?.addEventListener("submit", async ev => { ev.preventDefault(); await this.commitMarkBulkEdit(); });
     root.querySelectorAll("[data-watch-end]").forEach(el => el.onclick = () => this.askEndWatch());
     // The list of decisions: pick rows, then take the picked decisions away; a resting one makes nothing visible.

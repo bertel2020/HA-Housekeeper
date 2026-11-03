@@ -279,11 +279,12 @@ class UnusedMixin {
   unrefBulkForm(b, n) {
     const kinds = this.markKindsFor(new Map([["entity:x", "entity:x"]]));
     const days = [0, 30, 90, 180, 365].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
-    return `<form class="polform bulkform" data-unref-form><strong>${this.t("marksSetTitle", { n: this.formatNumber(n) })}</strong>
-      <select data-unref-kind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
+    const cancel = "data-unref-cancel";
+    return `<form class="actionarea" data-unref-form>${this.actionHead(this.t("marksSetTitle", { n: this.formatNumber(n) }), cancel)}
+      <div class="statusrow"><select data-unref-kind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
       <input data-unref-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
-      <select data-unref-days aria-label="${this.esc(this.t("markReview"))}">${days}</select>
-      <button type="submit" class="btn primary">${this.t("saveOptions")}</button><button type="button" class="btn quiet" data-unref-cancel>${this.t("cancelRun")}</button></form>`;
+      <select data-unref-days aria-label="${this.esc(this.t("markReview"))}">${days}</select></div>
+      ${this.actionFoot(cancel, `<button type="submit" class="btn primary">${this.t("saveOptions")}</button>`)}</form>`;
   }
 
   async commitUnrefBulk() {
