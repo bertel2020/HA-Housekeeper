@@ -69,9 +69,14 @@ Object.assign(TEXT.en, {
 
 class CheckLogMixin {
   async loadCheckLog() {
+    // Only the answer to the last question counts: a slow one for 90 days must not replace the one for 7.
+    const ask = this._clAsk = (this._clAsk || 0) + 1;
     this.clLoading = true;
-    try { this.checkLog = await this._hass.callWS({ type: "ha_housekeeper/check_log", days: this.clDays || 7, limit: 5000 }); this.clError = ""; this.markLoaded("checklog"); }
-    catch (err) { this.clError = this.errText(err); }
+    try {
+      const log = await this._hass.callWS({ type: "ha_housekeeper/check_log", days: this.clDays || 7, limit: 5000 });
+      if (ask !== this._clAsk) return;
+      this.checkLog = log; this.clError = ""; this.markLoaded("checklog");
+    } catch (err) { if (ask !== this._clAsk) return; this.clError = this.errText(err); }
     this.clLoading = false; this.render();
   }
 

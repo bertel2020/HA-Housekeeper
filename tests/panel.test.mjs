@@ -5944,6 +5944,19 @@ test("a second click on an action that is still running does nothing", async () 
   assert.equal(noted.length, 1, "one note for a double click");
 });
 
+test("the answer to an older question about the check log does not replace the newer one", async () => {
+  const { el } = panel("en");
+  const waits = [];
+  el._hass = { language: "en", callWS: msg => new Promise(resolve => waits.push(() => resolve({ days: msg.days, entries: [] }))) };
+  el.render = () => {}; el.markLoaded = () => {};
+  el.clDays = 90; const slow = el.loadCheckLog();
+  el.clDays = 7; const quick = el.loadCheckLog();
+  waits[1](); await quick;
+  waits[0](); await slow;
+  assert.equal(el.checkLog.days, 7, "the 90-day answer arrived last and was dropped");
+  assert.equal(el.clLoading, false);
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
