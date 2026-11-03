@@ -556,6 +556,7 @@ class FindingStatusMixin {
 
   bindFindingStatus(root) {
     root.querySelector("[data-fsel-exc]")?.addEventListener("click", () => this.openExceptionFor([...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean).map(f => this.findingKey(f))));
+    root.querySelectorAll("[data-exc-note-open]").forEach(el => el.onclick = () => { this.excForm = null; this.openMark(el.dataset.excNoteOpen); });
     root.querySelectorAll("[data-exc-for]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openExceptionFor([el.dataset.excFor]); });
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
     root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });

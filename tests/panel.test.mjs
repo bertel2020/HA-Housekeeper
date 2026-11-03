@@ -5972,6 +5972,19 @@ test("a decision for several findings that fails part way keeps the form and the
   assert.equal(JSON.stringify(sent), '["k1","k2"]');
 });
 
+test("the note offered in a rule form is the one of the object the rule was opened for, not of what is ticked", async () => {
+  const { el } = panel("en");
+  el._hass = { language: "en", callWS: async () => ({ rules: [], areas: [], integrations: [] }) };
+  el.exc = { rules: [], areas: [], integrations: [], days_max: 365 };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.z", name: "Z", platform: "demo", device_id: "d1" }, { object_type: "device", object_id: "d1", name: "Dev", config_entry_ids: [] }], findings: [{ key: "kz", rule_id: "entity.state_unavailable", object_id: "sensor.z", classification: "unavailable" }, { key: "ks", rule_id: "entity.state_unavailable", object_id: "sensor.a", classification: "unavailable" }] };
+  el.findSel = new Set(["ks"]); // another finding is ticked
+  el.render = () => {}; el.excPreview = () => {};
+  await el.openExceptionFor(["entity:sensor.z"]);
+  assert.deepEqual(JSON.parse(JSON.stringify(el.excForm.objectKeys)), ["entity:sensor.z"]);
+  const html = el.excFormHtml(el.excForm);
+  assert.ok(html.includes('data-exc-note-open="entity:sensor.z"') && !html.includes('data-fsel-state="mark"'));
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
@@ -6716,11 +6729,11 @@ test("an exception is added from the menu of a finding or the selection bar, wit
   el.view = "findingsNav";
   assert.ok(el.findingsView().includes("data-exc-form"));
   assert.ok(el.findingsView().includes('data-exp-menu="findings"') && !el.findingsView().includes("data-export="), "the shared export button, no CSV and JSON chips");
-  // a rule on one object points to the object note, which can take over from the same selection
-  el.findSel = new Set([finding.key]);
-  assert.ok(el.excFormHtml(el.excForm).includes('data-fsel-state="mark"') && el.excFormHtml(el.excForm).includes('class="effect"'), "one object: the object note is offered");
+  // a rule on one object points to the object note of that object, whatever is ticked in the list
   el.findSel = new Set();
-  assert.ok(!el.excFormHtml(el.excForm).includes('data-fsel-state="mark"'), "nothing a note could take: no offer");
+  assert.ok(el.excFormHtml(el.excForm).includes('data-exc-note-open="entity:light.a"') && el.excFormHtml(el.excForm).includes('class="effect"'), "one object: its object note is offered");
+  object.mark = { kind: "keep", reason: "x", at: "2026-10-01T00:00:00+00:00" };
+  assert.ok(!el.excFormHtml(el.excForm).includes("data-exc-note-open"), "the object has a note already: no offer");
 });
 
 test("the status of the selection is set in one form; an exception from a finding offers its device, area and integration", async () => {

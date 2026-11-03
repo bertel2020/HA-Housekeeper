@@ -13203,6 +13203,7 @@ class FindingStatusMixin {
 
   bindFindingStatus(root) {
     root.querySelector("[data-fsel-exc]")?.addEventListener("click", () => this.openExceptionFor([...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean).map(f => this.findingKey(f))));
+    root.querySelectorAll("[data-exc-note-open]").forEach(el => el.onclick = () => { this.excForm = null; this.openMark(el.dataset.excNoteOpen); });
     root.querySelectorAll("[data-exc-for]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openExceptionFor([el.dataset.excFor]); });
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
     root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
@@ -15118,8 +15119,10 @@ class ExceptionsMixin {
     const what = f.scopes ? `${preview}${this.excScopeCards(f)}${scopeChips}`
       : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
       <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
-    const single = f.here && (f.noteFor || (f.scopeSel === "objects" && f.picks.length === 1)) && this.markTargets().size > 0;
-    const noteHint = single ? `<div class="notice info outagehint"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t("excNoteHint"))}</p><button type="button" class="btn" data-fsel-state="mark"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button></div></div>` : "";
+    // The note it points to is the one of the object this rule was opened for, not of whatever is ticked in the list.
+    const noteKey = f.here && f.objectKeys?.length === 1 && MARK_TYPES.includes(f.objectKeys[0].split(":")[0]) && !this.findObject(f.objectKeys[0])?.mark ? f.objectKeys[0] : "";
+    const single = Boolean(noteKey) && (f.noteFor || (f.scopeSel === "objects" && f.picks.length === 1));
+    const noteHint = single ? `<div class="notice info outagehint"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t("excNoteHint"))}</p><button type="button" class="btn" data-exc-note-open="${this.esc(noteKey)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button></div></div>` : "";
     const noteField = `<label class="mfield"><span>${this.t("excNote")}</span><input data-exc-note maxlength="200" autocomplete="off" value="${this.esc(f.note)}"></label>`;
     const more = f.scopes ? `<small class="factnote">${this.t(single ? "excForMoreShort" : "excForMore")} <button type="button" class="link" data-exc-settings>${this.t("excForSettings")}</button></small>` : "";
     return `<form class="excform markform${f.here ? " actionarea" : ""}" data-exc-form>
@@ -15178,7 +15181,7 @@ class ExceptionsMixin {
     if (noteFor) scopes.splice(scopes.findIndex(x => x.id === "objects"), 1);
     if (!scopes.length) return;
     this.bulk = null;
-    this.excForm = { id: "", kind: "any", targets: [], picks: scopes[0].picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true, scopes, scopeSel: scopes[0].id, noteFor };
+    this.excForm = { id: "", kind: "any", targets: [], picks: scopes[0].picks, action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, here: true, scopes, scopeSel: scopes[0].id, noteFor, objectKeys: [...objectKeys] };
     this.render();
     this.shadowRoot?.querySelector?.("[data-exc-form]")?.scrollIntoView?.({ block: "nearest" });
     this.excPreview();
