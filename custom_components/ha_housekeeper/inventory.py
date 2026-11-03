@@ -2318,7 +2318,7 @@ class InventoryScanner:
             current = self.ignored.entry(undo["key"])
         else:
             current = self.marks.items.get(undo["key"])
-        return bool(current) and current.get("at") == after
+        return current is not None and current.get("at") == after
 
     def restore_decision(self, key: str, entry: dict[str, Any] | None) -> None:
         """Put the decision about a finding back as it was (``None``: there was none)."""
