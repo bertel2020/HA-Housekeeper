@@ -1012,9 +1012,8 @@ async def test_failure_info_reads_the_last_failed_run(hass: HomeAssistant, hass_
             "timestamp": {"start": "2026-10-21T09:00:00+00:00"},
         },
     ]
-    with patch(
-        "homeassistant.components.trace.util.async_list_traces", AsyncMock(return_value=heads)
-    ):
+    listed = AsyncMock(return_value=heads)
+    with patch("homeassistant.components.trace.util.async_list_traces", listed):
         await client.send_json_auto_id(
             {
                 "type": "ha_housekeeper/failure_info",
@@ -1026,6 +1025,35 @@ async def test_failure_info_reads_the_last_failed_run(hass: HomeAssistant, hass_
     failure = reply["result"]["failure"]
     assert failure["step"] == "action/2" and failure["error"] == "Entity cover.bath is unavailable"
     assert reply["result"]["hint"] is None  # nothing in the scan says cover.bath is down
+    # Home Assistant keeps its traces under "<domain>.<id>"; a bare id finds nothing.
+    listed.assert_awaited_once_with(hass, "automation", "automation.f1")
+
+
+async def test_failure_and_run_list_ask_for_the_whole_trace_key_and_cut_addresses(
+    hass: HomeAssistant,
+) -> None:
+    """The error text keeps the host of an address only; the run list asks for the key Home Assistant uses."""
+    from custom_components.ha_housekeeper.failure_info import last_failure
+    from custom_components.ha_housekeeper.trace_compare import list_runs
+
+    heads = [
+        {
+            "run_id": "r1",
+            "state": "stopped",
+            "script_execution": "error",
+            "error": "Call to https://hooks.example.com/abc/def?token=secret failed",
+            "timestamp": {"start": "2026-10-22T09:00:00+00:00"},
+        }
+    ]
+    listed = AsyncMock(return_value=heads)
+    with patch("homeassistant.components.trace.util.async_list_traces", listed):
+        failure = await last_failure(hass, "script", "s1")
+        await list_runs(hass, "automation.a1")
+    assert failure and failure["error"] == "Call to https://hooks.example.com failed"
+    assert [c.args[1:] for c in listed.await_args_list] == [
+        ("script", "script.s1"),
+        ("automation", "automation.a1"),
+    ]
 
 
 async def test_fix_check_looks_at_the_live_state_and_closes_nothing(

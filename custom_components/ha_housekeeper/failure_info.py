@@ -1,7 +1,8 @@
 """The last failed run of an automation or script, and a hint from its error text.
 
 Read from the short heads of Home Assistant's own trace buffer, on request, in memory; nothing is kept and no
-variable is read. The error text is shortened. A hint only names an entity of the text that is down itself:
+variable is read. The error text is shortened, and an address in it keeps its host only (a path or query may
+carry a token). A hint only names an entity of the text that is down itself:
 the text says that a call failed, not why, so the hint is never more than "look there".
 """
 
@@ -16,6 +17,7 @@ from .runs import _parse
 
 ERROR_MAX = 300
 _ENTITY = re.compile(r"\b[a-z_]+\.[a-z0-9_]+\b")
+_URL_TAIL = re.compile(r"(https?://[^\s/?#]+)[^\s]*")
 
 
 def item_id_of(snapshot: dict[str, Any], finding: dict[str, Any]) -> str | None:
@@ -39,7 +41,7 @@ async def last_failure(hass: HomeAssistant, domain: str, item_id: str) -> dict[s
     from homeassistant.components.trace.util import async_list_traces  # noqa: PLC0415
 
     try:
-        heads = await async_list_traces(hass, domain, item_id)
+        heads = await async_list_traces(hass, domain, f"{domain}.{item_id}")
     except Exception:  # noqa: BLE001 - the buffer is Home Assistant's; no trace is no answer
         return None
     failed = [
@@ -57,7 +59,7 @@ async def last_failure(hass: HomeAssistant, domain: str, item_id: str) -> dict[s
         "run_id": head.get("run_id"),
         "at": start.isoformat() if start else None,
         "step": head.get("last_step"),
-        "error": str(head.get("error") or "")[:ERROR_MAX] or None,
+        "error": _URL_TAIL.sub(r"\1", str(head.get("error") or ""))[:ERROR_MAX] or None,
     }
 
 
