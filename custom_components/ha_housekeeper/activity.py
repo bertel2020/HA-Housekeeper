@@ -24,11 +24,26 @@ KEEP_DAYS: Final = 365
 TEXT_LIMIT: Final = 300
 PAGE_LIMIT: Final = 100
 SOURCES: Final = ("cleanup", "list", "plan", "mcp", "system")
-UNDO_KINDS: Final = ("ignore", "mark", "plan")  # what an undo reference can point at
+UNDO_KINDS: Final = ("ignore", "ignore_many", "mark", "plan")  # what an undo reference can point at
+BULK_ITEMS: Final = 1000  # decisions one entry of a bulk action can take back
 
 
 def _text(value: Any, limit: int = TEXT_LIMIT) -> str | None:
     return value.strip()[:limit] or None if isinstance(value, str) else None
+
+
+def _bulk_items(value: Any) -> list[dict[str, Any]]:
+    if not isinstance(value, list):
+        return []
+    return [
+        {
+            "key": key,
+            "previous": item["previous"] if isinstance(item.get("previous"), dict) else None,
+            "after": _text(item.get("after"), 40),
+        }
+        for item in value[:BULK_ITEMS]
+        if isinstance(item, dict) and (key := _text(item.get("key")))
+    ]
 
 
 def _clean(value: Any) -> dict[str, Any] | None:
@@ -43,6 +58,7 @@ def _clean(value: Any) -> dict[str, Any] | None:
     if not entry_id or not at or not action or value.get("kind") not in KINDS:
         return None
     undo = value.get("undo")
+    count = value.get("count")
     return {
         "id": entry_id,
         "at": at,
@@ -54,12 +70,17 @@ def _clean(value: Any) -> dict[str, Any] | None:
         "until": _text(value.get("until"), 40),
         "by": _text(value.get("by"), 80),
         "source": value["source"] if value.get("source") in SOURCES else None,
+        "count": count
+        if isinstance(count, int) and not isinstance(count, bool) and count > 0
+        else None,
         "undo": {
             "type": undo["type"],
             "key": _text(undo.get("key")) or "",
             "previous": undo["previous"] if isinstance(undo.get("previous"), dict) else None,
             # The time of the entry the action left behind: an undo applies only while it is still that one.
             "after": _text(undo.get("after"), 40),
+            # A bulk action is one entry; each decision it made keeps what it was before and what it left.
+            "items": _bulk_items(undo.get("items")),
         }
         if isinstance(undo, dict) and undo.get("type") in UNDO_KINDS
         else None,
@@ -102,9 +123,10 @@ class ActivityStore:
         until: str | None = None,
         by: str | None = None,
         source: str | None = None,
+        count: int | None = None,
         undo: dict[str, Any] | None = None,
     ) -> None:
-        """Append one entry; an unknown kind is dropped."""
+        """Append one entry (``count``: how many things a bulk action touched); an unknown kind is dropped."""
         entry = _clean(
             {
                 "id": secrets.token_hex(6),
@@ -117,6 +139,7 @@ class ActivityStore:
                 "until": until,
                 "by": by,
                 "source": source,
+                "count": count,
                 "undo": undo,
             }
         )
@@ -254,7 +277,11 @@ class ActivityStore:
                 {
                     **e,
                     "undo": e["undo"]
-                    and {k: v for k, v in e["undo"].items() if k not in ("previous", "after")},
+                    and {
+                        k: v
+                        for k, v in e["undo"].items()
+                        if k not in ("previous", "after", "items")
+                    },
                 }
                 for e in page
             ],

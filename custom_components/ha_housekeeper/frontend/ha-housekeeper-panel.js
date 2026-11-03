@@ -21185,7 +21185,7 @@ class ActivityMixin {
   }
 
   activityRow(e) {
-    const what = e.name || e.key || "";
+    const what = e.name || e.key || (e.count ? this.t("actCount", { n: e.count }) : "");
     const details = [
       e.source ? this.t(`actSource_${e.source}`) : "",
       e.by_name || "",
@@ -21240,7 +21240,7 @@ class ActivityMixin {
 Object.assign(TEXT.de, {
   actTab: "Aktivität", actTabHint: "Was in Housekeeper getan wurde: Entscheidungen, Objekt-Notizen, Pläne, Logbuch.",
   actvTitle: "Aktivität", actHint: "Alles, was getan wurde, das Neueste zuerst. Was von selbst geschah, zeigt der Filter „Automatisch“.",
-  actSearch: "Suchen nach Name, Grund oder Benutzer", actCsv: "Als CSV", actRetry: "Erneut versuchen", actvMore: "Ältere laden",
+  actSearch: "Suchen nach Name, Grund oder Benutzer", actCsv: "Als CSV", actRetry: "Erneut versuchen", actvMore: "Ältere laden", actCount: "{n} Befunde",
   actToday: "Heute", actYesterday: "Gestern", actUntil: "bis {date}", actTakenOver: "nachträglich übernommen", actUndo: "Rückgängig", actOpenJournal: "Im Journal öffnen",
   actEmpty: "Noch nichts zu zeigen.", actEmptyNext: "Hier erscheint, was entschieden, vermerkt oder ausgeführt wird.",
   actFilter_all: "Alle", actFilter_decision: "Entscheidungen", actFilter_mark: "Objekt-Notizen", actFilter_plan: "Pläne", actFilter_note: "Logbuch", actFilter_auto: "Automatisch",
@@ -21252,7 +21252,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   actTab: "Activity", actTabHint: "What was done in Housekeeper: decisions, object notes, plans, logbook.",
   actvTitle: "Activity", actHint: "Everything that was done, newest first. What happened by itself shows under the filter “Automatic”.",
-  actSearch: "Search by name, reason or user", actCsv: "As CSV", actRetry: "Try again", actvMore: "Load older",
+  actSearch: "Search by name, reason or user", actCsv: "As CSV", actRetry: "Try again", actvMore: "Load older", actCount: "{n} findings",
   actToday: "Today", actYesterday: "Yesterday", actUntil: "until {date}", actTakenOver: "taken over later", actUndo: "Undo", actOpenJournal: "Open in the Journal",
   actEmpty: "Nothing to show yet.", actEmptyNext: "What is decided, marked or run shows up here.",
   actFilter_all: "All", actFilter_decision: "Decisions", actFilter_mark: "Object notes", actFilter_plan: "Plans", actFilter_note: "Logbook", actFilter_auto: "Automatic",

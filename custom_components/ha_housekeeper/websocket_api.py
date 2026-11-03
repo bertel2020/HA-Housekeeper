@@ -614,6 +614,21 @@ def websocket_activity_undo(
     if not undo:
         connection.send_error(msg["id"], "not_found", "Nothing to undo for this entry")
         return
+    if undo["type"] == "ignore_many":
+        restored = scanner.restore_decisions(undo["items"])
+        if not restored:
+            connection.send_error(
+                msg["id"],
+                "conflict_changed",
+                "It was changed after this action; nothing was undone",
+            )
+            return
+        scanner.activity.drop_undo(msg["entry_id"])
+        connection.send_result(
+            msg["id"],
+            {"undone": True, "restored": restored, "skipped": len(undo["items"]) - restored},
+        )
+        return
     if undo["type"] in ("ignore", "mark") and not scanner.stands_as_left(undo):
         connection.send_error(
             msg["id"], "conflict_changed", "It was changed after this action; nothing was undone"

@@ -2099,3 +2099,48 @@ async def test_an_undo_in_the_activity_leaves_a_later_decision_alone(
         "success"
     ]
     assert scanner.ignored.entry("k1") is None
+
+
+async def test_putting_the_rest_off_is_one_line_in_the_activity_with_one_undo(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """A bulk action writes one entry for all its findings; its undo takes back what is still as it left it."""
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    snapshot = await scanner.async_scan()
+    snapshot["findings"] = [
+        {
+            "key": f"k{number}",
+            "object_id": f"sensor.s{number}",
+            "topic": "down",
+            "impact": "low",
+            "classification": "x",
+            "rule_id": "entity.stale",
+            "object_type": "entity",
+        }
+        for number in range(3)
+    ]
+
+    async def call(payload):
+        await client.send_json_auto_id(payload)
+        return await client.receive_json()
+
+    assert scanner.snooze_many(["k0", "k1", "k2"], 30, "later", None, "cleanup") == 3
+    page = (await call({"type": "ha_housekeeper/activity", "kinds": ["decision"]}))["result"]
+    assert page["total"] == 1
+    entry = page["items"][0]
+    assert entry["count"] == 3 and entry["key"] is None and entry["undo"]["type"] == "ignore_many"
+    # k1 is decided again afterwards: its line is left alone, the other two go back.
+    await call(
+        {
+            "type": "ha_housekeeper/ignore",
+            "finding_key": "k1",
+            "ignored": True,
+            "kind": "keep",
+            "reason": "r",
+            "days": 30,
+        }
+    )
+    reply = await call({"type": "ha_housekeeper/activity_undo", "entry_id": entry["id"]})
+    assert reply["success"] and reply["result"] == {"undone": True, "restored": 2, "skipped": 1}
+    assert scanner.ignored.entry("k0") is None and scanner.ignored.entry("k2") is None
+    assert scanner.ignored.entry("k1")["kind"] == "keep"

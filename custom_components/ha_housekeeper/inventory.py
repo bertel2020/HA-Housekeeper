@@ -2338,6 +2338,7 @@ class InventoryScanner:
         now = datetime.now(UTC)
         found = {f["key"]: f for f in (self._snapshot or {}).get("findings", [])}
         registry = er.async_get(self.hass)
+        put_off: list[tuple[str, dict[str, Any], dict[str, Any] | None]] = []
         done = 0
         for key in keys:
             finding = found.get(key)
@@ -2354,11 +2355,53 @@ class InventoryScanner:
             ):
                 continue
             self._mark_ignored(finding, registry)
+            put_off.append((key, finding, previous))
+            done += 1
+        if len(put_off) == 1:
+            key, finding, previous = put_off[0]
             self._record_decision(
                 key, True, "snooze", reason, days, now, by, source, finding, previous
             )
+        elif put_off:
+            # One line for the whole action, so a bulk does not push the rest of the history out.
+            self.activity.record(
+                "decision",
+                "snooze",
+                now,
+                reason=reason or None,
+                until=(now + timedelta(days=days)).isoformat(),
+                by=by,
+                source=source,
+                count=len(put_off),
+                undo={
+                    "type": "ignore_many",
+                    "key": "",
+                    "previous": None,
+                    "items": [
+                        {"key": key, "previous": previous, "after": now.isoformat()}
+                        for key, _, previous in put_off
+                    ],
+                },
+            )
+        if done:
+            self._after_decisions()
+        return done
+
+    def restore_decisions(self, items: list[dict[str, Any]]) -> int:
+        """Take back the decisions of a bulk action that are still as it left them; how many were."""
+        found = {f["key"]: f for f in (self._snapshot or {}).get("findings", [])}
+        registry = er.async_get(self.hass)
+        done = 0
+        for item in items:
+            current = self.ignored.entry(item["key"])
+            if item.get("after") is not None and (current or {}).get("at") != item["after"]:
+                continue
+            self.ignored.restore(item["key"], item["previous"])
+            if (finding := found.get(item["key"])) is not None:
+                self._mark_ignored(finding, registry)
             done += 1
         if done:
+            self.activity.record("decision", "undo", datetime.now(UTC), count=done)
             self._after_decisions()
         return done
 
