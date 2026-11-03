@@ -6066,6 +6066,15 @@ test("the actions of a row of the round, the activity and the history of the cle
   assert.ok(act.includes('class="rowmenu"') && act.includes('data-act-undo="x"') && !act.includes('class="btn quiet" data-act-undo'));
 });
 
+test("the steps have names, and a tile that acts at once is not a toggle", () => {
+  const { el } = panel("en");
+  el.fc = { state: { done: [1] }, stages: {} };
+  const steps = el.fcStepper(3);
+  assert.ok(/aria-label="Stage 1 · [^"]+"/.test(steps) || /aria-label="[^"]*1[^"]*"/.test(steps), "a step button has a name, not only a digit");
+  assert.ok(!el.fcAct('data-x="1"', "Take", "hint").includes("aria-pressed"), "no state for a tile that acts at once");
+  assert.ok(el.fcAct('data-x="1"', "Keep", "hint", false, "", "", false, false).includes('aria-pressed="false"'), "a tile that is chosen or not says so");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

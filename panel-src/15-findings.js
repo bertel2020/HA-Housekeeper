@@ -444,7 +444,7 @@ class FindingsMixin {
   // A critical object (label, lock, alarm, detector) keeps "intended" only for a time; the facts say so.
   findingCritical(f) { return Boolean(f) && (f.impact_facts || []).some(x => x.fact === "critical"); }
 
-  // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after 90, hidden for good.
+  // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after a year (a critical object: 90 days where the person chooses none), hidden for good.
   defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 365 : 0; }
 
   // What a failing automation rests on: the counts of the window.

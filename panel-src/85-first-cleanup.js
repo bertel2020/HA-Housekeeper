@@ -171,7 +171,7 @@ class FirstCleanupMixin {
       const isDone = done.includes(i) && !this.stageCount(i), back = i < n && n <= 5;
       const cls = `fcstep${isDone ? " done" : ""}${i === n ? " cur" : ""}`;
       const label = this.t("fcStage", { n: i });
-      return `<${back ? "button type=\"button\"" : "span"} class="${cls}" ${back ? `data-fc-goto="${i}"` : ""} ${i === n ? "aria-current=\"step\"" : ""} title="${this.esc(`${label} · ${this.t(`fcStage${i}`)}`)}"><b>${isDone ? "✓" : i}</b></${back ? "button" : "span"}>`;
+      return `<${back ? "button type=\"button\"" : "span"} class="${cls}" ${back ? `data-fc-goto="${i}"` : ""} ${i === n ? "aria-current=\"step\"" : ""} aria-label="${this.esc(`${label} · ${this.t(`fcStage${i}`)}${isDone ? ` · ${this.t("fcStageClear")}` : ""}`)}" title="${this.esc(`${label} · ${this.t(`fcStage${i}`)}`)}"><b>${isDone ? "✓" : i}</b></${back ? "button" : "span"}>`;
     });
     return `<nav class="fcsteps" aria-label="${this.esc(this.t("fcStepsLabel"))}">${steps.join('<i class="fcline"></i>')}</nav>`;
   }
@@ -389,8 +389,9 @@ class FirstCleanupMixin {
   }
 
   // One action of a card: what it is called and, in a line, what it does.
-  fcAct(attr, label, hint, primary = false, icon = "", tone = "", rec = false, sel = false, scope = "") {
-    return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${sel ? " sel" : ""}${tone ? ` ${tone}` : ""}" aria-pressed="${sel}" ${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small>${scope ? `<span class="fcscope">${scope}</span>` : ""}</span></button>`;
+  // ``sel`` says whether a tile is chosen; a tile that does something at once has no such state and passes nothing.
+  fcAct(attr, label, hint, primary = false, icon = "", tone = "", rec = false, sel = null, scope = "") {
+    return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${sel ? " sel" : ""}${tone ? ` ${tone}` : ""}" ${sel === null ? "" : `aria-pressed="${sel}" `}${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small>${scope ? `<span class="fcscope">${scope}</span>` : ""}</span></button>`;
   }
 
   // A card shows with a short slide-in when it is a new one; renders of the same card within the moment keep it running.

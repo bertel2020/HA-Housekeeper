@@ -218,7 +218,7 @@ class CausesMixin {
   decideTabs(f, on) {
     const object = this.findObject(this.findingKey(f));
     if (f.ignored || !object || !MARK_TYPES.includes(object.object_type) || object.mark) return "";
-    return `<div class="dtabs" role="tablist"><button type="button" class="${on === "status" ? "on" : ""}" data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "ignore"}">${this.t("decideTabStatus")}</button><button type="button" class="${on === "mark" ? "on" : ""}" data-watch-mark="${this.esc(this.findingKey(f))}">${this.t("decideTabMark")}</button></div>`;
+    return `<div class="dtabs" role="tablist"><button type="button" role="tab" aria-selected="${on === "status"}" class="${on === "status" ? "on" : ""}" data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "ignore"}">${this.t("decideTabStatus")}</button><button type="button" role="tab" aria-selected="${on === "mark"}" class="${on === "mark" ? "on" : ""}" data-watch-mark="${this.esc(this.findingKey(f))}">${this.t("decideTabMark")}</button></div>`;
   }
 
   causeEntry(c) {

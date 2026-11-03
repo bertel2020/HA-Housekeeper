@@ -3386,7 +3386,7 @@ class FindingsMixin {
   // A critical object (label, lock, alarm, detector) keeps "intended" only for a time; the facts say so.
   findingCritical(f) { return Boolean(f) && (f.impact_facts || []).some(x => x.fact === "critical"); }
 
-  // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after 90, hidden for good.
+  // How long a status holds unless chosen otherwise: "later" 30 days, "intended" looked at again after a year (a critical object: 90 days where the person chooses none), hidden for good.
   defaultDays(kind) { return kind === "snooze" ? 30 : kind === "keep" ? 365 : 0; }
 
   // What a failing automation rests on: the counts of the window.
@@ -10776,7 +10776,7 @@ class CausesMixin {
   decideTabs(f, on) {
     const object = this.findObject(this.findingKey(f));
     if (f.ignored || !object || !MARK_TYPES.includes(object.object_type) || object.mark) return "";
-    return `<div class="dtabs" role="tablist"><button type="button" class="${on === "status" ? "on" : ""}" data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "ignore"}">${this.t("decideTabStatus")}</button><button type="button" class="${on === "mark" ? "on" : ""}" data-watch-mark="${this.esc(this.findingKey(f))}">${this.t("decideTabMark")}</button></div>`;
+    return `<div class="dtabs" role="tablist"><button type="button" role="tab" aria-selected="${on === "status"}" class="${on === "status" ? "on" : ""}" data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "ignore"}">${this.t("decideTabStatus")}</button><button type="button" role="tab" aria-selected="${on === "mark"}" class="${on === "mark" ? "on" : ""}" data-watch-mark="${this.esc(this.findingKey(f))}">${this.t("decideTabMark")}</button></div>`;
   }
 
   causeEntry(c) {
@@ -20278,7 +20278,7 @@ class FixMixin {
     if (!f) return `<div class="stack">${step(3, "fixStepCheck", `${this.fixCheckedFrom ? this.notice("info", this.t("fixDone")) : this.notice("info", this.t("fixGone"))}`)}<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div></div>`;
     const cur = Math.min(this.fixStep || 1, this.fixMax || 1), max = this.fixMax || 1, planOpen = Boolean(this.fcPlanKey && this.plan);
     const names = ["fixStepUnderstand", "fixStepRun", "fixStepCheck"];
-    const bar = `<div class="fctop"><nav class="fcsteps" aria-label="${this.esc(this.t("fixTitle"))}">${names.map((n, i) => `<button type="button" class="fcstep${i + 1 < cur ? " done" : ""}${i + 1 === cur ? " cur" : ""}" data-fix-step="${i + 1}" title="${this.esc(this.t(n))}" ${i + 1 === cur ? 'aria-current="step"' : ""} ${i + 1 > max ? "disabled" : ""}><b>${i + 1 < cur ? "✓" : i + 1}</b></button>`).join('<i class="fcline"></i>')}</nav></div>`;
+    const bar = `<div class="fctop"><nav class="fcsteps" aria-label="${this.esc(this.t("fixTitle"))}">${names.map((n, i) => `<button type="button" class="fcstep${i + 1 < cur ? " done" : ""}${i + 1 === cur ? " cur" : ""}" data-fix-step="${i + 1}" title="${this.esc(this.t(n))}" aria-label="${this.esc(`${this.t("fixStepOf", { n: i + 1 })} · ${this.t(n)}`)}" ${i + 1 === cur ? 'aria-current="step"' : ""} ${i + 1 > max ? "disabled" : ""}><b>${i + 1 < cur ? "✓" : i + 1}</b></button>`).join('<i class="fcline"></i>')}</nav></div>`;
     const nav = (back, next) => !back && !next ? "" : `<div class="panel fcfoot"><button type="button" class="btn" ${back ? `data-fix-step="${back}"` : "disabled"}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fixBack")}</button><span class="fcprogress"></span>${next ? `<button type="button" class="btn primary" data-fix-step="${next}">${this.t("fixNext")}</button>` : ""}</div>`;
     let body;
     if (cur === 1) body = `${step(1, "fixStepUnderstand", `${this.fixUnderstand(f)}<h4 class="fixsub">${this.t("fixStepDecide")}</h4>${this.fixDecide(f)}`)}${this.fixCollect(f)}${nav(0, 0)}`;
@@ -20668,7 +20668,7 @@ class FirstCleanupMixin {
       const isDone = done.includes(i) && !this.stageCount(i), back = i < n && n <= 5;
       const cls = `fcstep${isDone ? " done" : ""}${i === n ? " cur" : ""}`;
       const label = this.t("fcStage", { n: i });
-      return `<${back ? "button type=\"button\"" : "span"} class="${cls}" ${back ? `data-fc-goto="${i}"` : ""} ${i === n ? "aria-current=\"step\"" : ""} title="${this.esc(`${label} · ${this.t(`fcStage${i}`)}`)}"><b>${isDone ? "✓" : i}</b></${back ? "button" : "span"}>`;
+      return `<${back ? "button type=\"button\"" : "span"} class="${cls}" ${back ? `data-fc-goto="${i}"` : ""} ${i === n ? "aria-current=\"step\"" : ""} aria-label="${this.esc(`${label} · ${this.t(`fcStage${i}`)}${isDone ? ` · ${this.t("fcStageClear")}` : ""}`)}" title="${this.esc(`${label} · ${this.t(`fcStage${i}`)}`)}"><b>${isDone ? "✓" : i}</b></${back ? "button" : "span"}>`;
     });
     return `<nav class="fcsteps" aria-label="${this.esc(this.t("fcStepsLabel"))}">${steps.join('<i class="fcline"></i>')}</nav>`;
   }
@@ -20886,8 +20886,9 @@ class FirstCleanupMixin {
   }
 
   // One action of a card: what it is called and, in a line, what it does.
-  fcAct(attr, label, hint, primary = false, icon = "", tone = "", rec = false, sel = false, scope = "") {
-    return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${sel ? " sel" : ""}${tone ? ` ${tone}` : ""}" aria-pressed="${sel}" ${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small>${scope ? `<span class="fcscope">${scope}</span>` : ""}</span></button>`;
+  // ``sel`` says whether a tile is chosen; a tile that does something at once has no such state and passes nothing.
+  fcAct(attr, label, hint, primary = false, icon = "", tone = "", rec = false, sel = null, scope = "") {
+    return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${sel ? " sel" : ""}${tone ? ` ${tone}` : ""}" ${sel === null ? "" : `aria-pressed="${sel}" `}${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small>${scope ? `<span class="fcscope">${scope}</span>` : ""}</span></button>`;
   }
 
   // A card shows with a short slide-in when it is a new one; renders of the same card within the moment keep it running.
