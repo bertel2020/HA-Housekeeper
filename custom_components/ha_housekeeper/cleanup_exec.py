@@ -1739,7 +1739,9 @@ class CleanupRunner:
                 return "entity_changed"
             return None if now["on"] else "now_blocked"
         if kind in EXPOSURE_KINDS:
-            now = exposure_edit.prepare(self.hass, object_id, action["target"])
+            now = exposure_edit.prepare(
+                self.hass, object_id, action["target"], action.get("only") or ()
+            )
             if not now["exists"]:
                 return "entity_gone"
             if action.get("fingerprint") is None or now["fingerprint"] != action["fingerprint"]:

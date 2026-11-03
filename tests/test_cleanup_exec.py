@@ -1433,6 +1433,8 @@ async def test_switching_off_the_automatic_exposure_of_new_entities_is_verified_
 async def test_a_plan_limited_to_one_assistant_leaves_the_others_and_survives_a_renewal(
     hass: HomeAssistant,
 ) -> None:
+    from unittest.mock import patch
+
     from homeassistant.components.homeassistant.exposed_entities import async_expose_entity
     from homeassistant.setup import async_setup_component
 
@@ -1463,6 +1465,11 @@ async def test_a_plan_limited_to_one_assistant_leaves_the_others_and_survives_a_
         "a renewed plan keeps to the assistant"
     )
     scanner.journal.add(plan)
+
+    # A YAML filter of another assistant is no reason to stop a plan that leaves that assistant alone.
+    with patch.object(exposure_edit, "yaml_filter", lambda _hass, name: name == "cloud.alexa"):
+        context = {"snapshot": {}, "acknowledged": set()}
+        assert await scanner.cleanup._precheck(action, context) is None
 
     await run(scanner, plan)
     assert exposure_edit.prepare(hass, entry.entity_id, "remove")["assistants"] == ["cloud.alexa"]
