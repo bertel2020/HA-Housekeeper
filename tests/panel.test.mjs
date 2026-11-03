@@ -5864,6 +5864,20 @@ test("removing several object notes runs once, and a reload that fails afterward
   assert.equal(el.markSel.size, 0);
 });
 
+test("the ways of a finding show on the card of the cleanup in the stages that stay on the list", async () => {
+  const { el } = panel("en");
+  el._hass = { language: "en", callWS: async () => ({ ways: [{ id: "w" }] }) };
+  el.data = { ...DATA, findings: [{ key: "k", rule_id: "entity.state_unavailable", object_id: "sensor.a" }] };
+  let renders = 0;
+  el.render = () => { renders++; };
+  el.view = "findingsNav"; el.fixKey = "k"; el.fixWays = null;
+  await el.loadFixWays("k");
+  assert.equal(renders, 0, "on the plain list nothing is open");
+  el.fcWiz = { step: 1, on: true }; el.fcFixOpen = "entity:sensor.a";
+  await el.loadFixWays("k");
+  assert.equal(renders, 1, "on the card of stage 1 the ways appear at once");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
