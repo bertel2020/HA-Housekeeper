@@ -446,6 +446,12 @@ class FindingStatusMixin {
 
   // Takes the marks off the objects that hide the picked findings; one mark covers all findings of its object.
   async clearSelectedMarks() {
+    if (this._marksBusy) return;
+    this._marksBusy = true;
+    try { await this.clearOwnersMarks(); } finally { this._marksBusy = false; }
+  }
+
+  async clearOwnersMarks() {
     const owners = new Map();
     for (const f of this.selectionFacts().mark) { const o = this.markOwner(f); owners.set(o, [...(owners.get(o) || []), f.key]); }
     const failed = await this.runBulk([...owners.keys()], async owner => {

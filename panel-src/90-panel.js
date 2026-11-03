@@ -1195,7 +1195,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (findPage) { findPage.indeterminate = findPage.hasAttribute("data-partial"); findPage.onchange = ev => { (this._findPage || []).forEach(key => (ev.target.checked ? this.findSel.add(key) : this.findSel.delete(key))); this.render(); }; }
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
     root.querySelector("[data-fsel-unhide]")?.addEventListener("click", () => this.unhideSelectedFindings());
-    root.querySelector("[data-fsel-markclear]")?.addEventListener("click", () => this.clearSelectedMarks());
+    root.querySelector("[data-fsel-markclear]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmMarksRemove", { count: this.selectionFacts().mark.length }), () => this.clearSelectedMarks()));
     root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());
     root.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { this.pickRows("sel", el.dataset.sel, el.checked, this.cleanupSel, this._cleanupVisible); this.render(); });
     root.querySelector("[data-sel-page]")?.addEventListener("change", ev => { (this._cleanupVisible || []).forEach(id => (ev.target.checked ? this.cleanupSel.add(id) : this.cleanupSel.delete(id))); this.render(); });
@@ -1305,11 +1305,7 @@ class HAHousekeeperPanel extends HTMLElement {
     if (markPage) { markPage.indeterminate = markPage.hasAttribute("data-partial"); markPage.onchange = ev => { root.querySelectorAll("[data-mark-sel]").forEach(x => (ev.target.checked ? markSel().add(x.dataset.markSel) : markSel().delete(x.dataset.markSel))); this.render(); }; }
     root.querySelector("[data-mark-selclear]")?.addEventListener("click", () => { markSel().clear(); this.markBulk = null; this.render(); });
     root.querySelectorAll("[data-mark-bulk]").forEach(el => el.onclick = () => { this.markBulk = { kind: el.dataset.markBulk, days: 365, markKind: "" }; this.render(); });
-    root.querySelector("[data-mark-bulk-remove]")?.addEventListener("click", async () => {
-      await this.runBulk([...markSel()], async key => { const [object_type, ...rest] = key.split(":"); await this._hass.callWS({ type: "ha_housekeeper/mark_clear", object_type, object_id: rest.join(":") }); markSel().delete(key); });
-      await this.refreshData();
-      this.render();
-    });
+    root.querySelector("[data-mark-bulk-remove]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmMarksRemove", { count: markSel().size }), () => this.removeMarks([...markSel()])));
     root.querySelector("[data-mark-bulkdays]")?.addEventListener("change", ev => { this.markBulk.days = Number(ev.target.value); });
     root.querySelector("[data-mark-bulkkind]")?.addEventListener("change", ev => { this.markBulk.markKind = ev.target.value; });
     root.querySelector("[data-mark-bulkcancel]")?.addEventListener("click", () => { this.markBulk = null; this.render(); });

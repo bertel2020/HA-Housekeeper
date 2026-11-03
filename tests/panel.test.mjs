@@ -5850,6 +5850,20 @@ test("rule changes are saved one after the other on the rules as they are then, 
   assert.ok(el.t("confirmExcRules", { count: 3 }).includes("3") && el.t("confirmExcRule") !== "confirmExcRule", "deleting a rule or several asks first");
 });
 
+test("removing several object notes runs once, and a reload that fails afterwards is reported, not thrown", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg.object_id); await new Promise(r => setTimeout(r, 2)); return {}; } };
+  el.markSel = new Set(["device:d1", "entity:sensor.a"]);
+  const shown = [];
+  el.refreshData = async () => { throw new Error("offline"); };
+  el.failed = err => shown.push(err.message); el.render = () => {};
+  await Promise.all([el.removeMarks(["device:d1", "entity:sensor.a"]), el.removeMarks(["device:d1", "entity:sensor.a"])]);
+  assert.deepEqual(calls, ["d1", "sensor.a"], "the second click did nothing");
+  assert.deepEqual(shown, ["offline"]);
+  assert.equal(el.markSel.size, 0);
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
