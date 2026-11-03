@@ -107,7 +107,7 @@ DISABLEABLE_STATUSES = frozenset({"orphaned", "unavailable", "unknown"})
 # The reason of an entity whose loaded integration no longer provides it (see inventory).
 NOT_PROVIDED = "not_provided"
 PLAN_MAX_AGE_HOURS = 24
-MAX_ACTIONS = 200
+MAX_ACTIONS = 250
 # Only previews that were never started are limited by number; they cannot be confirmed after
 # PLAN_MAX_AGE_HOURS anyway. Plans that ran are never dropped by position (their data is needed for
 # undo, restore and the start of the quarantine); when the journal grows too large the oldest ones

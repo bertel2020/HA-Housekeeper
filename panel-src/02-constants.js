@@ -25,7 +25,7 @@ const DONE_RESULTS = Object.fromEntries([
   ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["set_expose_new", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"],
 ]);
 
-const MAX_PLAN_ACTIONS = 200; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
+const MAX_PLAN_ACTIONS = 250; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
 const PREFS_KEY = "ha_housekeeper.prefs";
 // A mark on an object that has run this many days without a gap asks whether it is still needed.
 const MARK_QUIET_DAYS = 30;

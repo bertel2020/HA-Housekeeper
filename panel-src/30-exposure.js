@@ -39,9 +39,9 @@ class ExposureMixin {
 
   // The bar over the table, as over the inventory: how many are ticked and what can be done with them.
   expoSelBar(source, rows) {
-    const sel = this.expoSelOf(source.id), n = sel.size, tooMany = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
-    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n && !tooMany ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: this.esc(source.label) })}</button>`;
-    return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-expo-sel-all="${this.esc(source.id)}" ${rows.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(rows.length) })}</button><button class="btn quiet" data-expo-sel-clear="${this.esc(source.id)}" ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn}</div>${this.viewCount(rows.length)}</div>${tooMany ? `<small class="error errpad" role="alert">${this.esc(this.t("stateTooMany", { max: MAX_PLAN_ACTIONS }))}</small>` : ""}`;
+    const sel = this.expoSelOf(source.id), n = sel.size, over = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
+    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: this.esc(source.label) })}</button>`;
+    return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-expo-sel-all="${this.esc(source.id)}" ${rows.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(rows.length) })}</button><button class="btn quiet" data-expo-sel-clear="${this.esc(source.id)}" ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn}</div>${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   bindExpoSel(root) {
@@ -62,11 +62,12 @@ class ExposureMixin {
 
   // A plan that takes the ticked entities (or one) out of the one assistant whose list is open; the others keep them.
   async makeExposureFrom(sourceId, ids) {
-    const list = (ids || [...this.expoSelOf(sourceId)]).slice(0, MAX_PLAN_ACTIONS);
+    const chosen = ids || [...this.expoSelOf(sourceId)], list = chosen.slice(0, MAX_PLAN_ACTIONS);
     if (!list.length) return;
     try {
       if (!await this.newPlan(list.map(object_id => ({ kind: "set_exposure", object_id, target: "remove", assistants: [sourceId] })))) return;
-      this.expoSelOf(sourceId).clear();
+      if (!ids) this.expoSelOf(sourceId).clear();
+      if (!ids) for (const id of chosen.slice(MAX_PLAN_ACTIONS)) this.expoSelOf(sourceId).add(id);
       this._exposureRequested = false;
     } catch (err) { this.failed(err); }
     this.render();
