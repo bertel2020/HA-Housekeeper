@@ -3480,8 +3480,17 @@ class FindingsMixin {
     if (d.kind === "keep" && !d.reason.trim()) { d.error = "decideNeedReason"; this.render(); return; }
     if (d.kind === "snooze" && !Number(d.days)) d.days = 30;
     if (d.kind === "keep" && d.critical && !Number(d.days)) d.days = 90;
+    const keys = d.keys || [d.key], decided = [];
+    // What was decided goes into the history of the cleanup, also when a later one of the same action failed.
+    const record = () => {
+      if (!d.fc || !decided.length) return;
+      try {
+        const first = decided[0], owner = decided.length > 1 ? this.ownerKey(first) : this.findingKey(first);
+        this.fcNotify(this.fcLogAdd({ stage: this.fcWiz?.step, key: first.key, keys: decided.map(x => x.key), n: decided.length, action: d.kind === "keep" ? "keep" : d.kind === "snooze" ? "later" : "hidden", name: this.findObject(owner)?.name || first.object_id }));
+      } catch (err) { this.noteError?.("action", err); }  // the history is a convenience; the decision stands
+      if (decided.some(x => x.key === this.fcFocus)) this.fcFocus = "";
+    };
     try {
-      const keys = d.keys || [d.key], decided = [];
       for (const key of keys) {
         const msg = { type: "ha_housekeeper/ignore", finding_key: key, ignored: true, kind: d.kind, reason: d.reason.trim(), ...(d.fc ? { source: "cleanup" } : {}) };
         if (Number(d.days)) msg.days = Number(d.days);
@@ -3496,17 +3505,20 @@ class FindingsMixin {
           this._rev++;
         }
       }
-      if (d.fc && decided.length) {
-        const first = decided[0], owner = decided.length > 1 ? this.ownerKey(first) : this.findingKey(first);
-        this.fcNotify(this.fcLogAdd({ stage: this.fcWiz?.step, key: first.key, keys: decided.map(x => x.key), n: decided.length, action: d.kind === "keep" ? "keep" : d.kind === "snooze" ? "later" : "hidden", name: this.findObject(owner)?.name || first.object_id }));
-        if (decided.some(x => x.key === this.fcFocus)) this.fcFocus = "";
-      }
+      record();
       this.decide = null;
       this.render();
       await this.reloadAfterDecision();
       return;
-    } catch (err) { this.failed(err); this.decide = null; }
+    } catch (err) {
+      // The form stays open with the reason the person typed; the ones already decided are not sent again.
+      record();
+      if (d.keys && decided.length) d.keys = keys.filter(k => !decided.some(x => x.key === k));
+      d.error = this.errText(err);
+      if (decided.length) this.noteError?.("action", err);
+    }
     this.render();
+    if (decided.length) await this.reloadAfterDecision();
   }
 
   // The findings of one object with what can be decided about each; the detail page shows them in the card of actions.

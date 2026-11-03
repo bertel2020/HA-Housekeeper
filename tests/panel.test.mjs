@@ -5957,6 +5957,21 @@ test("the answer to an older question about the check log does not replace the n
   assert.equal(el.clLoading, false);
 });
 
+test("a decision for several findings that fails part way keeps the form and the reason, logs what was decided, and does not send it again", async () => {
+  const { el } = panel("en");
+  const sent = [], logged = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg.finding_key); if (msg.finding_key === "k2") throw Object.assign(new Error("offline"), { code: "unknown_error" }); return {}; } };
+  el.data = { ...DATA, findings: ["k1", "k2"].map(k => ({ key: k, rule_id: "entity.stale", object_id: `sensor.${k}`, ignored: false })) };
+  el.decide = { key: "k1", keys: ["k1", "k2"], kind: "keep", reason: "so it is", days: 30, fc: true, error: "" };
+  el.fcLogAdd = e => { logged.push(e); return e; }; el.fcNotify = () => {};
+  el.render = () => {}; el.reloadAfterDecision = async () => {};
+  await el.commitDecide();
+  assert.ok(el.decide && el.decide.reason === "so it is" && el.decide.error, "the form stays open with what was typed");
+  assert.equal(JSON.stringify(el.decide.keys), '["k2"]', "k1 is decided and not sent again");
+  assert.equal(JSON.stringify(logged.map(e => e.keys)), '[["k1"]]');
+  assert.equal(JSON.stringify(sent), '["k1","k2"]');
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
