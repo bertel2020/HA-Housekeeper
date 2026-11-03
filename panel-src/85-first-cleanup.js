@@ -333,7 +333,7 @@ class FirstCleanupMixin {
   // Every decision of the tour, the newest first, each with its way back.
   fcHistoryPanel() {
     const log = [...this.fcLogGet()].reverse();
-    const rows = log.map(e => `<li><span class="fchstage">${this.t("fcStage", { n: e.stage })}</span><span class="fchtext">${e.name ? `<b>${this.esc(e.name)}</b> · ` : ""}${this.esc(this.fcEntryLabel(e))}</span><button type="button" class="btn" data-fc-undo="${this.esc(e.id)}">${this.t("fcUndo")}</button></li>`).join("");
+    const rows = log.map(e => `<li><span class="fchstage">${this.t("fcStage", { n: e.stage })}</span><span class="fchtext">${e.name ? `<b>${this.esc(e.name)}</b> · ` : ""}${this.esc(this.fcEntryLabel(e))}</span>${this.rowMenuHtml([["mdi:undo", "fcUndo", `data-fc-undo="${this.esc(e.id)}"`]])}</li>`).join("");
     return `<section class="panel fcpanel"><div class="panelhead"><div><h2>${this.t("fcHistory")}</h2><p>${this.t("fcHistoryHint")}</p></div></div>${rows ? `<ul class="fchist">${rows}</ul>` : `<div class="emptymsg">${this.t("fcHistoryNone")}</div>`}${this.fc?.state?.log_dropped ? `<p class="factnote pad">${this.t("fcHistoryCut", { n: this.formatNumber(this.fc.state.log_dropped) })}</p>` : ""}<div class="pad mbtns"><button type="button" class="btn primary" data-fc-history="0">${this.t("fcHistoryBack")}</button></div></section>`;
   }
 

@@ -12732,7 +12732,7 @@ class FindingStatusMixin {
 
   // What the person decided about this object, above all tabs of its page: a decided finding (known, snoozed, hidden) and a mark.
   statusBand(item, key) {
-    const change = this.hasActionsTab(item, key) ? `<button class="btn" data-detail-tab="actions">${this.t("bandChange")}</button>` : "";
+    const change = this.hasActionsTab(item, key) ? ["mdi:pencil-outline", "bandChange", 'data-detail-tab="actions"'] : null;
     const rows = (this.data?.findings || []).filter(f => f.ignored && f.ignored_by !== "mark" && this.findingKey(f) === key).map(f => {
       const info = f.ignore_info, byLabel = f.ignored_by === "label";
       const title = f.ignored_by === "rule" ? this.t("hidByRule") : byLabel ? this.t("bandByLabel") : info ? this.t(`decideKind_${info.kind}`) : this.t("ignoredLabel");
@@ -12740,12 +12740,12 @@ class FindingStatusMixin {
       const also = (f.also || []).map(a => a.by === "mark" ? this.t("alsoMark", { kind: this.t(`mark_${a.kind}`) }) : this.t(`also_${a.by}`));
       const alsoLine = also.length ? this.t(f.ignored_by === "user" ? "alsoUndo" : "alsoLine", { by: also.join(", ") }) : "";
       const note = [until, info?.reason, f.ignored_by === "rule" ? this.findingRuleLine(f) : "", alsoLine].filter(Boolean).join(" · ");
-      const undo = f.ignored_by === "user" ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0">${this.t("bandUndo")}</button>` : "";
-      return `<div class="row" data-status-band="finding"><span class="tile mute"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc([this.findingTitle(f), note].filter(Boolean).join(" · "))}</small></span>${change}${undo}</div>`;
+      const undo = f.ignored_by === "user" ? ["mdi:eye-outline", "bandUndo", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`] : null;
+      return `<div class="row" data-status-band="finding"><span class="tile mute"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc([this.findingTitle(f), note].filter(Boolean).join(" · "))}</small></span>${this.rowMenuHtml([change, undo])}</div>`;
     });
     if (item.mark) {
-      const clear = MARK_TYPES.includes(item.object_type) ? `<button class="btn quiet" data-mark-clear="${this.esc(key)}">${this.t("bandRemoveMark")}</button>` : "";
-      rows.push(`<div class="row" data-status-band="mark"><span class="tile ${item.mark_due ? "warn" : "mute"}"><ha-icon icon="mdi:bookmark-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("bandMark", { kind: this.t(`mark_${item.mark.kind}`) }))}</strong><small>${this.esc(this.markLine(item.mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}</small></span>${change}${clear}</div>`);
+      const clear = MARK_TYPES.includes(item.object_type) ? ["mdi:bookmark-remove-outline", "bandRemoveMark", `data-mark-clear="${this.esc(key)}"`] : null;
+      rows.push(`<div class="row" data-status-band="mark"><span class="tile ${item.mark_due ? "warn" : "mute"}"><ha-icon icon="mdi:bookmark-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("bandMark", { kind: this.t(`mark_${item.mark.kind}`) }))}</strong><small>${this.esc(this.markLine(item.mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}</small></span>${this.rowMenuHtml([change, clear])}</div>`);
     }
     return rows.length ? `<div class="panel u-mb14">${rows.join("")}</div>` : "";
   }
@@ -20411,12 +20411,13 @@ class RoundMixin {
     const action = { remove_entity: "roundRemove", delete_automation: "roundDelete", disable_entity: "roundDisable", merge: "roundMerge" }[r.kind];
     const reasons = (r.reasons || []).filter(x => x !== "config_rewrite").map(x => this.t(`reason_${x}`)).join(" ");
     const box = r.kind !== "merge" && r.group !== "blocked" ? `<input type="checkbox" data-round-pick="${this.esc(r.finding_key)}" ${picked.has(r.finding_key) ? "checked" : ""} aria-label="${this.esc(r.name)}">` : "";
-    const keep = `<button type="button" class="btn quiet" data-round-keep="${this.esc(r.finding_key)}">${this.t("roundKeep")}</button>`;
-    const main = r.group === "blocked" ? "" : r.kind === "merge"
-      ? (r.duplicate_of ? `<button type="button" class="btn" data-round-merge="${this.esc(r.object_id)}" data-round-into="${this.esc(r.duplicate_of)}">${this.t(action)}</button>` : "")
-      : `<button type="button" class="btn" data-round-one="${this.esc(r.finding_key)}">${this.t(action)}</button>`;
+    const keep = ["mdi:check-circle-outline", "roundKeep", `data-round-keep="${this.esc(r.finding_key)}"`];
+    const icon = { remove_entity: "mdi:delete-outline", delete_automation: "mdi:delete-outline", disable_entity: "mdi:cancel", merge: "mdi:call-merge" }[r.kind] || "mdi:play-outline";
+    const main = r.group === "blocked" ? null : r.kind === "merge"
+      ? (r.duplicate_of ? [icon, action, `data-round-merge="${this.esc(r.object_id)}" data-round-into="${this.esc(r.duplicate_of)}"`] : null)
+      : [icon, action, `data-round-one="${this.esc(r.finding_key)}"`];
     const why = r.kind === "merge" ? this.t("roundDuplicateOf", { name: r.duplicate_of || "?" }) : [r.first_step ? this.t("roundFirstStep") : "", reasons].filter(Boolean).join(" · ");
-    return `<div class="row${box ? "" : " fixway"}">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${main}${keep}</div>`;
+    return `<div class="row${box ? "" : " fixway"}">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${this.rowMenuHtml([main, keep])}</div>`;
   }
 
   roundGroup(title, hint, rows, picked, withAll) {
@@ -20829,7 +20830,7 @@ class FirstCleanupMixin {
   // Every decision of the tour, the newest first, each with its way back.
   fcHistoryPanel() {
     const log = [...this.fcLogGet()].reverse();
-    const rows = log.map(e => `<li><span class="fchstage">${this.t("fcStage", { n: e.stage })}</span><span class="fchtext">${e.name ? `<b>${this.esc(e.name)}</b> · ` : ""}${this.esc(this.fcEntryLabel(e))}</span><button type="button" class="btn" data-fc-undo="${this.esc(e.id)}">${this.t("fcUndo")}</button></li>`).join("");
+    const rows = log.map(e => `<li><span class="fchstage">${this.t("fcStage", { n: e.stage })}</span><span class="fchtext">${e.name ? `<b>${this.esc(e.name)}</b> · ` : ""}${this.esc(this.fcEntryLabel(e))}</span>${this.rowMenuHtml([["mdi:undo", "fcUndo", `data-fc-undo="${this.esc(e.id)}"`]])}</li>`).join("");
     return `<section class="panel fcpanel"><div class="panelhead"><div><h2>${this.t("fcHistory")}</h2><p>${this.t("fcHistoryHint")}</p></div></div>${rows ? `<ul class="fchist">${rows}</ul>` : `<div class="emptymsg">${this.t("fcHistoryNone")}</div>`}${this.fc?.state?.log_dropped ? `<p class="factnote pad">${this.t("fcHistoryCut", { n: this.formatNumber(this.fc.state.log_dropped) })}</p>` : ""}<div class="pad mbtns"><button type="button" class="btn primary" data-fc-history="0">${this.t("fcHistoryBack")}</button></div></section>`;
   }
 
@@ -21301,8 +21302,8 @@ class ActivityMixin {
       e.backfilled ? this.t("actTakenOver") : "",
     ].filter(Boolean).join(" · ");
     const undo = !e.undo || e.action === "undo" ? ""
-      : e.undo.type === "plan" ? `<button type="button" class="btn quiet" data-jump="journal" data-jump-tab="plans">${this.t("actOpenJournal")}</button>`
-      : `<button type="button" class="btn quiet" data-act-undo="${this.esc(e.id)}">${this.t("actUndo")}</button>`;
+      : e.undo.type === "plan" ? this.rowMenuHtml([["mdi:open-in-new", "actOpenJournal", 'data-jump="journal" data-jump-tab="plans"']])
+      : this.rowMenuHtml([["mdi:undo", "actUndo", `data-act-undo="${this.esc(e.id)}"`]]);
     return `<li class="actrow"><span class="tile mute"><ha-icon icon="${this.activityIcon(e)}"></ha-icon></span><span class="acttext"><strong>${this.esc(this.activityVerb(e))}</strong>${what ? ` ${this.esc(what)}` : ""}${details ? `<small>${this.esc(details)}</small>` : ""}</span><time datetime="${this.esc(e.at)}" title="${this.esc(this.formatDate(e.at))}">${this.esc(new Intl.DateTimeFormat(this.lang, { timeStyle: "short" }).format(new Date(e.at)))}</time>${undo}</li>`;
   }
 

@@ -54,8 +54,8 @@ class ActivityMixin {
       e.backfilled ? this.t("actTakenOver") : "",
     ].filter(Boolean).join(" · ");
     const undo = !e.undo || e.action === "undo" ? ""
-      : e.undo.type === "plan" ? `<button type="button" class="btn quiet" data-jump="journal" data-jump-tab="plans">${this.t("actOpenJournal")}</button>`
-      : `<button type="button" class="btn quiet" data-act-undo="${this.esc(e.id)}">${this.t("actUndo")}</button>`;
+      : e.undo.type === "plan" ? this.rowMenuHtml([["mdi:open-in-new", "actOpenJournal", 'data-jump="journal" data-jump-tab="plans"']])
+      : this.rowMenuHtml([["mdi:undo", "actUndo", `data-act-undo="${this.esc(e.id)}"`]]);
     return `<li class="actrow"><span class="tile mute"><ha-icon icon="${this.activityIcon(e)}"></ha-icon></span><span class="acttext"><strong>${this.esc(this.activityVerb(e))}</strong>${what ? ` ${this.esc(what)}` : ""}${details ? `<small>${this.esc(details)}</small>` : ""}</span><time datetime="${this.esc(e.at)}" title="${this.esc(this.formatDate(e.at))}">${this.esc(new Intl.DateTimeFormat(this.lang, { timeStyle: "short" }).format(new Date(e.at)))}</time>${undo}</li>`;
   }
 

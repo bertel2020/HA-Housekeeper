@@ -6056,6 +6056,16 @@ test("a finding is found by its key through one map", () => {
   assert.equal(JSON.stringify(el.pickedFindings().map(f => f.key)), '["a"]');
 });
 
+test("the actions of a row of the round, the activity and the history of the cleanup are in the row menu, not buttons", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [] };
+  const row = el.roundRow({ finding_key: "k1", object_type: "entity", object_id: "sensor.a", name: "A", kind: "remove_entity", group: "safe", reasons: [] }, new Set());
+  assert.ok(row.includes('class="rowmenu"') && row.includes('data-round-one="k1"') && row.includes('data-round-keep="k1"'));
+  assert.ok(!/<button type="button" class="btn[^"]*" data-round-(one|keep)/.test(row), "no button of its own in the row");
+  const act = el.activityRow({ id: "x", at: new Date().toISOString(), kind: "decision", action: "keep", key: "k", undo: { type: "ignore", key: "k" } });
+  assert.ok(act.includes('class="rowmenu"') && act.includes('data-act-undo="x"') && !act.includes('class="btn quiet" data-act-undo'));
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

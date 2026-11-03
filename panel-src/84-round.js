@@ -30,12 +30,13 @@ class RoundMixin {
     const action = { remove_entity: "roundRemove", delete_automation: "roundDelete", disable_entity: "roundDisable", merge: "roundMerge" }[r.kind];
     const reasons = (r.reasons || []).filter(x => x !== "config_rewrite").map(x => this.t(`reason_${x}`)).join(" ");
     const box = r.kind !== "merge" && r.group !== "blocked" ? `<input type="checkbox" data-round-pick="${this.esc(r.finding_key)}" ${picked.has(r.finding_key) ? "checked" : ""} aria-label="${this.esc(r.name)}">` : "";
-    const keep = `<button type="button" class="btn quiet" data-round-keep="${this.esc(r.finding_key)}">${this.t("roundKeep")}</button>`;
-    const main = r.group === "blocked" ? "" : r.kind === "merge"
-      ? (r.duplicate_of ? `<button type="button" class="btn" data-round-merge="${this.esc(r.object_id)}" data-round-into="${this.esc(r.duplicate_of)}">${this.t(action)}</button>` : "")
-      : `<button type="button" class="btn" data-round-one="${this.esc(r.finding_key)}">${this.t(action)}</button>`;
+    const keep = ["mdi:check-circle-outline", "roundKeep", `data-round-keep="${this.esc(r.finding_key)}"`];
+    const icon = { remove_entity: "mdi:delete-outline", delete_automation: "mdi:delete-outline", disable_entity: "mdi:cancel", merge: "mdi:call-merge" }[r.kind] || "mdi:play-outline";
+    const main = r.group === "blocked" ? null : r.kind === "merge"
+      ? (r.duplicate_of ? [icon, action, `data-round-merge="${this.esc(r.object_id)}" data-round-into="${this.esc(r.duplicate_of)}"`] : null)
+      : [icon, action, `data-round-one="${this.esc(r.finding_key)}"`];
     const why = r.kind === "merge" ? this.t("roundDuplicateOf", { name: r.duplicate_of || "?" }) : [r.first_step ? this.t("roundFirstStep") : "", reasons].filter(Boolean).join(" · ");
-    return `<div class="row${box ? "" : " fixway"}">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${main}${keep}</div>`;
+    return `<div class="row${box ? "" : " fixway"}">${box}<span class="row-text"><strong>${this.esc(r.name)}</strong><small>${this.esc([finding ? this.findingTitle(finding) : "", why].filter(Boolean).join(" · "))}</small></span>${this.rowMenuHtml([main, keep])}</div>`;
   }
 
   roundGroup(title, hint, rows, picked, withAll) {

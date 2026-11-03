@@ -82,7 +82,7 @@ class FindingStatusMixin {
 
   // What the person decided about this object, above all tabs of its page: a decided finding (known, snoozed, hidden) and a mark.
   statusBand(item, key) {
-    const change = this.hasActionsTab(item, key) ? `<button class="btn" data-detail-tab="actions">${this.t("bandChange")}</button>` : "";
+    const change = this.hasActionsTab(item, key) ? ["mdi:pencil-outline", "bandChange", 'data-detail-tab="actions"'] : null;
     const rows = (this.data?.findings || []).filter(f => f.ignored && f.ignored_by !== "mark" && this.findingKey(f) === key).map(f => {
       const info = f.ignore_info, byLabel = f.ignored_by === "label";
       const title = f.ignored_by === "rule" ? this.t("hidByRule") : byLabel ? this.t("bandByLabel") : info ? this.t(`decideKind_${info.kind}`) : this.t("ignoredLabel");
@@ -90,12 +90,12 @@ class FindingStatusMixin {
       const also = (f.also || []).map(a => a.by === "mark" ? this.t("alsoMark", { kind: this.t(`mark_${a.kind}`) }) : this.t(`also_${a.by}`));
       const alsoLine = also.length ? this.t(f.ignored_by === "user" ? "alsoUndo" : "alsoLine", { by: also.join(", ") }) : "";
       const note = [until, info?.reason, f.ignored_by === "rule" ? this.findingRuleLine(f) : "", alsoLine].filter(Boolean).join(" · ");
-      const undo = f.ignored_by === "user" ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0">${this.t("bandUndo")}</button>` : "";
-      return `<div class="row" data-status-band="finding"><span class="tile mute"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc([this.findingTitle(f), note].filter(Boolean).join(" · "))}</small></span>${change}${undo}</div>`;
+      const undo = f.ignored_by === "user" ? ["mdi:eye-outline", "bandUndo", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`] : null;
+      return `<div class="row" data-status-band="finding"><span class="tile mute"><ha-icon icon="mdi:bookmark-check-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(title)}</strong><small>${this.esc([this.findingTitle(f), note].filter(Boolean).join(" · "))}</small></span>${this.rowMenuHtml([change, undo])}</div>`;
     });
     if (item.mark) {
-      const clear = MARK_TYPES.includes(item.object_type) ? `<button class="btn quiet" data-mark-clear="${this.esc(key)}">${this.t("bandRemoveMark")}</button>` : "";
-      rows.push(`<div class="row" data-status-band="mark"><span class="tile ${item.mark_due ? "warn" : "mute"}"><ha-icon icon="mdi:bookmark-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("bandMark", { kind: this.t(`mark_${item.mark.kind}`) }))}</strong><small>${this.esc(this.markLine(item.mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}</small></span>${change}${clear}</div>`);
+      const clear = MARK_TYPES.includes(item.object_type) ? ["mdi:bookmark-remove-outline", "bandRemoveMark", `data-mark-clear="${this.esc(key)}"`] : null;
+      rows.push(`<div class="row" data-status-band="mark"><span class="tile ${item.mark_due ? "warn" : "mute"}"><ha-icon icon="mdi:bookmark-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(this.t("bandMark", { kind: this.t(`mark_${item.mark.kind}`) }))}</strong><small>${this.esc(this.markLine(item.mark))}${item.mark_due ? ` · ${this.t("markDue")}` : ""}</small></span>${this.rowMenuHtml([change, clear])}</div>`);
     }
     return rows.length ? `<div class="panel u-mb14">${rows.join("")}</div>` : "";
   }
