@@ -28,7 +28,7 @@ from . import criteria as criteria_module
 from . import db_health as db_health_module
 from . import reliability as reliability_module
 from . import storms as storms_module
-from .backup_health import backup_health
+from .central_log import log_tick
 from .const import (
     CONF_HISTORY_DAYS,
     CONF_LOW_BATTERY_PERCENT,
@@ -56,7 +56,7 @@ from .const import (
 )
 from .db_health import sample_size
 from .inventory import InventoryScanner
-from .issues import async_clear_issues, async_sync_flapping_issue
+from .issues import async_clear_issues
 from .maintenance import recorder_costs
 from .outage_levels import thresholds_from_options
 from .queries import REFRESH_AGE, REFRESH_TICK, next_reply
@@ -66,8 +66,7 @@ from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, retryable_gaps
 from .scan_trigger import ScanRefused
 from .services import async_register_services
 from .start_times import integration_rows, process_started
-from .system_checks import scan_check, system_checks
-from .system_usage import disk_usage, memory, system_light
+from .system_usage import system_light
 from .watch import UPDATE_ENTITIES
 from .websocket_api import async_register as async_register_websocket
 
@@ -271,24 +270,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
 
     entry.async_on_unload(async_track_time_interval(hass, _heartbeat, timedelta(minutes=5)))
 
+    log_memo: dict[str, Any] = {}
+
     async def _log_tick(_: Any) -> None:
-        # Passive: the central log only reads what a check says anyway, every five minutes.
-        if not hass.is_running:
-            return
-        try:
-            await backup_health(hass, scanner.attest, scanner.journal.plans, scanner.events)
-            disk, ram = await hass.async_add_executor_job(
-                lambda: (disk_usage(hass.config.config_dir), memory())
-            )
-            scanner.events.observe_checks(
-                "system", system_checks(disk, ram, scanner.events.levels), datetime.now(UTC)
-            )
-            scanner.events.observe_checks(
-                "scan", scan_check(scanner.health_report()), datetime.now(UTC)
-            )
-            async_sync_flapping_issue(hass, scanner.events.flapping(datetime.now(UTC)))
-        except Exception:  # noqa: BLE001 - a check that cannot be read is not worth a message here
-            _LOGGER.debug("The central log could not read the backup check", exc_info=True)
+        if hass.is_running:
+            await log_tick(hass, scanner, log_memo, datetime.now(UTC))
 
     entry.async_on_unload(async_track_time_interval(hass, _log_tick, timedelta(minutes=5)))
 

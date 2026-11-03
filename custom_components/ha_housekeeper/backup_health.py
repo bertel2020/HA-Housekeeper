@@ -76,6 +76,21 @@ def _names(items: Any) -> list[str]:
     return sorted(names)
 
 
+def backup_running(hass: HomeAssistant) -> bool | None:
+    """Whether a backup runs now, from the manager's state alone (no listing of the targets); ``None`` is unknown."""
+    try:
+        from homeassistant.components.backup import async_get_manager
+
+        manager_state = getattr(async_get_manager(hass), "state", None)
+        return (
+            None
+            if manager_state is None
+            else str(getattr(manager_state, "value", manager_state)) != "idle"
+        )
+    except Exception:  # noqa: BLE001 - without the figure an unfinished attempt counts as before
+        return None
+
+
 async def collect(hass: HomeAssistant) -> dict[str, Any]:
     """Read the backup manager into plain data; any single missing field becomes ``None``."""
     try:
@@ -85,16 +100,8 @@ async def collect(hass: HomeAssistant) -> dict[str, Any]:
     except Exception:
         return {"available": False}
     state: dict[str, Any] = {"available": True, "backups": [], "agent_errors": []}
-    try:
-        # A backup in progress has its start recorded but not yet its end; that is no failure.
-        manager_state = getattr(manager, "state", None)
-        state["running"] = (
-            None
-            if manager_state is None
-            else str(getattr(manager_state, "value", manager_state)) != "idle"
-        )
-    except Exception:  # noqa: BLE001 - without the figure an unfinished attempt counts as before
-        state["running"] = None
+    # A backup in progress has its start recorded but not yet its end; that is no failure.
+    state["running"] = backup_running(hass)
     try:
         data = manager.config.data
         create = data.create_backup
