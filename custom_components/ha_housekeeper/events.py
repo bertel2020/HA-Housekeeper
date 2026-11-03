@@ -412,8 +412,11 @@ class EventLog:
         """The checks that changed at least ``FLAP_CHANGES`` times lately, false alarms not counted."""
         return flapping(self.events, self.dismissed, now)
 
-    def recent(self, limit: int = LIST_LIMIT) -> list[dict[str, Any]]:
-        return list(reversed(self.events[-limit:]))
+    def recent(self, limit: int = LIST_LIMIT, skip: tuple[str, ...] = ()) -> list[dict[str, Any]]:
+        """The newest events first; the kinds in ``skip`` are left out before the limit counts."""
+        if not skip:
+            return list(reversed(self.events[-limit:]))
+        return [e for e in reversed(self.events) if e["kind"] not in skip][:limit]
 
 
 def _cause(item: dict[str, Any]) -> dict[str, Any]:

@@ -447,7 +447,9 @@ async def websocket_correlations(
 ) -> None:
     """Findings that began at about the time of an update or restart. Reads the last scan only."""
     snapshot = await scanner.async_get_snapshot()
-    result = correlate(snapshot["findings"], [*scanner.events.recent(), *scanner.notes.as_events()])
+    # A change of a check is neither an update nor a restart: it must not become the reason of a finding.
+    events = scanner.events.recent(skip=("check_change",))
+    result = correlate(snapshot["findings"], [*events, *scanner.notes.as_events()])
     connection.send_result(msg["id"], _versioned(result))
 
 

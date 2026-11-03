@@ -352,3 +352,14 @@ async def test_the_check_log_of_a_flapping_check_stays_fast_and_counts_the_windo
     assert (
         flaps and max(flaps) == 181
     )  # one change a minute: 180 minutes of the window plus the one now
+
+
+async def test_the_recent_events_can_leave_out_changes_of_checks_before_the_limit(
+    hass: HomeAssistant,
+) -> None:
+    log = EventLog(hass)
+    log.record("start", NOW)
+    for number in range(5):
+        log.record_change("system", "memory", "ok", "note", NOW + timedelta(minutes=number + 1))
+    assert [e["kind"] for e in log.recent(2, skip=("check_change",))] == ["start"]
+    assert [e["kind"] for e in log.recent(2)] == ["check_change", "check_change"]
