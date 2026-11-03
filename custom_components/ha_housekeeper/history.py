@@ -506,7 +506,8 @@ class ScanHistory:
                     "lead": cp.get("lead"),
                     "lead_classes": cp.get("lead_classes"),
                     "reasons": cp.get("reasons"),
-                    "topics": cp.get("topics") or _topics_from_keys(cp),
+                    # A point that stores its topics, even none (a clean house), is not recounted from its keys.
+                    "topics": cp["topics"] if "topics" in cp else _topics_from_keys(cp),
                     "lead_topics": cp.get("lead_topics"),
                     "affected": cp.get("affected"),
                     "lead_object_topics": cp.get("lead_object_topics"),

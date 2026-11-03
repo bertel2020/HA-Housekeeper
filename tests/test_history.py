@@ -381,3 +381,20 @@ def test_a_checkpoint_from_before_the_levels_by_duration_ends_findings_as_a_new_
     assert [f["reason"] for f in diff["ended_findings"]["items"]] == ["rules_changed"]
     again = make_checkpoint(new)
     assert diff_checkpoints(again, new)["new_rating"] is False
+
+
+def test_a_clean_house_does_not_get_its_hidden_findings_counted_back_into_the_topics(hass) -> None:
+    history = ScanHistory(hass)
+    snapshot = _snapshot("2026-10-06T08:00:00+00:00", [("entity", "x.a", "active")])
+    snapshot["findings"] = [
+        {
+            "rule_id": "entity.unused",
+            "object_id": "x.a",
+            "classification": "unused",
+            "impact": "medium",
+            "ignored": True,
+        }
+    ]
+    history.record(snapshot)
+    point = history.series()["points"][0]
+    assert point["open"] == 0 and not point["topics"]
