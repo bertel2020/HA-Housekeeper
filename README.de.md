@@ -28,7 +28,7 @@ HA Housekeeper ist eine Wartungs- und Analyseintegration für Home Assistant. Si
 
 Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunächst zu verstehen, welche Objekte existieren, weshalb etwas als problematisch gilt und was eine Bereinigung oder Reparatur betreffen würde, bevor du sie bestätigst.
 
-> Housekeeper liest und analysiert zunächst. Änderungen gibt es ausschließlich nach ausdrücklicher Bestätigung eines Plans. Pläne umfassen Quarantäne und Entfernen, Reparaturen, das Ersetzen von Verweisen, das Umbenennen von Entitäten, das Zuweisen von Bereichen, das Löschen ungenutzter Automationen, das Kürzen des Recorder-Verlaufs und weitere Wartungsaufgaben. Je nach Aktion verlangt Housekeeper eine Quarantänezeit, eine zusätzliche Bestätigung und ein erfolgreiches Backup. Umkehrbare Änderungen lassen sich zurücksetzen, solange ihre Ziele unverändert sind; endgültige Recorder- und Backup-Löschungen werden deutlich gekennzeichnet. Integrationen und Hubs werden nie verändert, und Housekeeper ändert nur, was ein bestätigter Plan nennt.
+> Housekeeper liest und analysiert zunächst. Änderungen gibt es ausschließlich nach ausdrücklicher Bestätigung eines Plans. Pläne umfassen Quarantäne und Entfernen, das Neuladen einer Integration, Reparaturen, das Ersetzen von Verweisen, das Umbenennen von Entitäten, das Zuweisen von Bereichen, das Löschen ungenutzter Automationen, das Kürzen des Recorder-Verlaufs und weitere Wartungsaufgaben. Je nach Aktion verlangt Housekeeper eine Quarantänezeit, eine zusätzliche Bestätigung und ein erfolgreiches Backup. Umkehrbare Änderungen lassen sich zurücksetzen, solange ihre Ziele unverändert sind; endgültige Recorder- und Backup-Löschungen werden deutlich gekennzeichnet. Integrationen und Hubs werden nie umkonfiguriert (das Neuladen einer Integration ist ein bestätigter Plan wie jeder andere), und Housekeeper ändert nur, was ein bestätigter Plan nennt.
 
 > **Beta von 2.0:** Die Vorabversion [2.0.0-beta.2](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.2) ist zum Ausprobieren da: Befunde nach Themen mit einer eigenen Seite „Beheben“, ein geführter Rundgang beim Aufräumen, die Ansicht „Einfach“ oder „Vollständig“ und neue Namen für die Ausgänge. In HACS (ab Home Assistant 2026.11: Marketplace) erscheint sie unter „Neu herunterladen“ mit eingeschalteten Beta-Versionen. Ein normales Update bleibt auf 1.x.
 
@@ -91,7 +91,7 @@ Mehr zur Installation (manuell, eigenes Repository), zu allen Ansichten und Eins
 
 - Das Panel ist nur für Administratoren.
 - Housekeeper liest und analysiert zuerst; jede Änderung ist ein von dir bestätigter Plan, mit Backup, wo die Aktion eines braucht.
-- Integrationen und Hubs werden nie verändert, keine `.storage`-Datei wird direkt bearbeitet, und nichts wird automatisch bereinigt.
+- Integrationen und Hubs werden nie umkonfiguriert (nur neu geladen, wenn ein bestätigter Plan es nennt), keine `.storage`-Datei wird direkt bearbeitet, und nichts wird automatisch bereinigt.
 
 Details: [Sicherheitsmodell](docs/USER-GUIDE.de.md#sicherheitsmodell) und [Aktuelle Einschränkungen](docs/USER-GUIDE.de.md#aktuelle-einschränkungen).
 

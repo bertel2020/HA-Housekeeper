@@ -28,7 +28,7 @@ HA Housekeeper is a maintenance and analysis integration for Home Assistant. It 
 
 The goal is not aggressive automatic cleanup. Housekeeper helps you understand what exists, why something is considered problematic, and what a cleanup or repair would affect before you confirm it.
 
-> Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan. Plans cover quarantine and removal, repairs, replacing references, renaming entities, assigning areas, deleting unused automations, trimming recorder history and other maintenance tasks. Depending on the action, Housekeeper requires a quarantine period, an additional confirmation and a successful backup. Reversible changes can be undone while their targets remain unchanged; irreversible recorder and backup deletions are clearly marked. Integrations and hubs are never modified, and Housekeeper changes only what a confirmed plan names.
+> Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan. Plans cover quarantine and removal, loading an integration anew, repairs, replacing references, renaming entities, assigning areas, deleting unused automations, trimming recorder history and other maintenance tasks. Depending on the action, Housekeeper requires a quarantine period, an additional confirmation and a successful backup. Reversible changes can be undone while their targets remain unchanged; irreversible recorder and backup deletions are clearly marked. Integrations and hubs are never reconfigured (loading an integration anew is a confirmed plan like any other), and Housekeeper changes only what a confirmed plan names.
 
 > **Beta of 2.0:** the pre-release [2.0.0-beta.2](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.2) is there to try: findings by topic with a page of its own, "Fix", a guided tour for cleaning up, the view "Simple" or "Full" and new names for the outcomes. In HACS (from Home Assistant 2026.11: Marketplace) it shows under "Redownload" with beta versions switched on. A normal update stays on 1.x.
 
@@ -90,7 +90,7 @@ More on installation (manual, custom repository), every view and all settings is
 
 - The panel is for administrators only.
 - Housekeeper reads and analyzes first; every change is a plan you confirm, with a backup where the action needs one.
-- Integrations and hubs are never modified, no `.storage` file is edited directly, and nothing is cleaned up automatically.
+- Integrations and hubs are never reconfigured (only loaded anew when a confirmed plan says so), no `.storage` file is edited directly, and nothing is cleaned up automatically.
 
 Details: [Safety model](docs/USER-GUIDE.md#safety-model) and [Current limitations](docs/USER-GUIDE.md#current-limitations).
 
