@@ -113,6 +113,9 @@ MAX_ACTIONS = 200
 # undo, restore and the start of the quarantine); when the journal grows too large the oldest ones
 # lose their whole-file copies instead.
 MAX_OPEN_PREVIEWS = 20
+MAX_OPEN_AI_PREVIEWS = (
+    10  # previews made through the service count apart, so they cannot push out a person's
+)
 MAX_PURGES = 100  # recorder purges kept in the journal
 JOURNAL_MAX_BYTES = 8 * 1024 * 1024
 JOURNAL_KEEP_DAYS = 365  # plans that ran and ended longer ago than this are dropped ...
@@ -1797,12 +1800,15 @@ class JournalStore:
         A plan that ran goes after ``JOURNAL_KEEP_DAYS`` days, or earlier when there are more than
         ``JOURNAL_MAX_PLANS`` plans (oldest first), unless it is still needed (see above).
         """
-        previews = 0
+        previews = {"mcp": 0, "panel": 0}
         kept = []
         for plan in self._plans:
             if self._is_open_preview(plan):
-                previews += 1
-                if previews > MAX_OPEN_PREVIEWS:
+                made_by = "mcp" if plan.get("via") == "mcp" else "panel"
+                previews[made_by] += 1
+                if previews[made_by] > (
+                    MAX_OPEN_AI_PREVIEWS if made_by == "mcp" else MAX_OPEN_PREVIEWS
+                ):
                     continue
             kept.append(plan)
         now = datetime.now(UTC)

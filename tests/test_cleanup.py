@@ -10,6 +10,7 @@ pytest.importorskip("homeassistant")
 
 from custom_components.ha_housekeeper.cleanup import (  # noqa: E402
     JOURNAL_MAX_BYTES,
+    MAX_OPEN_AI_PREVIEWS,
     MAX_OPEN_PREVIEWS,
     build_plan,
     judge_action,
@@ -134,6 +135,17 @@ def test_journal_limits_only_previews_and_removes_only_dry_runs() -> None:
     journal.plans[0]["executed"] = True
     assert journal.remove(journal.plans[0]["plan_id"]) is False
     assert journal.remove(journal.plans[1]["plan_id"]) is True
+
+
+def test_previews_made_through_the_service_never_push_out_those_of_the_person() -> None:
+    journal = _journal()
+    for number in range(5):
+        journal.add({"plan_id": f"mine{number}", "executed": False})
+    for number in range(MAX_OPEN_AI_PREVIEWS + 15):
+        journal.add({"plan_id": f"ai{number}", "executed": False, "via": "mcp"})
+    ids = [plan["plan_id"] for plan in journal.plans]
+    assert sum(i.startswith("mine") for i in ids) == 5
+    assert sum(i.startswith("ai") for i in ids) == MAX_OPEN_AI_PREVIEWS
 
 
 def test_new_previews_never_push_out_a_plan_that_ran() -> None:
