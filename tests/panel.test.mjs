@@ -5891,6 +5891,22 @@ test("putting the rest off logs what the server put off, not what the page showe
   assert.deepEqual(logged[0].keys, ["a", "b"]);
 });
 
+test("a cleanup that cannot be loaded says so and offers another try instead of loading for ever", async () => {
+  const { el } = panel("en");
+  let fail = true;
+  el._hass = { language: "en", callWS: async () => { if (fail) throw new Error("offline"); return { stages: {}, state: { done: [], log: [] } }; } };
+  el.data = { ...DATA, findings: [] }; el.view = "firstcleanup"; el.fcWiz = { step: null, look: false, on: true };
+  el.render = () => {};
+  await el.loadFirstCleanup(el.data);
+  assert.equal(el.fc, null);
+  const html = el.wizardView();
+  assert.ok(html.includes("offline") && html.includes("data-fc-retry") && !html.includes("Loading"), "the error and the way to try again");
+  fail = false;
+  el.fcLoadError = ""; el._fcFor = null;
+  await el.loadFirstCleanup(el.data);
+  assert.ok(el.fc && el.fcLoadError === "");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

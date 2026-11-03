@@ -15,8 +15,13 @@ class FirstCleanupMixin {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/first_cleanup" });
       if (this.data !== data) return;
       this.fc = reply || null;
+      this.fcLoadError = "";
       if (["findingsNav", "round", "firstcleanup"].includes(this.view) && !this.selected) this.render();
-    } catch (_) { if (this.data === data) this.fc = null; }
+    } catch (err) {
+      if (this.data !== data) return;
+      this.fc = null; this.fcLoadError = this.errText(err);
+      if (this.view === "firstcleanup") this.render();
+    }
   }
 
   async firstCleanupSet(msg) {
@@ -573,6 +578,7 @@ class FirstCleanupMixin {
   wizardView() {
     this.ensureFirstCleanup();
     const fc = this.fc;
+    if (!fc && this.fcLoadError) return `<div class="stack"><section class="panel"><div class="pad">${this.notice("err", this.esc(this.fcLoadError))}<button type="button" class="btn" data-fc-retry>${this.t("actRetry")}</button></div></section></div>`;
     if (!fc) return `<div class="stack"><section class="panel"><div class="pad"><small>${this.t("loading")}</small></div></section></div>`;
     if (this.fcWiz.step === null) this.fcWizSet(this.fcResumeStep());
     const n = this.fcWiz.step, error = fc.error ? this.notice("warn", this.esc(fc.error)) : "";
@@ -604,6 +610,7 @@ class FirstCleanupMixin {
   }
 
   bindFirstCleanup(root) {
+    root.querySelector("[data-fc-retry]")?.addEventListener("click", () => { this.fcLoadError = ""; this._fcFor = null; this.ensureFirstCleanup(); this.render(); });
     root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
     root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
     root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
