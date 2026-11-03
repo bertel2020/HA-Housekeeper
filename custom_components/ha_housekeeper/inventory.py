@@ -146,7 +146,13 @@ from .reliability import CACHE_SECONDS, reply_key
 from .reminders import ReminderStore
 from .run_health import run_findings
 from .runs import RunStore
-from .scan_coverage import RETRY_LIMIT, RETRY_MINUTES, ScanCoverage, retryable_gaps
+from .scan_coverage import (
+    RETRY_LIMIT,
+    RETRY_MINUTES,
+    ScanCoverage,
+    picture_complete,
+    retryable_gaps,
+)
 from .scan_health import ScanHealth
 from .scan_trigger import ScanRefused, scan_request
 from .seen import FirstSeenStore
@@ -1858,14 +1864,14 @@ class InventoryScanner:
         apply_topics(findings)
         apply_impact(objects, edges, findings)
         # When each finding was first seen; a preliminary scan misses findings and forgets none.
+        # A source that could not be read leaves its findings out: what is missing then is not gone.
+        complete = picture_complete(self._unchecked, self.scan_coverage.report())
         if not preliminary:
             self.first_seen.update(
-                {f["key"] for f in findings}, datetime.now(UTC), complete=not self._unchecked
+                {f["key"] for f in findings}, datetime.now(UTC), complete=complete
             )
         if not preliminary:
-            self.work.update(
-                {f["key"] for f in findings}, datetime.now(UTC), complete=not self._unchecked
-            )
+            self.work.update({f["key"] for f in findings}, datetime.now(UTC), complete=complete)
         for finding in findings:
             finding["first_seen_at"] = self.first_seen.get(finding["key"])
             self._mark_work(finding)

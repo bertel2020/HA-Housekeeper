@@ -6,6 +6,7 @@ from custom_components.ha_housekeeper.scan_coverage import (
     SOURCES,
     ScanCoverage,
     gaps,
+    picture_complete,
     retryable_gaps,
 )
 
@@ -65,3 +66,16 @@ def test_counts_are_kept_only_for_a_source_that_was_read() -> None:
     by_source = {item["source"]: item for item in coverage.report()}
     assert by_source["registry"]["counts"] == {"entities": 4}
     assert "counts" not in by_source["apps"]
+
+
+def test_a_picture_is_complete_only_when_no_readable_source_was_missed() -> None:
+    coverage = ScanCoverage()
+    coverage.checked("registry")
+    coverage.absent("apps", "no_supervisor")
+    coverage.skipped("dashboards", "unavailable")  # the component is not there at all: for good
+    assert picture_complete(set(), coverage.report()) is True
+    assert picture_complete({"app"}, coverage.report()) is False
+    coverage.skipped("automations", "automation_not_ready")
+    assert picture_complete(set(), coverage.report()) is False, (
+        "an unread source leaves findings out"
+    )
