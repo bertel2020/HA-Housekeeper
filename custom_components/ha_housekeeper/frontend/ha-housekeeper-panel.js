@@ -14731,6 +14731,7 @@ class PlanWizardMixin {
 
 // Exception rules: objects in an area or with a label are left out of the findings; mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
+  confirmExcRule: "Die Regel wird gelöscht. Befunde, die sie ausblendet, erscheinen wieder.", confirmExcRules: "{count} Regeln werden gelöscht. Befunde, die sie ausblenden, erscheinen wieder.",
   allLabels: "Alle Labels", lblTitle: "Labels", lblHint: "Housekeeper kennt drei feste Labels. Du legst sie in Home Assistant mit genau diesem Namen an und weist sie Objekten zu; Housekeeper erstellt sie nicht selbst.",
   lblOpenHa: "Labels in Home Assistant öffnen", lblCreated: "angelegt", lblMissing: "nicht angelegt", lblNoUse: "an keinem Objekt", lblUse: "an", lblShow: "Objekte anzeigen", lblShow1: "Objekt anzeigen", lblCopy: "Name kopieren", lblCopied: "Kopiert",
   lblKind_keep: "Nicht anfassen", lblKind_ignore: "Ganz ausnehmen", lblKind_critical: "Kritisch",
@@ -14776,6 +14777,7 @@ Object.assign(TEXT.de, {
   vacRuleAfter: "Urlaub beendet, zurückgehalten bis {date}", vacRuleActive: "Urlaubsmodus aktiv",
 });
 Object.assign(TEXT.en, {
+  confirmExcRule: "The rule will be deleted. Findings it hides appear again.", confirmExcRules: "{count} rules will be deleted. Findings they hide appear again.",
   allLabels: "All labels", lblTitle: "Labels", lblHint: "Housekeeper knows three fixed labels. You create them in Home Assistant with exactly this name and assign them to objects; Housekeeper does not create them itself.",
   lblOpenHa: "Open labels in Home Assistant", lblCreated: "created", lblMissing: "not created", lblNoUse: "on no object", lblUse: "on", lblShow: "Show objects", lblShow1: "Show object", lblCopy: "Copy name", lblCopied: "Copied",
   lblKind_keep: "Do not touch", lblKind_ignore: "Leave out completely", lblKind_critical: "Critical",
@@ -15160,14 +15162,26 @@ class ExceptionsMixin {
     this.render();
   }
 
-  async saveExceptions(rules, form) {
-    try {
-      await this._hass.callWS({ type: "ha_housekeeper/exceptions_set", rules });
-      this.excForm = null;
-      this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" });
-      await this.refreshData();
-    } catch (err) { if (form) form.error = this.t("excFailed", { reason: this.errText(err) }); else this.failed(err); }
-    this.render();
+  // Saves the rules. Saves run one after the other, and a function is applied to the rules as they are when its turn
+  // comes, so two quick clicks do not send the same old list twice (the second would undo the first). Resolves to
+  // whether it was saved.
+  saveExceptions(rules, form) {
+    const run = async () => {
+      const next = typeof rules === "function" ? rules(this.excRules()) : rules;
+      let saved = false;
+      try {
+        await this._hass.callWS({ type: "ha_housekeeper/exceptions_set", rules: next });
+        this.excForm = null;
+        this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" });
+        saved = true;
+        await this.refreshData();
+      } catch (err) { if (form) form.error = this.t("excFailed", { reason: this.errText(err) }); else this.failed(err); }
+      this.render();
+      return saved;
+    };
+    const turn = (this._excSaving || Promise.resolve()).then(run);
+    this._excSaving = turn;
+    return turn;
   }
 
   commitException() {
@@ -15192,7 +15206,6 @@ class ExceptionsMixin {
         if (icon) { icon.setAttribute("icon", "mdi:check"); el.title = this.t("lblCopied"); el.setAttribute("aria-label", this.t("lblCopied")); } else el.textContent = this.t("lblCopied");
       } catch (_) { /* no clipboard: the name stays selectable */ }
     });
-    const rules = () => this.excRules();
     // "Open rule" from a hidden finding: the rule in its form in the settings.
     root.querySelectorAll("[data-exc-goto]").forEach(el => el.onclick = async ev => {
       ev.stopPropagation();
@@ -15207,16 +15220,16 @@ class ExceptionsMixin {
     root.querySelectorAll("[data-exc-sel]").forEach(el => el.onchange = () => { this.pickRows("exc", el.dataset.excSel, el.checked, excSel(), [...root.querySelectorAll("[data-exc-sel]")].map(x => x.dataset.excSel)); this.render(); });
     root.querySelectorAll("[data-exc-page]").forEach(box => { box.indeterminate = box.hasAttribute("data-partial"); box.onchange = ev => { box.closest("table").querySelectorAll("[data-exc-sel]").forEach(x => (ev.target.checked ? excSel().add(x.dataset.excSel) : excSel().delete(x.dataset.excSel))); this.render(); }; });
     root.querySelectorAll("[data-exc-selclear]").forEach(el => el.onclick = () => { excSel().clear(); this.render(); });
-    root.querySelectorAll("[data-exc-bulk]").forEach(el => el.onclick = async () => {
-      const mode = el.dataset.excBulk, sel = excSel(), all = rules();
-      const next = mode === "delete" ? all.filter(r => !sel.has(r.id)) : all.map(r => (!sel.has(r.id) ? r : mode === "renew" ? (r.action === "hide" && (r.scope || "always") === "always" ? { ...r, review_at: null } : r) : { ...r, enabled: mode === "on" }));
-      if (mode === "delete") sel.clear();
-      await this.saveExceptions(next, null);
+    root.querySelectorAll("[data-exc-bulk]").forEach(el => el.onclick = () => {
+      const mode = el.dataset.excBulk, sel = excSel(), ids = new Set(sel);
+      const apply = all => (mode === "delete" ? all.filter(r => !ids.has(r.id)) : all.map(r => (!ids.has(r.id) ? r : mode === "renew" ? (r.action === "hide" && (r.scope || "always") === "always" ? { ...r, review_at: null } : r) : { ...r, enabled: mode === "on" })));
+      const run = async () => { if (await this.saveExceptions(apply, null) && mode === "delete") { ids.forEach(id => sel.delete(id)); this.render(); } };
+      if (mode === "delete") this.confirmAsk(this.t("confirmExcRules", { count: ids.size }), run); else run();
     });
-    root.querySelectorAll("[data-exc-renew]").forEach(el => el.onclick = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excRenew ? { ...r, review_at: null } : r)), null));
+    root.querySelectorAll("[data-exc-renew]").forEach(el => el.onclick = () => this.saveExceptions(all => all.map(r => (r.id === el.dataset.excRenew ? { ...r, review_at: null } : r)), null));
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
-    root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.saveExceptions(rules().filter(r => r.id !== el.dataset.excDelete), null));
-    root.querySelectorAll("[data-exc-toggle]").forEach(el => el.onchange = () => this.saveExceptions(rules().map(r => (r.id === el.dataset.excToggle ? { ...r, enabled: el.checked } : r)), null));
+    root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.confirmAsk(this.t("confirmExcRule"), () => this.saveExceptions(all => all.filter(r => r.id !== el.dataset.excDelete), null)));
+    root.querySelectorAll("[data-exc-toggle]").forEach(el => el.onchange = () => { const enabled = el.checked; this.saveExceptions(all => all.map(r => (r.id === el.dataset.excToggle ? { ...r, enabled } : r)), null); });
     root.querySelectorAll("[data-vac-form]").forEach(form => {
       const v = this.vacForm;
       form.onsubmit = ev => { ev.preventDefault(); this.saveVacation(); };

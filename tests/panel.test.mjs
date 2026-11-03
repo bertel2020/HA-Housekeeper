@@ -5834,6 +5834,22 @@ test("a new review date for notes that lift themselves keeps that, and a note tu
   assert.ok(calls[1].kind === "keep" && !("auto_clear" in calls[1]), "a note that hides nothing cannot lift itself");
 });
 
+test("rule changes are saved one after the other on the rules as they are then, so a quick second click does not undo the first", async () => {
+  const { el } = panel("en");
+  let stored = [{ id: "a", kind: "device", targets: ["x"], action: "hide", scope: "always", enabled: true }, { id: "b", kind: "device", targets: ["y"], action: "hide", scope: "always", enabled: true }];
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => {
+    if (msg.type.endsWith("/exceptions_set")) { await new Promise(r => setTimeout(r, 5)); sent.push(JSON.parse(JSON.stringify(msg.rules))); stored = msg.rules; return {}; }
+    return { rules: stored };
+  } };
+  el.exc = { rules: stored }; el.refreshData = async () => {}; el.render = () => {};
+  const off = id => all => all.map(r => (r.id === id ? { ...r, enabled: false } : r));
+  const results = await Promise.all([el.saveExceptions(off("a"), null), el.saveExceptions(off("b"), null)]);
+  assert.deepEqual(results, [true, true]);
+  assert.deepEqual(sent[1].map(r => r.enabled), [false, false], "the second save still has the first change");
+  assert.ok(el.t("confirmExcRules", { count: 3 }).includes("3") && el.t("confirmExcRule") !== "confirmExcRule", "deleting a rule or several asks first");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
