@@ -472,17 +472,18 @@ def check_log(
         if change_id(event) not in dismissed:  # a false alarm is no part of "flapping"
             by_key.setdefault(f"{event['area']}/{event['check']}", []).append(index)
     for indexes in by_key.values():
+        stamps = [
+            _stamp(changes[i]["at"]) for i in indexes
+        ]  # parsed once; the changes are in time order
+        first = 0  # the oldest change still within the flap window
         for position, index in enumerate(indexes):
-            at = _stamp(changes[index]["at"])
-            near = [
-                i for i in indexes[: position + 1] if at - _stamp(changes[i]["at"]) <= FLAP_WINDOW
-            ]
-            if len(near) >= FLAP_CHANGES:
-                flaps[index] = len(near)
+            at = stamps[position]
+            while at - stamps[first] > FLAP_WINDOW:
+                first += 1
+            if position - first + 1 >= FLAP_CHANGES:
+                flaps[index] = position - first + 1
             if changes[index]["to"] in ("problem", "note") and position + 1 < len(indexes):
-                lasted[index] = int(
-                    (_stamp(changes[indexes[position + 1]]["at"]) - at).total_seconds()
-                )
+                lasted[index] = int((stamps[position + 1] - at).total_seconds())
     entries: list[dict[str, Any]] = []
     runs = [i for i, e in enumerate(changes) if e["area"] == "backup" and e["check"] == "run"]
     run_end: dict[

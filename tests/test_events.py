@@ -327,3 +327,28 @@ async def test_changes_of_checks_do_not_push_out_restarts_and_updates(hass: Home
     kinds = [e["kind"] for e in log.events]
     assert kinds.count("check_change") == MAX_CHECK_EVENTS
     assert kinds.count("start") == 1 and kinds.count("plan") == 1
+
+
+async def test_the_check_log_of_a_flapping_check_stays_fast_and_counts_the_window(
+    hass: HomeAssistant,
+) -> None:
+    """Thousands of changes of one check: the flap count is taken over a sliding window, in linear time."""
+    import time
+
+    log = EventLog(hass)
+    for number in range(MAX_CHECK_EVENTS):
+        level = "note" if number % 2 == 0 else "ok"
+        log.record_change(
+            "system",
+            "memory",
+            "ok" if level == "note" else "note",
+            level,
+            NOW + timedelta(minutes=number),
+        )
+    began = time.perf_counter()
+    result = log.check_log(NOW + timedelta(minutes=MAX_CHECK_EVENTS), 90, 5000)
+    assert time.perf_counter() - began < 1.0
+    flaps = [e["flaps"] for e in result["entries"] if e.get("flaps")]
+    assert (
+        flaps and max(flaps) == 181
+    )  # one change a minute: 180 minutes of the window plus the one now

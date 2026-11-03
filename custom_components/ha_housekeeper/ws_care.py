@@ -259,12 +259,7 @@ async def websocket_check_log_mark(
         connection.send_error(msg["id"], "check_log_unknown", "That change is no longer in the log")
         return
     async_sync_flapping_issue(hass, scanner.events.flapping(datetime.now(UTC)))
-    connection.send_result(
-        msg["id"],
-        _versioned(
-            scanner.events.check_log(datetime.now(UTC), 7, config=scanner.config_changes.items)
-        ),
-    )
+    connection.send_result(msg["id"], _versioned({"ok": True}))
 
 
 @websocket_api.require_admin
