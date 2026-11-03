@@ -190,6 +190,10 @@ class PolicyItem(TypedDict):
     key: str  # the key for the ignore list
     ignored: bool
     by: str | None  # "label", "rule", "user" or None
+    ignore_info: NotRequired[
+        dict[str, Any] | None
+    ]  # the decision that hides it (kind, reason, until, ...)
+    resurfaced: NotRequired[bool]  # a decision ran out, so it is back and wants a new look
     also: NotRequired[list[str]]  # duplicate_name: the other entities with the same name
     expected: NotRequired[str]  # naming_scheme: the prefix the id should start with
     rate: NotRequired[int]  # state_rate: state changes per day
@@ -251,7 +255,7 @@ class Note(TypedDict):
     at: str  # ISO time with zone
     target: str
     note: str
-    source: str  # "me" or "housekeeper" (suggested after an action, accepted by the person)
+    source: str  # "me", "housekeeper" (suggested after an action, accepted by the person) or "agent" (the service)
     ref: str  # the plan an entry of source "housekeeper" came from
 
 

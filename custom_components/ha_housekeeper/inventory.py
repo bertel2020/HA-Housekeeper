@@ -1528,6 +1528,16 @@ class InventoryScanner:
         """Return the latest snapshot without triggering a scan."""
         return self._snapshot
 
+    def patch_snapshot(self, **sections: Any) -> None:
+        """Put fresh views (the notes, the reminders) into the cached snapshot, when there is one."""
+        if self._snapshot is not None:
+            self._snapshot.update(sections)
+
+    def patch_meta(self, **fields: Any) -> None:
+        """Put fresh facts (the protection mode) into the meta of the cached snapshot, when there is one."""
+        if self._snapshot is not None:
+            self._snapshot["meta"].update(fields)
+
     async def async_get_snapshot(self) -> dict[str, Any]:
         """Return the latest snapshot, scanning on first access."""
         if self._snapshot is None:

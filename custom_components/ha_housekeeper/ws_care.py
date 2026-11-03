@@ -507,9 +507,7 @@ def websocket_battery_replaced(
     except (BatteryError, NoteError) as err:
         connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
         return
-    if scanner._snapshot is not None:
-        scanner._snapshot["notes"] = scanner.notes.view()
-        scanner._snapshot["reminders"] = scanner.reminders.view(now.date())
+    scanner.patch_snapshot(notes=scanner.notes.view(), reminders=scanner.reminders.view(now.date()))
     connection.send_result(
         msg["id"],
         _versioned(
@@ -574,8 +572,7 @@ def websocket_note_set(
         connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
         return
     view = scanner.notes.view()
-    if scanner._snapshot is not None:
-        scanner._snapshot["notes"] = view
+    scanner.patch_snapshot(notes=view)
     connection.send_result(msg["id"], _versioned({"notes": view}))
 
 
@@ -621,8 +618,7 @@ def websocket_reminder_set(
         connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
         return
     view = scanner.reminders.view(today)
-    if scanner._snapshot is not None:
-        scanner._snapshot["reminders"] = view
+    scanner.patch_snapshot(reminders=view)
     connection.send_result(msg["id"], _versioned({"reminders": view}))
 
 
@@ -643,9 +639,7 @@ def websocket_protection_set(
 ) -> None:
     """Set the protection mode: what plans may change, checked on the server."""
     scanner.protection.set_mode(msg["mode"])
-    if scanner._snapshot is not None:
-        scanner._snapshot["meta"]["protection"] = scanner.protection.mode
-        scanner._snapshot["meta"]["protection_migrated"] = None
+    scanner.patch_meta(protection=scanner.protection.mode, protection_migrated=None)
     connection.send_result(msg["id"], {"mode": scanner.protection.mode})
 
 
