@@ -582,9 +582,9 @@ class FindingsMixin {
 }
 Object.assign(TEXT.de, {
   refersTo: "Verweist auf {kind} {target}",
-  statusNoteText: "Die Liste zeigt den Status „{status}“. Die Kacheln oben zählen die offenen Befunde; ein Klick darauf schaltet zurück auf „Offen“.", statusNoteBack: "Zu den offenen", statusNoteHidden: "Ausgeblendet wird durch deinen Status, eine Objekt-Notiz, eine Ausnahme oder ein Label; der Filter „Gründe“ trennt sie.", statusNoteHidden: "Ausgeblendet wird durch deinen Status, einen Vermerk, eine Ausnahme oder ein Label; der Filter „Gründe“ trennt sie.",
+  statusNoteText: "Die Liste zeigt den Status „{status}“. Die Kacheln oben zählen die offenen Befunde; ein Klick darauf schaltet zurück auf „Offen“.", statusNoteBack: "Zu den offenen", statusNoteHidden: "Ausgeblendet wird durch deinen Status, eine Objekt-Notiz, eine Ausnahme oder ein Label; der Filter „Gründe“ trennt sie.",
 });
 Object.assign(TEXT.en, {
   refersTo: "Refers to {kind} {target}",
-  statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones", statusNoteHidden: "Findings are hidden by your status, an object note, an exception or a label; the “Reasons” filter tells them apart.", statusNoteHidden: "Findings are hidden by your status, a mark, an exception or a label; the “Reasons” filter tells them apart.",
+  statusNoteText: "The list shows the status “{status}”. The tiles above count the open findings; a click on one goes back to “Open”.", statusNoteBack: "To the open ones", statusNoteHidden: "Findings are hidden by your status, an object note, an exception or a label; the “Reasons” filter tells them apart.",
 });

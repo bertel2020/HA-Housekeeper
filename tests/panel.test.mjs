@@ -5907,6 +5907,28 @@ test("a cleanup that cannot be loaded says so and offers another try instead of 
   assert.ok(el.fc && el.fcLoadError === "");
 });
 
+test("no text of the panel is defined twice in one block, where the later one would silently win", () => {
+  const dir = new URL("../panel-src/", import.meta.url);
+  const twice = [];
+  for (const file of fs.readdirSync(dir).sort()) {
+    const src = fs.readFileSync(new URL(file, dir), "utf8");
+    for (const block of src.matchAll(/Object\.assign\(TEXT\.(de|en),\s*\{/g)) {
+      let depth = 1, i = block.index + block[0].length, quote = null, flat = "";
+      for (; i < src.length && depth; i++) {
+        const c = src[i];
+        if (quote) { if (c === "\\") i++; else if (c === quote) { quote = null; flat += '"'; } continue; }
+        if (c === '"' || c === "'" || c === "`") { quote = c; flat += '"'; continue; }
+        if (c === "{") depth++; else if (c === "}") depth--;
+        flat += c;
+      }
+      const seen = new Map();
+      for (const key of flat.matchAll(/(?:^|[,{\s])([A-Za-z_][A-Za-z0-9_]*)\s*:\s*"/g)) seen.set(key[1], (seen.get(key[1]) || 0) + 1);
+      for (const [key, n] of seen) if (n > 1) twice.push(`${file} ${block[1]} ${key}`);
+    }
+  }
+  assert.deepEqual(twice, []);
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };
