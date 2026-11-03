@@ -2328,10 +2328,12 @@ class InventoryScanner:
             current = self.marks.items.get(undo["key"])
         return current is not None and current.get("at") == after
 
-    def restore_decision(self, key: str, entry: dict[str, Any] | None) -> None:
+    def restore_decision(
+        self, key: str, entry: dict[str, Any] | None, by: str | None = None
+    ) -> None:
         """Put the decision about a finding back as it was (``None``: there was none)."""
         self.ignored.restore(key, entry)
-        self.activity.record("decision", "undo", datetime.now(UTC), key=key)
+        self.activity.record("decision", "undo", datetime.now(UTC), key=key, by=by)
         finding = next(
             (f for f in (self._snapshot or {}).get("findings", []) if f["key"] == key), None
         )
@@ -2408,7 +2410,7 @@ class InventoryScanner:
             self._after_decisions()
         return done
 
-    def restore_decisions(self, items: list[dict[str, Any]]) -> int:
+    def restore_decisions(self, items: list[dict[str, Any]], by: str | None = None) -> int:
         """Take back the decisions of a bulk action that are still as it left them; how many were."""
         found = {f["key"]: f for f in (self._snapshot or {}).get("findings", [])}
         registry = er.async_get(self.hass)
@@ -2422,7 +2424,7 @@ class InventoryScanner:
                 self._mark_ignored(finding, registry)
             done += 1
         if done:
-            self.activity.record("decision", "undo", datetime.now(UTC), count=done)
+            self.activity.record("decision", "undo", datetime.now(UTC), count=done, by=by)
             self._after_decisions()
         return done
 
@@ -2492,11 +2494,13 @@ class InventoryScanner:
         self._refresh_marks()
         return None
 
-    def restore_mark(self, object_type: str, object_id: str, entry: dict[str, Any] | None) -> None:
+    def restore_mark(
+        self, object_type: str, object_id: str, entry: dict[str, Any] | None, by: str | None = None
+    ) -> None:
         """Put the mark of an object back as it was (``None``: there was none)."""
         self.marks.restore(mark_key(object_type, object_id), entry)
         self.activity.record(
-            "mark", "undo", datetime.now(UTC), key=mark_key(object_type, object_id)
+            "mark", "undo", datetime.now(UTC), key=mark_key(object_type, object_id), by=by
         )
         self._refresh_marks()
 

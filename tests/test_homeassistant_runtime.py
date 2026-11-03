@@ -2122,6 +2122,10 @@ async def test_an_undo_in_the_activity_leaves_a_later_decision_alone(
         "success"
     ]
     assert scanner.ignored.entry("k1") is None
+    undone = (await call({"type": "ha_housekeeper/activity", "kinds": ["decision"]}))["result"][
+        "items"
+    ][0]
+    assert undone["action"] == "undo" and undone["by"], "an undo says who did it"
 
 
 async def test_putting_the_rest_off_is_one_line_in_the_activity_with_one_undo(

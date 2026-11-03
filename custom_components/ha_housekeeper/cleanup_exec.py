@@ -2143,7 +2143,9 @@ class CleanupRunner:
         if not all(allows(mode, a) for a in plan["actions"] if a["object_id"] in wanted):
             raise CleanupError("protection_mode")
 
-    async def undo(self, plan_id: str, object_ids: list[str] | None) -> dict[str, Any]:
+    async def undo(
+        self, plan_id: str, object_ids: list[str] | None, user_id: str | None = None
+    ) -> dict[str, Any]:
         """Revert steps that are still exactly as Housekeeper left them."""
         if self.running:
             raise CleanupError("busy")
@@ -2155,7 +2157,9 @@ class CleanupRunner:
             raise CleanupError("busy") from busy
         try:
             result = await self._undo(plan_id, object_ids)
-            self.scanner.activity.record("plan", "undo", _now(), key=plan_id, source="plan")
+            self.scanner.activity.record(
+                "plan", "undo", _now(), key=plan_id, by=user_id, source="plan"
+            )
             return result
         finally:
             release_write(self.hass, "undo")

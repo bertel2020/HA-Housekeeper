@@ -626,11 +626,12 @@ def websocket_activity_undo(
     """Put a decision or a mark back as it was before the entry; the entry offers no undo after."""
     entry = scanner.activity.get(msg["entry_id"])
     undo = entry["undo"] if entry else None
+    by = connection.user.id if connection.user else None
     if not undo:
         connection.send_error(msg["id"], "not_found", "Nothing to undo for this entry")
         return
     if undo["type"] == "ignore_many":
-        restored = scanner.restore_decisions(undo["items"])
+        restored = scanner.restore_decisions(undo["items"], by)
         if not restored:
             connection.send_error(
                 msg["id"],
@@ -650,10 +651,10 @@ def websocket_activity_undo(
         )
         return
     if undo["type"] == "ignore":
-        scanner.restore_decision(undo["key"], undo["previous"])
+        scanner.restore_decision(undo["key"], undo["previous"], by)
     elif undo["type"] == "mark":
         object_type, _, object_id = undo["key"].partition(":")
-        scanner.restore_mark(object_type, object_id, undo["previous"])
+        scanner.restore_mark(object_type, object_id, undo["previous"], by)
     else:
         connection.send_error(msg["id"], "not_found", "Nothing to undo for this entry")
         return
@@ -1482,7 +1483,9 @@ async def websocket_plan_undo(
     if panel_session_only(hass, connection, msg):
         return
     try:
-        result = await scanner.cleanup.undo(msg["plan_id"], msg.get("object_ids"))
+        result = await scanner.cleanup.undo(
+            msg["plan_id"], msg.get("object_ids"), connection.user.id if connection.user else None
+        )
     except CleanupError as err:
         _cleanup_error(connection, msg, err)
         return
