@@ -55,7 +55,11 @@ class OftenStore:
         self._store.async_delay_save(lambda: {"items": self._items}, SAVE_DELAY)
 
     def skip(self, answers: dict[str, str], now: datetime) -> None:
-        """Remember "no thanks" for these keys, each with the time of the answer (not in the future)."""
+        """Remember "no thanks" for these keys, each with the time of the answer (not in the future).
+
+        Answers that no longer hold are dropped first, so they do not use up the room for new ones.
+        """
+        self._items = self.view(now)
         for raw, at in answers.items():
             when = _time(at)
             key = _key(raw)

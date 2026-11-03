@@ -14,6 +14,7 @@ from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
 from custom_components.ha_housekeeper import const  # noqa: E402
 from custom_components.ha_housekeeper.access_state import AccessState  # noqa: E402
+from custom_components.ha_housekeeper.activity import ActivityStore  # noqa: E402
 from custom_components.ha_housekeeper.backup_health import AttestStore  # noqa: E402
 from custom_components.ha_housekeeper.cleanup import JournalStore  # noqa: E402
 from custom_components.ha_housekeeper.events import EventLog  # noqa: E402
@@ -23,6 +24,7 @@ from custom_components.ha_housekeeper.history import ScanHistory  # noqa: E402
 from custom_components.ha_housekeeper.ignored import IgnoreStore, _clean  # noqa: E402
 from custom_components.ha_housekeeper.marks import MarkStore  # noqa: E402
 from custom_components.ha_housekeeper.observations import ObservationStore  # noqa: E402
+from custom_components.ha_housekeeper.often import OftenStore  # noqa: E402
 from custom_components.ha_housekeeper.policies import PolicyStore  # noqa: E402
 from custom_components.ha_housekeeper.queries import ReplyStore  # noqa: E402
 from custom_components.ha_housekeeper.runs import RunStore  # noqa: E402
@@ -47,6 +49,8 @@ STORES = [
     (VisitStore, const.VISITS_STORAGE_KEY),
     (WorkStore, const.WORK_STORAGE_KEY),
     (FirstCleanupStore, const.FIRST_CLEANUP_STORAGE_KEY),
+    (ActivityStore, const.ACTIVITY_STORAGE_KEY),
+    (OftenStore, const.OFTEN_STORAGE_KEY),
 ]
 GARBAGE = [
     "text",
@@ -70,6 +74,16 @@ GARBAGE = [
         "known": {"a": 5, "b": {"level": "huge"}},
         "secret_known": {"a": 5, "b": {"empty": "x"}},
     },
+    {
+        "items": [
+            1,
+            "a",
+            {"kind": "decision"},
+            {"id": "a", "at": "x", "action": "y", "kind": "nope"},
+        ]
+    },
+    {"items": {"entity:a": "not a time", "BAD": "2026-10-01T00:00:00", "group:x": 5}},
+    {"items": {"k": {"started_at": "2026-10-01T00:00:00", "progress_at": "x"}}},
 ]
 
 
@@ -510,3 +524,41 @@ async def test_credentials_stored_since_the_last_look_are_new_for_a_while(
         (then + timedelta(days=1)).isoformat(),
     )
     assert look(["a", "b"], then + timedelta(days=20))["b"]["secret_new"] is None, "news ages"
+
+
+async def test_work_with_a_time_that_has_no_zone_is_dropped_instead_of_failing_a_scan(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    put(
+        hass_storage,
+        const.WORK_STORAGE_KEY,
+        {
+            "items": {
+                "naive": {
+                    "started_at": "2026-10-01T00:00:00",
+                    "progress_at": "2026-10-01T00:00:00",
+                },
+                "ok": {
+                    "started_at": "2026-10-01T00:00:00+00:00",
+                    "progress_at": "2026-10-01T00:00:00+00:00",
+                },
+            }
+        },
+    )
+    store = WorkStore(hass)
+    await store.async_load()
+    assert store.get("naive") is None and store.get("ok")
+    store.update({"ok"}, datetime(2026, 10, 20, tzinfo=UTC), complete=True)  # must not raise
+
+
+async def test_answers_that_no_longer_hold_do_not_use_up_the_room_for_new_ones(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper import often
+
+    store = OftenStore(hass)
+    now = datetime(2026, 11, 3, tzinfo=UTC)
+    old = (now - timedelta(days=often.QUIET_DAYS + 5)).isoformat()
+    store._items = {f"entity:o{n}": old for n in range(often.ITEM_LIMIT)}
+    store.skip({"entity:new": now.isoformat()}, now)
+    assert set(store._items) == {"entity:new"}

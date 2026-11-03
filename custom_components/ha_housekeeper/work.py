@@ -21,6 +21,14 @@ ITEM_LIMIT = 2000
 STALE_DAYS = 7
 
 
+def _aware(value: Any) -> bool:
+    """Whether ``value`` is a time with a zone: what the store writes, and the only kind it can compare."""
+    try:
+        return isinstance(value, str) and datetime.fromisoformat(value).tzinfo is not None
+    except ValueError:
+        return False
+
+
 class WorkStore:
     """Remember which findings were started, when, and when they last moved."""
 
@@ -37,8 +45,8 @@ class WorkStore:
             if (
                 isinstance(key, str)
                 and isinstance(item, dict)
-                and isinstance(item.get("started_at"), str)
-                and isinstance(item.get("progress_at"), str)
+                and _aware(item.get("started_at"))
+                and _aware(item.get("progress_at"))
             ):
                 self._items[key] = {
                     "started_at": item["started_at"],
