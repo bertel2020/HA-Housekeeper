@@ -970,7 +970,7 @@ class CleanupMixin {
     const state = kind => kind !== "repair_counter" ? "" : !scan?.available ? `<span class="pill mute">${this.t("repairNotChecked")}</span>` : found ? `<span class="pill warn">${this.t("repairFound", { count: found })}</span>` : `<span class="pill ok">${this.t("repairNoneFound")}</span>`;
     const tone = kind => (kind !== "repair_counter" ? "ac" : !scan?.available ? "mute" : found ? "warn" : "ok");
     const tiles = REPAIR_TASKS.map(([kind, icon, label, hint]) => `<button class="taskcard t-${tone(kind)}${kind === task ? " on" : ""}" aria-pressed="${kind === task}" data-repair-task="${kind}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${state(kind)}</span><small>${this.t(hint)}</small></button>`).join("");
-    const nav = `<div class="taskgrid compactgrid setgrid navtiles compact" style="--cols:${this.navColumns(REPAIR_TASKS.length)}" role="group" aria-label="${this.esc(this.t("repairTitle"))}">${tiles}</div>`;
+    const nav = `<div class="taskgrid compactgrid setgrid navtiles compact equal" style="--cols:${this.navColumns(REPAIR_TASKS.length)}" role="group" aria-label="${this.esc(this.t("repairTitle"))}">${tiles}</div>`;
     let body;
     if (task) {
       const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), replace_wizard: () => this.rwCard(), repair_counter: () => this.counterCard() }[task]();
