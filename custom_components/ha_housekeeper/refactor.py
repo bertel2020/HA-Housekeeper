@@ -93,7 +93,18 @@ def _walk(steps: Any, prefix: str):
         yield from _walk(step.get("then"), f"{base}/then")
         yield from _walk(step.get("else"), f"{base}/else")
         yield from _walk(step.get("sequence"), f"{base}/sequence")
-        yield from _walk(step.get("parallel"), f"{base}/parallel")
+        for number, option in enumerate(
+            step["parallel"] if isinstance(step.get("parallel"), list) else []
+        ):
+            if not isinstance(option, dict):
+                continue
+            where = f"{base}/parallel/{number}"
+            if isinstance(option.get("sequence"), list):
+                yield where, option
+                yield from _walk(option["sequence"], f"{where}/sequence")
+            else:
+                # A single step: Home Assistant runs it as a sequence of one, and its trace says so.
+                yield from _walk([option], f"{where}/sequence")
         if isinstance(step.get("repeat"), dict):
             yield from _walk(step["repeat"].get("sequence"), f"{base}/repeat/sequence")
 
@@ -221,7 +232,7 @@ def removable_references(item: dict[str, Any], reference: str) -> list[dict[str,
                     tokens = [token.strip() for token in value.split(",")]
                 else:
                     continue
-                if reference in tokens and len(tokens) > 1:
+                if reference in tokens and any(token != reference for token in tokens):
                     found.append(
                         {
                             "path": "/".join(part for part in (path, where, name) if part),

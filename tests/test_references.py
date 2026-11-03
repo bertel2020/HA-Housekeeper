@@ -1197,6 +1197,44 @@ def test_timeouts_and_modes_are_set_exactly_where_asked() -> None:
             refactor.apply({**item, "mode": mode}, "set_mode", values)
 
 
+def test_a_reference_listed_twice_is_not_taken_out_to_leave_an_empty_list() -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    item = {
+        "alias": "Twice",
+        "action": [
+            {"action": "light.turn_off", "target": {"entity_id": ["light.gone", "light.gone"]}}
+        ],
+    }
+    with pytest.raises(ValueError, match="nothing_to_do"):
+        refactor.apply(item, "remove_reference", {"reference": "light.gone"})
+
+
+def test_a_single_step_in_parallel_has_the_path_of_its_trace() -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    item = {
+        "alias": "P",
+        "action": [
+            {
+                "parallel": [
+                    {"action": "light.turn_on", "target": {"entity_id": "light.a"}},
+                    {
+                        "sequence": [
+                            {"action": "light.turn_off", "target": {"entity_id": "light.b"}}
+                        ]
+                    },
+                ]
+            }
+        ],
+    }
+    assert refactor.action_step(item, "action/0/parallel/0/sequence/0")["action"] == "light.turn_on"
+    assert (
+        refactor.action_step(item, "action/0/parallel/1/sequence/0")["action"] == "light.turn_off"
+    )
+    assert refactor.action_step(item, "action/0/parallel/0") is None
+
+
 def test_refactoring_hints_name_device_triggers_long_delays_and_dead_branches() -> None:
     from custom_components.ha_housekeeper import refactor
 
