@@ -10,23 +10,44 @@ from typing import Any
 
 DISK_NOTE_PERCENT, DISK_PROBLEM_PERCENT = 80.0, 90.0  # used space of the data disk
 RAM_NOTE_PERCENT, RAM_PROBLEM_PERCENT = 85.0, 95.0
+HYSTERESIS_PERCENT = (
+    2.0  # a level is left only this far below its threshold, so a value at the edge does not flap
+)
 FAILING_PROBLEM = frozenset({"setup_error", "migration_error", "failed_unload"})
 FAILING_NOTE = frozenset({"setup_retry"})
 
 
-def _level(percent: float | None, note: float, problem: float) -> str:
+def _level(percent: float | None, note: float, problem: float, last: str | None = None) -> str:
+    """The level of a used share; ``last`` is the level written down before, which holds a little longer."""
     if percent is None:
         return "unknown"
-    return "problem" if percent >= problem else "note" if percent >= note else "ok"
+    level = "problem" if percent >= problem else "note" if percent >= note else "ok"
+    if last == "problem" and level != "problem" and percent >= problem - HYSTERESIS_PERCENT:
+        return "problem"
+    if last in ("problem", "note") and level == "ok" and percent >= note - HYSTERESIS_PERCENT:
+        return "note"
+    return level
 
 
-def system_checks(disk: dict[str, Any], memory: dict[str, Any]) -> list[dict[str, Any]]:
-    """Free disk space and memory; a part that could not be read is ``unknown``."""
+def system_checks(
+    disk: dict[str, Any], memory: dict[str, Any], levels: dict[str, str] | None = None
+) -> list[dict[str, Any]]:
+    """Free disk space and memory; a part that could not be read is ``unknown``.
+
+    ``levels`` are the levels the log wrote down last ("area/check"); a value that hovers at a threshold
+    keeps its level until it is clearly below it.
+    """
     ram = (memory or {}).get("ram") or {}
+    last = levels or {}
     return [
         {
             "id": "disk",
-            "level": _level(disk.get("percent"), DISK_NOTE_PERCENT, DISK_PROBLEM_PERCENT),
+            "level": _level(
+                disk.get("percent"),
+                DISK_NOTE_PERCENT,
+                DISK_PROBLEM_PERCENT,
+                last.get("system/disk"),
+            ),
             "values": {
                 "used_percent": disk.get("percent"),
                 "free_bytes": disk.get("free"),
@@ -35,7 +56,9 @@ def system_checks(disk: dict[str, Any], memory: dict[str, Any]) -> list[dict[str
         },
         {
             "id": "memory",
-            "level": _level(ram.get("percent"), RAM_NOTE_PERCENT, RAM_PROBLEM_PERCENT),
+            "level": _level(
+                ram.get("percent"), RAM_NOTE_PERCENT, RAM_PROBLEM_PERCENT, last.get("system/memory")
+            ),
             "values": {"used_percent": ram.get("percent"), "limit_percent": RAM_PROBLEM_PERCENT},
         },
     ]

@@ -280,7 +280,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
             disk, ram = await hass.async_add_executor_job(
                 lambda: (disk_usage(hass.config.config_dir), memory())
             )
-            scanner.events.observe_checks("system", system_checks(disk, ram), datetime.now(UTC))
+            scanner.events.observe_checks(
+                "system", system_checks(disk, ram, scanner.events.levels), datetime.now(UTC)
+            )
             scanner.events.observe_checks(
                 "scan", scan_check(scanner.health_report()), datetime.now(UTC)
             )

@@ -50,3 +50,18 @@ def test_goals_become_checks_only_when_met_or_missed_and_a_scan_that_needs_repai
     )
     assert scan_check({"state": "failed", "needs_repair": True})[0]["level"] == "problem"
     assert scan_check({"state": "preliminary"}) == []
+
+
+def test_a_value_at_a_threshold_keeps_its_level_until_it_is_clearly_below() -> None:
+    last = {"system/memory": "note", "system/disk": "problem"}
+
+    def levels(disk: float, ram: float) -> tuple[str, str]:
+        checks = {
+            c["id"]: c["level"]
+            for c in system_checks({"percent": disk}, {"ram": {"percent": ram}}, last)
+        }
+        return checks["disk"], checks["memory"]
+
+    assert levels(89.0, 84.9) == ("problem", "note")  # just below the threshold: no change
+    assert levels(87.9, 82.9) == ("note", "ok")  # clearly below: the level drops
+    assert system_checks({"percent": 84.9}, {"ram": {"percent": 84.9}})[1]["level"] == "ok"
