@@ -5878,6 +5878,19 @@ test("the ways of a finding show on the card of the cleanup in the stages that s
   assert.equal(renders, 1, "on the card of stage 1 the ways appear at once");
 });
 
+test("putting the rest off logs what the server put off, not what the page showed", async () => {
+  const { el } = panel("en");
+  const logged = [];
+  el._hass = { language: "en", callWS: async () => ({ put_off: 2, put_off_keys: ["a", "b"], state: { log: [] } }) };
+  el.data = { ...DATA, findings: ["a", "b", "c"].map(k => ({ key: k, rule_id: "entity.stale", object_id: `sensor.${k}`, ignored: false })) };
+  el.stageOpen = () => el.data.findings; el.stageCount = () => 3;
+  el.fcLogAdd = entry => { logged.push(entry); return entry; }; el.fcNotify = () => {};
+  el.refreshData = async () => {}; el.render = () => {};
+  await el.fcLaterRun(30);
+  assert.equal(logged[0].n, 2);
+  assert.deepEqual(logged[0].keys, ["a", "b"]);
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

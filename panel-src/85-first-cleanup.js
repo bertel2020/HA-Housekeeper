@@ -327,7 +327,7 @@ class FirstCleanupMixin {
   fcHistoryPanel() {
     const log = [...this.fcLogGet()].reverse();
     const rows = log.map(e => `<li><span class="fchstage">${this.t("fcStage", { n: e.stage })}</span><span class="fchtext">${e.name ? `<b>${this.esc(e.name)}</b> · ` : ""}${this.esc(this.fcEntryLabel(e))}</span><button type="button" class="btn" data-fc-undo="${this.esc(e.id)}">${this.t("fcUndo")}</button></li>`).join("");
-    return `<section class="panel fcpanel"><div class="panelhead"><div><h2>${this.t("fcHistory")}</h2><p>${this.t("fcHistoryHint")}</p></div></div>${rows ? `<ul class="fchist">${rows}</ul>` : `<div class="emptymsg">${this.t("fcHistoryNone")}</div>`}<div class="pad mbtns"><button type="button" class="btn primary" data-fc-history="0">${this.t("fcHistoryBack")}</button></div></section>`;
+    return `<section class="panel fcpanel"><div class="panelhead"><div><h2>${this.t("fcHistory")}</h2><p>${this.t("fcHistoryHint")}</p></div></div>${rows ? `<ul class="fchist">${rows}</ul>` : `<div class="emptymsg">${this.t("fcHistoryNone")}</div>`}${this.fc?.state?.log_dropped ? `<p class="factnote pad">${this.t("fcHistoryCut", { n: this.formatNumber(this.fc.state.log_dropped) })}</p>` : ""}<div class="pad mbtns"><button type="button" class="btn primary" data-fc-history="0">${this.t("fcHistoryBack")}</button></div></section>`;
   }
 
   // The part still open from the end page: the list of the stage, outside the tour.
@@ -651,7 +651,8 @@ class FirstCleanupMixin {
     const keys = this.stageOpen(5).map(f => f.key);
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/first_cleanup_later", days, reason: this.t("fcLaterReason") });
-      this.fcNotify(this.fcLogAdd({ stage: 5, action: "later_all", n, keys }));
+      // What the server put off, not what the page showed: it takes at most so many in one step.
+      this.fcNotify(this.fcLogAdd({ stage: 5, action: "later_all", n: reply.put_off ?? n, keys: reply.put_off_keys || keys }));
       this.fc = { ...reply, error: "" };
       await this.refreshData?.();
     } catch (err) { this.fc = { ...this.fc, error: this.errText(err) }; }
@@ -660,7 +661,7 @@ class FirstCleanupMixin {
 }
 Object.assign(TEXT.de, {
   fcAllActivity: "Gesamte Aktivität", fcBandText: "Du bist mitten im Aufräumen, bei Etappe {n}.", fcBandBack: "Zurück zum Aufräumen", fcUndo: "Rückgängig", fcHistory: "Verlauf", fcHistoryHint: "Alles, was du beim Aufräumen entschieden hast, das Neueste zuerst.",
-  fcHistoryNone: "Noch nichts entschieden.", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Objekt-Notiz angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
+  fcHistoryNone: "Noch nichts entschieden.", fcHistoryCut: "Die {n} ältesten Einträge sind nicht mehr im Verlauf und lassen sich hier nicht mehr zurücknehmen. Die Entscheidungen selbst gelten weiter (Aktivität).", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Objekt-Notiz angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
   fcFollowMore: "… und {n} weitere", 
   fcSumSuggest: "{n} Vorschläge", fcSumDeclined: "{n} abgelehnt", fcPendingPlan: "{n} Befunde sind vorgemerkt, es gibt noch keinen Plan. Bisher wurde nichts entfernt.", fcPendingGo: "Zu Etappe 4",
   
@@ -699,7 +700,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   fcAllActivity: "All activity", fcBandText: "You are in the middle of the cleanup, at stage {n}.", fcBandBack: "Back to the cleanup", fcUndo: "Undo", fcHistory: "History", fcHistoryHint: "All you decided in the cleanup, the newest first.",
-  fcHistoryNone: "Nothing decided yet.", fcHistoryBack: "Back to the cleanup", fcLogMark: "Object note set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings on “Later”", fcLogSeveral: "{n} suggestions",
+  fcHistoryNone: "Nothing decided yet.", fcHistoryCut: "The {n} oldest entries are no longer in the history and cannot be undone here. The decisions themselves still hold (Activity).", fcHistoryBack: "Back to the cleanup", fcLogMark: "Object note set", fcLogSkip: "Skipped", fcLogLaterAll: "{n} quiet findings on “Later”", fcLogSeveral: "{n} suggestions",
   fcFollowMore: "… and {n} more", 
   fcSumSuggest: "{n} suggestions", fcSumDeclined: "{n} declined", fcPendingPlan: "{n} findings are marked and there is no plan yet. Nothing was removed so far.", fcPendingGo: "To stage 4",
   

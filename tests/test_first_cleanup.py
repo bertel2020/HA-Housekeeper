@@ -99,3 +99,29 @@ async def test_the_history_of_the_tour_is_kept_for_the_house_and_cleared_with_it
     )
     store.reset()
     assert store.state()["log"] == [], "reset clears the history"
+
+
+async def test_the_history_counts_the_objects_it_names_and_remembers_how_many_it_let_go(
+    hass,
+) -> None:
+    from custom_components.ha_housekeeper.first_cleanup import LOG_KEYS_LIMIT
+
+    store = FirstCleanupStore(hass)
+    store.begin(60, NOW)
+    for number in range(30):
+        store.log_add(
+            {
+                "id": f"e{number}",
+                "at": "2026-10-23T08:00:00+00:00",
+                "stage": 2,
+                "action": "mark",
+                "key": f"k{number}",
+                "keys": [f"k{number}"],
+                "targets": [f"entity:s{number}.{i}" for i in range(200)],
+            }
+        )
+    state = store.state()
+    assert sum(len(e["keys"]) + len(e["targets"]) for e in state["log"]) <= LOG_KEYS_LIMIT
+    assert state["log_dropped"] == 30 - len(state["log"]) > 0
+    store.reset()
+    assert store.state()["log_dropped"] == 0

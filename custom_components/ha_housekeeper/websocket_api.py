@@ -558,7 +558,9 @@ def websocket_first_cleanup_later(
         connection.user.id if connection.user else None,
         "cleanup",
     )
-    connection.send_result(msg["id"], {"put_off": done, **_first_cleanup_reply(scanner)})
+    connection.send_result(
+        msg["id"], {"put_off": done, "put_off_keys": keys, **_first_cleanup_reply(scanner)}
+    )
 
 
 @websocket_api.require_admin

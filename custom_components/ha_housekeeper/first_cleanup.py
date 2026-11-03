@@ -91,10 +91,15 @@ def clean_entry(value: Any) -> dict[str, Any] | None:
     return entry
 
 
+def _weight(entry: dict[str, Any]) -> int:
+    """What an entry weighs in the store: the keys and the objects it names."""
+    return len(entry.get("keys", [])) + len(entry.get("targets", []))
+
+
 def _trim(log: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """The newest entries within the limits."""
     log = log[-LOG_LIMIT:]
-    while len(log) > 1 and sum(len(e.get("keys", [])) for e in log) > LOG_KEYS_LIMIT:
+    while len(log) > 1 and sum(_weight(e) for e in log) > LOG_KEYS_LIMIT:
         log = log[1:]
     return log
 
@@ -116,6 +121,10 @@ def _clean(value: Any) -> dict[str, Any]:
         "log": _trim([e for item in log if (e := clean_entry(item))])
         if isinstance(log, list)
         else [],
+        # How many of the oldest entries were let go, so the history can say it is not complete.
+        "log_dropped": dropped
+        if isinstance(dropped := value.get("log_dropped"), int) and dropped > 0
+        else 0,
     }
 
 
@@ -172,7 +181,9 @@ class FirstCleanupStore:
         if (entry := clean_entry(value)) and all(
             e["id"] != entry["id"] for e in self._state["log"]
         ):
-            self._state["log"] = _trim([*self._state["log"], entry])
+            grown = [*self._state["log"], entry]
+            self._state["log"] = _trim(grown)
+            self._state["log_dropped"] += len(grown) - len(self._state["log"])
             self._save()
 
     def log_remove(self, entry_id: str) -> None:
