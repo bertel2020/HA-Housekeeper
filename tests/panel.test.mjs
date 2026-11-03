@@ -5818,6 +5818,22 @@ test("the notes on objects are a table with picking: the picked ones get a new r
   assert.ok(el.findingStatus === "hidden" && el.lv.findings.q === "Tree lights" && el.view === "findingsNav", "the hidden findings of the object open in the list of findings");
 });
 
+test("a new review date for notes that lift themselves keeps that, and a note turned into \"do not delete\" stops doing so", async () => {
+  const { el } = panel("en");
+  const mark = { kind: "seasonal", reason: "winter", until: "2026-11-01T00:00:00+00:00", at: "2025-10-01T00:00:00+00:00", auto_clear: true, grace: 45 };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "device", object_id: "d1", name: "Tree lights", mark }] };
+  el.markSel = new Set(["device:d1"]);
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(JSON.parse(JSON.stringify(msg))); return { marked: true }; };
+  el.refreshData = async () => {}; el.render = () => {};
+  el.markBulk = { kind: "review", days: 90, markKind: "" };
+  await el.commitMarkBulkEdit();
+  assert.ok(calls[0].auto_clear === true && calls[0].grace_minutes === 45, "lifting itself and its grace period stay");
+  el.markBulk = { kind: "kind", days: 90, markKind: "keep" };
+  await el.commitMarkBulkEdit();
+  assert.ok(calls[1].kind === "keep" && !("auto_clear" in calls[1]), "a note that hides nothing cannot lift itself");
+});
+
 test("the unreferenced entities can be picked to get one object note", async () => {
   const { el } = panel("en");
   el.unrefSel = new Set(["light.a", "light.b"]); el.unrefBulk = { markKind: "keep", reason: "needed", days: 90 };

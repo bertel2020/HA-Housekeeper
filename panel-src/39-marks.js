@@ -183,6 +183,7 @@ class MarksMixin {
       if (days) msg.days = days;
       if (to === "replaced" && mark.target) msg.target = mark.target;
       if (to !== "keep" && mark.window) { msg.window = mark.window.mode === "sun" ? { mode: "sun" } : { mode: "time", from: mark.window.from, to: mark.window.to }; msg.grace_minutes = Number(mark.grace ?? 30); }
+      else if (to !== "keep" && mark.auto_clear) { msg.auto_clear = true; msg.grace_minutes = Number(mark.grace ?? 30); }
       await this._hass.callWS(msg);
     });
     await this.refreshData();
