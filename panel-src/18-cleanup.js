@@ -973,8 +973,8 @@ class CleanupMixin {
     const nav = `<div class="taskgrid compactgrid setgrid navtiles compact" style="--cols:${this.navColumns(REPAIR_TASKS.length)}" role="group" aria-label="${this.esc(this.t("repairTitle"))}">${tiles}</div>`;
     let body;
     if (task) {
-      const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), repair_counter: () => this.counterCard() }[task]();
-      const chosen = { repair_counter: (this.counterId || "").trim(), migrate_meter: this.meterOld, replace_references: this.replOld, exchange_device: this.exchangeState().oldDev }[task];
+      const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), replace_wizard: () => this.rwCard(), repair_counter: () => this.counterCard() }[task]();
+      const chosen = { repair_counter: (this.counterId || "").trim(), migrate_meter: this.meterOld, replace_references: this.replOld, exchange_device: this.exchangeState().oldDev, replace_wizard: this.rwState().step === 2 ? "set up" : "" }[task];
       body = `${this.stepsBar(chosen ? 2 : 1)}${card}`;
     } else {
       body = `<p class="factnote pad">${this.t("repairHint")}</p>`;

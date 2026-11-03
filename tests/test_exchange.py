@@ -10,7 +10,7 @@ pytest.importorskip("homeassistant")
 
 from custom_components.ha_housekeeper import followup  # noqa: E402
 from custom_components.ha_housekeeper.audit_report import build_report  # noqa: E402
-from custom_components.ha_housekeeper.device_pairs import pair_devices  # noqa: E402
+from custom_components.ha_housekeeper.device_pairs import pair_devices, suggest_entities  # noqa: E402
 from custom_components.ha_housekeeper.simulation import simulate  # noqa: E402
 
 NOW = datetime(2026, 10, 9, 12, tzinfo=UTC)
@@ -53,6 +53,34 @@ def test_pairs_rank_by_class_unit_and_name_and_choose_nothing() -> None:
     assert result["pairs"][0]["object_id"] == "sensor.a_power", "used entities come first"
     assert "selected" not in power
     assert pair_devices(snapshot, "old", "old") is None
+
+
+def test_entities_are_paired_across_devices_and_can_be_narrowed() -> None:
+    snapshot = {
+        "objects": [
+            {"object_type": "device", "object_id": "d1", "name": "Lamp"},
+            {"object_type": "device", "object_id": "d2", "name": "Lamp new"},
+            _entity("light.lamp_int1", "d1", name="Lamp", has_statistics=True),
+            _entity("light.lamp_int2", "d2", name="Lamp", platform="new"),
+            _entity("light.other", "d3", name="Other", platform="old"),
+        ],
+        "edges": [],
+    }
+    result = suggest_entities(snapshot, ["light.lamp_int1", "light.lamp_int1", "light.gone"])
+    assert result["unknown"] == ["light.gone"] and len(result["pairs"]) == 1
+    row = result["pairs"][0]
+    assert (
+        row["has_statistics"]
+        and [c["object_id"] for c in row["candidates"]][0] == "light.lamp_int2"
+    )
+    narrowed = suggest_entities(snapshot, ["light.lamp_int1"], scope_domain="old")
+    assert [c["object_id"] for c in narrowed["pairs"][0]["candidates"]] == ["light.other"]
+    chosen = suggest_entities(snapshot, ["light.lamp_int1", "light.lamp_int2"])
+    assert all(
+        c["object_id"] not in ("light.lamp_int1", "light.lamp_int2")
+        for p in chosen["pairs"]
+        for c in p["candidates"]
+    ), "an entity that is replaced is never offered as a replacement"
 
 
 def _finding(key, kind="unavailable"):

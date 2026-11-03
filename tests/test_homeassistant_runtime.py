@@ -1613,6 +1613,11 @@ async def test_report_and_device_pairs_are_served_to_admins(
         {"type": "ha_housekeeper/device_pairs", "old_device_id": "a", "new_device_id": "b"}
     )
     assert (await client.receive_json())["error"]["code"] == "not_found"
+    await client.send_json_auto_id(
+        {"type": "ha_housekeeper/entity_pairs", "old_entity_ids": ["light.nope"]}
+    )
+    result = (await client.receive_json())["result"]
+    assert result["pairs"] == [] and result["unknown"] == ["light.nope"]
 
 
 async def test_only_one_write_runs_at_a_time_across_purge_and_plans(

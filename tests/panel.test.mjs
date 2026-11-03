@@ -3901,6 +3901,33 @@ test("the cleanup journal notes recorder purges with backup, user and result", (
   assert.equal(el.purgeJournalCard(), "");
 });
 
+test("the replace assistant takes proposals only on request, defaults the kind by statistics and stops on a doubled target", async () => {
+  const calls = [];
+  const { el } = panel("en", { setTimeout: () => 0 });
+  el.data = { objects: [{ object_type: "entity", object_id: "light.a", name: "A", status: "unavailable" }, { object_type: "entity", object_id: "sensor.b", name: "B", status: "unavailable" }], quarantine: [], findings: [], edges: [], meta: {} };
+  const cand = (id, score = 5) => ({ object_id: id, name: id, score, reasons: [], status: "active", unit: null });
+  const result = { unknown: [], pairs: [
+    { object_id: "light.a", name: "A", used: 2, has_statistics: false, unit: null, candidates: [cand("light.n")] },
+    { object_id: "sensor.b", name: "B", used: 1, has_statistics: true, unit: null, candidates: [cand("light.n"), cand("sensor.n")] },
+  ] };
+  el._hass = { language: "en", callWS: async msg => { calls.push(JSON.parse(JSON.stringify(msg))); return msg.type === "ha_housekeeper/entity_pairs" ? result : { plan_id: "p1", actions: [], status: "dry_run", summary: {} }; } };
+  el.rwState().sel = new Set(["light.a", "sensor.b"]);
+  await el.rwLoadPairs();
+  assert.deepEqual(calls.find(c => c.type === "ha_housekeeper/entity_pairs").old_entity_ids, ["light.a", "sensor.b"]);
+  assert.equal(el.rwActions().length, 0, "nothing is chosen for the person");
+  el.rwTakeAll();
+  assert.deepEqual(JSON.parse(JSON.stringify(el.rwActions())), [{ kind: "replace_references", object_id: "light.a", target: "light.n" }, { kind: "migrate_meter", object_id: "sensor.b", target: "light.n", mode: "both" }]);
+  assert.equal(el.rwErrorCount(), 2, "one new entity for two old ones marks both rows");
+  assert.ok(el.rwCard().includes("Fix the errors") || el.rwSetupCard().includes("Fix the errors"));
+  el.rwState().step = 2;
+  assert.ok(/data-rw-create[^>]*disabled/.test(el.rwCard()), "no preview with an error in a row");
+  el.rwChoose("sensor.b", "sensor.n");
+  assert.equal(el.rwErrorCount(), 0);
+  await el.rwCreatePlan();
+  assert.equal(calls.find(c => c.type === "ha_housekeeper/plan_create").actions.length, 2);
+  assert.equal(el.plan.plan_id, "p1");
+});
+
 test("the exchange assistant preselects nothing and turns only confirmed pairs into actions", async () => {
   const calls = [];
   const { el } = panel("en", { setTimeout: () => 0 });
@@ -4754,7 +4781,7 @@ test("an entity has an Actions tab that holds what changes something; the overvi
   const actions = el.detailPanel("actions", ghost, key);
   assert.ok(actions.includes("Recommended") && actions.includes("Name and classify") && actions.includes("data-de-rename"));
   assert.ok(actions.includes('class="actrow"') && (actions.match(/<section class="panel/g) || []).length === 1, "the forms are rows of one card");
-  assert.ok(/<div class="fbtns"><button class="btn primary" data-act-replace="sensor.ghost"/.test(actions) && !actions.includes(">Open</button>"), "the step that answers the finding leads its row");
+  assert.ok(/<div class="fbtns"><button class="btn primary" data-act-replace="sensor.ghost"/.test(actions) && (actions.match(/data-act-replace="/g) || []).length === 1, "the step that answers the finding leads its row, and is not offered twice");
   assert.ok(actions.includes("data-de-id") && !actions.includes('class="deform" data-de-rename><label'), "the controls sit on the right, the label is the row title");
   // a healthy entity has no next step
   assert.equal(el.nextStepBand({ ...ghost, status: "active" }, "entity:sensor.fine"), "");

@@ -362,3 +362,18 @@ def test_the_journal_list_counts_what_was_done_and_names_the_kinds() -> None:
     }
     listed = plan_summary(plan)
     assert (listed["done_count"], listed["kinds"]) == (1, ["disable_entity"])
+
+
+def test_a_new_entity_named_twice_or_replaced_itself_blocks_both_sides() -> None:
+    objects = [entity(i, "active") for i in ("light.a", "light.b", "light.c", "light.n")]
+    requests = [
+        {"kind": "replace_references", "object_id": "light.a", "target": "light.n"},
+        {"kind": "replace_references", "object_id": "light.b", "target": "light.n"},
+        {"kind": "replace_references", "object_id": "light.c", "target": "light.a"},
+    ]
+    data = {(r["object_id"], r["target"]): (None, []) for r in requests}
+    plan = build_plan(snapshot(objects), requests, NOW, reference_data=data)
+    reasons = {a["object_id"]: a["reasons"] for a in plan["actions"]}
+    assert "target_duplicate" in reasons["light.a"] and "target_duplicate" in reasons["light.b"]
+    assert "target_replaced" in reasons["light.a"] and "target_replaced" in reasons["light.c"]
+    assert all(a["verdict"] == "blocked" and not a["executable"] for a in plan["actions"])

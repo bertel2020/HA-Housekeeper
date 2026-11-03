@@ -37,6 +37,7 @@ class DetailActionsMixin {
     // An integration that keeps failing to set up can be sent into the auto-pause, which tries it again later on its own.
     const failing = item.object_type === "config_entry" ? open.find(f => f.rule_id === "config_entry.not_loaded") : null;
     if (failing && (this.autoPause?.pausable || []).some(p => p.entry_id === item.object_id)) out.push({ attr: `data-ap-send="${this.esc(item.object_id)}"`, icon: "mdi:pause-circle-outline", label: this.t("apSend"), hint: "apSendHint", btn: "apDo", finding: failing.key, ap: true });
+    if (item.object_type === "entity") out.push({ attr: `data-act-replace-many="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal-variant", label: this.t("actReplaceMany"), hint: "actHintReplaceMany" });
     if (item.object_type === "device") out.push({ attr: `data-act-exchange="${this.esc(item.object_id)}"`, icon: "mdi:devices", label: this.t("actExchange"), hint: "actHintExchange" });
     return { items: out, broken };
   }

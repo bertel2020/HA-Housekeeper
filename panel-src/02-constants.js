@@ -193,9 +193,10 @@ const REPAIR_TASKS = [
   ["migrate_meter", "mdi:gauge", "repairTaskMeter", "repairTaskMeterHint"],
   ["replace_references", "mdi:swap-horizontal", "repairTaskReplace", "repairTaskReplaceHint"],
   ["exchange_device", "mdi:devices", "repairTaskExchange", "repairTaskExchangeHint"],
+  ["replace_wizard", "mdi:swap-horizontal-variant", "repairTaskWizard", "repairTaskWizardHint"],
 ];
 // The view in which the person finishes a plan of this kind.
-const viewForKind = kind => (["repair_counter", "repair_range", "migrate_meter", "replace_references", "exchange_device", "refactor_automation"].includes(kind) ? "repair" : "cleanup");
+const viewForKind = kind => (["repair_counter", "repair_range", "migrate_meter", "replace_references", "exchange_device", "replace_wizard", "refactor_automation"].includes(kind) ? "repair" : "cleanup");
 
 // IBM Plex, shipped with the integration. A shadow root cannot declare fonts, so the rules go into the document once.
 const FONT_BASE = "/ha_housekeeper/fonts/";

@@ -348,6 +348,8 @@ BLOCKING_REASONS = frozenset(
         "unsupported_action",
         "not_found",
         "target_missing",
+        "target_duplicate",
+        "target_replaced",
         "same_entity",
         "different_domain",
         "target_not_working",
@@ -1285,6 +1287,30 @@ def judge_entity_action(
     return action
 
 
+def _mark_target_clashes(actions: list[dict[str, Any]]) -> None:
+    """Block replacements that name the same new entity twice or whose new entity is replaced itself.
+
+    Two old entities cannot both become one new one, and a chain (A to B, B to C) would send
+    the first to an entity that is gone by the end. Both sides of a clash are blocked.
+    """
+    pairs = [a for a in actions if a["kind"] in REFERENCE_KINDS | METER_KINDS | RENAME_KINDS]
+    targets = [a.get("target") for a in pairs if a.get("target")]
+    sources = {a["object_id"] for a in pairs}
+    for action in pairs:
+        target = action.get("target")
+        if not target:
+            continue
+        found = []
+        if targets.count(target) > 1:
+            found.append("target_duplicate")
+        if target in sources or action["object_id"] in targets:
+            found.append("target_replaced")
+        if found:
+            action["reasons"].extend(r for r in found if r not in action["reasons"])
+            _verdict(action)
+            action["executable"] = False
+
+
 def build_plan(
     snapshot: dict[str, Any],
     requested: list[dict[str, Any]],
@@ -1515,6 +1541,7 @@ def build_plan(
             )
         action["executable"] = kind in EXECUTABLE_KINDS and action["verdict"] != "blocked"
         actions.append(action)
+    _mark_target_clashes(actions)
     counts = {
         verdict: sum(a["verdict"] == verdict for a in actions)
         for verdict in ("ok", "review", "blocked")

@@ -7,7 +7,7 @@ const SEARCH_WORDS = {
   overview: "start home status gesundheit zustand health",
   findingsNav: "befunde probleme fehler hinweise findings problems issues",
   cleanup: "aufräumen bereinigen löschen entfernen quarantäne cleanup delete remove quarantine",
-  repair: "reparieren zähler umziehen ersetzen austauschen repair counter meter replace exchange",
+  repair: "reparieren zähler umziehen ersetzen austauschen repair counter meter replace exchange wizard assistent mehrere entitäten ersetzen",
   journal: "journal pläne rückgängig verlauf plans undo history",
   removedDevices: "entfernt gelöscht vergessen entfernte geräte removed deleted forgotten devices",
   maintenance: "wartung backup sicherung wiederherstellung update blueprints maintenance restore",

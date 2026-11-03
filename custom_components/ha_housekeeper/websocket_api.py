@@ -64,7 +64,7 @@ from .cleanup import (
 from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable, reload_info
 from .cleanup_round import ROUND_LIMIT, duplicate_rows, needs_first_step, removal_requests, sort_row
 from .const import DOMAIN, OPTION_LIMITS
-from .device_pairs import pair_devices
+from .device_pairs import pair_devices, suggest_entities
 from .failure_info import error_hint, item_id_of, last_failure
 from .first_cleanup import BULK_LIMIT, LATER_DAYS, STAGES, stage_keys
 from .fix_ways import ways_for
@@ -1357,6 +1357,35 @@ async def websocket_device_pairs(
 
 @websocket_api.require_admin
 @websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/entity_pairs",
+        vol.Required("old_entity_ids"): vol.All([str], vol.Length(min=1, max=MAX_ACTIONS)),
+        vol.Optional("device_ids"): [str],
+        vol.Optional("platform"): str,
+    }
+)
+@websocket_api.async_response
+@with_scanner
+async def websocket_entity_pairs(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Suggest a replacement for each chosen entity, from any device. Reads only; nothing is chosen."""
+    try:
+        snapshot = await scanner.async_get_snapshot()
+    except Exception as err:
+        connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
+        return
+    result = suggest_entities(
+        snapshot, msg["old_entity_ids"], msg.get("device_ids"), msg.get("platform")
+    )
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
     {vol.Required("type"): f"{DOMAIN}/plan_delete", vol.Required("plan_id"): str}
 )
 @callback
@@ -1757,6 +1786,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_plan_delete)
     websocket_api.async_register_command(hass, websocket_plan_report)
     websocket_api.async_register_command(hass, websocket_device_pairs)
+    websocket_api.async_register_command(hass, websocket_entity_pairs)
     websocket_api.async_register_command(hass, websocket_plan_confirm)
     websocket_api.async_register_command(hass, websocket_plan_execute)
     websocket_api.async_register_command(hass, websocket_plan_cancel)
