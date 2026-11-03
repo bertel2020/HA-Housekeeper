@@ -210,6 +210,20 @@ class ActivityStore:
         self._backfilled = True
         self._save()
 
+    def _after(self, cursor: str | None) -> list[dict[str, Any]]:
+        """The entries after the cursor (``at|id`` of the last one of the page before).
+
+        Entries of one moment (a bulk action) share their time, so the time alone would skip them; the
+        position of the entry says where the next page begins. An entry that is gone falls back to the time.
+        """
+        if not cursor:
+            return self._items
+        at, _, entry_id = cursor.partition("|")
+        position = next((i for i, e in enumerate(self._items) if e["id"] == entry_id), None)
+        if position is not None:
+            return self._items[position + 1 :]
+        return [e for e in self._items if e["at"] < at]
+
     def view(
         self,
         kinds: tuple[str, ...] | None = None,
@@ -221,9 +235,8 @@ class ActivityStore:
         needle = query.strip().casefold()
         rows = [
             e
-            for e in self._items
+            for e in self._after(before)
             if (not kinds or e["kind"] in kinds)
-            and (before is None or e["at"] < before)
             and (
                 not needle
                 or needle
@@ -239,6 +252,6 @@ class ActivityStore:
                 {**e, "undo": e["undo"] and {k: v for k, v in e["undo"].items() if k != "previous"}}
                 for e in page
             ],
-            "next": page[-1]["at"] if len(rows) > limit else None,
+            "next": f"{page[-1]['at']}|{page[-1]['id']}" if len(rows) > limit else None,
             "total": len(rows),
         }

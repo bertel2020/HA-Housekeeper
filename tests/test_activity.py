@@ -36,3 +36,18 @@ async def test_activity_records_filters_pages_and_takes_over_the_old_records(
     store.record("auto", "gone", NOW + timedelta(days=400))
     assert store.view()["total"] == 1  # the older ones are past a year
     assert ITEM_LIMIT == 2000
+
+
+async def test_pages_do_not_skip_entries_of_the_same_moment(hass: HomeAssistant) -> None:
+    store = ActivityStore(hass)
+    for number in range(7):
+        store.record("decision", "snooze", NOW, key=f"f{number}")
+    seen: list[str] = []
+    cursor = None
+    while True:
+        page = store.view(before=cursor, limit=3)
+        seen += [e["key"] for e in page["items"]]
+        cursor = page["next"]
+        if cursor is None:
+            break
+    assert sorted(seen) == [f"f{number}" for number in range(7)] and len(seen) == 7
