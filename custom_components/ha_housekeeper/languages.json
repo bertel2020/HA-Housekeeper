@@ -1,16 +1,7 @@
 [
-  {
-    "code": "de",
-    "name": "Deutsch",
-    "patterns": ["de"],
-    "quotes": ["„", "“"],
-    "lowerKind": false
-  },
-  {
-    "code": "en",
-    "name": "English",
-    "patterns": ["en"],
-    "quotes": ["“", "”"],
-    "lowerKind": true
-  }
+  {"code": "de", "name": "Deutsch", "patterns": ["de"], "quotes": ["„", "“"], "lowerKind": false},
+  {"code": "en", "name": "English", "patterns": ["en"], "quotes": ["“", "”"], "lowerKind": true},
+  {"code": "sk", "name": "Slovenčina", "patterns": ["sk"], "quotes": ["„", "“"], "lowerKind": false, "status": "community"},
+  {"code": "ru", "name": "Русский", "patterns": ["ru"], "quotes": ["«", "»"], "lowerKind": false, "status": "community"},
+  {"code": "zh-Hans", "name": "简体中文", "patterns": ["zh-hans", "zh-cn", "zh-sg"], "quotes": ["“", "”"], "lowerKind": false, "status": "community"}
 ]

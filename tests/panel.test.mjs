@@ -8404,3 +8404,19 @@ test("a language is chosen by pattern, plural forms pick by number, and a missin
   el.prefs = { ...el.prefs, language: "fr" };
   assert.equal(el.lang, "de", "a language that is not listed is not used, Home Assistant decides");
 });
+
+test("a language file holds no stray key, keeps the placeholders of English and gives every plural text an other form", () => {
+  const { TEXT } = loadPanel();
+  const registry = JSON.parse(fs.readFileSync(new URL("../custom_components/ha_housekeeper/languages.json", import.meta.url), "utf8"));
+  const holders = text => new Set(String(text).match(/\{\w+\}/g) || []);
+  for (const { code } of registry.filter(l => l.code !== "de" && l.code !== "en")) {
+    const texts = JSON.parse(fs.readFileSync(new URL(`../custom_components/ha_housekeeper/frontend/i18n/${code}.json`, import.meta.url), "utf8"));
+    for (const [key, value] of Object.entries(texts)) {
+      assert.ok(key in TEXT.en, `${code}: ${key} is not a text of the panel`);
+      for (const form of typeof value === "string" ? [value] : Object.values(value)) {
+        assert.ok([...holders(form)].every(name => holders(TEXT.en[key]).has(name)), `${code}: ${key} names a placeholder English does not have`);
+      }
+      if (typeof value === "object") assert.ok(typeof value.other === "string", `${code}: ${key} has no other form`);
+    }
+  }
+});

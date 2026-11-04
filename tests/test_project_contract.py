@@ -25,6 +25,16 @@ def _leaf_paths(value: object, prefix: str = "") -> set[str]:
     return {prefix}
 
 
+def _flat(value: dict) -> dict[str, str]:
+    return {path: _lookup(value, path) for path in _leaf_paths(value)}
+
+
+def _lookup(value: dict, path: str) -> str:
+    for part in path.split("."):
+        value = value[part]
+    return str(value)
+
+
 def test_manifest_declares_installable_custom_integration() -> None:
     manifest = _json(COMPONENT / "manifest.json")
     assert manifest["domain"] == "ha_housekeeper"
@@ -255,3 +265,13 @@ def test_every_language_has_its_file_and_the_files_match_german_and_english() ->
     }
     files = {path.stem for path in (COMPONENT / "frontend" / "i18n").glob("*.json")}
     assert files == listed - {"de", "en"}
+
+
+def test_translation_files_hold_no_stray_key_and_keep_the_placeholders() -> None:
+    english = _flat(_json(COMPONENT / "translations" / "en.json"))
+    for path in sorted((COMPONENT / "translations").glob("*.json")):
+        for key, text in _flat(_json(path)).items():
+            assert key in english, f"{path.name}: {key} is not a text of English"
+            assert set(re.findall(r"\{\w+\}", text)) <= set(re.findall(r"\{\w+\}", english[key])), (
+                f"{path.name}: {key}"
+            )
