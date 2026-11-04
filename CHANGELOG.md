@@ -4,6 +4,24 @@
 >
 > **Beta of 2.0:** The pre-release [2.0.0-beta.1](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.1) is there to try: findings by topic with a page of its own, "Fix", a guided tour for cleaning up, the view "Simple" or "Full" and new names for the outcomes. In HACS (from Home Assistant 2026.11: Marketplace) it shows under "Redownload" with beta versions switched on. A normal update stays on 1.x.
 
+## 1.14.1 - 2026-11-04
+
+### Behoben
+
+- **Sicherheit:** Namen und Links aus Daten von Integrationen werden im Panel sicher angezeigt.
+  - Bereichs- und Entitätsnamen werden nicht mehr als Markup gelesen.
+  - Links zur Dokumentation und zu Reparaturhinweisen werden nur mit `http`, `https` oder als Pfad geöffnet.
+- **Diagnose:** Der Diagnose-Download enthält keine Titel von Integrationen und keine Entitäts-IDs mehr, nur noch deren Anzahl.
+
+### English
+
+#### Fixed
+
+- **Security:** Names and links from integration data are shown safely in the panel.
+  - Area and entity names are no longer read as markup.
+  - Links to documentation and repair hints only open with `http`, `https` or as a path.
+- **Diagnostics:** The diagnostics download no longer contains integration titles or entity IDs, only their count.
+
 ## 1.14.0 - 2026-10-31
 
 ### Neu
