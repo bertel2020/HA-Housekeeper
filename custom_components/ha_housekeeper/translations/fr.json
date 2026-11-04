@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Configurer HA Housekeeper",
-        "description": "Ajoute le panneau Housekeeper pour les administrateurs. Il commence par analyser ; rien n'est modifié sans votre confirmation explicite."
+        "description": "Ajoute le panneau Housekeeper pour les administrateurs. Il commence par analyser ; rien n'est modifié sans ta confirmation explicite."
       }
     },
     "abort": {
@@ -72,7 +72,7 @@
     },
     "database_damaged": {
       "title": "La base du recorder est endommagée",
-      "description": "Un contrôle du {at} a trouvé des dommages dans la base du recorder : {first} Housekeeper ne supprime rien du recorder tant qu'un contrôle n'est pas revenu propre. Faites d'abord une sauvegarde, reconstruisez les index concernés avec REINDEX ou restaurez une sauvegarde. [Ouvrir Housekeeper]({link})."
+      "description": "Un contrôle du {at} a trouvé des dommages dans la base du recorder : {first} Housekeeper ne supprime rien du recorder tant qu'un contrôle n'est pas revenu propre. Fais d'abord une sauvegarde, reconstruis les index concernés avec REINDEX ou restaure une sauvegarde. [Ouvrir Housekeeper]({link})."
     },
     "backup_problem": {
       "title": "La protection des sauvegardes signale un problème",
@@ -84,7 +84,7 @@
     },
     "auto_pause_exhausted": {
       "title": "{title} en pause depuis {days} jours",
-      "description": "Housekeeper a mis {title} en pause après des configurations ratées à répétition et a réessayé pendant {days} jours sans succès. Elle reste en pause jusqu'à ce que vous y mettiez fin. [Ouvrir la mise en pause automatique]({link})"
+      "description": "Housekeeper a mis {title} en pause après des configurations ratées à répétition et a réessayé pendant {days} jours sans succès. Elle reste en pause jusqu'à ce que tu y mettes fin. [Ouvrir la mise en pause automatique]({link})"
     },
     "check_flapping": {
       "title": "Un contrôle change sans cesse de niveau",
@@ -258,7 +258,7 @@
         },
         "ignored": {
           "name": "Constats masqués",
-          "description": "hide (par défaut) laisse de côté les constats sur lesquels vous avez tranché, include les ajoute, only ne liste que ceux-là."
+          "description": "hide (par défaut) laisse de côté les constats sur lesquels tu as tranché, include les ajoute, only ne liste que ceux-là."
         },
         "limit": {
           "name": "Taille de page",
@@ -314,7 +314,7 @@
     },
     "finding_decide": {
       "name": "Accès IA : trancher sur un constat",
-      "description": "Masque, conserve ou reporte un constat dans Housekeeper, ou l'affiche de nouveau. Seule la liste propre à Housekeeper change, jamais Home Assistant ; la modification peut être annulée avec « undo » ou dans le panneau. Nécessite que l'« Accès IA » et « Modifier la liste » soient activés. Récupérez la clé dans « findings ».",
+      "description": "Masque, conserve ou reporte un constat dans Housekeeper, ou l'affiche de nouveau. Seule la liste propre à Housekeeper change, jamais Home Assistant ; la modification peut être annulée avec « undo » ou dans le panneau. Nécessite que l'« Accès IA » et « Modifier la liste » soient activés. Récupère la clé dans « findings ».",
       "fields": {
         "key": {
           "name": "Clé du constat",
@@ -400,7 +400,7 @@
     },
     "undo": {
       "name": "Accès IA : annuler une modification",
-      "description": "Annule une modification du journal de l'accès IA, en la remettant comme avant. Récupérez l'heure de l'entrée dans « audit ». Nécessite que l'« Accès IA » et « Modifier la liste » soient activés.",
+      "description": "Annule une modification du journal de l'accès IA, en la remettant comme avant. Récupère l'heure de l'entrée dans « audit ». Nécessite que l'« Accès IA » et « Modifier la liste » soient activés.",
       "fields": {
         "at": {
           "name": "Heure de l'entrée",
@@ -432,37 +432,37 @@
       "message": "HA Housekeeper n'est pas chargé."
     },
     "cleanup_busy": {
-      "message": "Un plan est en cours et scanne de lui-même. Réessayez plus tard."
+      "message": "Un plan est en cours et scanne de lui-même. Réessaie plus tard."
     },
     "starting": {
       "message": "Home Assistant est encore en train de démarrer. Un scan serait préliminaire et n'est pas conservé."
     },
     "disabled": {
-      "message": "L'accès IA est désactivé. Activez-le dans les réglages de Housekeeper."
+      "message": "L'accès IA est désactivé. Active-le dans les réglages de Housekeeper."
     },
     "write_disabled": {
-      "message": "La modification des listes de Housekeeper est désactivée. Activez-la dans les réglages de Housekeeper."
+      "message": "La modification des listes de Housekeeper est désactivée. Active-la dans les réglages de Housekeeper."
     },
     "rate_limited": {
-      "message": "Trop de modifications : {detail} au maximum en 5 minutes. Patientez quelques minutes."
+      "message": "Trop de modifications : {detail} au maximum en 5 minutes. Patiente quelques minutes."
     },
     "too_many_calls": {
-      "message": "Trop d'appels : {detail} lectures au maximum par minute. Patientez un instant."
+      "message": "Trop d'appels : {detail} lectures au maximum par minute. Patiente un instant."
     },
     "not_admin": {
       "message": "Seul un administrateur peut utiliser l'accès IA."
     },
     "no_scan": {
-      "message": "Il n'y a pas encore de scan. Lancez-en un avec ha_housekeeper.scan."
+      "message": "Il n'y a pas encore de scan. Lances-en un avec ha_housekeeper.scan."
     },
     "invalid_format": {
       "message": "Les paramètres ne sont pas valides : {detail}."
     },
     "not_found": {
-      "message": "Rien trouvé pour cette clé ou cet identifiant. Prenez les clés et les identifiants dans « findings » ou « object » ; prenez « at » pour « undo » dans « audit »."
+      "message": "Rien trouvé pour cette clé ou cet identifiant. Prends les clés et les identifiants dans « findings » ou « object » ; prends « at » pour « undo » dans « audit »."
     },
     "withheld": {
-      "message": "Cet objet n'est pas communiqué : les objets sensibles (serrures, alarmes, caméras, personnes) sont retenus. Modifiez cela dans les réglages d'accès IA de Housekeeper."
+      "message": "Cet objet n'est pas communiqué : les objets sensibles (serrures, alarmes, caméras, personnes) sont retenus. Modifie cela dans les réglages d'accès IA de Housekeeper."
     },
     "reason_required": {
       "message": "Une décision nécessite une raison."
@@ -474,7 +474,7 @@
       "message": "Cet objet est critique : « Voulu » nécessite un nombre de jours après lequel il est de nouveau affiché."
     },
     "finding_not_found": {
-      "message": "Le constat n'est pas dans le dernier scan. Prenez la clé dans « findings »."
+      "message": "Le constat n'est pas dans le dernier scan. Prends la clé dans « findings »."
     },
     "kind_not_allowed": {
       "message": "Ce type de note d’objet n’est pas autorisé pour cet objet."
@@ -486,10 +486,10 @@
       "message": "La liste est pleine."
     },
     "fix_disabled": {
-      "message": "La création de plans de correction est désactivée. Activez « Corriger les constats » dans les paramètres de Housekeeper."
+      "message": "La création de plans de correction est désactivée. Active « Corriger les constats » dans les paramètres de Housekeeper."
     },
     "way_not_offered": {
-      "message": "Cette façon n’est pas proposée pour ce constat. Demandez les façons à finding_fix_options."
+      "message": "Cette façon n’est pas proposée pour ce constat. Demande les façons à finding_fix_options."
     },
     "target_required": {
       "message": "Cette façon nécessite la nouvelle cible dans « target »."

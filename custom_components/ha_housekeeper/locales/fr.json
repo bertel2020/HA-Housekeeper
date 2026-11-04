@@ -41,7 +41,7 @@
    "{title} ({domain}) est en pause : {why}. Housekeeper réessaie encore {n} fois, pendant {days} jour(s) au maximum. [Ouvrir Auto-pause](/{url}?view=reliability&tab=autopause)"
   ],
   "why_auto": "{n} tentative(s) échouée(s) en {hours} h",
-  "why_manual": "mis en pause par vous",
+  "why_manual": "mis en pause par toi",
   "back": [
    "HA Housekeeper : {title} est de retour",
    "{title} ({domain}) s’est de nouveau configuré après {span} et n’est plus en pause."
@@ -52,7 +52,7 @@
   ],
   "exhausted": [
    "HA Housekeeper : {title} en pause pendant {days} jour(s)",
-   "{title} ({domain}) n’a pas pu être configuré en {days} jour(s). Veuillez vérifier : le journal, une mise à jour de l’intégration, la source elle-même. [Ouvrir Auto-pause](/{url}?view=reliability&tab=autopause)"
+   "{title} ({domain}) n’a pas pu être configuré en {days} jour(s). Merci de vérifier : le journal, une mise à jour de l’intégration, la source elle-même. [Ouvrir Auto-pause](/{url}?view=reliability&tab=autopause)"
   ]
  },
  "monitor.MONITOR_REASONS": {

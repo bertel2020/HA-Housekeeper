@@ -52,7 +52,7 @@
   ],
   "exhausted": [
    "HA Housekeeper: {title} em pausa durante {days} dias",
-   "{title} ({domain}) não pôde ser configurado em {days} dias. Verifique: o registo, uma atualização da integração, a própria origem. [Abrir Pausa automática](/{url}?view=reliability&tab=autopause)"
+   "{title} ({domain}) não pôde ser configurado em {days} dias. Verifica: o registo, uma atualização da integração, a própria origem. [Abrir Pausa automática](/{url}?view=reliability&tab=autopause)"
   ]
  },
  "monitor.MONITOR_REASONS": {

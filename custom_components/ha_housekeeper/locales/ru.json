@@ -52,7 +52,7 @@
   ],
   "exhausted": [
    "HA Housekeeper: {title} приостановлено на {days} дн.",
-   "{title} ({domain}) не удалось настроить за {days} дн. Проверьте: журнал, обновление интеграции, сам источник. [Открыть автопаузу](/{url}?view=reliability&tab=autopause)"
+   "{title} ({domain}) не удалось настроить за {days} дн. Проверь: журнал, обновление интеграции, сам источник. [Открыть автопаузу](/{url}?view=reliability&tab=autopause)"
   ]
  },
  "monitor.MONITOR_REASONS": {
