@@ -78,7 +78,7 @@ class WatchMixin {
       parts.push(`<div class="sectionlabel">${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</div>${r.new_repairs.slice(0, WATCH_LIST).map(key => {
         const i = info[key], domain = key.split(":")[0], id = key.split(":").slice(1).join(":");
         const sub = [this.esc(domain), ["critical", "error", "warning"].includes(i?.severity) ? this.t(`repairSeverity_${i.severity}`) : "", i?.fixable ? this.t("repairFixable") : ""].filter(Boolean).join(" · ");
-        return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(i?.title || id)}</strong><small>${sub}</small></span>${i?.url ? `<a class="btn quiet" href="${this.esc(i.url)}" target="_blank" rel="noopener noreferrer">${this.t("repairMore")}</a>` : ""}</div>`;
+        return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(i?.title || id)}</strong><small>${sub}</small></span>${this.safeUrl(i?.url) ? `<a class="btn quiet" href="${this.esc(i.url)}" target="_blank" rel="noopener noreferrer">${this.t("repairMore")}</a>` : ""}</div>`;
       }).join("")}`);
     }
     if (r.new_findings.length) parts.push(`<p class="sub">${this.t("watchNewFindings", { n: this.formatNumber(r.new_findings.length) })}</p>`);

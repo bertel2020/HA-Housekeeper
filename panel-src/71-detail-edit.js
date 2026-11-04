@@ -30,7 +30,7 @@ class DetailEditMixin {
     const { e, now, suggest, renameControls, areaControls, hasAreas } = this.detailEditParts(item);
     const rename = renameControls ? `<form class="deform" data-de-rename><label for="de-id"><strong>${this.t("deNewId")}</strong></label>${renameControls}
         <small class="factnote">${this.t("deRenameNote")}</small></form>` : "";
-    const assign = hasAreas ? `<form class="deform" data-de-area><label for="de-area"><strong>${this.t("deArea")}</strong><small class="denow${now ? "" : " none"}">${this.t("deAreaNow", { area: now || this.t("deNoArea") })}</small></label>${areaControls}
+    const assign = hasAreas ? `<form class="deform" data-de-area><label for="de-area"><strong>${this.t("deArea")}</strong><small class="denow${now ? "" : " none"}">${this.t("deAreaNow", { area: this.esc(now || this.t("deNoArea")) })}</small></label>${areaControls}
         ${suggest ? `<small class="factnote">${this.t("areaNote")}</small>` : ""}</form>` : `<small class="factnote">${this.t("areaNone")}</small>`;
     // Rarely needed, so it starts closed; an error from the last try keeps it open.
     const body = `<div class="pad">${rename}${assign}${e.error ? `${this.notice("err", this.t(e.error))}` : ""}</div>`;
@@ -43,7 +43,7 @@ class DetailEditMixin {
     const { e, now, suggest, renameControls, areaControls, hasAreas } = this.detailEditParts(item, true);
     const rows = [];
     if (renameControls) rows.push(this.actRow(this.t("deNewId"), this.t("deRenameNote"), `<form class="deform" data-de-rename>${renameControls}</form>`));
-    const areaHint = [this.t("deAreaNow", { area: now || this.t("deNoArea") }), suggest && hasAreas ? this.t("areaNote") : ""].filter(Boolean).join(" · ");
+    const areaHint = [this.t("deAreaNow", { area: this.esc(now || this.t("deNoArea")) }), suggest && hasAreas ? this.t("areaNote") : ""].filter(Boolean).join(" · ");
     rows.push(hasAreas ? this.actRow(this.t("deArea"), areaHint, `<form class="deform" data-de-area>${areaControls}</form>`) : this.actRow(this.t("deArea"), this.t("areaNone"), ""));
     if (e.error) rows.push(`<div class="actblock">${this.notice("err", this.t(e.error))}</div>`);
     return rows;
