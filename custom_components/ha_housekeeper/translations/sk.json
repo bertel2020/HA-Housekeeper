@@ -85,6 +85,10 @@
     "auto_pause_exhausted": {
       "title": "Pozastavené: {title} ({days} dní)",
       "description": "Housekeeper pozastavil {title} po opakovaných neúspešných nastaveniach a ďalších {days} dní to opakovane skúšal bez úspechu. Pozastavenie zostáva aktívne, kým ho neukončíš. [Otvoriť automatické pozastavenie]({link})"
+    },
+    "check_flapping": {
+      "title": "Kontrola neustále mení úroveň",
+      "description": "{count} kontrol(a) zmenilo úroveň niekoľkokrát za pár hodín. Často to znamená, že pravidlo je príliš prísne alebo sa niečo neustále reštartuje. [Otvoriť históriu]({link}). Nič sa nemení automaticky."
     }
   },
   "entity": {
@@ -109,6 +113,9 @@
       },
       "low_batteries": {
         "name": "Slabé batérie"
+      },
+      "new_findings": {
+        "name": "Nové nálezy"
       },
       "last_scan": {
         "name": "Posledná kontrola"
@@ -182,6 +189,9 @@
       },
       "hint_orphaned_statistics": {
         "name": "Odporúčanie na opravu: osirotené štatistiky"
+      },
+      "hint_check_flapping": {
+        "name": "Tip na opravu: kontrola neustále mení úroveň"
       }
     },
     "number": {
@@ -233,6 +243,10 @@
         "classification": {
           "name": "Stav",
           "description": "Iba tento stav, napríklad unavailable, unknown, stale alebo broken_reference."
+        },
+        "topic": {
+          "name": "Téma",
+          "description": "Iba táto téma: down, broken_references, failing_automations alebo unneeded."
         },
         "object_type": {
           "name": "Typ objektu",
@@ -288,6 +302,16 @@
         }
       }
     },
+    "finding_fix_options": {
+      "name": "Prístup AI: spôsoby opravy nálezu",
+      "description": "Pomenuje spôsoby opravy jedného nálezu, najprv odporúčaný (nahradiť chýbajúci cieľ, otvoriť editor, počkať, pozrieť sa na integráciu a podobne). Iba ich pomenuje: nič sa nemení a spôsob, ktorý zapisuje, sa v paneli spustí ako plán s náhľadom a potvrdením. Vyžaduje zapnutý „Prístup AI“. Kľúč získaj zo služby „findings“.",
+      "fields": {
+        "key": {
+          "name": "Kľúč nálezu",
+          "description": "Kľúč nálezu zo zoznamu služby „findings“."
+        }
+      }
+    },
     "finding_decide": {
       "name": "Prístup AI: rozhodnutie o náleze",
       "description": "Skryje, ponechá alebo odloží nález v Housekeeperi, prípadne ho znova zobrazí. Mení iba vlastný zoznam Housekeepera, nikdy Home Assistant; zmenu možno vrátiť pomocou undo alebo v paneli. Vyžaduje „Prístup AI“ a povolenie „Meniť zoznam“. Kľúč získaj zo služby findings.",
@@ -297,21 +321,26 @@
           "description": "Kľúč nálezu zo služby findings."
         },
         "action": {
-          "name": "Akcia"
+          "name": "Akcia",
+          "description": "decide označí ako „Falošný poplach“, „Zámerné“ alebo „Neskôr“, restore ho znova zobrazí."
         },
         "kind": {
-          "name": "Rozhodnutie"
+          "name": "Rozhodnutie",
+          "description": "ignore znamená „Falošný poplach“, keep znamená „Zámerné“ (vyžaduje dôvod), snooze znamená „Neskôr“ (vyžaduje dni)."
         },
         "reason": {
           "name": "Dôvod",
           "description": "Dôvod, najviac 200 znakov. Povinný pri každom rozhodnutí."
         },
         "days": {
-          "name": "Dni"
+          "name": "Dni",
+          "description": "Ako dlho platí „Neskôr“ alebo iné rozhodnutie, 1 až 3650."
         }
       }
     },
     "mark": {
+      "name": "Prístup AI: nastaviť poznámku k objektu",
+      "description": "Povie Housekeeperovi, čo má od objektu čakať (zámerne offline, sezónny, náhradný, neodstraňovať, vymenený), alebo poznámku k objektu odstráni. Mení sa iba vlastný zoznam Housekeepera; zmenu možno vrátiť. Vyžaduje zapnutý „Prístup AI“ a „Meniť zoznam“.",
       "fields": {
         "action": {
           "name": "Akcia",
@@ -326,6 +355,7 @@
           "description": "ID objektu."
         },
         "kind": {
+          "name": "Druh poznámky k objektu",
           "description": "expected_offline, seasonal, spare, keep alebo replaced. Integrácie a aplikácie podporujú iba prvé tri."
         },
         "reason": {
@@ -333,7 +363,8 @@
           "description": "Dôvod, najviac 200 znakov."
         },
         "days": {
-          "name": "Dni"
+          "name": "Dni",
+          "description": "Dokedy poznámka k objektu platí, 1 až 3650. Bez hodnoty platí poznámka bez obmedzenia."
         },
         "target": {
           "name": "Náhrada",
@@ -374,6 +405,24 @@
         "at": {
           "name": "Čas záznamu",
           "description": "Hodnota at zo záznamu v denníku."
+        }
+      }
+    },
+    "finding_fix_plan": {
+      "name": "Prístup AI: vytvoriť plán opravy nálezu",
+      "description": "Vytvorí plán pre jeden spôsob opravy nálezu (nahradiť chýbajúci cieľ, odstrániť odkaz, zachytiť chybu, upratať nepotrebný objekt). Plán je len náhľad: nespúšťa sa. Správca ho skontroluje a potvrdí v paneli Housekeeper. Vyžaduje zapnutý „Prístup AI“ a „Opravovať nálezy“. Kľúč a spôsoby získaj zo služby „finding_fix_options“.",
+      "fields": {
+        "key": {
+          "name": "Kľúč nálezu",
+          "description": "Kľúč nálezu."
+        },
+        "way": {
+          "name": "Spôsob",
+          "description": "Spôsob zo služby „finding_fix_options“: replace_target, remove_reference, catch_error alebo cleanup_round."
+        },
+        "target": {
+          "name": "Nový cieľ",
+          "description": "Pre replace_target: entita, oblasť, poschodie alebo štítok, ktorý nahradí chýbajúci."
         }
       }
     }
@@ -418,14 +467,44 @@
     "reason_required": {
       "message": "Rozhodnutie vyžaduje dôvod."
     },
+    "days_required": {
+      "message": "„Neskôr“ vyžaduje počet dní."
+    },
+    "days_required_critical": {
+      "message": "Tento objekt je kritický: „Zámerné“ vyžaduje počet dní, po ktorých sa znova zobrazí."
+    },
     "finding_not_found": {
       "message": "Nález nie je v poslednej kontrole. Kľúč získaj zo služby findings."
+    },
+    "kind_not_allowed": {
+      "message": "Tento druh poznámky k objektu nie je pre tento objekt povolený."
     },
     "target_unknown": {
       "message": "Náhradný objekt sa nenašiel v poslednej kontrole."
     },
     "too_many": {
       "message": "Zoznam je plný."
+    },
+    "fix_disabled": {
+      "message": "Vytváranie plánov opráv je vypnuté. Zapni „Opravovať nálezy“ v nastaveniach Housekeepera."
+    },
+    "way_not_offered": {
+      "message": "Tento spôsob sa pre tento nález nenavrhuje. Spôsoby zisti zo služby finding_fix_options."
+    },
+    "target_required": {
+      "message": "Tento spôsob vyžaduje nový cieľ v „target“."
+    },
+    "refactor_disabled": {
+      "message": "Tento spôsob vyžaduje zapnuté „Vylepšenie“ v paneli Housekeeper."
+    },
+    "no_last_failure": {
+      "message": "V zásobníku stôp Home Assistanta nie je žiadny zlyhaný beh, z ktorého by sa dal krok prevziať."
+    },
+    "way_not_plannable": {
+      "message": "Tento spôsob sa nedá spraviť plánom; je určený pre panel."
+    },
+    "plan_blocked": {
+      "message": "Plán je zablokovaný: {detail}."
     }
   }
 }

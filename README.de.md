@@ -95,6 +95,10 @@ Mehr zur Installation (manuell, eigenes Repository), zu allen Ansichten und Eins
 
 Details: [Sicherheitsmodell](docs/USER-GUIDE.de.md#sicherheitsmodell) und [Aktuelle Einschränkungen](docs/USER-GUIDE.de.md#aktuelle-einschränkungen).
 
+## Sprachen
+
+Oberfläche, Einrichtung und Meldungen gibt es auf Deutsch und Englisch sowie als Community-Übersetzungen auf Französisch, Spanisch, Portugiesisch, Slowakisch, Russisch und Chinesisch (vereinfacht): was noch nicht übersetzt ist, erscheint auf Englisch. Die Wahl steht in den Einstellungen, sonst gilt die Sprache von Home Assistant. Das Benutzerhandbuch gibt es nur auf Deutsch und Englisch.
+
 ## Änderungsprotokoll
 
 Die Versionshinweise auf Deutsch und Englisch stehen in [CHANGELOG.md](CHANGELOG.md).

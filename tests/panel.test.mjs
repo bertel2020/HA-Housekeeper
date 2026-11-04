@@ -4489,7 +4489,7 @@ test("the language can be set by hand, saved with the preferences, and falls bac
   assert.equal(el.lang, "en");
   el.setPref("language", "de");
   assert.equal(el.lang, "de"); assert.equal(el.t("settings"), TEXT_DE_SETTINGS);
-  assert.equal(el.sanitizePrefs({ language: "fr" }).language, "auto");
+  assert.equal(el.sanitizePrefs({ language: "it" }).language, "auto");
   el.setPref("language", "auto");
   assert.equal(el.lang, "en");
   el.view = "settings"; el.settingsTab = "look"; el.render();
@@ -8401,7 +8401,7 @@ test("a language is chosen by pattern, plural forms pick by number, and a missin
   assert.deepEqual([1, 3, 5, 21, 1.5].map(count => pluralText(ru, "ru", { count })), ["файл", "файла", "файлов", "файл", "файла (дробное)"]);
   assert.equal(pluralText({ other: "x" }, "en", {}), "x");
   const { el } = panel("de");
-  el.prefs = { ...el.prefs, language: "fr" };
+  el.prefs = { ...el.prefs, language: "it" };
   assert.equal(el.lang, "de", "a language that is not listed is not used, Home Assistant decides");
 });
 

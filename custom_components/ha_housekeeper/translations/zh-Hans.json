@@ -73,6 +73,22 @@
     "database_damaged": {
       "title": "记录器数据库已损坏",
       "description": "在 {at} 的检查中发现记录器数据库损坏：{first} 在检查恢复正常之前，Housekeeper 不会从记录器中删除任何内容。请先创建备份，使用 REINDEX 重建受影响的索引，或恢复备份。[打开 Housekeeper]({link})。"
+    },
+    "backup_problem": {
+      "title": "备份保护报告了问题",
+      "description": "备份保护发现 {count} 项检查需要关注，例如没有近期备份、运行失败或可用空间不足。[打开备份保护]({link})。不会自动更改任何内容。"
+    },
+    "orphaned_statistics": {
+      "title": "{count} 条没有实体的统计数据",
+      "description": "Housekeeper 发现 {count} 条统计数据，其实体已不存在。它们占用数据库空间。[在 Housekeeper 中查看]({link})。不会自动更改任何内容。"
+    },
+    "auto_pause_exhausted": {
+      "title": "{title} 已暂停 {days} 天",
+      "description": "Housekeeper 在多次设置失败后暂停了 {title}，并已重试 {days} 天仍未成功。在你结束暂停之前它会一直保持暂停。[打开自动暂停]({link})"
+    },
+    "check_flapping": {
+      "title": "某项检查的级别不断变化",
+      "description": "{count} 项检查在几小时内多次改变级别。这通常意味着某条规则过于敏感，或有东西在不断重启。[打开历史记录]({link})。不会自动更改任何内容。"
     }
   },
   "entity": {
@@ -97,6 +113,9 @@
       },
       "low_batteries": {
         "name": "低电量电池"
+      },
+      "new_findings": {
+        "name": "新发现项"
       },
       "last_scan": {
         "name": "上次扫描"
@@ -148,6 +167,46 @@
           }
         }
       }
+    },
+    "switch": {
+      "hint_orphaned_entities": {
+        "name": "修复提示：孤立实体"
+      },
+      "hint_unavailable_entities": {
+        "name": "修复提示：不可用实体"
+      },
+      "hint_broken_automations": {
+        "name": "修复提示：失效引用"
+      },
+      "hint_scan_health": {
+        "name": "修复提示：扫描问题"
+      },
+      "hint_database_damaged": {
+        "name": "修复提示：数据库损坏"
+      },
+      "hint_backup_problem": {
+        "name": "修复提示：备份问题"
+      },
+      "hint_orphaned_statistics": {
+        "name": "修复提示：孤立统计数据"
+      },
+      "hint_check_flapping": {
+        "name": "修复提示：某项检查不断变化"
+      }
+    },
+    "number": {
+      "hint_min_orphaned_entities": {
+        "name": "仅在超过以下数量时提示修复：孤立实体"
+      },
+      "hint_min_unavailable_entities": {
+        "name": "仅在超过以下数量时提示修复：不可用实体"
+      },
+      "hint_min_broken_automations": {
+        "name": "仅在超过以下数量时提示修复：失效引用"
+      },
+      "hint_min_orphaned_statistics": {
+        "name": "仅在超过以下数量时提示修复：孤立统计数据"
+      }
     }
   },
   "services": {
@@ -184,6 +243,10 @@
         "classification": {
           "name": "状态",
           "description": "仅显示此状态，例如 unavailable、unknown、stale 或 broken_reference。"
+        },
+        "topic": {
+          "name": "主题",
+          "description": "仅此主题：down、broken_references、failing_automations 或 unneeded。"
         },
         "object_type": {
           "name": "对象类型",
@@ -239,6 +302,16 @@
         }
       }
     },
+    "finding_fix_options": {
+      "name": "AI 访问：修复发现项的方法",
+      "description": "列出修复某个发现项的方法，推荐的在前（替换缺失的目标、打开编辑器、等待、查看集成等）。只列出方法：不会更改任何内容，会写入的方法会在面板中以带预览和确认的计划运行。需要开启“AI 访问”。从“findings”获取键。",
+      "fields": {
+        "key": {
+          "name": "发现项键",
+          "description": "发现项的键，由“findings”列出。"
+        }
+      }
+    },
     "finding_decide": {
       "name": "AI 访问：处理发现项",
       "description": "在 Housekeeper 中隐藏、保留或推迟一个发现项，或重新显示它。只会更改 Housekeeper 自己的列表，绝不会更改 Home Assistant；可以通过“undo”或在面板中撤销更改。需要开启“AI 访问”和“更改列表”。从“findings”获取键。",
@@ -248,21 +321,26 @@
           "description": "发现项的键，由“findings”列出。"
         },
         "action": {
-          "name": "操作"
+          "name": "操作",
+          "description": "decide 表示标记为“误报”、“有意为之”或“稍后”，restore 表示重新显示。"
         },
         "kind": {
-          "name": "决定"
+          "name": "决定",
+          "description": "ignore 表示“误报”，keep 表示“有意为之”（需要原因），snooze 表示“稍后”（需要天数）。"
         },
         "reason": {
           "name": "原因",
           "description": "原因，最多 200 个字符。每个决定都需要。"
         },
         "days": {
-          "name": "天数"
+          "name": "天数",
+          "description": "“稍后”或其他决定的有效时长，1 到 3650 天。"
         }
       }
     },
     "mark": {
+      "name": "AI 访问：设置对象备注",
+      "description": "告诉 Housekeeper 对某个对象的预期（有意离线、季节性、备用、请勿删除、已替换），或取消对象备注。只会更改 Housekeeper 自己的列表；更改可以撤销。需要开启“AI 访问”和“更改列表”。",
       "fields": {
         "action": {
           "name": "操作",
@@ -277,6 +355,7 @@
           "description": "对象的 ID。"
         },
         "kind": {
+          "name": "对象备注类型",
           "description": "expected_offline、seasonal、spare、keep 或 replaced。集成和应用只接受前三种。"
         },
         "reason": {
@@ -284,7 +363,8 @@
           "description": "原因，最多 200 个字符。"
         },
         "days": {
-          "name": "天数"
+          "name": "天数",
+          "description": "对象备注的有效期限，1 到 3650 天。不填则对象备注没有期限。"
         },
         "target": {
           "name": "替代对象",
@@ -325,6 +405,24 @@
         "at": {
           "name": "条目时间",
           "description": "日志条目的“at”。"
+        }
+      }
+    },
+    "finding_fix_plan": {
+      "name": "AI 访问：创建修复发现项的计划",
+      "description": "为修复某个发现项的一种方法创建计划（替换缺失的目标、移除引用、捕获错误、清理不需要的对象）。计划只是预览：不会运行。管理员需在 Housekeeper 面板中审核并确认。需要开启“AI 访问”和“修复发现项”。从“finding_fix_options”获取键和方法。",
+      "fields": {
+        "key": {
+          "name": "发现项键",
+          "description": "发现项的键。"
+        },
+        "way": {
+          "name": "方法",
+          "description": "来自“finding_fix_options”的方法：replace_target、remove_reference、catch_error 或 cleanup_round。"
+        },
+        "target": {
+          "name": "新目标",
+          "description": "对于 replace_target：取代缺失对象的实体、区域、楼层或标签。"
         }
       }
     }
@@ -369,14 +467,44 @@
     "reason_required": {
       "message": "作出决定需要原因。"
     },
+    "days_required": {
+      "message": "“稍后”需要填写天数。"
+    },
+    "days_required_critical": {
+      "message": "此对象很关键：“有意为之”需要填写天数，到期后会重新显示。"
+    },
     "finding_not_found": {
       "message": "该发现项不在最新扫描中。请从“findings”获取键。"
+    },
+    "kind_not_allowed": {
+      "message": "此对象不允许使用这种对象备注类型。"
     },
     "target_unknown": {
       "message": "替代对象不在最新扫描中。"
     },
     "too_many": {
       "message": "列表已满。"
+    },
+    "fix_disabled": {
+      "message": "创建修复计划已关闭。请在 Housekeeper 设置中开启“修复发现项”。"
+    },
+    "way_not_offered": {
+      "message": "此发现项不提供该方法。请向 finding_fix_options 查询可用方法。"
+    },
+    "target_required": {
+      "message": "此方法需要在 \"target\" 中填写新目标。"
+    },
+    "refactor_disabled": {
+      "message": "此方法需要在 Housekeeper 面板中开启“改进”。"
+    },
+    "no_last_failure": {
+      "message": "Home Assistant 的跟踪缓冲区中没有可供提取步骤的失败运行。"
+    },
+    "way_not_plannable": {
+      "message": "此方法无法制定计划；它仅限面板使用。"
+    },
+    "plan_blocked": {
+      "message": "计划被阻止：{detail}。"
     }
   }
 }

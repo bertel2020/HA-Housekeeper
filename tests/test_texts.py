@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -20,7 +21,7 @@ def hass(language: str) -> SimpleNamespace:
 def test_the_region_does_not_matter_and_english_is_the_fallback() -> None:
     assert language_of(hass("de_AT")) == language_of(hass("DE-ch")) == "de"
     assert pick(hass("de-AT"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["de"]
-    assert pick(hass("fr"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["en"]
+    assert pick(hass("it"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["en"]
 
 
 def test_every_language_has_the_same_texts() -> None:
@@ -48,3 +49,47 @@ def test_a_text_missing_in_a_language_shows_in_english(monkeypatch: pytest.Monke
     assert pick(hass("fr"), table) == {"a": "À", "b": "B"}
     monkeypatch.setattr("custom_components.ha_housekeeper.texts.language_of", lambda _hass: "en")
     assert pick(hass("en"), table) is table["en"]
+
+
+def _holders(value: object) -> list[str]:
+    if isinstance(value, dict):
+        return [h for v in value.values() for h in _holders(v)]
+    if isinstance(value, (list, tuple)):
+        return [h for v in value for h in _holders(v)]
+    return sorted(re.findall(r"\{\w*\}", str(value)))
+
+
+def _same_shape(english: object, other: object) -> bool:
+    if isinstance(english, dict):
+        return (
+            isinstance(other, dict)
+            and english.keys() == other.keys()
+            and all(_same_shape(english[k], other[k]) for k in english)
+        )
+    if isinstance(english, (list, tuple)):
+        return (
+            type(other) is type(english)
+            and len(other) == len(english)
+            and all(_same_shape(a, b) for a, b in zip(english, other, strict=True))
+        )
+    return isinstance(other, str)
+
+
+def test_every_listed_language_has_complete_backend_texts_with_the_same_placeholders() -> None:
+    """locales/<code>.json fills the text tables of the code; each entry has the shape of the English one."""
+    from custom_components.ha_housekeeper import audit_report, auto_pause, notify
+    from custom_components.ha_housekeeper.texts import LANGUAGE_CODES
+
+    tables = [
+        audit_report.TEXTS,
+        auto_pause.TEXTS,
+        MONITOR_REASONS,
+        MONITOR_TEXTS,
+        notify.TEXTS,
+        LOGBOOK_DEVICE,
+    ]
+    for code in (c for c in LANGUAGE_CODES if c not in ("de", "en")):
+        for table in tables:
+            assert code in table, code
+            assert _same_shape(table["en"], table[code]), code
+            assert _holders(table["en"]) == _holders(table[code]), code

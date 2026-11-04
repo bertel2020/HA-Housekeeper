@@ -136,7 +136,7 @@ from .references import (
     target_exists,
     yaml_hash,
 )
-from .texts import pick
+from .texts import localize, pick
 from .writelock import WriteBusy, acquire_write, release_write, write_holder
 
 TOKEN_TTL = timedelta(minutes=5)
@@ -149,6 +149,7 @@ LOGBOOK_DEVICE = {
     "de": ("Gerät „{}“ {}", ("vergessen", "entfernt")),
     "en": ("Device “{}” {}", ("forgotten", "removed")),
 }
+localize("cleanup_exec.LOGBOOK_DEVICE", LOGBOOK_DEVICE)
 
 LOGBOOK_KINDS = ("remove_device", "forget_device")  # written to the logbook when done
 # Recorder steps do not depend on each other: one that fails must not hold back the others,

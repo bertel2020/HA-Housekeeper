@@ -27,7 +27,7 @@ from .const import (
     STORAGE_VERSION,
 )
 from .scan_health import stale_after
-from .texts import pick
+from .texts import localize, pick
 
 SAVE_DELAY = 5
 MAX_ITEMS = 30
@@ -100,6 +100,7 @@ REASONS_EN = {
     "rule_no_timestamp": "update time unknown",
 }
 MONITOR_REASONS = {"de": REASONS_DE, "en": REASONS_EN}
+localize("monitor.MONITOR_REASONS", MONITOR_REASONS)
 MONITOR_TEXTS = {
     "de": {
         "uncertain_open": "Prüfung unvollständig; letzter bestätigter Defekt ({last_reason}) bleibt ungeklärt.",
@@ -114,6 +115,7 @@ MONITOR_TEXTS = {
         "link": "Open home functions",
     },
 }
+localize("monitor.MONITOR_TEXTS", MONITOR_TEXTS)
 
 
 AVAILABILITY_DAYS = 30

@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .texts import localize
+
 TEXTS: dict[str, dict[str, str]] = {
     "de": {
         "title": "Prüfbericht zum Bereinigungsplan",
@@ -88,6 +90,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "failed": "failed",
     },
 }
+localize("audit_report.TEXTS", TEXTS)
 
 
 class _Names:
@@ -115,7 +118,7 @@ def _kind_of_source(source: str) -> str:
 
 def build_report(plan: dict[str, Any], *, anonymize: bool = True, lang: str = "en") -> str:
     """The report for ``plan`` as Markdown."""
-    t = TEXTS.get(lang, TEXTS["en"])
+    t = {**TEXTS["en"], **TEXTS.get(lang, {})}
     names = _Names(anonymize)
     device_ids = {
         a["object_id"] for a in plan.get("actions", []) if a.get("object_type") == "device"

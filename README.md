@@ -94,6 +94,10 @@ More on installation (manual, custom repository), every view and all settings is
 
 Details: [Safety model](docs/USER-GUIDE.md#safety-model) and [Current limitations](docs/USER-GUIDE.md#current-limitations).
 
+## Languages
+
+The panel, the setup and the messages come in German and English, and in French, Spanish, Portuguese, Slovak, Russian and Simplified Chinese as community translations: parts that are not translated yet show in English. The choice is in Settings, otherwise the language of Home Assistant is used. The user guide is available in German and English only.
+
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes in English and German.

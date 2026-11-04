@@ -30,7 +30,7 @@ from homeassistant.helpers.storage import Store
 
 from .const import AUTO_PAUSE_STORAGE_KEY, DOMAIN, PANEL_URL, STORAGE_VERSION
 from .sensitive_fields import reauth_entry_ids
-from .texts import pick
+from .texts import localize, pick
 
 if TYPE_CHECKING:
     from .inventory import InventoryScanner
@@ -132,6 +132,7 @@ TEXTS: dict[str, dict[str, Any]] = {
         ),
     },
 }
+localize("auto_pause.TEXTS", TEXTS)
 
 
 class AutoPauseError(Exception):
