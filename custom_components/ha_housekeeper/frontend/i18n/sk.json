@@ -1299,7 +1299,12 @@
 "few": "{n} dni",
 "other": "{n} dní"
 },
-"bhAgeDaysAgo": "{n} dní",
+"bhAgeDaysAgo": {
+"one": "{n} dňom",
+"few": "{n} dňami",
+"many": "{n} dňa",
+"other": "{n} dňami"
+},
 "bhSetupOk": "Úložiská: {agents} · plán: {recurrence}",
 "bhSetupNote": "Pre automatické zálohovanie nie je vybrané úložisko, ale existujú staršie zálohy.",
 "bhSetupProblem": "Nie je nastavené úložisko ani neexistuje žiadna záloha.",

@@ -1,7 +1,7 @@
 // Looks at the panel in a real browser: screenshots of the main views at desktop, tablet and phone
 // size in light and dark, and optionally an accessibility scan with axe-core.
 //
-//   node scripts/ui-check.mjs [--out DIR] [--objects N] [--views a,b] [--viewports desktop,mobile] [--lang de|en] [--axe] [--serve] [--fail-fast]
+//   node scripts/ui-check.mjs [--out DIR] [--objects N] [--views a,b] [--viewports desktop,mobile] [--lang de|en|fr|es|pt|sk|ru|zh-Hans] [--axe] [--serve] [--fail-fast]
 //   (a failing Chrome run is reported with its view, size and scheme; the other runs continue and the exit code is 1)
 //
 // Needs Google Chrome (CHROME=/path, the macOS default path, or google-chrome/chromium on PATH).
@@ -44,13 +44,15 @@ const run = (file, args, { timeout = 60000, maxBuffer = 1024 * 1024, encoding = 
 // True once the file exists and its size held still between two looks.
 const written = file => { let last = -1; return () => { const size = fs.existsSync(file) ? fs.statSync(file).size : 0; const done = size > 0 && size === last; last = size; return done; }; };
 const flag = name => process.argv.includes(`--${name}`);
-const language = arg("lang", "de") === "en" ? "en" : "de";
+const listed = JSON.parse(fs.readFileSync(path.join(root, "custom_components/ha_housekeeper/languages.json"), "utf8")).map(l => l.code);
+const language = listed.includes(arg("lang", "de")) ? arg("lang", "de") : "de"; // any listed language; the sample data stays German except for English
 
 const VIEWPORTS = { desktop: [1280, 1000], tablet: [768, 1100], mobile: [375, 1700] };
 const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", firstcleanup: "view=firstcleanup", inventory: "view=inventory", changes: "view=changes", monitor_editor: "view=monitor&editor=1",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
   attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", autopause: "view=autopause", checklog: "view=checklog", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
+  settings_look: "view=settings&settings=look",
   bulk_bat: "view=batteries&bulk=bat", bulk_unref: "view=unreferenced&bulk=unref", bulk_marks_review: "view=exceptions&bulk=marks-review", bulk_marks_kind: "view=exceptions&bulk=marks-kind",
 };
 const SCHEMES = ["light", "dark"];
@@ -264,6 +266,7 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
     if (plan === "running") el.planProgress = { done: 1, total: 2 };
   }
   if (q.get("view")) { el.view = q.get("view"); if (el.view === "changes") await el.loadCompare(); }
+  if (q.get("settings")) el.settingsTab = q.get("settings");
   if (q.get("editor")) {
     el.monitorForm = { name: document.documentElement.lang === "en" ? "Front door" : "Haustür", description: "", notify: true, members: [
       { object_key: "entity:sensor.beispiel_7", required: true, rules: [{ kind: "freshness", value: 24 }] },
@@ -310,6 +313,8 @@ const FRAME = `<!doctype html><html><head><meta charset="utf-8"><title>frame</ti
 // requests that never succeed and a screenshot with a virtual time budget never finishes.
 const COMPONENT = path.join(root, "custom_components/ha_housekeeper");
 function asset(pathname) {
+  const texts = /^\/ha_housekeeper\/i18n\/([\w-]+\.json)$/.exec(pathname); // the language files the panel loads on demand
+  if (texts && fs.existsSync(path.join(COMPONENT, "frontend/i18n", texts[1]))) return ["application/json", fs.readFileSync(path.join(COMPONENT, "frontend/i18n", texts[1]))];
   const font = /^\/ha_housekeeper\/fonts\/([\w.-]+\.woff2)$/.exec(pathname);
   const file = font ? path.join(COMPONENT, "fonts", font[1]) : pathname === "/ha_housekeeper/logo.png" ? path.join(COMPONENT, "brand/logo.png") : null;
   if (!file || !fs.existsSync(file)) return null;

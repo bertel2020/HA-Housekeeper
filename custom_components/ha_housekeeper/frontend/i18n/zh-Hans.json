@@ -1151,7 +1151,7 @@
 "bhNever": "从未",
 "bhAgeHours": "{n} 小时",
 "bhAgeDays": "{n} 天",
-"bhAgeDaysAgo": "{n} 天前",
+"bhAgeDaysAgo": "{n} 天",
 "bhSetupOk": "目标：{agents} · 备份计划：{recurrence}",
 "bhSetupNote": "自动备份未选择目标，但存在较早的备份。",
 "bhSetupProblem": "既无备份目标，也无现有备份。",
