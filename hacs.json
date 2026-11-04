@@ -1,5 +1,5 @@
 {
-  "name": "HA Housekeeper",
+  "name": "HA Housekeeper – Cleanup & Maintenance",
   "render_readme": true,
   "homeassistant": "2026.8.0"
 }

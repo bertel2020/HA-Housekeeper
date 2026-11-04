@@ -5,7 +5,7 @@
 <h1 align="center">HA Housekeeper</h1>
 
 <p align="center">
-  Maintenance and analysis for Home Assistant: inventory, diagnostics, and dependencies at a glance.
+  Housekeeping and cleanup for Home Assistant: find orphaned entities, devices and statistics, see their dependencies, and clean up with confirmation and undo.
 </p>
 
 <p align="center">

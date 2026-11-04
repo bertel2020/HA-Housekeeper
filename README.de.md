@@ -5,7 +5,7 @@
 <h1 align="center">HA Housekeeper</h1>
 
 <p align="center">
-  Wartung und Analyse für Home Assistant: Inventar, Diagnose und Abhängigkeiten auf einen Blick.
+  Housekeeping und Aufräumen für Home Assistant: verwaiste Entitäten, Geräte und Statistiken finden, Abhängigkeiten sehen und mit Bestätigung und Rückgängig aufräumen.
 </p>
 
 <p align="center">
