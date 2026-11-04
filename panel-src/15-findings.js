@@ -425,7 +425,7 @@ class FindingsMixin {
   findingTitle(f) {
     const sub = f.rule_id.split(".")[1] || f.rule_id;
     // A reference that leads nowhere: "Refers to entity sensor.x".
-    if (sub.startsWith("missing_")) return this.t("refersTo", { kind: this.lang === "en" ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
+    if (sub.startsWith("missing_")) return this.t("refersTo", { kind: languageInfo(this.lang).lowerKind ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
     if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
     const text = this.t(f.rule_id);
     return text === f.rule_id ? this.t(sub) : text;

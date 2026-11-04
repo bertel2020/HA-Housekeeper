@@ -308,7 +308,7 @@ class FirstCleanupMixin {
   fcFinish() {
     const facts = this.fcFacts(), left = facts.left, following = this.fcFollowing(), n = v => this.formatNumber(v);
     const mode = !left ? "all" : facts.done ? "done" : "none";
-    const until = new Date(Date.now() + (this.fc.later_days || 90) * 864e5).toLocaleDateString(this.lang === "en" ? "en" : "de");
+    const until = new Date(Date.now() + (this.fc.later_days || 90) * 864e5).toLocaleDateString(this.lang);
     const parts = [facts.keep ? this.t("fcSumKeep", { n: n(facts.keep) }) : "", facts.later ? this.t("fcSumLater", { n: n(facts.later) }) : "", facts.marks ? this.t("fcSumMark", { n: n(facts.marks) }) : "", facts.declined ? this.t("fcSumDeclined", { n: n(facts.declined) }) : ""].filter(Boolean).join(" · ");
     const kpi = (label, value, tone, note = "") => `<div class="fckpi ${tone}"><b>${n(value)}</b><span>${label}</span>${note ? `<small>${this.esc(note)}</small>` : ""}</div>`;
     const sub = mode === "all" ? this.t("fcEndSubAll") : mode === "done" ? this.t("fcEndSubDone", { d: n(facts.findings + facts.marks), now: n(left) }) : this.t("fcEndSubNone", { now: n(left) });

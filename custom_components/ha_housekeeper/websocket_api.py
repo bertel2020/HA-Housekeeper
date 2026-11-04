@@ -79,6 +79,7 @@ from .monitor import MonitorError, MonitorStore, evaluate
 from .outage_levels import OUTAGE_KEYS, thresholds_from_options, thresholds_rise
 from .recorder_purge import TRIM_MAX_DAYS, TRIM_TABLES, count_history, count_older, count_trim
 from .references import preview_replacement
+from .texts import LANGUAGE_CODES
 from .writelock import write_holder
 from .ws_common import (
     _scanner,
@@ -1298,7 +1299,7 @@ def websocket_plan_detail(
         vol.Required("type"): f"{DOMAIN}/plan_report",
         vol.Required("plan_id"): str,
         vol.Optional("anonymize", default=True): bool,
-        vol.Optional("lang", default="en"): vol.In(["de", "en"]),
+        vol.Optional("lang", default="en"): vol.In(LANGUAGE_CODES),
     }
 )
 @callback

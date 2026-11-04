@@ -22,7 +22,7 @@ class ThemeMixin {
     if (PAGE_SIZES.includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
-    if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
+    if (saved.language === "auto" || LANGUAGES.some(l => l.code === saved.language)) prefs.language = saved.language;
     if (VIEWS.includes(saved.view)) prefs.view = saved.view;
     prefs.viewAsked = typeof saved.viewAsked === "boolean" ? saved.viewAsked : true; // saved preferences without the answer belong to someone who was never asked
     if (Number.isInteger(saved.moreUses) && saved.moreUses >= -1 && saved.moreUses <= 99) prefs.moreUses = saved.moreUses;
@@ -38,7 +38,7 @@ class ThemeMixin {
       this._freshPrefs = false;
       const prefs = this.sanitizePrefs(result.value);
       if (JSON.stringify(prefs) === JSON.stringify(this.prefs)) return;
-      this.prefs = prefs; this.pageSize = prefs.pageSize; this.pages = {};
+      this.prefs = prefs; this.pageSize = prefs.pageSize; this.pages = {}; this.ensureLanguage();
       this.savePrefs(false);
       this.render();
     } catch (_) { /* no answer is not an empty profile: the local preferences stay, and nothing is written over the stored ones */ }
@@ -76,6 +76,7 @@ class ThemeMixin {
     if (key === "view") this.prefs.details = value === "full"; // a change of the view sets the technical details; they stay changeable
     if (key === "details" && this.prefs.details && this.isSimple() && this.prefs.moreUses >= 0) this.prefs.moreUses = Math.min(99, this.prefs.moreUses + 1); // counts how often the simple view is widened by hand
     if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
+    if (key === "language") this.ensureLanguage();
     this.savePrefs();
     this.render();
   }

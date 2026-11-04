@@ -1,5 +1,7 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true}];
+
 const TEXT = {
   de: {
     title: "Housekeeper", subtitle: "Deine Home-Assistant-Installation im Blick",
@@ -622,6 +624,25 @@ const MARKETPLACE_RULES = {
   ],
 };
 const forMarketplace = (text, lang) => (MARKETPLACE_RULES[lang] || MARKETPLACE_RULES.en).reduce((out, [from, to]) => out.replace(from, to), text);
+
+// The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
+
+// The language for a Home Assistant language code: an exact match of a pattern, else the main part
+// (de-AT -> de), else English. Written like this so zh-Hant does not fall to zh-Hans.
+function matchLanguage(list, code) {
+  const full = String(code || "en").toLowerCase().replace(/_/g, "-"), main = full.split("-")[0];
+  const find = key => list.find(l => l.patterns.includes(key));
+  return (find(full) || find(main))?.code || "en";
+}
+
+const languageInfo = code => LANGUAGES.find(l => l.code === code) || LANGUAGES.find(l => l.code === "en");
+
+// A text with its own plural forms: the form of the number (`count`, else `n`), else `other`.
+function pluralText(forms, lang, vars) {
+  let form = "other";
+  try { form = new Intl.PluralRules(lang).select(Number(vars?.count ?? vars?.n)); } catch (_) { /* no number: the general form */ }
+  return forms[form] ?? forms.other ?? "";
+}
 
 // Texts for step C of the cleanup (devices, replacing references); merged into TEXT.
 Object.assign(TEXT.de, {
@@ -1375,7 +1396,7 @@ class ThemeMixin {
     if (PAGE_SIZES.includes(saved.pageSize)) prefs.pageSize = saved.pageSize;
     if (START_VIEWS.includes(saved.startView)) prefs.startView = saved.startView;
     if (["list", "graph"].includes(saved.graphMode)) prefs.graphMode = saved.graphMode;
-    if (["auto", "de", "en"].includes(saved.language)) prefs.language = saved.language;
+    if (saved.language === "auto" || LANGUAGES.some(l => l.code === saved.language)) prefs.language = saved.language;
     if (VIEWS.includes(saved.view)) prefs.view = saved.view;
     prefs.viewAsked = typeof saved.viewAsked === "boolean" ? saved.viewAsked : true; // saved preferences without the answer belong to someone who was never asked
     if (Number.isInteger(saved.moreUses) && saved.moreUses >= -1 && saved.moreUses <= 99) prefs.moreUses = saved.moreUses;
@@ -1391,7 +1412,7 @@ class ThemeMixin {
       this._freshPrefs = false;
       const prefs = this.sanitizePrefs(result.value);
       if (JSON.stringify(prefs) === JSON.stringify(this.prefs)) return;
-      this.prefs = prefs; this.pageSize = prefs.pageSize; this.pages = {};
+      this.prefs = prefs; this.pageSize = prefs.pageSize; this.pages = {}; this.ensureLanguage();
       this.savePrefs(false);
       this.render();
     } catch (_) { /* no answer is not an empty profile: the local preferences stay, and nothing is written over the stored ones */ }
@@ -1429,6 +1450,7 @@ class ThemeMixin {
     if (key === "view") this.prefs.details = value === "full"; // a change of the view sets the technical details; they stay changeable
     if (key === "details" && this.prefs.details && this.isSimple() && this.prefs.moreUses >= 0) this.prefs.moreUses = Math.min(99, this.prefs.moreUses + 1); // counts how often the simple view is widened by hand
     if (key === "pageSize") { this.pageSize = value; this.pages = {}; }
+    if (key === "language") this.ensureLanguage();
     this.savePrefs();
     this.render();
   }
@@ -3370,7 +3392,7 @@ class FindingsMixin {
   findingTitle(f) {
     const sub = f.rule_id.split(".")[1] || f.rule_id;
     // A reference that leads nowhere: "Refers to entity sensor.x".
-    if (sub.startsWith("missing_")) return this.t("refersTo", { kind: this.lang === "en" ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
+    if (sub.startsWith("missing_")) return this.t("refersTo", { kind: languageInfo(this.lang).lowerKind ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
     if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
     const text = this.t(f.rule_id);
     return text === f.rule_id ? this.t(sub) : text;
@@ -3797,6 +3819,12 @@ class SettingsMixin {
     return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
+  // The languages as a list: automatic, then each one by its own name (a language still being translated says so).
+  languageSelect() {
+    const options = [["auto", this.t("langAuto")], ...LANGUAGES.map(l => [l.code, l.status === "community" ? `${l.name} (${this.t("langCommunity")})` : l.name])];
+    return `<select data-pref-select="language" aria-label="${this.esc(this.t("setLanguage"))}">${options.map(([v, l]) => `<option value="${this.esc(v)}" ${String(this.prefs.language) === v ? "selected" : ""}>${this.esc(l)}</option>`).join("")}</select>`;
+  }
+
   // A browser and a user profile with nothing saved, and a young installation with a first scan: it starts in the simple view and asks once.
   // An installation with older findings keeps the full view, whoever never saved a preference.
   firstContact() {
@@ -3895,7 +3923,7 @@ class SettingsMixin {
     const modes = [["auto", "modeAuto", "mdi:theme-light-dark"], ["light", "modeLight", "mdi:white-balance-sunny"], ["dark", "modeDark", "mdi:weather-night"]].map(([id, key, icon]) => tile("mode", id, this.t(key), `<ha-icon icon="${icon}"></ha-icon>`)).join("");
     const row = (label, hint, control) => `<div class="setrow"><div>${label}${hint ? `<small>${hint}</small>` : ""}</div>${control}</div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("setLanguage")}</h2><p>${this.t("setLanguageHint")}</p></div></div>
-      ${row(this.t("setLanguage"), "", this.segment("language", [["auto", this.t("langAuto")], ["de", "Deutsch"], ["en", "English"]]))}
+      ${row(this.t("setLanguage"), "", this.languageSelect())}
       <div class="panelhead"><h2>${this.t("colorScheme")}</h2></div><div class="tiles schemetiles">${schemes}</div>
       <div class="panelhead"><div><h2>${this.t("colorMode")}</h2><p>${this.t("modeHint")}</p></div></div><div class="tiles">${modes}</div></section>`;
   }
@@ -13575,7 +13603,7 @@ Object.assign(TEXT.de, {
   statusTasks: "{count} Aufgaben warten auf dich", statusTasksJump: "Zur Liste der Aufgaben springen", statusAllGood: "Alles in Ordnung",
   counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten. Starte die Prüfung mit „Sensoren prüfen“.",
   stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
-  setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
+  langCommunity: "Community", setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
   setTabProtection: "Schutzmodus", navCount_findingsNav: "{n} offene Befunde", navCount_batteries: "{n} schwache Batterien", navCount_reminders: "{n} fällige Erinnerungen", navCount_cleanup: "{n} in Quarantäne bereit zum Entfernen", navCount_repair: "{n} Sensorfehler zum Bereinigen", navCount_policies: "{n} Verstöße gegen Regeln oder verfehlte Ziele", navCount_other: "{n} Punkte zum Ansehen", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setOn: "an", setOff: "aus",
   maintHintBackup: "Backups prüfen, schützen und aufräumen.", maintHintUpdates: "Offene Updates und was vorher zu prüfen ist.", maintHintBlueprints: "Blueprints, die fehlen oder defekt sind.", maintHintGoals: "Eigene Grenzen für „in Ordnung“.",
@@ -13627,7 +13655,7 @@ Object.assign(TEXT.en, {
   statusTasks: "{count} tasks are waiting for you", statusTasksJump: "Jump to the list of tasks", statusAllGood: "All good",
   counterNoneSub: "{count} sensors look fine.", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements. Start the check with “Check sensors”.",
   stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
-  setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
+  langCommunity: "Community", setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
   setTabProtection: "Protection mode", navCount_findingsNav: "{n} open findings", navCount_batteries: "{n} low batteries", navCount_reminders: "{n} reminders due", navCount_cleanup: "{n} in quarantine ready for removal", navCount_repair: "{n} sensor errors to repair", navCount_policies: "{n} rule violations or goals missed", navCount_other: "{n} items to look at", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setOn: "on", setOff: "off",
   maintHintBackup: "Check, protect and tidy up backups.", maintHintUpdates: "Open updates and what to check first.", maintHintBlueprints: "Blueprints that are missing or broken.", maintHintGoals: "Your own limits for what in order means.",
@@ -15489,7 +15517,7 @@ class ExportMixin {
   xpRows() {
     const x = this.xp, g = x.g;
     let items = this.xpEntities().filter(o => x.sel.has(o.object_id)).map(o => ({ o, area: g.zuord || x.sort ? this.areaName(o) : "" }));
-    const collator = new Intl.Collator(this.lang === "en" ? "en" : "de", { numeric: true });
+    const collator = new Intl.Collator(this.lang, { numeric: true });
     items.sort((a, b) => (x.sort ? collator.compare(a.area, b.area) : 0) || collator.compare(a.o.name || a.o.object_id, b.o.name || b.o.object_id) || collator.compare(a.o.object_id, b.o.object_id));
     const labels = { area: new Map(), device: new Map(), used: new Map() };
     const label = (kind, key, word) => { const m = labels[kind]; if (!m.has(key)) m.set(key, `${word} ${m.size + 1}`); return m.get(key); };
@@ -21096,7 +21124,7 @@ class FirstCleanupMixin {
   fcFinish() {
     const facts = this.fcFacts(), left = facts.left, following = this.fcFollowing(), n = v => this.formatNumber(v);
     const mode = !left ? "all" : facts.done ? "done" : "none";
-    const until = new Date(Date.now() + (this.fc.later_days || 90) * 864e5).toLocaleDateString(this.lang === "en" ? "en" : "de");
+    const until = new Date(Date.now() + (this.fc.later_days || 90) * 864e5).toLocaleDateString(this.lang);
     const parts = [facts.keep ? this.t("fcSumKeep", { n: n(facts.keep) }) : "", facts.later ? this.t("fcSumLater", { n: n(facts.later) }) : "", facts.marks ? this.t("fcSumMark", { n: n(facts.marks) }) : "", facts.declined ? this.t("fcSumDeclined", { n: n(facts.declined) }) : ""].filter(Boolean).join(" · ");
     const kpi = (label, value, tone, note = "") => `<div class="fckpi ${tone}"><b>${n(value)}</b><span>${label}</span>${note ? `<small>${this.esc(note)}</small>` : ""}</div>`;
     const sub = mode === "all" ? this.t("fcEndSubAll") : mode === "done" ? this.t("fcEndSubDone", { d: n(facts.findings + facts.marks), now: n(left) }) : this.t("fcEndSubNone", { now: n(left) });
@@ -22195,7 +22223,7 @@ class HAHousekeeperPanel extends HTMLElement {
   set hass(value) {
     const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar;
     this._hass = value;
-    if (first) { this.load(false); this.loadUserPrefs(); }
+    if (first) { this.load(false); this.loadUserPrefs(); this.ensureLanguage(); }
     else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar) this.render();
   }
 
@@ -22311,15 +22339,31 @@ class HAHousekeeperPanel extends HTMLElement {
     head.appendChild(style);
   }
 
+  // The language of the panel: the chosen one, else the one of Home Assistant, else English.
   get lang() {
     const chosen = this.prefs?.language;
-    if (chosen === "de" || chosen === "en") return chosen;
-    return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en";
+    if (chosen && chosen !== "auto" && LANGUAGES.some(l => l.code === chosen)) return chosen;
+    return matchLanguage(LANGUAGES, this._hass?.language);
   }
 
+  // A language besides German and English is a file of its own, fetched once; until it is here, English shows.
+  ensureLanguage() {
+    const code = this.lang, entry = LANGUAGES.find(l => l.code === code);
+    if (!entry?.v || TEXT[code] || (this._langLoading ||= {})[code]) return;
+    this._langLoading[code] = true;
+    fetch(`/ha_housekeeper/i18n/${code}.json?v=${entry.v}`)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then(texts => { TEXT[code] = texts; if (this.lang === code) this.render(); })
+      .catch(() => { delete this._langLoading[code]; }); // stays English; the next change of language tries again
+  }
+
+  // A text may be a string or, for a language with more plural forms, an object {one, few, many, other}.
+  // The number that picks the form is `count` (a raw number), else `n`.
   t(key, vars) {
-    let text = TEXT[this.lang][key] || TEXT.en[key] || key;
-    if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, this.lang);
+    const lang = this.lang;
+    let text = TEXT[lang]?.[key] || TEXT.en[key] || key;
+    if (text && typeof text === "object") text = pluralText(text, lang, vars);
+    if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, lang);
     return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
   }
 
@@ -22717,7 +22761,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   // A typed text in the quotation marks of the language of the panel.
-  quote(text) { return this.lang === "de" ? `„${text}“` : `“${text}”`; }
+  quote(text) { const [open, close] = languageInfo(this.lang).quotes; return `${open}${text}${close}`; }
 
   // One finding by its key, without a search through all of them for every picked row.
   findingByKey(key) {

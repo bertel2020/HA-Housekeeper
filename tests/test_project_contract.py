@@ -244,3 +244,14 @@ def test_every_text_key_the_panel_asks_for_exists_in_both_languages() -> None:
     defined = set(re.findall(r"(?<![\w\"'])\"?([A-Za-z_][\w.]*)\"?\s*:\s*[\"`]", source))
     used = set(re.findall(r"\bt\(\"([A-Za-z_][\w.]*)\"", source))
     assert not sorted(used - defined)
+
+
+def test_every_language_has_its_file_and_the_files_match_german_and_english() -> None:
+    """languages.json and frontend/i18n/<code>.json belong together; a language file holds no stray key,
+    keeps the placeholders of English and gives every plural text an `other` form."""
+    listed = {
+        lang["code"]
+        for lang in json.loads((COMPONENT / "languages.json").read_text(encoding="utf-8"))
+    }
+    files = {path.stem for path in (COMPONENT / "frontend" / "i18n").glob("*.json")}
+    assert files == listed - {"de", "en"}

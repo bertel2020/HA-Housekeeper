@@ -54,7 +54,7 @@ class HAHousekeeperPanel extends HTMLElement {
   set hass(value) {
     const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar;
     this._hass = value;
-    if (first) { this.load(false); this.loadUserPrefs(); }
+    if (first) { this.load(false); this.loadUserPrefs(); this.ensureLanguage(); }
     else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar) this.render();
   }
 
@@ -170,15 +170,31 @@ class HAHousekeeperPanel extends HTMLElement {
     head.appendChild(style);
   }
 
+  // The language of the panel: the chosen one, else the one of Home Assistant, else English.
   get lang() {
     const chosen = this.prefs?.language;
-    if (chosen === "de" || chosen === "en") return chosen;
-    return String(this._hass?.language || "en").toLowerCase().startsWith("de") ? "de" : "en";
+    if (chosen && chosen !== "auto" && LANGUAGES.some(l => l.code === chosen)) return chosen;
+    return matchLanguage(LANGUAGES, this._hass?.language);
   }
 
+  // A language besides German and English is a file of its own, fetched once; until it is here, English shows.
+  ensureLanguage() {
+    const code = this.lang, entry = LANGUAGES.find(l => l.code === code);
+    if (!entry?.v || TEXT[code] || (this._langLoading ||= {})[code]) return;
+    this._langLoading[code] = true;
+    fetch(`/ha_housekeeper/i18n/${code}.json?v=${entry.v}`)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then(texts => { TEXT[code] = texts; if (this.lang === code) this.render(); })
+      .catch(() => { delete this._langLoading[code]; }); // stays English; the next change of language tries again
+  }
+
+  // A text may be a string or, for a language with more plural forms, an object {one, few, many, other}.
+  // The number that picks the form is `count` (a raw number), else `n`.
   t(key, vars) {
-    let text = TEXT[this.lang][key] || TEXT.en[key] || key;
-    if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, this.lang);
+    const lang = this.lang;
+    let text = TEXT[lang]?.[key] || TEXT.en[key] || key;
+    if (text && typeof text === "object") text = pluralText(text, lang, vars);
+    if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, lang);
     return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
   }
 
@@ -576,7 +592,7 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   // A typed text in the quotation marks of the language of the panel.
-  quote(text) { return this.lang === "de" ? `„${text}“` : `“${text}”`; }
+  quote(text) { const [open, close] = languageInfo(this.lang).quotes; return `${open}${text}${close}`; }
 
   // One finding by its key, without a search through all of them for every picked row.
   findingByKey(key) {

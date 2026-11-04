@@ -1,0 +1,16 @@
+[
+  {
+    "code": "de",
+    "name": "Deutsch",
+    "patterns": ["de"],
+    "quotes": ["„", "“"],
+    "lowerKind": false
+  },
+  {
+    "code": "en",
+    "name": "English",
+    "patterns": ["en"],
+    "quotes": ["“", "”"],
+    "lowerKind": true
+  }
+]

@@ -49,6 +49,7 @@ from .const import (
     DOMAIN,
     FONTS_URL,
     FRONTEND_URL,
+    I18N_URL,
     LOGO_URL,
     PANEL_ELEMENT,
     PANEL_URL,
@@ -146,6 +147,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
                 StaticPathConfig(FRONTEND_URL, str(bundle), True),
                 StaticPathConfig(LOGO_URL, str(Path(__file__).parent / "brand" / "logo.png"), True),
                 StaticPathConfig(FONTS_URL, str(Path(__file__).parent / "fonts"), True),
+                StaticPathConfig(I18N_URL, str(frontend_dir / "i18n"), True),
             ]
         )
         hass.data[DOMAIN]["static_path_registered"] = True

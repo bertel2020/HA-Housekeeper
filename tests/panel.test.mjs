@@ -26,8 +26,8 @@ function loadPanel(extra = {}) {
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, setTimeout: () => 0,
     ...extra,
   };
-  vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT; this.NAV = NAV; this.NAV_GROUPS = NAV_GROUPS; this.OPTION_FIELDS = OPTION_FIELDS; this.csvCell = csvCell;", context);
-  return { PanelClass, downloads, TEXT: context.TEXT, NAV: context.NAV, NAV_GROUPS: context.NAV_GROUPS, OPTION_FIELDS: context.OPTION_FIELDS, csvCell: context.csvCell, shadow };
+  vm.runInNewContext(fs.readFileSync(SOURCE, "utf8") + "\nthis.TEXT = TEXT; this.NAV = NAV; this.NAV_GROUPS = NAV_GROUPS; this.OPTION_FIELDS = OPTION_FIELDS; this.matchLanguage = matchLanguage; this.pluralText = pluralText; this.csvCell = csvCell;", context);
+  return { PanelClass, downloads, TEXT: context.TEXT, NAV: context.NAV, NAV_GROUPS: context.NAV_GROUPS, OPTION_FIELDS: context.OPTION_FIELDS, csvCell: context.csvCell, matchLanguage: context.matchLanguage, pluralText: context.pluralText, shadow };
 }
 
 const entriesOf = el => el.causeEntries().map(c => el.causeEntry(c)).join("");
@@ -4493,7 +4493,7 @@ test("the language can be set by hand, saved with the preferences, and falls bac
   el.setPref("language", "auto");
   assert.equal(el.lang, "en");
   el.view = "settings"; el.settingsTab = "look"; el.render();
-  assert.ok(shadow.innerHTML.includes('data-pref="language|de"') && shadow.innerHTML.includes('data-pref="language|auto"'));
+  assert.ok(shadow.innerHTML.includes('data-pref-select="language"') && shadow.innerHTML.includes('<option value="de"') && shadow.innerHTML.includes('<option value="auto" selected'));
 });
 test("the sensor field lists matching sensors with statistics while typing and takes the picked one", () => {
   const { el } = panel("en");
@@ -8391,4 +8391,16 @@ test("an orphaned statistic opens to show where the scan still names it and what
   el.statOpen = ["sensor.old_power"];
   el.render();
   assert.ok(shadow.innerHTML.includes("Still named in") && shadow.innerHTML.includes('data-object="automation:a1"') && shadow.innerHTML.includes('data-object="entity:sensor.old_power_2"'));
+});
+
+test("a language is chosen by pattern, plural forms pick by number, and a missing text shows in English", () => {
+  const { matchLanguage, pluralText } = loadPanel();
+  const list = [{ code: "pt", patterns: ["pt", "pt-br"] }, { code: "zh-Hans", patterns: ["zh-hans", "zh-cn"] }];
+  assert.deepEqual(["pt_BR", "pt-PT", "zh-Hans", "zh_CN", "zh-Hant", "fr", undefined].map(c => matchLanguage(list, c)), ["pt", "pt", "zh-Hans", "zh-Hans", "en", "en", "en"]);
+  const ru = { one: "файл", few: "файла", many: "файлов", other: "файла (дробное)" };
+  assert.deepEqual([1, 3, 5, 21, 1.5].map(count => pluralText(ru, "ru", { count })), ["файл", "файла", "файлов", "файл", "файла (дробное)"]);
+  assert.equal(pluralText({ other: "x" }, "en", {}), "x");
+  const { el } = panel("de");
+  el.prefs = { ...el.prefs, language: "fr" };
+  assert.equal(el.lang, "de", "a language that is not listed is not used, Home Assistant decides");
 });
