@@ -5976,7 +5976,7 @@ class DiagnosisMixin {
       item.created_at ? [this.t("entryCreated"), this.esc(this.formatDate(item.created_at))] : null,
       item.modified_at ? [this.t("entryModified"), this.esc(this.formatDate(item.modified_at))] : null,
       path ? [this.t("entryHaPath"), `<code>${this.esc(path)}</code>`] : null,
-      item.documentation ? [this.t("entryDocs"), link(item.documentation, item.documentation)] : null,
+      this.safeUrl(item.documentation) ? [this.t("entryDocs"), link(item.documentation, item.documentation)] : item.documentation ? [this.t("entryDocs"), this.esc(item.documentation)] : null,
     ].filter(Boolean);
     return `<section class="panel"><div class="panelhead"><h2>${this.t("integrationCard")}</h2></div><div class="pad"><dl class="kv">${rows.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${v}</dd>`).join("")}</dl></div></section>`;
   }
@@ -8997,7 +8997,7 @@ class WatchMixin {
       parts.push(`<div class="sectionlabel">${this.t("watchRepairs", { n: this.formatNumber(r.new_repairs.length) })}</div>${r.new_repairs.slice(0, WATCH_LIST).map(key => {
         const i = info[key], domain = key.split(":")[0], id = key.split(":").slice(1).join(":");
         const sub = [this.esc(domain), ["critical", "error", "warning"].includes(i?.severity) ? this.t(`repairSeverity_${i.severity}`) : "", i?.fixable ? this.t("repairFixable") : ""].filter(Boolean).join(" · ");
-        return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(i?.title || id)}</strong><small>${sub}</small></span>${i?.url ? `<a class="btn quiet" href="${this.esc(i.url)}" target="_blank" rel="noopener noreferrer">${this.t("repairMore")}</a>` : ""}</div>`;
+        return `<div class="row"><span class="tile warn"><ha-icon icon="mdi:wrench-outline"></ha-icon></span><span class="row-text"><strong>${this.esc(i?.title || id)}</strong><small>${sub}</small></span>${this.safeUrl(i?.url) ? `<a class="btn quiet" href="${this.esc(i.url)}" target="_blank" rel="noopener noreferrer">${this.t("repairMore")}</a>` : ""}</div>`;
       }).join("")}`);
     }
     if (r.new_findings.length) parts.push(`<p class="sub">${this.t("watchNewFindings", { n: this.formatNumber(r.new_findings.length) })}</p>`);
@@ -15453,7 +15453,7 @@ class DetailEditMixin {
     const { e, now, suggest, renameControls, areaControls, hasAreas } = this.detailEditParts(item);
     const rename = renameControls ? `<form class="deform" data-de-rename><label for="de-id"><strong>${this.t("deNewId")}</strong></label>${renameControls}
         <small class="factnote">${this.t("deRenameNote")}</small></form>` : "";
-    const assign = hasAreas ? `<form class="deform" data-de-area><label for="de-area"><strong>${this.t("deArea")}</strong><small class="denow${now ? "" : " none"}">${this.t("deAreaNow", { area: now || this.t("deNoArea") })}</small></label>${areaControls}
+    const assign = hasAreas ? `<form class="deform" data-de-area><label for="de-area"><strong>${this.t("deArea")}</strong><small class="denow${now ? "" : " none"}">${this.t("deAreaNow", { area: this.esc(now || this.t("deNoArea")) })}</small></label>${areaControls}
         ${suggest ? `<small class="factnote">${this.t("areaNote")}</small>` : ""}</form>` : `<small class="factnote">${this.t("areaNone")}</small>`;
     // Rarely needed, so it starts closed; an error from the last try keeps it open.
     const body = `<div class="pad">${rename}${assign}${e.error ? `${this.notice("err", this.t(e.error))}` : ""}</div>`;
@@ -15466,7 +15466,7 @@ class DetailEditMixin {
     const { e, now, suggest, renameControls, areaControls, hasAreas } = this.detailEditParts(item, true);
     const rows = [];
     if (renameControls) rows.push(this.actRow(this.t("deNewId"), this.t("deRenameNote"), `<form class="deform" data-de-rename>${renameControls}</form>`));
-    const areaHint = [this.t("deAreaNow", { area: now || this.t("deNoArea") }), suggest && hasAreas ? this.t("areaNote") : ""].filter(Boolean).join(" · ");
+    const areaHint = [this.t("deAreaNow", { area: this.esc(now || this.t("deNoArea")) }), suggest && hasAreas ? this.t("areaNote") : ""].filter(Boolean).join(" · ");
     rows.push(hasAreas ? this.actRow(this.t("deArea"), areaHint, `<form class="deform" data-de-area>${areaControls}</form>`) : this.actRow(this.t("deArea"), this.t("areaNone"), ""));
     if (e.error) rows.push(`<div class="actblock">${this.notice("err", this.t(e.error))}</div>`);
     return rows;
@@ -16728,7 +16728,7 @@ class PolicyRowMixin {
     const { list, taken } = this.polSuggestions(item);
     const hint = c.dead ? `<button type="button" class="btn small" data-jump="cleanup">${this.t("polToCleanup")}</button>` : "";
     const chips = list.length > 1 ? list.map((v, i) => `<button type="button" class="btn small mono${value === v ? " on" : ""}" data-pol-sugg="${key}|${this.esc(v)}" aria-pressed="${value === v}">${this.esc(v)}${i === 0 ? ` <small>${this.t("polRecommended")}</small>` : ""}</button>`).join("") : "";
-    const why = taken ? `<small class="factnote">${this.t("polSuggTaken", { id: taken, why: this.polCheckText(item, taken).text })}</small>` : "";
+    const why = taken ? `<small class="factnote">${this.t("polSuggTaken", { id: this.esc(taken), why: this.esc(this.polCheckText(item, taken).text) })}</small>` : "";
     return `<div class="poledit"><div class="inline"><span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="pol-id-${key}" data-pol-id="${key}" value="${this.esc(value)}" aria-label="${this.esc(this.t("deNewId"))}" placeholder="${this.esc(this.t("deNewId"))}" autocomplete="off" spellcheck="false"><button type="button" class="btn primary small" data-pol-rename-go="${key}" ${blocked ? "disabled" : ""}>${this.t("deRename")}</button>${hint}</div><span class="polcheck bad" data-pol-check="${key}" role="status">${this.esc(c.tone === "bad" ? c.text : "")}</span>${chips ? `<div class="inline"><small class="factnote">${this.t("polSuggestHint")}</small>${chips}</div>` : ""}${why}<small class="factnote"><ha-icon icon="mdi:information-outline"></ha-icon> ${this.t("deRenameNote")}</small></div>`;
   }
 
@@ -17534,7 +17534,7 @@ class IntegrationPageMixin {
   intOverview(item) {
     const fact = (label, value) => `<div class="fact"><span>${this.t(label)}</span><b>${value}</b></div>`;
     const size = item.custom ? (this.sysState("storage").data?.custom_integrations || []).find(x => x.domain === item.domain) : null;
-    const docs = /^https:\/\//.test(item.documentation || "") ? `<a class="btn" href="${this.esc(item.documentation)}" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:book-open-variant"></ha-icon>${this.t("intDocs")}</a>` : "";
+    const docs = this.safeUrl(item.documentation) ? `<a class="btn" href="${this.esc(item.documentation)}" target="_blank" rel="noopener noreferrer"><ha-icon icon="mdi:book-open-variant"></ha-icon>${this.t("intDocs")}</a>` : "";
     const folder = item.custom ? `<section class="panel"><div class="panelhead"><h2>${this.t("intFolder")}</h2></div><div class="facts">${fact("intFolder", this.esc(item.integration_dir || `custom_components/${item.domain}`))}${size ? fact("intFolderSize", this.esc(this.formatBytes(size.bytes))) : ""}</div></section>` : "";
     const hacs = item.hacs ? this.intHacsCard(item.hacs) : "";
     const rows = this.objectTable(`intentries-${item.object_id}`, this.intEntries(item).map(e => ({ key: `config_entry:${e.object_id}`, type: "config_entry", name: e.name || e.object_id, sub: "", tone: this.tone(e.status), state: e.status, stateLabel: this.statusLabel(e.status), pill: this.pill(e.status), pause: this.apCanPause(e.object_id, e.state) ? e.object_id : "", entities: e.entity_count || 0, devices: e.device_count || 0 })), {
@@ -18570,6 +18570,11 @@ class HAHousekeeperPanel extends HTMLElement {
     let text = TEXT[this.lang][key] || TEXT.en[key] || key;
     if (this.data?.meta?.hacs_store === "marketplace" && text.includes("HACS")) text = forMarketplace(text, this.lang);
     return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
+  }
+
+  // A link from third-party data only if it is http(s) or a path on this host; anything else (javascript:, data:) gets no link.
+  safeUrl(url) {
+    return /^(https?:\/\/|\/(?![\/\\]))/i.test(String(url || "")) ? String(url) : "";
   }
 
   esc(value) {

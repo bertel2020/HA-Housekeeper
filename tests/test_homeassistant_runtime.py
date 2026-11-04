@@ -169,11 +169,16 @@ async def test_diagnostics_exports_only_aggregates(hass: HomeAssistant) -> None:
     entry = er.async_get(hass).async_get_or_create(
         domain="sensor", platform="test", unique_id="diag-1", suggested_object_id="secret_name"
     )
+    hass.states.async_set("zone.only_state", "0")
     scanner = InventoryScanner(hass)
     config_entry = attach_scanner(hass, scanner)
     await scanner.async_scan()
 
     result = await async_get_config_entry_diagnostics(hass, config_entry)
+    assert result["meta"]["state_only_entities"] >= 1 and isinstance(
+        result["meta"]["warmup_names"], int
+    )
+    assert "zone.only_state" not in repr(result)
 
     assert result["loaded"] is True
     assert result["meta"]["object_count"] >= 1

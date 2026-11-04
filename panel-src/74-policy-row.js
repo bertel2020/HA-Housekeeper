@@ -78,7 +78,7 @@ class PolicyRowMixin {
     const { list, taken } = this.polSuggestions(item);
     const hint = c.dead ? `<button type="button" class="btn small" data-jump="cleanup">${this.t("polToCleanup")}</button>` : "";
     const chips = list.length > 1 ? list.map((v, i) => `<button type="button" class="btn small mono${value === v ? " on" : ""}" data-pol-sugg="${key}|${this.esc(v)}" aria-pressed="${value === v}">${this.esc(v)}${i === 0 ? ` <small>${this.t("polRecommended")}</small>` : ""}</button>`).join("") : "";
-    const why = taken ? `<small class="factnote">${this.t("polSuggTaken", { id: taken, why: this.polCheckText(item, taken).text })}</small>` : "";
+    const why = taken ? `<small class="factnote">${this.t("polSuggTaken", { id: this.esc(taken), why: this.esc(this.polCheckText(item, taken).text) })}</small>` : "";
     return `<div class="poledit"><div class="inline"><span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="pol-id-${key}" data-pol-id="${key}" value="${this.esc(value)}" aria-label="${this.esc(this.t("deNewId"))}" placeholder="${this.esc(this.t("deNewId"))}" autocomplete="off" spellcheck="false"><button type="button" class="btn primary small" data-pol-rename-go="${key}" ${blocked ? "disabled" : ""}>${this.t("deRename")}</button>${hint}</div><span class="polcheck bad" data-pol-check="${key}" role="status">${this.esc(c.tone === "bad" ? c.text : "")}</span>${chips ? `<div class="inline"><small class="factnote">${this.t("polSuggestHint")}</small>${chips}</div>` : ""}${why}<small class="factnote"><ha-icon icon="mdi:information-outline"></ha-icon> ${this.t("deRenameNote")}</small></div>`;
   }
 

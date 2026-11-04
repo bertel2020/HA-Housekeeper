@@ -294,7 +294,7 @@ class DiagnosisMixin {
       item.created_at ? [this.t("entryCreated"), this.esc(this.formatDate(item.created_at))] : null,
       item.modified_at ? [this.t("entryModified"), this.esc(this.formatDate(item.modified_at))] : null,
       path ? [this.t("entryHaPath"), `<code>${this.esc(path)}</code>`] : null,
-      item.documentation ? [this.t("entryDocs"), link(item.documentation, item.documentation)] : null,
+      this.safeUrl(item.documentation) ? [this.t("entryDocs"), link(item.documentation, item.documentation)] : item.documentation ? [this.t("entryDocs"), this.esc(item.documentation)] : null,
     ].filter(Boolean);
     return `<section class="panel"><div class="panelhead"><h2>${this.t("integrationCard")}</h2></div><div class="pad"><dl class="kv">${rows.map(([k, v]) => `<dt>${this.esc(k)}</dt><dd>${v}</dd>`).join("")}</dl></div></section>`;
   }

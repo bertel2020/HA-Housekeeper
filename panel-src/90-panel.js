@@ -178,6 +178,11 @@ class HAHousekeeperPanel extends HTMLElement {
     return vars ? text.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? "") : text;
   }
 
+  // A link from third-party data only if it is http(s) or a path on this host; anything else (javascript:, data:) gets no link.
+  safeUrl(url) {
+    return /^(https?:\/\/|\/(?![\/\\]))/i.test(String(url || "")) ? String(url) : "";
+  }
+
   esc(value) {
     return String(value ?? "—").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
   }
