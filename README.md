@@ -96,7 +96,7 @@ Details: [Safety model](docs/USER-GUIDE.md#safety-model) and [Current limitation
 
 ## Languages
 
-The panel, the setup and the messages come in German and English, and in French, Spanish, Portuguese, Slovak, Russian and Simplified Chinese as community translations: parts that are not translated yet show in English. The choice is in Settings, otherwise the language of Home Assistant is used. The user guide is available in German and English only.
+The panel, the setup and the messages come in German and English, and in French, Spanish, Portuguese, Slovak, Russian and Simplified Chinese as community translations: parts that are not translated yet show in English. The choice is in Settings, otherwise the language of Home Assistant is used. The user guide is available in German and English only. Translations are welcome: see [docs/TRANSLATING.md](docs/TRANSLATING.md).
 
 ## Changelog
 
