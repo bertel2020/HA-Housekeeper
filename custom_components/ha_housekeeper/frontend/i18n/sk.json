@@ -1144,7 +1144,12 @@
 "updVerdict_stop": "Zastaviť",
 "updVerdictNone": "Žiadne čakajúce aktualizácie",
 "updPending_1": "Čaká 1 aktualizácia",
-"updPending_n": "Čakajú aktualizácie: {n}",
+"updPending_n": {
+"one": "Čaká 1 aktualizácia",
+"few": "Čakajú {n} aktualizácie",
+"many": "Čaká {n} aktualizácií",
+"other": "Čaká {n} aktualizácií"
+},
 "updCheckFirst": "Skontrolovať: {items}",
 "updSumOpen": "Čakajúce",
 "updSumBlocked": "Blokované",
@@ -1165,7 +1170,12 @@
 "updCurrent_device": "Firmvér všetkých zariadení je aktuálny.",
 "updAllCurrent": "Všetko je aktuálne.",
 "todoUpdates_1": "Čaká 1 aktualizácia",
-"todoUpdates_n": "Čakajú aktualizácie: {n}",
+"todoUpdates_n": {
+"one": "Čaká 1 aktualizácia",
+"few": "Čakajú {n} aktualizácie",
+"many": "Čaká {n} aktualizácií",
+"other": "Čaká {n} aktualizácií"
+},
 "pfAfterTitle": "Po aktualizácii",
 "pfAfterOn": "Po aktualizácii Home Assistanta, operačného systému alebo Supervisora Housekeeper {hours} hodín sleduje, či sa niečo nepokazilo alebo nepribudli nálezy. Pri začiatku aktualizácie si uloží stav; výsledky nájdeš medzi nálezmi.",
 "pfAfterRunning": "Sledovanie po aktualizácii {what}, zostáva {hours} h, zatiaľ {n} nálezov.",
@@ -1259,8 +1269,18 @@
 "bhTileCount": "Zálohy",
 "bhTileRemote": "Kópia mimo zariadenia",
 "bhTileOpen": "Na kontrolu",
-"bhTileProblems": "{n} problémov",
-"bhTileNotes": "{n} upozornení",
+"bhTileProblems": {
+"one": "1 problém",
+"few": "{n} problémy",
+"many": "{n} problémov",
+"other": "{n} problémov"
+},
+"bhTileNotes": {
+"one": "1 upozornenie",
+"few": "{n} upozornenia",
+"many": "{n} upozornení",
+"other": "{n} upozornení"
+},
 "bhTileProblems1": "1 problém",
 "bhTileNotes1": "1 upozornenie",
 "bhGroup_running": "Priebeh záloh",
@@ -1376,9 +1396,19 @@
 "bhGuideSteps": "1. Priprav testovaciu alebo druhú inštaláciu (nikdy nezačínaj hlavnou). 2. Obnov tam aktuálnu zálohu: Nastavenia → Systém → Zálohy → nahrať zálohu alebo obnova počas úvodného nastavenia. 3. Over integrácie, automatizácie a dashboardy. 4. Ulož sem dátum testu. Housekeeper sám obnovu nevykonáva.",
 "todoBackupProblem": "Problém s ochranou záloh",
 "mtProblems_1": "1 problém",
-"mtProblems_n": "Problémy: {n}",
+"mtProblems_n": {
+"one": "1 problém",
+"few": "{n} problémy",
+"many": "{n} problémov",
+"other": "{n} problémov"
+},
 "mtNotes_1": "1 poznámka",
-"mtNotes_n": "Poznámky: {n}",
+"mtNotes_n": {
+"one": "1 poznámka",
+"few": "{n} poznámky",
+"many": "{n} poznámok",
+"other": "{n} poznámok"
+},
 "mtChecks": {
 "one": "{n} kontrola",
 "few": "{n} kontroly",
@@ -1387,7 +1417,12 @@
 "mtPreflight": "Predbežná kontrola",
 "mtOpen": "Otvorené: {n}",
 "mtUpdates_1": "1 aktualizácia",
-"mtUpdates_n": "{n} aktualizácií",
+"mtUpdates_n": {
+"one": "1 aktualizácia",
+"few": "{n} aktualizácie",
+"many": "{n} aktualizácií",
+"other": "{n} aktualizácií"
+},
 "mtRecord": "Uložený stav",
 "mtNoRecord": "žiadny",
 "reliability": "Spoľahlivosť",
@@ -1532,7 +1567,12 @@
 "runsColDuration": "Trvanie priemer / maximum",
 "runsColTrend": "7 dní",
 "runsCoverageFull": "Posledných {days} dní · všetky počty sú úplné v rozsahu údajov zachovaných Home Assistantom.",
-"runsCoverageLower": "Posledných {days} dní · pri {n} záznamoch ide o minimum: úložisko trás bolo plné a niektoré behy môžu chýbať.",
+"runsCoverageLower": {
+"one": "Posledných {days} dní · pri jednej položke „aspoň“: úložisko stôp bolo plné, niektoré spustenia môžu chýbať.",
+"few": "Posledných {days} dní · pri {n} záznamoch ide o minimum: úložisko trás bolo plné a niektoré behy môžu chýbať.",
+"many": "Posledných {days} dní · pri {n} záznamoch ide o minimum: úložisko trás bolo plné a niektoré behy môžu chýbať.",
+"other": "Posledných {days} dní · pri {n} záznamoch ide o minimum: úložisko trás bolo plné a niektoré behy môžu chýbať."
+},
 "runsCoverageLower1": "Posledných {days} dní · pri jednej položke „aspoň“: úložisko stôp bolo plné, niektoré spustenia môžu chýbať.",
 "rfHint_failing": "Skontroluj stopu automatizácie v uvedenom kroku.",
 "rfHint_overlap": "Uprav režim, maximálny počet súbežných behov alebo rozdeľ spúšťače.",
@@ -1627,7 +1667,12 @@
 "optOutageHighHint": "Po toľkých hodinách má výpadok vysokú závažnosť.",
 "unitMinutes": "min",
 "optionsOrder": "Limity musia rásť v poradí: informatívna, nízka, stredná, vysoká.",
-"optConvDays": "= {n} dní",
+"optConvDays": {
+"one": "= 1 deň",
+"few": "= {n} dni",
+"many": "= {n} dní",
+"other": "= {n} dní"
+},
 "optConvHours": "= {n} h",
 "optUnusedAutomationTitle": "Nepoužívané automatizácie",
 "optUnusedAutomationHint": "Po koľkých dňoch bez spustenia sa automatizácia považuje za nepoužívanú. Hodnota 0 kontrolu vypne.",
@@ -2175,9 +2220,19 @@
 "policies": "Pravidlá a ciele",
 "policiesSubtitle": "Tvoje vlastné pravidlá poriadku v Home Assistante a tvoje vlastné hranice toho, čo znamená v poriadku. Upozornenia, nie chyby; iba číta.",
 "polOverviewViolations": "Porušenia pravidiel",
-"polOverviewRules": "Aktívne pravidlá: {n}",
+"polOverviewRules": {
+"one": "1 aktívne pravidlo",
+"few": "{n} aktívne pravidlá",
+"many": "{n} aktívnych pravidiel",
+"other": "{n} aktívnych pravidiel"
+},
 "polOverviewRuleOne": "1 aktívne pravidlo",
-"polObjTitle": "Pravidlá · porušenia: {n}",
+"polObjTitle": {
+"one": "Pravidlá · 1 porušenie",
+"few": "Pravidlá · {n} porušenia",
+"many": "Pravidlá · {n} porušení",
+"other": "Pravidlá · {n} porušení"
+},
 "polObjTitleOne": "Pravidlá · 1 porušenie",
 "polObjHint": "Pravidlá, ktoré tento objekt porušuje. Skryté porušenia sa tu nezobrazujú.",
 "polObjAll": "Všetky pravidlá",
@@ -2456,7 +2511,12 @@
 "autopause": "Automatické pozastavenie",
 "autopauseSubtitle": "Čo je práve pozastavené, čo zbiera neúspešné pokusy a ako pozastavenie funguje.",
 "relApPaused_1": "1 integrácia je pozastavená.",
-"relApPaused_n": "Pozastavené integrácie: {n}.",
+"relApPaused_n": {
+"one": "1 integrácia je pozastavená.",
+"few": "Pozastavené sú {n} integrácie.",
+"many": "Pozastavených je {n} integrácií.",
+"other": "Pozastavených je {n} integrácií."
+},
 "relApOpen": "Otvoriť automatické pozastavenie",
 "apHead": "Automaticky pozastavovať opakované zlyhania",
 "apHeadSub": "Pozastaví zdroje údajov, ktorým opakovane zlyháva nastavenie, a neskôr ich skúša znova. Ručné pozastavenie tento prepínač nepotrebuje.",
@@ -2482,7 +2542,12 @@
 "apNext": "ďalší pokus o {span}",
 "apTry": "Pokus {n} z {total}",
 "apExhausted": "Ďalšie pokusy sa skončili, vyžaduje sa kontrola",
-"apReasonAuto": "{n} neúspešných pokusov",
+"apReasonAuto": {
+"one": "pozastavená tebou",
+"few": "{n} neúspešné pokusy",
+"many": "{n} neúspešných pokusov",
+"other": "{n} neúspešných pokusov"
+},
 "apReasonManual": "pozastavená tebou",
 "apTodoOne": "{name} je pozastavená",
 "apTodoMany": "Pozastavené integrácie: {n}",
@@ -2571,7 +2636,12 @@
 "clRecurringMany": "Kontroly, ktoré sa tento týždeň aspoň 3-krát zmenili na problém: {n}, naposledy: {what}.",
 "clRecurringOpen": "Na stránky spoľahlivosti",
 "clFlapText_1": "1 kontrola mení úroveň nezvykle často (aspoň 4 zmeny za 3 hodiny). Ak ide o falošný poplach, označ riadky v ponuke.",
-"clFlapText_n": "Kontroly, ktoré menia úroveň nezvykle často (aspoň 4 zmeny za 3 hodiny): {n}. Ak ide o falošné poplachy, označ riadky v ponuke.",
+"clFlapText_n": {
+"one": "1 kontrola mení úroveň nezvykle často (aspoň 4 zmeny za 3 hodiny). Ak ide o falošný poplach, označ riadky v ponuke.",
+"few": "{n} kontroly menia úroveň nezvykle často (aspoň 4 zmeny za 3 hodiny). Ak ide o falošné poplachy, označ riadky v ponuke.",
+"many": "{n} kontrol mení úroveň nezvykle často (aspoň 4 zmeny za 3 hodiny). Ak ide o falošné poplachy, označ riadky v ponuke.",
+"other": "{n} kontrol mení úroveň nezvykle často (aspoň 4 zmeny za 3 hodiny). Ak ide o falošné poplachy, označ riadky v ponuke."
+},
 "clFlapOnly": "Zobraziť len tieto",
 "clFlapAll": "Zobraziť všetky",
 "clStrips": "Stav podľa oblasti",
@@ -2803,13 +2873,23 @@
 "oftenSkip": "Viac sa nepýtať",
 "oftenDevice": "Viacero entít tohto zariadenia vypadáva súčasne.",
 "oftenGroup": "{device}: {n} entít",
-"oftenRest": "ďalších {n} entít zostáva sledovaných",
+"oftenRest": {
+"one": "ďalšia entita zostáva sledovaná",
+"few": "ďalšie {n} entity zostávajú sledované",
+"many": "ďalších {n} entít zostáva sledovaných",
+"other": "ďalších {n} entít zostáva sledovaných"
+},
 "oftenRest1": "ďalšia entita zostáva sledovaná",
 "oftenCardTitle": "Navrhované poznámky k objektom",
 "oftenCardHint": "Pravidelne zlyhávajú alebo strácajú hodnotu, napríklad v pohotovostnom režime. Poznámka k objektu „Zámerne offline“ skryje ich nálezy na 90 dní.",
 "oftenCount": "{n} návrhov",
 "oftenFindings1": "1 nález",
-"oftenFindings": "{n} nálezov",
+"oftenFindings": {
+"one": "1 nález",
+"few": "{n} nálezy",
+"many": "{n} nálezov",
+"other": "{n} nálezov"
+},
 "oftenTake": "Poznamenať",
 "oftenTakeN": "Poznamenať ({n})",
 "oftenColObject": "Objekt",
@@ -2824,9 +2904,19 @@
 "levelsHintSettings": "Zobraziť limity",
 "levelsHintOk": "Rozumiem",
 "changesNewRating": "Nové hodnotenie: od tejto verzie sa výpadky posudzujú podľa trvania. Nálezy, ktorých hodnotenie sa zmenilo, sú uvedené medzi „Skončené bez opravy“, nie ako vyriešené.",
-"ogSites": "Objekty: {n}",
+"ogSites": {
+"one": "1 objekt",
+"few": "{n} objekty",
+"many": "{n} objektov",
+"other": "{n} objektov"
+},
 "ogSites1": "1 objekt",
-"tileFindings": "Nálezy: {n}",
+"tileFindings": {
+"one": "1 nález",
+"few": "{n} nálezy",
+"many": "{n} nálezov",
+"other": "{n} nálezov"
+},
 "tileFindings1": "1 nález",
 "tileObjects": "objekty",
 "tileOutages": "Výpadky: {o}, súvisiace nálezy: {n}",
@@ -2945,7 +3035,12 @@
 "logLevel_critical": "{n}× kritická chyba",
 "cause_integration_down": "Integrácia {name} nie je načítaná",
 "cause_device_down": "Zariadenie {name} úplne vypadlo",
-"causeFollowers": "Následné nálezy: {n}",
+"causeFollowers": {
+"one": "1 následný nález",
+"few": "{n} následné nálezy",
+"many": "{n} následných nálezov",
+"other": "{n} následných nálezov"
+},
 "causeFollowers1": "1 následný nález",
 "causeExplains": "vysvetľuje ďalšie nálezy: {n}",
 "causeExplains1": "vysvetľuje ďalší 1 nález",
@@ -3095,7 +3190,12 @@
 "exHow_statistics": "Vymeniť merač (iba história)",
 "exHow_id": "Vymeniť merač (iba ID)",
 "exChosen": "Potvrdené dvojice: {count}",
-"exCreate": "Náhľad pre {count} dvojíc",
+"exCreate": {
+"one": "Vytvára sa náhľad…",
+"few": "Náhľad pre {count} dvojice",
+"many": "Náhľad pre {count} dvojíc",
+"other": "Náhľad pre {count} dvojíc"
+},
 "exUnmatched": "Bez náprotivku na starom zariadení: {list}",
 "exDisableOld": "Vypnúť staré zariadenie…",
 "exDisableHint": "Až po výmene. Dá sa to iba vtedy, keď už na starom zariadení nič nefunguje a nič naň neodkazuje.",
@@ -3460,7 +3560,12 @@
 "safeAi": "Prístup AI: {mode}",
 "safeRunning": "Prebieha plán",
 "safeBackupRunning": "Prebieha zálohovanie plánu",
-"safeWatching": "Sledované plány: {n}",
+"safeWatching": {
+"one": "Sleduje sa 1 plán",
+"few": "Sledujú sa {n} plány",
+"many": "Sleduje sa {n} plánov",
+"other": "Sleduje sa {n} plánov"
+},
 "safeWatching1": "Sleduje sa 1 plán",
 "safeWatchingTip": "Najviac 24 hodín po vykonaní Housekeeper pri každej kontrole zisťuje, či nepribudli nové nálezy.",
 "safeRegression": "Zhoršenia po zmene: {n}",
@@ -3668,7 +3773,12 @@
 "remHistoryClose": "Skryť históriu",
 "remToday": "dnes",
 "remOverdue": "Po termíne {n} dní",
-"remIn": "o {n} dní",
+"remIn": {
+"one": "dnes",
+"few": "o {n} dni",
+"many": "o {n} dní",
+"other": "o {n} dní"
+},
 "remInvalid": "Neuložené, skontroluj pole: {field}",
 "reminders": "Pripomienky",
 "remindersSubtitle": "Termíny pravidelne vykonávaných úloh.",
@@ -3863,7 +3973,12 @@
 "excCreate": "Pravidlo pre tento objekt …",
 "fselStatus": "Rozhodnúť o náleze …",
 "fselStatusChange": "Zmeniť stav …",
-"outageStatusHint": "Stav ukončí výpadok: entity za ním ({n}) sa potom počítajú jednotlivo ako nedostupné. Ak je objekt vypnutý zámerne, lepšie sa hodí poznámka k objektu; skryje výpadok s tým, čo z neho vyplýva, aj nabudúce.",
+"outageStatusHint": {
+"one": "Stav ukončí výpadok: entita za ním sa potom počíta samostatne ako nedostupná. Ak je objekt vypnutý zámerne, lepšie sa hodí poznámka k objektu; skryje výpadok s tým, čo z neho vyplýva, aj nabudúce.",
+"few": "Stav ukončí výpadok: entity za ním ({n}) sa potom počítajú jednotlivo ako nedostupné. Ak je objekt vypnutý zámerne, lepšie sa hodí poznámka k objektu; skryje výpadok s tým, čo z neho vyplýva, aj nabudúce.",
+"many": "Stav ukončí výpadok: entity za ním ({n}) sa potom počítajú jednotlivo ako nedostupné. Ak je objekt vypnutý zámerne, lepšie sa hodí poznámka k objektu; skryje výpadok s tým, čo z neho vyplýva, aj nabudúce.",
+"other": "Stav ukončí výpadok: entity za ním ({n}) sa potom počítajú jednotlivo ako nedostupné. Ak je objekt vypnutý zámerne, lepšie sa hodí poznámka k objektu; skryje výpadok s tým, čo z neho vyplýva, aj nabudúce."
+},
 "outageStatusHint1": "Stav ukončí výpadok: entita za ním sa potom počíta samostatne ako nedostupná. Ak je objekt vypnutý zámerne, lepšie sa hodí poznámka k objektu; skryje výpadok s tým, čo z neho vyplýva, aj nabudúce.",
 "outageMarkInstead": "Radšej nastaviť poznámku k objektu",
 "statusTitle": "Rozhodnúť o náleze · nálezy: {n}",
@@ -3881,7 +3996,12 @@
 "dueLater": "Ešte neskôr",
 "dueKeepReason": "Stále zámerné",
 "statusCriticalHint": "Kritický objekt: „Zámerné“ platí len na určitý čas a potom sa znova zobrazí.",
-"decNoticeText": "„Známe“ je teraz „Zámerné“, „Odložené“ je teraz „Neskôr“. Nálezy označené ako Zámerné bez času: {n}; zobrazia sa znova v časti „Po termíne“ po {days} dňoch. Čas sa dá zmeniť pri každom náleze.",
+"decNoticeText": {
+"one": "„Známe“ je teraz „Zámerné“, „Odložené“ je teraz „Neskôr“. Jeden nález označený ako Zámerné nemal čas; zobrazí sa znova v časti „Po termíne“ po {days} dňoch. Čas sa dá zmeniť.",
+"few": "„Známe“ je teraz „Zámerné“, „Odložené“ je teraz „Neskôr“. {n} nálezy označené ako Zámerné nemali čas; zobrazia sa znova v časti „Po termíne“ po {days} dňoch. Čas sa dá zmeniť pri každom náleze.",
+"many": "„Známe“ je teraz „Zámerné“, „Odložené“ je teraz „Neskôr“. {n} nálezov označených ako Zámerné nemalo čas; zobrazia sa znova v časti „Po termíne“ po {days} dňoch. Čas sa dá zmeniť pri každom náleze.",
+"other": "„Známe“ je teraz „Zámerné“, „Odložené“ je teraz „Neskôr“. {n} nálezov označených ako Zámerné nemalo čas; zobrazia sa znova v časti „Po termíne“ po {days} dňoch. Čas sa dá zmeniť pri každom náleze."
+},
 "decNoticeText1": "„Známe“ je teraz „Zámerné“, „Odložené“ je teraz „Neskôr“. Jeden nález označený ako Zámerné nemal čas; zobrazí sa znova v časti „Po termíne“ po {days} dňoch. Čas sa dá zmeniť.",
 "decNoticeOk": "Rozumiem",
 "statusScopeHint": "Platí len pre tieto nálezy. Nový nález na tom istom objekte je opäť otvorený.",
@@ -4168,9 +4288,19 @@
 "navSt_autopause": "Pozastavené: {n}",
 "navSt_reminders": "Po termíne: {n}",
 "navSt_policies_1": "1 porušenie",
-"navSt_policies_n": "Porušenia: {n}",
+"navSt_policies_n": {
+"one": "1 porušenie",
+"few": "{n} porušenia",
+"many": "{n} porušení",
+"other": "{n} porušení"
+},
 "navSt_goals_1": "1 nesplnený cieľ",
-"navSt_goals_n": "Nesplnené ciele: {n}",
+"navSt_goals_n": {
+"one": "1 nesplnený cieľ",
+"few": "{n} nesplnené ciele",
+"many": "{n} nesplnených cieľov",
+"other": "{n} nesplnených cieľov"
+},
 "navSt_exceptions": "Na kontrolu: {n}",
 "navStOff": "vypnuté",
 "navStVacation": "Dovolenka zapnutá",
@@ -4498,7 +4628,12 @@
 },
 "trimTitle": "Skrátiť starú históriu",
 "trimHint": "Vylúčenie platí len pre nové údaje. Už uložené stavy zostanú, kým ich tu nevymažeš.",
-"trimChosen": "Vybrané entity: {count}",
+"trimChosen": {
+"one": "Vybraná 1 entita",
+"few": "Vybrané {count} entity",
+"many": "Vybraných {count} entít",
+"other": "Vybraných {count} entít"
+},
 "trimChosenOne": "Vybraná 1 entita",
 "trimKeep": "Ponechať stavy mladšie než",
 "trimDays": "{days} dní",
@@ -4514,7 +4649,12 @@
 "trimFactRows": "Počet riadkov sa zistí v náhľade",
 "trimFactRowsSub": "Pred vykonaním uvidíš počet riadkov na odstránenie pri každej entite.",
 "trimFoot": "Pred vymazaním Housekeeper vytvorí zálohu Home Assistanta vrátane databázy. Obnova je možná iba zo zálohy.",
-"trimPreview": "Vytvoriť náhľad pre {count} entít",
+"trimPreview": {
+"one": "Vytvoriť náhľad pre 1 entitu",
+"few": "Vytvoriť náhľad pre {count} entity",
+"many": "Vytvoriť náhľad pre {count} entít",
+"other": "Vytvoriť náhľad pre {count} entít"
+},
 "trimPreviewOne": "Vytvoriť náhľad pre 1 entitu",
 "trimBusy": "Pripravuje sa plán…",
 "trimFailed": "Plán sa nepodarilo vytvoriť: {detail}",
@@ -4534,7 +4674,12 @@
 "wzSumEntries": "Položiek: {n}",
 "wzSumRun": "Hotovo: {done} z {total}",
 "wzIdleTitle": "Nie je čo spustiť",
-"wzIdleBlocked": "Všetkých {n} položiek je blokovaných. Príčiny sú uvedené pri položkách.",
+"wzIdleBlocked": {
+"one": "Položka je blokovaná. Dôvod je uvedený pri nej.",
+"few": "Všetky {n} položky sú blokované. Príčiny sú uvedené pri položkách.",
+"many": "Všetkých {n} položiek je blokovaných. Príčiny sú uvedené pri položkách.",
+"other": "Všetkých {n} položiek je blokovaných. Príčiny sú uvedené pri položkách."
+},
 "wzIdleBlockedOne": "Položka je blokovaná. Dôvod je uvedený pri nej.",
 "wzIdleNothingTitle": "Nie je čo meniť",
 "wzIdleNothing": "Housekeeper skontroloval systém a nenašiel nič, čo by bolo možné zmeniť. Nemusíš nič robiť.",
@@ -4726,7 +4871,12 @@
 "vacEnded": "Naposledy skončila {date}.",
 "vacFailed": "Neuložené: {reason}",
 "vacBarOn": "Režim dovolenky zapnutý",
-"vacBarHeld": "{n} odložených nálezov",
+"vacBarHeld": {
+"one": "1 odložený nález",
+"few": "{n} odložené nálezy",
+"many": "{n} odložených nálezov",
+"other": "{n} odložených nálezov"
+},
 "vacBarNothing": "momentálne nič nezadržiava",
 "vacBarNoRule": "bez pravidla",
 "vacBarNewRule": "Pridať pravidlo",
@@ -5058,7 +5208,12 @@
 "mcpAutoOff": "Automaticky vypnúť",
 "mcpAutoOffDetail": "Po tomto čase sa Prístup AI aj „Meniť zoznam“ samy vypnú, aby neostali zapnuté omylom.",
 "mcpAutoNever": "nikdy",
-"mcpAutoHours": "po {n} hodinách",
+"mcpAutoHours": {
+"one": "po 1 hodine",
+"few": "po {n} hodinách",
+"many": "po {n} hodinách",
+"other": "po {n} hodinách"
+},
 "mcpAutoHour": "po 1 hodine",
 "mcpOffAt": "Vypnutie: {date}",
 "mcpFn_auto_off": "Automaticky vypnuté",
@@ -5100,7 +5255,12 @@
 "btCtTitle": "Vlastné typy batérií",
 "btCtHint": "Vlastné typy sa zobrazujú pri výbere pre každý senzor. Zabudované a používané typy nemožno odstrániť.",
 "btCtNone": "Zatiaľ nemáš vlastné typy. Keď zadáš nový typ pri senzore, objaví sa tu.",
-"btCtUsed": "Používajú senzory: {n}",
+"btCtUsed": {
+"one": "Používa 1 senzor",
+"few": "Používajú {n} senzory",
+"many": "Používa {n} senzorov",
+"other": "Používa {n} senzorov"
+},
 "btCtUsed1": "Používa 1 senzor",
 "btCtUnused": "nepoužíva sa",
 "btCtAdd": "Pridať",
@@ -5156,7 +5316,12 @@
 "bkcNoDb": "bez databázy",
 "bkcNoPlan": "plán už nie je v denníku",
 "bkcOnlyReturn": "Táto záloha je jediná možnosť obnovenia údajov, ktoré plán vymazal alebo spojil.",
-"bkcPlan": "Vytvoriť plán na vymazanie ({count})",
+"bkcPlan": {
+"one": "Pripravuje sa plán…",
+"few": "Vytvoriť plán na vymazanie ({count})",
+"many": "Vytvoriť plán na vymazanie ({count})",
+"other": "Vytvoriť plán na vymazanie ({count})"
+},
 "bkcFinal": "Vymazanie je konečné. Zmeny nemožno vrátiť.",
 "bkcNone": "Žiadne zálohy Housekeepera.",
 "bkcUnavailable": "Zálohy sa nepodarilo načítať.",
@@ -6185,19 +6350,39 @@
 "monitorHistField_name": "Názov",
 "monitorHistField_description": "Opis",
 "monitorHistField_notify": "Upozornenie",
-"ogNoValue": "{n} z {m} entít bez hodnoty",
+"ogNoValue": {
+"one": "1 z {m} entít bez hodnoty",
+"few": "{n} z {m} entít bez hodnoty",
+"many": "{n} z {m} entít bez hodnoty",
+"other": "{n} z {m} entít bez hodnoty"
+},
 "ogNoValue1": "1 z {m} entít bez hodnoty",
 "ogKind": "{label} ({n})",
 "ogMatch": "Filtru zodpovedá {n} z {m} nálezov",
-"ogMarkHides": "{mark} · skrytých výpadkov: {n}",
+"ogMarkHides": {
+"one": "{mark} · 1 skrytý výpadok",
+"few": "{mark} · {n} skryté výpadky",
+"many": "{mark} · {n} skrytých výpadkov",
+"other": "{mark} · {n} skrytých výpadkov"
+},
 "ogMarkHides1": "{mark} · 1 skrytý výpadok",
-"ogFindings": "{n} nálezov",
+"ogFindings": {
+"one": "1 nález",
+"few": "{n} nálezy",
+"many": "{n} nálezov",
+"other": "{n} nálezov"
+},
 "ogFindings1": "1 nález",
 "ogViewCount": "Objekty: {m}, nálezy: {n}",
 "ogViewCount1": "1 objekt, nálezy: {n}",
 "ogViewCountOne": "1 objekt s 1 nálezom",
 "ogViewOutages": "{o} výpadkov s {n} nálezmi",
-"ogViewOutage1": "1 výpadok s {n} nálezmi",
+"ogViewOutage1": {
+"one": "1 výpadok s 1 nálezom",
+"few": "1 výpadok s {n} nálezmi",
+"many": "1 výpadok s {n} nálezmi",
+"other": "1 výpadok s {n} nálezmi"
+},
 "ogViewOutageOne": "1 výpadok s 1 nálezom",
 "ogNew": "najnovší: {age}",
 "selectObjectFindings": "Vybrať všetky nálezy objektu {name}",
@@ -6353,7 +6538,12 @@
 "rwMenuSuggest": "Prijať návrh",
 "rwMenuSkip": "Preskočiť tento riadok",
 "rwChosen": "Potvrdené dvojice: {count}",
-"rwCreate": "Vytvoriť náhľad ({count})",
+"rwCreate": {
+"one": "Vytvára sa náhľad…",
+"few": "Vytvoriť náhľad ({count})",
+"many": "Vytvoriť náhľad ({count})",
+"other": "Vytvoriť náhľad ({count})"
+},
 "rwFixFirst": "Najprv oprav chyby v riadkoch.",
 "rwManyPairs": "Od 50 dvojíc je náhľad pomalý; viac behov sa číta ľahšie.",
 "reason_target_duplicate": "Pre viac starých entít je vybraná tá istá nová entita.",
@@ -6418,7 +6608,12 @@
 "fcEndBar": "{p} % z nálezov ({start}) vybavených",
 "fcEndFollow": "Súvisiace nálezy",
 "fcEndFollowSub": "patria k príčinám",
-"fcEndFollowN": "Visia na výpadkoch: {n}",
+"fcEndFollowN": {
+"one": "1 visí na výpadku",
+"few": "{n} visia na výpadkoch",
+"many": "{n} visí na výpadkoch",
+"other": "{n} visí na výpadkoch"
+},
 "fcEndFollowN1": "1 visí na výpadku",
 "fcActsIntro": "Nález je to, čo pravidlo našlo na objekte. Spodok každej karty hovorí, na čo sa vzťahuje.",
 "fcScopeObject": "Platí pre: objekt",
@@ -6445,7 +6640,12 @@
 "fcAsList": "Zobraziť ako zoznam",
 "fcToCards": "Späť na karty",
 "fcSince": "nájdené {age}",
-"fcFollows": "Visia na ňom ďalšie nálezy: {n}",
+"fcFollows": {
+"one": "Visí na ňom ďalší 1 nález",
+"few": "Visia na ňom ďalšie {n} nálezy",
+"many": "Visí na ňom ďalších {n} nálezov",
+"other": "Visí na ňom ďalších {n} nálezov"
+},
 "fcFollows1": "Visí na ňom ďalší 1 nález",
 "fcCardsDone": "Všetky karty tohto stupňa sú prezreté.",
 "fcCardsLeft": "Všetky karty sú prezreté, preskočené ({n}) zostávajú otvorené.",
@@ -6470,7 +6670,12 @@
 "fcSumNone": "nič na robenie",
 "fcStageOf": "Stupeň {n} z 5",
 "fcSkip": "Preskočiť stupeň",
-"fcNextStage": "Ďalej na stupeň {n}",
+"fcNextStage": {
+"one": "Dokončiť",
+"few": "Ďalej na stupeň {n}",
+"many": "Ďalej na stupeň {n}",
+"other": "Ďalej na stupeň {n}"
+},
 "fcFinish": "Dokončiť",
 "fcBack": "Späť",
 "fcExit": "Pozastaviť, pokračovať neskôr",
@@ -6492,7 +6697,12 @@
 "fcKpiLater": "Na „Neskôr“",
 "fcProgress": "Priebeh",
 "fcMinutes": "Karty: {c}, asi {n} min.",
-"fcFollowsChip": "Súvisiace nálezy: {n}",
+"fcFollowsChip": {
+"one": "1 súvisiaci nález",
+"few": "{n} súvisiace nálezy",
+"many": "{n} súvisiacich nálezov",
+"other": "{n} súvisiacich nálezov"
+},
 "fcFollowsChip1": "1 súvisiaci nález",
 "fcToFindings": "Zobraziť otvorené nálezy",
 "firstcleanup": "Upratovanie",
@@ -6517,7 +6727,12 @@
 "fcStage5": "Pokojný zvyšok",
 "fcStage5Hint": "Dopad Nízky alebo Info: odložiť spolu na „Neskôr“; vráti sa cez „Po termíne“.",
 "fcRestEyebrow": "Pokojný zvyšok",
-"fcRestTitle": "Pokojné nálezy: {n}",
+"fcRestTitle": {
+"one": "1 pokojný nález",
+"few": "{n} pokojné nálezy",
+"many": "{n} pokojných nálezov",
+"other": "{n} pokojných nálezov"
+},
 "fcRestTitle1": "1 pokojný nález",
 "fcRestId": "Dopad Nízky alebo Info",
 "fcRestWhat": "Na odloženie",
@@ -6526,7 +6741,12 @@
 "fcRestLevels": "{low} Nízky · {info} Info",
 "fcRestObjects": "Objekty",
 "fcRestObjects1": "1 objekt",
-"fcRestObjectsN": "Objekty: {n}",
+"fcRestObjectsN": {
+"one": "1 objekt",
+"few": "{n} objekty",
+"many": "{n} objektov",
+"other": "{n} objektov"
+},
 "fcRestBack": "Vráti sa o",
 "fcRestDays": "{n} dní",
 "fcRestLaterHint": "Na zvolený čas.",
@@ -6594,14 +6814,24 @@
 "fcInfoMean_": "Trvanie",
 "fcInfoEpisodes": "Výpadky: {n} za {days} dní",
 "fcInfoMean": "{span} na výpadok v priemere",
-"fcInfoHides": "Poznámka k objektu skrýva nálezy: {n}",
+"fcInfoHides": {
+"one": "Poznámka k objektu skrýva 1 nález",
+"few": "Poznámka k objektu skrýva {n} nálezy",
+"many": "Poznámka k objektu skrýva {n} nálezov",
+"other": "Poznámka k objektu skrýva {n} nálezov"
+},
 "fcInfoHides1": "Poznámka k objektu skrýva 1 nález",
 "fcInfoHidesNone": "Poznámka k objektu neskrýva žiadny nález",
 "fcInfoType": "Typ",
 "fcInfoAssign": "Patrí k",
 "fcInfoNone": "Žiadne informácie",
 "fcInfoNothing": "Nič od toho nezávisí",
-"fcInfoUsedBy": "Používajú to objekty: {n}",
+"fcInfoUsedBy": {
+"one": "Používa to 1 objekt",
+"few": "Používajú to {n} objekty",
+"many": "Používa to {n} objektov",
+"other": "Používa to {n} objektov"
+},
 "fcInfoUsedBy1": "Používa to 1 objekt",
 "fcRoundKeepHint": "Nález zostáva a počíta sa ako skontrolovaný {days} dní. Entita alebo zariadenie dostane poznámku k objektu „Nemazať“; poznámka, ktorú už má, zostáva.",
 "fcRoundLaterHint": "Nález zmizne na {days} dní a potom sa vráti.",

@@ -8400,6 +8400,7 @@ test("a language is chosen by pattern, plural forms pick by number, and a missin
   const ru = { one: "файл", few: "файла", many: "файлов", other: "файла (дробное)" };
   assert.deepEqual([1, 3, 5, 21, 1.5].map(count => pluralText(ru, "ru", { count })), ["файл", "файла", "файлов", "файл", "файла (дробное)"]);
   assert.equal(pluralText({ other: "x" }, "en", {}), "x");
+  assert.deepEqual(["1 234", "1.021", "2", "5"].map(n => pluralText(ru, "ru", { n })), ["файла", "файл", "файла", "файлов"]); // a formatted number counts by its digits
   const { el } = panel("de");
   el.prefs = { ...el.prefs, language: "it" };
   assert.equal(el.lang, "de", "a language that is not listed is not used, Home Assistant decides");

@@ -11,8 +11,13 @@ function matchLanguage(list, code) {
 const languageInfo = code => LANGUAGES.find(l => l.code === code) || LANGUAGES.find(l => l.code === "en");
 
 // A text with its own plural forms: the form of the number (`count`, else `n`), else `other`.
+// The number may already be formatted ("1.234", "1 234"): only its digits count. Plural texts are for whole numbers.
 function pluralText(forms, lang, vars) {
   let form = "other";
-  try { form = new Intl.PluralRules(lang).select(Number(vars?.count ?? vars?.n)); } catch (_) { /* no number: the general form */ }
+  try {
+    const raw = vars?.count ?? vars?.n;
+    const number = typeof raw === "number" ? raw : Number(String(raw).replace(/[^\d]/g, "") || NaN);
+    form = new Intl.PluralRules(lang).select(number);
+  } catch (_) { /* no number: the general form */ }
   return forms[form] ?? forms.other ?? "";
 }
