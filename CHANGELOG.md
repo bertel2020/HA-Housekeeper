@@ -1,5 +1,75 @@
 # Changelog
 
+## 2.0.0-beta.3 - 2026-11-05
+
+### Neu
+
+- **Weitere Sprachen:** Französisch, Spanisch, Portugiesisch, Slowakisch, Russisch und Chinesisch (vereinfacht) sind dabei, in der Oberfläche, bei der Einrichtung und in den Meldungen.
+  - Die Sprache wählst du in den Einstellungen; was noch nicht übersetzt ist, erscheint auf Englisch.
+  - Die Übersetzungen sind Entwürfe und noch nicht von Muttersprachlern gelesen. `docs/TRANSLATING.md` erklärt, wie man eine Sprache ergänzt oder verbessert.
+  - Alle Sprachen reden dich mit „du“ an.
+- **Entitäten ersetzen:** Ein neuer Assistent unter „Beheben“ gibt mehreren gewählten Entitäten in einem Plan ihre neuen. Er schlägt Paare vor, ein doppelt genanntes Ziel wird gesperrt. Auch in den Aktionen jeder Entität als „Ersetzen …“.
+
+### Geändert
+
+- **Plan:** Ein Plan fasst 250 Entitäten; eine größere Auswahl aus dem Inventar oder der Freigabeliste läuft in Runden.
+- **„Ist so gewollt“ ohne Frist:** Beim Wechsel von 1.x bleibt es unbefristet. Fristen, die beta.1 und beta.2 einmalig mit 90 Tagen gesetzt haben, bleiben.
+- **Rückweg auf 1.x:** Pläne, die Freigaben ändern (Assistenten, Neu laden), vorher zurücknehmen; 1.x kennt sie nicht und meldet beim Rückgängig einen Konflikt. Der Schutzmodus „Nur Quarantäne“ wird in 2.0 als „Beobachten“ geführt und bleibt es auch in 1.x.
+- **Oberfläche allgemein:**
+  - Aktionen je Zeile stehen im ⋮-Menü (Aufräum-Runde, Aktivität, Verlauf, Statusband).
+  - Die Kacheln der Seite „Beheben“ sind gleich groß, der Ersetzen-Assistent passt auf das Smartphone.
+  - Schrittknöpfe und Reiter haben Namen für Screenreader.
+  - Standardfristen sind einheitlich: Notizen und Entscheidungen 365 Tage, bei kritischen Objekten 90.
+
+### Behoben
+
+- **Sicherheit:** Namen und Links aus Daten von Integrationen werden im Panel sicher angezeigt; der Diagnose-Download enthält keine Titel und Entitäts-IDs mehr, nur Anzahlen.
+- **Fehlerinfo und Vergleich:** Der letzte Fehlschlag einer Automation und die Laufliste im Vergleich fanden nie etwas und tun es jetzt.
+- **Ereignisverlauf und Prüfungen:** Er wird auch zur Laufzeit gespeichert; Speicher- und Plattenwerte an einer Schwelle springen nicht mehr alle fünf Minuten.
+- **Backup-Abfrage:** Die Ziele werden alle 45 statt alle 5 Minuten abgefragt, ein hängender Teil hält die anderen nicht mehr auf.
+- **Aktivität:** Seiten überspringen keine Einträge mehr; „Rückgängig“ greift nur, solange die Entscheidung noch so steht; „Rest auf später“ ist ein Eintrag mit einem Rückgängig.
+- **Freigabe-Pläne:** Ein Filter eines anderen Assistenten sperrt den Plan nicht mehr, ein nicht lesbarer Filter gilt nicht mehr als „kein Filter“.
+- **Neu laden:** Eine Integration, die lange lädt, wird nicht mehr halb abgebrochen und danach geprüft.
+- **Aufräum-Assistent:** „Behalten“ überschreibt keine vorhandene Notiz mehr, ein Ladefehler zeigt „Erneut versuchen“, der Verlauf zählt richtig, die Runde prüft höchstens 1000 Objekte und sagt, wenn sie abgeschnitten wurde.
+- **Ausnahmeregeln und Objekt-Notizen:** Löschen fragt vorher, schnelle Änderungen heben sich nicht gegenseitig auf, ein Doppelklick tut nichts zweimal, Fristen bleiben beim neuen Prüfdatum erhalten.
+- **Befunde:** Nach der Rückkehr steht „Neu“ nicht mehr über einer leeren Liste. Ein „Später“ für einen Ausfall fällt nicht mehr nach Stunden weg.
+- **Sonst:** Ein Scan mit unlesbarer Quelle vergisst keine „zuerst gesehen“-Daten mehr; der Timer-Aufräumer, Doppel-Escaping und Anführungszeichen je Sprache sind korrigiert.
+
+### English
+
+#### New
+
+- **More languages:** French, Spanish, Portuguese, Slovak, Russian and Chinese (Simplified) are there, in the interface, the setup and the messages.
+  - You choose the language in the settings; what is not translated yet shows in English.
+  - The translations are drafts and not yet read by native speakers. `docs/TRANSLATING.md` explains how to add or improve a language.
+  - Every language addresses you informally.
+- **Replace entities:** A new assistant under “Fix” gives several chosen entities their new ones in one plan. It suggests pairs, a target named twice is blocked. Also in the actions of each entity as “Replace …”.
+
+#### Changed
+
+- **Plan:** A plan holds 250 entities; a larger selection from the inventory or the exposure list runs in rounds.
+- **“Intended” without a time limit:** It stays unlimited on the way from 1.x. Limits that beta.1 and beta.2 set once to 90 days stay.
+- **Way back to 1.x:** Undo plans that change exposures (assistants, reload) first; 1.x does not know them and reports a conflict on undo. The protection mode “Quarantine only” is kept as “Watch” in 2.0 and stays so in 1.x.
+- **Interface, general:**
+  - Actions per row are in the ⋮ menu (cleanup round, activity, history, status band).
+  - The tiles of the “Fix” page are the same size, the replace assistant fits a phone.
+  - Step buttons and tabs have names for screen readers.
+  - Default time limits are the same everywhere: notes and decisions 365 days, critical objects 90.
+
+#### Fixed
+
+- **Security:** Names and links from integration data are shown safely in the panel; the diagnostics download no longer contains titles and entity IDs, only counts.
+- **Failure info and comparison:** The last failed run of an automation and the run list in the comparison never found anything and do now.
+- **Event log and checks:** It is also saved while running; memory and disk values at a threshold no longer flip every five minutes.
+- **Backup query:** The targets are queried every 45 instead of every 5 minutes, a part that hangs no longer stops the others.
+- **Activity:** Pages no longer skip entries; “Undo” applies only while the decision still stands as left; “Put the rest off” is one entry with one undo.
+- **Exposure plans:** A filter of another assistant no longer blocks the plan, an unreadable filter is no longer taken for “no filter”.
+- **Reload:** An integration that takes long to load is no longer cancelled half way and checked afterwards.
+- **Cleanup assistant:** “Keep” no longer overwrites an existing note, a loading error shows “Try again”, the history counts correctly, the round judges at most 1000 objects and says when it was cut off.
+- **Rules and object notes:** Deleting asks first, quick changes do not undo each other, a double click does nothing twice, time limits stay when the review date changes.
+- **Findings:** After coming back, “New” is no longer shown over an empty list. A “Later” for an outage no longer lapses after hours.
+- **Other:** A scan with an unreadable source no longer forgets “first seen” dates; timer cleanup, double escaping and quotation marks per language are corrected.
+
 ## 2.0.0-beta.2 - 2026-11-01
 
 ### Neu
