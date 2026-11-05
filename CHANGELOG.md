@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Neu
+
+- **Plan ohne Backup:** In der Plan-Vorschau gibt es unter „Erweitert“ den Schalter „Ohne Backup ausführen“, mit Warnmeldung. Nicht möglich bei Plänen, die in die Recorder-Datenbank schreiben; der Prüfbericht vermerkt das Überspringen.
+
+### English
+
+#### New
+
+- **Plan without a backup:** The plan preview has a switch "Run without a backup" under "Advanced", with a warning. Not possible for plans that write into the recorder database; the audit report notes that the backup was skipped.
+
 ## 2.0.0-beta.3 - 2026-11-05
 
 ### Neu

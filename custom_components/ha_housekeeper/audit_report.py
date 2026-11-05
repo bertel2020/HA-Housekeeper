@@ -25,6 +25,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "run": "Ausgeführt",
         "backup": "Backup",
         "no_backup": "kein Backup nötig oder gemacht",
+        "backup_skipped": "bewusst übersprungen",
         "simulation": "Erwarteter Endzustand",
         "actions": "Aktionen",
         "verification": "Nachprüfung",
@@ -63,6 +64,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "run": "Executed",
         "backup": "Backup",
         "no_backup": "no backup needed or made",
+        "backup_skipped": "skipped on purpose",
         "simulation": "Expected end state",
         "actions": "Actions",
         "verification": "Verification",
@@ -132,7 +134,7 @@ def build_report(plan: dict[str, Any], *, anonymize: bool = True, lang: str = "e
     if anonymize:
         lines += [f"_{t['anonymized']}_", ""]
     confirmed, run = plan.get("confirmed") or {}, plan.get("run") or {}
-    backup = plan.get("backup")
+    backup, skipped = plan.get("backup"), plan.get("backup_skipped")
     lines += [
         f"## {t['overview']}",
         "",
@@ -143,7 +145,13 @@ def build_report(plan: dict[str, Any], *, anonymize: bool = True, lang: str = "e
         + (f" {t['by']} {ref('user', confirmed.get('user_id'))}" if confirmed else ""),
         f"- {t['run']}: {run.get('started_at') or '-'} → {run.get('finished_at') or '-'}",
         f"- {t['backup']}: "
-        + (f"{backup['at']} ({ref('backup', backup.get('job_id'))})" if backup else t["no_backup"]),
+        + (
+            f"{backup['at']} ({ref('backup', backup.get('job_id'))})"
+            if backup
+            else f"{t['backup_skipped']}, {t['by']} {ref('user', skipped.get('user_id'))}, {skipped['at']}"
+            if skipped
+            else t["no_backup"]
+        ),
         "",
     ]
     simulation = plan.get("simulation")

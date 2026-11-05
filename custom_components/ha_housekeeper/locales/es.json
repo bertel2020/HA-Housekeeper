@@ -11,6 +11,7 @@
   "run": "Ejecutado",
   "backup": "Copia de seguridad",
   "no_backup": "no hizo falta copia de seguridad o no se hizo",
+  "backup_skipped": "omitida a propósito",
   "simulation": "Estado final esperado",
   "actions": "Acciones",
   "verification": "Verificación",

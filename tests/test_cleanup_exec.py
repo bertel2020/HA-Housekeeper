@@ -370,6 +370,32 @@ async def test_a_refused_small_backup_stops_and_a_full_one_runs_only_when_asked_
     assert kwargs["include_database"] is True and kwargs["include_homeassistant"] is True
 
 
+async def test_a_plan_runs_without_backup_only_when_chosen_and_never_for_database_writes(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import patch
+
+    scanner = await make_scanner(hass)
+    entry, _ = await quarantined_entity(hass, scanner, "kept")
+    manager, create = fake_backup()
+    with patch("homeassistant.components.backup.async_get_manager", return_value=manager):
+        plan = await make_plan(scanner, hass, entry.entity_id, kind="remove_entity")
+        confirmation = scanner.cleanup.confirm(plan["plan_id"], [], "user-1", skip_backup=True)
+        scanner.cleanup.start(plan["plan_id"], confirmation["token"], "user-1")
+        await scanner.cleanup._task
+    create.assert_not_awaited()
+    assert plan["status"] == "verified" and "backup" not in plan
+    assert plan["backup_skipped"]["user_id"] == "user-1"
+    assert "backup_skipped" in [e["type"] for e in plan["events"]]
+
+    other, _ = await quarantined_entity(hass, scanner, "history")
+    database = await make_plan(
+        scanner, hass, other.entity_id, kind="remove_entity", recorder="states"
+    )
+    with pytest.raises(CleanupError, match="skip_backup_database"):
+        scanner.cleanup.confirm(database["plan_id"], [other.entity_id], "user-1", skip_backup=True)
+
+
 async def test_removal_waits_for_a_backup_removes_and_can_be_restored(hass: HomeAssistant) -> None:
     scanner = await make_scanner(hass)
     entry, _ = await quarantined_entity(hass, scanner, "retired")

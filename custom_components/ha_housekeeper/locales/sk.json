@@ -11,6 +11,7 @@
   "run": "Vykonané",
   "backup": "Záloha",
   "no_backup": "nie je potrebná alebo nebola vytvorená",
+  "backup_skipped": "úmyselne vynechané",
   "simulation": "Očakávaný konečný stav",
   "actions": "Akcie",
   "verification": "Overenie",

@@ -1416,6 +1416,8 @@ def _cleanup_error(
         vol.Required("type"): f"{DOMAIN}/plan_confirm",
         vol.Required("plan_id"): str,
         vol.Optional("acknowledged", default=[]): [str],
+        # The person's explicit choice to run without the safety backup; refused for database writes.
+        vol.Optional("skip_backup", default=False): bool,
     }
 )
 @callback
@@ -1430,7 +1432,9 @@ def websocket_plan_confirm(
     if panel_session_only(hass, connection, msg):
         return
     try:
-        result = scanner.cleanup.confirm(msg["plan_id"], msg["acknowledged"], connection.user.id)
+        result = scanner.cleanup.confirm(
+            msg["plan_id"], msg["acknowledged"], connection.user.id, msg["skip_backup"]
+        )
     except CleanupError as err:
         _cleanup_error(connection, msg, err)
         return

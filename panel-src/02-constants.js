@@ -9,6 +9,8 @@ const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
 // Kinds that get a Home Assistant backup first (as in the backend).
 const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "rename_entity", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range"];
 // Deleting recorder rows: cannot be undone, only the backup brings them back.
+// Kinds that write into the recorder database: their backup cannot be skipped.
+const DATABASE_KINDS = ["repair_counter", "repair_range", "purge_statistics", "trim_history", "migrate_meter"];
 const PURGE_KINDS = ["purge_statistics", "trim_history", "delete_backup"];
 // Reasons that mean "all is well, there is nothing to do" and not "Housekeeper may not".
 const NOTHING_REASONS = ["nothing_found", "nothing_to_do"];

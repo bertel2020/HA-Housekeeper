@@ -452,8 +452,18 @@ class CleanupRunner:
         for plan_id in [key for key, saved in self._tokens.items() if saved[1] < now]:
             del self._tokens[plan_id]
 
-    def confirm(self, plan_id: str, acknowledged: list[str], user_id: str | None) -> dict[str, Any]:
-        """Select the actions that may run and hand out a short-lived confirmation token."""
+    def confirm(
+        self,
+        plan_id: str,
+        acknowledged: list[str],
+        user_id: str | None,
+        skip_backup: bool = False,
+    ) -> dict[str, Any]:
+        """Select the actions that may run and hand out a short-lived confirmation token.
+
+        ``skip_backup`` is the person's explicit choice to run without the safety backup. It is
+        refused when a selected action writes into the recorder database: that needs the backup.
+        """
         self._drop_expired_tokens()
         plan = self._plan(plan_id)
         if self.scanner.warming_up:
@@ -475,9 +485,17 @@ class CleanupRunner:
         if not selected:
             raise CleanupError("nothing_to_do")
         self._check_mode(plan, selected)
+        if skip_backup and any(
+            action["kind"] in DATABASE_KINDS or action.get("recorder")
+            for action in plan["actions"]
+            if action["object_id"] in selected
+        ):
+            raise CleanupError("skip_backup_database")
         token = secrets.token_urlsafe(16)
         self._tokens[plan_id] = (token, _now() + TOKEN_TTL, selected, user_id)
         plan["confirmed"] = {"at": _now().isoformat(), "user_id": user_id, "object_ids": selected}
+        if skip_backup:
+            plan["confirmed"]["skip_backup"] = True
         _event(plan, "confirmed", user_id=user_id, count=len(selected))
         self.scanner.journal.save()
         return {
@@ -580,7 +598,13 @@ class CleanupRunner:
             by_id = {action["object_id"]: action for action in plan["actions"]}
             selected = [by_id[object_id] for object_id in object_ids]
             kinds = {action["kind"] for action in selected}
-            if kinds & BACKUP_KINDS:
+            if kinds & BACKUP_KINDS and (plan.get("confirmed") or {}).get("skip_backup"):
+                # The person chose to run without the safety backup; never offered for database writes.
+                if not await self._others_idle(plan, False):
+                    return
+                plan["backup_skipped"] = {"at": _now().isoformat(), "user_id": user_id}
+                _event(plan, "backup_skipped", user_id=user_id)
+            elif kinds & BACKUP_KINDS:
                 writes_recorder = bool(kinds & DATABASE_KINDS) or any(
                     action.get("recorder") for action in selected
                 )

@@ -11,6 +11,7 @@
   "run": "已执行",
   "backup": "备份",
   "no_backup": "无需备份，也未创建备份",
+  "backup_skipped": "已有意跳过",
   "simulation": "预期最终状态",
   "actions": "操作",
   "verification": "验证",

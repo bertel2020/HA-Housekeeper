@@ -352,7 +352,7 @@ class CleanupMixin {
 
   async confirmPlan() {
     try {
-      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: this.plan.actions.filter(a => a.verdict === "review" && a.executable).map(a => a.object_id) });
+      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: this.plan.actions.filter(a => a.verdict === "review" && a.executable).map(a => a.object_id), ...(this.skipBackupOn(this.plan) ? { skip_backup: true } : {}) });
       this.confirmWord = ""; this.cleanupError = "";
     } catch (err) { this.failPlan(err, "confirm"); }
     this.render();
@@ -488,7 +488,9 @@ class CleanupMixin {
     if (!needsBackup) steps.push({ id: "stepBackup", state: "skipped", note: this.t("stepBackupSkipped") });
     else if (backupFailure) steps.push({ id: "stepBackup", state: "failed", note: [this.t(`abort_${backupFailure}`), ...(plan.events || []).filter(e => e.error).slice(-2).map(e => e.error), this.t("backupFailHint")].join(" · ") });
     else if (status === "backup") steps.push({ id: "stepBackup", state: "current", note: this.t("backupRunning") });
+    else if (open && this.skipBackupOn(plan)) steps.push({ id: "stepBackup", state: "skipped", note: this.t("skipBackupStep") });
     else if (open) steps.push({ id: "stepBackup", state: "todo", note: [plan.full_backup ? this.t("backupFullPlanned") : "", plan.backup_local ? this.t("backupLocalPlanned") : ""].filter(Boolean).join(" · ") || null });
+    else if (plan.backup_skipped) steps.push({ id: "stepBackup", state: "skipped", note: this.t("skipBackupDone", { date: this.formatDate(plan.backup_skipped.at) }) });
     else {
       const job = plan.backup?.job_id ? this.t("stepBackupJob", { id: plan.backup.job_id }) : "";
       const name = plan.backup?.name ? this.t("stepBackupName", { name: plan.backup.name }) : "";
@@ -575,7 +577,7 @@ class CleanupMixin {
       const run = this.runActions(plan);
       const blocked = this.modeBlocked(plan);
       const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
-      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t("confirmPlan")}</button></span></div>`;
+      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${this.skipBackupBlock(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "confirmPlanNoBackup" : "confirmPlan")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {
       const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
@@ -856,6 +858,21 @@ class CleanupMixin {
       this.journal = (this.journal || []).filter(p => p.plan_id !== old.plan_id);
     } catch (err) { this.failPlan(err, "renew"); }
     this.cleanupBusy = false; this.render();
+  }
+
+  // Running without the safety backup is a choice made on one preview; it is sent with the confirmation and
+  // never stored on the plan. Not offered when a selected action writes into the recorder database.
+  skipBackupAllowed(plan) {
+    const run = this.runActions(plan);
+    return run.some(a => BACKUP_KINDS.includes(a.kind)) && !run.some(a => DATABASE_KINDS.includes(a.kind) || a.recorder);
+  }
+
+  skipBackupOn(plan) { return this.skipBackupPlan === plan?.plan_id && this.skipBackupAllowed(plan); }
+
+  skipBackupBlock(plan) {
+    if (!this.skipBackupAllowed(plan)) return "";
+    const on = this.skipBackupOn(plan);
+    return `<details class="rowdetails"${on ? " open" : ""}><summary>${this.t("planAdvanced")}</summary><label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-skip-backup-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("skipBackup")}</strong><small>${this.t("skipBackupHint")}</small></span></label>${on ? `<div class="outcome red" role="alert"><ha-icon icon="mdi:shield-off-outline"></ha-icon><span><strong>${this.t("skipBackupWarnTitle")}</strong><small>${this.t("skipBackupWarn")}</small></span></div>` : ""}</details>`;
   }
 
   // The choice sits at the foot of the preview, only for plans that delete statistics.
