@@ -28,6 +28,7 @@ from . import criteria as criteria_module
 from . import db_health as db_health_module
 from . import reliability as reliability_module
 from . import storms as storms_module
+from .backup_auto import async_auto_clean
 from .central_log import log_tick
 from .const import (
     CONF_HISTORY_DAYS,
@@ -284,6 +285,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         await scanner.async_watch_tick()
 
     entry.async_on_unload(async_track_time_interval(hass, _watch_tick, timedelta(minutes=5)))
+
+    async def _backup_auto_tick(_: Any) -> None:
+        if hass.is_running and not scanner.warming_up:
+            await async_auto_clean(scanner, datetime.now(UTC))
+
+    entry.async_on_unload(async_track_time_interval(hass, _backup_auto_tick, timedelta(hours=1)))
 
     async def _check_reauth(_: Any) -> None:
         await scanner.async_check_reauth()

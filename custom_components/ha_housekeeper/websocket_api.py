@@ -1566,7 +1566,31 @@ async def websocket_backup_cleanup(
     result = await list_backups(
         hass, scanner.journal.plans, datetime.now(UTC), msg["keep_last"], msg["keep_days"]
     )
-    connection.send_result(msg["id"], _versioned(result))
+    connection.send_result(msg["id"], _versioned({**result, "auto": scanner.backup_auto.public()}))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/backup_auto_set",
+        vol.Required("enabled"): bool,
+        vol.Required("keep_last"): vol.All(int, vol.Range(min=0, max=MAX_LAST)),
+        vol.Required("keep_days"): vol.All(int, vol.Range(min=0, max=MAX_DAYS)),
+    }
+)
+@callback
+@with_scanner
+def websocket_backup_auto_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Switch the automatic tidy-up of Housekeeper's own backups on or off and set its rule."""
+    if panel_session_only(hass, connection, msg):
+        return
+    scanner.backup_auto.set(msg["enabled"], msg["keep_last"], msg["keep_days"])
+    connection.send_result(msg["id"], scanner.backup_auto.public())
 
 
 @websocket_api.require_admin
@@ -1798,6 +1822,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_plan_status)
     websocket_api.async_register_command(hass, websocket_plan_undo)
     websocket_api.async_register_command(hass, websocket_backup_cleanup)
+    websocket_api.async_register_command(hass, websocket_backup_auto_set)
     websocket_api.async_register_command(hass, websocket_events)
     websocket_api.async_register_command(hass, websocket_monitor_list)
     websocket_api.async_register_command(hass, websocket_monitor_save)

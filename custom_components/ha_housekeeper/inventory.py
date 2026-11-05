@@ -38,6 +38,7 @@ from .automation_analysis import (
     summarize_script_config,
 )
 from .automation_blocked import blocked_automation_findings, dead_effect_findings
+from .backup_auto import BackupAutoStore
 from .backup_health import AttestStore, backup_health
 from .battery_care import BatteryStore
 from .battery_kind import apply_battery_kinds
@@ -950,6 +951,7 @@ STORE_NAMES = (
     "batteries",
     "notify",
     "hints",
+    "backup_auto",
     "mcp",
     "monitor",
     "runs",
@@ -1008,6 +1010,7 @@ class InventoryScanner:
         self.batteries = BatteryStore(hass)
         self.notify = NotifyStore(hass)
         self.hints = HintStore(hass)
+        self.backup_auto = BackupAutoStore(hass)
         hass.data.setdefault(DOMAIN, {})["hints"] = self.hints
         self.backup_report: dict[str, Any] | None = None  # the last one that could be read
         self.mcp = McpStore(hass)

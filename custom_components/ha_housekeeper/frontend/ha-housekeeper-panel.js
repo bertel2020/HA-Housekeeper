@@ -16707,6 +16707,8 @@ Object.assign(TEXT.de, {
   reason_backup_missing: "Das Backup gibt es nicht mehr.", reason_not_housekeeper_backup: "Das ist kein Backup von Housekeeper.", reason_backup_protected: "Geschützt: Der Plan wird noch beobachtet oder das Backup erlaubt noch ein Rückgängig.", reason_only_return: "Einzige Möglichkeit, Daten dieses Plans zurückzuholen.",
   check_backup_deleted: "Backup ist gelöscht", confirmedSummaryBackups: "{count} Backups werden gelöscht. Das ist endgültig; es wird kein neues Backup angelegt.", undoFinal: "endgültig",
   abort_delete_failed: "Home Assistant konnte das Backup nicht überall löschen.", abort_not_housekeeper_backup: "Das ist kein Backup von Housekeeper; nichts wurde gelöscht.", abort_backup_unavailable: "Der Backup-Manager ist nicht erreichbar.",
+  bkcAuto: "Automatisch aufräumen", bkcAutoHint: "Housekeeper löscht dann stündlich, was nach der Regel oben zum Löschen vorgeschlagen ist. Geschützte Backups und Backups, die die einzige Möglichkeit sind, Daten eines Plans zurückzuholen, bleiben liegen. Es läuft nicht, solange ein Plan läuft oder der Schutzmodus das Löschen nicht erlaubt.", bkcAutoLast: "Zuletzt automatisch gelöscht: {count} Backups ({bytes}) am {date}.",
+  bkcAutoAskTitle: "Automatisch aufräumen einschalten", bkcAutoAskText: "Housekeeper löscht Backups künftig ohne Nachfrage: alle bis auf die letzten {last} und die der letzten {days} Tage. Gelöschte Backups sind endgültig weg. Ausschalten kannst du es hier jederzeit.", bkcAutoYes: "Einschalten",
   autoDelete: "Löschen vorbereiten", autoDeleteFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   reason_not_a_candidate: "Kein Befund nennt diese Automation als ungenutzt.", reason_not_in_yaml: "Nicht in der automations.yaml definiert: nicht automatisch löschbar.", reason_file_too_large: "Die Datei ist zu groß, um sie für das Rückgängig zu sichern.",
   reason_deletes_config: "Die Konfiguration wird aus der Datei entfernt, danach werden die Automationen neu geladen. Rückgängig stellt die Datei wieder her, solange sie nicht anders geändert wurde.",
@@ -16724,6 +16726,8 @@ Object.assign(TEXT.en, {
   reason_backup_missing: "The backup no longer exists.", reason_not_housekeeper_backup: "This is not a Housekeeper backup.", reason_backup_protected: "Protected: the plan is still watched or the backup still allows an undo.", reason_only_return: "The only way to get back data of this plan.",
   check_backup_deleted: "Backup is deleted", confirmedSummaryBackups: "{count} backups will be deleted. This is final; no new backup is made.", undoFinal: "final",
   abort_delete_failed: "Home Assistant could not delete the backup everywhere.", abort_not_housekeeper_backup: "This is not a Housekeeper backup; nothing was deleted.", abort_backup_unavailable: "The backup manager is not reachable.",
+  bkcAuto: "Tidy up automatically", bkcAutoHint: "Housekeeper then deletes every hour what the rule above suggests for deleting. Protected backups and backups that are the only way to get back a plan's data stay. It does not run while a plan runs or when the protection mode does not allow deleting.", bkcAutoLast: "Last deleted automatically: {count} backups ({bytes}) on {date}.",
+  bkcAutoAskTitle: "Turn on automatic tidy-up", bkcAutoAskText: "From now on Housekeeper deletes backups without asking: all except the last {last} and those from the last {days} days. Deleted backups are gone for good. You can turn it off here at any time.", bkcAutoYes: "Turn on",
   autoDelete: "Prepare deletion", autoDeleteFailed: "The plan could not be created: {detail}",
   reason_not_a_candidate: "No finding calls this automation unused.", reason_not_in_yaml: "Not defined in automations.yaml: cannot be deleted automatically.", reason_file_too_large: "The file is too large to be saved for the undo.",
   reason_deletes_config: "The configuration is removed from the file, then the automations are reloaded. Undo puts the file back as long as it was not changed otherwise.",
@@ -16744,6 +16748,12 @@ class BackupCleanupMixin {
       const keep_last = this.bkcLast ?? 3, keep_days = this.bkcDaysValue ?? 14;
       this.bkc = await this._hass.callWS({ type: "ha_housekeeper/backup_cleanup", keep_last, keep_days });
       this.bkcError = "";
+      const auto = this.bkc.auto;
+      if (auto?.enabled && this.bkcLast === undefined && this.bkcDaysValue === undefined) {
+        // The tidy-up runs on the saved rule: show that one, not the defaults.
+        this.bkcLast = auto.keep_last; this.bkcDaysValue = auto.keep_days;
+        if (auto.keep_last !== keep_last || auto.keep_days !== keep_days) { this.bkcLoading = false; return this.loadBackupCleanup(true); }
+      }
       if (pick) this.bkcSel = new Set(this.bkc.rows.filter(r => r.suggested).map(r => r.backup_id));
       else this.bkcSel = new Set([...(this.bkcSel || [])].filter(id => this.bkc.rows.some(r => r.backup_id === id && !r.protected)));
     } catch (err) { this.bkcError = this.errText(err); }
@@ -16765,7 +16775,7 @@ class BackupCleanupMixin {
     const d = this.bkc;
     if (!d) return `<div class="panel">${head}${this.skeleton("bkcLoading")}</div>`;
     if (!d.available) return `<div class="panel">${head}<div class="emptymsg">${this.t("bkcUnavailable")}</div></div>`;
-    if (!d.rows.length) return `<div class="panel">${head}<div class="emptymsg">${this.t("bkcNone")}</div></div>`;
+    if (!d.rows.length) return `<div class="panel">${head}${this.bkcAutoBlock(d)}<div class="emptymsg">${this.t("bkcNone")}</div></div>`;
     const sel = this.bkcSel || new Set();
     const sum = `<div class="bkcsum">${this.sumTiles([
       { label: this.t("bkcCount"), value: this.formatNumber(d.total.count) },
@@ -16801,7 +16811,24 @@ class BackupCleanupMixin {
     const bytes = d.rows.filter(r => sel.has(r.backup_id)).reduce((n, r) => n + (r.size || 0), 0);
     const error = this.bkcPlanError ? `<p class="bkcerr" role="alert">${this.esc(this.t("bkcFailed", { detail: this.bkcPlanError }))}</p>` : "";
     const action = `<div class="bkcfoot"><div><strong>${this.t("bkcSelSum", { count: this.formatNumber(sel.size), bytes: this.formatBytes(bytes) })}</strong><small>${this.t("bkcFinal")}</small>${error}</div><button class="btn dangersoft" data-bkc-plan ${sel.size && !this.bkcBusy ? "" : "disabled"}>${this.bkcBusy ? this.t("trimBusy") : this.t("bkcPlan", { count: sel.size })}</button></div>`;
-    return `<div class="panel">${head}${sum}${rule}${list}${action}</div>`;
+    return `<div class="panel">${head}${sum}${rule}${this.bkcAutoBlock(d)}${list}${action}</div>`;
+  }
+
+  // Optional: Housekeeper tidies up by the rule on its own. Off until switched on; switching on asks first.
+  bkcAutoBlock(d) {
+    const auto = d.auto || {};
+    const last = auto.last ? `<small>${this.t("bkcAutoLast", { count: this.formatNumber(auto.last.count), bytes: this.formatBytes(auto.last.bytes), date: this.formatDate(auto.last.at).split(",")[0] })}</small>` : "";
+    return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-bkc-auto ${auto.enabled ? "checked" : ""} ${this.bkcBusy ? "disabled" : ""}><span><strong>${this.t("bkcAuto")}</strong><small>${this.t("bkcAutoHint")}</small>${last}</span></label>`;
+  }
+
+  async setBackupAuto(enabled) {
+    this.bkcBusy = true; this.render();
+    try {
+      const auto = await this._hass.callWS({ type: "ha_housekeeper/backup_auto_set", enabled, keep_last: this.bkcLast ?? 3, keep_days: this.bkcDaysValue ?? 14 });
+      this.bkc = { ...this.bkc, auto };
+      this.bkcError = "";
+    } catch (err) { this.bkcError = this.errText(err); }
+    this.bkcBusy = false; this.render();
   }
 
   // The box in the table head: every backup of the page that can be ticked.
@@ -16843,8 +16870,13 @@ class BackupCleanupMixin {
   bindBackupCleanup(root) {
     root.querySelectorAll("[data-bkc-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { el.dataset.bkcPage.split(",").forEach(id => (el.checked ? this.bkcSel.add(id) : this.bkcSel.delete(id))); this.render(); }; });
     root.querySelectorAll("[data-bkc-sel]").forEach(el => el.onchange = () => { el.checked ? this.bkcSel.add(el.dataset.bkcSel) : this.bkcSel.delete(el.dataset.bkcSel); this.render(); });
-    root.querySelector("[data-bkc-last]")?.addEventListener("change", e => { this.bkcLast = Math.max(0, Math.min(100, Number(e.target.value) || 0)); this.loadBackupCleanup(true); });
-    root.querySelector("[data-bkc-days]")?.addEventListener("change", e => { this.bkcDaysValue = Math.max(0, Math.min(3650, Number(e.target.value) || 0)); this.loadBackupCleanup(true); });
+    root.querySelector("[data-bkc-last]")?.addEventListener("change", e => { this.bkcLast = Math.max(0, Math.min(100, Number(e.target.value) || 0)); if (this.bkc?.auto?.enabled) this.setBackupAuto(true); this.loadBackupCleanup(true); });
+    root.querySelector("[data-bkc-days]")?.addEventListener("change", e => { this.bkcDaysValue = Math.max(0, Math.min(3650, Number(e.target.value) || 0)); if (this.bkc?.auto?.enabled) this.setBackupAuto(true); this.loadBackupCleanup(true); });
+    root.querySelector("[data-bkc-auto]")?.addEventListener("change", ev => {
+      if (!ev.currentTarget.checked) { this.setBackupAuto(false); return; }
+      ev.currentTarget.checked = false; // only the answer of the dialog switches it on
+      this.confirmAsk(this.t("bkcAutoAskText", { last: this.bkcLast ?? 3, days: this.bkcDaysValue ?? 14 }), () => this.setBackupAuto(true), { title: this.t("bkcAutoAskTitle"), yes: this.t("bkcAutoYes"), danger: true });
+    });
     root.querySelector("[data-bkc-pick]")?.addEventListener("click", () => this.loadBackupCleanup(true));
     root.querySelector("[data-bkc-plan]")?.addEventListener("click", () => this.backupDeletePlan());
     root.querySelectorAll("[data-auto-delete]").forEach(el => el.addEventListener("click", () => this.automationDeletePlan(el.dataset.autoDelete)));

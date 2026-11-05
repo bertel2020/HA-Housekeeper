@@ -92,3 +92,31 @@ async def test_only_housekeeper_backups_are_deleted_and_a_refusal_is_reported(
         manager.async_delete_backup.return_value = {"agent": Exception("x")}
         assert await delete_backup(hass, mine.backup_id) == "delete_failed"
     assert make_scanner and run  # helpers are shared with the plan tests
+
+
+async def test_the_automatic_tidy_up_is_off_by_default_and_spares_what_only_a_backup_can_return(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper.backup_auto import async_auto_clean
+
+    scanner = await make_scanner(hass)
+    scanner.protection.mode = "full"
+    ids = ["aaaaaaaa11", "bbbbbbbb22", "cccccccc33", "dddddddd44", "eeeeeeee55"]
+    backups = {f"id-{p}": backup(p, d) for p, d in zip(ids, (2, 20, 30, 41, 60), strict=True)}
+    scanner.journal.plans.append(
+        plan(ids[4], kind="migrate_meter")
+    )  # only the backup brings it back
+    manager = SimpleNamespace(async_delete_backup=AsyncMock(return_value={}))
+
+    with patch(
+        "custom_components.ha_housekeeper.backup_cleanup._read",
+        AsyncMock(return_value=(manager, backups)),
+    ):
+        assert await async_auto_clean(scanner, NOW) is None  # off
+        manager.async_delete_backup.assert_not_awaited()
+        scanner.backup_auto.set(True, 3, 14)
+        result = await async_auto_clean(scanner, NOW)
+
+    assert result == {"count": 1, "bytes": 1000}
+    manager.async_delete_backup.assert_awaited_once_with(f"id-{ids[3]}")
+    assert scanner.backup_auto.last["count"] == 1
