@@ -6231,6 +6231,13 @@ class DiagnosisMixin {
         case "state_unknown": cause = t("cause_state_unknown"); break;
         default: cause = item.reason ? t(item.reason) : "";
       }
+      // An entity a helper builds reports nothing useful when the entity it reads is down: name those sources.
+      if (item.config_entry_id && HELPER_DOMAINS.has(item.platform) && !item.disabled_by && ["unavailable", "unknown", null, undefined].includes(item.state)) {
+        for (const e of this.edgesFrom(`config_entry:${item.config_entry_id}`).filter(x => x.relation === "REFERENCES" && String(x.target).startsWith("entity:"))) {
+          const src = this.findObject(e.target), down = !src ? "missing" : src.disabled_by ? "disabled" : ["unavailable", "unknown"].includes(src.state) ? src.state : "";
+          if (down) rows.push(this.check(t("helperSource"), down === "unknown" ? "violet" : "red", src?.name || e.target.split(":")[1], t(down), src ? this.objectKey(src) : null));
+        }
+      }
       const brokenMembers = this.data.findings.filter(f => f.rule_id === "entity.missing_member" && f.object_id === item.object_id);
       brokenMembers.forEach(f => rows.push(this.check(t("missing_member"), "red", f.affected_object, t("missing"))));
       if (item.duplicate_of) {
@@ -6578,6 +6585,10 @@ class DiagnosisMixin {
     return `<div class="detailgrid"><div class="stack">${this.diagnosisCard(item)}${this.polObjectCard(item)}${this.actionsCard(item, key)}${this.detailEditCard(item)}${this.impactCard(item, key)}</div><div class="stack">${this.factsCard(item, key)}${this.entityRecorderCard(item)}${this.entityTrimCard(item)}${this.staleCard(item)}</div></div>`;
   }
 }
+
+// The entity a helper reads is down: the row in the diagnosis of the helper's own entity.
+Object.assign(TEXT.de, { helperSource: "Quelle des Helfers" });
+Object.assign(TEXT.en, { helperSource: "Source of the helper" });
 
 // PropertiesMixin: property cards for entity and device pages (assignment, properties, technical data, times).
 class PropertiesMixin {
