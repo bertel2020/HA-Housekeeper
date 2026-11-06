@@ -16,7 +16,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
 from . import policy_rules as rules_more
-from .const import IGNORE_LABEL, POLICIES_STORAGE_KEY, STORAGE_VERSION
+from .const import DOMAIN, IGNORE_LABEL, POLICIES_STORAGE_KEY, STORAGE_VERSION
+from .dashboard_analysis import HELPER_DOMAINS
 from .hygiene import finding_key
 from .payloads import PoliciesResult
 
@@ -48,6 +49,8 @@ RULES = (
     "input_select_options",
     "statistic_helper_source",
     "helper_cycle",
+    "helper_duplicate",
+    "group_members",
     "input_number_config",
     "template_guard",
     "template_no_unique_id",
@@ -317,6 +320,10 @@ def evaluate(
             extra.get("statistic_helpers") or [], entities
         ),
         "helper_area": lambda: rules_more.helper_area(entities, devices),
+        "helper_duplicate": lambda: rules_more.helper_duplicate(extra.get("helper_entries") or []),
+        "group_members": lambda: rules_more.group_members(
+            extra.get("helper_entries") or [], entities
+        ),
         "input_number_config": lambda: rules_more.input_number_config(entities),
         "helper_write_only": lambda: rules_more.helper_write_only(
             entities, snapshot.get("edges", [])
@@ -545,6 +552,18 @@ def _extra(
         extra["exposed"] = {
             row["entity_id"]: row["assistants"] for row in result["exposed_entities"]
         }
+    if store.enabled & {"helper_duplicate", "group_members"}:
+        extra["helper_entries"] = [
+            {
+                "object_type": "config_entry",
+                "object_id": entry.entry_id,
+                "name": entry.title,
+                "domain": entry.domain,
+                "options": dict(entry.options or {}),
+            }
+            for domain in HELPER_DOMAINS - {DOMAIN}
+            for entry in hass.config_entries.async_entries(domain)
+        ]
     if "statistic_helper_source" in store.enabled:
         extra["statistic_helpers"] = [
             {

@@ -476,3 +476,30 @@ def test_input_select_options_and_statistic_helper_source() -> None:
         helper("i1", "integration", "sensor.power"),
     ]
     assert ids(run(sources, "statistic_helper_source", statistic_helpers=helpers)) == ["i1", "m1"]
+
+
+def test_helper_duplicate_and_group_members() -> None:
+    def helper(name: str, domain: str, options: dict) -> dict:
+        return {
+            "object_type": "config_entry",
+            "object_id": name,
+            "name": name,
+            "domain": domain,
+            "options": options,
+        }
+
+    entries = [
+        helper("a", "min_max", {"name": "A", "entity_ids": ["sensor.x"], "type": "max"}),
+        helper("b", "min_max", {"name": "B", "entity_ids": ["sensor.x"], "type": "max"}),
+        helper("c", "min_max", {"name": "C", "entity_ids": ["sensor.x"], "type": "min"}),
+    ]
+    rule = run([], "helper_duplicate", helper_entries=entries)
+    assert ids(rule) == ["a", "b"] and rule["items"][0]["also"] == ["b"]
+
+    groups = [
+        helper("g1", "group", {"entities": ["light.a"]}),
+        helper("g2", "group", {"entities": ["light.a", "light.gone"]}),
+        helper("g3", "group", {"entities": ["light.a", "light.b"]}),
+    ]
+    lights = [obj("entity", "light.a"), obj("entity", "light.b")]
+    assert ids(run(lights, "group_members", helper_entries=groups)) == ["g1", "g2"]

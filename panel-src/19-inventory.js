@@ -17,6 +17,7 @@ class InventoryMixin {
   set originFilter(v) { this.invSetFilter("origin", v); }
   get helperIdle() { return this.typeFilter === "helper" ? this.invState().f.idle || "" : ""; }
   set helperIdle(v) { this.invSetFilter("idle", v); }
+  get helperGap() { return this.typeFilter === "helper" ? this.invState().f.gap || "" : ""; }
 
   // The objects the inventory lists: an automation, script or scene is one object, not also its registry entity.
   invObjects() {
@@ -29,15 +30,16 @@ class InventoryMixin {
   filtered() {
     if (!this.data) return [];
     const st = this.invState(), q = st.q.trim().toLowerCase(), sort = st.sort, desc = st.dir === "desc";
-    const type = this.typeFilter, status = this.statusFilter, origin = this.originFilter, idle = this.helperIdle, label = this.labelFilter;
-    return this.memo("inventory", [q, type, status, origin, idle, label, sort, st.dir, this.lang], () => {
+    const type = this.typeFilter, status = this.statusFilter, origin = this.originFilter, idle = this.helperIdle, gap = this.helperGap, label = this.labelFilter;
+    return this.memo("inventory", [q, type, status, origin, idle, gap, label, sort, st.dir, this.lang], () => {
       const { natural, ids } = this.collators();
       const reason = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? String(item.missing_reference_count) : "");
-      const pick = item => sort === "status" ? item.status : sort === "type" ? item.object_type : sort === "since" ? item.status_since : sort === "version" ? item.integration_version : sort === "reason" ? reason(item) : sort === "entities" ? String(item.entity_count ?? "") : sort === "usedByCol" ? String(this.usedByCount(item) ?? "") : sort === "changedCol" ? (item.last_changed || "") : (item.name || item.object_id);
+      const pick = item => sort === "status" ? item.status : sort === "type" ? item.object_type : sort === "since" ? item.status_since : sort === "version" ? item.integration_version : sort === "reason" ? reason(item) : sort === "entities" ? String(item.entity_count ?? "") : sort === "usedByCol" ? String(this.usedByCount(item) ?? "") : sort === "changedCol" ? (item.last_changed || "") : sort === "helperAreaCol" ? this.helperPlaceText(item, "areas") : sort === "helperLabelCol" ? this.helperPlaceText(item, "labels") : (item.name || item.object_id);
       const rows = this.invObjects().filter(item => (!q || this.haystack(item).includes(q)) && (!type || (type === "helper" ? this.isHelper(item) : type === RATED_TYPE ? HEALTH_TYPES.includes(item.object_type) : item.object_type === type))
         && (!status || item.status === status)
         && (!label || (item.labels || []).includes(label))
         && (!(type === "helper" && idle) || this.isIdleHelper(item, Number(idle)))
+        && (!(type === "helper" && gap) || (this.isHelper(item) && (gap === "noarea" ? !this.helperPlace(item).areas.length : !this.helperPlace(item).labels.length)))
         && (!origin || (item.object_type === "config_entry" && !!item.custom === (origin === "custom")))).map(item => ({ item, key: pick(item) }));
       rows.sort((a, b) => {
         if (!a.key !== !b.key) return a.key ? -1 : 1; // missing values stay last in both directions
@@ -76,6 +78,31 @@ class InventoryMixin {
     return item.object_type === "entity" ? counts.own.get(item.object_id) ?? 0 : null;
   }
 
+  // The areas and labels of a helper: its own for an entity, those of its entities for a config entry.
+  helperPlace(item) {
+    const index = this.memo("helperPlace", [], () => {
+      const map = new Map();
+      for (const o of this.data.objects) {
+        if (o.object_type !== "entity" || !o.config_entry_id) continue;
+        const slot = map.get(o.config_entry_id) || { areas: new Set(), labels: new Set() };
+        if (o.area_id) slot.areas.add(o.area_id);
+        (o.labels || []).forEach(l => slot.labels.add(l));
+        map.set(o.config_entry_id, slot);
+      }
+      return map;
+    });
+    if (item.object_type === "config_entry") {
+      const slot = index.get(item.object_id);
+      return { areas: [...(slot?.areas || [])], labels: [...(slot?.labels || [])] };
+    }
+    return { areas: item.area_id ? [item.area_id] : [], labels: item.labels || [] };
+  }
+
+  helperPlaceText(item, part) {
+    const ids = this.helperPlace(item)[part];
+    return ids.map(id => this.findObject(`${part === "areas" ? "area" : "label"}:${id}`)?.name || id).join(", ");
+  }
+
   // A hint, not a finding: nobody uses this helper in what the scan reads and it has not changed for `days` days.
   // Dashboards outside the scan, apps and YAML can still use it, so nothing here suggests deleting it.
   isIdleHelper(item, days) {
@@ -108,8 +135,8 @@ class InventoryMixin {
     const tiles = this.invTypesCard(all);
     // Version and entity count only mean something for integrations; the helper columns for helpers.
     const integ = this.typeFilter === "config_entry", helperMode = this.typeFilter === "helper";
-    const integCols = [...(integ ? ["version", "entities"] : []), ...(helperMode ? ["usedByCol", "changedCol"] : [])];
-    const colValue = (item, k) => k === "version" ? (item.object_type === "config_entry" ? item.integration_version || "" : "") : k === "entities" ? (item.object_type === "config_entry" ? item.entity_count ?? 0 : "") : k === "usedByCol" ? this.usedByCount(item) ?? "" : item.last_changed || "";
+    const integCols = [...(integ ? ["version", "entities"] : []), ...(helperMode ? ["usedByCol", "changedCol", "helperAreaCol", "helperLabelCol"] : [])];
+    const colValue = (item, k) => k === "version" ? (item.object_type === "config_entry" ? item.integration_version || "" : "") : k === "entities" ? (item.object_type === "config_entry" ? item.entity_count ?? 0 : "") : k === "usedByCol" ? this.usedByCount(item) ?? "" : k === "helperAreaCol" ? this.helperPlaceText(item, "areas") : k === "helperLabelCol" ? this.helperPlaceText(item, "labels") : item.last_changed || "";
     const reasonText = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : item.entity_status && item.entity_status !== "active" && item.entity_reason ? this.t(item.entity_reason) : "");
     this.setExporter("inventory", "inventory", [this.t("name"), "ID", this.t("type"), this.t("status"), this.t("reason"), this.t("since"), ...(integ ? [this.t("origin")] : []), ...integCols.map(k => this.t(k))], () => rows.map(i => [i.name, i.object_id, this.t(i.object_type), this.statusLabel(i.status), reasonText(i), i.status_since || "", ...(integ ? [i.object_type === "config_entry" ? this.t(i.custom ? "originKindCustom" : "originKindCore") : ""] : []), ...integCols.map(k => colValue(i, k))]));
     const sorts = [
@@ -123,6 +150,7 @@ class InventoryMixin {
       { name: "status", all: this.t("allStatus"), options: statuses.map(x => [x, this.statusLabel(x)]) },
       ...(labels.length ? [{ name: "label", all: this.t("allLabels"), options: labels }] : []),
       ...(integ ? [{ name: "origin", all: this.t("allOrigins"), options: [["core", this.t("originKindCore")], ["custom", this.t("originKindCustom")]] }] : []),
+      ...(helperMode ? [{ name: "gap", all: this.t("helperGapAny"), options: [["noarea", this.t("helperNoArea")], ["nolabel", this.t("helperNoLabel")]] }] : []),
       ...(helperMode ? [{ name: "idle", all: this.t("helperIdleAny"), options: ["30", "90", "180"].map(d => [d, this.t("helperIdleOpt", { days: d })]) }] : []),
     ];
     const bar = this.listBar("inventory", { table: true, dense: true, sorts, filters, columns: ["type", "status", "reason", "since", ...integCols].map(k => ({ key: k, label: k === "reason" ? "reason" : k })) });
@@ -134,7 +162,7 @@ class InventoryMixin {
       { key: "status", label: "status", dir: "asc", cell: item => this.pill(item.status) },
       { key: "reason", label: "reason", dir: "asc", cell: item => this.esc(reasonText(item) || "—") },
       { key: "since", label: "since", dir: "desc", cell: item => this.formatDate(item.status_since) },
-      ...integCols.map(k => ({ key: k, label: k, dir: k === "version" ? "asc" : "desc", cell: item => this.esc(k === "usedByCol" ? (this.usedByCount(item) == null ? "—" : this.formatNumber(this.usedByCount(item))) : k === "changedCol" ? (item.last_changed ? this.formatDate(item.last_changed) : "—") : item.object_type !== "config_entry" ? "—" : k === "version" ? (item.integration_version || "—") : this.formatNumber(item.entity_count ?? 0)) })),
+      ...integCols.map(k => ({ key: k, label: k, dir: k === "version" ? "asc" : "desc", cell: item => this.esc(k === "usedByCol" ? (this.usedByCount(item) == null ? "—" : this.formatNumber(this.usedByCount(item))) : k === "changedCol" ? (item.last_changed ? this.formatDate(item.last_changed) : "—") : k === "helperAreaCol" || k === "helperLabelCol" ? (this.helperPlaceText(item, k === "helperAreaCol" ? "areas" : "labels") || "—") : item.object_type !== "config_entry" ? "—" : k === "version" ? (item.integration_version || "—") : this.formatNumber(item.entity_count ?? 0)) })),
       { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(item) })) },
     ];
     const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"${this.tone(item.status) === "red" ? ' data-rowtone="red"' : ""}` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;

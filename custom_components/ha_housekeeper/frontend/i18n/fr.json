@@ -6554,5 +6554,16 @@
 "sim_helper_created": "{count} auxiliaire(s) sont créés (annuler : ils sont supprimés)",
 "check_helper_created": "L’auxiliaire est créé",
 "actKind_import_helper": "Auxiliaire créé",
-"confirmedSummaryHelperImport": "L’auxiliaire est recréé à partir du fichier, avec les anciens ID d’entités et réglages. Cela peut être annulé : le nouvel auxiliaire est supprimé."
+"confirmedSummaryHelperImport": "L’auxiliaire est recréé à partir du fichier, avec les anciens ID d’entités et réglages. Cela peut être annulé : le nouvel auxiliaire est supprimé.",
+"polRule_helper_duplicate": "Auxiliaire en double (conseil)",
+"polDesc_helper_duplicate": "Deux auxiliaires du même type avec exactement les mêmes réglages, seul le nom diffère. Un seul suffit en général ; « Remplacer des entités » redirige les références.",
+"polAlso_helper_duplicate": "Identique à : {ids}",
+"polRule_group_members": "Groupe avec des lacunes (conseil)",
+"polDesc_group_members": "Un groupe avec un seul membre ou avec des membres qui n’existent plus. Il commande alors moins que prévu ou ne signale jamais d’état.",
+"polAlso_group_members": "Concernés : {ids}",
+"helperAreaCol": "Zone",
+"helperLabelCol": "Étiquettes",
+"helperGapAny": "Zone et étiquettes",
+"helperNoArea": "Sans zone",
+"helperNoLabel": "Sans étiquette"
 }

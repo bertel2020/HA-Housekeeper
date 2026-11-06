@@ -6,6 +6,7 @@ objects that break the rule. Several rules are heuristics; their texts in the pa
 
 from __future__ import annotations
 
+import json
 import re
 from collections.abc import Iterable
 from datetime import datetime
@@ -307,6 +308,42 @@ def statistic_helper_source(helpers: list[dict[str, Any]], entities: dict[str, d
             problems.append("unit")
         if problems:
             yield {**helper, "also": problems}
+
+
+DUPLICATE_IGNORED = frozenset({"name", "hide_members"})
+
+
+def helper_duplicate(helpers: list[dict[str, Any]]):
+    """Helper entries of one type with exactly the same settings, apart from the name (a hint)."""
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for helper in helpers:
+        options = {
+            k: v for k, v in (helper.get("options") or {}).items() if k not in DUPLICATE_IGNORED
+        }
+        if options:
+            key = json.dumps([helper.get("domain"), options], sort_keys=True, default=str)
+            groups.setdefault(key, []).append(helper)
+    for twins in groups.values():
+        if len(twins) > 1:
+            for helper in twins:
+                yield {
+                    **{k: v for k, v in helper.items() if k != "options"},
+                    "also": [t["object_id"] for t in twins if t is not helper][:5],
+                }
+
+
+def group_members(helpers: list[dict[str, Any]], entities: dict[str, dict[str, Any]]):
+    """Groups with a single member or with members that no longer exist (a hint)."""
+    for helper in helpers:
+        if helper.get("domain") != "group":
+            continue
+        members = _ids((helper.get("options") or {}).get("entities"))
+        missing = [m for m in members if m not in entities]
+        if len(members) == 1 or missing:
+            yield {
+                **{k: v for k, v in helper.items() if k != "options"},
+                "also": missing[:5] if missing else members,
+            }
 
 
 def helper_area(entities: dict[str, dict[str, Any]], devices: dict[str, dict[str, Any]]):

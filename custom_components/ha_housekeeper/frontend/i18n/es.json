@@ -6554,5 +6554,16 @@
 "sim_helper_created": "{count} ayudante(s) se crean (deshacer los borra)",
 "check_helper_created": "El ayudante está creado",
 "actKind_import_helper": "Ayudante creado",
-"confirmedSummaryHelperImport": "El ayudante se vuelve a crear desde el archivo, con los antiguos ID de entidad y ajustes. Se puede deshacer: el ayudante nuevo se borra."
+"confirmedSummaryHelperImport": "El ayudante se vuelve a crear desde el archivo, con los antiguos ID de entidad y ajustes. Se puede deshacer: el ayudante nuevo se borra.",
+"polRule_helper_duplicate": "Ayudante duplicado (aviso)",
+"polDesc_helper_duplicate": "Dos ayudantes del mismo tipo con exactamente los mismos ajustes; solo cambia el nombre. Normalmente basta con uno; «Reemplazar entidades» redirige las referencias.",
+"polAlso_helper_duplicate": "Igual que: {ids}",
+"polRule_group_members": "Grupo con huecos (aviso)",
+"polDesc_group_members": "Un grupo con un solo miembro o con miembros que ya no existen. Entonces controla menos de lo esperado o nunca informa de un estado.",
+"polAlso_group_members": "Afecta a: {ids}",
+"helperAreaCol": "Área",
+"helperLabelCol": "Etiquetas",
+"helperGapAny": "Área y etiquetas",
+"helperNoArea": "Sin área",
+"helperNoLabel": "Sin etiqueta"
 }

@@ -8505,3 +8505,17 @@ test("the helper list can export and import; a file that is no export is refused
   assert.equal(sent[0].kind, "import_helper");
   assert.equal(sent[0].helper.domain, "min_max");
 });
+
+test("the helper list shows area and labels per helper and filters those without", () => {
+  const { el } = panel("en");
+  const entry = { object_type: "config_entry", object_id: "e1", name: "Sum", domain: "min_max", status: "active" };
+  const ent = { object_type: "entity", object_id: "sensor.sum", name: "Sum", platform: "min_max", config_entry_id: "e1", area_id: "hall", labels: ["l1"], status: "active" };
+  const other = { object_type: "config_entry", object_id: "e2", name: "Bare", domain: "template", status: "active" };
+  const bare = { object_type: "entity", object_id: "sensor.bare", name: "Bare", platform: "template", config_entry_id: "e2", status: "active" };
+  el.data = { ...DATA, objects: [entry, ent, other, bare, { object_type: "area", object_id: "hall", name: "Hall" }], edges: [] };
+  assert.equal(el.helperPlaceText(entry, "areas"), "Hall");
+  assert.equal(el.helperPlaceText(other, "areas"), "");
+  el.typeFilter = "helper";
+  el.invSetFilter("gap", "noarea");
+  assert.deepEqual(el.filtered().map(i => i.object_id).sort(), ["e2", "sensor.bare"]);
+});

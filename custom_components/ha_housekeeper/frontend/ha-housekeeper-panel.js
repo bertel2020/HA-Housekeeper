@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"5c151879dc"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"c9785f3a14"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6ca252b4c8"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"7644dab97a"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"a313b3a376"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"47d4c04de3"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"d8572a9103"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"7fc9e9ed62"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7b158421d9"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"ffed3559bd"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"85cab93fea"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"b2567a1708"}];
 
 const TEXT = {
   de: {
@@ -5306,6 +5306,8 @@ Object.assign(TEXT.de, {
   polRule_automation_triggers: "Automation mit sehr vielen Auslösern", polDesc_automation_triggers: "Mehr als 10 Auslöser sind schwer zu pflegen. Oft helfen mehrere kleine Automationen.",
   polRule_input_select_options: "Auswahl-Helfer: Option gibt es nicht (Hinweis)", polDesc_input_select_options: "Eine Automation vergleicht einen input_select mit einer Option, die er nicht hat, oder wählt sie aus. Der Vergleich trifft nie zu; der Fehler bleibt still.", polAlso_input_select_options: "Fehlt: {ids}",
   polRule_statistic_helper_source: "Zähler-Helfer mit unpassender Quelle (Hinweis)", polDesc_statistic_helper_source: "Ein Verbrauchszähler, dessen Quelle weder total noch total_increasing als Zustandsklasse hat, oder ein Integral oder eine Ableitung über eine Quelle ohne Einheit.", polAlso_statistic_helper_source: "Betrifft: {ids}",
+  polRule_helper_duplicate: "Helfer doppelt (Hinweis)", polDesc_helper_duplicate: "Zwei Helfer der gleichen Art mit genau denselben Einstellungen, nur der Name unterscheidet sich. Einer von beiden reicht meist; „Entitäten ersetzen“ stellt die Verweise um.", polAlso_helper_duplicate: "Gleicht: {ids}",
+  polRule_group_members: "Gruppe mit Lücken (Hinweis)", polDesc_group_members: "Eine Gruppe mit nur einem Mitglied oder mit Mitgliedern, die es nicht mehr gibt. Sie schaltet dann weniger als gedacht oder meldet nie einen Zustand.", polAlso_group_members: "Betrifft: {ids}",
   polRule_helper_cycle: "Helfer liest sich selbst (Hinweis)", polDesc_helper_cycle: "Ein Helfer, dessen Quelle (auch über andere Helfer) wieder er selbst ist. Der Wert hängt dann von sich selbst ab und kann sich aufschaukeln oder stehen bleiben.",
   polRule_helper_area: "Helfer ohne Bereich (Hinweis)", polDesc_helper_area: "Input-Helfer, Zähler, Timer und Helfer-Einträge, die keinem Bereich zugeordnet sind. Das hilft beim Sortieren in Dashboards und Sprachsteuerung.",
   polRule_input_number_config: "Zahlen-Helfer mit unstimmigem Bereich (Hinweis)", polDesc_input_number_config: "Ein input_number, dessen Minimum nicht unter dem Maximum liegt, dessen Schrittweite größer als der Bereich ist oder dessen Wert außerhalb liegt.", polAlso_input_number_config: "Problem: {ids}",
@@ -5338,6 +5340,8 @@ Object.assign(TEXT.en, {
   polRule_automation_triggers: "Automation with very many triggers", polDesc_automation_triggers: "More than 10 triggers are hard to maintain. Several small automations often help.",
   polRule_input_select_options: "Select helper: option does not exist (hint)", polDesc_input_select_options: "An automation compares an input_select with an option it does not have, or selects it. The comparison never matches; the error stays silent.", polAlso_input_select_options: "Missing: {ids}",
   polRule_statistic_helper_source: "Meter helper with a source that does not fit (hint)", polDesc_statistic_helper_source: "A utility meter whose source has neither total nor total_increasing as its state class, or an integral or derivative over a source without a unit.", polAlso_statistic_helper_source: "Concerns: {ids}",
+  polRule_helper_duplicate: "Helper twice (hint)", polDesc_helper_duplicate: "Two helpers of the same type with exactly the same settings, only the name differs. One of them is usually enough; \"Replace entities\" switches the references.", polAlso_helper_duplicate: "Same as: {ids}",
+  polRule_group_members: "Group with gaps (hint)", polDesc_group_members: "A group with a single member or with members that no longer exist. It then switches less than expected or never reports a state.", polAlso_group_members: "Affects: {ids}",
   polRule_helper_cycle: "Helper reads itself (hint)", polDesc_helper_cycle: "A helper whose source (also through other helpers) is itself again. Its value then depends on itself and can build up or stand still.",
   polRule_helper_area: "Helper without an area (hint)", polDesc_helper_area: "Input helpers, counters, timers and helper entries that belong to no area. An area helps to sort them in dashboards and voice control.",
   polRule_input_number_config: "Number helper with an inconsistent range (hint)", polDesc_input_number_config: "An input_number whose minimum is not below its maximum, whose step is larger than the range, or whose value lies outside it.", polAlso_input_number_config: "Problem: {ids}",
@@ -5377,6 +5381,7 @@ class InventoryMixin {
   set originFilter(v) { this.invSetFilter("origin", v); }
   get helperIdle() { return this.typeFilter === "helper" ? this.invState().f.idle || "" : ""; }
   set helperIdle(v) { this.invSetFilter("idle", v); }
+  get helperGap() { return this.typeFilter === "helper" ? this.invState().f.gap || "" : ""; }
 
   // The objects the inventory lists: an automation, script or scene is one object, not also its registry entity.
   invObjects() {
@@ -5389,15 +5394,16 @@ class InventoryMixin {
   filtered() {
     if (!this.data) return [];
     const st = this.invState(), q = st.q.trim().toLowerCase(), sort = st.sort, desc = st.dir === "desc";
-    const type = this.typeFilter, status = this.statusFilter, origin = this.originFilter, idle = this.helperIdle, label = this.labelFilter;
-    return this.memo("inventory", [q, type, status, origin, idle, label, sort, st.dir, this.lang], () => {
+    const type = this.typeFilter, status = this.statusFilter, origin = this.originFilter, idle = this.helperIdle, gap = this.helperGap, label = this.labelFilter;
+    return this.memo("inventory", [q, type, status, origin, idle, gap, label, sort, st.dir, this.lang], () => {
       const { natural, ids } = this.collators();
       const reason = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? String(item.missing_reference_count) : "");
-      const pick = item => sort === "status" ? item.status : sort === "type" ? item.object_type : sort === "since" ? item.status_since : sort === "version" ? item.integration_version : sort === "reason" ? reason(item) : sort === "entities" ? String(item.entity_count ?? "") : sort === "usedByCol" ? String(this.usedByCount(item) ?? "") : sort === "changedCol" ? (item.last_changed || "") : (item.name || item.object_id);
+      const pick = item => sort === "status" ? item.status : sort === "type" ? item.object_type : sort === "since" ? item.status_since : sort === "version" ? item.integration_version : sort === "reason" ? reason(item) : sort === "entities" ? String(item.entity_count ?? "") : sort === "usedByCol" ? String(this.usedByCount(item) ?? "") : sort === "changedCol" ? (item.last_changed || "") : sort === "helperAreaCol" ? this.helperPlaceText(item, "areas") : sort === "helperLabelCol" ? this.helperPlaceText(item, "labels") : (item.name || item.object_id);
       const rows = this.invObjects().filter(item => (!q || this.haystack(item).includes(q)) && (!type || (type === "helper" ? this.isHelper(item) : type === RATED_TYPE ? HEALTH_TYPES.includes(item.object_type) : item.object_type === type))
         && (!status || item.status === status)
         && (!label || (item.labels || []).includes(label))
         && (!(type === "helper" && idle) || this.isIdleHelper(item, Number(idle)))
+        && (!(type === "helper" && gap) || (this.isHelper(item) && (gap === "noarea" ? !this.helperPlace(item).areas.length : !this.helperPlace(item).labels.length)))
         && (!origin || (item.object_type === "config_entry" && !!item.custom === (origin === "custom")))).map(item => ({ item, key: pick(item) }));
       rows.sort((a, b) => {
         if (!a.key !== !b.key) return a.key ? -1 : 1; // missing values stay last in both directions
@@ -5436,6 +5442,31 @@ class InventoryMixin {
     return item.object_type === "entity" ? counts.own.get(item.object_id) ?? 0 : null;
   }
 
+  // The areas and labels of a helper: its own for an entity, those of its entities for a config entry.
+  helperPlace(item) {
+    const index = this.memo("helperPlace", [], () => {
+      const map = new Map();
+      for (const o of this.data.objects) {
+        if (o.object_type !== "entity" || !o.config_entry_id) continue;
+        const slot = map.get(o.config_entry_id) || { areas: new Set(), labels: new Set() };
+        if (o.area_id) slot.areas.add(o.area_id);
+        (o.labels || []).forEach(l => slot.labels.add(l));
+        map.set(o.config_entry_id, slot);
+      }
+      return map;
+    });
+    if (item.object_type === "config_entry") {
+      const slot = index.get(item.object_id);
+      return { areas: [...(slot?.areas || [])], labels: [...(slot?.labels || [])] };
+    }
+    return { areas: item.area_id ? [item.area_id] : [], labels: item.labels || [] };
+  }
+
+  helperPlaceText(item, part) {
+    const ids = this.helperPlace(item)[part];
+    return ids.map(id => this.findObject(`${part === "areas" ? "area" : "label"}:${id}`)?.name || id).join(", ");
+  }
+
   // A hint, not a finding: nobody uses this helper in what the scan reads and it has not changed for `days` days.
   // Dashboards outside the scan, apps and YAML can still use it, so nothing here suggests deleting it.
   isIdleHelper(item, days) {
@@ -5468,8 +5499,8 @@ class InventoryMixin {
     const tiles = this.invTypesCard(all);
     // Version and entity count only mean something for integrations; the helper columns for helpers.
     const integ = this.typeFilter === "config_entry", helperMode = this.typeFilter === "helper";
-    const integCols = [...(integ ? ["version", "entities"] : []), ...(helperMode ? ["usedByCol", "changedCol"] : [])];
-    const colValue = (item, k) => k === "version" ? (item.object_type === "config_entry" ? item.integration_version || "" : "") : k === "entities" ? (item.object_type === "config_entry" ? item.entity_count ?? 0 : "") : k === "usedByCol" ? this.usedByCount(item) ?? "" : item.last_changed || "";
+    const integCols = [...(integ ? ["version", "entities"] : []), ...(helperMode ? ["usedByCol", "changedCol", "helperAreaCol", "helperLabelCol"] : [])];
+    const colValue = (item, k) => k === "version" ? (item.object_type === "config_entry" ? item.integration_version || "" : "") : k === "entities" ? (item.object_type === "config_entry" ? item.entity_count ?? 0 : "") : k === "usedByCol" ? this.usedByCount(item) ?? "" : k === "helperAreaCol" ? this.helperPlaceText(item, "areas") : k === "helperLabelCol" ? this.helperPlaceText(item, "labels") : item.last_changed || "";
     const reasonText = item => (item.reason ? this.t(item.reason) : item.missing_reference_count ? `${item.missing_reference_count} ${this.t("missingReferences")}` : item.entity_status && item.entity_status !== "active" && item.entity_reason ? this.t(item.entity_reason) : "");
     this.setExporter("inventory", "inventory", [this.t("name"), "ID", this.t("type"), this.t("status"), this.t("reason"), this.t("since"), ...(integ ? [this.t("origin")] : []), ...integCols.map(k => this.t(k))], () => rows.map(i => [i.name, i.object_id, this.t(i.object_type), this.statusLabel(i.status), reasonText(i), i.status_since || "", ...(integ ? [i.object_type === "config_entry" ? this.t(i.custom ? "originKindCustom" : "originKindCore") : ""] : []), ...integCols.map(k => colValue(i, k))]));
     const sorts = [
@@ -5483,6 +5514,7 @@ class InventoryMixin {
       { name: "status", all: this.t("allStatus"), options: statuses.map(x => [x, this.statusLabel(x)]) },
       ...(labels.length ? [{ name: "label", all: this.t("allLabels"), options: labels }] : []),
       ...(integ ? [{ name: "origin", all: this.t("allOrigins"), options: [["core", this.t("originKindCore")], ["custom", this.t("originKindCustom")]] }] : []),
+      ...(helperMode ? [{ name: "gap", all: this.t("helperGapAny"), options: [["noarea", this.t("helperNoArea")], ["nolabel", this.t("helperNoLabel")]] }] : []),
       ...(helperMode ? [{ name: "idle", all: this.t("helperIdleAny"), options: ["30", "90", "180"].map(d => [d, this.t("helperIdleOpt", { days: d })]) }] : []),
     ];
     const bar = this.listBar("inventory", { table: true, dense: true, sorts, filters, columns: ["type", "status", "reason", "since", ...integCols].map(k => ({ key: k, label: k === "reason" ? "reason" : k })) });
@@ -5494,7 +5526,7 @@ class InventoryMixin {
       { key: "status", label: "status", dir: "asc", cell: item => this.pill(item.status) },
       { key: "reason", label: "reason", dir: "asc", cell: item => this.esc(reasonText(item) || "—") },
       { key: "since", label: "since", dir: "desc", cell: item => this.formatDate(item.status_since) },
-      ...integCols.map(k => ({ key: k, label: k, dir: k === "version" ? "asc" : "desc", cell: item => this.esc(k === "usedByCol" ? (this.usedByCount(item) == null ? "—" : this.formatNumber(this.usedByCount(item))) : k === "changedCol" ? (item.last_changed ? this.formatDate(item.last_changed) : "—") : item.object_type !== "config_entry" ? "—" : k === "version" ? (item.integration_version || "—") : this.formatNumber(item.entity_count ?? 0)) })),
+      ...integCols.map(k => ({ key: k, label: k, dir: k === "version" ? "asc" : "desc", cell: item => this.esc(k === "usedByCol" ? (this.usedByCount(item) == null ? "—" : this.formatNumber(this.usedByCount(item))) : k === "changedCol" ? (item.last_changed ? this.formatDate(item.last_changed) : "—") : k === "helperAreaCol" || k === "helperLabelCol" ? (this.helperPlaceText(item, k === "helperAreaCol" ? "areas" : "labels") || "—") : item.object_type !== "config_entry" ? "—" : k === "version" ? (item.integration_version || "—") : this.formatNumber(item.entity_count ?? 0)) })),
       { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(item) })) },
     ];
     const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"${this.tone(item.status) === "red" ? ' data-rowtone="red"' : ""}` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
@@ -22663,6 +22695,7 @@ class FcRecommendMixin {
 
 // Helpers as a file: export the options and entity settings of helper entries, create them from such a file. A deleted helper is created anew by "Undo"; the file is the same note.
 Object.assign(TEXT.de, {
+  helperAreaCol: "Bereich", helperLabelCol: "Labels", helperGapAny: "Bereich und Labels", helperNoArea: "Ohne Bereich", helperNoLabel: "Ohne Label",
   helperExportAll: "Alle exportieren", helperImport: "Importieren …",
   helperIoHint: "Als Datei sichern und später wieder anlegen. Importieren erzeugt einen Plan mit Vorschau; Rückgängig löscht den neuen Helfer wieder.",
   helperImportBad: "Das ist keine Housekeeper-Helferdatei.", helperExportNone: "In der Liste ist kein Helfer, den Housekeeper exportieren kann.",
@@ -22674,6 +22707,7 @@ Object.assign(TEXT.de, {
   confirmedSummaryHelperImport: "Der Helfer wird aus der Datei neu erstellt, mit den alten Entitäts-IDs und Einstellungen. Das lässt sich rückgängig machen: der neue Helfer wird gelöscht.",
 });
 Object.assign(TEXT.en, {
+  helperAreaCol: "Area", helperLabelCol: "Labels", helperGapAny: "Area and labels", helperNoArea: "No area", helperNoLabel: "No label",
   helperExportAll: "Export all", helperImport: "Import …",
   helperIoHint: "Save as a file and create them again later. Importing makes a plan with a preview; Undo deletes the new helper again.",
   helperImportBad: "This is not a Housekeeper helper file.", helperExportNone: "The list has no helper Housekeeper can export.",

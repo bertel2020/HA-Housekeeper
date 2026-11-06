@@ -6554,5 +6554,16 @@
 "sim_helper_created": "{count} auxiliar(es) são criados (anular elimina-os)",
 "check_helper_created": "O auxiliar está criado",
 "actKind_import_helper": "Auxiliar criado",
-"confirmedSummaryHelperImport": "O auxiliar é criado de novo a partir do ficheiro, com os antigos IDs de entidade e definições. Pode ser anulado: o novo auxiliar é eliminado."
+"confirmedSummaryHelperImport": "O auxiliar é criado de novo a partir do ficheiro, com os antigos IDs de entidade e definições. Pode ser anulado: o novo auxiliar é eliminado.",
+"polRule_helper_duplicate": "Auxiliar duplicado (sugestão)",
+"polDesc_helper_duplicate": "Dois auxiliares do mesmo tipo com exatamente as mesmas definições; só o nome difere. Normalmente basta um; «Substituir entidades» redireciona as referências.",
+"polAlso_helper_duplicate": "Igual a: {ids}",
+"polRule_group_members": "Grupo com lacunas (sugestão)",
+"polDesc_group_members": "Um grupo com um único membro ou com membros que já não existem. Assim controla menos do que o esperado ou nunca indica um estado.",
+"polAlso_group_members": "Diz respeito a: {ids}",
+"helperAreaCol": "Área",
+"helperLabelCol": "Etiquetas",
+"helperGapAny": "Área e etiquetas",
+"helperNoArea": "Sem área",
+"helperNoLabel": "Sem etiqueta"
 }

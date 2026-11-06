@@ -1,5 +1,6 @@
 // Helpers as a file: export the options and entity settings of helper entries, create them from such a file. A deleted helper is created anew by "Undo"; the file is the same note.
 Object.assign(TEXT.de, {
+  helperAreaCol: "Bereich", helperLabelCol: "Labels", helperGapAny: "Bereich und Labels", helperNoArea: "Ohne Bereich", helperNoLabel: "Ohne Label",
   helperExportAll: "Alle exportieren", helperImport: "Importieren …",
   helperIoHint: "Als Datei sichern und später wieder anlegen. Importieren erzeugt einen Plan mit Vorschau; Rückgängig löscht den neuen Helfer wieder.",
   helperImportBad: "Das ist keine Housekeeper-Helferdatei.", helperExportNone: "In der Liste ist kein Helfer, den Housekeeper exportieren kann.",
@@ -11,6 +12,7 @@ Object.assign(TEXT.de, {
   confirmedSummaryHelperImport: "Der Helfer wird aus der Datei neu erstellt, mit den alten Entitäts-IDs und Einstellungen. Das lässt sich rückgängig machen: der neue Helfer wird gelöscht.",
 });
 Object.assign(TEXT.en, {
+  helperAreaCol: "Area", helperLabelCol: "Labels", helperGapAny: "Area and labels", helperNoArea: "No area", helperNoLabel: "No label",
   helperExportAll: "Export all", helperImport: "Import …",
   helperIoHint: "Save as a file and create them again later. Importing makes a plan with a preview; Undo deletes the new helper again.",
   helperImportBad: "This is not a Housekeeper helper file.", helperExportNone: "The list has no helper Housekeeper can export.",

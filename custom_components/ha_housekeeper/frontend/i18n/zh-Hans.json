@@ -6554,5 +6554,16 @@
 "sim_helper_created": "将创建 {count} 个辅助元素（撤销：将被删除）",
 "check_helper_created": "辅助元素已创建",
 "actKind_import_helper": "已创建辅助元素",
-"confirmedSummaryHelperImport": "将根据该文件重新创建该辅助元素，沿用原来的实体 ID 和设置。可以撤销：新的辅助元素将被删除。"
+"confirmedSummaryHelperImport": "将根据该文件重新创建该辅助元素，沿用原来的实体 ID 和设置。可以撤销：新的辅助元素将被删除。",
+"polRule_helper_duplicate": "辅助元素重复（提示）",
+"polDesc_helper_duplicate": "两个同类型的辅助元素设置完全相同，只有名称不同。通常一个就够了；“替换实体”可以改接引用。",
+"polAlso_helper_duplicate": "与以下相同：{ids}",
+"polRule_group_members": "有缺口的群组（提示）",
+"polDesc_group_members": "只有一个成员，或成员已不存在的群组。它控制的东西比预期少，或从不报告状态。",
+"polAlso_group_members": "涉及：{ids}",
+"helperAreaCol": "区域",
+"helperLabelCol": "标签",
+"helperGapAny": "区域和标签",
+"helperNoArea": "无区域",
+"helperNoLabel": "无标签"
 }

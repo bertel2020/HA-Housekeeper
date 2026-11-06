@@ -14,10 +14,11 @@
   - „Helfer exportieren“ speichert einen Helfer (auf der Helfer-Seite) oder alle der Liste (Inventar, Typ „Helfer“) als Datei. „Importieren …“ erzeugt daraus einen Plan mit Vorschau; Rückgängig löscht den neuen Helfer wieder.
   - Wird eine Entität deaktiviert oder entfernt, die ein Helfer liest, sagt der Plan, dass der Helfer seine Quelle verliert. Meldet die Entität eines Helfers „nicht verfügbar“, nennt die Diagnose die ausgefallenen Quellen.
   - Der Ersetzen-Assistent stellt auch die Quellen von Helfer-Einträgen auf die neue Entität um, mit Undo. Templates in Helfern bleiben von Hand zu prüfen.
+  - Im Inventar zeigt der Typ „Helfer“ die Spalten „Bereich“ und „Labels“ und den Filter „Ohne Bereich“ / „Ohne Label“.
   - Nennt ein Template-Helfer eine Entität eindeutig (`states('sensor.x')`, `is_state(…)`) und gibt es sie nicht mehr, wird er als „Entität fehlt“ gemeldet.
 - **Qualitätsregeln für Helfer und Templates** (aus, Hinweise):
   - Templates: Helfer ohne Verwendung, Zahl ohne Schutz vor fehlenden Werten, Template-Entität aus der YAML ohne `unique_id`.
-  - Helfer: wird nur beschrieben, ohne Bereich, Zahlenbereich unstimmig, liest sich selbst, Auswahl mit unbekannter Option, Zähler-Helfer mit ungeeigneter Quelle.
+  - Helfer: wird nur beschrieben, ohne Bereich, Zahlenbereich unstimmig, liest sich selbst, Auswahl mit unbekannter Option, Zähler-Helfer mit ungeeigneter Quelle, doppelt (gleiche Einstellungen), Gruppe mit nur einem oder fehlenden Mitgliedern.
 - **Geräte entfernen auf der Geräteseite:** Ein von Hand deaktiviertes Gerät zählt als in Quarantäne (ab der letzten Änderung in Home Assistant) und erscheint unter „Quarantäne und Entfernen“. Unter „Weitere Aktionen“ bietet seine Seite „Gerät entfernen“ (fragt die Integration) oder, wenn sie das nicht kann, „Gerät lokal vergessen“, jeweils mit Vorschau und Backup.
 - **Deaktivieren und Ausblenden auf der Entitätsseite:** Unter „Weitere Aktionen“ lässt sich jede Entität per Plan deaktivieren oder ausblenden, mit Vorschau und Undo. Wird sie noch sicher verwendet, bleibt das Deaktivieren gesperrt. Eine Entität, die noch läuft, lässt sich mit „Entfernen (läuft noch)“ ohne Quarantäne entfernen, mit Backup; sicher verwendet bleibt das gesperrt.
 - **Alte Entität deaktivieren:** Der Ersetzen-Assistent kann die alte Entität nach dem Umstellen deaktivieren (Quarantäne). Der Plan lässt sich zurücknehmen, dann ist sie wieder aktiv.
@@ -47,10 +48,11 @@
   - "Export the helper" saves one helper (on its page) or all in the list (inventory, type "Helpers") as a file. "Import …" turns it into a plan with a preview; Undo deletes the new helper again.
   - When an entity a helper reads is disabled or removed, the plan says the helper loses its source. When a helper's entity reports unavailable, the diagnosis names the sources that are down.
   - The replace assistant also switches the sources of helper entries to the new entity, with undo. Templates in helpers stay for a manual check.
+  - In the inventory the type "Helpers" shows the columns "Area" and "Labels" and the filter "No area" / "No label".
   - When a template helper names an entity clearly (`states('sensor.x')`, `is_state(…)`) and it no longer exists, the helper is reported as "entity missing".
 - **Quality rules for helpers and templates** (off, hints):
   - Templates: helper without use, number without protection against missing values, YAML template entity without `unique_id`.
-  - Helpers: only written, without area, inconsistent number range, reads itself, select with an unknown option, meter helper with an unsuitable source.
+  - Helpers: only written, without area, inconsistent number range, reads itself, select with an unknown option, meter helper with an unsuitable source, twice (same settings), group with a single or missing members.
 - **Remove devices on the device page:** A device disabled by hand counts as quarantined (from its last change in Home Assistant) and appears under "Quarantine and removal". Under "More actions" its page offers "Remove device" (asks the integration) or, when that cannot, "Forget device locally", each with a preview and a backup.
 - **Disable, hide and remove on the entity page:** Under "More actions" any entity can be disabled or hidden by a plan, with preview and undo. An entity that still works can be removed with "Remove (still working)" without quarantine, with a backup; if it is certainly used, that stays blocked.
 - **Disable the old entity:** The replace assistant can disable the old entity after switching over (quarantine). The plan can be undone, then it is active again.

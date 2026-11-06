@@ -7085,5 +7085,16 @@
 "sim_helper_created": "Vytvorí sa {count} pomocníkov (späť ich odstráni)",
 "check_helper_created": "Pomocník je vytvorený",
 "actKind_import_helper": "Pomocník vytvorený",
-"confirmedSummaryHelperImport": "Pomocník sa vytvorí znova zo súboru, so starými ID entít a nastaveniami. Dá sa vrátiť späť: nový pomocník sa odstráni."
+"confirmedSummaryHelperImport": "Pomocník sa vytvorí znova zo súboru, so starými ID entít a nastaveniami. Dá sa vrátiť späť: nový pomocník sa odstráni.",
+"polRule_helper_duplicate": "Pomocník dvakrát (tip)",
+"polDesc_helper_duplicate": "Dvaja pomocníci rovnakého typu s úplne rovnakým nastavením, líši sa len názov. Zvyčajne stačí jeden; „Nahradiť entity“ presmeruje odkazy.",
+"polAlso_helper_duplicate": "Rovnaký ako: {ids}",
+"polRule_group_members": "Skupina s medzerami (tip)",
+"polDesc_group_members": "Skupina len s jedným členom alebo s členmi, ktorí už neexistujú. Ovláda potom menej, než sa čaká, alebo nikdy nehlási stav.",
+"polAlso_group_members": "Týka sa: {ids}",
+"helperAreaCol": "Oblasť",
+"helperLabelCol": "Štítky",
+"helperGapAny": "Oblasť a štítky",
+"helperNoArea": "Bez oblasti",
+"helperNoLabel": "Bez štítka"
 }
