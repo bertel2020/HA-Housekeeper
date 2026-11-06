@@ -4641,9 +4641,25 @@ class CleanupMixin {
     catch (_) { this.toast(this.t("planCancelFailed"), true); }
   }
 
+  // Home Assistant may rebuild the panel while a plan runs (a lost connection, a tab left in the background):
+  // the open plan is kept per browser tab, so the rebuilt panel returns to its page instead of the overview.
+  rememberPlan(planId) {
+    try { if (planId) globalThis.sessionStorage?.setItem("ha_housekeeper.open_plan", planId); else globalThis.sessionStorage?.removeItem("ha_housekeeper.open_plan"); } catch (_) { /* the page just starts at the overview */ }
+  }
+
+  async restoreOpenPlan() {
+    let id = null;
+    try { id = globalThis.sessionStorage?.getItem("ha_housekeeper.open_plan"); } catch (_) { /* none */ }
+    if (!id || this.plan) return;
+    await this.openPlan(id);
+    if (!this.plan) { this.rememberPlan(null); return; }
+    if (["running", "backup"].includes(this.plan.status) || (this.plan.status === "executed" && !this.plan.verification)) this.pollPlan(id);
+  }
+
   // Follow a running plan until it stops; the plan object is replaced everywhere it is shown.
   async pollPlan(planId) {
     this._polling = planId;
+    this.rememberPlan(planId);
     let tries = 0, failed = 0;
     while (this._polling === planId) {
       try {
@@ -5141,6 +5157,7 @@ class CleanupMixin {
 
   // Closing the plan page: back to the page it came from, else the journal.
   leavePlan() {
+    this.rememberPlan(null);
     this.plan = null; this.planChanges = null; this.cleanupError = "";
     if (this.view === "plan") {
       if (this.viewTrail.length) { this.viewBack(); return; }
@@ -23175,6 +23192,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
+    this.restoreOpenPlan?.();
   }
 
   syncUrl() {

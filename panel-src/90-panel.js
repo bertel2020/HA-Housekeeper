@@ -711,6 +711,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const obj = this.findObject(params.get("object") || "");
     if (obj) this.openObject(obj);
     else if (this.view === "changes" && !this.compare) this.loadCompare();
+    this.restoreOpenPlan?.();
   }
 
   syncUrl() {
