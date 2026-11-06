@@ -246,16 +246,17 @@ async def prepare_meter(hass: HomeAssistant, old_id: str, new_id: str, mode: str
     """Everything the judge and the runner need to know about one meter migration.
 
     The fingerprint covers both registry entries and the statistics of both series, so a plan
-    whose entities or history changed after the preview is refused at execution.
+    whose entities or history changed after the preview is refused at execution. The references
+    a ``replace_statistics`` migration rewrites have their own fingerprint (``preview_replacement``).
     """
     from homeassistant.helpers import entity_registry as er
 
-    from .cleanup import registry_fingerprint
+    from .cleanup import METER_STATISTICS_MODES, registry_fingerprint
 
     registry = er.async_get(hass)
     old_entry, new_entry = registry.async_get(old_id), registry.async_get(new_id)
     analysis: dict[str, Any] = {}
-    if mode in {"both", "statistics"}:
+    if mode in METER_STATISTICS_MODES:
         analysis = await analyse_pair(hass, old_id, new_id)
     alt_id, alt_taken = free_alt_id(hass, old_id)
     parts = [

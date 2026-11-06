@@ -101,7 +101,9 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
             meters += 1
         if kind in ("repair_counter", "repair_range"):
             repaired += 1
-        if kind in ("replace_references", "rename_entity"):
+        if kind in ("replace_references", "rename_entity") or (
+            kind == "migrate_meter" and action.get("mode") == "replace_statistics"
+        ):
             for source in action.get("sources") or []:
                 if source.get("writable") and source.get("changes"):
                     key = (source["name"], source["type"])

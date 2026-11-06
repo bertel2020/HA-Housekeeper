@@ -28,7 +28,10 @@ DEVICE_KINDS = frozenset({"disable_device", "remove_device", "forget_device"})
 REFERENCE_KINDS = frozenset({"replace_references"})
 RENAME_KINDS = frozenset({"rename_entity"})  # a new entity ID, with every reference carried along
 METER_KINDS = frozenset({"migrate_meter"})
-METER_MODES = ("both", "statistics", "id")
+METER_MODES = ("both", "statistics", "id", "replace_statistics")
+# Modes that join the statistics, and the mode that also rewrites the references to the old entity.
+METER_STATISTICS_MODES = frozenset({"both", "statistics", "replace_statistics"})
+METER_REFERENCE_MODE = "replace_statistics"
 PURGE_KINDS = frozenset({"purge_statistics"})
 DELETE_CANDIDATE_RULES = frozenset(
     {"automation.never_triggered", "automation.stale", "automation.disabled_long"}
@@ -549,18 +552,23 @@ def judge_reference_action(
             reasons.append("unit_differs")
         if new.get("device_class") != old.get("device_class"):
             reasons.append("class_differs")
-    writable = [source for source in action["sources"] if source["writable"] and source["changes"]]
-    if not writable:
-        reasons.append("nothing_to_replace")
-    elif any(not source["writable"] or source["manual"] for source in action["sources"]):
-        reasons.append("source_manual")
-    if any(source["type"] == "energy" for source in writable):
-        reasons.append("energy_changes")
+    _source_reasons(action["sources"], reasons)
     if action["has_statistics"]:
         reasons.append("has_statistics")
     reasons.append("config_rewrite")
     _verdict(action)
     return action
+
+
+def _source_reasons(sources: list[dict[str, Any]], reasons: list[str]) -> None:
+    """What the sources of a reference replacement need: something to write, a look, Energy."""
+    writable = [source for source in sources if source["writable"] and source["changes"]]
+    if not writable:
+        reasons.append("nothing_to_replace")
+    elif any(not source["writable"] or source["manual"] for source in sources):
+        reasons.append("source_manual")
+    if any(source["type"] == "energy" for source in writable):
+        reasons.append("energy_changes")
 
 
 def judge_id_replace_action(
@@ -1153,8 +1161,10 @@ def judge_meter_action(
 ) -> dict[str, Any]:
     """Judge joining a replaced meter's history onto its successor and/or its entity ID.
 
-    ``meter`` carries ``mode`` (``statistics``, ``id`` or ``both``), the statistics ``analysis``,
-    the free ``alt_id`` the old entity moves to, and whether both entities are in the registry.
+    ``meter`` carries ``mode`` (``statistics``, ``id``, ``both`` or ``replace_statistics``), the
+    statistics ``analysis``, the free ``alt_id`` the old entity moves to, and whether both entities
+    are in the registry. ``replace_statistics`` joins the statistics and rewrites the references to
+    the old entity (its ``sources``, as for ``replace_references``); the new entity keeps its ID.
     Writing statistics is always at least ``review``; nothing in it can be undone without the
     backup.
     """
@@ -1174,6 +1184,8 @@ def judge_meter_action(
         "has_statistics": True,
         "statistics": {k: v for k, v in analysis.items() if k != "reasons"},
     }
+    if mode == METER_REFERENCE_MODE:
+        action["sources"] = meter.get("sources") or []
     reasons = action["reasons"]
     new = objects.get(target or "")
     if mode not in METER_MODES:
@@ -1192,9 +1204,12 @@ def judge_meter_action(
             reasons.append("unit_differs")
         if new.get("device_class") != old.get("device_class"):
             reasons.append("class_differs")
-    if mode in {"both", "statistics"}:
+    if mode in METER_STATISTICS_MODES:
         reasons.extend(analysis.get("reasons", []))
         reasons.append("stats_write")
+    if mode == METER_REFERENCE_MODE:
+        _source_reasons(action["sources"], reasons)
+        reasons.append("config_rewrite")
     if mode in {"both", "id"}:
         if not meter.get("old_in_registry"):
             reasons.append("old_not_in_registry")
@@ -1345,7 +1360,8 @@ def build_plan(
     ``reference_data`` maps ``(old, new, target kind)`` to the fingerprint and the sources found
     for a replacement; ``statistic_exists`` tells whether an entity carries a statistic ID now;
     ``meter_data`` maps ``(old, new, mode)`` to the fingerprint and judging data
-    of a meter migration. A plan holds at most one action per object.
+    of a meter migration; a ``replace_statistics`` migration also takes its sources from
+    ``reference_data``. A plan holds at most one action per object.
     """
     quarantine = {q["object_id"]: q["since"] for q in snapshot.get("quarantine", [])}
     objects = {
@@ -1481,15 +1497,23 @@ def build_plan(
             target = request.get("target") or ""
             mode = request.get("mode") or "both"
             meter = (meter_data or {}).get((object_id, target, mode), {})
+            reference_print: str | None = None
+            sources: list[dict[str, Any]] = []
+            if mode == METER_REFERENCE_MODE:
+                reference_print, sources = (reference_data or {}).get(
+                    (object_id, target, "entity"), (None, [])
+                )
             action = judge_action(
                 kind,
                 object_id,
                 objects,
                 snapshot["edges"],
                 target=target,
-                meter={**meter, "mode": mode},
+                meter={**meter, "mode": mode, "sources": sources},
             )
             action["fingerprint"] = meter.get("fingerprint")
+            if mode == METER_REFERENCE_MODE:
+                action["reference_fingerprint"] = reference_print
         elif kind in RENAME_KINDS:
             target = request.get("target") or ""
             found = (rename_data or {}).get((object_id, target), {})

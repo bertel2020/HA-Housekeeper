@@ -40,6 +40,7 @@ from .cleanup import (
     MAX_MERGE,
     METER_KINDS,
     METER_MODES,
+    METER_REFERENCE_MODE,
     RECORDER_CHOICES,
     REFACTOR_KINDS,
     REFERENCE_KINDS,
@@ -857,8 +858,14 @@ async def _plan_from_requests(
 
     reference_data: dict[Any, tuple[str | None, list[dict[str, Any]]]] = {}
     for action in requests:
-        if action["kind"] in REFERENCE_KINDS and action.get("target"):
-            target_kind = action.get("target_kind") or "entity"
+        # A meter change in the mode ``replace_statistics`` rewrites the references as well.
+        rewrites = action["kind"] in REFERENCE_KINDS or (
+            action["kind"] in METER_KINDS and action.get("mode") == METER_REFERENCE_MODE
+        )
+        if rewrites and action.get("target"):
+            target_kind = (
+                action.get("target_kind") if action["kind"] in REFERENCE_KINDS else None
+            ) or "entity"
             pair = (action["object_id"], action["target"], target_kind)
             if pair not in reference_data and pair[0] != pair[1]:
                 reference_data[pair] = await preview_replacement(
