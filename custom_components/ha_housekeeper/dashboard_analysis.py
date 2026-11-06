@@ -92,6 +92,7 @@ HELPER_DOMAINS = frozenset(
         "template", "derivative", "integration", "min_max", "threshold", "utility_meter",
         "statistics", "trend", "filter", "history_stats", "switch_as_x", "compensation",
         "generic_hygrostat", "generic_thermostat", "bayesian", "mold_indicator",
+        "group", "random", "tod",
     }
 )  # fmt: skip
 HELPER_KEYS = frozenset(
