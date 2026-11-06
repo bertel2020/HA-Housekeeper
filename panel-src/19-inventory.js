@@ -50,7 +50,7 @@ class InventoryMixin {
 
   // A helper is a config entry of a helper domain or an entity of a helper platform.
   isHelper(item) {
-    return item.object_type === "config_entry" ? HELPER_DOMAINS.has(item.domain) : item.object_type === "entity" && (HELPER_PLATFORMS.has(item.platform) || HELPER_DOMAINS.has(item.platform));
+    return item.object_type === "config_entry" ? this.helperDomain(item.domain) : item.object_type === "entity" && (HELPER_PLATFORMS.has(item.platform) || this.helperDomain(item.platform));
   }
 
   // How many objects use this one (incoming edges of the usage kinds); a config entry adds up its entities.

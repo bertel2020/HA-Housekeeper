@@ -485,7 +485,7 @@ const SCHEMES = {
 const SCHEME_ALIASES = { teal: "housekeeper", amber: "housekeeper", sage: "housekeeper", zeitarchiv: "housekeeper", indigo: "modern" };
 
 // Helpers: config-entry domains (inventory type config_entry) and entity platforms (inventory type entity).
-const HELPER_DOMAINS = new Set(["template", "derivative", "integration", "min_max", "threshold", "utility_meter", "statistics", "trend", "filter", "history_stats", "switch_as_x", "compensation", "generic_hygrostat", "generic_thermostat", "bayesian", "mold_indicator", "group", "random", "tod"]);
+// The helper domains (config-entry helpers) come from the backend with the inventory (meta.helper_domains), see helperDomain().
 const HELPER_PLATFORMS = new Set(["input_boolean", "input_button", "input_datetime", "input_number", "input_select", "input_text", "counter", "timer", "schedule", "group"]);
 const USAGE_RELATIONS = ["TRIGGERS_ON", "USES_AS_CONDITION", "TARGETS", "REFERENCES", "SHOWS", "INCLUDES"];
 
@@ -5410,7 +5410,7 @@ class InventoryMixin {
 
   // A helper is a config entry of a helper domain or an entity of a helper platform.
   isHelper(item) {
-    return item.object_type === "config_entry" ? HELPER_DOMAINS.has(item.domain) : item.object_type === "entity" && (HELPER_PLATFORMS.has(item.platform) || HELPER_DOMAINS.has(item.platform));
+    return item.object_type === "config_entry" ? this.helperDomain(item.domain) : item.object_type === "entity" && (HELPER_PLATFORMS.has(item.platform) || this.helperDomain(item.platform));
   }
 
   // How many objects use this one (incoming edges of the usage kinds); a config entry adds up its entities.
@@ -6240,7 +6240,7 @@ class DiagnosisMixin {
         default: cause = item.reason ? t(item.reason) : "";
       }
       // An entity a helper builds reports nothing useful when the entity it reads is down: name those sources.
-      if (item.config_entry_id && HELPER_DOMAINS.has(item.platform) && !item.disabled_by && ["unavailable", "unknown", null, undefined].includes(item.state)) {
+      if (item.config_entry_id && this.helperDomain(item.platform) && !item.disabled_by && ["unavailable", "unknown", null, undefined].includes(item.state)) {
         for (const e of this.edgesFrom(`config_entry:${item.config_entry_id}`).filter(x => x.relation === "REFERENCES" && String(x.target).startsWith("entity:"))) {
           const src = this.findObject(e.target), down = !src ? "missing" : src.disabled_by ? "disabled" : ["unavailable", "unknown"].includes(src.state) ? src.state : "";
           if (down) rows.push(this.check(t("helperSource"), down === "unknown" ? "violet" : "red", src?.name || e.target.split(":")[1], t(down), src ? this.objectKey(src) : null));
@@ -13535,10 +13535,10 @@ class DetailActionsMixin {
     if (failing && (this.autoPause?.pausable || []).some(p => p.entry_id === item.object_id)) out.push({ attr: `data-ap-send="${this.esc(item.object_id)}"`, icon: "mdi:pause-circle-outline", label: this.t("apSend"), hint: "apSendHint", btn: "apDo", finding: failing.key, ap: true });
     if (item.object_type === "entity") out.push({ attr: `data-act-replace-many="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal-variant", label: this.t("actReplaceMany"), hint: "actHintReplaceMany" });
     // An entity a helper builds cannot be removed on its own: the helper makes it anew. Says so and points to the helper.
-    const owner = item.object_type === "entity" && item.config_entry_id && HELPER_DOMAINS.has(item.platform) ? this.findObject(`config_entry:${item.config_entry_id}`) : null;
+    const owner = item.object_type === "entity" && item.config_entry_id && this.helperDomain(item.platform) ? this.findObject(`config_entry:${item.config_entry_id}`) : null;
     if (owner) out.push({ attr: `data-object="${this.esc(owner.object_type)}:${this.esc(owner.object_id)}"`, icon: "mdi:function-variant", label: this.t("actHelperOwner", { name: this.esc(owner.name) }), hint: "actHintHelperOwner" });
     // A helper entry can be deleted by a plan, from its own page or from the page of one of its entities.
-    const helperId = item.object_type === "config_entry" && HELPER_DOMAINS.has(item.domain) ? item.object_id : owner?.object_id;
+    const helperId = item.object_type === "config_entry" && this.helperDomain(item.domain) ? item.object_id : owner?.object_id;
     if (helperId) out.push({ attr: `data-act-export-helper="${this.esc(helperId)}"`, icon: "mdi:export", label: this.t("actExportHelper"), hint: "actHintExportHelper" });
     if (helperId) out.push({ attr: `data-act-remove-helper="${this.esc(helperId)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveHelper"), hint: "actHintRemoveHelper" });
     // An entity that still works can be removed too, on purpose: no quarantine, backup and confirmation as for any removal.
@@ -22686,6 +22686,11 @@ Object.assign(TEXT.en, {
 });
 
 class HelperIoMixin {
+  // Whether the domain is a config-entry helper; the list is the backend's, sent with the inventory.
+  helperDomain(domain) {
+    return (this.data?.meta?.helper_domains || []).includes(domain);
+  }
+
   // The bar over the helper list: export every helper in it, or create helpers from a file.
   helperIoBar(rows) {
     const ids = rows.filter(r => r.object_type === "config_entry").map(r => r.object_id);

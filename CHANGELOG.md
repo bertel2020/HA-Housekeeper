@@ -27,6 +27,7 @@
 - **Oberfläche:** Kleine Verbesserungen.
   - Die Regel und der Schalter „Automatisch aufräumen“ der Backup-Seite stehen in einem Rahmen.
   - Altes und neues Gerät stehen nebeneinander, ebenso beim Ersetzen von Entitäten.
+  - Welche Helfer-Arten Housekeeper kennt, steht nur noch im Backend; ein Test meldet, wenn Home Assistant eine neue Helfer-Art bringt.
 - **Ein Stepper für alle Abläufe:** Assistenten, Plan-Seite, „Beheben“ und die erste Aufräumrunde zeigen dieselbe waagerechte Leiste: Einrichten, Prüfen, Bestätigen, Ausführen, Ergebnis. Im Ersetzen-Assistenten mit mehreren Entitäten steht über den zwei Seiten von „Einrichten“ „Teil 1 von 2“ und „Teil 2 von 2“.
   - Erledigte Schritte sind grün, der aktuelle blau, ein fehlgeschlagener rot. Die Plan-Seite zeigt unter der Leiste nur die Unterschritte der gewählten Stufe, mit Fortschritt beim Ausführen.
   - Auf schmalen Bildschirmen steht nur der Name des aktuellen Schritts. „1 Eintrag“ steht jetzt im Singular.
@@ -63,6 +64,7 @@
 - **Interface:** Small improvements.
   - The rule and the "Tidy up automatically" switch of the backup page share one frame.
   - Old and new device sit side by side, and so do the entities when replacing.
+  - The helper types Housekeeper knows are kept in the backend only; a test reports when Home Assistant adds a new helper type.
 - **One stepper for every flow:** Assistants, the plan page, "Fix" and the first cleanup round show the same horizontal bar: Set up, Review, Confirm, Run, Result. In the replace assistant for several entities the two pages of "Set up" are marked "Part 1 of 2" and "Part 2 of 2".
   - Done stages are green, the current one blue, a failed one red. The plan page shows only the sub-steps of the chosen stage under the bar, with progress while it runs.
   - On narrow screens only the current step keeps its name. "1 entry" is now singular.

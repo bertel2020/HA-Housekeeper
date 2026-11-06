@@ -1994,6 +1994,7 @@ class InventoryScanner:
                 "quarantined": len(quarantine),
                 "recurring_devices": len(recurring),
                 "quarantine_days": QUARANTINE_DAYS,
+                "helper_domains": sorted(HELPER_DOMAINS),
                 "ha_version": HA_VERSION,
                 "hacs_available": hacs is not None,
                 "hacs_store": store_kind(self.hass),

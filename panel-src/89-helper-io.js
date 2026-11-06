@@ -23,6 +23,11 @@ Object.assign(TEXT.en, {
 });
 
 class HelperIoMixin {
+  // Whether the domain is a config-entry helper; the list is the backend's, sent with the inventory.
+  helperDomain(domain) {
+    return (this.data?.meta?.helper_domains || []).includes(domain);
+  }
+
   // The bar over the helper list: export every helper in it, or create helpers from a file.
   helperIoBar(rows) {
     const ids = rows.filter(r => r.object_type === "config_entry").map(r => r.object_id);

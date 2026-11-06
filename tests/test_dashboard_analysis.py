@@ -169,3 +169,13 @@ def test_suggestions_need_close_names_and_findings_count_the_card() -> None:
 
     place = findings[0]["evidence"][0]["place"]
     assert (place["card"], place["card_refs"], place["card_missing"]) == ("entities", 2, 1)
+
+
+def test_every_helper_of_the_installed_home_assistant_is_known() -> None:
+    """A helper type Home Assistant adds must be added to HELPER_DOMAINS (the panel gets the list from there)."""
+    from homeassistant.generated.config_flows import FLOWS
+
+    from custom_components.ha_housekeeper.dashboard_analysis import HELPER_DOMAINS
+
+    # otp keeps a secret in its options: it must never be exported to a file.
+    assert set(FLOWS["helper"]) - HELPER_DOMAINS - {"otp"} == set()

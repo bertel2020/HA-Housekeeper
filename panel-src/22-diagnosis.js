@@ -62,7 +62,7 @@ class DiagnosisMixin {
         default: cause = item.reason ? t(item.reason) : "";
       }
       // An entity a helper builds reports nothing useful when the entity it reads is down: name those sources.
-      if (item.config_entry_id && HELPER_DOMAINS.has(item.platform) && !item.disabled_by && ["unavailable", "unknown", null, undefined].includes(item.state)) {
+      if (item.config_entry_id && this.helperDomain(item.platform) && !item.disabled_by && ["unavailable", "unknown", null, undefined].includes(item.state)) {
         for (const e of this.edgesFrom(`config_entry:${item.config_entry_id}`).filter(x => x.relation === "REFERENCES" && String(x.target).startsWith("entity:"))) {
           const src = this.findObject(e.target), down = !src ? "missing" : src.disabled_by ? "disabled" : ["unavailable", "unknown"].includes(src.state) ? src.state : "";
           if (down) rows.push(this.check(t("helperSource"), down === "unknown" ? "violet" : "red", src?.name || e.target.split(":")[1], t(down), src ? this.objectKey(src) : null));

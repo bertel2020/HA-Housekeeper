@@ -39,10 +39,10 @@ class DetailActionsMixin {
     if (failing && (this.autoPause?.pausable || []).some(p => p.entry_id === item.object_id)) out.push({ attr: `data-ap-send="${this.esc(item.object_id)}"`, icon: "mdi:pause-circle-outline", label: this.t("apSend"), hint: "apSendHint", btn: "apDo", finding: failing.key, ap: true });
     if (item.object_type === "entity") out.push({ attr: `data-act-replace-many="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal-variant", label: this.t("actReplaceMany"), hint: "actHintReplaceMany" });
     // An entity a helper builds cannot be removed on its own: the helper makes it anew. Says so and points to the helper.
-    const owner = item.object_type === "entity" && item.config_entry_id && HELPER_DOMAINS.has(item.platform) ? this.findObject(`config_entry:${item.config_entry_id}`) : null;
+    const owner = item.object_type === "entity" && item.config_entry_id && this.helperDomain(item.platform) ? this.findObject(`config_entry:${item.config_entry_id}`) : null;
     if (owner) out.push({ attr: `data-object="${this.esc(owner.object_type)}:${this.esc(owner.object_id)}"`, icon: "mdi:function-variant", label: this.t("actHelperOwner", { name: this.esc(owner.name) }), hint: "actHintHelperOwner" });
     // A helper entry can be deleted by a plan, from its own page or from the page of one of its entities.
-    const helperId = item.object_type === "config_entry" && HELPER_DOMAINS.has(item.domain) ? item.object_id : owner?.object_id;
+    const helperId = item.object_type === "config_entry" && this.helperDomain(item.domain) ? item.object_id : owner?.object_id;
     if (helperId) out.push({ attr: `data-act-export-helper="${this.esc(helperId)}"`, icon: "mdi:export", label: this.t("actExportHelper"), hint: "actHintExportHelper" });
     if (helperId) out.push({ attr: `data-act-remove-helper="${this.esc(helperId)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveHelper"), hint: "actHintRemoveHelper" });
     // An entity that still works can be removed too, on purpose: no quarantine, backup and confirmation as for any removal.

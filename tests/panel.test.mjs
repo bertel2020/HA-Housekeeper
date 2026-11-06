@@ -32,7 +32,7 @@ function loadPanel(extra = {}) {
 
 const entriesOf = el => el.causeEntries().map(c => el.causeEntry(c)).join("");
 const DATA = {
-  meta: { scanned_at: "2026-10-07T10:00:00+00:00", object_count: 3, status_counts: { active: 2, orphaned: 1 }, type_counts: { entity: 3 } },
+  meta: { helper_domains: ["template", "min_max", "derivative"], scanned_at: "2026-10-07T10:00:00+00:00", object_count: 3, status_counts: { active: 2, orphaned: 1 }, type_counts: { entity: 3 } },
   objects: [
     { object_type: "entity", object_id: "sensor.a", name: "<img src=x onerror=alert(1)>", status: "orphaned", reason: "state_missing", platform: "test" },
     { object_type: "entity", object_id: "sensor.b", name: "B", status: "active", reason: "state_available" },
