@@ -3189,6 +3189,15 @@ test("the single view asks the backend for the suggestion of the old entity and 
   assert.equal(asked().length, 1, "asked once per old entity");
 });
 
+test("cancel in the replace assistant empties it and returns to the choice of a task", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [] };
+  el.repairTask = "replace_wizard"; el.replOld = "sensor.a"; el.replNew = "sensor.b"; el.replHow = "both";
+  assert.ok(el.rwOneCard().includes("data-rw-cancel"));
+  el.rwCancel();
+  assert.ok(!el.repairTask && !el.replOld && !el.replNew && !el.replHow);
+});
+
 test("the single view of the replace assistant turns the chosen kind into one action and blocks what cannot work", () => {
   const { el } = panel("en");
   const ent = (id, extra = {}) => ({ object_type: "entity", object_id: id, name: id, status: "active", unit: "kWh", device_class: "energy", state_class: "total_increasing", ...extra });

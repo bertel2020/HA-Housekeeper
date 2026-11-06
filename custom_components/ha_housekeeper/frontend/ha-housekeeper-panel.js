@@ -20577,6 +20577,14 @@ class ReplaceWizardMixin {
     return (this.rw ||= { single: true, step: 1, sel: new Set(), result: null, choices: {}, scope: "", loading: false, error: "" });
   }
 
+  // "Cancel": nothing was created, so the assistant is emptied and the person is back at the choice of a task.
+  rwCancel() {
+    this.rw = null; this._oneHints = null;
+    this.replOld = ""; this.replNew = ""; this.replHow = "";
+    this.repairTask = null;
+    this.render();
+  }
+
   // From a detail page or a finding: the choice is filled in, the person lands on step 1 with it.
   rwStart(ids) {
     this.startCleanup("replace_wizard", () => { this.rw = null; const rw = this.rwState(); rw.single = false; ids.forEach(id => rw.sel.add(id)); });
@@ -20831,7 +20839,7 @@ class ReplaceWizardMixin {
     const unknown = rw.result?.unknown?.length ? `<p class="factnote">${this.t("rwUnknown", { list: this.esc(rw.result.unknown.slice(0, 10).join(", ")) })}</p>` : "";
     const many = chosen >= 50 ? `<p class="factnote">${this.t("rwManyPairs")}</p>` : "";
     const how = Object.keys(rw.choices).length && rw.howOpen && rw.choices[rw.howOpen] ? this.rwHowCards(rw.howOpen) : "";
-    const foot = `<div class="setrow planfoot"><small class="u-m0">${this.t("rwChosen", { count: chosen })} · ${this.t("repairDryRun")}${errors ? ` · ${this.t("rwFixFirst")}` : ""}</small><span class="rwfoot"><button class="btn" data-rw-back>${this.t("rwBack")}</button> <button class="btn primary" data-rw-create ${chosen && !errors && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("rwCreate", { count: chosen })}</button></span></div>`;
+    const foot = `<div class="setrow planfoot"><small class="u-m0">${this.t("rwChosen", { count: chosen })} · ${this.t("repairDryRun")}${errors ? ` · ${this.t("rwFixFirst")}` : ""}</small><span class="rwfoot"><button class="btn" data-rw-back>${this.t("rwBack")}</button> <button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-rw-create ${chosen && !errors && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("rwCreate", { count: chosen })}</button></span></div>`;
     return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
       ${scope}<div class="setrow planfoot"><small class="u-m0">${this.esc(rw.error)}</small><button class="btn" data-rw-load ${rw.loading ? "disabled" : ""}>${rw.loading ? this.t("rwLoading") : this.t("rwLoad")}</button></div>
       ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${foot}</div>`;
@@ -20892,7 +20900,7 @@ class ReplaceWizardMixin {
     return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("repairTaskWizard")}</h2><p>${this.t("rwOneHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
       <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${this.rwOneWhy()}${checks.fit}</div></div>
       ${hints}${this.rwOneUses()}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}
-      <div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
+      <div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><span class="rwfoot"><button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></span></div></div>`;
   }
 
   bindReplaceWizard(root) {
@@ -20903,6 +20911,7 @@ class ReplaceWizardMixin {
     root.querySelector("[data-rw-all]")?.addEventListener("click", () => { (this._rwFiltered || []).forEach(id => rw().sel.add(id)); this.render(); });
     root.querySelector("[data-rw-clear]")?.addEventListener("click", () => { rw().sel.clear(); this.render(); });
     root.querySelector("[data-rw-next]")?.addEventListener("click", () => { rw().step = 2; this.rwLoadPairs(); });
+    root.querySelector("[data-rw-cancel]")?.addEventListener("click", () => this.rwCancel());
     root.querySelector("[data-rw-back]")?.addEventListener("click", () => { rw().step = 1; this.render(); });
     root.querySelector("[data-rw-load]")?.addEventListener("click", () => this.rwLoadPairs());
     root.querySelector("[data-rw-scope]")?.addEventListener("change", ev => { rw().scope = ev.target.value; this.rwLoadPairs(); });

@@ -18,6 +18,7 @@
   - Erledigte Schritte sind grün, der aktuelle blau, ein fehlgeschlagener rot. Die Plan-Seite zeigt unter der Leiste nur die Unterschritte der gewählten Stufe, mit Fortschritt beim Ausführen.
   - Auf schmalen Bildschirmen steht nur der Name des aktuellen Schritts. „1 Eintrag“ steht jetzt im Singular.
 - **Ersetzen für eine Entität:** Der Vorschlag für die neue Entität kommt jetzt wie bei mehreren Entitäten aus Geräteklasse, Einheit, Bereich, Name und ID-Endung, mit den Gründen. Unter den Feldern steht „Hier wird sie verwendet“ über die ganze Breite, mit jeder Stelle einzeln.
+  - Neben „Vorschau erstellen“ gibt es „Abbrechen“. Es leert den Assistenten und führt zur Auswahl der Aufgabe zurück; es wurde nichts angelegt.
 
 ### English
 
@@ -37,6 +38,7 @@
   - Done stages are green, the current one blue, a failed one red. The plan page shows only the sub-steps of the chosen stage under the bar, with progress while it runs.
   - On narrow screens only the current step keeps its name. "1 entry" is now singular.
 - **Replace for one entity:** The proposal for the new entity now comes, as for several entities, from device class, unit, area, name and ID ending, with the reasons. "Where it is used" sits under the fields over the full width, with every place named.
+  - "Cancel" sits next to "Create preview". It empties the assistant and returns to the choice of a task; nothing was created.
 
 ## 2.0.0-beta.3 - 2026-11-05
 
