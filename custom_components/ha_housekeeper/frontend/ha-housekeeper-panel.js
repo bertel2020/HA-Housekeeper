@@ -144,7 +144,7 @@ const TEXT = {
     quarantine: "Quarantäne", quarantineHint: "Entitäten, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich (Aktion „Entfernen“). Das Deaktivieren machst du über das Journal rückgängig.",
     quarantineSince: "seit {date} · {days} Tagen", quarantineWait: "Noch {days} Tage", quarantineReady: "Frühestens entfernbar", quarantineFact: "seit {date} ({days} Tage)",
     largeShareEntity: "Ungewöhnlich viel: {count} von {total} Entitäten ({percent} %)", largeShareDevice: "Ungewöhnlich viel: {count} von {total} Geräten ({percent} %)", largeShareHint: "Dieser Plan entfernt mehr als die Hälfte. Prüfe die Auswahl, bevor du fortfährst.",
-    confirmWordRemove: "ENTFERNEN", confirmedSummaryRemove: "{count} Entitäten werden entfernt. Vorher legt Housekeeper ein Home-Assistant-Backup an (das kann dauern) und startet nur, wenn es erfolgreich ist. Wiederherstellen geht, solange die Entitäts-ID frei ist und die Integration noch existiert.",
+    confirmWordRemove: "ENTFERNEN", confirmedSummaryRemove: "{count} Entitäten werden entfernt. Wiederherstellen geht, solange die Entitäts-ID frei ist und die Integration noch existiert.",
     reason_not_quarantined: "Nicht in Quarantäne: erst deaktivieren, nach der Quarantänezeit entfernen.", reason_not_provided_recent: "Wird erst seit weniger als einem Tag nicht mehr bereitgestellt. Bestätige, dass die Entität wirklich weg ist: manche Integrationen legen ihre Entitäten erst nach dem Start an.", reason_quarantine_too_short: "Die Quarantäne ist noch zu kurz.", reason_not_restorable: "Nicht wiederherstellbar: Die Integration existiert nicht mehr, das Entfernen wäre endgültig.",
     abort_backup_failed: "Das Backup ist fehlgeschlagen – es wurde nichts geändert.", abort_backup_small_failed: "Das Backup nur von Home Assistant ist fehlgeschlagen – es wurde nichts geändert.", repeatFull: "Mit vollem Backup wiederholen", repeatFullHint: "Ein volles Backup nach deinen Backup-Einstellungen (mit Apps und Ordnern) dauert länger, zählt aber nicht als automatisches Backup. Oder wiederhole den Plan mit dem kleinen Backup.", backupFullPlanned: "Volles Backup nach deinen Backup-Einstellungen", abort_interrupted: "Der Lauf wurde unterbrochen (Neustart von Home Assistant); dieser Schritt lief nicht.", abort_database_corrupt: "Die Recorder-Datenbank ist beschädigt („database disk image is malformed“) – es wurde nichts geändert. Prüfe sie mit PRAGMA integrity_check (zum Beispiel in SQLite Web), repariere betroffene Indizes mit REINDEX oder spiele ein Backup ein.", abort_backup_unverified: "Das Backup wurde gemeldet, ist aber nicht wie erwartet in der Backup-Liste (fehlt, ist leer oder ohne Datenbank) – es wurde nichts geändert. Prüfe Einstellungen → System → Backups.", abort_backup_running: "Home Assistant erstellt gerade selbst ein Backup – es wurde nichts geändert. Versuche es danach noch einmal.", abort_recorder_migrating: "Der Recorder baut gerade die Datenbank um (Migration) – es wurde nichts geändert. Warte, bis er fertig ist.", abort_recorder_backlog: "Der Recorder kommt mit dem Schreiben nicht nach (große Warteschlange) – es wurde nichts geändert. Versuche es später noch einmal.", abort_disk_low: "Auf dem Datenträger der Recorder-Datenbank ist zu wenig Platz frei für das Backup und die Änderung (mindestens 512 MB und etwa die halbe Datenbankgröße) – es wurde nichts geändert. Schaffe zuerst Platz.", abort_backup_unavailable: "Die Backup-Komponente ist nicht verfügbar – es wurde nichts geändert.", abort_no_backup_agent: "Es ist kein Backup-Ziel eingerichtet (Einstellungen → System → Backups) – es wurde nichts geändert.",
     result_removed: "Entfernt", undo_restored: "wiederhergestellt (wieder in Quarantäne)", undo_conflict_taken: "nicht wiederhergestellt: Entitäts-ID inzwischen belegt", undo_conflict_unrestorable: "nicht wiederhergestellt: Integration existiert nicht mehr",
@@ -329,7 +329,7 @@ const TEXT = {
     quarantine: "Quarantine", quarantineHint: "Entities Housekeeper has disabled. Removal is possible no earlier than after {days} days (action “Remove”). You can undo the disabling from the journal.",
     quarantineSince: "since {date} · {days} days", quarantineWait: "{days} days to go", quarantineReady: "Removable at the earliest", quarantineFact: "since {date} ({days} days)",
     largeShareEntity: "Unusually many: {count} of {total} entities ({percent} %)", largeShareDevice: "Unusually many: {count} of {total} devices ({percent} %)", largeShareHint: "This plan removes more than half. Check the selection before you continue.",
-    confirmWordRemove: "REMOVE", confirmedSummaryRemove: "{count} entities will be removed. Housekeeper creates a Home Assistant backup first (this can take a while) and only continues if it succeeds. Restoring works while the entity ID is free and the integration still exists.",
+    confirmWordRemove: "REMOVE", confirmedSummaryRemove: "{count} entities will be removed. Restoring works while the entity ID is free and the integration still exists.",
     reason_not_quarantined: "Not in quarantine: disable first, remove after the quarantine period.", reason_not_provided_recent: "Not provided for less than a day. Confirm the entity is really gone: some integrations add their entities only after start-up.", reason_quarantine_too_short: "The quarantine is still too short.", reason_not_restorable: "Not restorable: the integration no longer exists, so the removal would be final.",
     abort_backup_failed: "The backup failed – nothing was changed.", abort_backup_small_failed: "The backup of Home Assistant only failed – nothing was changed.", repeatFull: "Repeat with a full backup", repeatFullHint: "A full backup as your backup settings say (with apps and folders) takes longer but does not count as an automatic backup. Or repeat the plan with the small backup.", backupFullPlanned: "Full backup as your backup settings say", abort_interrupted: "The run was cut off (Home Assistant restarted); this step did not run.", abort_database_corrupt: "The recorder database is damaged (“database disk image is malformed”) – nothing was changed. Check it with PRAGMA integrity_check (for example in SQLite Web), repair the affected indexes with REINDEX or restore a backup.", abort_backup_unverified: "The backup was reported but is not in the backup list as expected (missing, empty or without the database) – nothing was changed. Check Settings → System → Backups.", abort_backup_running: "Home Assistant is making a backup itself – nothing was changed. Try again afterwards.", abort_recorder_migrating: "The recorder is migrating the database – nothing was changed. Wait until it is done.", abort_recorder_backlog: "The recorder cannot keep up with writing (a long queue) – nothing was changed. Try again later.", abort_disk_low: "The disk of the recorder database has too little free space for the backup and the change (at least 512 MB and about half the database size) – nothing was changed. Free some space first.", abort_backup_unavailable: "The backup component is not available – nothing was changed.", abort_no_backup_agent: "No backup location is set up (Settings → System → Backups) – nothing was changed.",
     result_removed: "Removed", undo_restored: "restored (back in quarantine)", undo_conflict_taken: "not restored: entity ID is taken now", undo_conflict_unrestorable: "not restored: the integration no longer exists",
@@ -384,6 +384,8 @@ const ICONS = {
 
 const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
 // Kinds that get a Home Assistant backup first (as in the backend).
+// A backup older than this (hours) is called old on the confirmation: the plan then makes a new one, and without it the person would fall back on the old one.
+const BACKUP_OLD_HOURS = 72;
 const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "rename_entity", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range"];
 // Deleting recorder rows: cannot be undone, only the backup brings them back.
 // Kinds that write into the recorder database: their backup cannot be skipped.
@@ -675,8 +677,8 @@ Object.assign(TEXT.de, {
   check_device_disabled: "Gerät ist deaktiviert", check_device_removed: "Gerät ist entfernt", check_not_recurring: "Das Gerät kam nicht wieder", check_references_replaced: "Keine sicheren Verweise auf die alte Entität mehr",
   undo_conflict_partial: "teilweise rückgängig gemacht; Rest zwischenzeitlich geändert", result_replaced: "Ersetzt",
   confirmWordReplace: "ERSETZEN", confirmedSummaryDeviceDisable: "{count} Geräte werden deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange das Gerät unverändert bleibt.",
-  confirmedSummaryDeviceRemove: "{count} Geräte werden samt Entitäten entfernt. Vorher legt Housekeeper ein Home-Assistant-Backup an und startet nur, wenn es erfolgreich ist. Wiederherstellen legt den Registry-Eintrag neu an; Entitäten stellt die Integration bereit, wenn sie es kann.",
-  confirmedSummaryReplace: "In {count} Entitäts-Verweisen wird die alte durch die neue Entität ersetzt (Automationen, Skripte, Szenen, Dashboards, Energie). Vorher legt Housekeeper ein Home-Assistant-Backup an. Jede Quelle wird vorab gesichert und lässt sich zurücksetzen, solange sie unverändert ist.",
+  confirmedSummaryDeviceRemove: "{count} Geräte werden samt Entitäten entfernt. Wiederherstellen legt den Registry-Eintrag neu an; Entitäten stellt die Integration bereit, wenn sie es kann.",
+  confirmedSummaryReplace: "{count} Stellen werden auf die neue Entität umgestellt (Automationen, Skripte, Szenen, Dashboards, Energie). Jede Quelle wird vorab gesichert und lässt sich zurücksetzen, solange sie unverändert ist.", confirmedSummaryReplaceOne: "1 Stelle wird auf die neue Entität umgestellt (Automationen, Skripte, Szenen, Dashboards, Energie). Jede Quelle wird vorab gesichert und lässt sich zurücksetzen, solange sie unverändert ist.",
   quarantineHint: "Entitäten und Geräte, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich. Mit „Aus Quarantäne holen“ aktivierst du ein Objekt wieder.",
   deviceCandidatesHint: "Geräte ohne funktionierende Entitäten. Deaktivieren schickt sie in Quarantäne.", removalDeviceHint: "Geräte in Quarantäne. Entfernen ist erst nach {days} Tagen möglich.", deviceEntities: "{count} Entitäten", deviceNoEntities: "Keine Entitäten", sortEntities: "Entitäten",
   replaceTitle: "Verweise ersetzen", replaceHint: "Ersetzt die alte Entität überall dort, wo sie exakt eingetragen ist: Automationen, Skripte, Szenen, Dashboards im Speichermodus und das Energie-Dashboard. Templates und YAML-Dashboards zeigt Housekeeper nur an. Die alte Entität bleibt unverändert; danach kannst du sie in Quarantäne schicken.",
@@ -708,8 +710,8 @@ Object.assign(TEXT.en, {
   check_device_disabled: "Device is disabled", check_device_removed: "Device is removed", check_not_recurring: "The device did not come back", check_references_replaced: "No certain references to the old entity remain",
   undo_conflict_partial: "partly undone; the rest changed in the meantime", result_replaced: "Replaced",
   confirmWordReplace: "REPLACE", confirmedSummaryDeviceDisable: "{count} devices will be disabled (quarantine). This is reversible at any time while the device stays unchanged.",
-  confirmedSummaryDeviceRemove: "{count} devices will be removed together with their entities. Housekeeper creates a Home Assistant backup first and only continues if it succeeds. Restoring recreates the registry entry; the integration provides the entities if it can.",
-  confirmedSummaryReplace: "In {count} entity references the old entity is replaced by the new one (automations, scripts, scenes, dashboards, Energy). Housekeeper creates a Home Assistant backup first. Each source is saved beforehand and can be put back while it is unchanged.",
+  confirmedSummaryDeviceRemove: "{count} devices will be removed together with their entities. Restoring recreates the registry entry; the integration provides the entities if it can.",
+  confirmedSummaryReplace: "{count} places are switched to the new entity (automations, scripts, scenes, dashboards, Energy). Each source is saved beforehand and can be put back while it is unchanged.", confirmedSummaryReplaceOne: "1 place is switched to the new entity (automations, scripts, scenes, dashboards, Energy). Each source is saved beforehand and can be put back while it is unchanged.",
   quarantineHint: "Entities and devices Housekeeper has disabled. Removal is possible no earlier than after {days} days. “Take out of quarantine” enables an object again.",
   deviceCandidatesHint: "Devices without working entities. Disabling sends them to quarantine.", removalDeviceHint: "Devices in quarantine. Removal is possible only after {days} days.", deviceEntities: "{count} entities", deviceNoEntities: "No entities", sortEntities: "Entities",
   replaceTitle: "Replace references", replaceHint: "Replaces the old entity wherever it is entered exactly: automations, scripts, scenes, storage-mode dashboards and the Energy dashboard. Housekeeper only lists templates and YAML dashboards. The old entity stays as it is; afterwards you can send it to quarantine.",
@@ -785,7 +787,7 @@ Object.assign(TEXT.de, {
   reason_stats_no_sum: "Der letzte alte Wert hat keine Summe; die Summe der neuen Statistik wird nicht fortgesetzt.",
   reason_stats_write: "Experimentell: schreibt in die Recorder-Datenbank. Die Statistik lässt sich danach nur mit dem Backup zurücksetzen.",
   reason_id_takeover: "Benennt zwei Entitäten um. Verweise auf die bisherige ID der neuen Entität funktionieren danach nicht mehr.", reason_target_in_use: "Die neue Entität wird selbst schon verwendet; diese Verweise müssen angepasst werden.",
-  confirmWordMeter: "MIGRIEREN", confirmedSummaryMeter: "{count} Statistik-Übernahmen: Housekeeper legt zuerst ein Home-Assistant-Backup an und startet nur, wenn es erfolgreich ist. Danach schreibt es Langzeitstatistiken und/oder benennt Entitäten um. Die IDs lassen sich zurückgeben, die Statistik nur mit dem Backup.",
+  confirmWordMeter: "MIGRIEREN", confirmedSummaryMeter: "{count} Statistik-Übernahmen: Housekeeper schreibt Langzeitstatistiken und/oder benennt Entitäten um. Die IDs lassen sich zurückgeben, die Statistik nur mit dem Backup.",
   result_migrated: "Migriert", check_meter_statistics: "Statistik fortgeführt", check_meter_id_taken: "Neue Entität trägt die stabile ID", undo_conflict_statistics: "nicht rückgängig: Statistik lässt sich nur mit dem Backup zurücksetzen",
   abort_meter_changed: "Entitäten oder Statistik wurden nach der Vorschau geändert.", abort_statistics_changed: "Die Statistik wurde nach der Vorschau geändert.", abort_statistics_failed: "Die Statistik konnte nicht bestätigt werden; der Lauf wurde angehalten.",
   abort_no_recorder: "Der Recorder läuft nicht.", abort_alt_id_taken: "Die Ausweich-ID ist inzwischen belegt.", abort_id_not_freed: "Home Assistant hat die alte ID nicht rechtzeitig freigegeben; alles wurde zurückgesetzt.", abort_id_takeover_failed: "Das Umbenennen ist fehlgeschlagen; alles wurde zurückgesetzt.",
@@ -831,7 +833,7 @@ Object.assign(TEXT.en, {
   reason_stats_no_sum: "The last old value has no total; the total of the new series is not continued.",
   reason_stats_write: "Experimental: writes into the recorder database. Afterwards the statistics can only be reset with the backup.",
   reason_id_takeover: "Renames two entities. References to the new entity's current ID stop working afterwards.", reason_target_in_use: "The new entity is already in use itself; those references have to be adjusted.",
-  confirmWordMeter: "MIGRATE", confirmedSummaryMeter: "{count} statistics takeovers: Housekeeper first creates a Home Assistant backup and only continues if it succeeds. It then writes long-term statistics and/or renames entities. IDs can be given back, statistics only with the backup.",
+  confirmWordMeter: "MIGRATE", confirmedSummaryMeter: "{count} statistics takeovers: Housekeeper writes long-term statistics and/or renames entities. IDs can be given back, statistics only with the backup.",
   result_migrated: "Migrated", check_meter_statistics: "Statistics continued", check_meter_id_taken: "New entity carries the stable ID", undo_conflict_statistics: "not undone: statistics can only be reset with the backup",
   abort_meter_changed: "Entities or statistics were changed after the preview.", abort_statistics_changed: "The statistics were changed after the preview.", abort_statistics_failed: "The statistics could not be confirmed; the run stopped.",
   abort_no_recorder: "The recorder is not running.", abort_alt_id_taken: "The fallback ID is taken now.", abort_id_not_freed: "Home Assistant did not free the old ID in time; everything was put back.", abort_id_takeover_failed: "Renaming failed; everything was put back.",
@@ -1791,6 +1793,7 @@ class StylesMixin {
       .emptymsg ha-icon{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;margin:0 0 6px;--mdc-icon-size:30px;background:color-mix(in srgb,var(--hk-green) 14%,transparent);box-shadow:var(--hk-sh2),var(--hk-hi)}
       .emptymsg.mute ha-icon{color:var(--hk-gray);background:var(--hk-soft)}.emptymsg.info ha-icon{color:var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 14%,transparent)}
       .emptymsg strong{color:var(--hk-text);font-size:calc(15px*var(--hk-fs,1));font-weight:600}.emptymsg .btn{margin-top:10px}
+      .bkcard{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;margin:12px 0 0;padding:12px 14px;border-radius:12px;--oc:var(--hk-green);background:color-mix(in srgb,var(--oc) 10%,transparent);border:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}.bkcard.warn{--oc:var(--hk-amber)}.bkcard.red{--oc:var(--hk-red)}.bkcard>ha-icon{--mdc-icon-size:24px;color:var(--oc);margin-top:1px}.bkcard strong{display:block}.bkcard small{display:block;margin-top:2px;color:var(--hk-muted)}.bkmeta{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 0 0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.bkswitch{display:flex;align-items:center;gap:10px;margin:10px 0 0;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--oc) 25%,transparent);cursor:pointer;font-size:calc(13px*var(--hk-fs,1))}.bkreq{margin:10px 0 0;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--oc) 25%,transparent);color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}
       .stepper{list-style:none;display:flex;align-items:flex-start;margin:0 0 16px;padding:0}.stepper .st{flex:0 0 auto;display:flex;justify-content:center;min-width:72px}.stepper .stline{flex:1;height:2px;min-width:8px;margin-top:13px;border-radius:2px;background:var(--hk-border)}.stepper .stline.done{background:var(--hk-green)}
       .stepper .stbtn{display:flex;flex-direction:column;align-items:center;gap:6px;max-width:104px;padding:0;border:0;background:none;color:var(--hk-muted);font:inherit;font-size:calc(12px*var(--hk-fs,1));text-align:center}.stepper button.stbtn{cursor:pointer}.stepper button.stbtn:hover .stmark{border-color:var(--hk-blue)}.stepper button.stbtn:focus-visible{outline:2px solid var(--hk-blue);outline-offset:3px;border-radius:8px}.stepper button.stbtn:disabled{opacity:.5;cursor:default}
       .stepper .stmark{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:600;font-size:calc(12px*var(--hk-fs,1));background:var(--hk-surface);border:1.5px solid var(--hk-border)}.stepper .stname{font-weight:inherit;overflow-wrap:anywhere}
@@ -4401,7 +4404,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
-    return this.t(key, { count: key === "confirmedSummaryReplace" ? changes : count });
+    return this.t(key === "confirmedSummaryReplace" && changes === 1 ? "confirmedSummaryReplaceOne" : key, { count: key === "confirmedSummaryReplace" ? changes : count });
   }
 
   // "trigger/0/entity_id" reads as "Trigger 1 · entity_id"; a path in another shape stays as it is.
@@ -4828,7 +4831,7 @@ class CleanupMixin {
       const run = this.runActions(plan);
       const blocked = this.modeBlocked(plan);
       const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
-      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${this.skipBackupBlock(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "confirmPlanNoBackup" : "confirmPlan")}</button></span></div>`;
+      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${this.planBackupCard(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "confirmPlanNoBackup" : "confirmPlan")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {
       const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
@@ -5080,10 +5083,31 @@ class CleanupMixin {
 
   skipBackupOn(plan) { return this.skipBackupPlan === plan?.plan_id && this.skipBackupAllowed(plan); }
 
-  skipBackupBlock(plan) {
-    if (!this.skipBackupAllowed(plan)) return "";
-    const on = this.skipBackupOn(plan);
-    return `<details class="rowdetails"${on ? " open" : ""}><summary>${this.t("planAdvanced")}</summary><label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-skip-backup-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("skipBackup")}</strong><small>${this.t("skipBackupHint")}</small></span></label>${on ? `<div class="outcome red" role="alert"><ha-icon icon="mdi:shield-off-outline"></ha-icon><span><strong>${this.t("skipBackupWarnTitle")}</strong><small>${this.t("skipBackupWarn")}</small></span></div>` : ""}</details>`;
+  // The newest Home Assistant backup, from the backup health check (asked for on demand): what the person falls back on.
+  lastBackupInfo() {
+    this.ensureBackup?.();
+    if (!this.backup?.available) return { known: false };
+    const checks = this.backup.checks || [], newest = checks.find(c => c.id === "newest"), targets = checks.find(c => c.id === "targets");
+    const age = newest?.values?.age_hours;
+    if (age === null || age === undefined) return { known: true, none: true };
+    const local = (targets?.values?.local || []).length > 0, remote = (targets?.values?.remote || []).length > 0;
+    return { known: true, age, old: age > BACKUP_OLD_HOURS, where: local && remote ? "both" : remote ? "remote" : local ? "local" : "" };
+  }
+
+  // One card for everything about the backup of a plan: what is done before it, what the person falls back on, and the choice to run without a new one.
+  planBackupCard(plan) {
+    const run = this.runActions(plan);
+    if (!run.some(a => BACKUP_KINDS.includes(a.kind))) return "";
+    const info = this.lastBackupInfo(), allowed = this.skipBackupAllowed(plan), on = this.skipBackupOn(plan);
+    const tone = on ? "red" : info.none || info.old ? "warn" : "ok", icon = { ok: "shield-check-outline", warn: "shield-alert-outline", red: "shield-off-outline" }[tone];
+    const age = info.age === undefined ? "" : this.bhAge(info.age, true), key = on ? "Skip" : info.none ? "None" : info.old ? "Old" : "Ok";
+    const title = this.t(`bkTitle${key}`, { age: info.age === undefined ? "" : this.bhAge(info.age) });
+    const sub = on && info.none ? this.t("skipBackupWarn") : this.t(`bkSub${key}`, { age });
+    const meta = !info.known ? "" : info.none ? `<span>${this.t("bkNoneFound")}</span>` : `<span>${this.t("bkLast", { age })}</span>${info.where ? `<span>${this.t(`bkWhere_${info.where}`)}</span>` : ""}`;
+    const control = allowed
+      ? `<label class="bkswitch"><input class="policyswitch" type="checkbox" role="switch" data-skip-backup-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span>${this.t("bkSwitch")}</span></label>`
+      : `<p class="bkreq">${this.t("err_skip_backup_database")}</p>`;
+    return `<div class="bkcard ${tone}"><ha-icon icon="mdi:${icon}" aria-hidden="true"></ha-icon><div><strong>${title}</strong><small>${sub}</small>${meta ? `<p class="bkmeta">${meta}</p>` : ""}${control}</div></div>`;
   }
 
   // The choice sits at the foot of the preview, only for plans that delete statistics.
@@ -11052,13 +11076,13 @@ Object.assign(TEXT.en, {
 Object.assign(TEXT.de, {
   purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Bereinigen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
   reason_irreversible: "Nur per Backup umkehrbar.", reason_with_states: "Löscht auch die gespeicherten Zustände.", reason_entity_exists: "Eine Entität trägt diese ID wieder.", reason_not_orphaned: "Die ID ist keine verwaiste Statistik.", reason_in_energy: "Das Energie-Dashboard nutzt diese Statistik.",
-  check_statistics_gone: "Statistik ist gelöscht", result_purged: "Gelöscht", undo_irreversible: "nicht rückgängig: nur mit dem Backup", confirmedSummaryPurge: "{count} Statistiken werden gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an. Das lässt sich nur mit dem Backup zurücknehmen.",
+  check_statistics_gone: "Statistik ist gelöscht", result_purged: "Gelöscht", undo_irreversible: "nicht rückgängig: nur mit dem Backup", confirmedSummaryPurge: "{count} Statistiken werden gelöscht. Das lässt sich nur mit dem Backup zurücknehmen.",
   abort_recorder_busy: "Der Recorder war 30 Sekunden lang mit einer Abfrage belegt; nichts wurde gelöscht.", abort_still_there: "Die Statistik war nach dem Löschen noch da.", abort_states_left: "Nach dem Löschen gab es noch gespeicherte Zustände.",
 });
 Object.assign(TEXT.en, {
   purgePreview: "Create preview", purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
   reason_irreversible: "Reversible only from the backup.", reason_with_states: "Also deletes the stored states.", reason_entity_exists: "An entity carries this ID again.", reason_not_orphaned: "The ID is not an orphaned statistic.", reason_in_energy: "The Energy dashboard uses this statistic.",
-  check_statistics_gone: "Statistic is deleted", result_purged: "Deleted", undo_irreversible: "not undone: only with the backup", confirmedSummaryPurge: "{count} statistics will be deleted. Housekeeper creates a Home Assistant backup first. It can only be taken back with that backup.",
+  check_statistics_gone: "Statistic is deleted", result_purged: "Deleted", undo_irreversible: "not undone: only with the backup", confirmedSummaryPurge: "{count} statistics will be deleted. It can only be taken back with that backup.",
   abort_recorder_busy: "The recorder was busy with a query for 30 seconds; nothing was deleted.", abort_still_there: "The statistic was still there after deleting.", abort_states_left: "Stored states were still there after deleting.",
 });
 
@@ -11850,7 +11874,7 @@ Object.assign(TEXT.de, {
   source_blueprint: "basiert auf einem Blueprint",
   reason_refactor_disabled: "Das Verbessern ist ausgeschaltet.", reason_not_editable: "Die Automation lässt sich nicht automatisch ändern.", reason_invalid_fix: "Die Angaben für diese Änderung sind nicht gültig.", reason_invalid_config: "Home Assistant würde die geänderte Automation nicht annehmen.",
   abort_invalid_config: "Home Assistant hätte die geänderte Automation nicht angenommen.", abort_reload_failed: "Die Automation wurde nach dem Neuladen nicht geladen; die Datei ist zurückgesetzt.", abort_invalid_fix: "Die Angaben für diese Änderung sind nicht gültig.",
-  check_refactor_applied: "Änderung ist in der Datei und die Automation ist geladen", confirmedSummaryRefactor: "{count} Automationen werden in der Konfiguration geändert (Backup vorher, Vorher-Datei bleibt für Rückgängig).", result_refactored: "Geändert",
+  check_refactor_applied: "Änderung ist in der Datei und die Automation ist geladen", confirmedSummaryRefactor: "{count} Automationen werden in der Konfiguration geändert (die Vorher-Datei bleibt für Rückgängig).", result_refactored: "Geändert",
 });
 Object.assign(TEXT.en, {
   refactorTitle: "Improve (experimental)",
@@ -11874,7 +11898,7 @@ Object.assign(TEXT.en, {
   source_blueprint: "is based on a blueprint",
   reason_refactor_disabled: "Improving is switched off.", reason_not_editable: "The automation cannot be changed automatically.", reason_invalid_fix: "The values for this change are not valid.", reason_invalid_config: "Home Assistant would not accept the changed automation.",
   abort_invalid_config: "Home Assistant would not have accepted the changed automation.", abort_reload_failed: "The automation was not loaded after the reload; the file was put back.", abort_invalid_fix: "The values for this change are not valid.",
-  check_refactor_applied: "The change is in the file and the automation is loaded", confirmedSummaryRefactor: "{count} automations are changed in the configuration (backup first, the old file is kept for undo).", result_refactored: "Changed",
+  check_refactor_applied: "The change is in the file and the automation is loaded", confirmedSummaryRefactor: "{count} automations are changed in the configuration (the old file is kept for undo).", result_refactored: "Changed",
 });
 
 class RefactorMixin {
@@ -12645,7 +12669,7 @@ Object.assign(TEXT.de, {
   reason_counter_write: "Schreibt in die Recorder-Datenbank (Verlauf und Statistik). Ein Backup entsteht zuerst; die alten Werte lassen sich aus dem Journal zurückspielen.", reason_counter_partial: "Eine der Tabellen kann nicht repariert werden (zu wenig Werte davor oder danach); die anderen schon.",
   reason_no_counter_statistics: "Für diese ID gibt es keine Summenstatistik des Recorders.", reason_nothing_found: "Es gibt nichts zu ändern.", reason_too_many_rows: "Zu viele Zeilen für einen Lauf (mehr als 5000); den Zeitraum erst von Hand eingrenzen.",
   reason_schema_unknown: "Das Datenbankschema dieser Home-Assistant-Version ist Housekeeper nicht bekannt; nichts wird geschrieben.", reason_counter_changed: "Die Daten haben sich seit der Vorschau geändert.",
-  confirmWordRepair: "REPARIEREN", confirmedSummaryRepair: "{count} Datenreparatur: Housekeeper legt zuerst ein Home-Assistant-Backup an und startet nur, wenn es erfolgreich ist. Danach überschreibt es falsche Werte im Verlauf und in der Statistik. Die alten Werte bleiben im Journal.",
+  confirmWordRepair: "REPARIEREN", confirmedSummaryRepair: "{count} Datenreparatur: Housekeeper überschreibt falsche Werte im Verlauf und in der Statistik. Die alten Werte bleiben im Journal.",
   result_repaired: "Repariert", check_counter_clean: "Keine Ausreißer mehr", simRepaired: "{count} Sensoren bereinigt",
   abort_counter_changed: "Die Daten wurden nach der Vorschau geändert.", abort_recorder_busy: "Der Recorder ist gerade belegt; später noch einmal versuchen.", abort_verify_failed: "Nach dem Schreiben war der Zähler nicht sauber; es wurde nichts übernommen.",
   undo_recorder_busy: "nicht rückgängig: der Recorder ist gerade belegt, später erneut versuchen",
@@ -12670,7 +12694,7 @@ Object.assign(TEXT.en, {
   reason_counter_write: "Writes into the recorder database (history and statistics). A backup is created first; the old values can be put back from the journal.", reason_counter_partial: "One of the tables cannot be repaired (too few values before or after); the others can.",
   reason_no_counter_statistics: "The recorder has no sum statistics for this ID.", reason_nothing_found: "There is nothing to change.", reason_too_many_rows: "Too many rows for one run (more than 5000); narrow the period down by hand first.",
   reason_schema_unknown: "Housekeeper does not know the database schema of this Home Assistant version; nothing is written.", reason_counter_changed: "The data changed since the preview.",
-  confirmWordRepair: "REPAIR", confirmedSummaryRepair: "{count} data repair: Housekeeper first creates a Home Assistant backup and only continues if it succeeds. It then overwrites wrong values in the history and in the statistics. The old values stay in the journal.",
+  confirmWordRepair: "REPAIR", confirmedSummaryRepair: "{count} data repair: Housekeeper overwrites wrong values in the history and in the statistics. The old values stay in the journal.",
   result_repaired: "Repaired", check_counter_clean: "No outliers left", simRepaired: "{count} sensors cleaned",
   abort_counter_changed: "The data changed after the preview.", abort_recorder_busy: "The recorder is busy; try again later.", abort_verify_failed: "The counter was not clean after writing; nothing was kept.",
   undo_recorder_busy: "not undone: the recorder is busy, try again later",
@@ -14640,12 +14664,22 @@ class ScanPointsMixin {
 
 // Texts for the choice to run a plan without the safety backup.
 Object.assign(TEXT.de, {
+  bkTitleOk: "Vorher wird ein Backup angelegt", bkSubOk: "Housekeeper startet nur, wenn es gelingt.",
+  bkTitleOld: "Dein letztes Backup ist {age} alt", bkSubOld: "Housekeeper legt vorher ein neues an. Ohne neues Backup wärst du auf dem alten Stand.",
+  bkTitleNone: "Es ist noch kein Backup bekannt", bkSubNone: "Housekeeper legt vorher eines an. Ohne Backup gibt es für Entferntes keinen Weg zurück.",
+  bkTitleSkip: "Kein neues Backup vor dem Plan", bkSubSkip: "Zurückholen geht dann nur mit deinem letzten Backup von vor {age}. Was danach geändert wurde, fehlt dort.",
+  bkLast: "Letztes Backup: vor {age}", bkNoneFound: "Kein Backup in Home Assistant gefunden", bkWhere_local: "Nur lokal", bkWhere_remote: "Extern", bkWhere_both: "Lokal und extern", bkSwitch: "Ohne neues Backup ausführen",
   planAdvanced: "Erweitert", skipBackup: "Ohne Backup ausführen", skipBackupHint: "Nur einschalten, wenn du selbst ein aktuelles Backup hast.",
   skipBackupWarnTitle: "Kein Backup vor dem Plan", skipBackupWarn: "Falls etwas schiefgeht, kann Housekeeper es nicht über ein Backup wiederherstellen. Entfernte Entitäten und Geräte sind dann nicht mehr zurückzuholen.",
   confirmPlanNoBackup: "Ohne Backup bestätigen", skipBackupStep: "Übersprungen: du hast gewählt, ohne Backup zu laufen", skipBackupDone: "Bewusst übersprungen ({date})",
   err_skip_backup_database: "Dieser Plan schreibt in die Recorder-Datenbank. Dafür ist das Backup Pflicht.",
 });
 Object.assign(TEXT.en, {
+  bkTitleOk: "A backup is made first", bkSubOk: "Housekeeper only starts if it succeeds.",
+  bkTitleOld: "Your last backup is {age} old", bkSubOld: "Housekeeper makes a new one first. Without a new backup you would be back at the old state.",
+  bkTitleNone: "No backup is known yet", bkSubNone: "Housekeeper makes one first. Without a backup there is no way back for what is removed.",
+  bkTitleSkip: "No new backup before the plan", bkSubSkip: "Getting things back then only works with your last backup from {age} ago. What changed since is missing there.",
+  bkLast: "Last backup: {age} ago", bkNoneFound: "No backup found in Home Assistant", bkWhere_local: "Local only", bkWhere_remote: "External", bkWhere_both: "Local and external", bkSwitch: "Run without a new backup",
   planAdvanced: "Advanced", skipBackup: "Run without a backup", skipBackupHint: "Turn on only if you have a recent backup of your own.",
   skipBackupWarnTitle: "No backup before the plan", skipBackupWarn: "If something goes wrong, Housekeeper cannot restore it from a backup. Removed entities and devices cannot be brought back.",
   confirmPlanNoBackup: "Confirm without backup", skipBackupStep: "Skipped: you chose to run without a backup", skipBackupDone: "Skipped on purpose ({date})",
@@ -14667,7 +14701,7 @@ Object.assign(TEXT.de, {
   trimFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Zurücknehmen geht nur mit diesem Backup.", trimPreview: "Vorschau erstellen ({count})", trimPreviewOne: "Vorschau erstellen (1)", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   trimSub: "älter als {days} Tage: {rows} Zeilen", reason_bad_keep_days: "Die Zeit zum Behalten ist ungültig.", reason_not_counted: "Die Zeilen ließen sich nicht zählen.", reason_nothing_to_trim: "Nichts zu löschen: Es gibt keine so alten Zustände.",
   check_history_trimmed: "Alter Verlauf ist gelöscht", abort_trim_unverified: "Gelöscht, aber die übrigen Zeilen ließen sich nicht zählen.", abort_trim_left: "Nach dem Löschen gab es noch ältere Zeilen.",
-  confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an, einschließlich der Datenbank. Das lässt sich nur mit dem Backup zurücknehmen.",
+  confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Das Backup enthält die Datenbank. Das lässt sich nur mit dem Backup zurücknehmen.",
 });
 Object.assign(TEXT.en, {
   exclHint: "This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",
@@ -14682,7 +14716,7 @@ Object.assign(TEXT.en, {
   trimFoot: "Before deleting, Housekeeper creates a Home Assistant backup including the database. It can only be undone with that backup.", trimPreview: "Create preview ({count})", trimPreviewOne: "Create preview (1)", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
   trimSub: "older than {days} days: {rows} rows", reason_bad_keep_days: "The time to keep is not valid.", reason_not_counted: "The rows could not be counted.", reason_nothing_to_trim: "Nothing to delete: there are no states that old.",
   check_history_trimmed: "Old history is deleted", abort_trim_unverified: "Deleted, but the rows left could not be counted.", abort_trim_left: "Older rows were still there after deleting.",
-  confirmedSummaryTrim: "The old history of {count} entities will be deleted. Housekeeper creates a Home Assistant backup first, including the database. It can only be taken back with that backup.",
+  confirmedSummaryTrim: "The old history of {count} entities will be deleted. The backup includes the database. It can only be taken back with that backup.",
 });
 
 const EXCLUDE_MIN_PER_DAY = 100; // only for the text of the rule: the backend decides (SUGGEST_MIN_PER_DAY in maintenance.py)

@@ -149,7 +149,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
-    return this.t(key, { count: key === "confirmedSummaryReplace" ? changes : count });
+    return this.t(key === "confirmedSummaryReplace" && changes === 1 ? "confirmedSummaryReplaceOne" : key, { count: key === "confirmedSummaryReplace" ? changes : count });
   }
 
   // "trigger/0/entity_id" reads as "Trigger 1 · entity_id"; a path in another shape stays as it is.
@@ -576,7 +576,7 @@ class CleanupMixin {
       const run = this.runActions(plan);
       const blocked = this.modeBlocked(plan);
       const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
-      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${this.skipBackupBlock(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "confirmPlanNoBackup" : "confirmPlan")}</button></span></div>`;
+      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${this.planBackupCard(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "confirmPlanNoBackup" : "confirmPlan")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {
       const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
@@ -828,10 +828,31 @@ class CleanupMixin {
 
   skipBackupOn(plan) { return this.skipBackupPlan === plan?.plan_id && this.skipBackupAllowed(plan); }
 
-  skipBackupBlock(plan) {
-    if (!this.skipBackupAllowed(plan)) return "";
-    const on = this.skipBackupOn(plan);
-    return `<details class="rowdetails"${on ? " open" : ""}><summary>${this.t("planAdvanced")}</summary><label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-skip-backup-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("skipBackup")}</strong><small>${this.t("skipBackupHint")}</small></span></label>${on ? `<div class="outcome red" role="alert"><ha-icon icon="mdi:shield-off-outline"></ha-icon><span><strong>${this.t("skipBackupWarnTitle")}</strong><small>${this.t("skipBackupWarn")}</small></span></div>` : ""}</details>`;
+  // The newest Home Assistant backup, from the backup health check (asked for on demand): what the person falls back on.
+  lastBackupInfo() {
+    this.ensureBackup?.();
+    if (!this.backup?.available) return { known: false };
+    const checks = this.backup.checks || [], newest = checks.find(c => c.id === "newest"), targets = checks.find(c => c.id === "targets");
+    const age = newest?.values?.age_hours;
+    if (age === null || age === undefined) return { known: true, none: true };
+    const local = (targets?.values?.local || []).length > 0, remote = (targets?.values?.remote || []).length > 0;
+    return { known: true, age, old: age > BACKUP_OLD_HOURS, where: local && remote ? "both" : remote ? "remote" : local ? "local" : "" };
+  }
+
+  // One card for everything about the backup of a plan: what is done before it, what the person falls back on, and the choice to run without a new one.
+  planBackupCard(plan) {
+    const run = this.runActions(plan);
+    if (!run.some(a => BACKUP_KINDS.includes(a.kind))) return "";
+    const info = this.lastBackupInfo(), allowed = this.skipBackupAllowed(plan), on = this.skipBackupOn(plan);
+    const tone = on ? "red" : info.none || info.old ? "warn" : "ok", icon = { ok: "shield-check-outline", warn: "shield-alert-outline", red: "shield-off-outline" }[tone];
+    const age = info.age === undefined ? "" : this.bhAge(info.age, true), key = on ? "Skip" : info.none ? "None" : info.old ? "Old" : "Ok";
+    const title = this.t(`bkTitle${key}`, { age: info.age === undefined ? "" : this.bhAge(info.age) });
+    const sub = on && info.none ? this.t("skipBackupWarn") : this.t(`bkSub${key}`, { age });
+    const meta = !info.known ? "" : info.none ? `<span>${this.t("bkNoneFound")}</span>` : `<span>${this.t("bkLast", { age })}</span>${info.where ? `<span>${this.t(`bkWhere_${info.where}`)}</span>` : ""}`;
+    const control = allowed
+      ? `<label class="bkswitch"><input class="policyswitch" type="checkbox" role="switch" data-skip-backup-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span>${this.t("bkSwitch")}</span></label>`
+      : `<p class="bkreq">${this.t("err_skip_backup_database")}</p>`;
+    return `<div class="bkcard ${tone}"><ha-icon icon="mdi:${icon}" aria-hidden="true"></ha-icon><div><strong>${title}</strong><small>${sub}</small>${meta ? `<p class="bkmeta">${meta}</p>` : ""}${control}</div></div>`;
   }
 
   // The choice sits at the foot of the preview, only for plans that delete statistics.

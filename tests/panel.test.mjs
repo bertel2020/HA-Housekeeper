@@ -1415,7 +1415,7 @@ test("a blocked removal cannot be confirmed; a ready one asks for the removal wo
   el._hass = { language: "en", callWS: async () => ({ plan_id: "p2", token: "t", expires_at: "x", execute: ["sensor.a"], removals: ["sensor.a"], needs_acknowledgement: [], skipped: [] }) };
   el.render();
   assert.ok(shadow.innerHTML.includes("data-plan-confirm") && shadow.innerHTML.includes('data-risky="true"'));
-  assert.ok(!shadow.innerHTML.includes("data-confirm-word") && shadow.innerHTML.includes("creates a Home Assistant backup first"));
+  assert.ok(!shadow.innerHTML.includes("data-confirm-word") && shadow.innerHTML.includes("A backup is made first"));
 });
 
 test("removal candidates are the quarantined entities and wait for the quarantine period", () => {
@@ -1503,7 +1503,7 @@ test("the replace assistant previews sources and sends the new entity with the p
   assert.ok(html.includes("sensor.old → sensor.new") && html.includes("Heating") && html.includes("2 changes") && html.includes("Trigger 1 · entity_id") && html.includes("<span>sensor.old</span>") && html.includes("<span>sensor.new</span>"));
   assert.ok(html.includes("To do by hand (2)") && html.includes("action/0/data/message") && html.includes("YAML dashboard") && html.includes("Rewrites configuration"));
   assert.equal(el.planWord(plan), "REPLACE");
-  assert.ok(el.confirmSummary(plan, 1).startsWith("In 2 entity references"));
+  assert.ok(el.confirmSummary(plan, 1).startsWith("2 places are switched to the new entity"));
 });
 
 test("a plan that removes half of all entities or more warns before it runs", () => {
@@ -1598,7 +1598,7 @@ test("a meter plan explains the copy, the shifted total and the ID move, and ask
   assert.ok(html.includes("sensor.meter_old → sensor.meter_old_alt, then sensor.meter_new → sensor.meter_old"));
   assert.ok(html.includes("Experimental: writes into the recorder database"));
   assert.equal(el.planWord(METER_PLAN), "MIGRATE");
-  assert.ok(el.confirmSummary(METER_PLAN, 1).startsWith("1 statistics takeovers: Housekeeper first creates a Home Assistant backup"));
+  assert.ok(el.confirmSummary(METER_PLAN, 1).startsWith("1 statistics takeovers: Housekeeper writes long-term statistics"));
   assert.equal(panel("de").el.planWord(METER_PLAN), "MIGRIEREN");
   const done = { ...METER_PLAN, status: "verified", actions: [{ ...METER_PLAN.actions[0], result: { state: "done", statistics_kept: true } }] };
   el.plan = done; el.render();
@@ -2550,7 +2550,7 @@ test("the whole confirmation flow works end to end against a scripted backend", 
   assert.ok(seen.some(s => s.includes("Backup:done Run:current")), "then the run");
   assert.equal(seen.at(-1), "Select:done Analysis:done Confirm:done Backup:done Run:done Verify:done");
   assert.ok(snapshots.some(s => s.live.includes("Backup running")) && snapshots.some(s => s.scanDisabled), "screen readers and the scan button follow the run");
-  assert.equal(JSON.stringify(sent.filter(type => type !== "plan_list").slice(0, 7)), JSON.stringify(["plan_create", "plan_confirm", "plan_execute", "plan_status", "plan_status", "plan_status", "inventory"]));
+  assert.equal(JSON.stringify(sent.filter(type => type !== "plan_list").slice(0, 8)), JSON.stringify(["plan_create", "backup_health", "plan_confirm", "plan_execute", "plan_status", "plan_status", "plan_status", "inventory"]));
   assert.ok(shadow.innerHTML.includes("data-undo-all") && shadow.innerHTML.includes("Created"), "undo and the backup record are offered");
   el.undoAsk = "all"; el.render();
   assert.ok(shadow.innerHTML.includes("data-undo-all-yes") && !shadow.innerHTML.includes("data-undo-all>"), "undo asks before it goes");
@@ -3187,6 +3187,21 @@ test("the single view asks the backend for the suggestion of the old entity and 
   const html = el.rwOneCard();
   assert.ok(html.includes('data-repl-pick="sensor.other_name"') && html.includes("will be replaced") && html.includes("automation.x"));
   assert.equal(asked().length, 1, "asked once per old entity");
+});
+
+test("the backup card names the last backup, calls it old after 72 hours and warns when the new one is skipped", () => {
+  const { el } = panel("en");
+  const plan = { plan_id: "p", status: "dry_run", actions: [{ kind: "remove_entity", object_id: "sensor.a", executable: true, verdict: "ok", reasons: [] }], summary: {} };
+  el.plan = plan; el._bhRequested = true; el._bhKey = el.data?.meta?.scanned_at || "";
+  const checks = hours => [{ id: "newest", values: { age_hours: hours } }, { id: "targets", values: { local: ["hassio.local"], remote: [] } }];
+  el.backup = { available: true, checks: checks(70) };
+  let html = el.planBackupCard(plan);
+  assert.ok(html.includes("A backup is made first") && html.includes("Last backup: 3 days ago") && html.includes("Local only") && html.includes("bkcard ok"));
+  el.backup = { available: true, checks: checks(100) };
+  assert.ok(el.planBackupCard(plan).includes("is 4 days old") && el.planBackupCard(plan).includes("bkcard warn"));
+  el.skipBackupPlan = "p";
+  html = el.planBackupCard(plan);
+  assert.ok(html.includes("bkcard red") && html.includes("No new backup before the plan") && html.includes("from 4 days ago"));
 });
 
 test("cancel in the replace assistant empties it and returns to the choice of a task", () => {

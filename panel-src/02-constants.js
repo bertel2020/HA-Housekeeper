@@ -7,6 +7,8 @@ const ICONS = {
 
 const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
 // Kinds that get a Home Assistant backup first (as in the backend).
+// A backup older than this (hours) is called old on the confirmation: the plan then makes a new one, and without it the person would fall back on the old one.
+const BACKUP_OLD_HOURS = 72;
 const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "rename_entity", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range"];
 // Deleting recorder rows: cannot be undone, only the backup brings them back.
 // Kinds that write into the recorder database: their backup cannot be skipped.
