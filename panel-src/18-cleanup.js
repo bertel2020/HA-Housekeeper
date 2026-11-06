@@ -506,6 +506,19 @@ class CleanupMixin {
     return steps;
   }
 
+  // Whether "undo" can change anything for this step; a statistics-only meter change has nothing to put back.
+  undoWorks(action) {
+    const r = action.result;
+    if (r?.state !== "done" || PURGE_KINDS.includes(action.kind) || action.kind === "delete_backup") return false;
+    if (action.kind !== "migrate_meter") return true;
+    return r.mode === "replace_statistics" ? Boolean(r.sources?.length) : Boolean(r.take_id);
+  }
+
+  // A plan that merged statistics and ran without a backup: the undo cannot take the statistics back.
+  statsStayOnUndo(plan) {
+    return !plan.backup && plan.actions.some(a => a.kind === "migrate_meter" && a.result?.state === "done" && a.result.statistics);
+  }
+
   // Housekeeper can take every action back except merged statistics, which only a backup restores.
   undoBadge(action) {
     if (action.kind === "reload_integration") return `<span class="pill mute"><ha-icon icon="mdi:reload" class="u-ic14"></ha-icon>${this.t("undoReload")}</span>`;
@@ -584,9 +597,16 @@ class CleanupMixin {
       control = `<div class="setrow planfoot"><small class="u-m0">${this.t(small ? "repeatFullHint" : "repeatHint")}</small>${full}<button class="btn primary" data-plan-repeat="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? 'disabled aria-busy="true"' : ""}><ha-icon icon="mdi:reload"></ha-icon>${this.t("repeatPlan")}</button></div>`;
     }
     else if (plan.status === "running" || plan.status === "backup") control = `<div class="setrow planfoot"><small class="u-m0">${plan.status === "backup" || this.planProgress?.phase === "backup" ? this.t("backupRunning") : `${this.t("running")} ${this.planProgress ? this.t("progressOf", { done: this.planProgress.done, total: this.planProgress.total }) : ""}`}</small><button class="btn" data-plan-cancel>${this.t("cancelRun")}</button></div>`;
-    else if (plan.actions.some(a => a.result?.state === "done" && !PURGE_KINDS.includes(a.kind))) control = this.undoAsk === "all"
-      ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t("undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`
-      : `<div class="setrow planfoot"><small class="u-m0">${this.esc(this.undoMessage || this.t("undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
+    else if (plan.actions.some(a => a.result?.state === "done" && !PURGE_KINDS.includes(a.kind))) {
+      // Merged statistics only come back from the backup: without one, the undo leaves them and says so.
+      const keeps = this.statsStayOnUndo(plan);
+      const canUndo = plan.actions.some(a => this.undoWorks(a));
+      control = !canUndo
+        ? `<div class="setrow planfoot"><small class="u-m0">${this.t("undoNoneHint")}</small></div>`
+        : this.undoAsk === "all"
+          ? `<div class="setrow planfoot askbox"><div><strong>${this.t("undoAskAll")}</strong><small>${this.t(keeps ? "undoAskAllKeepsStats" : "undoAskAllHint")}</small></div><span class="askrow"><button class="btn danger" data-undo-all-yes><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span></div>`
+          : `<div class="setrow planfoot"><small class="u-m0">${this.esc(this.undoMessage || this.t(keeps ? "undoAllKeepsStats" : "undoAllHint"))}</small><button class="btn accent" data-undo-all><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoAll")}</button></div>`;
+    }
     const checks = plan.verification ? `<details class="checkdet"><summary><b>${this.t("verification")}</b></summary><div class="checkrow">${plan.verification.checks.map(c => `<span class="pill ${c.ok ? "ok" : "red"}">${c.ok ? "✓" : "✗"} ${this.t(`check_${c.check}`)}${c.object_id ? ` (${this.esc(c.object_id)})` : ""}</span>`).join("")}</div></details>` : "";
     const stage = this.planStage(plan, Boolean(conf));
     const footClose = open && !conf && executable && !this.planStale(plan); // the preview has its buttons in the foot
