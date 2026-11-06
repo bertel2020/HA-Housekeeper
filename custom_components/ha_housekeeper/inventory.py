@@ -832,7 +832,8 @@ def _missing_findings(
             "rule_id": f"{domain}.missing_{reference['kind']}",
             "object_id": object_id,
             "classification": "broken_reference",
-            "confidence": 0.98,
+            # A name found in the text of a template is less sure than a key of a configuration.
+            "confidence": 0.98 if reference.get("confidence", "certain") == "certain" else 0.6,
             "first_detected_at": None,
             "affected_object": reference["object_id"],
             "evidence": [

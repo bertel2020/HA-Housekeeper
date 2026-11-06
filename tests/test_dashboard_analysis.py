@@ -70,7 +70,7 @@ def test_helper_options_reference_their_source_entities() -> None:
         "name": "Energy",
         "source": "sensor.temp",
         "entity_ids": ["light.kitchen", "sensor.gone"],
-        "state": "{{ states('sun.sun') }} {{ states('sensor.unknown_thing') }}",
+        "state": "{{ states('sun.sun') }} {{ states('sensor.unknown_thing') }} sensor.free_text",
     }
     refs = {(r["object_id"], r["confidence"]) for r in extract_helper_references(options, KNOWN)}
 
@@ -79,6 +79,7 @@ def test_helper_options_reference_their_source_entities() -> None:
         ("light.kitchen", "certain"),
         ("sensor.gone", "certain"),
         ("sun.sun", "probable"),
+        ("sensor.unknown_thing", "probable"),  # named by a state function: reported though missing
     }
 
 
