@@ -13503,6 +13503,13 @@ class DetailActionsMixin {
     const failing = item.object_type === "config_entry" ? open.find(f => f.rule_id === "config_entry.not_loaded") : null;
     if (failing && (this.autoPause?.pausable || []).some(p => p.entry_id === item.object_id)) out.push({ attr: `data-ap-send="${this.esc(item.object_id)}"`, icon: "mdi:pause-circle-outline", label: this.t("apSend"), hint: "apSendHint", btn: "apDo", finding: failing.key, ap: true });
     if (item.object_type === "entity") out.push({ attr: `data-act-replace-many="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal-variant", label: this.t("actReplaceMany"), hint: "actHintReplaceMany" });
+    // Any entity can be switched off or hidden by a plan; a step that already answers a finding (disable, remove) is not offered twice.
+    if (item.object_type === "entity") {
+      const state = (target, icon) => out.push({ attr: `data-act-state="${this.esc(item.object_id)}|${target}"`, icon, label: this.t(`actState_${target}`), hint: `actStateHint_${target}` });
+      if (!item.disabled_by && !out.some(o => /data-act-(disable|remove)=/.test(o.attr))) state("disable", "mdi:cancel");
+      else if (item.disabled_by === "user") state("enable", "mdi:check-circle-outline");
+      if (!item.disabled_by) state(item.hidden_by ? "unhide" : "hide", item.hidden_by ? "mdi:eye-outline" : "mdi:eye-off-outline");
+    }
     if (item.object_type === "device") out.push({ attr: `data-act-exchange="${this.esc(item.object_id)}"`, icon: "mdi:devices", label: this.t("actExchange"), hint: "actHintExchange" });
     return { items: out, broken };
   }
@@ -13644,6 +13651,11 @@ class DetailActionsMixin {
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = el.dataset.replNew || this.findObject(`entity:${el.dataset.actReplace}`)?.duplicate_of || ""; }));
     root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan(el.dataset.actReload.split(",").map(object_id => ({ kind: "reload_integration", object_id }))); } catch (err) { this.failed(err); } this.render(); });
     root.querySelectorAll("[data-act-disable]").forEach(el => el.onclick = () => this.startCleanup("disable_entity", () => this.cleanupSel.add(el.dataset.actDisable)));
+    root.querySelectorAll("[data-act-state]").forEach(el => el.onclick = async () => {
+      const [object_id, target] = el.dataset.actState.split("|");
+      try { if (!await this.newPlan([{ kind: "set_entity_state", object_id, target }])) return; this.selected = null; } catch (err) { this.failed(err); }
+      this.render();
+    });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
@@ -13663,6 +13675,20 @@ Object.assign(TEXT.en, {
   actLabelTitle: "Add a label", actLabelHint: "Adds an existing label, for example for filtering. You see a preview first.", actLabelPreview: "Create preview",
   actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it.",
   actEditInHa: "Housekeeper does not remove a single reference itself. Open the automation in Home Assistant and edit it there.",
+});
+
+// Switching one entity off or hiding it from its own page: a plan like any other (preview, backup, undo).
+Object.assign(TEXT.de, {
+  actState_disable: "Deaktivieren", actStateHint_disable: "Legt die Entität in Quarantäne: Sie wird nicht mehr geladen, Statistik und Einstellungen bleiben, du kannst sie wieder aktivieren.",
+  actState_enable: "Wieder aktivieren", actStateHint_enable: "Aktiviert die Entität, die du deaktiviert hast, wieder.",
+  actState_hide: "Ausblenden", actStateHint_hide: "Die Entität läuft weiter, taucht aber nicht mehr in Auto-Dashboards und Bereichen auf.",
+  actState_unhide: "Einblenden", actStateHint_unhide: "Zeigt die Entität wieder in Auto-Dashboards und Bereichen.",
+});
+Object.assign(TEXT.en, {
+  actState_disable: "Disable", actStateHint_disable: "Puts the entity in quarantine: it is no longer loaded, its statistics and settings stay, and you can enable it again.",
+  actState_enable: "Enable again", actStateHint_enable: "Enables the entity you disabled again.",
+  actState_hide: "Hide", actStateHint_hide: "The entity keeps running but no longer appears in auto-generated dashboards and areas.",
+  actState_unhide: "Show", actStateHint_unhide: "Shows the entity in auto-generated dashboards and areas again.",
 });
 
 // Error texts for what the backend refuses. The backend sends a code and an English sentence; errText() looks the
