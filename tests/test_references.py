@@ -326,6 +326,37 @@ async def test_the_old_entity_can_be_disabled_after_the_references_moved_and_is_
         assert registry.async_get(OLD).disabled_by is None
 
 
+async def test_a_helper_entry_that_reads_the_old_entity_is_rewritten_and_undone(
+    hass: HomeAssistant,
+) -> None:
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    make_entities(hass)
+    reload_services(hass)
+    entry = MockConfigEntry(
+        domain="min_max", options={"entity_ids": [OLD, "sensor.other"], "type": "max"}
+    )
+    entry.add_to_hass(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+        patch.object(hass.config_entries, "async_reload", AsyncMock()) as reload,
+    ):
+        plan = await make_reference_plan(scanner, hass)
+        source = next(
+            s for s in plan["actions"][0]["sources"] if s["source"].startswith("config_entry:")
+        )
+        assert source["source"] == f"config_entry:{entry.entry_id}" and source["writable"]
+        await run(scanner, plan, [OLD])
+        assert entry.options["entity_ids"] == [NEW, "sensor.other"]
+        reload.assert_awaited_with(entry.entry_id)
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+        assert entry.options["entity_ids"] == [OLD, "sensor.other"]
+
+
 AREA_AUTOMATIONS = """- id: auto-1
   alias: Heating
   trigger:

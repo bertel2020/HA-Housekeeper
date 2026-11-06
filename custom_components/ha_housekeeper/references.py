@@ -8,6 +8,7 @@ them by hand. Nothing here writes; the write functions live in ``cleanup_exec``.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import re
@@ -21,6 +22,7 @@ from homeassistant.util.yaml import dump, load_yaml
 
 from .cleanup import USAGE_RELATIONS, registry_fingerprint
 from .const import MAX_FILE_BACKUP, MAX_PLAN_SNAPSHOTS
+from .dashboard_analysis import HELPER_DOMAINS
 
 MAX_LISTED = 50  # changes and mentions kept per source in a plan; totals stay exact
 YAML_FILES = {"automation": "automations.yaml", "script": "scripts.yaml", "scene": "scenes.yaml"}
@@ -218,6 +220,13 @@ async def load_source(
             "hash": yaml_hash(item),
             "file_bytes": len(text.encode("utf-8")),
         }
+    if kind == "config_entry":
+        # A helper entry keeps the entities it reads in its options; they are rewritten like any source.
+        entry = hass.config_entries.async_get_entry(ident)
+        if entry is None or entry.domain not in HELPER_DOMAINS:
+            raise SourceError("not_editable")
+        item = copy.deepcopy(dict(entry.options))
+        return {**base, "format": "config_entry", "item": item, "hash": json_hash(item)}
     if kind == "dashboard" and ident == "energy":
         try:
             from homeassistant.components.energy.data import async_get_manager

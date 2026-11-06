@@ -1726,6 +1726,13 @@ class CleanupRunner:
             before = copy.deepcopy(loaded["item"])
             await loaded["dashboard"].async_save(item)
             return before, {}
+        if fmt == "config_entry":
+            entry = self.hass.config_entries.async_get_entry(loaded["id"])
+            if entry is None:
+                raise SourceError("not_editable")
+            before = copy.deepcopy(loaded["item"])
+            self.hass.config_entries.async_update_entry(entry, options=item)
+            return before, {}
         from homeassistant.components.energy.data import async_get_manager
 
         manager = await async_get_manager(self.hass)
@@ -1743,6 +1750,10 @@ class CleanupRunner:
         """Let Home Assistant read a rewritten file. Dashboards and Energy apply at once."""
         if loaded["format"] == "yaml":
             await self.hass.services.async_call(loaded["type"], "reload", blocking=True)
+        elif loaded["format"] == "config_entry":
+            # Most helpers reload themselves when their options change; a failing reload is Home Assistant's to report.
+            with contextlib.suppress(Exception):
+                await self.hass.config_entries.async_reload(loaded["id"])
 
     async def _revert_source(self, source: dict[str, Any]) -> str:
         """Put one rewritten source back while it is exactly as Housekeeper left it."""
