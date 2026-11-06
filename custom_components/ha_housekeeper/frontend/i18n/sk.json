@@ -7062,11 +7062,6 @@
 "rwUseReplaced": "bude nahradené",
 "rwUseManual": "zostane, skontroluj ručne",
 "rwUsesNote": "Automaticky prepísané: {auto}. Bez zmeny: {manual}.",
-"rwDisableOld": "Starú entitu potom vypnúť",
-"rwDisableOldHint": "Dá sa do karantény a dá sa znova zapnúť. Nič sa neodstráni. Pri „prevziať ID“ to netreba: stará entita dostane iné ID tak či tak.",
-"actRemoveWorking": "Odstrániť (stále funguje)",
-"actHintRemoveWorking": "Odstráni záznam v registri, hoci entita stále dodáva hodnoty. Bez karantény, ale so zálohou a náhľadom; ak sa preukázateľne používa, plán zostane zablokovaný.",
-"reason_working_confirmed": "Entita stále dodáva hodnoty. Výslovne si sa rozhodol odstrániť ju bez karantény.",
 "actRemoveDevice": "Odstrániť zariadenie",
 "actHintRemoveDevice": "Opýta sa integrácie a odstráni zariadenie spolu s jeho entitami. Až po karanténe, so zálohou a náhľadom.",
 "actForgetDevice": "Zabudnúť zariadenie lokálne",
@@ -7096,5 +7091,14 @@
 "helperLabelCol": "Štítky",
 "helperGapAny": "Oblasť a štítky",
 "helperNoArea": "Bez oblasti",
-"helperNoLabel": "Bez štítka"
+"helperNoLabel": "Bez štítka",
+"rwOldTitle": "Stará entita potom",
+"rwOld_none": "Nič nerobiť",
+"rwOld_disable": "Vypnúť (karanténa)",
+"rwOld_delete": "Odstrániť",
+"rwOldHint": "Vypnutie sa dá vziať späť. Pri „Prevziať ID“ to odpadá, stará entita dostane aj tak iné ID.",
+"rwOldWarn": "Odstránenie funguje len pri entite, ktorú jej integrácia už neposkytuje; inak by sa vrátila. Ak patrí pomocníkovi, odstráni sa celý pomocník. Jej história zostane v recorderi ako osirelá štatistika, „Vrátiť späť“ obnoví len záznam. Predtým sa vytvorí záloha.",
+"reason_delete_old": "Stará entita sa odstráni. Jej história zostane v recorderi, „Vrátiť späť“ obnoví len záznam.",
+"reason_delete_old_helper": "Stará entita patrí pomocníkovi: odstráni sa so všetkými svojimi entitami.",
+"reason_delete_old_provided": "Integrácia starú entitu stále poskytuje, vrátila by sa. Dá sa len vypnúť."
 }

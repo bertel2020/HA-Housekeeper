@@ -1085,7 +1085,7 @@ async def websocket_helper_export(
                     vol.Optional("target_kind"): vol.In(("entity", "area", "floor", "label")),
                     vol.Optional("mode"): vol.In((*METER_MODES, *counter_repair.RANGE_MODES)),
                     vol.Optional("disable_old"): bool,
-                    vol.Optional("confirm_working"): bool,
+                    vol.Optional("delete_old"): bool,
                     vol.Optional("helper"): dict,
                     vol.Optional("range"): {
                         vol.Required("from"): vol.Coerce(float),

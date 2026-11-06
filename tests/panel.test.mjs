@@ -8479,15 +8479,19 @@ test("a language file holds no stray key, keeps the placeholders of English and 
   }
 });
 
-test("the actions of an entity: a working one can be removed on purpose, a helper's entity points to its helper", () => {
+test("the actions of an entity: a helper's entity points to its helper; the replace assistant says what happens to the old entity", () => {
   const { el } = panel("en");
   const live = { object_type: "entity", object_id: "sensor.live", name: "Live", status: "active" };
   const owned = { object_type: "entity", object_id: "sensor.sum", name: "Sum", status: "active", platform: "min_max", config_entry_id: "e1" };
   const helper = { object_type: "config_entry", object_id: "e1", name: "Sum helper", domain: "min_max" };
   el.data = { ...DATA, objects: [live, owned, helper], causes: [], findings: [] };
   const attrs = item => el.fixItems(item, `entity:${item.object_id}`).items.map(w => w.attr).join(" ");
-  assert.ok(attrs(live).includes("data-act-remove-working"), "a working entity offers its removal");
-  assert.ok(!attrs(owned).includes("data-act-remove-working"), "an entity a helper builds does not");
+  assert.ok(!attrs(live).includes("data-act-remove-working"), "a working entity is not removed: its integration would create it again");
+  el.rwOld = "delete";
+  assert.equal(JSON.stringify(el.rwDisableFlag("replace")), '{"delete_old":true}');
+  assert.equal(JSON.stringify(el.rwDisableFlag("both")), "{}", "taking over the ID leaves the old entity alone");
+  el.rwOld = "disable";
+  assert.equal(JSON.stringify(el.rwDisableFlag("replace")), '{"disable_old":true}');
   assert.ok(attrs(owned).includes("data-act-remove-helper") && attrs(owned).includes("data-object"), "it points to the helper and offers its deletion");
 });
 

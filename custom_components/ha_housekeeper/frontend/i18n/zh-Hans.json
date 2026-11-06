@@ -6531,11 +6531,6 @@
 "rwUseReplaced": "将被替换",
 "rwUseManual": "保持不变，请手动检查",
 "rwUsesNote": "自动改写：{auto}。保持不变：{manual}。",
-"rwDisableOld": "之后禁用旧实体",
-"rwDisableOldHint": "它会被放入隔离区，之后可以重新启用。不会移除任何内容。选择“接管 ID”时不需要：旧实体在那里本来就会获得另一个 ID。",
-"actRemoveWorking": "移除（仍在工作）",
-"actHintRemoveWorking": "即使实体仍在提供数值，也会移除其注册表条目。不经隔离期，但有备份和预览；如果确定正在被使用，该计划会被阻止。",
-"reason_working_confirmed": "该实体仍在提供数值。你明确选择了不经隔离期直接移除。",
 "actRemoveDevice": "移除设备",
 "actHintRemoveDevice": "询问集成并移除该设备及其实体。仅在隔离期之后进行，有备份和预览。",
 "actForgetDevice": "在本地忘记设备",
@@ -6565,5 +6560,14 @@
 "helperLabelCol": "标签",
 "helperGapAny": "区域和标签",
 "helperNoArea": "无区域",
-"helperNoLabel": "无标签"
+"helperNoLabel": "无标签",
+"rwOldTitle": "之后处理旧实体",
+"rwOld_none": "不处理",
+"rwOld_disable": "禁用（隔离区）",
+"rwOld_delete": "删除",
+"rwOldHint": "禁用可以撤销。使用“接管 ID”时无需设置：旧实体在那里本来就会获得另一个 ID。",
+"rwOldWarn": "只有其集成不再提供的实体才能删除，否则它会回来。如果它属于某个辅助元素，整个辅助元素都会被删除。它的历史会作为孤立统计留在 recorder 中，“撤销”只恢复条目。事先会创建备份。",
+"reason_delete_old": "旧实体将被删除。它的历史留在 recorder 中，撤销只恢复条目。",
+"reason_delete_old_helper": "旧实体属于某个辅助元素：它会连同所有实体一起被删除。",
+"reason_delete_old_provided": "集成仍在提供旧实体，它会回来。只能禁用。"
 }

@@ -6531,11 +6531,6 @@
 "rwUseReplaced": "se sustituirá",
 "rwUseManual": "se queda, revisa a mano",
 "rwUsesNote": "Reescritos automáticamente: {auto}. Sin cambios: {manual}.",
-"rwDisableOld": "Desactivar después la entidad antigua",
-"rwDisableOldHint": "Se pone en cuarentena y se puede volver a activar. No se elimina nada. No hace falta con «asumir el ID»: la entidad antigua recibe otro ID de todos modos.",
-"actRemoveWorking": "Eliminar (aún funciona)",
-"actHintRemoveWorking": "Elimina la entrada del registro aunque la entidad aún entregue valores. Sin cuarentena, pero con copia de seguridad y vista previa; si se usa con seguridad, el plan queda bloqueado.",
-"reason_working_confirmed": "La entidad aún entrega valores. Has elegido expresamente eliminarla sin cuarentena.",
 "actRemoveDevice": "Eliminar el dispositivo",
 "actHintRemoveDevice": "Pregunta a la integración y elimina el dispositivo con sus entidades. Solo después de la cuarentena, con copia de seguridad y vista previa.",
 "actForgetDevice": "Olvidar el dispositivo localmente",
@@ -6565,5 +6560,14 @@
 "helperLabelCol": "Etiquetas",
 "helperGapAny": "Área y etiquetas",
 "helperNoArea": "Sin área",
-"helperNoLabel": "Sin etiqueta"
+"helperNoLabel": "Sin etiqueta",
+"rwOldTitle": "Entidad antigua después",
+"rwOld_none": "No hacer nada",
+"rwOld_disable": "Desactivar (cuarentena)",
+"rwOld_delete": "Eliminar",
+"rwOldHint": "La desactivación se puede deshacer. No hace falta con «Asumir el ID»: la entidad antigua recibe otro ID de todos modos.",
+"rwOldWarn": "Eliminar solo funciona con una entidad que su integración ya no proporciona; si no, volvería. Si pertenece a un ayudante, se elimina todo el ayudante. Su historial queda en el recorder como estadística huérfana, «Deshacer» solo restaura la entrada. Antes se hace una copia de seguridad.",
+"reason_delete_old": "La entidad antigua se elimina. Su historial queda en el recorder, «Deshacer» solo restaura la entrada.",
+"reason_delete_old_helper": "La entidad antigua pertenece a un ayudante: se elimina con todas sus entidades.",
+"reason_delete_old_provided": "La integración aún proporciona la entidad antigua, volvería. Solo se puede desactivar."
 }

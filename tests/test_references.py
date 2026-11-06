@@ -326,6 +326,33 @@ async def test_the_old_entity_can_be_disabled_after_the_references_moved_and_is_
         assert registry.async_get(OLD).disabled_by is None
 
 
+async def test_the_old_entity_is_deleted_only_where_it_does_not_come_back_and_undo_restores_it(
+    hass: HomeAssistant,
+) -> None:
+    make_entities(hass)
+    write_config(hass, "automations.yaml", AUTOMATIONS)
+    reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    registry = er.async_get(hass)
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        plan = await make_reference_plan(scanner, hass, delete_old=True)
+        action = plan["actions"][0]
+        assert "delete_old_provided" in action["reasons"] and action["verdict"] == "blocked"
+        # An entity its integration no longer provides is deleted; the journal can bring it back.
+        action.update(delete_old="entity", reasons=["delete_old"], verdict="review")
+        action["executable"] = True
+        await run(scanner, plan, [OLD])
+        assert registry.async_get(OLD) is None
+        hass.states.async_remove(OLD)  # the test's own state; a removed entity has none
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+        assert registry.async_get(OLD) is not None
+
+
 async def test_a_helper_entry_that_reads_the_old_entity_is_rewritten_and_undone(
     hass: HomeAssistant,
 ) -> None:

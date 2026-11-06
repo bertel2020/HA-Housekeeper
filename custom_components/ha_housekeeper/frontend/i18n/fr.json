@@ -6531,11 +6531,6 @@
 "rwUseReplaced": "sera remplacée",
 "rwUseManual": "reste, à vérifier à la main",
 "rwUsesNote": "Réécrites automatiquement : {auto}. Laissées inchangées : {manual}.",
-"rwDisableOld": "Désactiver ensuite l’ancienne entité",
-"rwDisableOldHint": "Elle est mise en quarantaine et peut être réactivée. Rien n’est supprimé. Inutile pour « reprendre l’ID » : l’ancienne entité reçoit de toute façon un autre ID.",
-"actRemoveWorking": "Supprimer (fonctionne encore)",
-"actHintRemoveWorking": "Supprime l’entrée du registre bien que l’entité fournisse encore des valeurs. Sans quarantaine, mais avec une sauvegarde et un aperçu ; si elle est assurément utilisée, le plan reste bloqué.",
-"reason_working_confirmed": "L’entité fournit encore des valeurs. Tu as choisi explicitement de la supprimer sans quarantaine.",
 "actRemoveDevice": "Supprimer l’appareil",
 "actHintRemoveDevice": "Interroge l’intégration et supprime l’appareil avec ses entités. Seulement après la quarantaine, avec une sauvegarde et un aperçu.",
 "actForgetDevice": "Oublier l’appareil localement",
@@ -6565,5 +6560,14 @@
 "helperLabelCol": "Étiquettes",
 "helperGapAny": "Zone et étiquettes",
 "helperNoArea": "Sans zone",
-"helperNoLabel": "Sans étiquette"
+"helperNoLabel": "Sans étiquette",
+"rwOldTitle": "Ancienne entité ensuite",
+"rwOld_none": "Ne rien faire",
+"rwOld_disable": "Désactiver (quarantaine)",
+"rwOld_delete": "Supprimer",
+"rwOldHint": "La désactivation peut être annulée. Inutile avec « Reprendre l’ID » : l’ancienne entité reçoit de toute façon un autre ID.",
+"rwOldWarn": "La suppression ne marche que pour une entité que son intégration ne fournit plus ; sinon elle reviendrait. Si elle appartient à un auxiliaire, tout l’auxiliaire est supprimé. Son historique reste dans le recorder comme statistique orpheline, « Annuler » ne rétablit que l’entrée. Une sauvegarde est faite avant.",
+"reason_delete_old": "L’ancienne entité est supprimée. Son historique reste dans le recorder, « Annuler » ne rétablit que l’entrée.",
+"reason_delete_old_helper": "L’ancienne entité appartient à un auxiliaire : il est supprimé avec toutes ses entités.",
+"reason_delete_old_provided": "L’intégration fournit encore l’ancienne entité, elle reviendrait. Elle ne peut qu’être désactivée."
 }

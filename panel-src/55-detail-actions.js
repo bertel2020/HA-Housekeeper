@@ -45,8 +45,6 @@ class DetailActionsMixin {
     const helperId = item.object_type === "config_entry" && this.helperDomain(item.domain) ? item.object_id : owner?.object_id;
     if (helperId) out.push({ attr: `data-act-export-helper="${this.esc(helperId)}"`, icon: "mdi:export", label: this.t("actExportHelper"), hint: "actHintExportHelper" });
     if (helperId) out.push({ attr: `data-act-remove-helper="${this.esc(helperId)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveHelper"), hint: "actHintRemoveHelper" });
-    // An entity that still works can be removed too, on purpose: no quarantine, backup and confirmation as for any removal.
-    if (item.object_type === "entity" && !owner && item.status && !["orphaned", "unavailable", "unknown", "disabled"].includes(item.status)) out.push({ attr: `data-act-remove-working="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveWorking"), hint: "actHintRemoveWorking" });
     // Any entity can be switched off or hidden by a plan; a step that already answers a finding (disable, remove) is not offered twice.
     if (item.object_type === "entity") {
       const state = (target, icon) => out.push({ attr: `data-act-state="${this.esc(item.object_id)}|${target}"`, icon, label: this.t(`actState_${target}`), hint: `actStateHint_${target}` });
@@ -207,10 +205,6 @@ class DetailActionsMixin {
       try { if (!await this.newPlan([{ kind: "remove_helper", object_id: el.dataset.actRemoveHelper }])) return; this.selected = null; } catch (err) { this.failed(err); }
       this.render();
     });
-    root.querySelectorAll("[data-act-remove-working]").forEach(el => el.onclick = async () => {
-      try { if (!await this.newPlan([{ kind: "remove_entity", object_id: el.dataset.actRemoveWorking, confirm_working: true }])) return; this.selected = null; } catch (err) { this.failed(err); }
-      this.render();
-    });
     root.querySelectorAll("[data-act-remove-device]").forEach(el => el.onclick = async () => {
       const [object_id, kind] = el.dataset.actRemoveDevice.split("|");
       try { if (!await this.newPlan([{ kind, object_id }])) return; this.selected = null; } catch (err) { this.failed(err); }
@@ -258,10 +252,6 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   helperKind: "Helper", actHelperOwner: "Belongs to the helper {name}", actHintHelperOwner: "A helper builds this entity and creates it again at once. To remove it, delete the helper in Home Assistant (Settings → Devices & services → Helpers).",
 });
-
-// A working entity removed on purpose.
-Object.assign(TEXT.de, { actRemoveWorking: "Entfernen (läuft noch)", actHintRemoveWorking: "Entfernt den Registry-Eintrag, obwohl die Entität noch Werte liefert. Ohne Quarantäne, aber mit Backup und Vorschau; wird sie sicher verwendet, bleibt der Plan gesperrt.", reason_working_confirmed: "Die Entität liefert noch Werte. Du hast ausdrücklich gewählt, sie ohne Quarantäne zu entfernen." });
-Object.assign(TEXT.en, { actRemoveWorking: "Remove (still working)", actHintRemoveWorking: "Removes the registry entry although the entity still delivers values. No quarantine, but with a backup and a preview; if it is certainly used, the plan stays blocked.", reason_working_confirmed: "The entity still delivers values. You chose explicitly to remove it without quarantine." });
 
 // A helper that reads the entity loses its source when the entity is switched off or removed.
 Object.assign(TEXT.de, { reason_feeds_helper: "Ein Helfer liest diese Entität und verliert damit seine Quelle: er meldet danach „nicht verfügbar“ oder falsche Werte." });

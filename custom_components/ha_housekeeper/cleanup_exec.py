@@ -1049,7 +1049,9 @@ class CleanupRunner:
         if kind == "forget_device":
             return await self._forget_device(action), "device_forgotten"
         if kind in METER_KINDS:
-            return self._disable_old(action, await self._migrate_meter(action)), "meter_migrated"
+            return await self._old_after(
+                action, await self._migrate_meter(action)
+            ), "meter_migrated"
         if kind in PURGE_KINDS:
             return await self._purge_statistics(action), "statistics_purged"
         if kind in TRIM_KINDS:
@@ -1091,9 +1093,52 @@ class CleanupRunner:
             return await self._repair_counter(action), "counter_repaired"
         if kind in REFACTOR_KINDS:
             return await self._refactor_automation(action), "automation_refactored"
-        return self._disable_old(
+        return await self._old_after(
             action, await self._replace_references(action)
         ), "references_replaced"
+
+    async def _old_after(self, action: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+        """What happens to the old entity once its replacement went through: deleted or disabled."""
+        if action.get("delete_old") and not result.get("stopped"):
+            return await self._delete_old(action, result)
+        return self._disable_old(action, result)
+
+    async def _delete_old(self, action: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+        """Delete the old entity (or its helper); the journal keeps what is needed to restore it."""
+        registry = er.async_get(self.hass)
+        entry = registry.async_get(action["object_id"])
+        if entry is None:
+            return result
+        if action["delete_old"] == "helper":
+            note = export_helper(self.hass, entry.config_entry_id or "")
+            if note is None:
+                return result
+            try:
+                await self.hass.config_entries.async_remove(entry.config_entry_id)
+            except Exception:
+                return result
+            result["deleted_old"] = {"helper": note}
+            return result
+        result["deleted_old"] = {"restore": _restore_data(entry)}
+        registry.async_remove(action["object_id"])
+        return result
+
+    async def _undo_delete_old(self, object_id: str, result: dict[str, Any]) -> str:
+        """Bring the old entity (or its helper) back; history that was deleted is not restored."""
+        note = result.get("deleted_old")
+        if not note or note.get("state") == "undone":
+            return "undone"
+        if "helper" in note:
+            try:
+                await create_helper(self.hass, note["helper"])
+            except HelperError as err:
+                return err.reason
+        else:
+            outcome = self._restore(er.async_get(self.hass), object_id, note["restore"])
+            if outcome != "undone":
+                return outcome
+        note["state"] = "undone"
+        return "undone"
 
     def _disable_old(self, action: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
         """Quarantine the old entity once its replacement went through; the step stays done if not.
@@ -2101,7 +2146,6 @@ class CleanupRunner:
             ):
                 return "entity_changed"
             restorable = entity_restorable(self.hass, entry)
-            verdict_args = {"confirm_working": bool(action.get("confirm_working"))}
         verdict = judge_action(
             kind,
             object_id,
@@ -2400,10 +2444,14 @@ class CleanupRunner:
                 outcome = await self._undo_references(result)
                 if outcome == "undone":
                     outcome = self._undo_disable_old(action["object_id"], result)
+                if outcome == "undone":
+                    outcome = await self._undo_delete_old(action["object_id"], result)
             elif kind in METER_KINDS:
                 outcome = await self._undo_meter(result)
                 if outcome == "undone":
                     outcome = self._undo_disable_old(action["object_id"], result)
+                if outcome == "undone":
+                    outcome = await self._undo_delete_old(action["object_id"], result)
             elif kind in AREA_KINDS:
                 outcome = self._unset_area(action["object_id"], result)
             elif kind in STATE_KINDS:

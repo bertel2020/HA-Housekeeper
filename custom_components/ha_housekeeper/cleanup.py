@@ -18,6 +18,7 @@ from homeassistant.helpers.storage import Store
 
 from . import followup
 from .const import IGNORE_LABEL, JOURNAL_STORAGE_KEY, QUARANTINE_DAYS, STORAGE_VERSION
+from .dashboard_analysis import HELPER_DOMAINS
 from .helper_backup import check_note
 from .simulation import simulate
 
@@ -331,7 +332,6 @@ def judge_action(
     target: str | None = None,
     sources: list[dict[str, Any]] | None = None,
     meter: dict[str, Any] | None = None,
-    confirm_working: bool = False,
 ) -> dict[str, Any]:
     """Judge one candidate of any kind; see ``judge_entity_action`` for the verdicts."""
     if kind in METER_KINDS:
@@ -342,9 +342,7 @@ def judge_action(
         )
     if kind in REFERENCE_KINDS:
         return judge_reference_action(object_id, target, objects, edges, sources)
-    return judge_entity_action(
-        kind, object_id, objects, edges, quarantine, restorable, now, confirm_working
-    )
+    return judge_entity_action(kind, object_id, objects, edges, quarantine, restorable, now)
 
 
 def _quarantine_reasons(
@@ -376,6 +374,7 @@ BLOCKING_REASONS = frozenset(
         "entry_no_reload",
         "not_helper",
         "invalid_helper",
+        "delete_old_provided",
         "not_user_disabled",
         "marked_keep",
         "not_quarantined",
@@ -1353,7 +1352,6 @@ def judge_entity_action(
     quarantine: dict[str, str] | None = None,
     restorable: bool | None = None,
     now: datetime | None = None,
-    confirm_working: bool = False,
 ) -> dict[str, Any]:
     """Judge one entity candidate. Verdicts: ``ok`` (no known use), ``review``, ``blocked``.
 
@@ -1387,16 +1385,7 @@ def judge_entity_action(
 
     reasons = action["reasons"]
     allowed = DISABLEABLE_STATUSES if kind == "disable_entity" else REMOVABLE_STATUSES
-    # A working entity is removed only when the person asked for exactly that (``confirm_working``):
-    # then there is no quarantine to wait for, backup and confirmation still apply.
-    working_removal = (
-        kind == "remove_entity" and confirm_working and item["status"] not in REMOVABLE_STATUSES
-    )
-    if working_removal:
-        reasons.append("working_confirmed")
-        action["confirm_working"] = True
-        action["skips_quarantine"] = True
-    elif kind == "disable_entity" and item["status"] == "disabled":
+    if kind == "disable_entity" and item["status"] == "disabled":
         reasons.append("already_disabled")
     elif item["status"] not in allowed and not (
         kind == "disable_entity" and item.get("blocked_automation")
@@ -1416,11 +1405,7 @@ def judge_entity_action(
         reasons.append("marked_keep")
     if item.get("critical"):
         reasons.append("critical_object")
-    if working_removal:
-        action["restorable"] = restorable
-        if restorable is False:
-            reasons.append("not_restorable")
-    elif kind == "remove_entity":
+    if kind == "remove_entity":
         # Disabling an entity its integration no longer provides changes nothing, so the
         # quarantine would prove nothing; backup, confirmation and restore still apply. Before
         # a day of scans without it (``not_provided_settled``) the person confirms it is gone:
@@ -1437,6 +1422,34 @@ def judge_entity_action(
 
     _verdict(action)
     return action
+
+
+def _judge_delete_old(
+    action: dict[str, Any],
+    request: dict[str, Any],
+    objects: dict[str, dict[str, Any]],
+    possible: bool,
+) -> None:
+    """Deleting the old entity after a replacement: only where it does not come back.
+
+    An entity its integration still provides is created again at the next reload, so it can
+    only be disabled. What is no longer provided is removed from the registry; the entity of a
+    helper goes with the helper. Either way the person confirms the warning (a ``review``).
+    """
+    if not (request.get("delete_old") and possible):
+        return
+    item = objects.get(action["object_id"]) or {}
+    helper = bool(item.get("config_entry_id")) and item.get("platform") in HELPER_DOMAINS
+    if helper:
+        action["delete_old"] = "helper"
+        action["reasons"].append("delete_old_helper")
+    elif item.get("reason") == NOT_PROVIDED:
+        action["delete_old"] = "entity"
+        action["reasons"].append("delete_old")
+    else:
+        action["reasons"].append("delete_old_provided")
+    action["disable_old"] = False
+    _verdict(action)
 
 
 def _mark_target_clashes(actions: list[dict[str, Any]]) -> None:
@@ -1663,6 +1676,7 @@ def build_plan(
             )
             action["fingerprint"] = meter.get("fingerprint")
             action["disable_old"] = bool(request.get("disable_old")) and mode not in {"both", "id"}
+            _judge_delete_old(action, request, objects, mode not in {"both", "id"})
             if mode == METER_REFERENCE_MODE:
                 action["reference_fingerprint"] = reference_print
         elif kind in RENAME_KINDS:
@@ -1698,6 +1712,7 @@ def build_plan(
                 )
             action["fingerprint"] = reference_print
             action["disable_old"] = bool(request.get("disable_old")) and target_kind == "entity"
+            _judge_delete_old(action, request, objects, target_kind == "entity")
         else:
             action = judge_action(
                 kind,
@@ -1707,7 +1722,6 @@ def build_plan(
                 quarantine,
                 restorable(object_id) if restorable else None,
                 now,
-                confirm_working=bool(request.get("confirm_working")),
             )
             action["fingerprint"] = fingerprint(object_id) if fingerprint else None
         if kind in REMOVAL_KINDS:
