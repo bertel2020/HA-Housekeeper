@@ -216,6 +216,8 @@ def quarantine_entries(
 ) -> list[dict[str, Any]]:
     """Entities and devices Housekeeper quarantined that are still disabled by the user.
 
+    Devices the person disabled by hand count too (``adopted``, no plan).
+
     The journal says when something was disabled; the live inventory says whether it still
     is. Items that were re-enabled, undone or removed since are no longer in quarantine.
     """
@@ -236,6 +238,23 @@ def quarantine_entries(
                     "plan_id": plan["plan_id"],
                     "since": result["at"],
                 }
+    # A device the person disabled by hand has no plan, but is just as quarantined: Home Assistant
+    # keeps when its entry last changed, which is never earlier than the disabling (so the wait
+    # is never shorter than it was).
+    for key, item in live.items():
+        if (
+            key[0] == "device"
+            and key not in latest
+            and item.get("disabled_by") == "user"
+            and item.get("modified_at")
+        ):
+            latest[key] = {
+                "object_type": "device",
+                "object_id": key[1],
+                "plan_id": None,
+                "since": item["modified_at"],
+                "adopted": True,
+            }
     return sorted(
         (
             entry

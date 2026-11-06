@@ -45,7 +45,13 @@ from .battery_kind import apply_battery_kinds
 from .blueprints import async_available, blueprint_path, missing_blueprint_findings
 from .causes import apply_causes, device_down_findings
 from .certainty import apply_certainty
-from .cleanup import JournalStore, is_child_device, quarantine_entries, recurring_devices
+from .cleanup import (
+    JournalStore,
+    device_support,
+    is_child_device,
+    quarantine_entries,
+    recurring_devices,
+)
 from .cleanup_exec import CleanupRunner
 from .config_changes import ChangeStore, fingerprint
 from .conflicts import KEY_PREFIX as CONFLICT_KEY_PREFIX
@@ -1613,6 +1619,9 @@ class InventoryScanner:
 
         entity_counts = Counter(item["device_id"] for item in entities if item["device_id"])
         devices = [_device_item(device, entity_counts[device.id]) for device in device_entries]
+        for item, device in zip(devices, device_entries, strict=True):
+            # Tells the panel whether a removal asks the integration or has to be forced.
+            item["removal_supported"] = device_support(self.hass, device)["removal_supported"]
         areas = [_area_item(area) for area in _registry_entries(area_registry.areas)]
         floors = [_floor_item(floor) for floor in _registry_entries(floor_registry.floors)]
         labels = [_label_item(label) for label in _registry_entries(label_registry.labels)]

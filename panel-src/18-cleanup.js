@@ -21,6 +21,7 @@ class CleanupMixin {
 
   releaseControl(q) {
     const key = `${q.object_type || "entity"}:${q.object_id}`;
+    if (!q.plan_id) return `<small>${this.t("releaseByHand")}</small>`;
     if (this.releaseConfirm === key) {
       return `<span class="qconfirm" role="group" aria-label="${this.esc(this.t("releaseQuestion"))}"><span>${this.t("releaseQuestion")}</span><button class="btn" data-release-yes="${this.esc(key)}">${this.t("yes")}</button><button class="btn" data-release-no>${this.t("cancelRun")}</button></span>`;
     }

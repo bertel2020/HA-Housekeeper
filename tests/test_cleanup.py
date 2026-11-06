@@ -417,3 +417,25 @@ def test_a_working_entity_is_removed_only_when_asked_for_and_without_quarantine(
         "remove_entity", "sensor.live", objects, used, confirm_working=True
     )
     assert blocked["verdict"] == "blocked"
+
+
+def test_quarantine_adopts_devices_disabled_by_hand() -> None:
+    from custom_components.ha_housekeeper.cleanup import quarantine_entries
+
+    items = [
+        {"object_type": "device", "object_id": "d1", "disabled_by": "user", "modified_at": "t1"},
+        {
+            "object_type": "device",
+            "object_id": "d2",
+            "disabled_by": "integration",
+            "modified_at": "t2",
+        },
+        {
+            "object_type": "entity",
+            "object_id": "sensor.a",
+            "disabled_by": "user",
+            "modified_at": "t3",
+        },
+    ]
+    entries = quarantine_entries([], items)
+    assert [(e["object_id"], e["since"], e["plan_id"]) for e in entries] == [("d1", "t1", None)]

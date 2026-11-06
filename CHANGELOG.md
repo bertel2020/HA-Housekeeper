@@ -16,6 +16,7 @@
 - **Qualitätsregeln für Helfer und Templates** (aus, Hinweise):
   - Templates: Helfer ohne Verwendung, Zahl ohne Schutz vor fehlenden Werten, Template-Entität aus der YAML ohne `unique_id`.
   - Helfer: wird nur beschrieben, ohne Bereich, Zahlenbereich unstimmig, liest sich selbst, Auswahl mit unbekannter Option, Zähler-Helfer mit ungeeigneter Quelle.
+- **Geräte entfernen auf der Geräteseite:** Ein von Hand deaktiviertes Gerät zählt als in Quarantäne (ab der letzten Änderung in Home Assistant) und erscheint unter „Quarantäne und Entfernen“. Unter „Weitere Aktionen“ bietet seine Seite „Gerät entfernen“ (fragt die Integration) oder, wenn sie das nicht kann, „Gerät lokal vergessen“, jeweils mit Vorschau und Backup.
 - **Deaktivieren und Ausblenden auf der Entitätsseite:** Unter „Weitere Aktionen“ lässt sich jede Entität per Plan deaktivieren oder ausblenden, mit Vorschau und Undo. Wird sie noch sicher verwendet, bleibt das Deaktivieren gesperrt. Eine Entität, die noch läuft, lässt sich mit „Entfernen (läuft noch)“ ohne Quarantäne entfernen, mit Backup; sicher verwendet bleibt das gesperrt.
 - **Alte Entität deaktivieren:** Der Ersetzen-Assistent kann die alte Entität nach dem Umstellen deaktivieren (Quarantäne). Der Plan lässt sich zurücknehmen, dann ist sie wieder aktiv.
 - **Ein Assistent zum Ersetzen:** „Entitäten ersetzen“ ersetzt eine oder mehrere Entitäten. „Zähler wechseln“ und „Verweise ersetzen“ gehen darin auf, Reparieren hat drei Kacheln.
@@ -45,6 +46,7 @@
 - **Quality rules for helpers and templates** (off, hints):
   - Templates: helper without use, number without protection against missing values, YAML template entity without `unique_id`.
   - Helpers: only written, without area, inconsistent number range, reads itself, select with an unknown option, meter helper with an unsuitable source.
+- **Remove devices on the device page:** A device disabled by hand counts as quarantined (from its last change in Home Assistant) and appears under "Quarantine and removal". Under "More actions" its page offers "Remove device" (asks the integration) or, when that cannot, "Forget device locally", each with a preview and a backup.
 - **Disable, hide and remove on the entity page:** Under "More actions" any entity can be disabled or hidden by a plan, with preview and undo. An entity that still works can be removed with "Remove (still working)" without quarantine, with a backup; if it is certainly used, that stays blocked.
 - **Disable the old entity:** The replace assistant can disable the old entity after switching over (quarantine). The plan can be undone, then it is active again.
 - **Plan without a backup:** The plan preview has a switch "Run without a backup" under "Advanced", with a warning. Not possible for plans that write into the recorder database; the audit report notes that the backup was skipped.

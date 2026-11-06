@@ -53,6 +53,8 @@ class DetailActionsMixin {
       else if (item.disabled_by === "user") state("enable", "mdi:check-circle-outline");
       if (!item.disabled_by) state(item.hidden_by ? "unhide" : "hide", item.hidden_by ? "mdi:eye-outline" : "mdi:eye-off-outline");
     }
+    // A device disabled by the person is in quarantine; removing it asks the integration, or is forced when it offers no removal.
+    if (item.object_type === "device" && item.disabled_by === "user") out.push({ attr: `data-act-remove-device="${this.esc(item.object_id)}|${item.removal_supported ? "remove_device" : "forget_device"}"`, icon: "mdi:delete-outline", label: this.t(item.removal_supported ? "actRemoveDevice" : "actForgetDevice"), hint: item.removal_supported ? "actHintRemoveDevice" : "actHintForgetDevice" });
     if (item.object_type === "device") out.push({ attr: `data-act-exchange="${this.esc(item.object_id)}"`, icon: "mdi:devices", label: this.t("actExchange"), hint: "actHintExchange" });
     return { items: out, broken };
   }
@@ -207,6 +209,11 @@ class DetailActionsMixin {
       try { if (!await this.newPlan([{ kind: "remove_entity", object_id: el.dataset.actRemoveWorking, confirm_working: true }])) return; this.selected = null; } catch (err) { this.failed(err); }
       this.render();
     });
+    root.querySelectorAll("[data-act-remove-device]").forEach(el => el.onclick = async () => {
+      const [object_id, kind] = el.dataset.actRemoveDevice.split("|");
+      try { if (!await this.newPlan([{ kind, object_id }])) return; this.selected = null; } catch (err) { this.failed(err); }
+      this.render();
+    });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
@@ -268,4 +275,15 @@ Object.assign(TEXT.en, {
   actRemoveHelper: "Delete the helper", actHintRemoveHelper: "Deletes the helper with all its entities. Housekeeper makes a backup first; only the backup brings it back.",
   reason_not_helper: "This is not a helper Housekeeper may delete.", check_helper_gone: "Helper is deleted", actKind_remove_helper: "Helper deleted", goneKind_remove_helper: "Helper deleted",
   confirmedSummaryHelper: "The helper is deleted with all its entities. A backup is made first; only that restores it.",
+});
+
+Object.assign(TEXT.de, {
+  actRemoveDevice: "Gerät entfernen", actHintRemoveDevice: "Fragt die Integration und entfernt das Gerät mit seinen Entitäten. Erst nach der Quarantäne, mit Backup und Vorschau.",
+  actForgetDevice: "Gerät lokal vergessen", actHintForgetDevice: "Die Integration bietet kein Entfernen; Housekeeper löscht den Eintrag erzwungen. Erst nach der Quarantäne, mit Backup und Vorschau; die Integration kann das Gerät wieder anlegen.",
+  releaseByHand: "von Hand deaktiviert; in Home Assistant wieder aktivieren",
+});
+Object.assign(TEXT.en, {
+  actRemoveDevice: "Remove device", actHintRemoveDevice: "Asks the integration and removes the device with its entities. Only after the quarantine, with a backup and a preview.",
+  actForgetDevice: "Forget device locally", actHintForgetDevice: "The integration offers no removal; Housekeeper deletes the entry by force. Only after the quarantine, with a backup and a preview; the integration may create the device again.",
+  releaseByHand: "disabled by hand; enable it again in Home Assistant",
 });
