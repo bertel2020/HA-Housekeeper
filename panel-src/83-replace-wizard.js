@@ -104,7 +104,7 @@ class ReplaceWizardMixin {
   rwDisableFlag(how) { return this.rwDisable && !RW_TAKE.includes(how) ? { disable_old: true } : {}; }
 
   rwDisableSwitch() {
-    return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-rw-disable ${this.rwDisable ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("rwDisableOld")}</strong><small>${this.t("rwDisableOldHint")}</small></span></label>`;
+    return `<label class="optswitch inpanel"><input class="policyswitch" type="checkbox" role="switch" data-rw-disable ${this.rwDisable ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("rwDisableOld")}</strong><small>${this.t("rwDisableOldHint")}</small></span></label>`;
   }
 
   // Row problems that the panel can see before any preview: one new entity for two old ones.
