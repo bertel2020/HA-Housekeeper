@@ -50,6 +50,10 @@ Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunäc
 | --- | --- |
 | ![Automationen](screenshots/showcase/runs-desktop-light.png) | ![Zuverlässigkeit](screenshots/showcase/reliability-desktop-light.png) |
 
+| Recorder | Freigaben |
+| --- | --- |
+| ![Recorder](screenshots/showcase/recorder-desktop-light.png) | ![Freigaben](screenshots/showcase/exposure-desktop-light.png) |
+
 
 ## Warum HA Housekeeper?
 
