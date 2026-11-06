@@ -79,7 +79,7 @@ class BackupCleanupMixin {
     const d = this.bkc;
     if (!d) return `<div class="panel">${head}${this.skeleton("bkcLoading")}</div>`;
     if (!d.available) return `<div class="panel">${head}<div class="emptymsg">${this.t("bkcUnavailable")}</div></div>`;
-    if (!d.rows.length) return `<div class="panel">${head}${this.bkcAutoBlock(d)}<div class="emptymsg">${this.t("bkcNone")}</div></div>`;
+    if (!d.rows.length) return `<div class="panel">${head}<div class="bkcrule">${this.bkcAutoBlock(d)}</div><div class="emptymsg">${this.t("bkcNone")}</div></div>`;
     const sel = this.bkcSel || new Set();
     const sum = `<div class="bkcsum">${this.sumTiles([
       { label: this.t("bkcCount"), value: this.formatNumber(d.total.count) },
@@ -89,7 +89,7 @@ class BackupCleanupMixin {
     // The rule only suggests: changing a number selects anew; a hand-made selection can go back to it.
     const suggested = d.rows.filter(r => r.suggested && !r.protected).map(r => r.backup_id);
     const changed = sel.size !== suggested.length || suggested.some(id => !sel.has(id));
-    const rule = `<div class="bkcrule"><strong>${this.t("bkcRule")}</strong><div class="line"><label for="hk-bkc-last">${this.t("bkcKeepLast")}</label><input id="hk-bkc-last" type="number" min="0" max="100" value="${this.bkcLast ?? 3}" data-bkc-last><label for="hk-bkc-days">${this.t("bkcKeepDays")}</label><input id="hk-bkc-days" type="number" min="0" max="3650" value="${this.bkcDaysValue ?? 14}" data-bkc-days><span>${this.t("bkcDays")}</span>${changed ? `<button class="btn quiet" data-bkc-pick>${this.t("bkcReset")}</button>` : ""}</div><p>${this.t("bkcProtectNote")}</p></div>`;
+    const rule = `<div class="bkcrule"><strong>${this.t("bkcRule")}</strong><div class="line"><label for="hk-bkc-last">${this.t("bkcKeepLast")}</label><input id="hk-bkc-last" type="number" min="0" max="100" value="${this.bkcLast ?? 3}" data-bkc-last><label for="hk-bkc-days">${this.t("bkcKeepDays")}</label><input id="hk-bkc-days" type="number" min="0" max="3650" value="${this.bkcDaysValue ?? 14}" data-bkc-days><span>${this.t("bkcDays")}</span>${changed ? `<button class="btn quiet" data-bkc-pick>${this.t("bkcReset")}</button>` : ""}</div><p>${this.t("bkcProtectNote")}</p>${this.bkcAutoBlock(d)}</div>`;
     const age = r => (r.age_days === null || r.age_days === undefined ? -1 : r.age_days);
     const columns = [
       { key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: rows => this.bkcHeadBox(rows), cell: r => `<input type="checkbox" class="selbox" data-bkc-sel="${this.esc(r.backup_id)}" ${sel.has(r.backup_id) ? "checked" : ""} ${r.protected ? "disabled" : ""} aria-label="${this.esc(r.name)}">` },
@@ -115,7 +115,7 @@ class BackupCleanupMixin {
     const bytes = d.rows.filter(r => sel.has(r.backup_id)).reduce((n, r) => n + (r.size || 0), 0);
     const error = this.bkcPlanError ? `<p class="bkcerr" role="alert">${this.esc(this.t("bkcFailed", { detail: this.bkcPlanError }))}</p>` : "";
     const action = `<div class="bkcfoot"><div><strong>${this.t("bkcSelSum", { count: this.formatNumber(sel.size), bytes: this.formatBytes(bytes) })}</strong><small>${this.t("bkcFinal")}</small>${error}</div><button class="btn dangersoft" data-bkc-plan ${sel.size && !this.bkcBusy ? "" : "disabled"}>${this.bkcBusy ? this.t("trimBusy") : this.t("bkcPlan", { count: sel.size })}</button></div>`;
-    return `<div class="panel">${head}${sum}${rule}${this.bkcAutoBlock(d)}${list}${action}</div>`;
+    return `<div class="panel">${head}${sum}${rule}${list}${action}</div>`;
   }
 
   // Optional: Housekeeper tidies up by the rule on its own. Off until switched on; switching on asks first.
