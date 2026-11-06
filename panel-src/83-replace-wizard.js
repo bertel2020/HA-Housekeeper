@@ -247,14 +247,23 @@ class ReplaceWizardMixin {
   usesList(objectId, cap = 0) {
     const uses = this.mergePlaces(this.edgesTo(`entity:${objectId}`).filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e })));
     const sure = x => (x.edge.confidence || "certain") === "certain";
-    const line = x => {
-      const obj = this.findObject(x.other), energy = x.other === "dashboard:energy", name = this.esc(energy ? this.t("energyDashboard") : obj?.name || x.other.split(":").slice(1).join(":"));
-      const places = x.places.filter(Boolean), note = `${this.esc(x.label)}${places.length ? ` · ${this.esc(places.join(", "))}` : ""}`;
-      return `<li>${obj ? `<button class="linklike" data-object="${this.esc(x.other)}">${name}</button>` : name} <small class="muted">${this.esc(this.t(obj?.object_type || x.other.split(":")[0]))} · ${note}</small> <span class="pill ${sure(x) ? "ok" : "warn"}">${this.t(sure(x) ? "rwUseReplaced" : "rwUseManual")}</span></li>`;
+    const row = x => {
+      const places = x.places.filter(Boolean).map(pl => `<code>${this.esc(pl)}</code>`).join("");
+      return `<li class="useitem"><span class="userole">${this.esc(x.label)}</span><span class="useplace">${places}</span><span class="pill ${sure(x) ? "ok" : "warn"}">${this.t(sure(x) ? "rwUseReplaced" : "rwUseManual")}</span></li>`;
     };
-    const auto = uses.filter(sure).length, shown = cap && uses.length > cap + 1 ? uses.slice(0, cap) : uses, rest = uses.slice(shown.length);
-    const more = rest.length ? `<details class="usemore"><summary>${this.t("rwUsesMore", { n: rest.length })}</summary><ul class="uselist">${rest.map(line).join("")}</ul></details>` : "";
-    return `<ul class="uselist">${shown.map(line).join("")}</ul>${more}<p class="factnote">${this.t("rwUsesNote", { auto, manual: uses.length - auto })}</p>`;
+    // One head per object (an automation that uses the entity twice is named once), its places below.
+    const group = list => {
+      const byObj = new Map();
+      for (const x of list) { if (!byObj.has(x.other)) byObj.set(x.other, []); byObj.get(x.other).push(x); }
+      return [...byObj].map(([other, items]) => {
+        const obj = this.findObject(other), energy = other === "dashboard:energy", name = this.esc(energy ? this.t("energyDashboard") : obj?.name || other.split(":").slice(1).join(":"));
+        return `<li class="usegroup"><div class="usehead">${obj ? `<button class="linklike" data-object="${this.esc(other)}">${name}</button>` : name} <small class="muted">${this.esc(this.t(obj?.object_type || other.split(":")[0]))}</small></div><ul class="uselist">${items.map(row).join("")}</ul></li>`;
+      }).join("");
+    };
+    const auto = uses.filter(sure).length, groups = [...new Set(uses.map(x => x.other))], keep = cap && groups.length > cap + 1 ? new Set(groups.slice(0, cap)) : new Set(groups);
+    const shown = uses.filter(x => keep.has(x.other)), rest = uses.filter(x => !keep.has(x.other));
+    const more = rest.length ? `<details class="usemore"><summary>${this.t("rwUsesMore", { n: groups.length - keep.size })}</summary><ul class="usegroups">${group(rest)}</ul></details>` : "";
+    return `<ul class="usegroups">${group(shown)}</ul>${more}<p class="factnote">${this.t("rwUsesNote", { auto, manual: uses.length - auto })}</p>`;
   }
 
   // The row under an open pair in a list.
@@ -287,7 +296,7 @@ class ReplaceWizardMixin {
   rwOneHints() {
     this.ensureOneHints();
     const cur = this._oneHints?.id === this.replOld ? this._oneHints : null;
-    const found = (cur?.list || []).filter(c => c.score > 0 && c.object_id !== this.replOld).slice(0, 5);
+    const found = (cur?.list || []).filter(c => c.score > 0 && c.object_id !== this.replOld).slice(0, 3);
     if (!found.length) return cur?.list ? this.successorHints(this.replOld, this.entityUnit(this.replOld), "data-repl-pick") : "";
     const why = c => c.reasons.map(r => this.t(`exReason_${r}`)).join(", ");
     return `<div class="setrow planfoot"><small class="u-m0">${this.t("successorHint")}</small><span class="chips">${found.map((c, i) => `<button class="chip${this.replNew === c.object_id ? " active" : ""}" data-repl-pick="${this.esc(c.object_id)}" title="${this.esc(`${c.name}${why(c) ? ` · ${why(c)}` : ""}`)}">${this.esc(c.object_id)}${i === 0 ? ` <span class="pill ok">${this.t("exSuggested")}</span>` : ""}</button>`).join("")}</span></div>`;

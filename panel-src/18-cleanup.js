@@ -632,7 +632,7 @@ class CleanupMixin {
   // Candidates for the new entity, shown as buttons below the field. They only fill the field; the person decides.
   successorHints(id, unit, attr) {
     if (!id) return "";
-    const found = this.successorsOf(id, unit);
+    const found = this.successorsOf(id, unit, 3);
     if (!found.length) return "";
     return `<div class="setrow planfoot"><small class="u-m0">${this.t("successorHint")}</small><span class="chips">${found.map(o => `<button class="chip" ${attr}="${this.esc(o.object_id)}" title="${this.esc(o.name)}">${this.esc(o.object_id)}</button>`).join("")}</span></div>`;
   }
