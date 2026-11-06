@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from unittest.mock import patch
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -15,6 +17,7 @@ from homeassistant.components.recorder.models import StatisticMeanType  # noqa: 
 from homeassistant.components.recorder.statistics import async_import_statistics  # noqa: E402
 from homeassistant.core import HomeAssistant  # noqa: E402
 from homeassistant.helpers import entity_registry as er  # noqa: E402
+from homeassistant.util.yaml import load_yaml  # noqa: E402
 from pytest_homeassistant_custom_component.components.recorder.common import (  # noqa: E402
     async_wait_recording_done,
 )
@@ -25,12 +28,17 @@ from custom_components.ha_housekeeper.cleanup import (  # noqa: E402
     build_plan,
     judge_meter_action,
 )
-from custom_components.ha_housekeeper.cleanup_exec import CleanupError  # noqa: E402
+from custom_components.ha_housekeeper.cleanup_exec import (  # noqa: E402
+    CleanupError,
+    CleanupRunner,
+    StepAbort,
+)
 from custom_components.ha_housekeeper.meter import (  # noqa: E402
     analyse,
     prepare_meter,
     read_series,
 )
+from custom_components.ha_housekeeper.references import preview_replacement  # noqa: E402
 
 OLD, NEW = "sensor.meter_old", "sensor.meter_new"
 START = datetime(2026, 9, 1, tzinfo=UTC)
@@ -538,3 +546,194 @@ async def test_a_changed_middle_row_after_the_preview_stops_the_run(
     assert plan["status"] == "aborted" and plan["executed"] is False
     assert plan["actions"][0]["result"]["reason"] == "meter_changed"
     assert len(await series(hass, NEW)) == 24
+
+
+# ---- statistics and references together (replace_statistics) --------------------------------
+
+WRITE = {
+    "source": "automation:automation.meter",
+    "type": "automation",
+    "writable": True,
+    "changes": [1],
+    "manual": [],
+}
+
+
+def test_joining_the_statistics_and_replacing_the_references_is_judged_as_both() -> None:
+    action = judge_meter_action(
+        OLD, NEW, objects(), [], good_meter(mode="replace_statistics", sources=[WRITE])
+    )
+    assert action["verdict"] == "review" and action["sources"] == [WRITE]
+    assert {"stats_write", "config_rewrite"} <= set(action["reasons"])
+    assert not {"id_takeover", "old_not_in_registry", "target_not_in_registry"} & set(
+        action["reasons"]
+    )  # the new entity keeps its ID: no registry requirement
+    nothing = judge_meter_action(
+        OLD, NEW, objects(), [], good_meter(mode="replace_statistics", old_in_registry=False)
+    )
+    assert nothing["verdict"] == "blocked" and "nothing_to_replace" in nothing["reasons"]
+    no_stats = judge_meter_action(
+        OLD,
+        NEW,
+        objects(),
+        [],
+        good_meter(
+            mode="replace_statistics",
+            analysis={"reasons": ["stats_missing_old"]},
+            sources=[{**WRITE, "manual": ["x"]}],
+        ),
+    )
+    assert no_stats["verdict"] == "blocked"
+    assert {"stats_missing_old", "source_manual"} <= set(no_stats["reasons"])
+
+
+METER_AUTOMATIONS = f"""\
+- id: meter-1
+  alias: Meter
+  trigger:
+    - platform: state
+      entity_id: {OLD}
+  action: []
+"""
+
+
+def meter_automation(hass: HomeAssistant, scanner):
+    """An automation in automations.yaml that triggers on the old meter, as the scanner sees it."""
+    path = Path(hass.config.path("automations.yaml"))
+    path.write_text(METER_AUTOMATIONS, encoding="utf-8")
+
+    async def reload(call) -> None:
+        return None
+
+    hass.services.async_register("automation", "reload", reload)
+    hass.states.async_set("automation.meter", "on", {"friendly_name": "Meter", "id": "meter-1"})
+
+    class Automation:  # what Home Assistant holds follows the file, like after a reload
+        entity_id, unique_id, name = "automation.meter", "meter-1", "Meter"
+        referenced_devices = referenced_areas = referenced_floors = referenced_labels = set()
+
+        @property
+        def raw_config(self) -> dict:
+            return load_yaml(str(path))[0]
+
+        @property
+        def referenced_entities(self) -> set[str]:
+            return {self.raw_config["trigger"][0]["entity_id"]}
+
+    component = SimpleNamespace(entities=[Automation()])
+    return path, patch.object(
+        type(scanner),
+        "_runtime_component",
+        lambda self, domain: component if domain == "automation" else None,
+    )
+
+
+async def make_replace_plan(scanner, hass: HomeAssistant) -> dict:
+    snapshot = await scanner.async_scan()
+    key = (OLD, NEW, "replace_statistics")
+    plan = build_plan(
+        snapshot,
+        [{"kind": "migrate_meter", "object_id": OLD, "target": NEW, "mode": key[2]}],
+        datetime.now(UTC),
+        meter_data={key: await prepare_meter(hass, *key)},
+        reference_data={(OLD, NEW, "entity"): await preview_replacement(hass, snapshot, OLD, NEW)},
+    )
+    scanner.journal.add(plan)
+    return plan
+
+
+async def test_the_statistics_are_joined_first_then_the_references_follow_and_only_they_undo(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    two_meters(hass)
+    await async_wait_recording_done(hass)
+    scanner = await make_scanner(hass)
+    path, scanned = meter_automation(hass, scanner)
+    manager, create = fake_backup()
+    order: list[str] = []
+    join, replace = CleanupRunner._join_statistics, CleanupRunner._replace_references
+
+    async def joining(self, action):
+        order.append("statistics")
+        return await join(self, action)
+
+    async def replacing(self, action):
+        order.append("references")
+        return await replace(self, action)
+
+    try:
+        with (
+            scanned,
+            patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+            patch.object(CleanupRunner, "_join_statistics", joining),
+            patch.object(CleanupRunner, "_replace_references", replacing),
+        ):
+            plan = await make_replace_plan(scanner, hass)
+            action = plan["actions"][0]
+            assert action["verdict"] == "review" and action["executable"] is True
+            assert action["reference_fingerprint"] and action["sources"][0]["change_count"] == 1
+            confirmation = await run(scanner, plan, [OLD])
+            assert confirmation["rewrites"] == [OLD] and confirmation["migrations"] == [OLD]
+            create.assert_awaited_once()
+
+            assert order == ["statistics", "references"]
+            assert len(await series(hass, NEW)) == 72  # joined, under the new entity's own ID
+            assert er.async_get(hass).async_get(OLD) is not None  # the old entity stays as it is
+            assert load_yaml(str(path))[0]["trigger"][0]["entity_id"] == NEW
+            result = plan["actions"][0]["result"]
+            assert result["statistics"]["verified"] and result["take_id"] is None
+            assert result["sources"][0]["state"] == "done" and "stopped" not in result
+            checks = {c["check"]: c["ok"] for c in plan["verification"]["checks"]}
+            assert checks["meter_statistics"] and checks["references_replaced"]
+            assert plan["status"] == "verified"
+
+            undo = await scanner.cleanup.undo(plan["plan_id"], None)
+            assert undo["results"] == [{"object_id": OLD, "outcome": "undone"}]
+            assert load_yaml(str(path))[0]["trigger"][0]["entity_id"] == OLD
+            assert plan["actions"][0]["result"]["statistics_kept"] is True
+            assert len(await series(hass, NEW)) == 72  # statistics only come back with the backup
+    finally:
+        path.unlink(missing_ok=True)
+
+
+@pytest.mark.parametrize("failing", ["statistics", "references"])
+async def test_a_failed_part_stops_the_run_and_keeps_what_was_written(
+    recorder_mock, hass: HomeAssistant, failing: str
+) -> None:
+    two_meters(hass)
+    await async_wait_recording_done(hass)
+    scanner = await make_scanner(hass)
+    path, scanned = meter_automation(hass, scanner)
+    manager, _ = fake_backup()
+    if failing == "statistics":
+        broken = patch.object(
+            CleanupRunner,
+            "_join_statistics",
+            AsyncMock(
+                return_value={"verified": False, "imported": 0, "first": None, "series_id": NEW}
+            ),
+        )
+    else:
+        broken = patch.object(
+            CleanupRunner, "_replace_references", AsyncMock(side_effect=StepAbort("reload_failed"))
+        )
+    try:
+        with (
+            scanned,
+            patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+            broken,
+        ):
+            plan = await make_replace_plan(scanner, hass)
+            await run(scanner, plan, [OLD])
+        result = plan["actions"][0]["result"]
+        assert result["state"] == "done" and plan["status"] == "partial"
+        assert load_yaml(str(path))[0]["trigger"][0]["entity_id"] == OLD  # references untouched
+        if failing == "statistics":
+            assert result["stopped"] == "statistics_failed" and "sources" not in result
+        else:
+            assert result["stopped"] == "reload_failed" and result["sources"] is None
+            assert result["statistics"]["verified"] is True  # the join stays in the journal
+            assert len(await series(hass, NEW)) == 72
+        assert plan["verification"]["ok"] is False
+    finally:
+        path.unlink(missing_ok=True)
