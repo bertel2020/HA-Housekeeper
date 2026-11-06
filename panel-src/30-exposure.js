@@ -11,6 +11,7 @@ const EXPO_DOMAIN_ICONS = {
 const EXPO_PLAN_KINDS = {
   stale_exposed: { target: "remove", label: "expoActRemove" },
   diagnostic_exposed: { target: "remove", label: "expoActRemove" },
+  sensitive_exposed: { target: "remove", label: "expoActRemove" },
   google_without_pin: { target: "pin", label: "expoActPin" },
   auto_expose: { target: "off", label: "expoActNewOff", kind: "set_expose_new" },
 };

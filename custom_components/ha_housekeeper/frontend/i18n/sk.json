@@ -2090,7 +2090,7 @@
 "expoText_alias_duplicate": "Názov „{alias}“ používa pri {assistant} spolu {n} entít. Asistent ich nedokáže rozlíšiť.",
 "expoText_webhook_orphan": "Webhooky v počte {n} patria integrácii „{domain}“, ktorá už nie je nastavená. Housekeeper ich ID zámerne nezobrazuje.",
 "expoAdvice_diagnostic_exposed": "Zruš sprístupnenie. Tlačidlo z toho urobí plán s náhľadom.",
-"expoAdvice_sensitive_exposed": "Iba na informáciu. Housekeeper nič nemení.",
+"expoAdvice_sensitive_exposed": "Len na vedomie, kým sa nerozhodneš inak: Housekeeper sám nič nemení. Tlačidlo alebo ponuka riadka zruší sprístupnenie s náhľadom.",
 "expoAdvice_stale_exposed": "Upratať entitu alebo zrušiť sprístupnenie. Tlačidlo vytvorí plán s jeho náhľadom.",
 "expoAdvice_alias_duplicate": "Premenuj niektorú z nich, aby boli hlasové príkazy jednoznačné.",
 "expoAdvice_webhook_orphan": "Integráciu znova nastav alebo odstráň pozostatky, ak ich už nepotrebuješ.",

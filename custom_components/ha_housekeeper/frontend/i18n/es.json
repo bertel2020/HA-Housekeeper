@@ -1892,7 +1892,7 @@
 "expoText_alias_duplicate": "«{alias}» nombra a {n} entidades para {assistant}. El asistente no puede distinguirlas.",
 "expoText_webhook_orphan": "{n} webhooks pertenecen a «{domain}», una integración que ya no está configurada. Housekeeper deliberadamente no muestra sus ID.",
 "expoAdvice_diagnostic_exposed": "Retira la exposición. El botón crea un plan con vista previa.",
-"expoAdvice_sensitive_exposed": "Solo a título informativo. Housekeeper no cambia nada.",
+"expoAdvice_sensitive_exposed": "Solo informativo hasta que decidas otra cosa: Housekeeper no cambia nada por sí mismo. El botón o el menú de la fila retira la exposición, con vista previa.",
 "expoAdvice_stale_exposed": "Limpia la entidad o retira la exposición. El botón crea un plan con vista previa.",
 "expoAdvice_alias_duplicate": "Renombra una de ellas para que los comandos de voz sean inequívocos.",
 "expoAdvice_webhook_orphan": "Vuelve a configurar la integración o elimina los restos si ya no hacen falta.",

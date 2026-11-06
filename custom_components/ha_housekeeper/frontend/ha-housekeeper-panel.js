@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"378014756a"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"9b834ef124"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b75a1b2a01"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"674ca52f10"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"c91ed359d7"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"bb336a8118"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"9a3c1a8861"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"b80d2e3339"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7d0126c535"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"1a21871d1a"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"3030ded4ed"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"295e8830fb"}];
 
 const TEXT = {
   de: {
@@ -1479,7 +1479,7 @@ Object.assign(TEXT.de, {
   expoText_alias_duplicate: "„{alias}“ heißt bei {assistant} {n} Entitäten. Der Assistent kann sie nicht auseinanderhalten.",
   expoText_webhook_orphan: "{n} Webhooks gehören zu „{domain}“, einer Integration, die nicht mehr eingerichtet ist. Die IDs zeigt Housekeeper bewusst nicht an.",
   expoAdvice_diagnostic_exposed: "Freigabe zurücknehmen. Der Knopf macht daraus einen Plan mit Vorschau.",
-  expoAdvice_sensitive_exposed: "Nur zur Kenntnis. Housekeeper ändert nichts.",
+  expoAdvice_sensitive_exposed: "Nur zur Kenntnis, bis du es willst: Housekeeper ändert nichts von selbst. Der Knopf oder das Zeilenmenü nimmt die Freigabe mit Vorschau zurück.",
   expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen. Der Knopf macht daraus einen Plan mit Vorschau.",
   expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
   expoAdvice_webhook_orphan: "Die Integration neu einrichten oder die Reste entfernen, falls sie nicht mehr gebraucht werden.",
@@ -1509,7 +1509,7 @@ Object.assign(TEXT.en, {
   expoText_alias_duplicate: "\"{alias}\" names {n} entities for {assistant}. The assistant cannot tell them apart.",
   expoText_webhook_orphan: "{n} webhooks belong to \"{domain}\", an integration that is no longer set up. Housekeeper deliberately does not show their ids.",
   expoAdvice_diagnostic_exposed: "Take the exposure back. The button makes a plan with a preview of it.",
-  expoAdvice_sensitive_exposed: "For your information only. Housekeeper changes nothing.",
+  expoAdvice_sensitive_exposed: "For your information until you decide otherwise: Housekeeper changes nothing by itself. The button or the row menu takes the exposure back, with a preview.",
   expoAdvice_stale_exposed: "Clean up the entity or take the exposure back. The button makes a plan with a preview of it.",
   expoAdvice_alias_duplicate: "Rename one of them so voice commands are unambiguous.",
   expoAdvice_webhook_orphan: "Set the integration up again or remove the leftovers if they are no longer needed.",
@@ -8900,6 +8900,7 @@ const EXPO_DOMAIN_ICONS = {
 const EXPO_PLAN_KINDS = {
   stale_exposed: { target: "remove", label: "expoActRemove" },
   diagnostic_exposed: { target: "remove", label: "expoActRemove" },
+  sensitive_exposed: { target: "remove", label: "expoActRemove" },
   google_without_pin: { target: "pin", label: "expoActPin" },
   auto_expose: { target: "off", label: "expoActNewOff", kind: "set_expose_new" },
 };
