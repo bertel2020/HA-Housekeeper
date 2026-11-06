@@ -57,7 +57,8 @@ class ReplaceWizardMixin {
   }
 
   // How a pair is replaced when the person has not said: statistics are carried on, otherwise references are switched.
-  rwDefaultHow(pair) { return pair.has_statistics ? "both" : "replace"; }
+  // Only a real meter (a total that keeps counting) takes over the history and the ID by default; for a measurement, switching the references is enough and touches no database.
+  rwDefaultHow(pair) { return pair.has_statistics && pair.meter ? "both" : "replace"; }
 
   rwHowsOf(pair) { return RW_HOWS.filter(h => pair.has_statistics || !["both", "statistics"].includes(h)); }
 

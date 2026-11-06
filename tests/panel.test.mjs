@@ -1596,7 +1596,7 @@ test("a meter plan explains the copy, the shifted total and the ID move, and ask
   assert.ok(html.includes("sensor.meter_old → sensor.meter_old_alt, then sensor.meter_new → sensor.meter_old"));
   assert.ok(html.includes("Experimental: writes into the recorder database"));
   assert.equal(el.planWord(METER_PLAN), "MIGRATE");
-  assert.ok(el.confirmSummary(METER_PLAN, 1).startsWith("1 meter changes: Housekeeper first creates a Home Assistant backup"));
+  assert.ok(el.confirmSummary(METER_PLAN, 1).startsWith("1 statistics takeovers: Housekeeper first creates a Home Assistant backup"));
   assert.equal(panel("de").el.planWord(METER_PLAN), "MIGRIEREN");
   const done = { ...METER_PLAN, status: "verified", actions: [{ ...METER_PLAN.actions[0], result: { state: "done", statistics_kept: true } }] };
   el.plan = done; el.render();
@@ -3156,7 +3156,7 @@ test("a plan with several pairs sums up the changes and folds each row's details
   const src = (type, n) => ({ type, name: type, writable: true, change_count: n, changes: [], manual: [] });
   const plan = { actions: [{ kind: "replace_references", sources: [src("automation", 3), src("energy", 1)] }, { kind: "migrate_meter" }, { kind: "replace_references", sources: [src("script", 2)] }] };
   const html = el.exchangeSummary(plan);
-  assert.ok(html.includes("3 pairs") && html.includes("6 changes in 3 sources") && html.includes("1 meter switches") && html.includes("Energy dashboard"));
+  assert.ok(html.includes("3 pairs") && html.includes("6 changes in 3 sources") && html.includes("1 statistics takeovers") && html.includes("Energy dashboard"));
   assert.equal(el.exchangeSummary({ actions: [plan.actions[0]] }), "", "a single action has no sum");
 });
 
@@ -3908,7 +3908,7 @@ test("the replace assistant takes proposals only on request, defaults the kind b
   const cand = (id, score = 5) => ({ object_id: id, name: id, score, reasons: [], status: "active", unit: null });
   const result = { unknown: [], pairs: [
     { object_id: "light.a", name: "A", used: 2, has_statistics: false, unit: null, candidates: [cand("light.n")] },
-    { object_id: "sensor.b", name: "B", used: 1, has_statistics: true, unit: null, candidates: [cand("light.n"), cand("sensor.n")] },
+    { object_id: "sensor.b", name: "B", used: 1, has_statistics: true, meter: true, unit: null, candidates: [cand("light.n"), cand("sensor.n")] },
   ] };
   el._hass = { language: "en", callWS: async msg => { calls.push(JSON.parse(JSON.stringify(msg))); return msg.type === "ha_housekeeper/entity_pairs" ? result : { plan_id: "p1", actions: [], status: "dry_run", summary: {} }; } };
   el.rwState().sel = new Set(["light.a", "sensor.b"]);
@@ -3917,6 +3917,7 @@ test("the replace assistant takes proposals only on request, defaults the kind b
   assert.equal(el.rwActions().length, 0, "nothing is chosen for the person");
   el.rwTakeAll();
   assert.deepEqual(JSON.parse(JSON.stringify(el.rwActions())), [{ kind: "replace_references", object_id: "light.a", target: "light.n" }, { kind: "migrate_meter", object_id: "sensor.b", target: "light.n", mode: "both" }]);
+  assert.equal(el.rwDefaultHow({ has_statistics: true, meter: false }), "replace", "a measurement with statistics only switches the references by default");
   assert.equal(el.rwErrorCount(), 2, "one new entity for two old ones marks both rows");
   assert.ok(el.rwCard().includes("Fix the errors") || el.rwSetupCard().includes("Fix the errors"));
   el.rwState().step = 2;

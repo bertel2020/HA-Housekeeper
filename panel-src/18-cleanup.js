@@ -679,8 +679,7 @@ class CleanupMixin {
     const ready = this.replOld && this.replNew && !this.cleanupBusy && !checks.bad;
     const hints = this.successorHints(this.replOld, this.entityUnit(this.replOld), "data-repl-pick");
     return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("replaceTitle")}</h2><p>${this.t("replaceHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
-      <div class="setrow"><div><label>${this.t("replaceOld")}</label></div><div>${this.pickerBox("replOld", "sensor.old_entity")}${checks.used}</div></div>
-      <div class="setrow"><div><label>${this.t("replaceNew")}</label></div><div>${this.pickerBox("replNew", "sensor.new_entity")}${checks.fit}</div></div>
+      <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}${checks.used}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${checks.fit}</div></div>
       ${hints}<div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
@@ -706,8 +705,7 @@ class CleanupMixin {
     const ready = this.meterOld && this.meterNew && !this.cleanupBusy;
     const cards = `<div class="modecards" role="radiogroup" aria-label="${this.esc(this.t("meterMode"))}">${modes.map(m => `<button class="modecard${this.meterMode === m ? " on" : ""}" role="radio" aria-checked="${this.meterMode === m}" data-meter-mode="${m}"><strong>${this.t(`meterCard_${m}`)}${m === "both" ? ` <span class="pill ok">${this.t("meterUsual")}</span>` : ""}</strong><small>${this.t(`meterCardHint_${m}`)}</small><small class="modefollow">${this.t(`meterCardFollow_${m}`)}</small></button>`).join("")}</div>`;
     return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("meterTitle")}</h2><p>${this.t("meterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
-      <div class="setrow"><div><label>${this.t("meterOld")}</label></div>${this.pickerBox("meterOld", "sensor.old_meter")}</div>
-      <div class="setrow"><div><label>${this.t("meterNew")}</label></div>${this.pickerBox("meterNew", "sensor.new_meter")}</div>
+      <div class="exgrid two"><div><label>${this.t("meterOld")}</label>${this.pickerBox("meterOld", "sensor.old_meter")}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("meterNew")}</label>${this.pickerBox("meterNew", "sensor.new_meter")}</div></div>
       ${this.meterChecks(byId.get(this.meterOld), byId.get(this.meterNew))}
       <div class="setrow"><div><label>${this.t("meterMode")}</label></div></div>${cards}
       ${this.successorHints(this.meterOld, byId.get(this.meterOld)?.unit, "data-meter-pick")}<div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
