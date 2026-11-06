@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"b6b9009589"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"84b9f9863a"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"095d5ed812"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"a1632e2d57"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"958cec3ece"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"6b8669a60a"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"df71977573"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"45dbb729ae"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a52f61aced"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"daf8e2fdac"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"810960a9d5"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"fe4e75ab19"}];
 
 const TEXT = {
   de: {
@@ -5222,9 +5222,9 @@ class CleanupMixin {
     return `<ol class="stepper" aria-label="${this.esc(label)}">${parts.join("")}</ol>`;
   }
 
-  // The six stages of every assistant and its plan: choose, set up, review, confirm, run, result.
+  // The five stages of every assistant and its plan: set up (choose and set up may be two screens), review, confirm, run, result.
   // `at` is the stage that is on; the stages before it are done and only shown (going back is the buttons' job).
-  stageNames() { return ["stepChoose", "stepSetup", "wzReview", "wzConfirm", "wzRun", "wzResult"].map(k => this.t(k)); }
+  stageNames() { return ["stepSetup", "wzReview", "wzConfirm", "wzRun", "wzResult"].map(k => this.t(k)); }
 
   stepsBar(at) {
     const items = this.stageNames().map((label, i) => ({ label, state: i < at ? "done" : i === at ? "cur" : "todo" }));
@@ -5244,8 +5244,7 @@ class CleanupMixin {
     let body;
     if (task) {
       const card = { exchange_device: () => this.exchangeCard(), replace_wizard: () => this.rwCard(), repair_counter: () => this.counterCard() }[task]();
-      const chosen = { repair_counter: (this.counterId || "").trim(), exchange_device: this.exchangeState().oldDev, replace_wizard: this.rwState().single ? this.replOld : this.rwState().step === 2 ? "set up" : "" }[task];
-      body = `${this.stepsBar(chosen ? 1 : 0)}${card}`;
+      body = `${this.stepsBar(0)}${card}`;
     } else {
       body = `<p class="factnote pad">${this.t("repairHint")}</p>`;
     }
@@ -13670,7 +13669,7 @@ Object.assign(TEXT.de, {
   unit_outages_1: "Ausfall", unit_outages_n: "Ausfälle", unit_followup_1: "Plan", unit_followup_n: "Pläne", unit_reminders_1: "Erinnerung", unit_reminders_n: "Erinnerungen", unit_criteria_1: "Ziel", unit_criteria_n: "Ziele", unit_critical_1: "Befund", unit_critical_n: "Befunde", unit_backup_1: "Problem", unit_backup_n: "Probleme", unit_quarantine_1: "Objekt", unit_quarantine_n: "Objekte",
   statusTasks: "{count} Aufgaben warten auf dich", statusTasksJump: "Zur Liste der Aufgaben springen", statusAllGood: "Alles in Ordnung",
   counterNoneSub: "{count} Sensoren sehen unauffällig aus.", counterNotChecked: "Noch nicht geprüft", counterNotCheckedSub: "Housekeeper sucht falsche Werte in Zählern und Messwerten. Starte die Prüfung mit „Sensoren prüfen“.",
-  stepChoose: "Auswahl", stepSetup: "Einstellen", stepPreview: "Vorschau",
+  stepSetup: "Einrichten",
   langCommunity: "Community", setLanguage: "Sprache", setLanguageHint: "Gilt für dieses Panel und wird in deinem Benutzerprofil gespeichert. Automatisch folgt der Sprache von Home Assistant.", langAuto: "Automatisch",
   setTabProtection: "Schutzmodus", navCount_findingsNav: "{n} offene Befunde", navCount_batteries: "{n} schwache Batterien", navCount_reminders: "{n} fällige Erinnerungen", navCount_cleanup: "{n} in Quarantäne bereit zum Entfernen", navCount_repair: "{n} Sensorfehler zum Bereinigen", navCount_policies: "{n} Verstöße gegen Regeln oder verfehlte Ziele", navCount_other: "{n} Punkte zum Ansehen", setHintLook: "Sprache, Dichte und Darstellung.", setHintProtection: "Was Aufräumpläne ändern dürfen.", setHintScan: "Wann geprüft wird, Grenzwerte und Meldungen.", setHintInfo: "Version, Diagnose und Support.",
   setEveryHours: "alle {n} h", setManual: "von Hand", setOn: "an", setOff: "aus",
@@ -13722,7 +13721,7 @@ Object.assign(TEXT.en, {
   unit_outages_1: "outage", unit_outages_n: "outages", unit_followup_1: "plan", unit_followup_n: "plans", unit_reminders_1: "reminder", unit_reminders_n: "reminders", unit_criteria_1: "goal", unit_criteria_n: "goals", unit_critical_1: "finding", unit_critical_n: "findings", unit_backup_1: "problem", unit_backup_n: "problems", unit_quarantine_1: "object", unit_quarantine_n: "objects",
   statusTasks: "{count} tasks are waiting for you", statusTasksJump: "Jump to the list of tasks", statusAllGood: "All good",
   counterNoneSub: "{count} sensors look fine.", counterNotChecked: "Not checked yet", counterNotCheckedSub: "Housekeeper looks for wrong values in counters and measurements. Start the check with “Check sensors”.",
-  stepChoose: "Choose", stepSetup: "Set up", stepPreview: "Preview",
+  stepSetup: "Set up",
   langCommunity: "Community", setLanguage: "Language", setLanguageHint: "Applies to this panel and is saved in your user profile. Automatic follows the language of Home Assistant.", langAuto: "Automatic",
   setTabProtection: "Protection mode", navCount_findingsNav: "{n} open findings", navCount_batteries: "{n} low batteries", navCount_reminders: "{n} reminders due", navCount_cleanup: "{n} in quarantine ready for removal", navCount_repair: "{n} sensor errors to repair", navCount_policies: "{n} rule violations or goals missed", navCount_other: "{n} items to look at", setHintLook: "Language, density and appearance.", setHintProtection: "What cleanup plans may change.", setHintScan: "When it checks, limits and messages.", setHintInfo: "Version, diagnostics and support.",
   setEveryHours: "every {n} h", setManual: "manual", setOn: "on", setOff: "off",
@@ -14864,7 +14863,7 @@ class PlanWizardMixin {
     const picked = this._planShow && this._planShow.id === plan.plan_id && this._planShow.at === stage && states[this._planShow.stage] !== "todo" ? this._planShow.stage : fallback;
     const names = this.stageNames();
     const items = [
-      { label: names[0], state: "done" }, { label: names[1], state: "done" },
+      { label: names[0], state: "done" },
       ...groups.map(([name], i) => ({ label: this.t(name), state: states[i], attrs: states[i] === "todo" ? undefined : `data-plan-stage="${i}"`, note: i === picked ? this.t("stepShown") : "" })),
     ];
     const detail = ([name, ids], i) => {
@@ -20552,7 +20551,7 @@ Object.assign(TEXT.de, {
   rwHow_replace_statistics: "Verweise und Statistik", rwHowHint_replace_statistics: "Automationen, Skripte, Szenen und Dashboards zeigen danach auf die neue ID, und die alte Statistik wird an die neue gehängt. Die Statistik ist nur über das Backup umkehrbar.",
   actReplaceMany: "Ersetzen …", actHintReplaceMany: "Diese Entität durch eine neue ersetzen, mit dem Assistenten für mehrere.",
   rwPickTitle: "Welche Entitäten sollen ersetzt werden?", rwPickHint: "Wähle die alten Entitäten. Im nächsten Schritt ordnest du jeder die neue zu; bis zur bestätigten Vorschau wird nichts geändert.",
-  rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesMore: "{n} weitere", exUsedOne: "1 Verwendung", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "Automatisch umgeschrieben: {auto}. Bleiben unverändert: {manual}.",
+  rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesMore: "{n} weitere", rwPart: "Teil {n} von 2", exUsedOne: "1 Verwendung", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "Automatisch umgeschrieben: {auto}. Bleiben unverändert: {manual}.",
   rwFilterDomain: "Alle Arten", rwFilterPlatform: "Alle Integrationen", rwFilterScope: "Alle", rwFilterUsed: "Nur verwendete", rwFilterGone: "Nur nicht verfügbare",
   rwSelectFiltered: "Alle {count} gefilterten wählen", rwNext: "Weiter zu „Zuordnen“ ({count})", rwNoEntities: "Keine Entitäten.",
   rwSetupTitle: "Welche neue Entität ersetzt welche?", rwSetupHint: "Housekeeper schlägt vor (Klasse, Einheit, Bereich, Name, ID-Endung). Nichts ist vorausgewählt, was du nicht bestätigst.",
@@ -20583,7 +20582,7 @@ Object.assign(TEXT.en, {
   rwHow_replace_statistics: "References and statistics", rwHowHint_replace_statistics: "Automations, scripts, scenes and dashboards then point to the new ID, and the old statistics are attached to the new ones. The statistics can only be undone through the backup.",
   actReplaceMany: "Replace …", actHintReplaceMany: "Replace this entity with a new one, using the assistant for several.",
   rwPickTitle: "Which entities should be replaced?", rwPickHint: "Pick the old entities. In the next step you give each one its new entity; nothing changes until you confirm the preview.",
-  rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesMore: "{n} more", exUsedOne: "1 use", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "Rewritten automatically: {auto}. Left unchanged: {manual}.",
+  rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesMore: "{n} more", rwPart: "Part {n} of 2", exUsedOne: "1 use", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "Rewritten automatically: {auto}. Left unchanged: {manual}.",
   rwFilterDomain: "All kinds", rwFilterPlatform: "All integrations", rwFilterScope: "All", rwFilterUsed: "Used only", rwFilterGone: "Unavailable only",
   rwSelectFiltered: "Select all {count} filtered", rwNext: "On to \"Set up\" ({count})", rwNoEntities: "No entities.",
   rwSetupTitle: "Which new entity replaces which?", rwSetupHint: "Housekeeper proposes (class, unit, area, name, ID ending). Nothing is preselected that you do not confirm.",
@@ -20740,7 +20739,7 @@ class ReplaceWizardMixin {
     const table = list.length ? this.listTable("rwpick", columns, pg.rows, { cls: "objs", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${all.length ? this.noMatches("rwpick") : this.t("rwNoEntities")}</div>`;
     const n = rw.sel.size;
     const allBtn = list.length && list.length <= 500 && list.some(r => !rw.sel.has(r.item.object_id)) ? `<button class="btn quiet" data-rw-all>${this.t("rwSelectFiltered", { count: list.length })}</button>` : "";
-    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
+    return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 1 })}</small><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
       <div class="toolbar${n ? "" : " nosel"}">${this.selTools("rwpick", n, "data-rw-clear")}${allBtn}<span class="toolgap"></span>
       <button class="btn primary" data-rw-next ${n ? "" : "disabled"}>${this.t("rwNext", { count: n })}</button></div>
       ${bar}${table}${pg.footer}</div>`;
@@ -20874,7 +20873,7 @@ class ReplaceWizardMixin {
     const many = chosen >= 50 ? `<p class="factnote">${this.t("rwManyPairs")}</p>` : "";
     const how = Object.keys(rw.choices).length && rw.howOpen && rw.choices[rw.howOpen] ? this.rwHowCards(rw.howOpen) : "";
     const foot = `<div class="setrow planfoot"><small class="u-m0">${this.t("rwChosen", { count: chosen })} · ${this.t("repairDryRun")}${errors ? ` · ${this.t("rwFixFirst")}` : ""}</small><span class="rwfoot"><button class="btn" data-rw-back>${this.t("rwBack")}</button> <button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-rw-create ${chosen && !errors && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("rwCreate", { count: chosen })}</button></span></div>`;
-    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
+    return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 2 })}</small><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
       ${scope}<div class="setrow planfoot"><small class="u-m0">${this.esc(rw.error)}</small><button class="btn" data-rw-load ${rw.loading ? "disabled" : ""}>${rw.loading ? this.t("rwLoading") : this.t("rwLoad")}</button></div>
       ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${foot}</div>`;
   }

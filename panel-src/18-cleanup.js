@@ -967,9 +967,9 @@ class CleanupMixin {
     return `<ol class="stepper" aria-label="${this.esc(label)}">${parts.join("")}</ol>`;
   }
 
-  // The six stages of every assistant and its plan: choose, set up, review, confirm, run, result.
+  // The five stages of every assistant and its plan: set up (choose and set up may be two screens), review, confirm, run, result.
   // `at` is the stage that is on; the stages before it are done and only shown (going back is the buttons' job).
-  stageNames() { return ["stepChoose", "stepSetup", "wzReview", "wzConfirm", "wzRun", "wzResult"].map(k => this.t(k)); }
+  stageNames() { return ["stepSetup", "wzReview", "wzConfirm", "wzRun", "wzResult"].map(k => this.t(k)); }
 
   stepsBar(at) {
     const items = this.stageNames().map((label, i) => ({ label, state: i < at ? "done" : i === at ? "cur" : "todo" }));
@@ -989,8 +989,7 @@ class CleanupMixin {
     let body;
     if (task) {
       const card = { exchange_device: () => this.exchangeCard(), replace_wizard: () => this.rwCard(), repair_counter: () => this.counterCard() }[task]();
-      const chosen = { repair_counter: (this.counterId || "").trim(), exchange_device: this.exchangeState().oldDev, replace_wizard: this.rwState().single ? this.replOld : this.rwState().step === 2 ? "set up" : "" }[task];
-      body = `${this.stepsBar(chosen ? 1 : 0)}${card}`;
+      body = `${this.stepsBar(0)}${card}`;
     } else {
       body = `<p class="factnote pad">${this.t("repairHint")}</p>`;
     }

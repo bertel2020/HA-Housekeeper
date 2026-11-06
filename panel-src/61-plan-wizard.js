@@ -39,7 +39,7 @@ class PlanWizardMixin {
     const picked = this._planShow && this._planShow.id === plan.plan_id && this._planShow.at === stage && states[this._planShow.stage] !== "todo" ? this._planShow.stage : fallback;
     const names = this.stageNames();
     const items = [
-      { label: names[0], state: "done" }, { label: names[1], state: "done" },
+      { label: names[0], state: "done" },
       ...groups.map(([name], i) => ({ label: this.t(name), state: states[i], attrs: states[i] === "todo" ? undefined : `data-plan-stage="${i}"`, note: i === picked ? this.t("stepShown") : "" })),
     ];
     const detail = ([name, ids], i) => {

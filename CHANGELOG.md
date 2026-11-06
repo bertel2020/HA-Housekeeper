@@ -14,7 +14,7 @@
 - **Oberfläche:** Kleine Verbesserungen.
   - Die Regel und der Schalter „Automatisch aufräumen“ der Backup-Seite stehen in einem Rahmen.
   - Altes und neues Gerät stehen nebeneinander, ebenso beim Ersetzen von Entitäten.
-- **Ein Stepper für alle Abläufe:** Assistenten, Plan-Seite, „Beheben“ und die erste Aufräumrunde zeigen dieselbe waagerechte Leiste: Auswahl, Einstellen, Prüfen, Bestätigen, Ausführen, Ergebnis.
+- **Ein Stepper für alle Abläufe:** Assistenten, Plan-Seite, „Beheben“ und die erste Aufräumrunde zeigen dieselbe waagerechte Leiste: Einrichten, Prüfen, Bestätigen, Ausführen, Ergebnis. Im Ersetzen-Assistenten mit mehreren Entitäten steht über den zwei Seiten von „Einrichten“ „Teil 1 von 2“ und „Teil 2 von 2“.
   - Erledigte Schritte sind grün, der aktuelle blau, ein fehlgeschlagener rot. Die Plan-Seite zeigt unter der Leiste nur die Unterschritte der gewählten Stufe, mit Fortschritt beim Ausführen.
   - Auf schmalen Bildschirmen steht nur der Name des aktuellen Schritts. „1 Eintrag“ steht jetzt im Singular.
 - **Ersetzen für eine Entität:** Der Vorschlag für die neue Entität kommt jetzt wie bei mehreren Entitäten aus Geräteklasse, Einheit, Bereich, Name und ID-Endung, mit den Gründen. Unter den Feldern steht „Hier wird sie verwendet“ über die ganze Breite, mit jeder Stelle einzeln.
@@ -37,7 +37,7 @@
 - **Interface:** Small improvements.
   - The rule and the "Tidy up automatically" switch of the backup page share one frame.
   - Old and new device sit side by side, and so do the entities when replacing.
-- **One stepper for every flow:** Assistants, the plan page, "Fix" and the first cleanup round show the same horizontal bar: Choose, Set up, Review, Confirm, Run, Result.
+- **One stepper for every flow:** Assistants, the plan page, "Fix" and the first cleanup round show the same horizontal bar: Set up, Review, Confirm, Run, Result. In the replace assistant for several entities the two pages of "Set up" are marked "Part 1 of 2" and "Part 2 of 2".
   - Done stages are green, the current one blue, a failed one red. The plan page shows only the sub-steps of the chosen stage under the bar, with progress while it runs.
   - On narrow screens only the current step keeps its name. "1 entry" is now singular.
 - **Replace for one entity:** The proposal for the new entity now comes, as for several entities, from device class, unit, area, name and ID ending, with the reasons. "Where it is used" sits under the fields over the full width, with every place named.

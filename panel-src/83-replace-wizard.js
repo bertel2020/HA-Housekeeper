@@ -12,7 +12,7 @@ Object.assign(TEXT.de, {
   rwHow_replace_statistics: "Verweise und Statistik", rwHowHint_replace_statistics: "Automationen, Skripte, Szenen und Dashboards zeigen danach auf die neue ID, und die alte Statistik wird an die neue gehängt. Die Statistik ist nur über das Backup umkehrbar.",
   actReplaceMany: "Ersetzen …", actHintReplaceMany: "Diese Entität durch eine neue ersetzen, mit dem Assistenten für mehrere.",
   rwPickTitle: "Welche Entitäten sollen ersetzt werden?", rwPickHint: "Wähle die alten Entitäten. Im nächsten Schritt ordnest du jeder die neue zu; bis zur bestätigten Vorschau wird nichts geändert.",
-  rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesMore: "{n} weitere", exUsedOne: "1 Verwendung", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "Automatisch umgeschrieben: {auto}. Bleiben unverändert: {manual}.",
+  rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesMore: "{n} weitere", rwPart: "Teil {n} von 2", exUsedOne: "1 Verwendung", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "Automatisch umgeschrieben: {auto}. Bleiben unverändert: {manual}.",
   rwFilterDomain: "Alle Arten", rwFilterPlatform: "Alle Integrationen", rwFilterScope: "Alle", rwFilterUsed: "Nur verwendete", rwFilterGone: "Nur nicht verfügbare",
   rwSelectFiltered: "Alle {count} gefilterten wählen", rwNext: "Weiter zu „Zuordnen“ ({count})", rwNoEntities: "Keine Entitäten.",
   rwSetupTitle: "Welche neue Entität ersetzt welche?", rwSetupHint: "Housekeeper schlägt vor (Klasse, Einheit, Bereich, Name, ID-Endung). Nichts ist vorausgewählt, was du nicht bestätigst.",
@@ -43,7 +43,7 @@ Object.assign(TEXT.en, {
   rwHow_replace_statistics: "References and statistics", rwHowHint_replace_statistics: "Automations, scripts, scenes and dashboards then point to the new ID, and the old statistics are attached to the new ones. The statistics can only be undone through the backup.",
   actReplaceMany: "Replace …", actHintReplaceMany: "Replace this entity with a new one, using the assistant for several.",
   rwPickTitle: "Which entities should be replaced?", rwPickHint: "Pick the old entities. In the next step you give each one its new entity; nothing changes until you confirm the preview.",
-  rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesMore: "{n} more", exUsedOne: "1 use", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "Rewritten automatically: {auto}. Left unchanged: {manual}.",
+  rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesMore: "{n} more", rwPart: "Part {n} of 2", exUsedOne: "1 use", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "Rewritten automatically: {auto}. Left unchanged: {manual}.",
   rwFilterDomain: "All kinds", rwFilterPlatform: "All integrations", rwFilterScope: "All", rwFilterUsed: "Used only", rwFilterGone: "Unavailable only",
   rwSelectFiltered: "Select all {count} filtered", rwNext: "On to \"Set up\" ({count})", rwNoEntities: "No entities.",
   rwSetupTitle: "Which new entity replaces which?", rwSetupHint: "Housekeeper proposes (class, unit, area, name, ID ending). Nothing is preselected that you do not confirm.",
@@ -200,7 +200,7 @@ class ReplaceWizardMixin {
     const table = list.length ? this.listTable("rwpick", columns, pg.rows, { cls: "objs", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${all.length ? this.noMatches("rwpick") : this.t("rwNoEntities")}</div>`;
     const n = rw.sel.size;
     const allBtn = list.length && list.length <= 500 && list.some(r => !rw.sel.has(r.item.object_id)) ? `<button class="btn quiet" data-rw-all>${this.t("rwSelectFiltered", { count: list.length })}</button>` : "";
-    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
+    return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 1 })}</small><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
       <div class="toolbar${n ? "" : " nosel"}">${this.selTools("rwpick", n, "data-rw-clear")}${allBtn}<span class="toolgap"></span>
       <button class="btn primary" data-rw-next ${n ? "" : "disabled"}>${this.t("rwNext", { count: n })}</button></div>
       ${bar}${table}${pg.footer}</div>`;
@@ -334,7 +334,7 @@ class ReplaceWizardMixin {
     const many = chosen >= 50 ? `<p class="factnote">${this.t("rwManyPairs")}</p>` : "";
     const how = Object.keys(rw.choices).length && rw.howOpen && rw.choices[rw.howOpen] ? this.rwHowCards(rw.howOpen) : "";
     const foot = `<div class="setrow planfoot"><small class="u-m0">${this.t("rwChosen", { count: chosen })} · ${this.t("repairDryRun")}${errors ? ` · ${this.t("rwFixFirst")}` : ""}</small><span class="rwfoot"><button class="btn" data-rw-back>${this.t("rwBack")}</button> <button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-rw-create ${chosen && !errors && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("rwCreate", { count: chosen })}</button></span></div>`;
-    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
+    return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 2 })}</small><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
       ${scope}<div class="setrow planfoot"><small class="u-m0">${this.esc(rw.error)}</small><button class="btn" data-rw-load ${rw.loading ? "disabled" : ""}>${rw.loading ? this.t("rwLoading") : this.t("rwLoad")}</button></div>
       ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${foot}</div>`;
   }
