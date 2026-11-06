@@ -8,18 +8,15 @@
 - **Backups automatisch aufräumen:** Auf der Seite „Housekeeper-Backups aufräumen“ gibt es einen Schalter (aus), der stündlich nach der dortigen Regel löscht. Geschützte Backups und solche, die die einzige Rückkehr nach einer Recorder-Änderung sind, bleiben.
 - **Verwendungen sehen:** In „Entitäten ersetzen“ und „Gerät austauschen“ lässt sich die Zahl der Verwendungen aufklappen. Die Liste zeigt jede Stelle und ob sie ersetzt wird oder von Hand zu prüfen bleibt.
 - **Statistik übernehmen nur bei Zählern:** Im Ersetzen-Assistenten übernimmt die neue Entität Verlauf und ID nur noch bei echten Zählern von selbst. Bei Messwerten werden standardmäßig nur die Verweise umgestellt. Die Vorschau spricht von „Statistik übernehmen“ statt „Zählerwechsel“.
-- **Zwei Regeln für Auswahl- und Zähler-Helfer** (aus, Hinweise): „Auswahl-Helfer: Option gibt es nicht“ (eine Automation vergleicht oder wählt eine Option, die der `input_select` nicht hat) und „Zähler-Helfer mit unpassender Quelle“ (Verbrauchszähler ohne `total` oder `total_increasing`, Integral oder Ableitung über eine Quelle ohne Einheit).
-- **Qualitätsregel „Helfer liest sich selbst“** (aus, Hinweis): Ein Helfer, dessen Quelle, auch über andere Helfer, wieder er selbst ist.
-- **Quelle des Helfers in der Diagnose:** Meldet die Entität eines Helfers „nicht verfügbar“, nennt die Diagnose die Quell-Entitäten, die ausgefallen, deaktiviert oder gelöscht sind.
-- **Zwei weitere Helfer-Regeln** (aus, Hinweise): „Helfer ohne Bereich“ und „Zahlen-Helfer mit unstimmigem Bereich“ (Minimum, Maximum, Schrittweite, Wert).
-- **Qualitätsregel „Helfer wird nur beschrieben“** (aus, Hinweis): Input-Helfer, Zähler und Timer, die gesetzt, aber nirgends gelesen werden.
-- **Helfer als Folge im Plan:** Wird eine Entität deaktiviert oder entfernt, die ein Helfer liest, sagt der Plan, dass der Helfer seine Quelle verliert.
-- **Helfer löschen:** Auf der Seite eines Helfer-Eintrags (Template, Derivative, Min/Max …) und auf der Aktionsseite seiner Entitäten gibt es „Helfer löschen“ als Plan mit Vorschau. Gesperrt, solange etwas den Helfer sicher verwendet. Vorher entsteht ein Backup, rückgängig geht es nur damit. Input-Helfer, Zähler und Timer sind davon ausgenommen.
-- **Helfer beim Ersetzen mitnehmen:** Der Ersetzen-Assistent stellt auch die Quellen von Helfer-Einträgen (Min/Max, Derivative, utility_meter, Gruppen …) auf die neue Entität um, lädt den Helfer neu und nimmt es beim Zurücknehmen wieder zurück. Templates in Helfern bleiben von Hand zu prüfen.
-- **Fehlende Quelle in einem Template-Helfer:** Nennt das Template eine Entität eindeutig (`states('sensor.x')`, `is_state(…)`, `states.sensor.x`) und gibt es sie nicht mehr, meldet Housekeeper den Helfer als „Entität fehlt“, mit geringerer Sicherheit als bei einem festen Eintrag. Freier Text zählt weiter nicht.
-- **Drei Qualitätsregeln für Templates** (aus, Hinweise): Template-Helfer ohne Verwendung, Template ohne Schutz vor fehlenden Werten (`float` oder `int` ohne Standardwert) und Template-Entitäten aus der YAML ohne `unique_id`.
-- **Helfer erkennbar:** Bei einer Entität, die ein Helfer (Template, Derivative, …) erzeugt, steht auf der Seite „Aktionen“, welchem Helfer sie gehört und dass er zum Entfernen gelöscht werden muss. In Vorschauen und in „Hier wird sie verwendet“ heißen Helfer, die eine Entität nutzen, „Helfer“.
-- **Deaktivieren und Ausblenden auf der Entitätsseite:** Unter „Weitere Aktionen“ lässt sich jede Entität per Plan deaktivieren oder ausblenden, mit Vorschau und Undo. Wird sie noch sicher verwendet, bleibt das Deaktivieren gesperrt.
+- **Helfer:** Housekeeper erkennt Helfer (Template, Derivative, Min/Max …) besser.
+  - Die Aktionsseite einer Helfer-Entität nennt ihren Helfer. „Helfer löschen“ ist ein Plan mit Vorschau und Backup, gesperrt, solange etwas den Helfer sicher verwendet. Input-Helfer, Zähler und Timer sind davon ausgenommen.
+  - Wird eine Entität deaktiviert oder entfernt, die ein Helfer liest, sagt der Plan, dass der Helfer seine Quelle verliert. Meldet die Entität eines Helfers „nicht verfügbar“, nennt die Diagnose die ausgefallenen Quellen.
+  - Der Ersetzen-Assistent stellt auch die Quellen von Helfer-Einträgen auf die neue Entität um, mit Undo. Templates in Helfern bleiben von Hand zu prüfen.
+  - Nennt ein Template-Helfer eine Entität eindeutig (`states('sensor.x')`, `is_state(…)`) und gibt es sie nicht mehr, wird er als „Entität fehlt“ gemeldet.
+- **Qualitätsregeln für Helfer und Templates** (aus, Hinweise):
+  - Templates: Helfer ohne Verwendung, Zahl ohne Schutz vor fehlenden Werten, Template-Entität aus der YAML ohne `unique_id`.
+  - Helfer: wird nur beschrieben, ohne Bereich, Zahlenbereich unstimmig, liest sich selbst, Auswahl mit unbekannter Option, Zähler-Helfer mit ungeeigneter Quelle.
+- **Deaktivieren und Ausblenden auf der Entitätsseite:** Unter „Weitere Aktionen“ lässt sich jede Entität per Plan deaktivieren oder ausblenden, mit Vorschau und Undo. Wird sie noch sicher verwendet, bleibt das Deaktivieren gesperrt. Eine Entität, die noch läuft, lässt sich mit „Entfernen (läuft noch)“ ohne Quarantäne entfernen, mit Backup; sicher verwendet bleibt das gesperrt.
 - **Alte Entität deaktivieren:** Der Ersetzen-Assistent kann die alte Entität nach dem Umstellen deaktivieren (Quarantäne). Der Plan lässt sich zurücknehmen, dann ist sie wieder aktiv.
 - **Ein Assistent zum Ersetzen:** „Entitäten ersetzen“ ersetzt eine oder mehrere Entitäten. „Zähler wechseln“ und „Verweise ersetzen“ gehen darin auf, Reparieren hat drei Kacheln.
   - Für eine Entität gibt es fünf Arten, nach der ID gruppiert: Verweise umstellen, Verweise und Statistik (neu), Nur Statistik, Statistik und ID, Nur ID.
@@ -40,6 +37,16 @@
 
 #### New
 
+- **Helpers:** Housekeeper knows helpers (template, derivative, min/max …) better.
+  - The actions page of a helper's entity names its helper. "Delete the helper" is a plan with a preview and a backup, blocked while something certainly uses the helper. Input helpers, counters and timers are left out.
+  - When an entity a helper reads is disabled or removed, the plan says the helper loses its source. When a helper's entity reports unavailable, the diagnosis names the sources that are down.
+  - The replace assistant also switches the sources of helper entries to the new entity, with undo. Templates in helpers stay for a manual check.
+  - When a template helper names an entity clearly (`states('sensor.x')`, `is_state(…)`) and it no longer exists, the helper is reported as "entity missing".
+- **Quality rules for helpers and templates** (off, hints):
+  - Templates: helper without use, number without protection against missing values, YAML template entity without `unique_id`.
+  - Helpers: only written, without area, inconsistent number range, reads itself, select with an unknown option, meter helper with an unsuitable source.
+- **Disable, hide and remove on the entity page:** Under "More actions" any entity can be disabled or hidden by a plan, with preview and undo. An entity that still works can be removed with "Remove (still working)" without quarantine, with a backup; if it is certainly used, that stays blocked.
+- **Disable the old entity:** The replace assistant can disable the old entity after switching over (quarantine). The plan can be undone, then it is active again.
 - **Plan without a backup:** The plan preview has a switch "Run without a backup" under "Advanced", with a warning. Not possible for plans that write into the recorder database; the audit report notes that the backup was skipped.
 - **Tidy backups automatically:** The "Tidy up Housekeeper backups" page has a switch (off) that deletes every hour by the rule there. Protected backups and those that are the only way back after a recorder change stay.
 - **See the uses:** In "Replace entities" and "Exchange a device" the count of uses unfolds into a list of every place and whether it is replaced or left for a manual check.

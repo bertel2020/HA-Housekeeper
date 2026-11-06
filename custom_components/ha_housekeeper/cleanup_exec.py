@@ -2057,6 +2057,7 @@ class CleanupRunner:
             ):
                 return "entity_changed"
             restorable = entity_restorable(self.hass, entry)
+            verdict_args = {"confirm_working": bool(action.get("confirm_working"))}
         verdict = judge_action(
             kind,
             object_id,

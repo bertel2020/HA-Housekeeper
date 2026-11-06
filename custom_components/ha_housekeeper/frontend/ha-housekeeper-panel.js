@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"df71977573"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"45dbb729ae"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a52f61aced"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"daf8e2fdac"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"810960a9d5"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"fe4e75ab19"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"2062d26a4d"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"7c466ed9ef"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b03531fec8"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"5ffecd3429"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"611214dc22"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"33469598ec"}];
 
 const TEXT = {
   de: {
@@ -13539,6 +13539,8 @@ class DetailActionsMixin {
     // A helper entry can be deleted by a plan, from its own page or from the page of one of its entities.
     const helperId = item.object_type === "config_entry" && HELPER_DOMAINS.has(item.domain) ? item.object_id : owner?.object_id;
     if (helperId) out.push({ attr: `data-act-remove-helper="${this.esc(helperId)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveHelper"), hint: "actHintRemoveHelper" });
+    // An entity that still works can be removed too, on purpose: no quarantine, backup and confirmation as for any removal.
+    if (item.object_type === "entity" && !owner && item.status && !["orphaned", "unavailable", "unknown", "disabled"].includes(item.status)) out.push({ attr: `data-act-remove-working="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveWorking"), hint: "actHintRemoveWorking" });
     // Any entity can be switched off or hidden by a plan; a step that already answers a finding (disable, remove) is not offered twice.
     if (item.object_type === "entity") {
       const state = (target, icon) => out.push({ attr: `data-act-state="${this.esc(item.object_id)}|${target}"`, icon, label: this.t(`actState_${target}`), hint: `actStateHint_${target}` });
@@ -13696,6 +13698,10 @@ class DetailActionsMixin {
       try { if (!await this.newPlan([{ kind: "remove_helper", object_id: el.dataset.actRemoveHelper }])) return; this.selected = null; } catch (err) { this.failed(err); }
       this.render();
     });
+    root.querySelectorAll("[data-act-remove-working]").forEach(el => el.onclick = async () => {
+      try { if (!await this.newPlan([{ kind: "remove_entity", object_id: el.dataset.actRemoveWorking, confirm_working: true }])) return; this.selected = null; } catch (err) { this.failed(err); }
+      this.render();
+    });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
@@ -13738,6 +13744,10 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   helperKind: "Helper", actHelperOwner: "Belongs to the helper {name}", actHintHelperOwner: "A helper builds this entity and creates it again at once. To remove it, delete the helper in Home Assistant (Settings → Devices & services → Helpers).",
 });
+
+// A working entity removed on purpose.
+Object.assign(TEXT.de, { actRemoveWorking: "Entfernen (läuft noch)", actHintRemoveWorking: "Entfernt den Registry-Eintrag, obwohl die Entität noch Werte liefert. Ohne Quarantäne, aber mit Backup und Vorschau; wird sie sicher verwendet, bleibt der Plan gesperrt.", reason_working_confirmed: "Die Entität liefert noch Werte. Du hast ausdrücklich gewählt, sie ohne Quarantäne zu entfernen." });
+Object.assign(TEXT.en, { actRemoveWorking: "Remove (still working)", actHintRemoveWorking: "Removes the registry entry although the entity still delivers values. No quarantine, but with a backup and a preview; if it is certainly used, the plan stays blocked.", reason_working_confirmed: "The entity still delivers values. You chose explicitly to remove it without quarantine." });
 
 // A helper that reads the entity loses its source when the entity is switched off or removed.
 Object.assign(TEXT.de, { reason_feeds_helper: "Ein Helfer liest diese Entität und verliert damit seine Quelle: er meldet danach „nicht verfügbar“ oder falsche Werte." });

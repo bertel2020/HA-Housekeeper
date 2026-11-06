@@ -393,3 +393,27 @@ def test_a_helper_that_reads_the_entity_is_named_in_the_verdict() -> None:
     ]
     action = judge_entity_action("disable_entity", "sensor.src", objects, edges)
     assert "feeds_helper" in action["reasons"]
+
+
+def test_a_working_entity_is_removed_only_when_asked_for_and_without_quarantine() -> None:
+    from custom_components.ha_housekeeper.cleanup import judge_entity_action
+
+    objects = {"sensor.live": {"object_id": "sensor.live", "status": "working", "name": "L"}}
+    plain = judge_entity_action("remove_entity", "sensor.live", objects, [])
+    assert plain["verdict"] == "blocked"
+    assert "entity_working" in plain["reasons"]
+    asked = judge_entity_action("remove_entity", "sensor.live", objects, [], confirm_working=True)
+    assert asked["verdict"] == "review"
+    assert asked["reasons"] == ["working_confirmed"]
+    used = [
+        {
+            "source": "automation:a",
+            "target": "entity:sensor.live",
+            "relation": "REFERENCES",
+            "confidence": "certain",
+        }
+    ]
+    blocked = judge_entity_action(
+        "remove_entity", "sensor.live", objects, used, confirm_working=True
+    )
+    assert blocked["verdict"] == "blocked"

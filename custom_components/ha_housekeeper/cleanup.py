@@ -308,6 +308,7 @@ def judge_action(
     target: str | None = None,
     sources: list[dict[str, Any]] | None = None,
     meter: dict[str, Any] | None = None,
+    confirm_working: bool = False,
 ) -> dict[str, Any]:
     """Judge one candidate of any kind; see ``judge_entity_action`` for the verdicts."""
     if kind in METER_KINDS:
@@ -318,7 +319,9 @@ def judge_action(
         )
     if kind in REFERENCE_KINDS:
         return judge_reference_action(object_id, target, objects, edges, sources)
-    return judge_entity_action(kind, object_id, objects, edges, quarantine, restorable, now)
+    return judge_entity_action(
+        kind, object_id, objects, edges, quarantine, restorable, now, confirm_working
+    )
 
 
 def _quarantine_reasons(
@@ -1293,6 +1296,7 @@ def judge_entity_action(
     quarantine: dict[str, str] | None = None,
     restorable: bool | None = None,
     now: datetime | None = None,
+    confirm_working: bool = False,
 ) -> dict[str, Any]:
     """Judge one entity candidate. Verdicts: ``ok`` (no known use), ``review``, ``blocked``.
 
@@ -1326,7 +1330,16 @@ def judge_entity_action(
 
     reasons = action["reasons"]
     allowed = DISABLEABLE_STATUSES if kind == "disable_entity" else REMOVABLE_STATUSES
-    if kind == "disable_entity" and item["status"] == "disabled":
+    # A working entity is removed only when the person asked for exactly that (``confirm_working``):
+    # then there is no quarantine to wait for, backup and confirmation still apply.
+    working_removal = (
+        kind == "remove_entity" and confirm_working and item["status"] not in REMOVABLE_STATUSES
+    )
+    if working_removal:
+        reasons.append("working_confirmed")
+        action["confirm_working"] = True
+        action["skips_quarantine"] = True
+    elif kind == "disable_entity" and item["status"] == "disabled":
         reasons.append("already_disabled")
     elif item["status"] not in allowed and not (
         kind == "disable_entity" and item.get("blocked_automation")
@@ -1346,7 +1359,11 @@ def judge_entity_action(
         reasons.append("marked_keep")
     if item.get("critical"):
         reasons.append("critical_object")
-    if kind == "remove_entity":
+    if working_removal:
+        action["restorable"] = restorable
+        if restorable is False:
+            reasons.append("not_restorable")
+    elif kind == "remove_entity":
         # Disabling an entity its integration no longer provides changes nothing, so the
         # quarantine would prove nothing; backup, confirmation and restore still apply. Before
         # a day of scans without it (``not_provided_settled``) the person confirms it is gone:
@@ -1625,6 +1642,7 @@ def build_plan(
                 quarantine,
                 restorable(object_id) if restorable else None,
                 now,
+                confirm_working=bool(request.get("confirm_working")),
             )
             action["fingerprint"] = fingerprint(object_id) if fingerprint else None
         if kind in REMOVAL_KINDS:
