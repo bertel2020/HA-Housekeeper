@@ -109,7 +109,7 @@ const TEXT = {
     stepRunPartial: "Nur teilweise ausgeführt", stepVerifyFailed: "Die Prüfung hat Auffälligkeiten ergeben",
     backupRestoreHint: "Ein Backup stellt nur Home Assistant selbst wieder her (Einstellungen → System → Backups); Housekeeper spielt keine Backups ein.",
     undoHousekeeper: "Rückgängig per Housekeeper", undoBackupOnly: "Nur per Backup rückgängig", planDetails: "Details",
-    planResult: "Ergebnis der Vorschau", planClose: "Schließen", planCreating: "Erstelle Vorschau …", planError: "Vorschau fehlgeschlagen",
+    planResult: "Ergebnis der Vorschau", planBack: "Zurück zur Auswahl", planBackHint: "Verwirft diese Vorschau und geht zur Auswahl zurück. Nichts wurde geändert.", planClose: "Schließen", planCreating: "Erstelle Vorschau …", planError: "Vorschau fehlgeschlagen",
     confirmError: "Bestätigen nicht möglich", checkError: "Aktualitätsprüfung fehlgeschlagen", renewError: "Erneuern fehlgeschlagen", renewPlan: "Erneuern", toastRenewed: "Vorschau erneuert", planStale: "Veraltet",
     planStaleHint: "Diese Vorschau ist älter als 24 Stunden und kann nicht mehr bestätigt werden. Erneuern prüft dieselben Einträge noch einmal und ersetzt sie.",
     planChangedTitle: "Seit der Vorschau hat sich etwas geändert", planChangedHint: "Für diese Einträge ergibt die Prüfung jetzt ein anderes Bild. Erneuere die Vorschau und sieh sie dir noch einmal an.", planChangedMore: "… und {count} weitere",
@@ -294,7 +294,7 @@ const TEXT = {
     stepRunPartial: "Only partly executed", stepVerifyFailed: "The check found irregularities",
     backupRestoreHint: "Only Home Assistant itself restores a backup (Settings → System → Backups); Housekeeper does not restore backups.",
     undoHousekeeper: "Undo by Housekeeper", undoBackupOnly: "Backup only", planDetails: "Details",
-    planResult: "Preview result", planClose: "Close", planCreating: "Creating preview …", planError: "Preview failed",
+    planResult: "Preview result", planBack: "Back to the choice", planBackHint: "Discards this preview and returns to the choice. Nothing was changed.", planClose: "Close", planCreating: "Creating preview …", planError: "Preview failed",
     confirmError: "Cannot confirm", checkError: "Freshness check failed", renewError: "Renewing failed", renewPlan: "Renew", toastRenewed: "Preview renewed", planStale: "Outdated",
     planStaleHint: "This preview is older than 24 hours and can no longer be confirmed. Renewing checks the same entries again and replaces it.",
     planChangedTitle: "Something changed since the preview", planChangedHint: "The check now gives a different result for these entries. Renew the preview and look at it again.", planChangedMore: "… and {count} more",
@@ -4482,7 +4482,7 @@ class CleanupMixin {
       const run = this.runActions(plan);
       const blocked = this.modeBlocked(plan);
       const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
-      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t("confirmPlan")}</button></span></div>`;
+      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns">${this.viewTrail.length ? `<button class="btn" data-plan-discard title="${this.esc(this.t("planBackHint"))}"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("planBack")}</button>` : ""}<button class="btn" data-plan-close>${this.t("planClose")}</button>${this.viewTrail.length ? "" : `<button class="btn" data-plan-discard>${this.t("confirmCancel")}</button>`}<button class="btn ${risky ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t("confirmPlan")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {
       const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
