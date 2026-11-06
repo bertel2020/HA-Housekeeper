@@ -624,3 +624,11 @@ async def test_the_scan_finds_a_spike_in_a_measurement(recorder_mock, hass) -> N
     (item,) = found["items"]
     assert item["statistic_id"] == "sensor.temperature" and item["kind"] == "measurement"
     assert len(item["findings"]) == 1 and item["unit"] == "°C"
+
+
+def test_a_counter_that_resets_every_day_has_no_glitches() -> None:
+    daily = [h * 0.01 + (0.005 if h == 0 else 0) for _ in range(10) for h in range(24)]
+    assert analyse([], hourly(daily)) == []
+    on_a_high_level = [1000 + v for v in daily]
+    on_a_high_level[30] = 5.0  # one real dip on a high level is still found
+    assert len(analyse([], hourly(on_a_high_level, increasing=False))) == 1
