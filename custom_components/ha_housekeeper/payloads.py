@@ -183,6 +183,16 @@ class StatisticsLastResult(TypedDict):
     rows: dict[str, int]  # statistic_id -> number of hourly rows
 
 
+class StatisticDetailResult(TypedDict):
+    available: bool
+    busy: bool
+    meta: (
+        dict[str, Any] | None
+    )  # source, unit, unit_class, has_sum, has_mean; None without a metadata row
+    tables: dict[str, Any]  # statistics, short_term, states -> rows, first, last (epoch seconds)
+    origin: dict[str, Any]  # kind (entity_removed, integration_removed, unknown), platform, since
+
+
 class PolicyItem(TypedDict):
     object_type: str
     object_id: str

@@ -98,7 +98,36 @@ class UnusedMixin {
     const refsHtml = refs.length ? `<p class="factnote">${t("statRefsSome", { n: refs.length })}</p><ul>${refs.map(refLine).join("")}</ul>` : `<span class="muted">${t("statRefsNone")}</span>`;
     const successors = this.statSuccessors(o);
     const succHtml = successors.length ? successors.map(s => `<button class="linklike" data-object="entity:${this.esc(s.object_id)}">${this.esc(s.object_id)}</button>`).join(", ") : `<span class="muted">${t("statNoSuccessor")}</span>`;
-    return `<tr class="static remhist"><td colspan="7"><div class="bhgrid">${field("statFullId", `<code>${this.esc(o.statistic_id)}</code>`, "wide")}${field("statRefs", refsHtml, "wide")}${field("statSuccTitle", succHtml, "wide")}</div></td></tr>`;
+    return `<tr class="static remhist"><td colspan="7"><div class="bhgrid">${field("statFullId", `<code>${this.esc(o.statistic_id)}</code>`, "wide")}${this.statInfoFields(o, field)}${field("statEnergy", o.in_energy ? `<span class="pill warn">${t("inEnergy")}</span> <span class="muted">${this.esc(t("inEnergyLocked"))}</span>` : `<span class="pill ok">${t("statEnergyNo")}</span>`)}${field("statRefs", refsHtml, "wide")}${field("statSuccTitle", succHtml, "wide")}</div></td></tr>`;
+  }
+
+  // Reads what the recorder holds for one statistic when its row is opened; kept until the page reloads.
+  loadStatInfo(id, refresh = false) {
+    const cache = (this.statInfo ||= {}), kept = cache[id];
+    if (kept?.loading || (kept && !kept.busy && !kept.failed && !refresh)) return;
+    cache[id] = { loading: true };
+    this._hass.callWS({ type: "ha_housekeeper/statistic_detail", statistic_id: id, refresh })
+      .then(r => { cache[id] = r; }).catch(() => { cache[id] = { failed: true }; }).finally(() => this.render());
+  }
+
+  // Period, cause, origin and the rows per recorder table of an opened statistic.
+  statInfoFields(o, field) {
+    const t = (k, v) => this.t(k, v), id = o.statistic_id, info = this.statInfo?.[id];
+    if (!info || info.loading) return field("statPeriod", `<span class="muted">${t("statDetailLoading")}</span>`, "wide");
+    if (info.failed || info.available === false) return field("statPeriod", `<span class="muted">${t("statDetailFailed")}</span>`, "wide");
+    if (info.busy) return field("statPeriod", `<span class="muted">${t("statDetailBusy")}</span>`, "wide");
+    const day = ts => new Date(ts * 1000).toLocaleDateString(this.lang), n = v => this.formatNumber(v);
+    const st = info.tables.statistics, days = st.first && st.last ? Math.max(1, Math.round((st.last - st.first) / 86400)) : 0;
+    const span = !days ? "" : days >= 60 ? t("statSpanMonths", { n: n(Math.round(days / 30.4)) }) : t("statSpanDays", { n: n(days) });
+    const period = st.rows ? `${day(st.first)} – ${day(st.last)}<br><span class="muted">${this.esc(span)}, ${t("statRowsHourly", { n: n(st.rows) })}</span>${days >= 180 ? `<br><span class="pill warn">${t("statLongData")}</span>` : ""}` : `<span class="muted">${t("lastEntryNone")}</span>`;
+    const og = info.origin || {}, platform = this.esc(og.platform || "–");
+    const why = og.kind === "integration_removed" ? t("statWhyIntegration", { platform }) : og.kind === "entity_removed" ? t("statWhyEntity", { platform }) : t("statWhyUnknown");
+    const when = og.since ? ` ${t("statWhenRemoved", { when: this.esc(this.relTime(new Date(og.since * 1000).toISOString())) })}` : "";
+    const m = info.meta, unitClass = m?.unit_class ? `<br><span class="muted">${t("statUnitClass")}: ${this.esc(m.unit_class)}</span>` : "";
+    const origin = m ? `${this.esc(t(m.has_sum && m.has_mean ? "kindBoth" : m.has_sum ? "kindSum" : "kindMean"))}${unitClass}<br><span class="muted">${t("statSource")}: ${this.esc(m.source)}</span>${m.has_sum ? `<br><span class="muted">${t("statSumHint")}</span>` : ""}` : "–";
+    const row = (key, tb) => `<span>${t(key)}</span><span class="num">${n(tb.rows)}</span>`;
+    const db = `<div class="statdb">${row("statDbStatistics", info.tables.statistics)}${row("statDbShort", info.tables.short_term)}${row("statDbStates", info.tables.states)}</div><p class="factnote">${t("statDbNote")}</p>`;
+    return `${field("statPeriod", period)}${field("statWhy", `${why}${when}`)}${field("statOrigin", origin)}${field("statDb", db, "wide")}`;
   }
 
   // When the statistic last received a value: read on the first visit of the list, never during a scan.

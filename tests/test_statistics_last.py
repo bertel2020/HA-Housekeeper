@@ -94,3 +94,18 @@ async def test_given_ids_are_answered_instead_of_the_orphans(
         hass, snapshot("sensor.gone"), ["sensor.live", "sensor.none"], refresh=True
     )
     assert result["last"] == {"sensor.live": top.timestamp(), "sensor.none": None}
+
+
+async def test_detail_counts_the_rows_per_table(recorder_mock, hass: HomeAssistant) -> None:
+    from custom_components.ha_housekeeper.statistics_detail import statistic_detail
+
+    top = datetime.now(UTC).replace(minute=0, second=0, microsecond=0)
+    seed(hass, "sensor.gone", [top - timedelta(hours=2), top - timedelta(hours=1), top])
+    await async_wait_recording_done(hass)
+
+    result = await statistic_detail(hass, "sensor.gone", refresh=True)
+
+    assert result["meta"]["unit"] == "%" and result["meta"]["source"] == "recorder"
+    assert result["tables"]["statistics"]["rows"] == 3
+    assert result["tables"]["states"]["rows"] == 0
+    assert result["origin"]["kind"] == "unknown"

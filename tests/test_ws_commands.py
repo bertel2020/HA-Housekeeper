@@ -37,6 +37,7 @@ READS = [
     {"type": D + "reliability", "window_days": 7, "compare": True, "cached_only": True},
     {"type": D + "db_health"},
     {"type": D + "statistics_last"},
+    {"type": D + "statistic_detail", "statistic_id": "sensor.none"},
     {"type": D + "database_first"},
     {"type": D + "entity_space"},
     {"type": D + "storms"},

@@ -1470,6 +1470,7 @@ class HAHousekeeperPanel extends HTMLElement {
       if (el.dataset.statRow !== undefined && inner && inner !== el && el.contains(inner)) return;
       const key = el.dataset.statMore ?? el.dataset.statRow, open = this.statOpen || [];
       this.statOpen = open.includes(key) ? open.filter(x => x !== key) : [...open, key];
+      if (this.statOpen.includes(key)) this.loadStatInfo(key);
       this.render();
     }));
     root.querySelectorAll("[data-use-more]").forEach(el => el.onclick = () => { const k = el.dataset.useMore, open = this.useOpen || []; this.useOpen = open.includes(k) ? open.filter(x => x !== k) : [...open, k]; this.render(); });
