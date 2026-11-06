@@ -6566,7 +6566,7 @@
 "rwOld_disable": "Desativar (quarentena)",
 "rwOld_delete": "Eliminar",
 "rwOldHint": "A desativação pode ser desfeita. Não é preciso com «Assumir o ID»: a entidade antiga recebe outro ID de qualquer forma.",
-"rwOldWarn": "Eliminar só funciona numa entidade que a integração já não fornece; caso contrário voltaria. Se pertencer a um auxiliar, o auxiliar inteiro é eliminado. O histórico fica no recorder como estatística órfã, «Anular» só repõe a entrada. Antes é feita uma cópia de segurança.",
+"rwOldWarn": "Só para uma entidade que a integração já não fornece; caso contrário voltaria. Se pertencer a um auxiliar, o auxiliar inteiro é eliminado. «Anular» só repõe a entrada. Antes é feita uma cópia de segurança.",
 "reason_delete_old": "A entidade antiga é eliminada. «Anular» só repõe a entrada.",
 "reason_delete_old_helper": "A entidade antiga pertence a um auxiliar: é eliminado com todas as suas entidades.",
 "reason_delete_old_provided": "A integração ainda fornece a entidade antiga, voltaria. Só pode ser desativada.",

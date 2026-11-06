@@ -6566,7 +6566,7 @@
 "rwOld_disable": "Desactivar (cuarentena)",
 "rwOld_delete": "Eliminar",
 "rwOldHint": "La desactivación se puede deshacer. No hace falta con «Asumir el ID»: la entidad antigua recibe otro ID de todos modos.",
-"rwOldWarn": "Eliminar solo funciona con una entidad que su integración ya no proporciona; si no, volvería. Si pertenece a un ayudante, se elimina todo el ayudante. Su historial queda en el recorder como estadística huérfana, «Deshacer» solo restaura la entrada. Antes se hace una copia de seguridad.",
+"rwOldWarn": "Solo para una entidad que su integración ya no proporciona; si no, volvería. Si pertenece a un ayudante, se elimina todo el ayudante. «Deshacer» solo restaura la entrada. Antes se hace una copia de seguridad.",
 "reason_delete_old": "La entidad antigua se elimina. «Deshacer» solo restaura la entrada.",
 "reason_delete_old_helper": "La entidad antigua pertenece a un ayudante: se elimina con todas sus entidades.",
 "reason_delete_old_provided": "La integración aún proporciona la entidad antigua, volvería. Solo se puede desactivar.",

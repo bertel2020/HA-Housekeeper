@@ -6566,7 +6566,7 @@
 "rwOld_disable": "Désactiver (quarantaine)",
 "rwOld_delete": "Supprimer",
 "rwOldHint": "La désactivation peut être annulée. Inutile avec « Reprendre l’ID » : l’ancienne entité reçoit de toute façon un autre ID.",
-"rwOldWarn": "La suppression ne marche que pour une entité que son intégration ne fournit plus ; sinon elle reviendrait. Si elle appartient à un auxiliaire, tout l’auxiliaire est supprimé. Son historique reste dans le recorder comme statistique orpheline, « Annuler » ne rétablit que l’entrée. Une sauvegarde est faite avant.",
+"rwOldWarn": "Seulement pour une entité que son intégration ne fournit plus ; sinon elle reviendrait. Si elle appartient à un auxiliaire, tout l’auxiliaire est supprimé. « Annuler » ne rétablit que l’entrée. Une sauvegarde est faite avant.",
 "reason_delete_old": "L’ancienne entité est supprimée. « Annuler » ne rétablit que l’entrée.",
 "reason_delete_old_helper": "L’ancienne entité appartient à un auxiliaire : il est supprimé avec toutes ses entités.",
 "reason_delete_old_provided": "L’intégration fournit encore l’ancienne entité, elle reviendrait. Elle ne peut qu’être désactivée.",
