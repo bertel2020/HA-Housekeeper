@@ -1512,6 +1512,7 @@ def build_plan(
                 meter={**meter, "mode": mode, "sources": sources},
             )
             action["fingerprint"] = meter.get("fingerprint")
+            action["disable_old"] = bool(request.get("disable_old")) and mode not in {"both", "id"}
             if mode == METER_REFERENCE_MODE:
                 action["reference_fingerprint"] = reference_print
         elif kind in RENAME_KINDS:
@@ -1546,6 +1547,7 @@ def build_plan(
                     sources,
                 )
             action["fingerprint"] = reference_print
+            action["disable_old"] = bool(request.get("disable_old")) and target_kind == "entity"
         else:
             action = judge_action(
                 kind,

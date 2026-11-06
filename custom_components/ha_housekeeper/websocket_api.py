@@ -1042,6 +1042,7 @@ async def _plan_from_requests(
                     ),
                     vol.Optional("target_kind"): vol.In(("entity", "area", "floor", "label")),
                     vol.Optional("mode"): vol.In((*METER_MODES, *counter_repair.RANGE_MODES)),
+                    vol.Optional("disable_old"): bool,
                     vol.Optional("range"): {
                         vol.Required("from"): vol.Coerce(float),
                         vol.Required("to"): vol.Coerce(float),

@@ -978,7 +978,7 @@ class CleanupRunner:
         if kind == "forget_device":
             return await self._forget_device(action), "device_forgotten"
         if kind in METER_KINDS:
-            return await self._migrate_meter(action), "meter_migrated"
+            return self._disable_old(action, await self._migrate_meter(action)), "meter_migrated"
         if kind in PURGE_KINDS:
             return await self._purge_statistics(action), "statistics_purged"
         if kind in TRIM_KINDS:
@@ -1016,7 +1016,48 @@ class CleanupRunner:
             return await self._repair_counter(action), "counter_repaired"
         if kind in REFACTOR_KINDS:
             return await self._refactor_automation(action), "automation_refactored"
-        return await self._replace_references(action), "references_replaced"
+        return self._disable_old(
+            action, await self._replace_references(action)
+        ), "references_replaced"
+
+    def _disable_old(self, action: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+        """Quarantine the old entity once its replacement went through; the step stays done if not.
+
+        Only when the person asked for it, the step did not stop, and the old entity keeps its ID
+        (the modes that give its ID away already move it aside).
+        """
+        if (
+            not action.get("disable_old")
+            or result.get("stopped")
+            or action.get("mode") in {"both", "id"}
+        ):
+            return result
+        registry = er.async_get(self.hass)
+        entry = registry.async_get(action["object_id"])
+        if entry is None or entry.disabled_by is not None:
+            return result
+        updated = registry.async_update_entity(
+            action["object_id"], disabled_by=er.RegistryEntryDisabler.USER
+        )
+        result["disabled_old"] = {
+            "before": registry_fingerprint(entry),
+            "after": registry_fingerprint(updated),
+        }
+        return result
+
+    def _undo_disable_old(self, object_id: str, result: dict[str, Any]) -> str:
+        """Enable the old entity again; a change made to it since then is left alone."""
+        note = result.get("disabled_old")
+        if not note or note.get("state") == "undone":
+            return "undone"
+        entry = er.async_get(self.hass).async_get(object_id)
+        if entry is None:
+            return "conflict_gone"
+        if registry_fingerprint(entry) != note["after"]:
+            return "conflict_changed"
+        er.async_get(self.hass).async_update_entity(object_id, disabled_by=None)
+        note["state"] = "undone"
+        return "undone"
 
     async def _purge_after_removal(self, plan: dict[str, Any], action: dict[str, Any]) -> dict:
         """Delete the recorder data of a removed entity or device as the person chose.
@@ -2254,8 +2295,12 @@ class CleanupRunner:
                 outcome = await self._undo_rename(result)
             elif kind in REFERENCE_KINDS | REFACTOR_KINDS:
                 outcome = await self._undo_references(result)
+                if outcome == "undone":
+                    outcome = self._undo_disable_old(action["object_id"], result)
             elif kind in METER_KINDS:
                 outcome = await self._undo_meter(result)
+                if outcome == "undone":
+                    outcome = self._undo_disable_old(action["object_id"], result)
             elif kind in AREA_KINDS:
                 outcome = self._unset_area(action["object_id"], result)
             elif kind in STATE_KINDS:

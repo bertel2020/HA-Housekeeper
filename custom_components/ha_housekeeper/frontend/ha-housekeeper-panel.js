@@ -20608,6 +20608,7 @@ Object.assign(TEXT.de, {
   rwHowHint_id: "Die neue Entität übernimmt die ID, die Statistik bleibt getrennt.",
   rwErrDuplicate: "Ziel schon für {name} vergeben", rwWarnGone: "Ziel läuft nicht", rwWarnUnit: "Einheit weicht ab ({old} → {new})",
   rwMenuHow: "Art ändern …", rwMenuSuggest: "Vorschlag übernehmen", rwMenuSkip: "Zeile überspringen",
+  rwDisableOld: "Alte Entität danach deaktivieren", rwDisableOldHint: "Sie wird in Quarantäne gelegt und lässt sich wieder aktivieren. Entfernt wird nichts. Bei „ID übernehmen“ entfällt das, die alte Entität bekommt dort ohnehin eine andere ID.",
   rwChosen: "{count} Paare bestätigt", rwCreate: "Vorschau erstellen ({count})", rwFixFirst: "Behebe zuerst die Fehler in den Zeilen.", rwManyPairs: "Ab 50 Paaren wird die Vorschau langsam; mehrere Läufe sind übersichtlicher.",
   reason_target_duplicate: "Dieselbe neue Entität ist für mehrere alte gewählt.", reason_target_replaced: "Die neue Entität wird selbst ersetzt (oder ersetzt eine andere).",
 });
@@ -20639,6 +20640,7 @@ Object.assign(TEXT.en, {
   rwHowHint_id: "The new entity takes the ID, the statistics stay separate.",
   rwErrDuplicate: "Target already taken for {name}", rwWarnGone: "Target is not working", rwWarnUnit: "Unit differs ({old} → {new})",
   rwMenuHow: "Change kind …", rwMenuSuggest: "Take the proposal", rwMenuSkip: "Skip this row",
+  rwDisableOld: "Disable the old entity afterwards", rwDisableOldHint: "It is put in quarantine and can be enabled again. Nothing is removed. Not needed for \"take over the ID\": the old entity gets another ID there anyway.",
   rwChosen: "{count} pairs confirmed", rwCreate: "Create preview ({count})", rwFixFirst: "Fix the errors in the rows first.", rwManyPairs: "From 50 pairs on the preview gets slow; several runs are easier to read.",
   reason_target_duplicate: "The same new entity is chosen for several old ones.", reason_target_replaced: "The new entity is replaced itself (or replaces another one).",
 });
@@ -20655,7 +20657,7 @@ class ReplaceWizardMixin {
   // "Cancel": nothing was created, so the assistant is emptied and the person is back at the choice of a task.
   rwCancel() {
     this.rw = null; this._oneHints = null;
-    this.replOld = ""; this.replNew = ""; this.replHow = "";
+    this.replOld = ""; this.replNew = ""; this.replHow = ""; this.rwDisable = false;
     this.repairTask = null;
     this.render();
   }
@@ -20675,8 +20677,15 @@ class ReplaceWizardMixin {
   rwActions() {
     const rw = this.rwState();
     return Object.entries(rw.choices).filter(([, c]) => c.target).map(([object_id, c]) => (c.how && c.how !== "replace"
-      ? { kind: "migrate_meter", object_id, target: c.target, mode: c.how }
-      : { kind: "replace_references", object_id, target: c.target }));
+      ? { kind: "migrate_meter", object_id, target: c.target, mode: c.how, ...this.rwDisableFlag(c.how) }
+      : { kind: "replace_references", object_id, target: c.target, ...this.rwDisableFlag(c.how) }));
+  }
+
+  // The old entity is only disabled where it keeps its ID; the modes that hand its ID over move it aside anyway.
+  rwDisableFlag(how) { return this.rwDisable && !RW_TAKE.includes(how) ? { disable_old: true } : {}; }
+
+  rwDisableSwitch() {
+    return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-rw-disable ${this.rwDisable ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("rwDisableOld")}</strong><small>${this.t("rwDisableOldHint")}</small></span></label>`;
   }
 
   // Row problems that the panel can see before any preview: one new entity for two old ones.
@@ -20926,7 +20935,7 @@ class ReplaceWizardMixin {
     const foot = `<div class="setrow planfoot"><small class="u-m0">${this.t("rwChosen", { count: chosen })} · ${this.t("repairDryRun")}${errors ? ` · ${this.t("rwFixFirst")}` : ""}</small><span class="rwfoot"><button class="btn" data-rw-back>${this.t("rwBack")}</button> <button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-rw-create ${chosen && !errors && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("rwCreate", { count: chosen })}</button></span></div>`;
     return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 2 })}</small><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
       ${scope}<div class="setrow planfoot"><small class="u-m0">${this.esc(rw.error)}</small><button class="btn" data-rw-load ${rw.loading ? "disabled" : ""}>${rw.loading ? this.t("rwLoading") : this.t("rwLoad")}</button></div>
-      ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${foot}</div>`;
+      ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${this.rwDisableSwitch()}${foot}</div>`;
   }
 
   // The kinds as cards for one pair, opened from its menu; picking one closes them.
@@ -20971,7 +20980,8 @@ class ReplaceWizardMixin {
 
   rwOneActions() {
     const { how } = this.rwOneInfo();
-    return [how === "replace" ? { kind: "replace_references", object_id: this.replOld, target: this.replNew } : { kind: "migrate_meter", object_id: this.replOld, target: this.replNew, mode: how }];
+    const flag = this.rwDisableFlag(how);
+    return [how === "replace" ? { kind: "replace_references", object_id: this.replOld, target: this.replNew, ...flag } : { kind: "migrate_meter", object_id: this.replOld, target: this.replNew, mode: how, ...flag }];
   }
 
   rwOneCard() {
@@ -20983,7 +20993,7 @@ class ReplaceWizardMixin {
     const hints = this.rwOneHints();
     return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("repairTaskWizard")}</h2><p>${this.t("rwOneHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
       <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${this.rwOneWhy()}${checks.fit}</div></div>
-      ${hints}${this.rwOneUses()}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}
+      ${hints}${this.rwOneUses()}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}${this.rwDisableSwitch()}
       <div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><span class="rwfoot"><button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></span></div></div>`;
   }
 
@@ -20995,6 +21005,7 @@ class ReplaceWizardMixin {
     root.querySelector("[data-rw-all]")?.addEventListener("click", () => { (this._rwFiltered || []).forEach(id => rw().sel.add(id)); this.render(); });
     root.querySelector("[data-rw-clear]")?.addEventListener("click", () => { rw().sel.clear(); this.render(); });
     root.querySelector("[data-rw-next]")?.addEventListener("click", () => { rw().step = 2; this.rwLoadPairs(); });
+    root.querySelectorAll("[data-rw-disable]").forEach(el => el.onchange = () => { this.rwDisable = el.checked; this.render(); });
     root.querySelector("[data-rw-cancel]")?.addEventListener("click", () => this.rwCancel());
     root.querySelector("[data-rw-back]")?.addEventListener("click", () => { rw().step = 1; this.render(); });
     root.querySelector("[data-rw-load]")?.addEventListener("click", () => this.rwLoadPairs());

@@ -245,13 +245,15 @@ def make_entities(hass: HomeAssistant, *, new_state: str = "21") -> None:
     hass.states.async_set(new.entity_id, new_state)
 
 
-async def make_reference_plan(scanner, hass: HomeAssistant, old: str = OLD, new: str = NEW):
+async def make_reference_plan(
+    scanner, hass: HomeAssistant, old: str = OLD, new: str = NEW, **request
+):
     snapshot = await scanner.async_scan()
     registry = er.async_get(hass)
     data = {(old, new, "entity"): await preview_replacement(hass, snapshot, old, new)}
     plan = build_plan(
         snapshot,
-        [{"kind": "replace_references", "object_id": old, "target": new}],
+        [{"kind": "replace_references", "object_id": old, "target": new, **request}],
         datetime.now(UTC),
         lambda object_id: registry_fingerprint(registry.async_get(object_id)),
         lambda object_id: entity_restorable(hass, registry.async_get(object_id)),
@@ -300,6 +302,28 @@ async def test_replacing_references_in_an_automation_is_verified_and_undone(
         assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
         assert load_yaml(path) == load_yaml_text(before)
         assert plan["status"] == "undone" and reloads == ["automation", "automation"]
+
+
+async def test_the_old_entity_can_be_disabled_after_the_references_moved_and_is_enabled_again(
+    hass: HomeAssistant,
+) -> None:
+    make_entities(hass)
+    write_config(hass, "automations.yaml", AUTOMATIONS)
+    reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    registry = er.async_get(hass)
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        plan = await make_reference_plan(scanner, hass, disable_old=True)
+        assert plan["actions"][0]["disable_old"] is True
+        await run(scanner, plan, [OLD])
+        assert registry.async_get(OLD).disabled_by is er.RegistryEntryDisabler.USER
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
+        assert registry.async_get(OLD).disabled_by is None
 
 
 AREA_AUTOMATIONS = """- id: auto-1

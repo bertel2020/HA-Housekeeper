@@ -8,6 +8,7 @@
 - **Backups automatisch aufräumen:** Auf der Seite „Housekeeper-Backups aufräumen“ gibt es einen Schalter (aus), der stündlich nach der dortigen Regel löscht. Geschützte Backups und solche, die die einzige Rückkehr nach einer Recorder-Änderung sind, bleiben.
 - **Verwendungen sehen:** In „Entitäten ersetzen“ und „Gerät austauschen“ lässt sich die Zahl der Verwendungen aufklappen. Die Liste zeigt jede Stelle und ob sie ersetzt wird oder von Hand zu prüfen bleibt.
 - **Statistik übernehmen nur bei Zählern:** Im Ersetzen-Assistenten übernimmt die neue Entität Verlauf und ID nur noch bei echten Zählern von selbst. Bei Messwerten werden standardmäßig nur die Verweise umgestellt. Die Vorschau spricht von „Statistik übernehmen“ statt „Zählerwechsel“.
+- **Alte Entität deaktivieren:** Der Ersetzen-Assistent kann die alte Entität nach dem Umstellen deaktivieren (Quarantäne). Der Plan lässt sich zurücknehmen, dann ist sie wieder aktiv.
 - **Ein Assistent zum Ersetzen:** „Entitäten ersetzen“ ersetzt eine oder mehrere Entitäten. „Zähler wechseln“ und „Verweise ersetzen“ gehen darin auf, Reparieren hat drei Kacheln.
   - Für eine Entität gibt es fünf Arten, nach der ID gruppiert: Verweise umstellen, Verweise und Statistik (neu), Nur Statistik, Statistik und ID, Nur ID.
   - Was bei diesem Paar nicht möglich ist, ist gesperrt und sagt warum.
