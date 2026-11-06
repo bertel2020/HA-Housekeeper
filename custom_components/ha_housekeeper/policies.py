@@ -45,6 +45,8 @@ RULES = (
     "template_unused",
     "helper_write_only",
     "helper_area",
+    "input_select_options",
+    "statistic_helper_source",
     "helper_cycle",
     "input_number_config",
     "template_guard",
@@ -310,6 +312,10 @@ def evaluate(
         "helper_cycle": lambda: rules_more.helper_cycle(
             integrations, entities, snapshot.get("edges", [])
         ),
+        "input_select_options": lambda: rules_more.input_select_options(entities, automations),
+        "statistic_helper_source": lambda: rules_more.statistic_helper_source(
+            extra.get("statistic_helpers") or [], entities
+        ),
         "helper_area": lambda: rules_more.helper_area(entities, devices),
         "input_number_config": lambda: rules_more.input_number_config(entities),
         "helper_write_only": lambda: rules_more.helper_write_only(
@@ -539,6 +545,18 @@ def _extra(
         extra["exposed"] = {
             row["entity_id"]: row["assistants"] for row in result["exposed_entities"]
         }
+    if "statistic_helper_source" in store.enabled:
+        extra["statistic_helpers"] = [
+            {
+                "object_type": "config_entry",
+                "object_id": entry.entry_id,
+                "name": entry.title,
+                "domain": entry.domain,
+                "source": (entry.options or {}).get("source"),
+            }
+            for domain in ("utility_meter", "integration", "derivative")
+            for entry in hass.config_entries.async_entries(domain)
+        ]
     if store.enabled & {"template_guard", "template_no_unique_id"}:
         extra.update(template_facts(hass, store.enabled))
     if store.enabled & {"http_trusted_networks", "http_external_url", "http_proxies"}:

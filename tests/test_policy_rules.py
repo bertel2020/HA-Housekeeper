@@ -433,3 +433,46 @@ def test_helper_cycle() -> None:
     }
     edges = [edge("a", "b"), edge("b", "a"), edge("c", "a")]
     assert ids(run([*helpers, *items], "helper_cycle", edges=edges)) == ["a", "b"]
+
+
+def test_input_select_options_and_statistic_helper_source() -> None:
+    select = obj(
+        "entity", "input_select.mode", attributes={"options": ["home", "away"]}, state="home"
+    )
+    automation = obj(
+        "automation",
+        "automation.m",
+        source="config",
+        triggers=[{"trigger": "state", "entity_id": "input_select.mode", "to": "vacation"}],
+        conditions=[{"condition": "state", "entity_id": "input_select.mode", "state": "home"}],
+        actions=[
+            {
+                "action": "input_select.select_option",
+                "target": {"entity_id": "input_select.mode"},
+                "data": {"option": "party"},
+            }
+        ],
+    )
+    rule = run([select, automation], "input_select_options")
+    assert ids(rule) == ["input_select.mode"] and rule["items"][0]["also"] == ["party", "vacation"]
+
+    sources = [
+        obj("entity", "sensor.power", state="5", state_class="measurement", unit=None),
+        obj("entity", "sensor.energy", state="5", state_class="total_increasing", unit="kWh"),
+    ]
+
+    def helper(name: str, domain: str, source: str) -> dict:
+        return {
+            "object_type": "config_entry",
+            "object_id": name,
+            "name": name,
+            "domain": domain,
+            "source": source,
+        }
+
+    helpers = [
+        helper("m1", "utility_meter", "sensor.power"),
+        helper("m2", "utility_meter", "sensor.energy"),
+        helper("i1", "integration", "sensor.power"),
+    ]
+    assert ids(run(sources, "statistic_helper_source", statistic_helpers=helpers)) == ["i1", "m1"]

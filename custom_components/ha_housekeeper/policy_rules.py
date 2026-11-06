@@ -161,6 +161,7 @@ def label_unused(labels: list[dict[str, Any]], used: set[str], ignore_label: str
             yield item
 
 
+ALSO_LIMIT = 3
 INPUT_PLATFORMS = frozenset(
     {
         "input_boolean", "input_button", "input_datetime", "input_number", "input_select",
@@ -221,6 +222,91 @@ def helper_cycle(
     for item in integrations:
         if item.get("domain") in HELPER_DOMAINS and reaches_itself(item["object_id"]):
             yield item
+
+
+def _nodes(value: Any) -> Iterable[dict[str, Any]]:
+    """Every dict of nested dicts and lists."""
+    if isinstance(value, dict):
+        yield value
+        for inner in value.values():
+            yield from _nodes(inner)
+    elif isinstance(value, list):
+        for inner in value:
+            yield from _nodes(inner)
+
+
+def _ids(value: Any) -> list[str]:
+    """Entity ids from a string or a list of strings."""
+    if isinstance(value, str):
+        return [part.strip() for part in value.split(",") if part.strip()]
+    if isinstance(value, list):
+        return [part for part in value if isinstance(part, str)]
+    return []
+
+
+def _values(value: Any) -> list[str]:
+    """Plain text values; a template or anything that is no text is left out."""
+    found = [value] if isinstance(value, str) else value if isinstance(value, list) else []
+    return [v for v in found if isinstance(v, str) and "{{" not in v and "{%" not in v]
+
+
+def _select_values(automations: list[dict[str, Any]]) -> dict[str, set[str]]:
+    """The option each automation compares with or selects, per input_select."""
+    found: dict[str, set[str]] = {}
+    for item in _config_automations(automations):
+        for block in ("triggers", "conditions", "actions"):
+            for entry in _nodes(item.get(block) or []):
+                kind = entry.get("trigger") or entry.get("platform") or entry.get("condition")
+                values: list[str] = []
+                if kind == "state":
+                    values = _values(entry.get("to")) + _values(entry.get("from"))
+                    values += _values(entry.get("state"))
+                elif (entry.get("action") or entry.get("service")) == "input_select.select_option":
+                    values = _values((entry.get("data") or {}).get("option"))
+                if not values:
+                    continue
+                target = entry.get("target") or {}
+                holder = target.get("entity_id") if isinstance(target, dict) else None
+                for entity_id in _ids(entry.get("entity_id") or holder):
+                    if entity_id.startswith("input_select."):
+                        found.setdefault(entity_id, set()).update(values)
+    return found
+
+
+def input_select_options(entities: dict[str, dict[str, Any]], automations: list[dict[str, Any]]):
+    """``input_select`` helpers that an automation compares with or sets to an option they do not have."""
+    wanted = _select_values(automations)
+    for entity_id, values in sorted(wanted.items()):
+        item = entities.get(entity_id)
+        options = (item or {}).get("attributes", {}).get("options")
+        if item is None or not isinstance(options, list) or item.get("disabled_by"):
+            continue
+        missing = sorted(
+            v for v in values if v not in options and v not in ("unavailable", "unknown")
+        )
+        if missing:
+            yield {**item, "also": missing[:ALSO_LIMIT]}
+
+
+STATISTIC_HELPERS = frozenset({"utility_meter", "integration", "derivative"})
+
+
+def statistic_helper_source(helpers: list[dict[str, Any]], entities: dict[str, dict[str, Any]]):
+    """Meter, integration and derivative helpers over a source that does not suit them (a hint)."""
+    for helper in helpers:
+        source = entities.get(str(helper.get("source") or ""))
+        if source is None or source.get("state") in (None, "unavailable", "unknown"):
+            continue
+        problems = []
+        if helper.get("domain") == "utility_meter" and source.get("state_class") not in (
+            "total",
+            "total_increasing",
+        ):
+            problems.append("state_class")
+        if helper.get("domain") in {"integration", "derivative"} and not source.get("unit"):
+            problems.append("unit")
+        if problems:
+            yield {**helper, "also": problems}
 
 
 def helper_area(entities: dict[str, dict[str, Any]], devices: dict[str, dict[str, Any]]):
