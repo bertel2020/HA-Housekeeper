@@ -377,3 +377,19 @@ def test_a_new_entity_named_twice_or_replaced_itself_blocks_both_sides() -> None
     assert "target_duplicate" in reasons["light.a"] and "target_duplicate" in reasons["light.b"]
     assert "target_replaced" in reasons["light.a"] and "target_replaced" in reasons["light.c"]
     assert all(a["verdict"] == "blocked" and not a["executable"] for a in plan["actions"])
+
+
+def test_a_helper_that_reads_the_entity_is_named_in_the_verdict() -> None:
+    from custom_components.ha_housekeeper.cleanup import judge_entity_action
+
+    objects = {"sensor.src": {"object_id": "sensor.src", "status": "unavailable", "name": "S"}}
+    edges = [
+        {
+            "source": "config_entry:abc",
+            "target": "entity:sensor.src",
+            "relation": "REFERENCES",
+            "confidence": "probable",
+        }
+    ]
+    action = judge_entity_action("disable_entity", "sensor.src", objects, edges)
+    assert "feeds_helper" in action["reasons"]

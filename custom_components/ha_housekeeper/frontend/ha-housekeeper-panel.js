@@ -13708,6 +13708,10 @@ Object.assign(TEXT.en, {
   helperKind: "Helper", actHelperOwner: "Belongs to the helper {name}", actHintHelperOwner: "A helper builds this entity and creates it again at once. To remove it, delete the helper in Home Assistant (Settings → Devices & services → Helpers).",
 });
 
+// A helper that reads the entity loses its source when the entity is switched off or removed.
+Object.assign(TEXT.de, { reason_feeds_helper: "Ein Helfer liest diese Entität und verliert damit seine Quelle: er meldet danach „nicht verfügbar“ oder falsche Werte." });
+Object.assign(TEXT.en, { reason_feeds_helper: "A helper reads this entity and loses its source: it then reports unavailable or wrong values." });
+
 // Error texts for what the backend refuses. The backend sends a code and an English sentence; errText() looks the
 // sentence up here first, then the code, so a person reads it in the language of the panel.
 const ERR_MESSAGE_KEYS = {

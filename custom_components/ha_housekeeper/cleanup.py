@@ -285,6 +285,11 @@ def _used_by(edges: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
     ]
 
 
+def _feeds_helper(used_by: list[dict[str, Any]]) -> bool:
+    """Whether a helper (a config entry) reads the entity: it would lose its source."""
+    return any(str(use["source"]).startswith("config_entry:") for use in used_by)
+
+
 def judge_action(
     kind: str,
     object_id: str,
@@ -1044,6 +1049,8 @@ def judge_state_action(
             reasons.append("used_certain")
         elif used_by:
             reasons.append("used_probable")
+        if _feeds_helper(used_by):
+            reasons.append("feeds_helper")
         if info.get("marked_keep"):
             reasons.append("marked_keep")
         if info.get("critical"):
@@ -1275,6 +1282,8 @@ def judge_entity_action(
         reasons.append("used_certain")
     elif used_by:
         reasons.append("used_probable")
+    if _feeds_helper(used_by):
+        reasons.append("feeds_helper")
     if action["has_statistics"]:
         reasons.append("has_statistics")
     if (item.get("labels") and IGNORE_LABEL in item["labels"]) or item.get("excepted"):
