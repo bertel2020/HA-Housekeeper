@@ -1,7 +1,7 @@
 // The assistant "Replace entities": choose several old entities, give each its new one, then one plan (see device_pairs.py suggest_entities, cleanup.py _mark_target_clashes); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   rwOldTitle: "Alte Entität danach", rwOld_none: "Nichts tun", rwOld_disable: "Deaktivieren (Quarantäne)", rwOld_delete: "Löschen", rwOldHint: "Deaktivieren lässt sich zurücknehmen. Bei „ID übernehmen“ entfällt das, die alte Entität bekommt dort ohnehin eine andere ID.", rwOldWarn: "Nur bei einer Entität, die ihre Integration nicht mehr liefert; sonst käme sie zurück. Gehört sie einem Helfer, wird der ganze Helfer gelöscht. „Rückgängig“ stellt nur den Eintrag wieder her. Vorher entsteht ein Backup.", reason_delete_old: "Die alte Entität wird gelöscht. Rückgängig stellt nur den Eintrag wieder her.",
-  rwRecTitle: "Verlauf der alten Entität", rwRecHint: "„Behalten“ lässt ihn als verwaiste Statistik im Recorder, später einzeln löschbar. Entfällt, wenn die Statistik in die neue Entität übernommen wird.", rwRecWarn: "Gelöschter Verlauf lässt sich nur mit dem Backup zurückholen, auch wenn du das Löschen rückgängig machst.",
+  rwRecTitle: "Verlauf der alten Entität", rwRecHint: "„Behalten“ lässt ihn als verwaiste Statistik im Recorder, später einzeln löschbar.", rwRecHintMixed: "Gilt nur für Paare, bei denen die Statistik nicht übernommen wird. Behalten lässt ihn als verwaiste Statistik im Recorder.", rwRecCarried: "Die Statistik wird in die neue Entität übernommen, es bleibt kein Verlauf zurück.", rwRecWarn: "Gelöschter Verlauf lässt sich nur mit dem Backup zurückholen, auch wenn du das Löschen rückgängig machst.",
   planOldDisabled: "Alte Entität: deaktiviert", planOldDeleted: "Alte Entität: gelöscht", planOldHelper: "Alter Helfer: gelöscht", reason_delete_old_helper: "Die alte Entität gehört einem Helfer: er wird mit allen seinen Entitäten gelöscht.", reason_delete_old_provided: "Die Integration liefert die alte Entität noch, sie käme zurück. Sie lässt sich nur deaktivieren.",
   repairTaskWizard: "Entitäten ersetzen", repairTaskWizardHint: "Eine oder mehrere Entitäten durch neue ersetzen: Verweise umstellen, Statistik und ID übernehmen. Zum Beispiel beim Wechsel eines Zählers oder einer Integration.",
   rwOneHint: "Ersetzt eine Entität durch eine andere. Was dabei geschieht, wählst du unten; bis du die Vorschau bestätigst, ändert sich nichts.",
@@ -36,7 +36,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   rwOldTitle: "Old entity afterwards", rwOld_none: "Do nothing", rwOld_disable: "Disable (quarantine)", rwOld_delete: "Delete", rwOldHint: "Disabling can be taken back. Not needed for \"take over the ID\": the old entity gets another ID there anyway.", rwOldWarn: "Only for an entity its integration no longer provides; otherwise it would come back. If it belongs to a helper, the whole helper is deleted. \"Undo\" only restores the entry. A backup is made first.", reason_delete_old: "The old entity is deleted. Undo only restores the entry.",
-  rwRecTitle: "History of the old entity", rwRecHint: "\"Keep\" leaves it as an orphaned statistic in the recorder, deletable one by one later. Not used when the statistics are carried over to the new entity.", rwRecWarn: "Deleted history can only be restored from the backup, even if you undo the deletion.",
+  rwRecTitle: "History of the old entity", rwRecHint: "\"Keep\" leaves it as an orphaned statistic in the recorder, deletable one by one later.", rwRecHintMixed: "Only for pairs whose statistics are not carried over. Keep leaves it as an orphaned statistic in the recorder.", rwRecCarried: "The statistics are carried over to the new entity, no history is left behind.", rwRecWarn: "Deleted history can only be restored from the backup, even if you undo the deletion.",
   planOldDisabled: "Old entity: disabled", planOldDeleted: "Old entity: deleted", planOldHelper: "Old helper: deleted", reason_delete_old_helper: "The old entity belongs to a helper: it is deleted with all its entities.", reason_delete_old_provided: "The integration still provides the old entity, it would come back. It can only be disabled.",
   repairTaskWizard: "Replace entities", repairTaskWizardHint: "Replace one or several entities with new ones: switch references, take over statistics and ID. For example when changing a meter or an integration.",
   rwOneHint: "Replaces one entity with another. You choose below what happens; nothing changes until you confirm the preview.",
@@ -115,13 +115,17 @@ class ReplaceWizardMixin {
   }
 
   // One card: the choice for the old entity, and below it (only for "delete") what happens to its history.
-  rwDisableSwitch() {
+  // `hows` are the ways of the pairs in the plan: the history can only be deleted where the statistics are not carried over.
+  rwDisableSwitch(hows = []) {
     const off = this.cleanupBusy ? "disabled" : "";
     const opt = k => `<option value="${k}" ${(this.rwOld || "none") === k ? "selected" : ""}>${this.t(`rwOld_${k}`)}</option>`;
     const note = text => `<div class="hintbox"><ha-icon icon="mdi:alert-outline"></ha-icon><div><p>${this.t(text)}</p></div></div>`;
     const row = (title, hint, attr, options) => `<div class="rwrow"><span><strong>${this.t(title)}</strong><small>${this.t(hint)}</small></span><select ${attr} aria-label="${this.esc(this.t(title))}" ${off}>${options}</select></div>`;
-    const rec = this.rwOld === "delete" && this.data?.meta?.recorder_available
-      ? `<div class="rwsub">${row("rwRecTitle", "rwRecHint", "data-rw-rec", ["keep", "statistics", "states"].map(k => `<option value="${k}" ${(this.rwRec || "keep") === k ? "selected" : ""}>${this.t(`recChoice_${k}`)}</option>`).join(""))}${this.rwRec ? note("rwRecWarn") : ""}</div>` : "";
+    const plain = hows.filter(h => h === "replace").length;
+    const rec = this.rwOld === "delete" && this.data?.meta?.recorder_available && hows.length && !plain
+      ? `<div class="rwsub"><div class="rwrow"><span><strong>${this.t("rwRecTitle")}</strong><small>${this.t("rwRecCarried")}</small></span></div></div>`
+      : this.rwOld === "delete" && this.data?.meta?.recorder_available
+      ? `<div class="rwsub">${row("rwRecTitle", plain < hows.length ? "rwRecHintMixed" : "rwRecHint", "data-rw-rec", ["keep", "statistics", "states"].map(k => `<option value="${k}" ${(this.rwRec || "keep") === k ? "selected" : ""}>${this.t(`recChoice_${k}`)}</option>`).join(""))}${this.rwRec ? note("rwRecWarn") : ""}</div>` : "";
     return `<div class="optswitch inpanel rwold">${row("rwOldTitle", "rwOldHint", "data-rw-old", ["none", "disable", "delete"].map(opt).join(""))}${this.rwOld === "delete" ? note("rwOldWarn") : ""}${rec}</div>`;
   }
 
@@ -372,7 +376,7 @@ class ReplaceWizardMixin {
     const foot = `<div class="setrow planfoot"><small class="u-m0">${this.t("rwChosen", { count: chosen })} · ${this.t("repairDryRun")}${errors ? ` · ${this.t("rwFixFirst")}` : ""}</small><span class="rwfoot"><button class="btn" data-rw-back>${this.t("rwBack")}</button> <button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-rw-create ${chosen && !errors && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("rwCreate", { count: chosen })}</button></span></div>`;
     return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 2 })}</small><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
       ${scope}<div class="setrow planfoot"><small class="u-m0">${this.esc(rw.error)}</small><button class="btn" data-rw-load ${rw.loading ? "disabled" : ""}>${rw.loading ? this.t("rwLoading") : this.t("rwLoad")}</button></div>
-      ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${this.rwDisableSwitch()}${foot}</div>`;
+      ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${this.rwDisableSwitch(Object.values(this.rwState().choices).filter(c => c.target).map(c => c.how || "replace"))}${foot}</div>`;
   }
 
   // The kinds as cards for one pair, opened from its menu; picking one closes them.
@@ -430,7 +434,7 @@ class ReplaceWizardMixin {
     const hints = this.rwOneHints();
     return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("repairTaskWizard")}</h2><p>${this.t("rwOneHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
       <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${this.rwOneWhy()}${checks.fit}</div></div>
-      ${hints}${this.rwOneUses()}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}${this.rwDisableSwitch()}
+      ${hints}${this.rwOneUses()}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}${this.rwDisableSwitch([how])}
       <div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><span class="rwfoot"><button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></span></div></div>`;
   }
 

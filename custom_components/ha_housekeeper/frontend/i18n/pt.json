@@ -6572,9 +6572,11 @@
 "reason_delete_old_provided": "A integração ainda fornece a entidade antiga, voltaria. Só pode ser desativada.",
 "bkSubSkipData": "«Anular» pelo Housekeeper continua possível enquanto nada tiver mudado. Um histórico eliminado só volta com uma cópia de segurança, e a última é de há {age}.",
 "rwRecTitle": "Histórico da entidade antiga",
-"rwRecHint": "«Manter» deixa-o no recorder como estatística órfã, que podes eliminar depois uma a uma. Não se aplica se as estatísticas passarem para a entidade nova.",
+"rwRecHint": "«Manter» deixa-o no recorder como estatística órfã, que podes eliminar depois uma a uma.",
 "rwRecWarn": "Um histórico eliminado só volta a partir da cópia de segurança, mesmo que anules a eliminação.",
 "planOldDisabled": "Entidade antiga: desativada",
 "planOldDeleted": "Entidade antiga: eliminada",
-"planOldHelper": "Auxiliar antigo: eliminado"
+"planOldHelper": "Auxiliar antigo: eliminado",
+"rwRecHintMixed": "Só para os pares cujas estatísticas não passam para a entidade nova. «Manter» deixa-o no recorder como estatística órfã.",
+"rwRecCarried": "As estatísticas passam para a entidade nova, não fica histórico."
 }

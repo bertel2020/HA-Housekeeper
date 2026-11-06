@@ -8494,6 +8494,10 @@ test("the actions of an entity: a helper's entity points to its helper; the repl
   assert.equal(JSON.stringify(el.rwDisableFlag("replace")), '{"delete_old":true,"recorder":"states"}');
   assert.equal(JSON.stringify(el.rwDisableFlag("replace_statistics")), '{"delete_old":true}', "carried statistics leave nothing to delete");
   el.rwRec = "";
+  const card = hows => el.rwDisableSwitch(hows);
+  assert.ok(card(["replace"]).includes("data-rw-rec"), "references only: the history choice is offered");
+  assert.ok(!card(["replace_statistics"]).includes("data-rw-rec"), "statistics are carried over: nothing is left to delete");
+  assert.ok(card(["replace", "replace_statistics"]).includes("data-rw-rec"), "mixed pairs: offered for the plain ones");
   el.rwOld = "disable";
   assert.equal(JSON.stringify(el.rwDisableFlag("replace")), '{"disable_old":true}');
   assert.ok(attrs(owned).includes("data-act-remove-helper") && attrs(owned).includes("data-object"), "it points to the helper and offers its deletion");

@@ -7103,9 +7103,11 @@
 "reason_delete_old_provided": "Integrácia starú entitu stále poskytuje, vrátila by sa. Dá sa len vypnúť.",
 "bkSubSkipData": "„Vrátiť späť“ cez Housekeeper zostáva možné, kým sa nič nezmenilo. Odstránenú históriu vráti len záloha a tá posledná je spred {age}.",
 "rwRecTitle": "História starej entity",
-"rwRecHint": "„Ponechať“ ju necháva v recorderi ako osirelú štatistiku, ktorú môžeš neskôr odstrániť jednotlivo. Neplatí, ak sa štatistiky prenesú do novej entity.",
+"rwRecHint": "„Ponechať“ ju necháva v recorderi ako osirelú štatistiku, ktorú môžeš neskôr odstrániť jednotlivo.",
 "rwRecWarn": "Odstránená história sa vráti len zo zálohy, aj keď odstránenie vrátiš späť.",
 "planOldDisabled": "Stará entita: deaktivovaná",
 "planOldDeleted": "Stará entita: odstránená",
-"planOldHelper": "Starý pomocník: odstránený"
+"planOldHelper": "Starý pomocník: odstránený",
+"rwRecHintMixed": "Len pre dvojice, ktorých štatistiky sa neprenášajú do novej entity. „Ponechať“ ju necháva v recorderi ako osirelú štatistiku.",
+"rwRecCarried": "Štatistiky sa prenesú do novej entity, žiadna história nezostane."
 }

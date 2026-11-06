@@ -6572,9 +6572,11 @@
 "reason_delete_old_provided": "La integración aún proporciona la entidad antigua, volvería. Solo se puede desactivar.",
 "bkSubSkipData": "«Deshacer» por Housekeeper sigue siendo posible mientras nada haya cambiado. Un historial eliminado solo lo devuelve una copia de seguridad, y la última es de hace {age}.",
 "rwRecTitle": "Historial de la entidad antigua",
-"rwRecHint": "«Conservar» lo deja en el recorder como estadística huérfana, que se puede eliminar después una por una. No se usa si las estadísticas pasan a la entidad nueva.",
+"rwRecHint": "«Conservar» lo deja en el recorder como estadística huérfana, que se puede eliminar después una por una.",
 "rwRecWarn": "Un historial eliminado solo vuelve desde la copia de seguridad, aunque deshagas la eliminación.",
 "planOldDisabled": "Entidad antigua: desactivada",
 "planOldDeleted": "Entidad antigua: eliminada",
-"planOldHelper": "Ayudante antiguo: eliminado"
+"planOldHelper": "Ayudante antiguo: eliminado",
+"rwRecHintMixed": "Solo para los pares cuyas estadísticas no pasan a la entidad nueva. «Conservar» lo deja en el recorder como estadística huérfana.",
+"rwRecCarried": "Las estadísticas pasan a la entidad nueva, no queda historial."
 }

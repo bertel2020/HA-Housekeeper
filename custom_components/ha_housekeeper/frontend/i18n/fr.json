@@ -6572,9 +6572,11 @@
 "reason_delete_old_provided": "L’intégration fournit encore l’ancienne entité, elle reviendrait. Elle ne peut qu’être désactivée.",
 "bkSubSkipData": "« Annuler » par Housekeeper reste possible tant que rien n’a changé. Seule une sauvegarde ramène un historique supprimé, et ta dernière date d’il y a {age}.",
 "rwRecTitle": "Historique de l’ancienne entité",
-"rwRecHint": "« Conserver » le laisse dans le recorder comme statistique orpheline, supprimable plus tard une par une. Sans effet si les statistiques passent à la nouvelle entité.",
+"rwRecHint": "« Conserver » le laisse dans le recorder comme statistique orpheline, supprimable plus tard une par une.",
 "rwRecWarn": "Un historique supprimé ne revient que depuis la sauvegarde, même si tu annules la suppression.",
 "planOldDisabled": "Ancienne entité : désactivée",
 "planOldDeleted": "Ancienne entité : supprimée",
-"planOldHelper": "Ancien auxiliaire : supprimé"
+"planOldHelper": "Ancien auxiliaire : supprimé",
+"rwRecHintMixed": "Seulement pour les paires dont les statistiques ne passent pas à la nouvelle entité. « Conserver » le laisse dans le recorder comme statistique orpheline.",
+"rwRecCarried": "Les statistiques passent à la nouvelle entité, aucun historique ne reste."
 }

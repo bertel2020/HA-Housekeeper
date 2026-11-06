@@ -6572,9 +6572,11 @@
 "reason_delete_old_provided": "集成仍在提供旧实体，它会回来。只能禁用。",
 "bkSubSkipData": "只要没有改动，仍可通过 Housekeeper 撤销。已删除的历史只有备份能找回，而上一个备份是 {age} 前的。",
 "rwRecTitle": "旧实体的历史",
-"rwRecHint": "“保留”会让它作为孤立统计留在 recorder 中，之后可逐个删除。如果统计转移到新实体，则不适用。",
+"rwRecHint": "“保留”会让它作为孤立统计留在 recorder 中，之后可逐个删除。",
 "rwRecWarn": "已删除的历史只能从备份找回，即使你撤销了删除。",
 "planOldDisabled": "旧实体：已停用",
 "planOldDeleted": "旧实体：已删除",
-"planOldHelper": "旧辅助元素：已删除"
+"planOldHelper": "旧辅助元素：已删除",
+"rwRecHintMixed": "仅适用于统计不转移到新实体的配对。“保留”会让它作为孤立统计留在 recorder 中。",
+"rwRecCarried": "统计会转移到新实体，不会留下历史。"
 }
