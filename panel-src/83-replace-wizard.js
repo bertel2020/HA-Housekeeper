@@ -3,7 +3,7 @@ Object.assign(TEXT.de, {
   repairTaskWizard: "Entitäten ersetzen", repairTaskWizardHint: "Mehrere Entitäten auf einmal durch neue ersetzen, zum Beispiel beim Wechsel der Integration.",
   actReplaceMany: "Ersetzen …", actHintReplaceMany: "Diese Entität durch eine neue ersetzen, mit dem Assistenten für mehrere.",
   rwPickTitle: "Welche Entitäten sollen ersetzt werden?", rwPickHint: "Wähle die alten Entitäten. Im nächsten Schritt ordnest du jeder die neue zu; bis zur bestätigten Vorschau wird nichts geändert.",
-  rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet",
+  rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "{auto} werden automatisch umgeschrieben, {manual} bleiben unverändert.",
   rwFilterDomain: "Alle Arten", rwFilterPlatform: "Alle Integrationen", rwFilterScope: "Alle", rwFilterUsed: "Nur verwendete", rwFilterGone: "Nur nicht verfügbare",
   rwSelectFiltered: "Alle {count} gefilterten wählen", rwNext: "Weiter zu „Zuordnen“ ({count})", rwNoEntities: "Keine Entitäten.",
   rwSetupTitle: "Welche neue Entität ersetzt welche?", rwSetupHint: "Housekeeper schlägt vor (Klasse, Einheit, Bereich, Name, ID-Endung). Nichts ist vorausgewählt, was du nicht bestätigst.",
@@ -25,7 +25,7 @@ Object.assign(TEXT.en, {
   repairTaskWizard: "Replace entities", repairTaskWizardHint: "Replace several entities with new ones at once, for example when switching integrations.",
   actReplaceMany: "Replace …", actHintReplaceMany: "Replace this entity with a new one, using the assistant for several.",
   rwPickTitle: "Which entities should be replaced?", rwPickHint: "Pick the old entities. In the next step you give each one its new entity; nothing changes until you confirm the preview.",
-  rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere",
+  rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "{auto} are rewritten automatically, {manual} stay unchanged.",
   rwFilterDomain: "All kinds", rwFilterPlatform: "All integrations", rwFilterScope: "All", rwFilterUsed: "Used only", rwFilterGone: "Unavailable only",
   rwSelectFiltered: "Select all {count} filtered", rwNext: "On to \"Set up\" ({count})", rwNoEntities: "No entities.",
   rwSetupTitle: "Which new entity replaces which?", rwSetupHint: "Housekeeper proposes (class, unit, area, name, ID ending). Nothing is preselected that you do not confirm.",
@@ -207,6 +207,27 @@ class ReplaceWizardMixin {
     return `<select data-rw-how="${this.esc(pair.object_id)}" aria-label="${this.t("rwColHow")}" title="${this.esc(this.t(`rwHowHint_${choice.how}`))}">${this.rwHowsOf(pair).map(h => `<option value="${h}" ${choice.how === h ? "selected" : ""}>${this.t(`rwHow_${h}`)}</option>`).join("")}</select>`;
   }
 
+  // The count of uses as a toggle: the person sees where an entity is used before choosing what replaces it.
+  usesToggle(pair) {
+    if (!pair.used) return this.esc(this.t("exUnused"));
+    const open = (this.useOpen || []).includes(pair.object_id), label = this.t(open ? "rwUsesHide" : "rwUsesShow");
+    return `<button type="button" class="linklike usetoggle" data-use-more="${this.esc(pair.object_id)}" aria-expanded="${open}" title="${this.esc(label)}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon>${this.esc(this.t("exUsed", { count: pair.used }))}</button>`;
+  }
+
+  // The row under an open pair: one line per place that uses the entity, and whether it is rewritten or stays.
+  usesDetail(pair, cols) {
+    if (!pair.used || !(this.useOpen || []).includes(pair.object_id)) return "";
+    const uses = this.mergePlaces(this.edgesTo(`entity:${pair.object_id}`).filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e })));
+    const sure = x => (x.edge.confidence || "certain") === "certain";
+    const line = x => {
+      const obj = this.findObject(x.other), name = this.esc(obj?.name || x.other.split(":").slice(1).join(":"));
+      const places = x.places.filter(Boolean), note = `${this.esc(x.label)}${places.length ? ` · ${this.esc(places.join(", "))}` : ""}`;
+      return `<li>${obj ? `<button class="linklike" data-object="${this.esc(x.other)}">${name}</button>` : name} <small class="muted">${this.esc(this.t(obj?.object_type || "entity"))} · ${note}</small> <span class="pill ${sure(x) ? "ok" : "warn"}">${this.t(sure(x) ? "rwUseReplaced" : "rwUseManual")}</span></li>`;
+    };
+    const auto = uses.filter(sure).length;
+    return `<tr class="static"><td colspan="${cols}"><ul class="uselist">${uses.map(line).join("")}</ul><p class="factnote">${this.t("rwUsesNote", { auto, manual: uses.length - auto })}</p></td></tr>`;
+  }
+
   rwPairsList(pairs) {
     const rw = this.rwState();
     const sorts = [
@@ -215,7 +236,7 @@ class ReplaceWizardMixin {
     ];
     const columns = [
       { key: "name", label: "rwColEntity", dir: "asc", cell: p => this.nameCell(p.name, p.object_id) },
-      { key: "used", label: "rwColUsed", dir: "desc", cell: p => this.esc(p.used ? this.t("exUsed", { count: p.used }) : this.t("exUnused")) },
+      { key: "used", label: "rwColUsed", dir: "desc", cell: p => this.usesToggle(p) },
       { key: "target", label: "rwColTarget", sortable: false, cell: p => this.rwTargetCell(p) },
       { key: "how", label: "rwColHow", sortable: false, cell: p => this.rwHowCell(p) },
       { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: p => this.rowMenuHtml([
@@ -226,6 +247,7 @@ class ReplaceWizardMixin {
     ];
     return this.sysList("rwpairs", pairs, {
       sort: "name", dir: "asc", sorts, columns, cls: "pairs", empty: "exNoPairs",
+      after: p => this.usesDetail(p, columns.length),
       text: p => `${p.name} ${p.object_id}`, tie: p => p.object_id,
     });
   }

@@ -127,12 +127,13 @@ class ExchangeMixin {
     ];
     const columns = [
       { key: "name", label: "exColEntity", dir: "asc", cell: p => this.nameCell(p.name, p.object_id) },
-      { key: "used", label: "exColUsed", dir: "desc", cell: p => this.esc(p.used ? this.t("exUsed", { count: p.used }) : this.t("exUnused")) },
+      { key: "used", label: "exColUsed", dir: "desc", cell: p => this.usesToggle(p) },
       { key: "target", label: "exColTarget", sortable: false, cell: p => this.pairTargetCell(p) },
       ...(hasHow ? [{ key: "how", label: "exColHow", sortable: false, cell: p => this.pairHowCell(p) }] : []),
     ];
     return this.sysList("exchangepairs", pairs, {
       sort: "name", dir: "asc", sorts, columns, cls: "pairs", empty: "exNoPairs",
+      after: p => this.usesDetail(p, columns.length),
       filters: [{ name: "pick", all: this.t("exAllPairs"), options: [["suggest", this.t("exFilterSuggest")], ["none", this.t("exFilterNone")], ["chosen", this.t("exFilterChosen")]] }],
       filterFns: { pick: (p, v) => (v === "suggest" ? p.candidates[0]?.score > 0 : v === "none" ? !p.used && !p.meter : Boolean(ex.choices[p.object_id]?.target)) },
       text: p => `${p.name} ${p.object_id}`, tie: p => p.object_id,

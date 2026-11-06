@@ -1475,6 +1475,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.statOpen = open.includes(key) ? open.filter(x => x !== key) : [...open, key];
       this.render();
     }));
+    root.querySelectorAll("[data-use-more]").forEach(el => el.onclick = () => { const k = el.dataset.useMore, open = this.useOpen || []; this.useOpen = open.includes(k) ? open.filter(x => x !== k) : [...open, k]; this.render(); });
     root.querySelectorAll("[data-pagesize]").forEach(el => el.onchange = () => { this.pageSize = Number(el.value); this.pages = {}; this.render(); });
   }
 }
