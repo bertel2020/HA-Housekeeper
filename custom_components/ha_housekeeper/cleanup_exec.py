@@ -29,6 +29,9 @@ Meters:
   (experimental: it writes into the recorder database, so a backup is mandatory and statistics
   cannot be undone) and/or lets the new entity take over the old entity ID. The old entity moves
   to a free ``_alt`` ID; Home Assistant moves history and statistics along with every rename.
+  The mode ``replace_statistics`` joins the statistics and then rewrites the references to the
+  old entity like ``replace_references``; the new entity keeps its ID. Only the references can be
+  undone.
 
 Counters:
 
@@ -81,6 +84,8 @@ from .cleanup import (
     INTERNAL_RESULT_KEYS,
     LABEL_KINDS,
     METER_KINDS,
+    METER_REFERENCE_MODE,
+    METER_STATISTICS_MODES,
     PLAN_MAX_AGE_HOURS,
     PURGE_KINDS,
     REFACTOR_KINDS,
@@ -239,6 +244,22 @@ def _state_reached(entry: Any, target: str) -> bool:
         "hide": entry.hidden_by is not None,
         "unhide": entry.hidden_by is None,
     }[target]
+
+
+def _references_check(action: dict[str, Any], snapshot: dict[str, Any]) -> dict[str, Any]:
+    """No rewritten source still certainly names the old entity in the scan after the run."""
+    object_id = action["object_id"]
+    done = {
+        s["source"] for s in action["result"].get("sources") or [] if s.get("state") != "undone"
+    }
+    still = [
+        e
+        for e in snapshot["edges"]
+        if e["source"] in done
+        and e["target"] == f"entity:{object_id}"
+        and e.get("confidence", "certain") == "certain"
+    ]
+    return {"check": "references_replaced", "object_id": object_id, "ok": not still}
 
 
 def _restore_data(entry: Any) -> dict[str, Any]:
@@ -512,7 +533,10 @@ class CleanupRunner:
                 a["object_id"]
                 for a in plan["actions"]
                 if a["object_id"] in selected
-                and a["kind"] in REFERENCE_KINDS | RENAME_KINDS | REFACTOR_KINDS
+                and (
+                    a["kind"] in REFERENCE_KINDS | RENAME_KINDS | REFACTOR_KINDS
+                    or (a["kind"] in METER_KINDS and a.get("mode") == METER_REFERENCE_MODE)
+                )
             ],
             "migrations": [
                 a["object_id"]
@@ -1299,9 +1323,10 @@ class CleanupRunner:
     # -- meters ----------------------------------------------------------------------------
 
     async def _migrate_meter(self, action: dict[str, Any]) -> dict[str, Any]:
-        """Join the statistics, then let the new entity take the old ID, as the mode asks.
+        """Join the statistics, then take the old ID or rewrite the references, as the mode asks.
 
-        What was written stays in the result even if a later part stops, so it is never lost.
+        What was written stays in the result even if a later part stops, so it is never lost. The
+        references are only touched once the joined statistics are verified.
         """
         mode = action["mode"]
         result: dict[str, Any] = {
@@ -1310,11 +1335,23 @@ class CleanupRunner:
             "statistics": None,
             "take_id": None,
         }
-        if mode in {"both", "statistics"}:
+        if mode in METER_STATISTICS_MODES:
             result["statistics"] = await self._join_statistics(action)
             if not result["statistics"]["verified"]:
                 result["stopped"] = "statistics_failed"
                 return result
+        if mode == METER_REFERENCE_MODE:
+            result["sources"] = None
+            try:
+                result["sources"] = (await self._replace_references(action))["sources"]
+            except StepAbort as stop:
+                if stop.result is not None:  # a rewritten source could not be put back
+                    result["sources"] = stop.result["sources"]
+                    result["cause"] = stop.result.get("cause")
+                    result["stopped"] = "rollback_incomplete"
+                else:  # every source is as before; the joined statistics stay
+                    result["stopped"] = stop.reason
+            return result
         if mode in {"both", "id"}:
             try:
                 result["take_id"] = await self._take_id(action)
@@ -1865,9 +1902,20 @@ class CleanupRunner:
             meter = await prepare_meter(self.hass, object_id, action["target"], action["mode"])
             if action.get("fingerprint") is None or meter["fingerprint"] != action["fingerprint"]:
                 return "meter_changed"
+            sources: list[dict[str, Any]] = []
+            if action["mode"] == METER_REFERENCE_MODE:
+                fingerprint, sources = await preview_replacement(
+                    self.hass, snapshot, object_id, action["target"], self._lineage, "entity"
+                )
+                if (
+                    action.get("reference_fingerprint") is None
+                    or fingerprint != action["reference_fingerprint"]
+                ):
+                    return "source_changed"
+                action["sources"] = sources
             verdict_args = {
                 "target": action["target"],
-                "meter": {**meter, "mode": action["mode"]},
+                "meter": {**meter, "mode": action["mode"], "sources": sources},
             }
         elif kind in RENAME_KINDS:
             found = await rename_module.prepare(
@@ -1996,7 +2044,7 @@ class CleanupRunner:
                         }
                     )
             elif kind in METER_KINDS:
-                checks.extend(await self._verify_meter(action))
+                checks.extend(await self._verify_meter(action, snapshot))
             elif kind in RENAME_KINDS:
                 registry = er.async_get(self.hass)
                 done = {
@@ -2085,19 +2133,7 @@ class CleanupRunner:
                 gone = object_id not in await statistics_left(self.hass, [object_id])
                 checks.append({"check": "statistics_gone", "object_id": object_id, "ok": gone})
             else:
-                done = {
-                    s["source"] for s in action["result"]["sources"] if s.get("state") != "undone"
-                }
-                still = [
-                    e
-                    for e in snapshot["edges"]
-                    if e["source"] in done
-                    and e["target"] == f"entity:{object_id}"
-                    and e.get("confidence", "certain") == "certain"
-                ]
-                checks.append(
-                    {"check": "references_replaced", "object_id": object_id, "ok": not still}
-                )
+                checks.append(_references_check(action, snapshot))
         new_broken = [
             f["key"]
             for f in snapshot["findings"]
@@ -2132,7 +2168,9 @@ class CleanupRunner:
             "ok": ok and loaded_now,
         }
 
-    async def _verify_meter(self, action: dict[str, Any]) -> list[dict[str, Any]]:
+    async def _verify_meter(
+        self, action: dict[str, Any], snapshot: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         result, checks = action["result"], []
         object_id = action["object_id"]
         if (take := result.get("take_id")) and not take.get("partial"):
@@ -2159,6 +2197,11 @@ class CleanupRunner:
                 ok = bool(stats["verified"]) and len(rows) >= stats["imported"]
                 ok = ok and bool(rows) and rows[0]["start"] == stats["first"]
             checks.append({"check": "meter_statistics", "object_id": object_id, "ok": ok})
+        if result.get("mode") == METER_REFERENCE_MODE:
+            # References that were not rewritten (a stop after the statistics) fail the check.
+            check = _references_check(action, snapshot)
+            check["ok"] = check["ok"] and bool(result.get("sources")) and not result.get("stopped")
+            checks.append(check)
         return checks
 
     def _check_mode(self, plan: dict[str, Any], object_ids: list[str]) -> None:
@@ -2256,10 +2299,15 @@ class CleanupRunner:
         return {"results": results, "status": plan["status"]}
 
     async def _undo_meter(self, result: dict[str, Any]) -> str:
-        """Only the ID takeover can be undone; joined statistics need the backup."""
-        if not result.get("take_id"):
+        """Only the ID takeover or the references can be undone; statistics need the backup."""
+        if result.get("mode") == METER_REFERENCE_MODE:
+            if not result.get("sources"):
+                return "conflict_statistics"
+            outcome = await self._undo_references(result)
+        elif not result.get("take_id"):
             return "conflict_statistics"
-        outcome = await self._undo_take_id(result["take_id"])
+        else:
+            outcome = await self._undo_take_id(result["take_id"])
         if outcome == "undone" and result.get("statistics"):
             result["statistics_kept"] = True
         return outcome
