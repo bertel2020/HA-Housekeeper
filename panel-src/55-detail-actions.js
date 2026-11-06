@@ -38,6 +38,9 @@ class DetailActionsMixin {
     const failing = item.object_type === "config_entry" ? open.find(f => f.rule_id === "config_entry.not_loaded") : null;
     if (failing && (this.autoPause?.pausable || []).some(p => p.entry_id === item.object_id)) out.push({ attr: `data-ap-send="${this.esc(item.object_id)}"`, icon: "mdi:pause-circle-outline", label: this.t("apSend"), hint: "apSendHint", btn: "apDo", finding: failing.key, ap: true });
     if (item.object_type === "entity") out.push({ attr: `data-act-replace-many="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal-variant", label: this.t("actReplaceMany"), hint: "actHintReplaceMany" });
+    // An entity a helper builds cannot be removed on its own: the helper makes it anew. Says so and points to the helper.
+    const owner = item.object_type === "entity" && item.config_entry_id && HELPER_DOMAINS.has(item.platform) ? this.findObject(`config_entry:${item.config_entry_id}`) : null;
+    if (owner) out.push({ attr: `data-object="${this.esc(owner.object_type)}:${this.esc(owner.object_id)}"`, icon: "mdi:function-variant", label: this.t("actHelperOwner", { name: this.esc(owner.name) }), hint: "actHintHelperOwner" });
     // Any entity can be switched off or hidden by a plan; a step that already answers a finding (disable, remove) is not offered twice.
     if (item.object_type === "entity") {
       const state = (target, icon) => out.push({ attr: `data-act-state="${this.esc(item.object_id)}|${target}"`, icon, label: this.t(`actState_${target}`), hint: `actStateHint_${target}` });
@@ -224,4 +227,12 @@ Object.assign(TEXT.en, {
   actState_enable: "Enable again", actStateHint_enable: "Enables the entity you disabled again.",
   actState_hide: "Hide", actStateHint_hide: "The entity keeps running but no longer appears in auto-generated dashboards and areas.",
   actState_unhide: "Show", actStateHint_unhide: "Shows the entity in auto-generated dashboards and areas again.",
+});
+
+// An entity of a helper (template, derivative, ...): where it comes from, and what uses it is named a helper.
+Object.assign(TEXT.de, {
+  helperKind: "Helfer", actHelperOwner: "Gehört dem Helfer {name}", actHintHelperOwner: "Diese Entität erzeugt ein Helfer und legt sie sofort neu an. Zum Entfernen löschst du den Helfer in Home Assistant (Einstellungen → Geräte & Dienste → Helfer).",
+});
+Object.assign(TEXT.en, {
+  helperKind: "Helper", actHelperOwner: "Belongs to the helper {name}", actHintHelperOwner: "A helper builds this entity and creates it again at once. To remove it, delete the helper in Home Assistant (Settings → Devices & services → Helpers).",
 });

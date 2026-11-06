@@ -266,7 +266,7 @@ class ReplaceWizardMixin {
       for (const x of list) { if (!byObj.has(x.other)) byObj.set(x.other, []); byObj.get(x.other).push(x); }
       return [...byObj].map(([other, items]) => {
         const obj = this.findObject(other), energy = other === "dashboard:energy", name = this.esc(energy ? this.t("energyDashboard") : obj?.name || other.split(":").slice(1).join(":"));
-        return `<li class="usegroup"><div class="usehead">${obj ? `<button class="linklike" data-object="${this.esc(other)}">${name}</button>` : name} <small class="muted">${this.esc(this.t(obj?.object_type || other.split(":")[0]))}</small></div><ul class="uselist">${items.map(row).join("")}</ul></li>`;
+        return `<li class="usegroup"><div class="usehead">${obj ? `<button class="linklike" data-object="${this.esc(other)}">${name}</button>` : name} <small class="muted">${this.esc(this.t(this.isHelper(obj || {}) ? "helperKind" : obj?.object_type || other.split(":")[0]))}</small></div><ul class="uselist">${items.map(row).join("")}</ul></li>`;
       }).join("");
     };
     const auto = uses.filter(sure).length, groups = [...new Set(uses.map(x => x.other))], keep = cap && groups.length > cap + 1 ? new Set(groups.slice(0, cap)) : new Set(groups);
