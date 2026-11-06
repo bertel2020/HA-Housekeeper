@@ -8,6 +8,12 @@
 - **Backups automatisch aufräumen:** Auf der Seite „Housekeeper-Backups aufräumen“ gibt es einen Schalter (aus), der stündlich nach der dortigen Regel löscht. Geschützte Backups und solche, die die einzige Rückkehr nach einer Recorder-Änderung sind, bleiben.
 - **Verwendungen sehen:** In „Entitäten ersetzen“ und „Gerät austauschen“ lässt sich die Zahl der Verwendungen aufklappen. Die Liste zeigt jede Stelle und ob sie ersetzt wird oder von Hand zu prüfen bleibt.
 - **Statistik übernehmen nur bei Zählern:** Im Ersetzen-Assistenten übernimmt die neue Entität Verlauf und ID nur noch bei echten Zählern von selbst. Bei Messwerten werden standardmäßig nur die Verweise umgestellt. Die Vorschau spricht von „Statistik übernehmen“ statt „Zählerwechsel“.
+- **Ein Assistent zum Ersetzen:** „Entitäten ersetzen“ ersetzt eine oder mehrere Entitäten. „Zähler wechseln“ und „Verweise ersetzen“ gehen darin auf, Reparieren hat drei Kacheln.
+  - Für eine Entität gibt es fünf Arten, nach der ID gruppiert: Verweise umstellen, Verweise und Statistik (neu), Nur Statistik, Statistik und ID, Nur ID.
+  - Was bei diesem Paar nicht möglich ist, ist gesperrt und sagt warum.
+- **Oberfläche:** Kleine Verbesserungen.
+  - Die Regel und der Schalter „Automatisch aufräumen“ der Backup-Seite stehen in einem Rahmen.
+  - Altes und neues Gerät stehen nebeneinander, ebenso beim Ersetzen von Entitäten.
 
 ### English
 
@@ -17,6 +23,12 @@
 - **Tidy backups automatically:** The "Tidy up Housekeeper backups" page has a switch (off) that deletes every hour by the rule there. Protected backups and those that are the only way back after a recorder change stay.
 - **See the uses:** In "Replace entities" and "Exchange a device" the count of uses unfolds into a list of every place and whether it is replaced or left for a manual check.
 - **Statistics takeover only for meters:** In the replace assistant the new entity takes over history and ID by default only for real meters. For measurements only the references are switched. The preview says "statistics takeover" instead of "meter change".
+- **One assistant to replace:** "Replace entities" replaces one or several entities. "Replace a meter" and "Replace references" are part of it, and Repair has three tiles.
+  - For one entity there are five kinds, grouped by the ID: Switch references, References and statistics (new), Statistics only, Statistics and ID, ID only.
+  - What is not possible for this pair is blocked and says why.
+- **Interface:** Small improvements.
+  - The rule and the "Tidy up automatically" switch of the backup page share one frame.
+  - Old and new device sit side by side, and so do the entities when replacing.
 
 ## 2.0.0-beta.3 - 2026-11-05
 
