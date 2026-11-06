@@ -236,7 +236,7 @@ class CheckLogMixin {
     const e = r.e;
     if (e.kind === "backup_run") return e.ended ? "" : `<span class="clstep"><span class="pill blue">${this.t("clLevel_running")}</span></span>`;
     if (e.kind !== "change") return "";
-    const pills = `<span class="pill ${CL_LEVEL_PILL[e.from] || "mute"}">${this.esc(this.t(`clLevel_${e.from}`))}</span><ha-icon icon="mdi:arrow-right"></ha-icon><span class="pill ${CL_LEVEL_PILL[e.to] || "mute"}">${this.esc(this.t(`clLevel_${e.to}`))}</span>`;
+    const pills = `<span class="pill ${CL_LEVEL_PILL[e.from] || "mute"}">${this.esc(this.t(`clLevel_${e.from}`))}</span><ha-icon icon="mdi:arrow-right" style="color:var(--hk-text);--mdc-icon-size:18px"></ha-icon><span class="pill ${CL_LEVEL_PILL[e.to] || "mute"}">${this.esc(this.t(`clLevel_${e.to}`))}</span>`;
     return `<span class="clstep">${e.dismissed ? `<span class="pill mute">${this.t("clDismissed", { reason: this.esc(this.t(`clReason_${e.dismissed}`)) })}</span>` : ""}${pills}</span>`;
   }
 

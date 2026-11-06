@@ -63,6 +63,7 @@ Object.assign(TEXT.en, {
 });
 
 const RW_HOWS = ["replace", "replace_statistics", "statistics", "both", "id"];
+const RW_TONE = { replace: ["var(--hk-blue)", "link-variant"], replace_statistics: ["color-mix(in srgb,var(--hk-blue) 50%,var(--hk-green))", "link-plus"], statistics: ["var(--hk-green)", "chart-line"], both: ["var(--hk-violet)", "swap-horizontal"], id: ["var(--hk-amber)", "identifier"] };
 const RW_KEEP = ["replace", "replace_statistics", "statistics"], RW_TAKE = ["both", "id"];
 
 class ReplaceWizardMixin {
@@ -335,7 +336,7 @@ class ReplaceWizardMixin {
 
   rwOneCard() {
     const info = this.rwOneInfo(), { checks, off, how, usual, known } = info;
-    const tile = id => `<button class="modecard${how === id ? " on" : ""}${off[id] ? " off" : ""}" role="radio" aria-checked="${how === id}" ${off[id] ? 'aria-disabled="true" data-off' : ""} data-rw-one-how="${id}"><strong>${this.t(`rwHow_${id}`)}${known && id === usual ? ` <span class="pill ok">${this.t("meterUsual")}</span>` : ""}</strong><small>${this.t(`rwHowHint_${id}`)}</small>${off[id] ? `<small class="modefollow">${this.t(off[id])}</small>` : ""}</button>`;
+    const tile = id => `<button class="modecard mc${how === id ? " on" : ""}${off[id] ? " off" : ""}" style="--mc:${RW_TONE[id][0]}" role="radio" aria-checked="${how === id}" ${off[id] ? 'aria-disabled="true" data-off' : ""} data-rw-one-how="${id}"><span class="mcico"><ha-icon icon="mdi:${RW_TONE[id][1]}" aria-hidden="true"></ha-icon></span><strong>${this.t(`rwHow_${id}`)}${known && id === usual ? ` <span class="pill ok">${this.t("meterUsual")}</span>` : ""}</strong><small>${this.t(`rwHowHint_${id}`)}</small>${off[id] ? `<small class="modefollow">${this.t(off[id])}</small>` : ""}</button>`;
     const group = (key, ids) => `<p class="rwgroup">${this.t(key)}</p><div class="modecards" role="radiogroup" aria-label="${this.esc(this.t(key))}">${ids.map(tile).join("")}</div>`;
     const result = known && !checks.bad ? `<p class="factnote rwresult"><strong>${this.t("rwResultLabel")}</strong> ${this.t(`rwResult_${how}`, { old: this.esc(this.replOld), new: this.esc(this.replNew) })}</p>` : "";
     const ready = this.replOld && this.replNew && !this.cleanupBusy && !checks.bad && !off[how];
