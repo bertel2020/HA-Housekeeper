@@ -360,3 +360,26 @@ def test_hacs_rules_name_each_integration_once_not_each_entry() -> None:
     ]
     assert ids(run(objects, "hacs_archived")) == ["e1"]
     assert ids(run(objects, "hacs_blocked")) == ["e3"]
+
+
+def test_template_rules() -> None:
+    helpers = [
+        obj("config_entry", "e1", domain="template"),
+        obj("config_entry", "e2", domain="template"),
+        obj("entity", "sensor.a", config_entry_id="e1"),
+        obj("entity", "sensor.b", config_entry_id="e2"),
+    ]
+    edges = [{"source": "automation:x", "target": "entity:sensor.b", "relation": "TRIGGERS_ON"}]
+    assert ids(run(helpers, "template_unused", edges=edges)) == ["e1"]
+
+    def tpl(text: str) -> dict:
+        return {"object_type": "config_entry", "object_id": text, "name": text, "state": text}
+
+    bare = "{{ states('sensor.x') | float * 2 }}"
+    safe = [
+        "{{ states('sensor.x') | float(0) }}",
+        "{% if is_number(states('sensor.x')) %}1{% endif %}",
+    ]
+    assert ids(run([], "template_guard", templates=[tpl(bare), *map(tpl, safe)])) == [bare]
+    own = {"object_type": "entity", "object_id": "sensor.t", "name": "T"}
+    assert ids(run([], "template_no_unique_id", template_no_unique_id=[own])) == ["sensor.t"]

@@ -42,6 +42,9 @@ RULES = (
     "automation_error_handling",
     "automation_triggers",
     "automation_literal_ids",
+    "template_unused",
+    "template_guard",
+    "template_no_unique_id",
     "automation_self_trigger",
     "turn_on_only",
     "exposure_unused",
@@ -300,6 +303,11 @@ def evaluate(
         "automation_triggers": lambda: rules_more.automation_triggers(automations),
         "automation_literal_ids": lambda: rules_more.automation_literal_ids(automations),
         "automation_self_trigger": lambda: rules_more.automation_self_trigger(automations),
+        "template_unused": lambda: rules_more.template_unused(integrations, entities, used),
+        "template_guard": lambda: rules_more.template_guard(extra.get("templates") or []),
+        "template_no_unique_id": lambda: rules_more.template_no_unique_id(
+            extra.get("template_no_unique_id") or []
+        ),
         "turn_on_only": lambda: rules_more.turn_on_only(automations, scripts, entities),
         "exposure_unused": lambda: rules_more.exposure_unused(exposed, entities, used),
         "exposure_sensitive": lambda: rules_more.exposure_sensitive(exposed, entities),
@@ -519,12 +527,50 @@ def _extra(
         extra["exposed"] = {
             row["entity_id"]: row["assistants"] for row in result["exposed_entities"]
         }
+    if store.enabled & {"template_guard", "template_no_unique_id"}:
+        extra.update(template_facts(hass, store.enabled))
     if store.enabled & {"http_trusted_networks", "http_external_url", "http_proxies"}:
         extra["http"] = http_facts(hass)
     kept = getattr(replies, "replies", {}).get("db_health")
     if isinstance(kept, dict) and "db_bytes" in kept:
         extra["db"] = kept
     return extra
+
+
+def template_facts(hass: HomeAssistant, enabled: Any) -> dict[str, Any]:
+    """The state templates of template helpers and the template entities that have no unique id."""
+    facts: dict[str, Any] = {}
+    if "template_guard" in enabled:
+        facts["templates"] = [
+            {
+                "object_type": "config_entry",
+                "object_id": entry.entry_id,
+                "name": entry.title,
+                "state": (entry.options or {}).get("state"),
+            }
+            for entry in hass.config_entries.async_entries("template")
+        ]
+    if "template_no_unique_id" in enabled:
+        from homeassistant.helpers import entity_platform
+
+        found: list[dict[str, Any]] = []
+        try:
+            for platform in entity_platform.async_get_platforms(hass, "template"):
+                for entity in platform.entities.values():
+                    if entity.unique_id is None and entity.entity_id:
+                        state = hass.states.get(entity.entity_id)
+                        name = state.attributes.get("friendly_name") if state else None
+                        found.append(
+                            {
+                                "object_type": "entity",
+                                "object_id": entity.entity_id,
+                                "name": name or entity.entity_id,
+                            }
+                        )
+        except Exception:  # noqa: BLE001 - a platform that cannot be read means no hint, not an error
+            found = []
+        facts["template_no_unique_id"] = found
+    return facts
 
 
 def http_facts(hass: HomeAssistant) -> dict[str, Any]:

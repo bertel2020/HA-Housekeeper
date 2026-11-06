@@ -160,6 +160,40 @@ def label_unused(labels: list[dict[str, Any]], used: set[str], ignore_label: str
             yield item
 
 
+def template_unused(
+    integrations: list[dict[str, Any]], entities: dict[str, dict[str, Any]], used: set[str]
+):
+    """Template helpers whose entities nothing refers to (a hint: the helper may be a leftover)."""
+    members: dict[str, list[str]] = {}
+    for item in entities.values():
+        if item.get("config_entry_id"):
+            members.setdefault(item["config_entry_id"], []).append(item["object_id"])
+    for item in integrations:
+        if item.get("domain") != "template":
+            continue
+        own = members.get(item["object_id"], [])
+        if own and not any(entity_id in used for entity_id in own):
+            yield item
+
+
+# `| float` or `| int` without a default raises an error when the source has no number.
+UNGUARDED_NUMBER = re.compile(r"\|\s*(?:float|int)\b(?!\s*\()")
+NUMBER_GUARDS = ("is_number", "has_value", "unavailable", "unknown", "default", "availability")
+
+
+def template_guard(templates: list[dict[str, Any]]):
+    """Template helpers that turn a value into a number without a default or a check (a hint)."""
+    for item in templates:
+        text = str(item.get("state") or "")
+        if UNGUARDED_NUMBER.search(text) and not any(word in text for word in NUMBER_GUARDS):
+            yield item
+
+
+def template_no_unique_id(entities: list[dict[str, Any]]):
+    """Template entities without a ``unique_id``: the interface cannot rename or disable them."""
+    yield from entities
+
+
 def automation_error_handling(automations: list[dict[str, Any]]):
     """Two or more actions, no condition and nothing that handles a failing step (a hint)."""
     for item in _config_automations(automations):
