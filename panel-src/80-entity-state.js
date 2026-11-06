@@ -65,6 +65,7 @@ class EntityStateMixin {
       this.invSel = new Set([...(this.invSel || []), ...this.filtered().filter(r => this.invSelectable(r)).map(r => r.object_id)]); this.render();
     });
     root.querySelector("[data-inv-sel-clear]")?.addEventListener("click", () => { this.invSel = new Set(); this.render(); });
+    this.bindHelperIo(root);
     root.querySelectorAll("[data-inv-state]").forEach(el => el.addEventListener("click", () => this.makeStatePlan(el.dataset.invState)));
   }
 

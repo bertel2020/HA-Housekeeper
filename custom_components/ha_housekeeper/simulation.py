@@ -16,6 +16,7 @@ DISABLING = {"disable_entity", "disable_device"}
 OTHER_KINDS = {
     "reload_integration": "reloaded",
     "remove_helper": "helper_removed",
+    "import_helper": "helper_created",
     "add_label": "labeled",
     "set_area": "area_set",
     "set_exposure": "exposure_set",

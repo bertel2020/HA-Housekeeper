@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"2062d26a4d"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"7c466ed9ef"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b03531fec8"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"5ffecd3429"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"611214dc22"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"33469598ec"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"5c151879dc"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"c9785f3a14"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6ca252b4c8"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"7644dab97a"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"a313b3a376"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"47d4c04de3"}];
 
 const TEXT = {
   de: {
@@ -403,7 +403,7 @@ const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 const DONE_RESULTS = Object.fromEntries([
   ...REMOVAL_KINDS.map(kind => [kind, "removed"]), ...REPAIR_KINDS.map(kind => [kind, "repaired"]), ...PURGE_KINDS.map(kind => [kind, "purged"]),
   ["delete_automation", "purged"], ["replace_references", "replaced"], ["refactor_automation", "refactored"], ["migrate_meter", "migrated"],
-  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["set_expose_new", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"], ["remove_helper", "removed"],
+  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["set_expose_new", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"], ["remove_helper", "removed"], ["import_helper", "created"],
 ]);
 
 const MAX_PLAN_ACTIONS = 250; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
@@ -4403,7 +4403,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "set_exposure") ? "confirmedSummaryExposure"
       : executable.some(a => a.kind === "set_expose_new") ? "confirmedSummaryExposeNew"
       : executable.some(a => a.kind === "reload_integration") ? "confirmedSummaryReload"
-      : executable.some(a => a.kind === "remove_helper") ? "confirmedSummaryHelper"
+      : executable.some(a => a.kind === "remove_helper") ? "confirmedSummaryHelper" : executable.some(a => a.kind === "import_helper") ? "confirmedSummaryHelperImport"
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
@@ -4796,7 +4796,7 @@ class CleanupMixin {
   // Housekeeper can take every action back except merged statistics, which only a backup restores.
   undoBadge(action) {
     if (action.kind === "reload_integration") return `<span class="pill mute"><ha-icon icon="mdi:reload" class="u-ic14"></ha-icon>${this.t("undoReload")}</span>`;
-    if (action.kind === "delete_backup" || action.kind === "remove_helper") return `<span class="pill mute"><ha-icon icon="mdi:delete-forever-outline" class="u-ic14"></ha-icon>${this.t("undoFinal")}</span>`;
+    if (action.kind === "delete_backup") return `<span class="pill mute"><ha-icon icon="mdi:delete-forever-outline" class="u-ic14"></ha-icon>${this.t("undoFinal")}</span>`;
     const backupOnly = action.kind === "migrate_meter" || PURGE_KINDS.includes(action.kind);
     return `<span class="pill ${backupOnly ? "warn" : "mute"}"><ha-icon icon="${backupOnly ? "mdi:backup-restore" : "mdi:undo-variant"}" class="u-ic14"></ha-icon>${this.t(backupOnly ? "undoBackupOnly" : "undoHousekeeper")}</span>`;
   }
@@ -4846,7 +4846,7 @@ class CleanupMixin {
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
-      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" || a.kind === "remove_helper" ? "" : this.undoAsk === a.object_id
+      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"${!settled && !idle && a.verdict !== "ok" ? ` data-rowtone="${a.verdict === "blocked" ? "red" : "warn"}"` : ""}><span class="tile ${tone}"><ha-icon icon="${settled || idle || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
@@ -5498,7 +5498,7 @@ class InventoryMixin {
       { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(item) })) },
     ];
     const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"${this.tone(item.status) === "red" ? ' data-rowtone="red"' : ""}` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
-    return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
+    return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${helperMode ? this.helperIoBar(rows) : ""}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
   }
 
   // The types as a ring with a table beside it: the largest few, the rest behind a button. A row filters the list below (a
@@ -11224,7 +11224,7 @@ Object.assign(TEXT.de, {
   simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",
   simRemoved: "{count} Entitäten entfernt", simRemovedOne: "1 Entität entfernt", simDisabled: "{count} Entitäten deaktiviert", simDisabledOne: "1 Entität deaktiviert", simDevices: " ({devices} Geräte)", simDevicesOne: " (1 Gerät)", simReplaced: "{count} Referenzen ersetzt", simMeters: "{count} Statistik-Übernahmen",
   simCertain: "{count} sichere Verwendungen bleiben bestehen", simUncertain: "{count} unsichere oder manuelle Verwendungen bleiben bestehen", simOrphaned: "{count} Statistiken voraussichtlich verwaist", simBlocked: "{count} Aktionen laufen nicht",
-  sim_helper_removed: "{count} Helfer werden gelöscht (nur das Backup bringt sie zurück)", sim_reloaded: "{count} Integration(en) werden neu geladen (einige Sekunden nicht erreichbar, nichts wird gelöscht)", sim_labeled: "{count} Entitäten bekommen ein Label", sim_area_set: "{count} Objekte bekommen einen Bereich", sim_refactored: "{count} Automationen werden umgebaut", sim_enabled: "{count} Entitäten werden aktiviert", sim_hidden: "{count} Entitäten werden ausgeblendet", sim_unhidden: "{count} Entitäten werden eingeblendet", sim_backups_deleted: "{count} Backups werden gelöscht", sim_automations_deleted: "{count} Automationen werden gelöscht",
+  sim_helper_removed: "{count} Helfer werden gelöscht (rückgängig: werden neu erstellt)", sim_reloaded: "{count} Integration(en) werden neu geladen (einige Sekunden nicht erreichbar, nichts wird gelöscht)", sim_labeled: "{count} Entitäten bekommen ein Label", sim_area_set: "{count} Objekte bekommen einen Bereich", sim_refactored: "{count} Automationen werden umgebaut", sim_enabled: "{count} Entitäten werden aktiviert", sim_hidden: "{count} Entitäten werden ausgeblendet", sim_unhidden: "{count} Entitäten werden eingeblendet", sim_backups_deleted: "{count} Backups werden gelöscht", sim_automations_deleted: "{count} Automationen werden gelöscht",
   simLimits: "Grenzen: Die Datenbankdatei schrumpft erst nach einem Repack. Verweise in Vorlagen und außerhalb von Home Assistant sind nicht sicher prüfbar; eine Speicherersparnis wird nicht geschätzt.",
 });
 Object.assign(TEXT.en, {
@@ -11247,7 +11247,7 @@ Object.assign(TEXT.en, {
   simTitle: "Expected end state", simPurged: "{count} statistics will be deleted (reversible only from the backup)",
   simRemoved: "{count} entities removed", simRemovedOne: "1 entity removed", simDisabled: "{count} entities disabled", simDisabledOne: "1 entity disabled", simDevices: " ({devices} devices)", simDevicesOne: " (1 device)", simReplaced: "{count} references replaced", simMeters: "{count} statistics takeovers",
   simCertain: "{count} certain uses remain", simUncertain: "{count} uncertain or manual uses remain", simOrphaned: "{count} statistics likely orphaned", simBlocked: "{count} actions will not run",
-  sim_helper_removed: "{count} helper(s) are deleted (only the backup brings them back)", sim_reloaded: "{count} integration(s) will be reloaded (unreachable for a few seconds, nothing is deleted)", sim_labeled: "{count} entities get a label", sim_area_set: "{count} objects get an area", sim_refactored: "{count} automations are rewritten", sim_enabled: "{count} entities are enabled", sim_hidden: "{count} entities are hidden", sim_unhidden: "{count} entities are shown again", sim_backups_deleted: "{count} backups are deleted", sim_automations_deleted: "{count} automations are deleted",
+  sim_helper_removed: "{count} helper(s) are deleted (undo creates them anew)", sim_reloaded: "{count} integration(s) will be reloaded (unreachable for a few seconds, nothing is deleted)", sim_labeled: "{count} entities get a label", sim_area_set: "{count} objects get an area", sim_refactored: "{count} automations are rewritten", sim_enabled: "{count} entities are enabled", sim_hidden: "{count} entities are hidden", sim_unhidden: "{count} entities are shown again", sim_backups_deleted: "{count} backups are deleted", sim_automations_deleted: "{count} automations are deleted",
   simLimits: "Limits: the database file only shrinks after a repack. References inside templates and outside Home Assistant cannot be checked for certain; saved storage is not estimated.",
 });
 
@@ -11445,7 +11445,7 @@ class ExchangeMixin {
     if (s.remaining_uncertain) lines.push(this.t("simUncertain", { count: s.remaining_uncertain }));
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
     if (s.rows_counted) { const other = s.purge_rows - (s.purge_stat_rows || 0) - (s.purge_states_rows || 0); if (s.purge_stat_rows) lines.push(this.t("simPurgeStatRows", { count: this.formatNumber(s.purge_stat_rows) })); if (s.purge_states_rows) lines.push(this.t("simPurgeStateRows", { count: this.formatNumber(s.purge_states_rows) })); if (other > 0) lines.push(this.t("simPurgeRows", { count: this.formatNumber(other) })); if (s.history_states_kept === undefined) { if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); } else { if (s.history_states_kept) lines.push(this.t(plan.recorder_auto_purge === false ? "simKeptStatesForever" : plan.recorder_keep_days ? "simKeptStates" : "simKeptStatesOpen", { count: this.formatNumber(s.history_states_kept), days: plan.recorder_keep_days })); if (s.history_stats_kept) lines.push(this.t("simKeptStats", { count: this.formatNumber(s.history_stats_kept) })); } }
-    for (const key of ["reloaded", "helper_removed", "labeled", "area_set", "exposure_set", "refactored", "enabled", "hidden", "unhidden", "backups_deleted", "automations_deleted"]) if (s[key]) lines.push(this.t(`sim_${key}`, { count: s[key] }));
+    for (const key of ["reloaded", "helper_removed", "helper_created", "labeled", "area_set", "exposure_set", "refactored", "enabled", "hidden", "unhidden", "backups_deleted", "automations_deleted"]) if (s[key]) lines.push(this.t(`sim_${key}`, { count: s[key] }));
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
     if (!lines.length) return "";
     return `<div class="simbox"><details ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary><ul class="simlist">${lines.map(l => `<li>${this.esc(l)}</li>`).join("")}</ul><p class="simlimits">${this.t("simLimits")}</p></details></div>`;
@@ -13539,6 +13539,7 @@ class DetailActionsMixin {
     if (owner) out.push({ attr: `data-object="${this.esc(owner.object_type)}:${this.esc(owner.object_id)}"`, icon: "mdi:function-variant", label: this.t("actHelperOwner", { name: this.esc(owner.name) }), hint: "actHintHelperOwner" });
     // A helper entry can be deleted by a plan, from its own page or from the page of one of its entities.
     const helperId = item.object_type === "config_entry" && HELPER_DOMAINS.has(item.domain) ? item.object_id : owner?.object_id;
+    if (helperId) out.push({ attr: `data-act-export-helper="${this.esc(helperId)}"`, icon: "mdi:export", label: this.t("actExportHelper"), hint: "actHintExportHelper" });
     if (helperId) out.push({ attr: `data-act-remove-helper="${this.esc(helperId)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveHelper"), hint: "actHintRemoveHelper" });
     // An entity that still works can be removed too, on purpose: no quarantine, backup and confirmation as for any removal.
     if (item.object_type === "entity" && !owner && item.status && !["orphaned", "unavailable", "unknown", "disabled"].includes(item.status)) out.push({ attr: `data-act-remove-working="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveWorking"), hint: "actHintRemoveWorking" });
@@ -13681,6 +13682,7 @@ class DetailActionsMixin {
   }
 
   bindDetailActions(root) {
+    this.bindHelperIo(root);
     root.querySelectorAll("[data-act-more]").forEach(el => el.onclick = () => {
       const open = el.previousElementSibling?.classList.toggle("open");
       el.setAttribute("aria-expanded", String(Boolean(open)));
@@ -13763,14 +13765,14 @@ Object.assign(TEXT.en, { reason_feeds_helper: "A helper reads this entity and lo
 
 // Deleting a helper entry: a plan with a backup first; only the backup brings it back.
 Object.assign(TEXT.de, {
-  actRemoveHelper: "Helfer löschen", actHintRemoveHelper: "Löscht den Helfer mit allen seinen Entitäten. Vorher legt Housekeeper ein Backup an; nur das Backup bringt ihn zurück.",
+  actRemoveHelper: "Helfer löschen", actHintRemoveHelper: "Löscht den Helfer mit allen seinen Entitäten. Vorher legt Housekeeper ein Backup an; „Rückgängig“ erstellt ihn aus den gespeicherten Optionen neu.",
   reason_not_helper: "Das ist kein Helfer, den Housekeeper löschen darf.", check_helper_gone: "Helfer ist gelöscht", actKind_remove_helper: "Helfer gelöscht", goneKind_remove_helper: "Helfer gelöscht",
-  confirmedSummaryHelper: "Der Helfer wird mit allen seinen Entitäten gelöscht. Vorher entsteht ein Backup, nur damit lässt er sich wiederherstellen.",
+  confirmedSummaryHelper: "Der Helfer wird mit allen seinen Entitäten gelöscht. Vorher entsteht ein Backup. „Rückgängig“ erstellt ihn neu, die Statistik der Entitäten bleibt im Recorder.",
 });
 Object.assign(TEXT.en, {
-  actRemoveHelper: "Delete the helper", actHintRemoveHelper: "Deletes the helper with all its entities. Housekeeper makes a backup first; only the backup brings it back.",
+  actRemoveHelper: "Delete the helper", actHintRemoveHelper: "Deletes the helper with all its entities. Housekeeper makes a backup first; “Undo” creates it anew from the saved options.",
   reason_not_helper: "This is not a helper Housekeeper may delete.", check_helper_gone: "Helper is deleted", actKind_remove_helper: "Helper deleted", goneKind_remove_helper: "Helper deleted",
-  confirmedSummaryHelper: "The helper is deleted with all its entities. A backup is made first; only that restores it.",
+  confirmedSummaryHelper: "The helper is deleted with all its entities. A backup is made first. “Undo” creates it anew, the statistics of its entities stay in the recorder.",
 });
 
 Object.assign(TEXT.de, {
@@ -19653,6 +19655,7 @@ class EntityStateMixin {
       this.invSel = new Set([...(this.invSel || []), ...this.filtered().filter(r => this.invSelectable(r)).map(r => r.object_id)]); this.render();
     });
     root.querySelector("[data-inv-sel-clear]")?.addEventListener("click", () => { this.invSel = new Set(); this.render(); });
+    this.bindHelperIo(root);
     root.querySelectorAll("[data-inv-state]").forEach(el => el.addEventListener("click", () => this.makeStatePlan(el.dataset.invState)));
   }
 
@@ -22658,6 +22661,65 @@ class FcRecommendMixin {
   }
 }
 
+// Helpers as a file: export the options and entity settings of helper entries, create them from such a file. A deleted helper is created anew by "Undo"; the file is the same note.
+Object.assign(TEXT.de, {
+  helperExportAll: "Alle exportieren", helperImport: "Importieren …",
+  helperIoHint: "Als Datei sichern und später wieder anlegen. Importieren erzeugt einen Plan mit Vorschau; Rückgängig löscht den neuen Helfer wieder.",
+  helperImportBad: "Das ist keine Housekeeper-Helferdatei.", helperExportNone: "In der Liste ist kein Helfer, den Housekeeper exportieren kann.",
+  actExportHelper: "Helfer exportieren", actHintExportHelper: "Speichert die Optionen und Entitäts-Einstellungen des Helfers als Datei. Housekeeper legt sie auch vor jedem Löschen im Journal ab.",
+  err_not_helper: "Das ist kein Helfer, den Housekeeper exportieren darf.",
+  undo_conflict_helper_flow: "nicht wiederhergestellt: Home Assistant konnte den Helfer nicht neu anlegen. Das Backup bringt ihn zurück",
+  reason_invalid_helper: "Die Datei enthält für diesen Helfer keine brauchbaren Angaben.",
+  sim_helper_created: "{count} Helfer werden erstellt (rückgängig: werden gelöscht)", check_helper_created: "Helfer ist erstellt", actKind_import_helper: "Helfer erstellt",
+  confirmedSummaryHelperImport: "Der Helfer wird aus der Datei neu erstellt, mit den alten Entitäts-IDs und Einstellungen. Das lässt sich rückgängig machen: der neue Helfer wird gelöscht.",
+});
+Object.assign(TEXT.en, {
+  helperExportAll: "Export all", helperImport: "Import …",
+  helperIoHint: "Save as a file and create them again later. Importing makes a plan with a preview; Undo deletes the new helper again.",
+  helperImportBad: "This is not a Housekeeper helper file.", helperExportNone: "The list has no helper Housekeeper can export.",
+  actExportHelper: "Export the helper", actHintExportHelper: "Saves the options and entity settings of the helper as a file. Housekeeper also keeps them in the journal before every deletion.",
+  err_not_helper: "This is not a helper Housekeeper may export.",
+  undo_conflict_helper_flow: "not restored: Home Assistant could not create the helper anew. The backup brings it back",
+  reason_invalid_helper: "The file holds no usable details for this helper.",
+  sim_helper_created: "{count} helper(s) are created (undo deletes them)", check_helper_created: "Helper is created", actKind_import_helper: "Helper created",
+  confirmedSummaryHelperImport: "The helper is created anew from the file, with the old entity IDs and settings. This can be undone: the new helper is deleted.",
+});
+
+class HelperIoMixin {
+  // The bar over the helper list: export every helper in it, or create helpers from a file.
+  helperIoBar(rows) {
+    const ids = rows.filter(r => r.object_type === "config_entry").map(r => r.object_id);
+    return `<div class="toolbar"><button class="btn" data-helper-export-all="${this.esc(ids.join(","))}" ${ids.length ? "" : "disabled"}><ha-icon icon="mdi:export"></ha-icon>${this.t("helperExportAll")}</button><button class="btn" data-helper-import><ha-icon icon="mdi:import"></ha-icon>${this.t("helperImport")}</button><input type="file" accept=".json,application/json" data-helper-file hidden><span class="toolgap"></span><span class="muted">${this.t("helperIoHint")}</span></div>`;
+  }
+
+  bindHelperIo(root) {
+    root.querySelectorAll("[data-helper-export-all]").forEach(el => el.onclick = () => this.exportHelpers(el.dataset.helperExportAll.split(",").filter(Boolean)));
+    root.querySelectorAll("[data-act-export-helper]").forEach(el => el.onclick = () => this.exportHelpers([el.dataset.actExportHelper]));
+    root.querySelectorAll("[data-helper-import]").forEach(el => el.onclick = () => root.querySelector("[data-helper-file]")?.click());
+    root.querySelectorAll("[data-helper-file]").forEach(el => el.onchange = () => { const file = el.files?.[0]; el.value = ""; if (file) this.importHelpers(file); });
+  }
+
+  async exportHelpers(entryIds) {
+    if (!entryIds.length) { this.toast(this.t("helperExportNone"), true); return; }
+    try {
+      const file = await this._hass.callWS({ type: "ha_housekeeper/helper_export", entry_ids: entryIds.slice(0, 200) });
+      this.downloadText(`helpers-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(file, null, 2), "application/json");
+    } catch (err) { this.failed(err); }
+  }
+
+  // The file becomes one plan with a step per helper; nothing is created before the person confirms it.
+  async importHelpers(file) {
+    let data;
+    try { data = JSON.parse(await file.text()); } catch { data = null; }
+    const helpers = data && data.format === "housekeeper-helper-export" && Array.isArray(data.helpers) ? data.helpers.filter(h => h && typeof h === "object") : [];
+    if (!helpers.length) { this.toast(this.t("helperImportBad"), true); return; }
+    try {
+      if (!await this.newPlan(helpers.slice(0, MAX_PLAN_ACTIONS).map((helper, i) => ({ kind: "import_helper", object_id: `import:${i + 1}:${helper.domain || ""}`, helper })))) return;
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+}
+
 class HAHousekeeperPanel extends HTMLElement {
   constructor() {
     super();
@@ -24139,7 +24201,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, ReplaceWizardMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, StartsMixin, AutoPauseMixin, CheckLogMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FcRecommendMixin, FcRoundMixin, FirstCleanupMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, ReplaceWizardMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, HelperIoMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, StartsMixin, AutoPauseMixin, CheckLogMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FcRecommendMixin, FcRoundMixin, FirstCleanupMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }

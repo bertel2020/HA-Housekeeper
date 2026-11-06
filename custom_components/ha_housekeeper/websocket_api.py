@@ -35,6 +35,7 @@ from .cleanup import (
     DELETE_BACKUP_KINDS,
     EXPOSE_NEW_KINDS,
     EXPOSURE_KINDS,
+    HELPER_IMPORT_KINDS,
     HELPER_KINDS,
     LABEL_KINDS,
     MAX_ACTIONS,
@@ -76,6 +77,7 @@ from .device_pairs import pair_devices, suggest_entities
 from .failure_info import error_hint, item_id_of, last_failure
 from .first_cleanup import BULK_LIMIT, LATER_DAYS, STAGES, stage_keys
 from .fix_ways import ways_for
+from .helper_backup import check_note, export_file, taken_ids
 from .history import PinError
 from .ignored import KINDS as IGNORE_KINDS
 from .ignored import REASON_LIMIT as IGNORE_REASON_LIMIT
@@ -958,6 +960,12 @@ async def _plan_from_requests(
         if action["kind"] in HELPER_KINDS
     }
 
+    helper_import_data = {
+        action["object_id"]: taken_ids(hass, action["helper"])
+        for action in requests
+        if action["kind"] in HELPER_IMPORT_KINDS and check_note(action.get("helper")) is None
+    }
+
     area_data = {
         action["object_id"]: area_assign.prepare(
             hass, action["object_id"], action.get("target") or ""
@@ -1033,12 +1041,32 @@ async def _plan_from_requests(
         delete_data=delete_data,
         reload_data=reload_data,
         helper_data=helper_data,
+        helper_import_data=helper_import_data,
         exposure_data=exposure_data,
         expose_new_data=expose_new_data,
     )
     if with_history:
         await _add_history(hass, snapshot, plan)
     return plan
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/helper_export",
+        vol.Required("entry_ids"): vol.All([str], vol.Length(min=1, max=200)),
+    }
+)
+@websocket_api.async_response
+async def websocket_helper_export(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """The export file of the given helper entries (options and entity settings)."""
+    file = export_file(hass, msg["entry_ids"], datetime.now(UTC).isoformat())
+    if not file["helpers"]:
+        connection.send_error(msg["id"], "not_helper", "None of the entries is a helper")
+        return
+    connection.send_result(msg["id"], file)
 
 
 @websocket_api.require_admin
@@ -1058,6 +1086,7 @@ async def _plan_from_requests(
                     vol.Optional("mode"): vol.In((*METER_MODES, *counter_repair.RANGE_MODES)),
                     vol.Optional("disable_old"): bool,
                     vol.Optional("confirm_working"): bool,
+                    vol.Optional("helper"): dict,
                     vol.Optional("range"): {
                         vol.Required("from"): vol.Coerce(float),
                         vol.Required("to"): vol.Coerce(float),
@@ -1807,6 +1836,7 @@ def async_register(hass: HomeAssistant) -> None:
     ws_recorder.async_register(hass)
     ws_system.async_register(hass)
     websocket_api.async_register_command(hass, websocket_inventory)
+    websocket_api.async_register_command(hass, websocket_helper_export)
     websocket_api.async_register_command(hass, websocket_scan)
     websocket_api.async_register_command(hass, websocket_status)
     websocket_api.async_register_command(hass, websocket_detail)

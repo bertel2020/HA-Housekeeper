@@ -43,6 +43,7 @@ class DetailActionsMixin {
     if (owner) out.push({ attr: `data-object="${this.esc(owner.object_type)}:${this.esc(owner.object_id)}"`, icon: "mdi:function-variant", label: this.t("actHelperOwner", { name: this.esc(owner.name) }), hint: "actHintHelperOwner" });
     // A helper entry can be deleted by a plan, from its own page or from the page of one of its entities.
     const helperId = item.object_type === "config_entry" && HELPER_DOMAINS.has(item.domain) ? item.object_id : owner?.object_id;
+    if (helperId) out.push({ attr: `data-act-export-helper="${this.esc(helperId)}"`, icon: "mdi:export", label: this.t("actExportHelper"), hint: "actHintExportHelper" });
     if (helperId) out.push({ attr: `data-act-remove-helper="${this.esc(helperId)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveHelper"), hint: "actHintRemoveHelper" });
     // An entity that still works can be removed too, on purpose: no quarantine, backup and confirmation as for any removal.
     if (item.object_type === "entity" && !owner && item.status && !["orphaned", "unavailable", "unknown", "disabled"].includes(item.status)) out.push({ attr: `data-act-remove-working="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveWorking"), hint: "actHintRemoveWorking" });
@@ -185,6 +186,7 @@ class DetailActionsMixin {
   }
 
   bindDetailActions(root) {
+    this.bindHelperIo(root);
     root.querySelectorAll("[data-act-more]").forEach(el => el.onclick = () => {
       const open = el.previousElementSibling?.classList.toggle("open");
       el.setAttribute("aria-expanded", String(Boolean(open)));
@@ -267,14 +269,14 @@ Object.assign(TEXT.en, { reason_feeds_helper: "A helper reads this entity and lo
 
 // Deleting a helper entry: a plan with a backup first; only the backup brings it back.
 Object.assign(TEXT.de, {
-  actRemoveHelper: "Helfer löschen", actHintRemoveHelper: "Löscht den Helfer mit allen seinen Entitäten. Vorher legt Housekeeper ein Backup an; nur das Backup bringt ihn zurück.",
+  actRemoveHelper: "Helfer löschen", actHintRemoveHelper: "Löscht den Helfer mit allen seinen Entitäten. Vorher legt Housekeeper ein Backup an; „Rückgängig“ erstellt ihn aus den gespeicherten Optionen neu.",
   reason_not_helper: "Das ist kein Helfer, den Housekeeper löschen darf.", check_helper_gone: "Helfer ist gelöscht", actKind_remove_helper: "Helfer gelöscht", goneKind_remove_helper: "Helfer gelöscht",
-  confirmedSummaryHelper: "Der Helfer wird mit allen seinen Entitäten gelöscht. Vorher entsteht ein Backup, nur damit lässt er sich wiederherstellen.",
+  confirmedSummaryHelper: "Der Helfer wird mit allen seinen Entitäten gelöscht. Vorher entsteht ein Backup. „Rückgängig“ erstellt ihn neu, die Statistik der Entitäten bleibt im Recorder.",
 });
 Object.assign(TEXT.en, {
-  actRemoveHelper: "Delete the helper", actHintRemoveHelper: "Deletes the helper with all its entities. Housekeeper makes a backup first; only the backup brings it back.",
+  actRemoveHelper: "Delete the helper", actHintRemoveHelper: "Deletes the helper with all its entities. Housekeeper makes a backup first; “Undo” creates it anew from the saved options.",
   reason_not_helper: "This is not a helper Housekeeper may delete.", check_helper_gone: "Helper is deleted", actKind_remove_helper: "Helper deleted", goneKind_remove_helper: "Helper deleted",
-  confirmedSummaryHelper: "The helper is deleted with all its entities. A backup is made first; only that restores it.",
+  confirmedSummaryHelper: "The helper is deleted with all its entities. A backup is made first. “Undo” creates it anew, the statistics of its entities stay in the recorder.",
 });
 
 Object.assign(TEXT.de, {

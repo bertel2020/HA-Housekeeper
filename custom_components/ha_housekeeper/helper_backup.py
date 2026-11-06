@@ -4,7 +4,7 @@ A helper that is a config entry (template, min/max, derivative …) is little mo
 ``export_helper`` takes them with the registry settings of its entities (name, area, labels …);
 ``create_helper`` runs the helper's own config flow with them, so Home Assistant itself validates
 and creates the entry, then puts the entity IDs and settings back. Nothing here touches private
-Home Assistant internals; a flow that cannot be walked ends as ``conflict_unrestorable`` and the
+Home Assistant internals; a flow that cannot be walked ends as ``conflict_helper_flow`` and the
 backup stays the way back.
 """
 
@@ -110,7 +110,7 @@ async def _walk_flow(hass: HomeAssistant, note: dict[str, Any]) -> str:
     try:
         result = await flows.async_init(note["domain"], context={"source": SOURCE_USER})
     except Exception as err:
-        raise HelperError("conflict_unrestorable") from err
+        raise HelperError("conflict_helper_flow") from err
     for _ in range(MAX_FLOW_STEPS):
         kind = result["type"]
         if kind == FlowResultType.CREATE_ENTRY:
@@ -138,8 +138,9 @@ async def _walk_flow(hass: HomeAssistant, note: dict[str, Any]) -> str:
                 break
         except Exception:
             break
-    flows.async_abort(result["flow_id"]) if "flow_id" in result else None
-    raise HelperError("conflict_unrestorable")
+    if "flow_id" in result:
+        flows.async_abort(result["flow_id"])
+    raise HelperError("conflict_helper_flow")
 
 
 async def _wait_for_entities(
@@ -155,51 +156,11 @@ async def _wait_for_entities(
     return list(er.async_entries_for_config_entry(registry, entry_id))
 
 
-def _put_back(
-    hass: HomeAssistant, created: list[er.RegistryEntry], note: dict[str, Any]
-) -> list[str]:
-    """Give each new entity the ID and settings of its old twin; returns the IDs that stayed different."""
-    from .cleanup_exec import _restored_aliases
-
-    registry = er.async_get(hass)
-    old = sorted(note.get("entities", []), key=lambda e: e["entity_id"])
-    new = sorted(created, key=lambda e: e.entity_id)
-    differ: list[str] = []
-    for twin in old:
-        domain = twin["entity_id"].partition(".")[0]
-        match = next((e for e in new if e.entity_id == twin["entity_id"]), None) or next(
-            (e for e in new if e.entity_id.partition(".")[0] == domain), None
-        )
-        if match is None:
-            continue
-        new.remove(match)
-        entity_id = match.entity_id
-        if entity_id != twin["entity_id"]:
-            if registry.async_get(twin["entity_id"]) is None:
-                registry.async_update_entity(entity_id, new_entity_id=twin["entity_id"])
-                entity_id = twin["entity_id"]
-            else:
-                differ.append(entity_id)
-        changes: dict[str, Any] = {
-            "name": twin.get("name"),
-            "icon": twin.get("icon"),
-            "area_id": twin.get("area_id"),
-            "labels": set(twin.get("labels") or []),
-            "aliases": _restored_aliases(twin),
-        }
-        if twin.get("disabled_by"):
-            changes["disabled_by"] = er.RegistryEntryDisabler(twin["disabled_by"])
-        if twin.get("hidden_by"):
-            changes["hidden_by"] = er.RegistryEntryHider(twin["hidden_by"])
-        registry.async_update_entity(entity_id, **changes)
-    return differ
-
-
 async def create_helper(hass: HomeAssistant, note: dict[str, Any]) -> dict[str, Any]:
     """Create the helper of ``note`` anew; raises ``HelperError`` with the undo outcome."""
     problem = check_note(note)
     if problem:
-        raise HelperError("conflict_unrestorable")
+        raise HelperError("conflict_helper_flow")
     if taken_ids(hass, note):
         raise HelperError("conflict_taken")
     entry_id = await _walk_flow(hass, note)
@@ -207,5 +168,7 @@ async def create_helper(hass: HomeAssistant, note: dict[str, Any]) -> dict[str, 
     if entry is not None and dict(entry.options) != note["options"]:
         hass.config_entries.async_update_entry(entry, options=copy.deepcopy(note["options"]))
     created = await _wait_for_entities(hass, entry_id, len(note.get("entities", [])))
-    differ = _put_back(hass, created, note)
+    from .cleanup_exec import _put_helper_entities_back
+
+    differ = _put_helper_entities_back(hass, created, note)
     return {"entry_id": entry_id, "ids_differ": differ}

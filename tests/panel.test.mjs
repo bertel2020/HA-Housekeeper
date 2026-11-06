@@ -8490,3 +8490,18 @@ test("the actions of an entity: a working one can be removed on purpose, a helpe
   assert.ok(!attrs(owned).includes("data-act-remove-working"), "an entity a helper builds does not");
   assert.ok(attrs(owned).includes("data-act-remove-helper") && attrs(owned).includes("data-object"), "it points to the helper and offers its deletion");
 });
+
+test("the helper list can export and import; a file that is no export is refused before any plan", async () => {
+  const { el } = panel("en");
+  assert.ok(el.helperIoBar([{ object_type: "config_entry", object_id: "e1" }]).includes('data-helper-export-all="e1"'));
+  const toasts = [];
+  el.toast = (text, bad) => toasts.push([text, bad]);
+  await el.importHelpers({ text: async () => "{\"format\":\"other\"}" });
+  assert.deepEqual(toasts, [["This is not a Housekeeper helper file.", true]]);
+  const sent = [];
+  el.newPlan = async actions => { sent.push(...actions); return true; };
+  el.render = () => {};
+  await el.importHelpers({ text: async () => JSON.stringify({ format: "housekeeper-helper-export", helpers: [{ domain: "min_max", title: "X", options: {}, entities: [] }] }) });
+  assert.equal(sent[0].kind, "import_helper");
+  assert.equal(sent[0].helper.domain, "min_max");
+});

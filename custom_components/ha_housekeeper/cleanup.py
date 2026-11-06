@@ -18,6 +18,7 @@ from homeassistant.helpers.storage import Store
 
 from . import followup
 from .const import IGNORE_LABEL, JOURNAL_STORAGE_KEY, QUARANTINE_DAYS, STORAGE_VERSION
+from .helper_backup import check_note
 from .simulation import simulate
 
 USAGE_RELATIONS = frozenset(
@@ -59,8 +60,10 @@ RECORDER_CHOICES = ("keep", "statistics", "states")
 REFACTOR_KINDS = frozenset({"refactor_automation"})
 # Loads one integration entry anew; nothing is written, so there is no backup and no way back.
 RELOAD_KINDS = frozenset({"reload_integration"})
-# Deletes the config entry of a helper (template, derivative, ...) with its entities; only the backup brings it back.
+# Deletes the config entry of a helper (template, derivative, ...) with its entities; undo creates it anew from the journal.
 HELPER_KINDS = frozenset({"remove_helper"})
+# Creates a helper from an export file; undo deletes it again.
+HELPER_IMPORT_KINDS = frozenset({"import_helper"})
 ACTION_KINDS = (
     ENTITY_KINDS
     | DEVICE_KINDS
@@ -80,6 +83,7 @@ ACTION_KINDS = (
     | EXPOSE_NEW_KINDS
     | RELOAD_KINDS
     | HELPER_KINDS
+    | HELPER_IMPORT_KINDS
 )
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
@@ -371,6 +375,7 @@ BLOCKING_REASONS = frozenset(
         "entry_own",
         "entry_no_reload",
         "not_helper",
+        "invalid_helper",
         "not_user_disabled",
         "marked_keep",
         "not_quarantined",
@@ -1212,7 +1217,7 @@ def judge_helper_action(
         "object_type": "integration",
         "name": info.get("title") or info.get("domain") or entry_id,
         "domain": info.get("domain"),
-        "entities": len(entities),
+        "entity_count": len(entities),
         "entity_ids": entities[:20],
         "verdict": "blocked",
         "reasons": [],
@@ -1231,6 +1236,39 @@ def judge_helper_action(
             reasons.append("used_probable")
         if action["has_statistics"]:
             reasons.append("has_statistics")
+    _verdict(action)
+    return action
+
+
+def judge_import_helper(object_id: str, note: dict[str, Any], taken: list[str]) -> dict[str, Any]:
+    """Judge creating a helper from an export: its shape, its domain and free entity IDs.
+
+    Nothing is deleted or overwritten, so there is no backup; undo deletes the new helper.
+    """
+    note = note if isinstance(note, dict) else {}
+    entities = [e.get("entity_id") for e in note.get("entities") or [] if isinstance(e, dict)]
+    action: dict[str, Any] = {
+        "kind": "import_helper",
+        "object_id": object_id,
+        "object_type": "integration",
+        "name": str(note.get("title") or object_id),
+        "domain": note.get("domain"),
+        "entity_count": len(entities),
+        "entity_ids": [str(e) for e in entities[:20]],
+        "helper": note,
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": [],
+        "has_statistics": False,
+    }
+    problem = check_note(note)
+    if problem == "not_helper":
+        action["reasons"].append("not_helper")
+    elif problem:
+        action["reasons"].append("invalid_helper")
+    elif taken:
+        action["reasons"].append("entity_exists")
+        action["taken"] = taken[:20]
     _verdict(action)
     return action
 
@@ -1449,6 +1487,7 @@ def build_plan(
     delete_data: dict[str, dict[str, Any]] | None = None,
     reload_data: dict[str, dict[str, Any]] | None = None,
     helper_data: dict[str, dict[str, Any]] | None = None,
+    helper_import_data: dict[str, list[str]] | None = None,
     exposure_data: dict[tuple[str, str], dict[str, Any]] | None = None,
     expose_new_data: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
@@ -1541,6 +1580,13 @@ def build_plan(
             info = (helper_data or {}).get(object_id, {})
             action = judge_helper_action(object_id, info, snapshot["edges"], objects)
             action["fingerprint"] = info.get("fingerprint")
+        elif kind in HELPER_IMPORT_KINDS:
+            action = judge_import_helper(
+                object_id,
+                request.get("helper") or {},
+                (helper_import_data or {}).get(object_id, []),
+            )
+            action["fingerprint"] = None
         elif kind in RELOAD_KINDS:
             action = judge_reload_action(object_id, (reload_data or {}).get(object_id, {}))
             action["fingerprint"] = (reload_data or {}).get(object_id, {}).get("fingerprint")

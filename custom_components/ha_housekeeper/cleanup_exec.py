@@ -82,6 +82,7 @@ from .cleanup import (
     EXECUTABLE_KINDS,
     EXPOSE_NEW_KINDS,
     EXPOSURE_KINDS,
+    HELPER_IMPORT_KINDS,
     HELPER_KINDS,
     INTERNAL_RESULT_KEYS,
     LABEL_KINDS,
@@ -119,6 +120,7 @@ from .db_health import (
     is_corruption_error,
     start_check,
 )
+from .helper_backup import HelperError, create_helper, export_helper, taken_ids
 from .issues import async_sync_database_issue
 from .meter import analyse, prepare_meter, read_series, recorder_ready
 from .notes import NoteError
@@ -326,6 +328,44 @@ def _restore_data(entry: Any) -> dict[str, Any]:
         computed_alias=any(not isinstance(alias, str) for alias in entry.aliases),
     )
     return data
+
+
+def _put_helper_entities_back(
+    hass: HomeAssistant, created: list[er.RegistryEntry], note: dict[str, Any]
+) -> list[str]:
+    """Give each new entity the ID and settings of its old twin; returns the IDs that stayed different."""
+    registry = er.async_get(hass)
+    old = sorted(note.get("entities", []), key=lambda e: e["entity_id"])
+    new = sorted(created, key=lambda e: e.entity_id)
+    differ: list[str] = []
+    for twin in old:
+        domain = twin["entity_id"].partition(".")[0]
+        match = next((e for e in new if e.entity_id == twin["entity_id"]), None) or next(
+            (e for e in new if e.entity_id.partition(".")[0] == domain), None
+        )
+        if match is None:
+            continue
+        new.remove(match)
+        entity_id = match.entity_id
+        if entity_id != twin["entity_id"]:
+            if registry.async_get(twin["entity_id"]) is None:
+                registry.async_update_entity(entity_id, new_entity_id=twin["entity_id"])
+                entity_id = twin["entity_id"]
+            else:
+                differ.append(entity_id)
+        changes: dict[str, Any] = {
+            "name": twin.get("name"),
+            "icon": twin.get("icon"),
+            "area_id": twin.get("area_id"),
+            "labels": set(twin.get("labels") or []),
+            "aliases": _restored_aliases(twin),
+        }
+        if twin.get("disabled_by"):
+            changes["disabled_by"] = er.RegistryEntryDisabler(twin["disabled_by"])
+        if twin.get("hidden_by"):
+            changes["hidden_by"] = er.RegistryEntryHider(twin["hidden_by"])
+        registry.async_update_entity(entity_id, **changes)
+    return differ
 
 
 def _restored_aliases(data: dict[str, Any]) -> set[Any]:
@@ -1030,6 +1070,8 @@ class CleanupRunner:
             return exposure_edit.set_expose_new(self.hass, object_id, False), "expose_new_set"
         if kind in HELPER_KINDS:
             return await self._remove_helper(action), "helper_removed"
+        if kind in HELPER_IMPORT_KINDS:
+            return await self._import_helper(action), "helper_created"
         if kind in RELOAD_KINDS:
             return await self._reload_integration(action), "integration_reloaded"
         if kind in LABEL_KINDS:
@@ -1867,6 +1909,8 @@ class CleanupRunner:
             if ar.async_get(self.hass).async_get_area(action["target"]) is None:
                 return "now_blocked"
             return None
+        if kind in HELPER_IMPORT_KINDS:
+            return "now_blocked" if taken_ids(self.hass, action.get("helper") or {}) else None
         if kind in HELPER_KINDS:
             info = helper_info(self.hass, object_id)
             if not info.get("exists"):
@@ -2165,6 +2209,10 @@ class CleanupRunner:
             elif kind in HELPER_KINDS:
                 gone = self.hass.config_entries.async_get_entry(object_id) is None
                 checks.append({"check": "helper_gone", "object_id": object_id, "ok": gone})
+            elif kind in HELPER_IMPORT_KINDS:
+                created = ((action.get("result") or {}).get("created") or {}).get("entry_id")
+                ok = bool(created) and self.hass.config_entries.async_get_entry(created) is not None
+                checks.append({"check": "helper_created", "object_id": object_id, "ok": ok})
             elif kind in RELOAD_KINDS:
                 checks.extend(self._verify_reload(object_id))
             elif kind in STATE_KINDS:
@@ -2373,9 +2421,11 @@ class CleanupRunner:
                     outcome = stop.reason
             elif kind in DELETE_AUTOMATION_KINDS:
                 outcome = await self._undo_automation_delete(result)
-            elif (
-                kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS | RELOAD_KINDS | HELPER_KINDS
-            ):
+            elif kind in HELPER_KINDS:
+                outcome = await self._undo_helper(result)
+            elif kind in HELPER_IMPORT_KINDS:
+                outcome = await self._undo_import(result)
+            elif kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS | RELOAD_KINDS:
                 outcome = "irreversible"
             else:
                 outcome = self._reenable(registry, action["object_id"], result)
@@ -2535,18 +2585,44 @@ class CleanupRunner:
         info = helper_info(self.hass, action["object_id"])
         if not info.get("exists") or not info.get("helper") or info.get("own"):
             raise StepAbort("now_blocked")
-        entry = self.hass.config_entries.async_get_entry(action["object_id"])
-        note = {
-            "domain": info["domain"],
-            "title": info["title"],
-            "options": copy.deepcopy(dict(entry.options)) if entry else {},
-            "entities": info["entity_ids"],
-        }
+        note = export_helper(self.hass, action["object_id"])
+        if note is None:
+            raise StepAbort("now_blocked")
         try:
             await self.hass.config_entries.async_remove(action["object_id"])
         except Exception as err:
             raise StepAbort("helper_remove_failed") from err
-        return {"removed": note, "irreversible": True}
+        return {"removed": note}
+
+    async def _import_helper(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Create the helper of an export file anew."""
+        try:
+            created = await create_helper(self.hass, action.get("helper") or {})
+        except HelperError as err:
+            raise StepAbort(
+                "helper_create_failed" if err.reason != "conflict_taken" else "now_blocked"
+            ) from err
+        return {"created": created}
+
+    async def _undo_import(self, result: dict[str, Any]) -> str:
+        """Delete the helper the import created."""
+        entry_id = (result.get("created") or {}).get("entry_id")
+        if not entry_id or self.hass.config_entries.async_get_entry(entry_id) is None:
+            return "conflict_gone"
+        try:
+            await self.hass.config_entries.async_remove(entry_id)
+        except Exception:
+            return "conflict_unrestorable"
+        return "undone"
+
+    async def _undo_helper(self, result: dict[str, Any]) -> str:
+        """Create the deleted helper anew from the note in the journal."""
+        try:
+            created = await create_helper(self.hass, result.get("removed") or {})
+        except HelperError as err:
+            return err.reason
+        result["restored"] = created
+        return "undone"
 
     async def _reload_integration(self, action: dict[str, Any]) -> dict[str, Any]:
         """Load the entry anew; whatever it does afterwards is what the verification reports.

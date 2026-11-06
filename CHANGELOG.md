@@ -10,6 +10,8 @@
 - **Statistik übernehmen nur bei Zählern:** Im Ersetzen-Assistenten übernimmt die neue Entität Verlauf und ID nur noch bei echten Zählern von selbst. Bei Messwerten werden standardmäßig nur die Verweise umgestellt. Die Vorschau spricht von „Statistik übernehmen“ statt „Zählerwechsel“.
 - **Helfer:** Housekeeper erkennt Helfer (Template, Derivative, Min/Max …) besser.
   - Die Aktionsseite einer Helfer-Entität nennt ihren Helfer. „Helfer löschen“ ist ein Plan mit Vorschau und Backup, gesperrt, solange etwas den Helfer sicher verwendet. Input-Helfer, Zähler und Timer sind davon ausgenommen.
+  - Ein gelöschter Helfer lässt sich mit „Rückgängig“ neu erstellen: Housekeeper legt vorher Optionen, Entitäts-IDs, Namen, Bereiche und Labels im Journal ab und führt den Einrichtungsdialog des Helfers damit aus. Klappt das nicht, bringt ihn das Backup zurück.
+  - „Helfer exportieren“ speichert einen Helfer (auf der Helfer-Seite) oder alle der Liste (Inventar, Typ „Helfer“) als Datei. „Importieren …“ erzeugt daraus einen Plan mit Vorschau; Rückgängig löscht den neuen Helfer wieder.
   - Wird eine Entität deaktiviert oder entfernt, die ein Helfer liest, sagt der Plan, dass der Helfer seine Quelle verliert. Meldet die Entität eines Helfers „nicht verfügbar“, nennt die Diagnose die ausgefallenen Quellen.
   - Der Ersetzen-Assistent stellt auch die Quellen von Helfer-Einträgen auf die neue Entität um, mit Undo. Templates in Helfern bleiben von Hand zu prüfen.
   - Nennt ein Template-Helfer eine Entität eindeutig (`states('sensor.x')`, `is_state(…)`) und gibt es sie nicht mehr, wird er als „Entität fehlt“ gemeldet.
@@ -40,6 +42,8 @@
 
 - **Helpers:** Housekeeper knows helpers (template, derivative, min/max …) better.
   - The actions page of a helper's entity names its helper. "Delete the helper" is a plan with a preview and a backup, blocked while something certainly uses the helper. Input helpers, counters and timers are left out.
+  - A deleted helper can be created again with "Undo": Housekeeper keeps options, entity IDs, names, areas and labels in the journal first and runs the helper's own setup dialog with them. If that fails, the backup brings it back.
+  - "Export the helper" saves one helper (on its page) or all in the list (inventory, type "Helpers") as a file. "Import …" turns it into a plan with a preview; Undo deletes the new helper again.
   - When an entity a helper reads is disabled or removed, the plan says the helper loses its source. When a helper's entity reports unavailable, the diagnosis names the sources that are down.
   - The replace assistant also switches the sources of helper entries to the new entity, with undo. Templates in helpers stay for a manual check.
   - When a template helper names an entity clearly (`states('sensor.x')`, `is_state(…)`) and it no longer exists, the helper is reported as "entity missing".

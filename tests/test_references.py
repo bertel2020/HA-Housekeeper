@@ -388,7 +388,11 @@ async def test_a_helper_entry_can_be_deleted_by_a_plan_and_a_used_one_is_blocked
         await run(scanner, plan, [entry.entry_id])
         create.assert_awaited_once()
         assert hass.config_entries.async_get_entry(entry.entry_id) is None
-        assert plan["actions"][0]["result"]["irreversible"] is True
+        assert plan["actions"][0]["result"]["removed"]["domain"] == "min_max"
+        assert "irreversible" not in plan["actions"][0]["result"]
+        outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert outcome["results"] == [{"object_id": entry.entry_id, "outcome": "undone"}]
+        assert hass.config_entries.async_entries("min_max")
 
     other = MockConfigEntry(domain="automation")
     other.add_to_hass(hass)
@@ -1550,3 +1554,80 @@ def test_scenes_created_by_an_action_are_recognised() -> None:
         ]
     }
     assert runtime_scene_ids(config) == {"scene.before"}
+
+
+async def test_a_deleted_min_max_helper_is_created_again_with_its_entity_id_and_settings(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper.helper_backup import create_helper, export_helper
+
+    hass.states.async_set("sensor.a", "1")
+    hass.states.async_set("sensor.b", "3")
+    flow = await hass.config_entries.flow.async_init("min_max", context={"source": "user"})
+    done = await hass.config_entries.flow.async_configure(
+        flow["flow_id"],
+        {"name": "Highest", "entity_ids": ["sensor.a", "sensor.b"], "type": "max"},
+    )
+    entry = done["result"]
+    await hass.async_block_till_done()
+    registry = er.async_get(hass)
+    (entity,) = er.async_entries_for_config_entry(registry, entry.entry_id)
+    registry.async_update_entity(entity.entity_id, name="My maximum", icon="mdi:arrow-up")
+    note = export_helper(hass, entry.entry_id)
+    assert note["domain"] == "min_max" and note["entities"][0]["name"] == "My maximum"
+    await hass.config_entries.async_remove(entry.entry_id)
+    await hass.async_block_till_done()
+    assert registry.async_get(entity.entity_id) is None
+    created = await create_helper(hass, note)
+    await hass.async_block_till_done()
+    assert created["ids_differ"] == []
+    again = registry.async_get(entity.entity_id)
+    assert again is not None and again.name == "My maximum" and again.icon == "mdi:arrow-up"
+    assert hass.config_entries.async_get_entry(created["entry_id"]).options["type"] == "max"
+    with pytest.raises(Exception, match="conflict_taken"):
+        await create_helper(hass, note)
+
+
+async def test_an_exported_helper_is_created_by_a_plan_and_undo_deletes_it(
+    hass: HomeAssistant,
+) -> None:
+    from custom_components.ha_housekeeper.helper_backup import export_helper, taken_ids
+
+    hass.states.async_set("sensor.a", "1")
+    hass.states.async_set("sensor.b", "3")
+    flow = await hass.config_entries.flow.async_init("min_max", context={"source": "user"})
+    done = await hass.config_entries.flow.async_configure(
+        flow["flow_id"],
+        {"name": "Lowest", "entity_ids": ["sensor.a", "sensor.b"], "type": "min"},
+    )
+    note = export_helper(hass, done["result"].entry_id)
+    await hass.config_entries.async_remove(done["result"].entry_id)
+    await hass.async_block_till_done()
+
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    object_id = "import:1:min_max"
+    plan = build_plan(
+        snapshot,
+        [{"kind": "import_helper", "object_id": object_id, "helper": note}],
+        datetime.now(UTC),
+        lambda _: None,
+        lambda _: None,
+        helper_import_data={object_id: taken_ids(hass, note)},
+    )
+    assert plan["actions"][0]["executable"] is True
+    scanner.journal.add(plan)
+    await run(scanner, plan, [object_id])
+    assert plan["actions"][0]["result"]["created"]["entry_id"]
+    assert len(hass.config_entries.async_entries("min_max")) == 1
+    outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert outcome["results"] == [{"object_id": object_id, "outcome": "undone"}]
+    assert not hass.config_entries.async_entries("min_max")
+    blocked = build_plan(
+        snapshot,
+        [{"kind": "import_helper", "object_id": object_id, "helper": {"domain": "automation"}}],
+        datetime.now(UTC),
+        lambda _: None,
+        lambda _: None,
+    )
+    assert blocked["actions"][0]["reasons"] == ["not_helper"]
