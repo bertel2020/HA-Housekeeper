@@ -12,7 +12,7 @@ Object.assign(TEXT.de, {
   rwHow_replace_statistics: "Verweise und Statistik", rwHowHint_replace_statistics: "Automationen, Skripte, Szenen und Dashboards zeigen danach auf die neue ID, und die alte Statistik wird an die neue gehängt. Die Statistik ist nur über das Backup umkehrbar.",
   actReplaceMany: "Ersetzen …", actHintReplaceMany: "Diese Entität durch eine neue ersetzen, mit dem Assistenten für mehrere.",
   rwPickTitle: "Welche Entitäten sollen ersetzt werden?", rwPickHint: "Wähle die alten Entitäten. Im nächsten Schritt ordnest du jeder die neue zu; bis zur bestätigten Vorschau wird nichts geändert.",
-  rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "{auto} werden automatisch umgeschrieben, {manual} bleiben unverändert.",
+  rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesMore: "{n} weitere", exUsedOne: "1 Verwendung", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "Automatisch umgeschrieben: {auto}. Bleiben unverändert: {manual}.",
   rwFilterDomain: "Alle Arten", rwFilterPlatform: "Alle Integrationen", rwFilterScope: "Alle", rwFilterUsed: "Nur verwendete", rwFilterGone: "Nur nicht verfügbare",
   rwSelectFiltered: "Alle {count} gefilterten wählen", rwNext: "Weiter zu „Zuordnen“ ({count})", rwNoEntities: "Keine Entitäten.",
   rwSetupTitle: "Welche neue Entität ersetzt welche?", rwSetupHint: "Housekeeper schlägt vor (Klasse, Einheit, Bereich, Name, ID-Endung). Nichts ist vorausgewählt, was du nicht bestätigst.",
@@ -43,7 +43,7 @@ Object.assign(TEXT.en, {
   rwHow_replace_statistics: "References and statistics", rwHowHint_replace_statistics: "Automations, scripts, scenes and dashboards then point to the new ID, and the old statistics are attached to the new ones. The statistics can only be undone through the backup.",
   actReplaceMany: "Replace …", actHintReplaceMany: "Replace this entity with a new one, using the assistant for several.",
   rwPickTitle: "Which entities should be replaced?", rwPickHint: "Pick the old entities. In the next step you give each one its new entity; nothing changes until you confirm the preview.",
-  rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "{auto} are rewritten automatically, {manual} stay unchanged.",
+  rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesMore: "{n} more", exUsedOne: "1 use", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "Rewritten automatically: {auto}. Left unchanged: {manual}.",
   rwFilterDomain: "All kinds", rwFilterPlatform: "All integrations", rwFilterScope: "All", rwFilterUsed: "Used only", rwFilterGone: "Unavailable only",
   rwSelectFiltered: "Select all {count} filtered", rwNext: "On to \"Set up\" ({count})", rwNoEntities: "No entities.",
   rwSetupTitle: "Which new entity replaces which?", rwSetupHint: "Housekeeper proposes (class, unit, area, name, ID ending). Nothing is preselected that you do not confirm.",
@@ -232,21 +232,63 @@ class ReplaceWizardMixin {
   usesToggle(pair) {
     if (!pair.used) return this.esc(this.t("exUnused"));
     const open = (this.useOpen || []).includes(pair.object_id), label = this.t(open ? "rwUsesHide" : "rwUsesShow");
-    return `<button type="button" class="linklike usetoggle" data-use-more="${this.esc(pair.object_id)}" aria-expanded="${open}" title="${this.esc(label)}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon>${this.esc(this.t("exUsed", { count: pair.used }))}</button>`;
+    return `<button type="button" class="linklike usetoggle" data-use-more="${this.esc(pair.object_id)}" aria-expanded="${open}" title="${this.esc(label)}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon>${this.esc(this.t(pair.used === 1 ? "exUsedOne" : "exUsed", { count: pair.used }))}</button>`;
   }
 
-  // The row under an open pair: one line per place that uses the entity, and whether it is rewritten or stays.
-  usesDetail(pair, cols) {
-    if (!pair.used || !(this.useOpen || []).includes(pair.object_id)) return "";
-    const uses = this.mergePlaces(this.edgesTo(`entity:${pair.object_id}`).filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e })));
+  // The places that use an entity, one line each, and whether Housekeeper rewrites them or leaves them for a manual check.
+  usesList(objectId, cap = 0) {
+    const uses = this.mergePlaces(this.edgesTo(`entity:${objectId}`).filter(e => USAGE_RELATIONS.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e })));
     const sure = x => (x.edge.confidence || "certain") === "certain";
     const line = x => {
-      const obj = this.findObject(x.other), name = this.esc(obj?.name || x.other.split(":").slice(1).join(":"));
+      const obj = this.findObject(x.other), energy = x.other === "dashboard:energy", name = this.esc(energy ? this.t("energyDashboard") : obj?.name || x.other.split(":").slice(1).join(":"));
       const places = x.places.filter(Boolean), note = `${this.esc(x.label)}${places.length ? ` · ${this.esc(places.join(", "))}` : ""}`;
-      return `<li>${obj ? `<button class="linklike" data-object="${this.esc(x.other)}">${name}</button>` : name} <small class="muted">${this.esc(this.t(obj?.object_type || "entity"))} · ${note}</small> <span class="pill ${sure(x) ? "ok" : "warn"}">${this.t(sure(x) ? "rwUseReplaced" : "rwUseManual")}</span></li>`;
+      return `<li>${obj ? `<button class="linklike" data-object="${this.esc(x.other)}">${name}</button>` : name} <small class="muted">${this.esc(this.t(obj?.object_type || x.other.split(":")[0]))} · ${note}</small> <span class="pill ${sure(x) ? "ok" : "warn"}">${this.t(sure(x) ? "rwUseReplaced" : "rwUseManual")}</span></li>`;
     };
-    const auto = uses.filter(sure).length;
-    return `<tr class="static"><td colspan="${cols}"><ul class="uselist">${uses.map(line).join("")}</ul><p class="factnote">${this.t("rwUsesNote", { auto, manual: uses.length - auto })}</p></td></tr>`;
+    const auto = uses.filter(sure).length, shown = cap && uses.length > cap + 1 ? uses.slice(0, cap) : uses, rest = uses.slice(shown.length);
+    const more = rest.length ? `<details class="usemore"><summary>${this.t("rwUsesMore", { n: rest.length })}</summary><ul class="uselist">${rest.map(line).join("")}</ul></details>` : "";
+    return `<ul class="uselist">${shown.map(line).join("")}</ul>${more}<p class="factnote">${this.t("rwUsesNote", { auto, manual: uses.length - auto })}</p>`;
+  }
+
+  // The row under an open pair in a list.
+  usesDetail(pair, cols) {
+    if (!pair.used || !(this.useOpen || []).includes(pair.object_id)) return "";
+    return `<tr class="static"><td colspan="${cols}">${this.usesList(pair.object_id)}</td></tr>`;
+  }
+
+  // One entity: where the old one is used, over the full width and with every place named.
+  rwOneUses() {
+    if (!this.replOld) return "";
+    const count = this.edgesTo(`entity:${this.replOld}`).filter(e => USAGE_RELATIONS.includes(e.relation)).length;
+    if (!count) return `<div class="rwuses"><p class="factnote">${this.t("replUsedNowhere")}</p></div>`;
+    return `<div class="rwuses"><p class="rwgroup">${this.t("replUsedHere")} <span class="pill mute">${this.t(count === 1 ? "exUsedOne" : "exUsed", { count })}</span></p>${this.usesList(this.replOld, 6)}</div>`;
+  }
+
+  // Candidates for the new entity: the same suggestion as in the list of several, asked once per old entity.
+  // Until the answer is in (or when it fails) the simple word match answers.
+  ensureOneHints() {
+    const id = this.replOld, cur = this._oneHints;
+    if (!id || (cur && cur.id === id)) return;
+    this._oneHints = { id, list: null };
+    if (!this._hass?.callWS) return;
+    this._hass.callWS({ type: "ha_housekeeper/entity_pairs", old_entity_ids: [id] })
+      .then(res => { if (this._oneHints?.id === id) this._oneHints.list = res?.pairs?.[0]?.candidates || []; })
+      .catch(() => { if (this._oneHints?.id === id) this._oneHints.list = []; })
+      .then(() => { if (this.replOld === id) this.render(); });
+  }
+
+  rwOneHints() {
+    this.ensureOneHints();
+    const cur = this._oneHints?.id === this.replOld ? this._oneHints : null;
+    const found = (cur?.list || []).filter(c => c.score > 0 && c.object_id !== this.replOld).slice(0, 5);
+    if (!found.length) return cur?.list ? this.successorHints(this.replOld, this.entityUnit(this.replOld), "data-repl-pick") : "";
+    const why = c => c.reasons.map(r => this.t(`exReason_${r}`)).join(", ");
+    return `<div class="setrow planfoot"><small class="u-m0">${this.t("successorHint")}</small><span class="chips">${found.map((c, i) => `<button class="chip${this.replNew === c.object_id ? " active" : ""}" data-repl-pick="${this.esc(c.object_id)}" title="${this.esc(`${c.name}${why(c) ? ` · ${why(c)}` : ""}`)}">${this.esc(c.object_id)}${i === 0 ? ` <span class="pill ok">${this.t("exSuggested")}</span>` : ""}</button>`).join("")}</span></div>`;
+  }
+
+  // The reasons why the chosen new entity was suggested, under its field.
+  rwOneWhy() {
+    const c = (this._oneHints?.id === this.replOld ? this._oneHints.list || [] : []).find(x => x.object_id === this.replNew);
+    return c?.reasons?.length ? `<span class="exptags">${c.reasons.map(r => `<span class="tag">${this.esc(this.t(`exReason_${r}`))}</span>`).join("")}</span>` : "";
   }
 
   rwPairsList(pairs) {
@@ -340,10 +382,10 @@ class ReplaceWizardMixin {
     const group = (key, ids) => `<p class="rwgroup">${this.t(key)}</p><div class="modecards" role="radiogroup" aria-label="${this.esc(this.t(key))}">${ids.map(tile).join("")}</div>`;
     const result = known && !checks.bad ? `<p class="factnote rwresult"><strong>${this.t("rwResultLabel")}</strong> ${this.t(`rwResult_${how}`, { old: this.esc(this.replOld), new: this.esc(this.replNew) })}</p>` : "";
     const ready = this.replOld && this.replNew && !this.cleanupBusy && !checks.bad && !off[how];
-    const hints = this.successorHints(this.replOld, this.entityUnit(this.replOld), "data-repl-pick");
+    const hints = this.rwOneHints();
     return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("repairTaskWizard")}</h2><p>${this.t("rwOneHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
-      <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}${checks.used}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${checks.fit}</div></div>
-      ${hints}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}
+      <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${this.rwOneWhy()}${checks.fit}</div></div>
+      ${hints}${this.rwOneUses()}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}
       <div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 

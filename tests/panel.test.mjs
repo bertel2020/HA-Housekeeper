@@ -3174,6 +3174,21 @@ test("the replace form checks the pair before any preview and keeps the button o
   assert.ok(html.includes("does not work") && /data-plan-create\s+disabled/.test(html));
 });
 
+test("the single view asks the backend for the suggestion of the old entity and lists where it is used", async () => {
+  const { el } = panel("en");
+  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "active", unit: "W" });
+  el.data = { ...DATA, objects: [ent("sensor.old"), ent("sensor.other_name")], edges: [{ source: "automation:automation.x", target: "entity:sensor.old", relation: "TRIGGERS_ON" }] };
+  const calls = [];
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { pairs: [{ object_id: "sensor.old", candidates: [{ object_id: "sensor.other_name", name: "Other", score: 5, reasons: ["same_unit"] }] }] }; } };
+  el.replOld = "sensor.old"; el.rwOneCard();
+  await new Promise(r => setTimeout(r, 0));
+  const asked = () => calls.filter(c => c.type === "ha_housekeeper/entity_pairs");
+  assert.equal(JSON.stringify(asked().map(c => c.old_entity_ids)), JSON.stringify([["sensor.old"]]));
+  const html = el.rwOneCard();
+  assert.ok(html.includes('data-repl-pick="sensor.other_name"') && html.includes("will be replaced") && html.includes("automation.x"));
+  assert.equal(asked().length, 1, "asked once per old entity");
+});
+
 test("the single view of the replace assistant turns the chosen kind into one action and blocks what cannot work", () => {
   const { el } = panel("en");
   const ent = (id, extra = {}) => ({ object_type: "entity", object_id: id, name: id, status: "active", unit: "kWh", device_class: "energy", state_class: "total_increasing", ...extra });
