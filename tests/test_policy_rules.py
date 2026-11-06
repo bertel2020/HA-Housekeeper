@@ -383,3 +383,18 @@ def test_template_rules() -> None:
     assert ids(run([], "template_guard", templates=[tpl(bare), *map(tpl, safe)])) == [bare]
     own = {"object_type": "entity", "object_id": "sensor.t", "name": "T"}
     assert ids(run([], "template_no_unique_id", template_no_unique_id=[own])) == ["sensor.t"]
+
+
+def test_helper_write_only() -> None:
+    items = [
+        obj("entity", "input_boolean.a", platform="input_boolean"),
+        obj("entity", "input_boolean.b", platform="input_boolean"),
+        obj("entity", "light.c", platform="hue"),
+    ]
+    edges = [
+        {"source": "automation:x", "target": "entity:input_boolean.a", "relation": "TARGETS"},
+        {"source": "automation:x", "target": "entity:input_boolean.b", "relation": "TARGETS"},
+        {"source": "automation:y", "target": "entity:input_boolean.b", "relation": "TRIGGERS_ON"},
+        {"source": "automation:x", "target": "entity:light.c", "relation": "TARGETS"},
+    ]
+    assert ids(run(items, "helper_write_only", edges=edges)) == ["input_boolean.a"]

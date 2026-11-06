@@ -43,6 +43,7 @@ RULES = (
     "automation_triggers",
     "automation_literal_ids",
     "template_unused",
+    "helper_write_only",
     "template_guard",
     "template_no_unique_id",
     "automation_self_trigger",
@@ -303,6 +304,9 @@ def evaluate(
         "automation_triggers": lambda: rules_more.automation_triggers(automations),
         "automation_literal_ids": lambda: rules_more.automation_literal_ids(automations),
         "automation_self_trigger": lambda: rules_more.automation_self_trigger(automations),
+        "helper_write_only": lambda: rules_more.helper_write_only(
+            entities, snapshot.get("edges", [])
+        ),
         "template_unused": lambda: rules_more.template_unused(integrations, entities, used),
         "template_guard": lambda: rules_more.template_guard(extra.get("templates") or []),
         "template_no_unique_id": lambda: rules_more.template_no_unique_id(

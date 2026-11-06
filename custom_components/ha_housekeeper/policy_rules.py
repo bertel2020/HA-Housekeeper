@@ -160,6 +160,34 @@ def label_unused(labels: list[dict[str, Any]], used: set[str], ignore_label: str
             yield item
 
 
+INPUT_PLATFORMS = frozenset(
+    {
+        "input_boolean", "input_button", "input_datetime", "input_number", "input_select",
+        "input_text", "counter", "timer", "schedule",
+    }
+)  # fmt: skip
+READ_RELATIONS = frozenset({"TRIGGERS_ON", "USES_AS_CONDITION", "REFERENCES", "SHOWS", "INCLUDES"})
+
+
+def helper_write_only(entities: dict[str, dict[str, Any]], edges: list[dict[str, Any]]):
+    """Input helpers that something sets but nothing reads (a hint: the value goes nowhere)."""
+    written: set[str] = set()
+    read: set[str] = set()
+    for edge in edges:
+        target = str(edge.get("target", ""))
+        if not target.startswith("entity:"):
+            continue
+        entity_id = target.split(":", 1)[1]
+        if edge.get("relation") == "TARGETS":
+            written.add(entity_id)
+        elif edge.get("relation") in READ_RELATIONS:
+            read.add(entity_id)
+    for entity_id in sorted(written - read):
+        item = entities.get(entity_id)
+        if item is not None and item.get("platform") in INPUT_PLATFORMS:
+            yield item
+
+
 def template_unused(
     integrations: list[dict[str, Any]], entities: dict[str, dict[str, Any]], used: set[str]
 ):
