@@ -80,9 +80,14 @@ class ReplaceWizardMixin {
   }
 
   // "Cancel": nothing was created, so the assistant is emptied and the person is back at the choice of a task.
-  rwCancel() {
+  // The entries of the assistant, empty again (after a replacement that ran).
+  rwClear() {
     this.rw = null; this._oneHints = null;
     this.replOld = ""; this.replNew = ""; this.replHow = ""; this.rwOld = ""; this.rwRec = "";
+  }
+
+  rwCancel() {
+    this.rwClear();
     this.repairTask = null;
     this.render();
   }

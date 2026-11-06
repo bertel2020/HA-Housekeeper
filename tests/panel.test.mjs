@@ -8531,3 +8531,15 @@ test("the helper list shows area and labels per helper and filters those without
   el.invSetFilter("gap", "noarea");
   assert.deepEqual(el.filtered().map(i => i.object_id).sort(), ["e2", "sensor.bare"]);
 });
+
+test("closing a replacement that ran empties the assistant; a preview that did not run keeps the entries", () => {
+  const { el } = panel("en");
+  el.data = DATA; el.journal = []; el.view = "cleanup";
+  const plan = status => ({ plan_id: "pr", created_at: new Date().toISOString(), status, executed: status !== "dry_run", summary: { total: 1, ok: 1, review: 0, blocked: 0 },
+    actions: [{ kind: "replace_references", object_id: "sensor.old", target: "sensor.new", name: "Old", verdict: "ok", executable: true, reasons: [], used_by: [] }] });
+  el.replOld = "sensor.old"; el.replNew = "sensor.new"; el.rwOld = "delete";
+  el.openNewPlan(plan("dry_run")); el.leavePlan();
+  assert.equal(el.replOld, "sensor.old", "a preview left unrun keeps the pair");
+  el.openNewPlan(plan("verified")); el.leavePlan();
+  assert.equal(el.replOld + el.replNew + el.rwOld, "", "a replacement that ran starts from an empty assistant");
+});
