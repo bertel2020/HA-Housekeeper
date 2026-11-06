@@ -6479,7 +6479,7 @@
 "bkTitleNone": "Ainda não se conhece nenhuma cópia de segurança",
 "bkSubNone": "O Housekeeper faz uma primeiro. Sem cópia de segurança, o que é removido não tem volta.",
 "bkTitleSkip": "Sem nova cópia de segurança antes do plano",
-"bkSubSkip": "Recuperar só funciona então com a tua última cópia de segurança, de há {age}. O que mudou desde então não está lá.",
+"bkSubSkip": "«Anular» pelo Housekeeper continua possível enquanto nada tiver mudado. Se falhar, só ajuda a tua última cópia de segurança, de há {age}; o que mudou desde então não está lá.",
 "bkLast": "Última cópia de segurança: há {age}",
 "bkNoneFound": "Nenhuma cópia de segurança encontrada no Home Assistant",
 "bkWhere_local": "Só local",
@@ -6567,7 +6567,14 @@
 "rwOld_delete": "Eliminar",
 "rwOldHint": "A desativação pode ser desfeita. Não é preciso com «Assumir o ID»: a entidade antiga recebe outro ID de qualquer forma.",
 "rwOldWarn": "Eliminar só funciona numa entidade que a integração já não fornece; caso contrário voltaria. Se pertencer a um auxiliar, o auxiliar inteiro é eliminado. O histórico fica no recorder como estatística órfã, «Anular» só repõe a entrada. Antes é feita uma cópia de segurança.",
-"reason_delete_old": "A entidade antiga é eliminada. O histórico fica no recorder, «Anular» só repõe a entrada.",
+"reason_delete_old": "A entidade antiga é eliminada. «Anular» só repõe a entrada.",
 "reason_delete_old_helper": "A entidade antiga pertence a um auxiliar: é eliminado com todas as suas entidades.",
-"reason_delete_old_provided": "A integração ainda fornece a entidade antiga, voltaria. Só pode ser desativada."
+"reason_delete_old_provided": "A integração ainda fornece a entidade antiga, voltaria. Só pode ser desativada.",
+"bkSubSkipData": "«Anular» pelo Housekeeper continua possível enquanto nada tiver mudado. Um histórico eliminado só volta com uma cópia de segurança, e a última é de há {age}.",
+"rwRecTitle": "Histórico da entidade antiga",
+"rwRecHint": "«Manter» deixa-o no recorder como estatística órfã, que podes eliminar depois uma a uma. Não se aplica se as estatísticas passarem para a entidade nova.",
+"rwRecWarn": "Um histórico eliminado só volta a partir da cópia de segurança, mesmo que anules a eliminação.",
+"planOldDisabled": "Entidade antiga: desativada",
+"planOldDeleted": "Entidade antiga: eliminada",
+"planOldHelper": "Auxiliar antigo: eliminado"
 }

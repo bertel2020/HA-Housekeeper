@@ -6479,7 +6479,7 @@
 "bkTitleNone": "Aucune sauvegarde connue pour l’instant",
 "bkSubNone": "Housekeeper en crée une d’abord. Sans sauvegarde, il n’y a pas de retour en arrière pour ce qui est supprimé.",
 "bkTitleSkip": "Pas de nouvelle sauvegarde avant le plan",
-"bkSubSkip": "Tout récupérer ne marche alors qu’avec ta dernière sauvegarde, d’il y a {age}. Ce qui a changé depuis y manque.",
+"bkSubSkip": "« Annuler » par Housekeeper reste possible tant que rien n’a changé. En cas d’échec, seule ta dernière sauvegarde d’il y a {age} aide ; ce qui a changé depuis y manque.",
 "bkLast": "Dernière sauvegarde : il y a {age}",
 "bkNoneFound": "Aucune sauvegarde trouvée dans Home Assistant",
 "bkWhere_local": "Local uniquement",
@@ -6567,7 +6567,14 @@
 "rwOld_delete": "Supprimer",
 "rwOldHint": "La désactivation peut être annulée. Inutile avec « Reprendre l’ID » : l’ancienne entité reçoit de toute façon un autre ID.",
 "rwOldWarn": "La suppression ne marche que pour une entité que son intégration ne fournit plus ; sinon elle reviendrait. Si elle appartient à un auxiliaire, tout l’auxiliaire est supprimé. Son historique reste dans le recorder comme statistique orpheline, « Annuler » ne rétablit que l’entrée. Une sauvegarde est faite avant.",
-"reason_delete_old": "L’ancienne entité est supprimée. Son historique reste dans le recorder, « Annuler » ne rétablit que l’entrée.",
+"reason_delete_old": "L’ancienne entité est supprimée. « Annuler » ne rétablit que l’entrée.",
 "reason_delete_old_helper": "L’ancienne entité appartient à un auxiliaire : il est supprimé avec toutes ses entités.",
-"reason_delete_old_provided": "L’intégration fournit encore l’ancienne entité, elle reviendrait. Elle ne peut qu’être désactivée."
+"reason_delete_old_provided": "L’intégration fournit encore l’ancienne entité, elle reviendrait. Elle ne peut qu’être désactivée.",
+"bkSubSkipData": "« Annuler » par Housekeeper reste possible tant que rien n’a changé. Seule une sauvegarde ramène un historique supprimé, et ta dernière date d’il y a {age}.",
+"rwRecTitle": "Historique de l’ancienne entité",
+"rwRecHint": "« Conserver » le laisse dans le recorder comme statistique orpheline, supprimable plus tard une par une. Sans effet si les statistiques passent à la nouvelle entité.",
+"rwRecWarn": "Un historique supprimé ne revient que depuis la sauvegarde, même si tu annules la suppression.",
+"planOldDisabled": "Ancienne entité : désactivée",
+"planOldDeleted": "Ancienne entité : supprimée",
+"planOldHelper": "Ancien auxiliaire : supprimé"
 }

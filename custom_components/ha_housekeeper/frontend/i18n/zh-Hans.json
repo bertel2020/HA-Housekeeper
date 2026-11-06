@@ -6479,7 +6479,7 @@
 "bkTitleNone": "尚未发现任何备份",
 "bkSubNone": "Housekeeper 会先创建一个。没有备份，被移除的内容就无法恢复。",
 "bkTitleSkip": "计划之前不创建新备份",
-"bkSubSkip": "之后只能用 {age} 前的上一个备份来恢复。之后发生的更改不在其中。",
+"bkSubSkip": "只要没有改动，仍可通过 Housekeeper 撤销。若失败，只能用 {age} 前的上一个备份；之后发生的更改不在其中。",
 "bkLast": "上次备份：{age} 前",
 "bkNoneFound": "Home Assistant 中没有找到备份",
 "bkWhere_local": "仅本地",
@@ -6567,7 +6567,14 @@
 "rwOld_delete": "删除",
 "rwOldHint": "禁用可以撤销。使用“接管 ID”时无需设置：旧实体在那里本来就会获得另一个 ID。",
 "rwOldWarn": "只有其集成不再提供的实体才能删除，否则它会回来。如果它属于某个辅助元素，整个辅助元素都会被删除。它的历史会作为孤立统计留在 recorder 中，“撤销”只恢复条目。事先会创建备份。",
-"reason_delete_old": "旧实体将被删除。它的历史留在 recorder 中，撤销只恢复条目。",
+"reason_delete_old": "旧实体会被删除。“撤销”只恢复条目。",
 "reason_delete_old_helper": "旧实体属于某个辅助元素：它会连同所有实体一起被删除。",
-"reason_delete_old_provided": "集成仍在提供旧实体，它会回来。只能禁用。"
+"reason_delete_old_provided": "集成仍在提供旧实体，它会回来。只能禁用。",
+"bkSubSkipData": "只要没有改动，仍可通过 Housekeeper 撤销。已删除的历史只有备份能找回，而上一个备份是 {age} 前的。",
+"rwRecTitle": "旧实体的历史",
+"rwRecHint": "“保留”会让它作为孤立统计留在 recorder 中，之后可逐个删除。如果统计转移到新实体，则不适用。",
+"rwRecWarn": "已删除的历史只能从备份找回，即使你撤销了删除。",
+"planOldDisabled": "旧实体：已停用",
+"planOldDeleted": "旧实体：已删除",
+"planOldHelper": "旧辅助元素：已删除"
 }

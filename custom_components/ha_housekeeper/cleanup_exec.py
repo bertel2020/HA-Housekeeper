@@ -977,7 +977,11 @@ class CleanupRunner:
             _event(plan, event, object_id=object_id)
             if action["kind"] in LOGBOOK_KINDS:
                 self._write_logbook(plan, action)
-            if action.get("recorder"):
+            if action.get("recorder") and (
+                action["kind"] not in METER_KINDS | REFERENCE_KINDS
+                or action["result"].get("deleted_old")
+            ):
+                # After a replacement the history of the old entity goes only once the entity is.
                 action["result"].update(await self._purge_after_removal(plan, action))
             plan["executed"] = True
             self.status["done"] = index + 1

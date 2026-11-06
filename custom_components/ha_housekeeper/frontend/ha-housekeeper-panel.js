@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"87c6cff3ad"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"00fb36c2d4"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7c4330cda7"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"1b8b35daf6"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"3371c9b726"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"45dc330a7b"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"755989c6dc"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"54659596e2"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"52b086cfa9"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"67d435c3c0"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"4272201689"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"f2d53d8fad"}];
 
 const TEXT = {
   de: {
@@ -4842,7 +4842,7 @@ class CleanupMixin {
       const result = a.result;
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
       const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" || a.kind === "set_expose_new" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
-      const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
+      const sub = [sub0 === a.name ? "" : sub0, a.delete_old ? this.t(a.delete_old === "helper" ? "planOldHelper" : "planOldDeleted") : a.disable_old ? this.t("planOldDisabled") : "", a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
@@ -5141,7 +5141,7 @@ class CleanupMixin {
     const tone = on ? "red" : info.none || info.old ? "warn" : "ok", icon = { ok: "shield-check-outline", warn: "shield-alert-outline", red: "shield-off-outline" }[tone];
     const age = info.age === undefined ? "" : this.bhAge(info.age, true), key = on ? "Skip" : info.none ? "None" : info.old ? "Old" : "Ok";
     const title = this.t(`bkTitle${key}`, { age: info.age === undefined ? "" : this.bhAge(info.age) });
-    const sub = on && info.none ? this.t("skipBackupWarn") : this.t(`bkSub${key}`, { age });
+    const sub = on && info.none ? this.t("skipBackupWarn") : this.t(`bkSub${key}${on && run.some(a => a.recorder || PURGE_KINDS.includes(a.kind)) ? "Data" : ""}`, { age });
     const meta = !info.known ? "" : info.none ? `<span>${this.t("bkNoneFound")}</span>` : `<span>${this.t("bkLast", { age })}</span>${info.where ? `<span>${this.t(`bkWhere_${info.where}`)}</span>` : ""}`;
     const control = allowed
       ? `<label class="bkswitch"><input class="policyswitch" type="checkbox" role="switch" data-skip-backup-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span>${this.t("bkSwitch")}</span></label>`
@@ -14898,7 +14898,7 @@ Object.assign(TEXT.de, {
   bkTitleOk: "Vorher wird ein Backup angelegt", bkSubOk: "Housekeeper startet nur, wenn es gelingt.",
   bkTitleOld: "Dein letztes Backup ist {age} alt", bkSubOld: "Housekeeper legt vorher ein neues an. Ohne neues Backup wärst du auf dem alten Stand.",
   bkTitleNone: "Es ist noch kein Backup bekannt", bkSubNone: "Housekeeper legt vorher eines an. Ohne Backup gibt es für Entferntes keinen Weg zurück.",
-  bkTitleSkip: "Kein neues Backup vor dem Plan", bkSubSkip: "Zurückholen geht dann nur mit deinem letzten Backup von vor {age}. Was danach geändert wurde, fehlt dort.",
+  bkTitleSkip: "Kein neues Backup vor dem Plan", bkSubSkip: "Rückgängig per Housekeeper bleibt möglich, solange nichts verändert wurde. Scheitert es, hilft nur dein letztes Backup von vor {age}; was danach geändert wurde, fehlt dort.", bkSubSkipData: "Rückgängig per Housekeeper bleibt möglich, solange nichts verändert wurde. Gelöschten Verlauf bringt nur ein Backup zurück, und das letzte ist von vor {age}.",
   bkLast: "Letztes Backup: vor {age}", bkNoneFound: "Kein Backup in Home Assistant gefunden", bkWhere_local: "Nur lokal", bkWhere_remote: "Extern", bkWhere_both: "Lokal und extern", bkSwitch: "Ohne neues Backup ausführen",
   planAdvanced: "Erweitert", skipBackup: "Ohne Backup ausführen", skipBackupHint: "Nur einschalten, wenn du selbst ein aktuelles Backup hast.",
   skipBackupWarnTitle: "Kein Backup vor dem Plan", skipBackupWarn: "Falls etwas schiefgeht, kann Housekeeper es nicht über ein Backup wiederherstellen. Entfernte Entitäten und Geräte sind dann nicht mehr zurückzuholen.",
@@ -14909,7 +14909,7 @@ Object.assign(TEXT.en, {
   bkTitleOk: "A backup is made first", bkSubOk: "Housekeeper only starts if it succeeds.",
   bkTitleOld: "Your last backup is {age} old", bkSubOld: "Housekeeper makes a new one first. Without a new backup you would be back at the old state.",
   bkTitleNone: "No backup is known yet", bkSubNone: "Housekeeper makes one first. Without a backup there is no way back for what is removed.",
-  bkTitleSkip: "No new backup before the plan", bkSubSkip: "Getting things back then only works with your last backup from {age} ago. What changed since is missing there.",
+  bkTitleSkip: "No new backup before the plan", bkSubSkip: "Undo by Housekeeper stays possible as long as nothing was changed. If it fails, only your last backup from {age} ago helps; what changed since is missing there.", bkSubSkipData: "Undo by Housekeeper stays possible as long as nothing was changed. Deleted history only comes back from a backup, and your last one is from {age} ago.",
   bkLast: "Last backup: {age} ago", bkNoneFound: "No backup found in Home Assistant", bkWhere_local: "Local only", bkWhere_remote: "External", bkWhere_both: "Local and external", bkSwitch: "Run without a new backup",
   planAdvanced: "Advanced", skipBackup: "Run without a backup", skipBackupHint: "Turn on only if you have a recent backup of your own.",
   skipBackupWarnTitle: "No backup before the plan", skipBackupWarn: "If something goes wrong, Housekeeper cannot restore it from a backup. Removed entities and devices cannot be brought back.",
@@ -20774,7 +20774,9 @@ Object.assign(TEXT.en, {
 
 // The assistant "Replace entities": choose several old entities, give each its new one, then one plan (see device_pairs.py suggest_entities, cleanup.py _mark_target_clashes); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  rwOldTitle: "Alte Entität danach", rwOld_none: "Nichts tun", rwOld_disable: "Deaktivieren (Quarantäne)", rwOld_delete: "Löschen", rwOldHint: "Deaktivieren lässt sich zurücknehmen. Bei „ID übernehmen“ entfällt das, die alte Entität bekommt dort ohnehin eine andere ID.", rwOldWarn: "Löschen geht nur bei einer Entität, die ihre Integration nicht mehr liefert; sonst käme sie zurück. Gehört sie einem Helfer, wird der ganze Helfer gelöscht. Ihr Verlauf bleibt als verwaiste Statistik im Recorder, „Rückgängig“ stellt nur den Eintrag wieder her. Vorher entsteht ein Backup.", reason_delete_old: "Die alte Entität wird gelöscht. Ihr Verlauf bleibt im Recorder, Rückgängig stellt nur den Eintrag wieder her.", reason_delete_old_helper: "Die alte Entität gehört einem Helfer: er wird mit allen seinen Entitäten gelöscht.", reason_delete_old_provided: "Die Integration liefert die alte Entität noch, sie käme zurück. Sie lässt sich nur deaktivieren.",
+  rwOldTitle: "Alte Entität danach", rwOld_none: "Nichts tun", rwOld_disable: "Deaktivieren (Quarantäne)", rwOld_delete: "Löschen", rwOldHint: "Deaktivieren lässt sich zurücknehmen. Bei „ID übernehmen“ entfällt das, die alte Entität bekommt dort ohnehin eine andere ID.", rwOldWarn: "Löschen geht nur bei einer Entität, die ihre Integration nicht mehr liefert; sonst käme sie zurück. Gehört sie einem Helfer, wird der ganze Helfer gelöscht. Ihr Verlauf bleibt als verwaiste Statistik im Recorder, „Rückgängig“ stellt nur den Eintrag wieder her. Vorher entsteht ein Backup.", reason_delete_old: "Die alte Entität wird gelöscht. Rückgängig stellt nur den Eintrag wieder her.",
+  rwRecTitle: "Verlauf der alten Entität", rwRecHint: "„Behalten“ lässt ihn als verwaiste Statistik im Recorder, später einzeln löschbar. Entfällt, wenn die Statistik in die neue Entität übernommen wird.", rwRecWarn: "Gelöschter Verlauf lässt sich nur mit dem Backup zurückholen, auch wenn du das Löschen rückgängig machst.",
+  planOldDisabled: "Alte Entität: deaktiviert", planOldDeleted: "Alte Entität: gelöscht", planOldHelper: "Alter Helfer: gelöscht", reason_delete_old_helper: "Die alte Entität gehört einem Helfer: er wird mit allen seinen Entitäten gelöscht.", reason_delete_old_provided: "Die Integration liefert die alte Entität noch, sie käme zurück. Sie lässt sich nur deaktivieren.",
   repairTaskWizard: "Entitäten ersetzen", repairTaskWizardHint: "Eine oder mehrere Entitäten durch neue ersetzen: Verweise umstellen, Statistik und ID übernehmen. Zum Beispiel beim Wechsel eines Zählers oder einer Integration.",
   rwOneHint: "Ersetzt eine Entität durch eine andere. Was dabei geschieht, wählst du unten; bis du die Vorschau bestätigst, ändert sich nichts.",
   rwModeOne: "Eine Entität", rwModeMany: "Mehrere Entitäten", rwGroupKeep: "Die neue Entität behält ihre ID", rwGroupTake: "Die neue Entität übernimmt die alte ID",
@@ -20807,7 +20809,9 @@ Object.assign(TEXT.de, {
   reason_target_duplicate: "Dieselbe neue Entität ist für mehrere alte gewählt.", reason_target_replaced: "Die neue Entität wird selbst ersetzt (oder ersetzt eine andere).",
 });
 Object.assign(TEXT.en, {
-  rwOldTitle: "Old entity afterwards", rwOld_none: "Do nothing", rwOld_disable: "Disable (quarantine)", rwOld_delete: "Delete", rwOldHint: "Disabling can be taken back. Not needed for \"take over the ID\": the old entity gets another ID there anyway.", rwOldWarn: "Deleting only works for an entity its integration no longer provides; otherwise it would come back. If it belongs to a helper, the whole helper is deleted. Its history stays in the recorder as an orphaned statistic, \"Undo\" only restores the entry. A backup is made first.", reason_delete_old: "The old entity is deleted. Its history stays in the recorder, undo only restores the entry.", reason_delete_old_helper: "The old entity belongs to a helper: it is deleted with all its entities.", reason_delete_old_provided: "The integration still provides the old entity, it would come back. It can only be disabled.",
+  rwOldTitle: "Old entity afterwards", rwOld_none: "Do nothing", rwOld_disable: "Disable (quarantine)", rwOld_delete: "Delete", rwOldHint: "Disabling can be taken back. Not needed for \"take over the ID\": the old entity gets another ID there anyway.", rwOldWarn: "Deleting only works for an entity its integration no longer provides; otherwise it would come back. If it belongs to a helper, the whole helper is deleted. Its history stays in the recorder as an orphaned statistic, \"Undo\" only restores the entry. A backup is made first.", reason_delete_old: "The old entity is deleted. Undo only restores the entry.",
+  rwRecTitle: "History of the old entity", rwRecHint: "\"Keep\" leaves it as an orphaned statistic in the recorder, deletable one by one later. Not used when the statistics are carried over to the new entity.", rwRecWarn: "Deleted history can only be restored from the backup, even if you undo the deletion.",
+  planOldDisabled: "Old entity: disabled", planOldDeleted: "Old entity: deleted", planOldHelper: "Old helper: deleted", reason_delete_old_helper: "The old entity belongs to a helper: it is deleted with all its entities.", reason_delete_old_provided: "The integration still provides the old entity, it would come back. It can only be disabled.",
   repairTaskWizard: "Replace entities", repairTaskWizardHint: "Replace one or several entities with new ones: switch references, take over statistics and ID. For example when changing a meter or an integration.",
   rwOneHint: "Replaces one entity with another. You choose below what happens; nothing changes until you confirm the preview.",
   rwModeOne: "One entity", rwModeMany: "Several entities", rwGroupKeep: "The new entity keeps its ID", rwGroupTake: "The new entity takes over the old ID",
@@ -20852,7 +20856,7 @@ class ReplaceWizardMixin {
   // "Cancel": nothing was created, so the assistant is emptied and the person is back at the choice of a task.
   rwCancel() {
     this.rw = null; this._oneHints = null;
-    this.replOld = ""; this.replNew = ""; this.replHow = ""; this.rwOld = "";
+    this.replOld = ""; this.replNew = ""; this.replHow = ""; this.rwOld = ""; this.rwRec = "";
     this.repairTask = null;
     this.render();
   }
@@ -20877,12 +20881,19 @@ class ReplaceWizardMixin {
   }
 
   // The old entity is only disabled where it keeps its ID; the modes that hand its ID over move it aside anyway.
-  rwDisableFlag(how) { return !this.rwOld || RW_TAKE.includes(how) ? {} : this.rwOld === "delete" ? { delete_old: true } : { disable_old: true }; }
+  // Deleting can take the old entity's history along; only where the statistics are not carried over to the new entity.
+  rwDisableFlag(how) {
+    if (!this.rwOld || RW_TAKE.includes(how)) return {};
+    if (this.rwOld !== "delete") return { disable_old: true };
+    return { delete_old: true, ...(this.rwRec && how === "replace" && this.data?.meta?.recorder_available ? { recorder: this.rwRec } : {}) };
+  }
 
   rwDisableSwitch() {
     const opt = k => `<option value="${k}" ${(this.rwOld || "none") === k ? "selected" : ""}>${this.t(`rwOld_${k}`)}</option>`;
     const warn = this.rwOld === "delete" ? `<div class="hintbox"><ha-icon icon="mdi:alert-outline"></ha-icon><div><p>${this.t("rwOldWarn")}</p></div></div>` : "";
-    return `<div class="optswitch inpanel"><span><strong>${this.t("rwOldTitle")}</strong><small>${this.t("rwOldHint")}</small>${warn}</span><select data-rw-old aria-label="${this.esc(this.t("rwOldTitle"))}" ${this.cleanupBusy ? "disabled" : ""}>${["none", "disable", "delete"].map(opt).join("")}</select></div>`;
+    const rec = this.rwOld === "delete" && this.data?.meta?.recorder_available
+      ? `<span class="rwhist"><strong>${this.t("rwRecTitle")}</strong><small>${this.t("rwRecHint")}</small><select data-rw-rec aria-label="${this.esc(this.t("rwRecTitle"))}" ${this.cleanupBusy ? "disabled" : ""}>${["keep", "statistics", "states"].map(k => `<option value="${k}" ${(this.rwRec || "keep") === k ? "selected" : ""}>${this.t(`recChoice_${k}`)}</option>`).join("")}</select>${this.rwRec ? `<div class="hintbox"><ha-icon icon="mdi:alert-outline"></ha-icon><div><p>${this.t("rwRecWarn")}</p></div></div>` : ""}</span>` : "";
+    return `<div class="optswitch inpanel"><span><strong>${this.t("rwOldTitle")}</strong><small>${this.t("rwOldHint")}</small>${warn}</span><select data-rw-old aria-label="${this.esc(this.t("rwOldTitle"))}" ${this.cleanupBusy ? "disabled" : ""}>${["none", "disable", "delete"].map(opt).join("")}</select></div>${rec ? `<div class="optswitch inpanel">${rec}</div>` : ""}`;
   }
 
   // Row problems that the panel can see before any preview: one new entity for two old ones.
@@ -21202,7 +21213,8 @@ class ReplaceWizardMixin {
     root.querySelector("[data-rw-all]")?.addEventListener("click", () => { (this._rwFiltered || []).forEach(id => rw().sel.add(id)); this.render(); });
     root.querySelector("[data-rw-clear]")?.addEventListener("click", () => { rw().sel.clear(); this.render(); });
     root.querySelector("[data-rw-next]")?.addEventListener("click", () => { rw().step = 2; this.rwLoadPairs(); });
-    root.querySelectorAll("[data-rw-old]").forEach(el => el.onchange = () => { this.rwOld = el.value === "none" ? "" : el.value; this.render(); });
+    root.querySelectorAll("[data-rw-old]").forEach(el => el.onchange = () => { this.rwOld = el.value === "none" ? "" : el.value; if (this.rwOld !== "delete") this.rwRec = ""; this.render(); });
+    root.querySelectorAll("[data-rw-rec]").forEach(el => el.onchange = () => { this.rwRec = el.value === "keep" ? "" : el.value; this.render(); });
     root.querySelector("[data-rw-cancel]")?.addEventListener("click", () => this.rwCancel());
     root.querySelector("[data-rw-back]")?.addEventListener("click", () => { rw().step = 1; this.render(); });
     root.querySelector("[data-rw-load]")?.addEventListener("click", () => this.rwLoadPairs());

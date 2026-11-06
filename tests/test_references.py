@@ -1658,3 +1658,48 @@ async def test_an_exported_helper_is_created_by_a_plan_and_undo_deletes_it(
         lambda _: None,
     )
     assert blocked["actions"][0]["reasons"] == ["not_helper"]
+
+
+def test_deleting_the_old_entity_can_take_its_history_along_and_the_end_state_says_so() -> None:
+    from custom_components.ha_housekeeper.cleanup import _judge_delete_old
+    from custom_components.ha_housekeeper.simulation import simulate
+
+    def judged(recorder: bool, choice: str) -> dict:
+        action = {"object_id": OLD, "reasons": [], "used_by": [], "verdict": "ok"}
+        objects = {OLD: {"reason": "not_provided"}}
+        request = {"delete_old": True, "recorder": choice}
+        with patch("custom_components.ha_housekeeper.cleanup.NOT_PROVIDED", "not_provided"):
+            _judge_delete_old(action, request, objects, True, recorder)
+        return action
+
+    action = judged(True, "states")
+    assert action["delete_old"] == "entity" and action["recorder"] == "states"
+    assert {"irreversible", "with_states"} <= set(action["reasons"]) and action[
+        "verdict"
+    ] == "review"
+    assert "no_recorder" in judged(False, "statistics")["reasons"]
+    assert "recorder" not in judged(True, "keep")  # keeping the history asks nothing more
+
+    run = {
+        **action,
+        "kind": "replace_references",
+        "executable": True,
+        "history": {"states": 5, "statistics": 3},
+    }
+    state = simulate(
+        [
+            run,
+            {
+                **run,
+                "object_id": "sensor.two",
+                "delete_old": "helper",
+                "recorder": None,
+                "history": None,
+            },
+        ]
+    )
+    assert state["removed"] == 1 and state["helper_removed"] == 1 and state["purge_rows"] == 8
+    off = simulate(
+        [{"kind": "replace_references", "object_id": OLD, "executable": True, "disable_old": True}]
+    )
+    assert off["disabled"] == 1 and off["removed"] == 0

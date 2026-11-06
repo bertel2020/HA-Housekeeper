@@ -7010,7 +7010,7 @@
 "bkTitleNone": "Zatiaľ nie je známa žiadna záloha",
 "bkSubNone": "Housekeeper ju najprv vytvorí. Bez zálohy niet cesty späť pre to, čo sa odstráni.",
 "bkTitleSkip": "Pred plánom žiadna nová záloha",
-"bkSubSkip": "Návrat je potom možný iba z tvojej poslednej zálohy spred {age}. Čo sa odvtedy zmenilo, v nej chýba.",
+"bkSubSkip": "„Vrátiť späť“ cez Housekeeper zostáva možné, kým sa nič nezmenilo. Ak zlyhá, pomôže len tvoja posledná záloha spred {age}; čo sa odvtedy zmenilo, v nej chýba.",
 "bkLast": "Posledná záloha: pred {age}",
 "bkNoneFound": "V Home Assistantovi sa nenašla žiadna záloha",
 "bkWhere_local": "Iba lokálne",
@@ -7098,7 +7098,14 @@
 "rwOld_delete": "Odstrániť",
 "rwOldHint": "Vypnutie sa dá vziať späť. Pri „Prevziať ID“ to odpadá, stará entita dostane aj tak iné ID.",
 "rwOldWarn": "Odstránenie funguje len pri entite, ktorú jej integrácia už neposkytuje; inak by sa vrátila. Ak patrí pomocníkovi, odstráni sa celý pomocník. Jej história zostane v recorderi ako osirelá štatistika, „Vrátiť späť“ obnoví len záznam. Predtým sa vytvorí záloha.",
-"reason_delete_old": "Stará entita sa odstráni. Jej história zostane v recorderi, „Vrátiť späť“ obnoví len záznam.",
+"reason_delete_old": "Stará entita sa odstráni. „Vrátiť späť“ obnoví len záznam.",
 "reason_delete_old_helper": "Stará entita patrí pomocníkovi: odstráni sa so všetkými svojimi entitami.",
-"reason_delete_old_provided": "Integrácia starú entitu stále poskytuje, vrátila by sa. Dá sa len vypnúť."
+"reason_delete_old_provided": "Integrácia starú entitu stále poskytuje, vrátila by sa. Dá sa len vypnúť.",
+"bkSubSkipData": "„Vrátiť späť“ cez Housekeeper zostáva možné, kým sa nič nezmenilo. Odstránenú históriu vráti len záloha a tá posledná je spred {age}.",
+"rwRecTitle": "História starej entity",
+"rwRecHint": "„Ponechať“ ju necháva v recorderi ako osirelú štatistiku, ktorú môžeš neskôr odstrániť jednotlivo. Neplatí, ak sa štatistiky prenesú do novej entity.",
+"rwRecWarn": "Odstránená história sa vráti len zo zálohy, aj keď odstránenie vrátiš späť.",
+"planOldDisabled": "Stará entita: deaktivovaná",
+"planOldDeleted": "Stará entita: odstránená",
+"planOldHelper": "Starý pomocník: odstránený"
 }

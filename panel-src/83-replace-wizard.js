@@ -1,6 +1,8 @@
 // The assistant "Replace entities": choose several old entities, give each its new one, then one plan (see device_pairs.py suggest_entities, cleanup.py _mark_target_clashes); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  rwOldTitle: "Alte Entität danach", rwOld_none: "Nichts tun", rwOld_disable: "Deaktivieren (Quarantäne)", rwOld_delete: "Löschen", rwOldHint: "Deaktivieren lässt sich zurücknehmen. Bei „ID übernehmen“ entfällt das, die alte Entität bekommt dort ohnehin eine andere ID.", rwOldWarn: "Löschen geht nur bei einer Entität, die ihre Integration nicht mehr liefert; sonst käme sie zurück. Gehört sie einem Helfer, wird der ganze Helfer gelöscht. Ihr Verlauf bleibt als verwaiste Statistik im Recorder, „Rückgängig“ stellt nur den Eintrag wieder her. Vorher entsteht ein Backup.", reason_delete_old: "Die alte Entität wird gelöscht. Ihr Verlauf bleibt im Recorder, Rückgängig stellt nur den Eintrag wieder her.", reason_delete_old_helper: "Die alte Entität gehört einem Helfer: er wird mit allen seinen Entitäten gelöscht.", reason_delete_old_provided: "Die Integration liefert die alte Entität noch, sie käme zurück. Sie lässt sich nur deaktivieren.",
+  rwOldTitle: "Alte Entität danach", rwOld_none: "Nichts tun", rwOld_disable: "Deaktivieren (Quarantäne)", rwOld_delete: "Löschen", rwOldHint: "Deaktivieren lässt sich zurücknehmen. Bei „ID übernehmen“ entfällt das, die alte Entität bekommt dort ohnehin eine andere ID.", rwOldWarn: "Löschen geht nur bei einer Entität, die ihre Integration nicht mehr liefert; sonst käme sie zurück. Gehört sie einem Helfer, wird der ganze Helfer gelöscht. Ihr Verlauf bleibt als verwaiste Statistik im Recorder, „Rückgängig“ stellt nur den Eintrag wieder her. Vorher entsteht ein Backup.", reason_delete_old: "Die alte Entität wird gelöscht. Rückgängig stellt nur den Eintrag wieder her.",
+  rwRecTitle: "Verlauf der alten Entität", rwRecHint: "„Behalten“ lässt ihn als verwaiste Statistik im Recorder, später einzeln löschbar. Entfällt, wenn die Statistik in die neue Entität übernommen wird.", rwRecWarn: "Gelöschter Verlauf lässt sich nur mit dem Backup zurückholen, auch wenn du das Löschen rückgängig machst.",
+  planOldDisabled: "Alte Entität: deaktiviert", planOldDeleted: "Alte Entität: gelöscht", planOldHelper: "Alter Helfer: gelöscht", reason_delete_old_helper: "Die alte Entität gehört einem Helfer: er wird mit allen seinen Entitäten gelöscht.", reason_delete_old_provided: "Die Integration liefert die alte Entität noch, sie käme zurück. Sie lässt sich nur deaktivieren.",
   repairTaskWizard: "Entitäten ersetzen", repairTaskWizardHint: "Eine oder mehrere Entitäten durch neue ersetzen: Verweise umstellen, Statistik und ID übernehmen. Zum Beispiel beim Wechsel eines Zählers oder einer Integration.",
   rwOneHint: "Ersetzt eine Entität durch eine andere. Was dabei geschieht, wählst du unten; bis du die Vorschau bestätigst, ändert sich nichts.",
   rwModeOne: "Eine Entität", rwModeMany: "Mehrere Entitäten", rwGroupKeep: "Die neue Entität behält ihre ID", rwGroupTake: "Die neue Entität übernimmt die alte ID",
@@ -33,7 +35,9 @@ Object.assign(TEXT.de, {
   reason_target_duplicate: "Dieselbe neue Entität ist für mehrere alte gewählt.", reason_target_replaced: "Die neue Entität wird selbst ersetzt (oder ersetzt eine andere).",
 });
 Object.assign(TEXT.en, {
-  rwOldTitle: "Old entity afterwards", rwOld_none: "Do nothing", rwOld_disable: "Disable (quarantine)", rwOld_delete: "Delete", rwOldHint: "Disabling can be taken back. Not needed for \"take over the ID\": the old entity gets another ID there anyway.", rwOldWarn: "Deleting only works for an entity its integration no longer provides; otherwise it would come back. If it belongs to a helper, the whole helper is deleted. Its history stays in the recorder as an orphaned statistic, \"Undo\" only restores the entry. A backup is made first.", reason_delete_old: "The old entity is deleted. Its history stays in the recorder, undo only restores the entry.", reason_delete_old_helper: "The old entity belongs to a helper: it is deleted with all its entities.", reason_delete_old_provided: "The integration still provides the old entity, it would come back. It can only be disabled.",
+  rwOldTitle: "Old entity afterwards", rwOld_none: "Do nothing", rwOld_disable: "Disable (quarantine)", rwOld_delete: "Delete", rwOldHint: "Disabling can be taken back. Not needed for \"take over the ID\": the old entity gets another ID there anyway.", rwOldWarn: "Deleting only works for an entity its integration no longer provides; otherwise it would come back. If it belongs to a helper, the whole helper is deleted. Its history stays in the recorder as an orphaned statistic, \"Undo\" only restores the entry. A backup is made first.", reason_delete_old: "The old entity is deleted. Undo only restores the entry.",
+  rwRecTitle: "History of the old entity", rwRecHint: "\"Keep\" leaves it as an orphaned statistic in the recorder, deletable one by one later. Not used when the statistics are carried over to the new entity.", rwRecWarn: "Deleted history can only be restored from the backup, even if you undo the deletion.",
+  planOldDisabled: "Old entity: disabled", planOldDeleted: "Old entity: deleted", planOldHelper: "Old helper: deleted", reason_delete_old_helper: "The old entity belongs to a helper: it is deleted with all its entities.", reason_delete_old_provided: "The integration still provides the old entity, it would come back. It can only be disabled.",
   repairTaskWizard: "Replace entities", repairTaskWizardHint: "Replace one or several entities with new ones: switch references, take over statistics and ID. For example when changing a meter or an integration.",
   rwOneHint: "Replaces one entity with another. You choose below what happens; nothing changes until you confirm the preview.",
   rwModeOne: "One entity", rwModeMany: "Several entities", rwGroupKeep: "The new entity keeps its ID", rwGroupTake: "The new entity takes over the old ID",
@@ -78,7 +82,7 @@ class ReplaceWizardMixin {
   // "Cancel": nothing was created, so the assistant is emptied and the person is back at the choice of a task.
   rwCancel() {
     this.rw = null; this._oneHints = null;
-    this.replOld = ""; this.replNew = ""; this.replHow = ""; this.rwOld = "";
+    this.replOld = ""; this.replNew = ""; this.replHow = ""; this.rwOld = ""; this.rwRec = "";
     this.repairTask = null;
     this.render();
   }
@@ -103,12 +107,19 @@ class ReplaceWizardMixin {
   }
 
   // The old entity is only disabled where it keeps its ID; the modes that hand its ID over move it aside anyway.
-  rwDisableFlag(how) { return !this.rwOld || RW_TAKE.includes(how) ? {} : this.rwOld === "delete" ? { delete_old: true } : { disable_old: true }; }
+  // Deleting can take the old entity's history along; only where the statistics are not carried over to the new entity.
+  rwDisableFlag(how) {
+    if (!this.rwOld || RW_TAKE.includes(how)) return {};
+    if (this.rwOld !== "delete") return { disable_old: true };
+    return { delete_old: true, ...(this.rwRec && how === "replace" && this.data?.meta?.recorder_available ? { recorder: this.rwRec } : {}) };
+  }
 
   rwDisableSwitch() {
     const opt = k => `<option value="${k}" ${(this.rwOld || "none") === k ? "selected" : ""}>${this.t(`rwOld_${k}`)}</option>`;
     const warn = this.rwOld === "delete" ? `<div class="hintbox"><ha-icon icon="mdi:alert-outline"></ha-icon><div><p>${this.t("rwOldWarn")}</p></div></div>` : "";
-    return `<div class="optswitch inpanel"><span><strong>${this.t("rwOldTitle")}</strong><small>${this.t("rwOldHint")}</small>${warn}</span><select data-rw-old aria-label="${this.esc(this.t("rwOldTitle"))}" ${this.cleanupBusy ? "disabled" : ""}>${["none", "disable", "delete"].map(opt).join("")}</select></div>`;
+    const rec = this.rwOld === "delete" && this.data?.meta?.recorder_available
+      ? `<span class="rwhist"><strong>${this.t("rwRecTitle")}</strong><small>${this.t("rwRecHint")}</small><select data-rw-rec aria-label="${this.esc(this.t("rwRecTitle"))}" ${this.cleanupBusy ? "disabled" : ""}>${["keep", "statistics", "states"].map(k => `<option value="${k}" ${(this.rwRec || "keep") === k ? "selected" : ""}>${this.t(`recChoice_${k}`)}</option>`).join("")}</select>${this.rwRec ? `<div class="hintbox"><ha-icon icon="mdi:alert-outline"></ha-icon><div><p>${this.t("rwRecWarn")}</p></div></div>` : ""}</span>` : "";
+    return `<div class="optswitch inpanel"><span><strong>${this.t("rwOldTitle")}</strong><small>${this.t("rwOldHint")}</small>${warn}</span><select data-rw-old aria-label="${this.esc(this.t("rwOldTitle"))}" ${this.cleanupBusy ? "disabled" : ""}>${["none", "disable", "delete"].map(opt).join("")}</select></div>${rec ? `<div class="optswitch inpanel">${rec}</div>` : ""}`;
   }
 
   // Row problems that the panel can see before any preview: one new entity for two old ones.
@@ -428,7 +439,8 @@ class ReplaceWizardMixin {
     root.querySelector("[data-rw-all]")?.addEventListener("click", () => { (this._rwFiltered || []).forEach(id => rw().sel.add(id)); this.render(); });
     root.querySelector("[data-rw-clear]")?.addEventListener("click", () => { rw().sel.clear(); this.render(); });
     root.querySelector("[data-rw-next]")?.addEventListener("click", () => { rw().step = 2; this.rwLoadPairs(); });
-    root.querySelectorAll("[data-rw-old]").forEach(el => el.onchange = () => { this.rwOld = el.value === "none" ? "" : el.value; this.render(); });
+    root.querySelectorAll("[data-rw-old]").forEach(el => el.onchange = () => { this.rwOld = el.value === "none" ? "" : el.value; if (this.rwOld !== "delete") this.rwRec = ""; this.render(); });
+    root.querySelectorAll("[data-rw-rec]").forEach(el => el.onchange = () => { this.rwRec = el.value === "keep" ? "" : el.value; this.render(); });
     root.querySelector("[data-rw-cancel]")?.addEventListener("click", () => this.rwCancel());
     root.querySelector("[data-rw-back]")?.addEventListener("click", () => { rw().step = 1; this.render(); });
     root.querySelector("[data-rw-load]")?.addEventListener("click", () => this.rwLoadPairs());

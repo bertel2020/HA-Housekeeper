@@ -1429,6 +1429,7 @@ def _judge_delete_old(
     request: dict[str, Any],
     objects: dict[str, dict[str, Any]],
     possible: bool,
+    recorder: bool | None = None,
 ) -> None:
     """Deleting the old entity after a replacement: only where it does not come back.
 
@@ -1449,6 +1450,8 @@ def _judge_delete_old(
     else:
         action["reasons"].append("delete_old_provided")
     action["disable_old"] = False
+    if recorder is not None and action.get("delete_old"):
+        apply_recorder_choice(action, request.get("recorder") or "keep", recorder)
     _verdict(action)
 
 
@@ -1712,7 +1715,13 @@ def build_plan(
                 )
             action["fingerprint"] = reference_print
             action["disable_old"] = bool(request.get("disable_old")) and target_kind == "entity"
-            _judge_delete_old(action, request, objects, target_kind == "entity")
+            _judge_delete_old(
+                action,
+                request,
+                objects,
+                target_kind == "entity",
+                bool(snapshot["meta"].get("recorder_available")),
+            )
         else:
             action = judge_action(
                 kind,
@@ -1796,6 +1805,10 @@ def merge_requests(
                 request["states"] = bool(action.get("states"))
             if action.get("recorder"):
                 request["recorder"] = action["recorder"]
+            if action.get("delete_old"):
+                request["delete_old"] = True
+            elif action.get("disable_old"):
+                request["disable_old"] = True
             if action["kind"] in TRIM_KINDS:
                 request["keep_days"] = action["keep_days"]
                 if action.get("tables"):
@@ -1821,7 +1834,11 @@ def history_ids(plan: dict[str, Any]) -> list[str]:
     """The entity or statistic IDs whose recorder rows a plan is about."""
     ids: list[str] = []
     for action in plan["actions"]:
-        if action["kind"] in PURGE_KINDS or action["kind"] == "remove_entity":
+        if (
+            action["kind"] in PURGE_KINDS
+            or action["kind"] == "remove_entity"
+            or (action["kind"] in REFERENCE_KINDS and action.get("recorder"))
+        ):
             ids.append(action["object_id"])
         elif action["kind"] in {"remove_device", "forget_device"}:
             ids.extend(action.get("entities") or [])
