@@ -41,6 +41,9 @@ class DetailActionsMixin {
     // An entity a helper builds cannot be removed on its own: the helper makes it anew. Says so and points to the helper.
     const owner = item.object_type === "entity" && item.config_entry_id && HELPER_DOMAINS.has(item.platform) ? this.findObject(`config_entry:${item.config_entry_id}`) : null;
     if (owner) out.push({ attr: `data-object="${this.esc(owner.object_type)}:${this.esc(owner.object_id)}"`, icon: "mdi:function-variant", label: this.t("actHelperOwner", { name: this.esc(owner.name) }), hint: "actHintHelperOwner" });
+    // A helper entry can be deleted by a plan, from its own page or from the page of one of its entities.
+    const helperId = item.object_type === "config_entry" && HELPER_DOMAINS.has(item.domain) ? item.object_id : owner?.object_id;
+    if (helperId) out.push({ attr: `data-act-remove-helper="${this.esc(helperId)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveHelper"), hint: "actHintRemoveHelper" });
     // Any entity can be switched off or hidden by a plan; a step that already answers a finding (disable, remove) is not offered twice.
     if (item.object_type === "entity") {
       const state = (target, icon) => out.push({ attr: `data-act-state="${this.esc(item.object_id)}|${target}"`, icon, label: this.t(`actState_${target}`), hint: `actStateHint_${target}` });
@@ -194,6 +197,10 @@ class DetailActionsMixin {
       try { if (!await this.newPlan([{ kind: "set_entity_state", object_id, target }])) return; this.selected = null; } catch (err) { this.failed(err); }
       this.render();
     });
+    root.querySelectorAll("[data-act-remove-helper]").forEach(el => el.onclick = async () => {
+      try { if (!await this.newPlan([{ kind: "remove_helper", object_id: el.dataset.actRemoveHelper }])) return; this.selected = null; } catch (err) { this.failed(err); }
+      this.render();
+    });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
@@ -240,3 +247,15 @@ Object.assign(TEXT.en, {
 // A helper that reads the entity loses its source when the entity is switched off or removed.
 Object.assign(TEXT.de, { reason_feeds_helper: "Ein Helfer liest diese Entität und verliert damit seine Quelle: er meldet danach „nicht verfügbar“ oder falsche Werte." });
 Object.assign(TEXT.en, { reason_feeds_helper: "A helper reads this entity and loses its source: it then reports unavailable or wrong values." });
+
+// Deleting a helper entry: a plan with a backup first; only the backup brings it back.
+Object.assign(TEXT.de, {
+  actRemoveHelper: "Helfer löschen", actHintRemoveHelper: "Löscht den Helfer mit allen seinen Entitäten. Vorher legt Housekeeper ein Backup an; nur das Backup bringt ihn zurück.",
+  reason_not_helper: "Das ist kein Helfer, den Housekeeper löschen darf.", check_helper_gone: "Helfer ist gelöscht", actKind_remove_helper: "Helfer gelöscht", goneKind_remove_helper: "Helfer gelöscht",
+  confirmedSummaryHelper: "Der Helfer wird mit allen seinen Entitäten gelöscht. Vorher entsteht ein Backup, nur damit lässt er sich wiederherstellen.",
+});
+Object.assign(TEXT.en, {
+  actRemoveHelper: "Delete the helper", actHintRemoveHelper: "Deletes the helper with all its entities. Housekeeper makes a backup first; only the backup brings it back.",
+  reason_not_helper: "This is not a helper Housekeeper may delete.", check_helper_gone: "Helper is deleted", actKind_remove_helper: "Helper deleted", goneKind_remove_helper: "Helper deleted",
+  confirmedSummaryHelper: "The helper is deleted with all its entities. A backup is made first; only that restores it.",
+});

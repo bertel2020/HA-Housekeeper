@@ -357,6 +357,53 @@ async def test_a_helper_entry_that_reads_the_old_entity_is_rewritten_and_undone(
         assert entry.options["entity_ids"] == [OLD, "sensor.other"]
 
 
+async def test_a_helper_entry_can_be_deleted_by_a_plan_and_a_used_one_is_blocked(
+    hass: HomeAssistant,
+) -> None:
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper.cleanup_exec import helper_info
+
+    make_entities(hass)
+    entry = MockConfigEntry(domain="min_max", options={"entity_ids": [OLD], "type": "max"})
+    entry.add_to_hass(hass)
+    scanner = await make_scanner(hass)
+    manager, create = fake_backup()
+    registry = er.async_get(hass)
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        snapshot = await scanner.async_scan()
+        plan = build_plan(
+            snapshot,
+            [{"kind": "remove_helper", "object_id": entry.entry_id}],
+            datetime.now(UTC),
+            lambda object_id: registry_fingerprint(registry.async_get(object_id)),
+            lambda object_id: entity_restorable(hass, registry.async_get(object_id)),
+            helper_data={entry.entry_id: helper_info(hass, entry.entry_id)},
+        )
+        scanner.journal.add(plan)
+        assert plan["actions"][0]["executable"] is True
+        await run(scanner, plan, [entry.entry_id])
+        create.assert_awaited_once()
+        assert hass.config_entries.async_get_entry(entry.entry_id) is None
+        assert plan["actions"][0]["result"]["irreversible"] is True
+
+    other = MockConfigEntry(domain="automation")
+    other.add_to_hass(hass)
+    plan = build_plan(
+        snapshot,
+        [{"kind": "remove_helper", "object_id": other.entry_id}],
+        datetime.now(UTC),
+        lambda object_id: None,
+        lambda object_id: None,
+        helper_data={other.entry_id: helper_info(hass, other.entry_id)},
+    )
+    assert plan["actions"][0]["reasons"] == ["not_helper"]
+    assert plan["actions"][0]["executable"] is False
+
+
 AREA_AUTOMATIONS = """- id: auto-1
   alias: Heating
   trigger:

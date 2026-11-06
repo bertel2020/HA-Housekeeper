@@ -9,7 +9,7 @@ const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
 // Kinds that get a Home Assistant backup first (as in the backend).
 // A backup older than this (hours) is called old on the confirmation: the plan then makes a new one, and without it the person would fall back on the old one.
 const BACKUP_OLD_HOURS = 72;
-const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "rename_entity", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range"];
+const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "rename_entity", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range", "remove_helper"];
 // Deleting recorder rows: cannot be undone, only the backup brings them back.
 // Kinds that write into the recorder database: their backup cannot be skipped.
 const DATABASE_KINDS = ["repair_counter", "repair_range", "purge_statistics", "trim_history", "migrate_meter"];
@@ -26,7 +26,7 @@ const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 const DONE_RESULTS = Object.fromEntries([
   ...REMOVAL_KINDS.map(kind => [kind, "removed"]), ...REPAIR_KINDS.map(kind => [kind, "repaired"]), ...PURGE_KINDS.map(kind => [kind, "purged"]),
   ["delete_automation", "purged"], ["replace_references", "replaced"], ["refactor_automation", "refactored"], ["migrate_meter", "migrated"],
-  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["set_expose_new", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"],
+  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["set_expose_new", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"], ["remove_helper", "removed"],
 ]);
 
 const MAX_PLAN_ACTIONS = 250; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan

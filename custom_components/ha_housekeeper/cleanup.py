@@ -59,6 +59,8 @@ RECORDER_CHOICES = ("keep", "statistics", "states")
 REFACTOR_KINDS = frozenset({"refactor_automation"})
 # Loads one integration entry anew; nothing is written, so there is no backup and no way back.
 RELOAD_KINDS = frozenset({"reload_integration"})
+# Deletes the config entry of a helper (template, derivative, ...) with its entities; only the backup brings it back.
+HELPER_KINDS = frozenset({"remove_helper"})
 ACTION_KINDS = (
     ENTITY_KINDS
     | DEVICE_KINDS
@@ -77,6 +79,7 @@ ACTION_KINDS = (
     | EXPOSURE_KINDS
     | EXPOSE_NEW_KINDS
     | RELOAD_KINDS
+    | HELPER_KINDS
 )
 # Disabling is the quarantine; removing is only allowed after a full quarantine period.
 EXECUTABLE_KINDS = ACTION_KINDS
@@ -95,6 +98,7 @@ BACKUP_KINDS = frozenset(
         "refactor_automation",
         "repair_counter",
         "repair_range",
+        "remove_helper",
     }
 )
 # Kinds that always write into the recorder database. Removal actions additionally require it
@@ -344,6 +348,7 @@ BLOCKING_REASONS = frozenset(
         "entry_disabled",
         "entry_own",
         "entry_no_reload",
+        "not_helper",
         "not_user_disabled",
         "marked_keep",
         "not_quarantined",
@@ -1159,6 +1164,55 @@ def judge_reload_action(entry_id: str, info: dict[str, Any]) -> dict[str, Any]:
     return action
 
 
+def judge_helper_action(
+    entry_id: str,
+    info: dict[str, Any],
+    edges: list[dict[str, Any]],
+    objects: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Judge deleting the config entry of a helper; ``info`` is what the config entries hold now.
+
+    The entry and all its entities go. What certainly uses one of them blocks the plan, what
+    probably does needs a look; the statistics of its entities stay in the recorder. Only the
+    backup brings the helper back.
+    """
+    entities = list(info.get("entity_ids") or [])
+    used_by: list[dict[str, Any]] = []
+    for entity_id in entities:
+        used_by.extend(
+            use
+            for use in _used_by(edges, f"entity:{entity_id}")
+            if not str(use["source"]).startswith(f"config_entry:{entry_id}")
+        )
+    action: dict[str, Any] = {
+        "kind": "remove_helper",
+        "object_id": entry_id,
+        "object_type": "integration",
+        "name": info.get("title") or info.get("domain") or entry_id,
+        "domain": info.get("domain"),
+        "entities": len(entities),
+        "entity_ids": entities[:20],
+        "verdict": "blocked",
+        "reasons": [],
+        "used_by": used_by,
+        "has_statistics": any((objects.get(e) or {}).get("has_statistics") for e in entities),
+    }
+    reasons = action["reasons"]
+    if not info.get("exists"):
+        reasons.append("entry_missing")
+    elif not info.get("helper") or info.get("own"):
+        reasons.append("not_helper")
+    else:
+        if any(use["confidence"] == "certain" for use in used_by):
+            reasons.append("used_certain")
+        elif used_by:
+            reasons.append("used_probable")
+        if action["has_statistics"]:
+            reasons.append("has_statistics")
+    _verdict(action)
+    return action
+
+
 def judge_meter_action(
     object_id: str,
     target: str | None,
@@ -1358,6 +1412,7 @@ def build_plan(
     backup_data: dict[str, dict[str, Any]] | None = None,
     delete_data: dict[str, dict[str, Any]] | None = None,
     reload_data: dict[str, dict[str, Any]] | None = None,
+    helper_data: dict[str, dict[str, Any]] | None = None,
     exposure_data: dict[tuple[str, str], dict[str, Any]] | None = None,
     expose_new_data: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
@@ -1445,6 +1500,10 @@ def build_plan(
             info = (area_data or {}).get(object_id, {})
             entry = objects.get(object_id) or devices.get(object_id) or {}
             action = judge_area_action(object_id, entry.get("name") or object_id, info)
+            action["fingerprint"] = info.get("fingerprint")
+        elif kind in HELPER_KINDS:
+            info = (helper_data or {}).get(object_id, {})
+            action = judge_helper_action(object_id, info, snapshot["edges"], objects)
             action["fingerprint"] = info.get("fingerprint")
         elif kind in RELOAD_KINDS:
             action = judge_reload_action(object_id, (reload_data or {}).get(object_id, {}))

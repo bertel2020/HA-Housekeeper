@@ -15,6 +15,7 @@ DISABLING = {"disable_entity", "disable_device"}
 # Actions that change nothing the other counters show; each gets a count of its own.
 OTHER_KINDS = {
     "reload_integration": "reloaded",
+    "remove_helper": "helper_removed",
     "add_label": "labeled",
     "set_area": "area_set",
     "set_exposure": "exposure_set",

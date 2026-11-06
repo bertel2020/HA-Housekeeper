@@ -386,7 +386,7 @@ const REMOVAL_KINDS = ["remove_entity", "remove_device", "forget_device"];
 // Kinds that get a Home Assistant backup first (as in the backend).
 // A backup older than this (hours) is called old on the confirmation: the plan then makes a new one, and without it the person would fall back on the old one.
 const BACKUP_OLD_HOURS = 72;
-const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "rename_entity", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range"];
+const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replace_references", "rename_entity", "migrate_meter", "purge_statistics", "trim_history", "delete_automation", "refactor_automation", "repair_counter", "repair_range", "remove_helper"];
 // Deleting recorder rows: cannot be undone, only the backup brings them back.
 // Kinds that write into the recorder database: their backup cannot be skipped.
 const DATABASE_KINDS = ["repair_counter", "repair_range", "purge_statistics", "trim_history", "migrate_meter"];
@@ -403,7 +403,7 @@ const DEVICE_KINDS = ["disable_device", "remove_device", "forget_device"];
 const DONE_RESULTS = Object.fromEntries([
   ...REMOVAL_KINDS.map(kind => [kind, "removed"]), ...REPAIR_KINDS.map(kind => [kind, "repaired"]), ...PURGE_KINDS.map(kind => [kind, "purged"]),
   ["delete_automation", "purged"], ["replace_references", "replaced"], ["refactor_automation", "refactored"], ["migrate_meter", "migrated"],
-  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["set_expose_new", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"],
+  ["add_label", "labeled"], ["set_entity_state", "entity_state"], ["set_area", "area"], ["set_exposure", "exposure"], ["set_expose_new", "exposure"], ["rename_entity", "renamed"], ["reload_integration", "reloaded"], ["remove_helper", "removed"],
 ]);
 
 const MAX_PLAN_ACTIONS = 250; // as MAX_ACTIONS in cleanup.py: more entries do not fit into one plan
@@ -4402,6 +4402,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "set_exposure") ? "confirmedSummaryExposure"
       : executable.some(a => a.kind === "set_expose_new") ? "confirmedSummaryExposeNew"
       : executable.some(a => a.kind === "reload_integration") ? "confirmedSummaryReload"
+      : executable.some(a => a.kind === "remove_helper") ? "confirmedSummaryHelper"
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
@@ -4794,7 +4795,7 @@ class CleanupMixin {
   // Housekeeper can take every action back except merged statistics, which only a backup restores.
   undoBadge(action) {
     if (action.kind === "reload_integration") return `<span class="pill mute"><ha-icon icon="mdi:reload" class="u-ic14"></ha-icon>${this.t("undoReload")}</span>`;
-    if (action.kind === "delete_backup") return `<span class="pill mute"><ha-icon icon="mdi:delete-forever-outline" class="u-ic14"></ha-icon>${this.t("undoFinal")}</span>`;
+    if (action.kind === "delete_backup" || action.kind === "remove_helper") return `<span class="pill mute"><ha-icon icon="mdi:delete-forever-outline" class="u-ic14"></ha-icon>${this.t("undoFinal")}</span>`;
     const backupOnly = action.kind === "migrate_meter" || PURGE_KINDS.includes(action.kind);
     return `<span class="pill ${backupOnly ? "warn" : "mute"}"><ha-icon icon="${backupOnly ? "mdi:backup-restore" : "mdi:undo-variant"}" class="u-ic14"></ha-icon>${this.t(backupOnly ? "undoBackupOnly" : "undoHousekeeper")}</span>`;
   }
@@ -4844,7 +4845,7 @@ class CleanupMixin {
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
-      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
+      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" || a.kind === "remove_helper" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"${!settled && !idle && a.verdict !== "ok" ? ` data-rowtone="${a.verdict === "blocked" ? "red" : "warn"}"` : ""}><span class="tile ${tone}"><ha-icon icon="${settled || idle || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
@@ -11222,7 +11223,7 @@ Object.assign(TEXT.de, {
   simTitle: "Erwarteter Endzustand", simPurged: "{count} Statistiken werden gelöscht (nur per Backup umkehrbar)",
   simRemoved: "{count} Entitäten entfernt", simRemovedOne: "1 Entität entfernt", simDisabled: "{count} Entitäten deaktiviert", simDisabledOne: "1 Entität deaktiviert", simDevices: " ({devices} Geräte)", simDevicesOne: " (1 Gerät)", simReplaced: "{count} Referenzen ersetzt", simMeters: "{count} Statistik-Übernahmen",
   simCertain: "{count} sichere Verwendungen bleiben bestehen", simUncertain: "{count} unsichere oder manuelle Verwendungen bleiben bestehen", simOrphaned: "{count} Statistiken voraussichtlich verwaist", simBlocked: "{count} Aktionen laufen nicht",
-  sim_reloaded: "{count} Integration(en) werden neu geladen (einige Sekunden nicht erreichbar, nichts wird gelöscht)", sim_labeled: "{count} Entitäten bekommen ein Label", sim_area_set: "{count} Objekte bekommen einen Bereich", sim_refactored: "{count} Automationen werden umgebaut", sim_enabled: "{count} Entitäten werden aktiviert", sim_hidden: "{count} Entitäten werden ausgeblendet", sim_unhidden: "{count} Entitäten werden eingeblendet", sim_backups_deleted: "{count} Backups werden gelöscht", sim_automations_deleted: "{count} Automationen werden gelöscht",
+  sim_helper_removed: "{count} Helfer werden gelöscht (nur das Backup bringt sie zurück)", sim_reloaded: "{count} Integration(en) werden neu geladen (einige Sekunden nicht erreichbar, nichts wird gelöscht)", sim_labeled: "{count} Entitäten bekommen ein Label", sim_area_set: "{count} Objekte bekommen einen Bereich", sim_refactored: "{count} Automationen werden umgebaut", sim_enabled: "{count} Entitäten werden aktiviert", sim_hidden: "{count} Entitäten werden ausgeblendet", sim_unhidden: "{count} Entitäten werden eingeblendet", sim_backups_deleted: "{count} Backups werden gelöscht", sim_automations_deleted: "{count} Automationen werden gelöscht",
   simLimits: "Grenzen: Die Datenbankdatei schrumpft erst nach einem Repack. Verweise in Vorlagen und außerhalb von Home Assistant sind nicht sicher prüfbar; eine Speicherersparnis wird nicht geschätzt.",
 });
 Object.assign(TEXT.en, {
@@ -11245,7 +11246,7 @@ Object.assign(TEXT.en, {
   simTitle: "Expected end state", simPurged: "{count} statistics will be deleted (reversible only from the backup)",
   simRemoved: "{count} entities removed", simRemovedOne: "1 entity removed", simDisabled: "{count} entities disabled", simDisabledOne: "1 entity disabled", simDevices: " ({devices} devices)", simDevicesOne: " (1 device)", simReplaced: "{count} references replaced", simMeters: "{count} statistics takeovers",
   simCertain: "{count} certain uses remain", simUncertain: "{count} uncertain or manual uses remain", simOrphaned: "{count} statistics likely orphaned", simBlocked: "{count} actions will not run",
-  sim_reloaded: "{count} integration(s) will be reloaded (unreachable for a few seconds, nothing is deleted)", sim_labeled: "{count} entities get a label", sim_area_set: "{count} objects get an area", sim_refactored: "{count} automations are rewritten", sim_enabled: "{count} entities are enabled", sim_hidden: "{count} entities are hidden", sim_unhidden: "{count} entities are shown again", sim_backups_deleted: "{count} backups are deleted", sim_automations_deleted: "{count} automations are deleted",
+  sim_helper_removed: "{count} helper(s) are deleted (only the backup brings them back)", sim_reloaded: "{count} integration(s) will be reloaded (unreachable for a few seconds, nothing is deleted)", sim_labeled: "{count} entities get a label", sim_area_set: "{count} objects get an area", sim_refactored: "{count} automations are rewritten", sim_enabled: "{count} entities are enabled", sim_hidden: "{count} entities are hidden", sim_unhidden: "{count} entities are shown again", sim_backups_deleted: "{count} backups are deleted", sim_automations_deleted: "{count} automations are deleted",
   simLimits: "Limits: the database file only shrinks after a repack. References inside templates and outside Home Assistant cannot be checked for certain; saved storage is not estimated.",
 });
 
@@ -11443,7 +11444,7 @@ class ExchangeMixin {
     if (s.remaining_uncertain) lines.push(this.t("simUncertain", { count: s.remaining_uncertain }));
     if (s.statistics_orphaned_count) lines.push(this.t("simOrphaned", { count: s.statistics_orphaned_count }));
     if (s.rows_counted) { const other = s.purge_rows - (s.purge_stat_rows || 0) - (s.purge_states_rows || 0); if (s.purge_stat_rows) lines.push(this.t("simPurgeStatRows", { count: this.formatNumber(s.purge_stat_rows) })); if (s.purge_states_rows) lines.push(this.t("simPurgeStateRows", { count: this.formatNumber(s.purge_states_rows) })); if (other > 0) lines.push(this.t("simPurgeRows", { count: this.formatNumber(other) })); if (s.history_states_kept === undefined) { if (s.history_rows_kept) lines.push(this.t("simKeptRows", { count: this.formatNumber(s.history_rows_kept) })); } else { if (s.history_states_kept) lines.push(this.t(plan.recorder_auto_purge === false ? "simKeptStatesForever" : plan.recorder_keep_days ? "simKeptStates" : "simKeptStatesOpen", { count: this.formatNumber(s.history_states_kept), days: plan.recorder_keep_days })); if (s.history_stats_kept) lines.push(this.t("simKeptStats", { count: this.formatNumber(s.history_stats_kept) })); } }
-    for (const key of ["reloaded", "labeled", "area_set", "exposure_set", "refactored", "enabled", "hidden", "unhidden", "backups_deleted", "automations_deleted"]) if (s[key]) lines.push(this.t(`sim_${key}`, { count: s[key] }));
+    for (const key of ["reloaded", "helper_removed", "labeled", "area_set", "exposure_set", "refactored", "enabled", "hidden", "unhidden", "backups_deleted", "automations_deleted"]) if (s[key]) lines.push(this.t(`sim_${key}`, { count: s[key] }));
     if (s.blocked) lines.push(this.t("simBlocked", { count: s.blocked }));
     if (!lines.length) return "";
     return `<div class="simbox"><details ${plan.status === "dry_run" ? "open" : ""}><summary>${this.t("simTitle")}</summary><ul class="simlist">${lines.map(l => `<li>${this.esc(l)}</li>`).join("")}</ul><p class="simlimits">${this.t("simLimits")}</p></details></div>`;
@@ -13535,6 +13536,9 @@ class DetailActionsMixin {
     // An entity a helper builds cannot be removed on its own: the helper makes it anew. Says so and points to the helper.
     const owner = item.object_type === "entity" && item.config_entry_id && HELPER_DOMAINS.has(item.platform) ? this.findObject(`config_entry:${item.config_entry_id}`) : null;
     if (owner) out.push({ attr: `data-object="${this.esc(owner.object_type)}:${this.esc(owner.object_id)}"`, icon: "mdi:function-variant", label: this.t("actHelperOwner", { name: this.esc(owner.name) }), hint: "actHintHelperOwner" });
+    // A helper entry can be deleted by a plan, from its own page or from the page of one of its entities.
+    const helperId = item.object_type === "config_entry" && HELPER_DOMAINS.has(item.domain) ? item.object_id : owner?.object_id;
+    if (helperId) out.push({ attr: `data-act-remove-helper="${this.esc(helperId)}"`, icon: "mdi:delete-outline", label: this.t("actRemoveHelper"), hint: "actHintRemoveHelper" });
     // Any entity can be switched off or hidden by a plan; a step that already answers a finding (disable, remove) is not offered twice.
     if (item.object_type === "entity") {
       const state = (target, icon) => out.push({ attr: `data-act-state="${this.esc(item.object_id)}|${target}"`, icon, label: this.t(`actState_${target}`), hint: `actStateHint_${target}` });
@@ -13688,6 +13692,10 @@ class DetailActionsMixin {
       try { if (!await this.newPlan([{ kind: "set_entity_state", object_id, target }])) return; this.selected = null; } catch (err) { this.failed(err); }
       this.render();
     });
+    root.querySelectorAll("[data-act-remove-helper]").forEach(el => el.onclick = async () => {
+      try { if (!await this.newPlan([{ kind: "remove_helper", object_id: el.dataset.actRemoveHelper }])) return; this.selected = null; } catch (err) { this.failed(err); }
+      this.render();
+    });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
@@ -13734,6 +13742,18 @@ Object.assign(TEXT.en, {
 // A helper that reads the entity loses its source when the entity is switched off or removed.
 Object.assign(TEXT.de, { reason_feeds_helper: "Ein Helfer liest diese Entität und verliert damit seine Quelle: er meldet danach „nicht verfügbar“ oder falsche Werte." });
 Object.assign(TEXT.en, { reason_feeds_helper: "A helper reads this entity and loses its source: it then reports unavailable or wrong values." });
+
+// Deleting a helper entry: a plan with a backup first; only the backup brings it back.
+Object.assign(TEXT.de, {
+  actRemoveHelper: "Helfer löschen", actHintRemoveHelper: "Löscht den Helfer mit allen seinen Entitäten. Vorher legt Housekeeper ein Backup an; nur das Backup bringt ihn zurück.",
+  reason_not_helper: "Das ist kein Helfer, den Housekeeper löschen darf.", check_helper_gone: "Helfer ist gelöscht", actKind_remove_helper: "Helfer gelöscht", goneKind_remove_helper: "Helfer gelöscht",
+  confirmedSummaryHelper: "Der Helfer wird mit allen seinen Entitäten gelöscht. Vorher entsteht ein Backup, nur damit lässt er sich wiederherstellen.",
+});
+Object.assign(TEXT.en, {
+  actRemoveHelper: "Delete the helper", actHintRemoveHelper: "Deletes the helper with all its entities. Housekeeper makes a backup first; only the backup brings it back.",
+  reason_not_helper: "This is not a helper Housekeeper may delete.", check_helper_gone: "Helper is deleted", actKind_remove_helper: "Helper deleted", goneKind_remove_helper: "Helper deleted",
+  confirmedSummaryHelper: "The helper is deleted with all its entities. A backup is made first; only that restores it.",
+});
 
 // Error texts for what the backend refuses. The backend sends a code and an English sentence; errText() looks the
 // sentence up here first, then the code, so a person reads it in the language of the panel.

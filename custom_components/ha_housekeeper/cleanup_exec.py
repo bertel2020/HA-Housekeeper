@@ -49,6 +49,7 @@ import contextlib
 import copy
 import hashlib
 import inspect
+import json
 import logging
 import secrets
 from datetime import UTC, datetime, timedelta
@@ -81,6 +82,7 @@ from .cleanup import (
     EXECUTABLE_KINDS,
     EXPOSE_NEW_KINDS,
     EXPOSURE_KINDS,
+    HELPER_KINDS,
     INTERNAL_RESULT_KEYS,
     LABEL_KINDS,
     METER_KINDS,
@@ -233,6 +235,35 @@ def reload_info(hass: HomeAssistant, entry_id: str) -> dict[str, Any]:
         "disabled": entry.disabled_by is not None,
         "can_reload": state in RELOADABLE_STATES and (state != "loaded" or entry.supports_unload),
         "entities": len(er.async_entries_for_config_entry(er.async_get(hass), entry_id)),
+    }
+
+
+def helper_info(hass: HomeAssistant, entry_id: str) -> dict[str, Any]:
+    """What the config entries and the registry hold about a helper entry now.
+
+    The fingerprint covers the options and the entities, so a helper changed after the preview
+    is not deleted by a plan that judged something else.
+    """
+    from .dashboard_analysis import HELPER_DOMAINS
+
+    entry = hass.config_entries.async_get_entry(entry_id)
+    if entry is None:
+        return {"exists": False}
+    entities = sorted(
+        e.entity_id for e in er.async_entries_for_config_entry(er.async_get(hass), entry_id)
+    )
+    return {
+        "exists": True,
+        "title": str(entry.title or ""),
+        "domain": entry.domain,
+        "own": entry.domain == DOMAIN,
+        "helper": entry.domain in HELPER_DOMAINS,
+        "entity_ids": entities,
+        "fingerprint": hashlib.sha256(
+            json.dumps(
+                [entry.domain, entry.options, entities], sort_keys=True, default=str
+            ).encode()
+        ).hexdigest()[:16],
     }
 
 
@@ -997,6 +1028,8 @@ class CleanupRunner:
             return self._set_exposure(action), "exposure_set"
         if kind in EXPOSE_NEW_KINDS:
             return exposure_edit.set_expose_new(self.hass, object_id, False), "expose_new_set"
+        if kind in HELPER_KINDS:
+            return await self._remove_helper(action), "helper_removed"
         if kind in RELOAD_KINDS:
             return await self._reload_integration(action), "integration_reloaded"
         if kind in LABEL_KINDS:
@@ -1834,6 +1867,13 @@ class CleanupRunner:
             if ar.async_get(self.hass).async_get_area(action["target"]) is None:
                 return "now_blocked"
             return None
+        if kind in HELPER_KINDS:
+            info = helper_info(self.hass, object_id)
+            if not info.get("exists"):
+                return "entity_gone"
+            if not info.get("helper") or info.get("own"):
+                return "now_blocked"
+            return None if info["fingerprint"] == action.get("fingerprint") else "entity_changed"
         if kind in RELOAD_KINDS:
             return None if reload_info(self.hass, object_id).get("can_reload") else "now_blocked"
         if kind in STATE_KINDS:
@@ -2121,6 +2161,9 @@ class CleanupRunner:
                 entry = self._area_entry(object_id)
                 ok = entry is not None and entry.area_id == action["target"]
                 checks.append({"check": "area_set", "object_id": object_id, "ok": ok})
+            elif kind in HELPER_KINDS:
+                gone = self.hass.config_entries.async_get_entry(object_id) is None
+                checks.append({"check": "helper_gone", "object_id": object_id, "ok": gone})
             elif kind in RELOAD_KINDS:
                 checks.extend(self._verify_reload(object_id))
             elif kind in STATE_KINDS:
@@ -2329,7 +2372,9 @@ class CleanupRunner:
                     outcome = stop.reason
             elif kind in DELETE_AUTOMATION_KINDS:
                 outcome = await self._undo_automation_delete(result)
-            elif kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS | RELOAD_KINDS:
+            elif (
+                kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS | RELOAD_KINDS | HELPER_KINDS
+            ):
                 outcome = "irreversible"
             else:
                 outcome = self._reenable(registry, action["object_id"], result)
@@ -2483,6 +2528,24 @@ class CleanupRunner:
             return "conflict_changed"
         self._write_area(object_id, result.get("previous"))
         return "undone"
+
+    async def _remove_helper(self, action: dict[str, Any]) -> dict[str, Any]:
+        """Delete the config entry of a helper. What it held is noted in the journal; only the backup restores it."""
+        info = helper_info(self.hass, action["object_id"])
+        if not info.get("exists") or not info.get("helper") or info.get("own"):
+            raise StepAbort("now_blocked")
+        entry = self.hass.config_entries.async_get_entry(action["object_id"])
+        note = {
+            "domain": info["domain"],
+            "title": info["title"],
+            "options": copy.deepcopy(dict(entry.options)) if entry else {},
+            "entities": info["entity_ids"],
+        }
+        try:
+            await self.hass.config_entries.async_remove(action["object_id"])
+        except Exception as err:
+            raise StepAbort("helper_remove_failed") from err
+        return {"removed": note, "irreversible": True}
 
     async def _reload_integration(self, action: dict[str, Any]) -> dict[str, Any]:
         """Load the entry anew; whatever it does afterwards is what the verification reports.

@@ -35,6 +35,7 @@ from .cleanup import (
     DELETE_BACKUP_KINDS,
     EXPOSE_NEW_KINDS,
     EXPOSURE_KINDS,
+    HELPER_KINDS,
     LABEL_KINDS,
     MAX_ACTIONS,
     MAX_MERGE,
@@ -62,7 +63,13 @@ from .cleanup import (
     registry_fingerprint,
     trim_is_plain,
 )
-from .cleanup_exec import CleanupError, backup_is_local_only, entity_restorable, reload_info
+from .cleanup_exec import (
+    CleanupError,
+    backup_is_local_only,
+    entity_restorable,
+    helper_info,
+    reload_info,
+)
 from .cleanup_round import ROUND_LIMIT, duplicate_rows, needs_first_step, removal_requests, sort_row
 from .const import DOMAIN, OPTION_LIMITS
 from .device_pairs import pair_devices, suggest_entities
@@ -945,6 +952,12 @@ async def _plan_from_requests(
         if action["kind"] in RELOAD_KINDS
     }
 
+    helper_data = {
+        action["object_id"]: helper_info(hass, action["object_id"])
+        for action in requests
+        if action["kind"] in HELPER_KINDS
+    }
+
     area_data = {
         action["object_id"]: area_assign.prepare(
             hass, action["object_id"], action.get("target") or ""
@@ -1019,6 +1032,7 @@ async def _plan_from_requests(
         backup_data=backup_data,
         delete_data=delete_data,
         reload_data=reload_data,
+        helper_data=helper_data,
         exposure_data=exposure_data,
         expose_new_data=expose_new_data,
     )
