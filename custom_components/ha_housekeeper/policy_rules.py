@@ -13,6 +13,7 @@ from ipaddress import ip_address, ip_network
 from typing import Any
 from urllib.parse import urlsplit
 
+from .dashboard_analysis import HELPER_DOMAINS
 from .exposure import SENSITIVE_COVERS, SENSITIVE_DOMAINS
 from .hygiene import low_battery_ids
 
@@ -186,6 +187,48 @@ def helper_write_only(entities: dict[str, dict[str, Any]], edges: list[dict[str,
         item = entities.get(entity_id)
         if item is not None and item.get("platform") in INPUT_PLATFORMS:
             yield item
+
+
+def helper_area(entities: dict[str, dict[str, Any]], devices: dict[str, dict[str, Any]]):
+    """Helpers (input helpers, counters, timers, helper entries) that belong to no area (a hint)."""
+    for item in entities.values():
+        if item.get("disabled_by") or item.get("area_id"):
+            continue
+        helper = item.get("platform") in INPUT_PLATFORMS or item.get("platform") in HELPER_DOMAINS
+        device = devices.get(item.get("device_id") or "")
+        if helper and not (device and device.get("area_id")):
+            yield item
+
+
+def _number(value: Any) -> float | None:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def input_number_config(entities: dict[str, dict[str, Any]]):
+    """``input_number`` helpers whose range does not hold together or whose value is outside it."""
+    for item in entities.values():
+        if item.get("platform") != "input_number" or item.get("disabled_by"):
+            continue
+        attrs = item.get("attributes") or {}
+        low, high, step = (
+            _number(attrs.get("min")),
+            _number(attrs.get("max")),
+            _number(attrs.get("step")),
+        )
+        value = _number(item.get("state"))
+        problems: list[str] = []
+        if low is not None and high is not None:
+            if low >= high:
+                problems.append("min ≥ max")
+            elif step is not None and step > high - low:
+                problems.append("step > max − min")
+            if value is not None and not low <= value <= high:
+                problems.append("value outside min/max")
+        if problems:
+            yield {**item, "also": problems}
 
 
 def template_unused(

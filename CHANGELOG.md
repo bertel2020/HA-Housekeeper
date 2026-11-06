@@ -8,6 +8,7 @@
 - **Backups automatisch aufräumen:** Auf der Seite „Housekeeper-Backups aufräumen“ gibt es einen Schalter (aus), der stündlich nach der dortigen Regel löscht. Geschützte Backups und solche, die die einzige Rückkehr nach einer Recorder-Änderung sind, bleiben.
 - **Verwendungen sehen:** In „Entitäten ersetzen“ und „Gerät austauschen“ lässt sich die Zahl der Verwendungen aufklappen. Die Liste zeigt jede Stelle und ob sie ersetzt wird oder von Hand zu prüfen bleibt.
 - **Statistik übernehmen nur bei Zählern:** Im Ersetzen-Assistenten übernimmt die neue Entität Verlauf und ID nur noch bei echten Zählern von selbst. Bei Messwerten werden standardmäßig nur die Verweise umgestellt. Die Vorschau spricht von „Statistik übernehmen“ statt „Zählerwechsel“.
+- **Zwei weitere Helfer-Regeln** (aus, Hinweise): „Helfer ohne Bereich“ und „Zahlen-Helfer mit unstimmigem Bereich“ (Minimum, Maximum, Schrittweite, Wert).
 - **Qualitätsregel „Helfer wird nur beschrieben“** (aus, Hinweis): Input-Helfer, Zähler und Timer, die gesetzt, aber nirgends gelesen werden.
 - **Helfer als Folge im Plan:** Wird eine Entität deaktiviert oder entfernt, die ein Helfer liest, sagt der Plan, dass der Helfer seine Quelle verliert.
 - **Fehlende Quelle in einem Template-Helfer:** Nennt das Template eine Entität eindeutig (`states('sensor.x')`, `is_state(…)`, `states.sensor.x`) und gibt es sie nicht mehr, meldet Housekeeper den Helfer als „Entität fehlt“, mit geringerer Sicherheit als bei einem festen Eintrag. Freier Text zählt weiter nicht.

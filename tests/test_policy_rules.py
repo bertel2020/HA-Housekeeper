@@ -398,3 +398,26 @@ def test_helper_write_only() -> None:
         {"source": "automation:x", "target": "entity:light.c", "relation": "TARGETS"},
     ]
     assert ids(run(items, "helper_write_only", edges=edges)) == ["input_boolean.a"]
+
+
+def test_helper_area_and_input_number_config() -> None:
+    bare = obj("entity", "input_boolean.a", platform="input_boolean")
+    placed = obj("entity", "input_boolean.b", platform="input_boolean", area_id="hall")
+    other = obj("entity", "light.c", platform="hue")
+    assert ids(run([bare, placed, other], "helper_area")) == ["input_boolean.a"]
+
+    def number(name, **attrs):
+        state = attrs.pop("state", "5")
+        return obj("entity", name, platform="input_number", state=state, attributes=attrs)
+
+    good = number("input_number.ok", min=0, max=10, step=1)
+    bad = [
+        number("input_number.flip", min=10, max=0, step=1),
+        number("input_number.step", min=0, max=1, step=5, state="0"),
+        number("input_number.out", min=0, max=3, step=1),
+    ]
+    assert ids(run([good, *bad], "input_number_config")) == [
+        "input_number.flip",
+        "input_number.out",
+        "input_number.step",
+    ]
