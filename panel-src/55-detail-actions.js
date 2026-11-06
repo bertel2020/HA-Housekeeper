@@ -122,6 +122,12 @@ class DetailActionsMixin {
 
   // The Cleanup view takes over from here: the assistant is filled in, the person looks at the preview and confirms.
   startCleanup(kind, fill) {
+    // Replacing references and carrying a meter on are one view of the replace assistant: one entity, then what should happen.
+    if (kind === "replace_references" || kind === "migrate_meter") {
+      const inner = fill, how = kind === "migrate_meter" ? "replace_statistics" : "";
+      kind = "replace_wizard";
+      fill = () => { inner(); this.rwState().single = true; this.replHow = how; };
+    }
     this.noteJump?.("cleanup");
     this.cleanupKind = kind; this.cleanupSel = new Set(); this.plan = null; fill();
     if (this.lv.cleanup) this.lv.cleanup.f = {};
@@ -168,7 +174,7 @@ class DetailActionsMixin {
       el.textContent = this.t(open ? "actLess" : "actMore");
     });
     root.querySelectorAll("[data-act-repair]").forEach(el => el.onclick = () => this.repairValues(el.dataset.actRepair));
-    root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.meterOld = el.dataset.actMeter; this.meterNew = ""; }));
+    root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.replOld = el.dataset.actMeter; this.replNew = ""; }));
     root.querySelectorAll("[data-act-exchange]").forEach(el => el.onclick = () => this.startCleanup("exchange_device", () => { const ex = this.exchangeState(); ex.oldDev = el.dataset.actExchange; ex.newDev = ""; ex.result = null; ex.choices = {}; }));
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = el.dataset.replNew || this.findObject(`entity:${el.dataset.actReplace}`)?.duplicate_of || ""; }));
     root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan(el.dataset.actReload.split(",").map(object_id => ({ kind: "reload_integration", object_id }))); } catch (err) { this.failed(err); } this.render(); });

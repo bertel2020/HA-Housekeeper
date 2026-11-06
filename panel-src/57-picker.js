@@ -10,22 +10,11 @@ class PickerMixin {
       },
       replOld: {
         get: () => this.replOld || "", set: v => this.setPair("repl", "Old", v), min: 1, types: ["entity"], limit: 30,
-        filter: o => this.edgeIndex().used.has(`entity:${o.object_id}`), pick: o => this.setPair("repl", "Old", o.object_id),
+        filter: o => o.has_statistics || this.edgeIndex().used.has(`entity:${o.object_id}`), pick: o => this.setPair("repl", "Old", o.object_id),
       },
       replNew: {
         get: () => this.replNew || "", set: v => { this.replNew = v; }, min: 1, types: ["entity"], limit: 30,
         filter: o => o.status === "active" && o.object_id !== this.replOld && this.sameDomain(o, this.replOld), pick: o => { this.replNew = o.object_id; },
-      },
-      meterOld: {
-        get: () => this.meterOld || "", set: v => this.setPair("meter", "Old", v), min: 1, types: ["entity"], limit: 30,
-        filter: o => o.has_statistics && o.object_id.startsWith("sensor."), pick: o => this.setPair("meter", "Old", o.object_id),
-      },
-      meterNew: {
-        get: () => this.meterNew || "", set: v => { this.meterNew = v; }, min: 1, types: ["entity"], limit: 30,
-        filter: o => {
-          const unit = this.findObject(`entity:${this.meterOld}`)?.unit;
-          return o.status === "active" && o.object_id !== this.meterOld && this.sameDomain(o, this.meterOld) && (!unit || o.unit === unit);
-        }, pick: o => { this.meterNew = o.object_id; },
       },
       exOld: {
         get: () => this.deviceText("old"), set: v => this.setDevice("old", "", v), min: 0, browse: true, types: ["device"], limit: 30, sub: o => this.deviceSub(o),

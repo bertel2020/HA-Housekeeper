@@ -31,8 +31,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.findSel = new Set();
     this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
-    this.replOld = ""; this.replNew = "";
-    this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
+    this.replOld = ""; this.replNew = ""; this.replHow = "";
     this.ex = null; this.report = null; this.reportClear = true; this.reportMessage = "";
     this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.policies = null; this.policiesLoading = false; this.policiesError = ""; this._policiesRequested = false; this.policyShowHidden = false; this.orphanLast = null; this.orphanLastLoading = false; this._orphanLastRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
@@ -1264,14 +1263,10 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-plan-repeat-full]").forEach(el => el.addEventListener("click", () => this.repeatPlan([this.plan, ...(this.journal || [])].find(x => x?.plan_id === el.dataset.planRepeatFull), true)));
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });
-    root.querySelectorAll("[data-meter-pick]").forEach(el => el.onclick = () => { this.meterNew = el.dataset.meterPick; this.render(); });
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRows("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
-    root.querySelectorAll("[data-meter-mode]").forEach(el => el.onclick = () => { this.meterMode = el.dataset.meterMode; this.render(); });
-    root.querySelector("[data-repl-meter]")?.addEventListener("click", () => this.startCleanup("migrate_meter", () => { this.meterOld = this.replOld; this.meterNew = this.replNew; }));
-    root.querySelector("[data-meter-refs]")?.addEventListener("click", () => this.startCleanup("replace_references", () => { this.replOld = this.meterOld; this.replNew = this.meterNew; }));
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
     root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));

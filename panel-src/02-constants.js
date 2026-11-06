@@ -192,10 +192,8 @@ const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-
 const CLEANUP_KINDS = ["disable_entity", "remove_entity", "disable_device", "remove_device", "forget_device"];
 const REPAIR_TASKS = [
   ["repair_counter", "mdi:chart-line", "repairTaskCounter", "repairTaskCounterHint"],
-  ["migrate_meter", "mdi:gauge", "repairTaskMeter", "repairTaskMeterHint"],
-  ["replace_references", "mdi:swap-horizontal", "repairTaskReplace", "repairTaskReplaceHint"],
-  ["exchange_device", "mdi:devices", "repairTaskExchange", "repairTaskExchangeHint"],
   ["replace_wizard", "mdi:swap-horizontal-variant", "repairTaskWizard", "repairTaskWizardHint"],
+  ["exchange_device", "mdi:devices", "repairTaskExchange", "repairTaskExchangeHint"],
 ];
 // The view in which the person finishes a plan of this kind.
 const viewForKind = kind => (["repair_counter", "repair_range", "migrate_meter", "replace_references", "exchange_device", "replace_wizard", "refactor_automation"].includes(kind) ? "repair" : "cleanup");

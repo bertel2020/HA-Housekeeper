@@ -1479,10 +1479,10 @@ test("device candidates are the devices without working entities; removal lists 
 test("the replace assistant previews sources and sends the new entity with the plan", async () => {
   const { el, shadow } = panel("en");
   const { data } = stepCData();
-  el.data = data; el.journal = []; el.view = "repair"; el.repairTask = "replace_references"; el.cleanupKind = "replace_references";
+  el.data = data; el.journal = []; el.view = "repair"; el.repairTask = "replace_wizard"; el.cleanupKind = "replace_wizard";
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Replace references") && html.includes('data-picker="replOld"'));
+  assert.ok(html.includes("Replace entities") && html.includes('data-picker="replOld"'));
   assert.ok(/data-plan-create\s+disabled/.test(html));
   el.replOld = "sensor.old"; el.replNew = "sensor.";
   el.render();
@@ -1569,16 +1569,18 @@ test("the meter assistant offers the modes and sends the pair with the plan", as
   data.objects.push({ object_type: "entity", object_id: "sensor.meter_old", name: "Old meter", status: "unavailable", has_statistics: true, unit: "kWh" },
     { object_type: "entity", object_id: "sensor.meter_new", name: "New meter", status: "active", unit: "kWh" },
     { object_type: "entity", object_id: "sensor.other_unit", name: "Other", status: "active", unit: "W" });
-  el.data = data; el.journal = []; el.view = "repair"; el.repairTask = "migrate_meter"; el.cleanupKind = "migrate_meter";
+  el.data = data; el.journal = []; el.view = "repair"; el.repairTask = "replace_wizard"; el.cleanupKind = "replace_wizard";
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("Replace a meter") && html.includes('data-picker="meterOld"'));
-  assert.ok(html.includes("Statistics and ID") && /data-plan-create\s+disabled/.test(html));
-  el.meterOld = "sensor.meter_old"; el.meterNew = "sensor.meter_new"; el.meterMode = "statistics";
+  assert.ok(html.includes("Replace entities") && html.includes('data-picker="replOld"'));
+  assert.ok(html.includes("Statistics and ID") && html.includes("References and statistics") && /data-plan-create\s+disabled/.test(html));
+  el.replOld = "sensor.meter_old"; el.replNew = "sensor.meter_new"; el.replHow = "statistics";
   el.render();
   html = shadow.innerHTML;
-  const offeredMeters = el.pickerResults("meterNew").map(o => o.object_id);
-  assert.ok(offeredMeters.includes("sensor.meter_new") && !offeredMeters.includes("sensor.other_unit"), "only new meters with the same unit");
+  assert.ok(el.pickerResults("replNew").some(o => o.object_id === "sensor.meter_new"));
+  el.replNew = "sensor.other_unit";
+  assert.ok(el.rwOneInfo().off.statistics, "another unit blocks the kinds that write statistics");
+  el.replNew = "sensor.meter_new";
   const sent = [];
   el._hass = { language: "en", callWS: async msg => { sent.push(msg); return METER_PLAN; } };
   await el.createPlan();
@@ -3165,11 +3167,23 @@ test("the replace form checks the pair before any preview and keeps the button o
   const ent = (id, extra = {}) => ({ object_type: "entity", object_id: id, name: id, status: "active", unit: "kWh", ...extra });
   el.data = { ...DATA, objects: [ent("sensor.a", { has_statistics: true }), ent("sensor.b"), ent("sensor.c", { unit: "W" }), ent("sensor.d", { status: "disabled" })], edges: [{ source: "automation:automation.x", target: "entity:sensor.a", relation: "TRIGGERS_ON" }, { source: "dashboard:energy", target: "entity:sensor.a", relation: "SHOWS" }] };
   el.replOld = "sensor.a"; el.replNew = "sensor.b";
-  let html = el.replaceCard();
-  assert.ok(html.includes("Automation") && html.includes("Energy dashboard") && html.includes("The new entity works") && html.includes("Same unit (kWh)") && html.includes("data-repl-meter") && !/data-plan-create\s+disabled/.test(html));
-  el.replNew = "sensor.c"; assert.ok(el.replaceCard().includes("Unit or device class differ"));
-  el.replNew = "sensor.d"; html = el.replaceCard();
+  let html = el.rwOneCard();
+  assert.ok(html.includes("Automation") && html.includes("Energy dashboard") && html.includes("The new entity works") && html.includes("Same unit (kWh)") && !/data-plan-create\s+disabled/.test(html));
+  el.replNew = "sensor.c"; assert.ok(el.rwOneCard().includes("Unit or device class differ"));
+  el.replNew = "sensor.d"; html = el.rwOneCard();
   assert.ok(html.includes("does not work") && /data-plan-create\s+disabled/.test(html));
+});
+
+test("the single view of the replace assistant turns the chosen kind into one action and blocks what cannot work", () => {
+  const { el } = panel("en");
+  const ent = (id, extra = {}) => ({ object_type: "entity", object_id: id, name: id, status: "active", unit: "kWh", device_class: "energy", state_class: "total_increasing", ...extra });
+  el.data = { ...DATA, objects: [ent("sensor.a", { has_statistics: true }), ent("sensor.b"), ent("sensor.c", { unit: "W" })], edges: [{ source: "automation:automation.x", target: "entity:sensor.a", relation: "TRIGGERS_ON" }] };
+  el.replOld = "sensor.a"; el.replNew = "sensor.b"; el.replHow = "";
+  assert.equal(JSON.stringify(el.rwOneActions()), JSON.stringify([{ kind: "migrate_meter", object_id: "sensor.a", target: "sensor.b", mode: "replace_statistics" }]), "a meter takes references and statistics by default");
+  el.replHow = "replace";
+  assert.equal(el.rwOneActions()[0].kind, "replace_references");
+  el.replNew = "sensor.c"; el.replHow = "both";
+  assert.ok(el.rwOneInfo().off.both && el.rwOneInfo().how === "replace", "another unit blocks the kinds that write statistics and falls back to the references");
 });
 
 test("the entity page trims history: tables and period become one plan action, a stretch only for states", () => {
@@ -3911,12 +3925,13 @@ test("the replace assistant takes proposals only on request, defaults the kind b
     { object_id: "sensor.b", name: "B", used: 1, has_statistics: true, meter: true, unit: null, candidates: [cand("light.n"), cand("sensor.n")] },
   ] };
   el._hass = { language: "en", callWS: async msg => { calls.push(JSON.parse(JSON.stringify(msg))); return msg.type === "ha_housekeeper/entity_pairs" ? result : { plan_id: "p1", actions: [], status: "dry_run", summary: {} }; } };
+  el.rwState().single = false;
   el.rwState().sel = new Set(["light.a", "sensor.b"]);
   await el.rwLoadPairs();
   assert.deepEqual(calls.find(c => c.type === "ha_housekeeper/entity_pairs").old_entity_ids, ["light.a", "sensor.b"]);
   assert.equal(el.rwActions().length, 0, "nothing is chosen for the person");
   el.rwTakeAll();
-  assert.deepEqual(JSON.parse(JSON.stringify(el.rwActions())), [{ kind: "replace_references", object_id: "light.a", target: "light.n" }, { kind: "migrate_meter", object_id: "sensor.b", target: "light.n", mode: "both" }]);
+  assert.deepEqual(JSON.parse(JSON.stringify(el.rwActions())), [{ kind: "replace_references", object_id: "light.a", target: "light.n" }, { kind: "migrate_meter", object_id: "sensor.b", target: "light.n", mode: "replace_statistics" }]);
   assert.equal(el.rwDefaultHow({ has_statistics: true, meter: false }), "replace", "a measurement with statistics only switches the references by default");
   assert.equal(el.rwErrorCount(), 2, "one new entity for two old ones marks both rows");
   assert.ok(el.rwCard().includes("Fix the errors") || el.rwSetupCard().includes("Fix the errors"));
@@ -4405,7 +4420,8 @@ test("the overview of an object offers its actions: decide a finding, replace a 
   assert.ok(el.labelForm({ object_type: "script", object_id: "script.x" }).includes("data-act-label-plan") && el.labelForm({ object_type: "device", object_id: "d1" }) === "", "scripts and scenes take a label too, devices not");
   el.startCleanup("replace_references", () => { el.replOld = "sensor.gone"; });
   assert.equal(el.view, "repair");
-  assert.equal(el.repairTask, "replace_references");
+  assert.equal(el.repairTask, "replace_wizard", "replacing references is the single view of the replace assistant");
+  assert.equal(el.rwState().single, true);
   assert.equal(el.replOld, "sensor.gone");
   assert.ok(!el.detailPanel("relations", el.findObject("entity:sensor.a"), "entity:sensor.a").includes("data-decide-open"), "findings moved off the dependencies tab");
   const rel = el.relationsCard("entity:sensor.a");
@@ -4438,13 +4454,14 @@ test("the repair view offers its tasks as tiles; one opens its assistant and the
   el.data = stepCData().data; el.journal = []; el.view = "repair"; el.repairTask = null;
   el.render();
   let html = shadow.innerHTML;
-  for (const kind of ["repair_counter", "migrate_meter", "replace_references", "exchange_device"]) assert.ok(html.includes(`data-repair-task="${kind}"`), kind);
+  for (const kind of ["repair_counter", "replace_wizard", "exchange_device"]) assert.ok(html.includes(`data-repair-task="${kind}"`), kind);
+  assert.ok(!html.includes('data-repair-task="migrate_meter"') && !html.includes('data-repair-task="replace_references"'), "meter and references are kinds of one assistant now");
   assert.ok(!html.includes("data-cleanup-kind") && html.includes("not checked"));
   el.counterScan = { available: true, items: [], checked: 3 }; el.render();
   assert.ok(shadow.innerHTML.includes("none found"));
-  el.repairTask = "migrate_meter"; el.cleanupKind = "migrate_meter"; el.render();
+  el.repairTask = "replace_wizard"; el.cleanupKind = "replace_wizard"; el.render();
   html = shadow.innerHTML;
-  assert.ok(html.includes('data-picker="meterOld"') && html.includes('aria-pressed="true" data-repair-task="migrate_meter"') && !html.includes("data-repair-back"));
+  assert.ok(html.includes('data-picker="replOld"') && html.includes('aria-pressed="true" data-repair-task="replace_wizard"') && !html.includes("data-repair-back"));
 });
 
 test("the overview has no tile card; a missed goal is a to-do row, not a card of its own", () => {

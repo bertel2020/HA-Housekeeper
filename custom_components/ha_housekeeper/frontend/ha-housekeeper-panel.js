@@ -569,10 +569,8 @@ const NAV_ICONS = { ...Object.fromEntries(NAV), unreferenced: "mdi:link-variant-
 const CLEANUP_KINDS = ["disable_entity", "remove_entity", "disable_device", "remove_device", "forget_device"];
 const REPAIR_TASKS = [
   ["repair_counter", "mdi:chart-line", "repairTaskCounter", "repairTaskCounterHint"],
-  ["migrate_meter", "mdi:gauge", "repairTaskMeter", "repairTaskMeterHint"],
-  ["replace_references", "mdi:swap-horizontal", "repairTaskReplace", "repairTaskReplaceHint"],
-  ["exchange_device", "mdi:devices", "repairTaskExchange", "repairTaskExchangeHint"],
   ["replace_wizard", "mdi:swap-horizontal-variant", "repairTaskWizard", "repairTaskWizardHint"],
+  ["exchange_device", "mdi:devices", "repairTaskExchange", "repairTaskExchangeHint"],
 ];
 // The view in which the person finishes a plan of this kind.
 const viewForKind = kind => (["repair_counter", "repair_range", "migrate_meter", "replace_references", "exchange_device", "replace_wizard", "refactor_automation"].includes(kind) ? "repair" : "cleanup");
@@ -1800,7 +1798,7 @@ class StylesMixin {
       .stepsbar .step.done i{background:color-mix(in srgb,var(--hk-green) 16%,var(--hk-surface));color:var(--hk-green);border-color:var(--hk-green)}
       .stepsbar .step .stepname{font-weight:inherit}@media (max-width:640px){.stepsbar .step:not(.on) .stepname{display:none}.stepsbar .line{min-width:8px;margin:0 6px}}.stepsbar .line{flex:1;height:2px;min-width:20px;margin:0 10px;border-radius:2px;background:var(--hk-border)}.stepsbar .line.done{background:var(--hk-green)}
       .rangechart .grid{stroke:var(--hk-border);stroke-width:1}
-      .bkcsum{padding:14px 16px 0}.bkcsum .sumtiles{margin-bottom:0}.bkcrule{display:grid;gap:8px;margin:14px 16px;padding:12px 14px;border-radius:12px;background:var(--hk-soft)}.bkcrule .line{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.bkcrule input{width:76px}.bkcrule .line .btn{margin-left:auto}.exgrid{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr) auto;gap:10px;align-items:end;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.exgrid.two{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:start}.exgrid.two>ha-icon{margin-top:30px}.exgrid>div{min-width:0}.exgrid label{display:block;margin-bottom:4px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.exgrid>ha-icon{--mdc-icon-size:18px;color:var(--hk-muted);justify-self:center;margin-bottom:10px}@media(max-width:700px){.exgrid,.exgrid.two{grid-template-columns:minmax(0,1fr)}.exgrid>ha-icon{transform:rotate(90deg)}.exgrid .btn{justify-self:start}}.bkcrule .optswitch{margin:6px 0 0;padding:14px 0 0;border:0;border-top:1px solid var(--hk-border);border-radius:0;background:none}.bkcrule p,.bkcfoot small{display:block;margin:0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}.bkcwarn{display:flex;gap:6px;align-items:flex-start;margin-top:4px;color:var(--hk-amber)}.bkcwarn ha-icon{--mdc-icon-size:14px;flex:none;margin-top:1px}.bkcfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:14px 16px;border-top:1px solid var(--hk-border)}.bkcfoot>div{flex:1 1 260px;min-width:0}.bkcerr{margin:6px 0 0;color:var(--hk-red);font-size:calc(12px*var(--hk-fs,1))}@media(max-width:640px){.bkcrow{grid-auto-flow:row}.bkcrow>.pill{grid-column:2;justify-self:start}}
+      .bkcsum{padding:14px 16px 0}.bkcsum .sumtiles{margin-bottom:0}.bkcrule{display:grid;gap:8px;margin:14px 16px;padding:12px 14px;border-radius:12px;background:var(--hk-soft)}.bkcrule .line{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.bkcrule input{width:76px}.bkcrule .line .btn{margin-left:auto}.exgrid{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr) auto;gap:10px;align-items:end;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.modecard.off{opacity:.55;cursor:not-allowed}.rwresult{margin:0;padding:10px 16px}.rwgroup{margin:0;padding:14px 16px 4px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.exgrid.two{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);align-items:start}.exgrid.two>ha-icon{margin-top:30px}.exgrid>div{min-width:0}.exgrid label{display:block;margin-bottom:4px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.exgrid>ha-icon{--mdc-icon-size:18px;color:var(--hk-muted);justify-self:center;margin-bottom:10px}@media(max-width:700px){.exgrid,.exgrid.two{grid-template-columns:minmax(0,1fr)}.exgrid>ha-icon{transform:rotate(90deg)}.exgrid .btn{justify-self:start}}.bkcrule .optswitch{margin:6px 0 0;padding:14px 0 0;border:0;border-top:1px solid var(--hk-border);border-radius:0;background:none}.bkcrule p,.bkcfoot small{display:block;margin:0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}.bkcwarn{display:flex;gap:6px;align-items:flex-start;margin-top:4px;color:var(--hk-amber)}.bkcwarn ha-icon{--mdc-icon-size:14px;flex:none;margin-top:1px}.bkcfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:14px 16px;border-top:1px solid var(--hk-border)}.bkcfoot>div{flex:1 1 260px;min-width:0}.bkcerr{margin:6px 0 0;color:var(--hk-red);font-size:calc(12px*var(--hk-fs,1))}@media(max-width:640px){.bkcrow{grid-auto-flow:row}.bkcrow>.pill{grid-column:2;justify-self:start}}
       .pagebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.pb-left,.pb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.pb-right{margin-left:auto}.pagebar .btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.pagebar ha-icon{--mdc-icon-size:18px}.pagebar ha-icon.spin{animation:hkspin 1s linear infinite}@keyframes hkspin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.pagebar ha-icon.spin{animation:none}}
       .navtiles.compact{grid-template-columns:repeat(auto-fit,minmax(max(200px,calc(100%/var(--cols,4) - 12px)),1fr));grid-auto-rows:1fr;gap:10px}.navtiles.compact .taskcard{display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto auto auto;column-gap:14px;row-gap:3px;align-content:center;align-items:center;padding:10px 8px 10px 16px}.navtiles.compact .taskcard>ha-icon{grid-row:1 / span 4;margin:0}.navtiles.compact .taskcard>.navfacts{grid-column:2;display:flex;flex-wrap:nowrap;gap:6px;margin-top:4px;min-height:24px;overflow:hidden;min-width:0}.navtiles.compact .taskcard>.navfacts .pill{flex:none}.navtiles.fixed .taskcard>small{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(min-width:641px){.navtiles.compact.five{grid-template-columns:repeat(6,minmax(0,1fr))}.navtiles.compact.five .taskcard{grid-column:span 2}.navtiles.compact.five .taskcard:nth-child(n+4){grid-column:span 3}}@media(max-width:640px){.navtiles.compact .taskcard>.navfacts{flex-wrap:wrap;min-height:0}.navtiles.compact .taskcard>.navfacts:empty{display:none}}.navtiles.compact .taskcard>strong{grid-column:2;grid-row:1}.navtiles.compact .taskcard>.setpill{grid-column:2;grid-row:2;flex-wrap:wrap;gap:6px;min-height:0;justify-self:start}.navtiles.compact .taskcard>.setpill:empty{display:none}.navtiles.compact .taskcard>.setpill.slot:empty{display:flex;min-height:24px}.navtiles.compact .taskcard>small{grid-column:2;grid-row:3}
       @media(max-width:640px){.navtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.navtiles .taskcard{grid-template-rows:auto auto;padding:10px}.navtiles .taskcard>ha-icon,.navtiles .taskcard>small{display:none}.navtiles.compact{grid-template-columns:repeat(2,minmax(0,1fr))}.navtiles.compact .taskcard{grid-template-columns:1fr}.navtiles.compact .taskcard>strong,.navtiles.compact .taskcard>.setpill,.navtiles.compact .taskcard>.navfacts{grid-column:1}.toolbar.nosel [data-fsel-clear],.toolbar.nosel [data-sel-clear],.toolbar.nosel [data-sel-only],.toolbar.nosel .fbtns{display:none}}
@@ -4448,7 +4446,7 @@ class CleanupMixin {
       if (s.gap_hours > 0) list.push(fact(this.t("meterFactGap", { hours: s.gap_hours }), this.t("meterFactGapText")));
       facts = `<div class="mfacts">${list.join("")}</div>`;
     }
-    if (action.mode !== "statistics" && action.alt_id) lines.push(this.t("meterIdMove", { old: action.object_id, alt: action.alt_id, new: action.target }));
+    if (["both", "id"].includes(action.mode) && action.alt_id) lines.push(this.t("meterIdMove", { old: action.object_id, alt: action.alt_id, new: action.target }));
     const before = (s.preview?.before || []), after = (s.preview?.after || []);
     const cell = row => `${this.esc(day(row.start))}: ${this.esc(this.formatNumber(Math.round((row.sum_after ?? row.sum ?? 0) * 1000) / 1000))}`;
     const rows = before.length || after.length ? `<details class="rowdetails"><summary>${this.t("meterPreviewRows")}</summary><small class="u-dim u-block">${[...before, ...after].map(cell).join(" · ")}</small></details>` : "";
@@ -4537,12 +4535,11 @@ class CleanupMixin {
 
   async createPlan() {
     if (this.cleanupKind === "exchange_device") return this.createExchangePlan();
-    const pair = this.cleanupKind === "replace_references" ? [this.replOld, this.replNew] : this.cleanupKind === "migrate_meter" ? [this.meterOld, this.meterNew] : this.cleanupKind === "repair_counter" ? [this.counterSel, "-"] : null;
+    const pair = this.cleanupKind === "replace_wizard" ? [this.replOld, this.replNew] : this.cleanupKind === "repair_counter" ? [this.counterSel, "-"] : null;
     if (pair ? !(pair[0] && pair[1]) : !this.cleanupSel.size) return;
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
-      const actions = this.cleanupKind === "replace_references" ? [{ kind: "replace_references", object_id: this.replOld, target: this.replNew }]
-        : this.cleanupKind === "migrate_meter" ? [{ kind: "migrate_meter", object_id: this.meterOld, target: this.meterNew, mode: this.meterMode }]
+      const actions = this.cleanupKind === "replace_wizard" ? this.rwOneActions()
         : this.cleanupKind === "repair_counter" ? [this.counterRangeReq ? { kind: "repair_range", object_id: this.counterSel, mode: this.counterRangeReq.mode, range: this.counterRangeReq.range } : { kind: "repair_counter", object_id: this.counterSel, mode: this.counterMode || "hold" }]
         : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.recorderFor(object_id) !== "keep" ? { recorder: this.recorderFor(object_id) } : {}) }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
@@ -4811,7 +4808,7 @@ class CleanupMixin {
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
       const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" || a.kind === "set_expose_new" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
-      const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
+      const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
       const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
@@ -4923,46 +4920,8 @@ class CleanupMixin {
         else rows.push(mark("ok", this.t("replWorking")));
         rows.push(same(old.unit, nu.unit) && same(old.device_class, nu.device_class) ? mark("ok", this.t(old.unit ? "replFits" : "replFitsNoUnit", { unit: this.esc(old.unit || "") })) : mark("warn", this.t("replDiffers")));
       }
-      if (!bad && old.has_statistics) rows.push(`<div class="mcheck"><span class="warn-t">!</span><span>${this.t("replStats")} <button class="link" data-repl-meter>${this.t("replStatsGo")}</button></span></div>`);
     }
     return { used, fit: rows.join(""), bad };
-  }
-
-  replaceCard() {
-    const checks = this.replaceChecks(this.replOld, this.replNew);
-    const ready = this.replOld && this.replNew && !this.cleanupBusy && !checks.bad;
-    const hints = this.successorHints(this.replOld, this.entityUnit(this.replOld), "data-repl-pick");
-    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("replaceTitle")}</h2><p>${this.t("replaceHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
-      <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}${checks.used}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${checks.fit}</div></div>
-      ${hints}<div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
-  }
-
-  // The checks that the panel can make before any preview: unit, classes and statistics of the two meters.
-  meterChecks(old, nu) {
-    if (!old || !nu) return "";
-    const line = (tone, text) => `<div class="mcheck"><span class="${tone}-t">${tone === "ok" ? "✓" : "!"}</span><span>${text}</span></div>`;
-    const lines = [];
-    const same = (a, b) => (a ?? "") === (b ?? "");
-    lines.push(same(old.unit, nu.unit) && same(old.device_class, nu.device_class) && same(old.state_class, nu.state_class)
-      ? line("ok", this.t("meterCheckSame", { unit: this.esc(old.unit || "–"), cls: this.esc(old.state_class || "–") }))
-      : line("warn", this.t("meterCheckDiffer")));
-    lines.push(old.has_statistics ? line("ok", this.t("meterCheckStats")) : line("warn", this.t("meterCheckNoStats")));
-    lines.push(`<div class="mcheck"><span class="warn-t">!</span><span>${this.t("meterCheckRefs")} <button class="link" data-meter-refs>${this.t("meterCheckRefsGo")}</button></span></div>`);
-    return lines.join("");
-  }
-
-  // Join a replaced meter's history to its successor and/or let the successor take over the ID.
-  meterCard() {
-    const entities = this.data.objects.filter(o => o.object_type === "entity");
-    const byId = new Map(entities.map(o => [o.object_id, o]));
-    const modes = ["both", "statistics", "id"];
-    const ready = this.meterOld && this.meterNew && !this.cleanupBusy;
-    const cards = `<div class="modecards" role="radiogroup" aria-label="${this.esc(this.t("meterMode"))}">${modes.map(m => `<button class="modecard${this.meterMode === m ? " on" : ""}" role="radio" aria-checked="${this.meterMode === m}" data-meter-mode="${m}"><strong>${this.t(`meterCard_${m}`)}${m === "both" ? ` <span class="pill ok">${this.t("meterUsual")}</span>` : ""}</strong><small>${this.t(`meterCardHint_${m}`)}</small><small class="modefollow">${this.t(`meterCardFollow_${m}`)}</small></button>`).join("")}</div>`;
-    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("meterTitle")}</h2><p>${this.t("meterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>
-      <div class="exgrid two"><div><label>${this.t("meterOld")}</label>${this.pickerBox("meterOld", "sensor.old_meter")}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("meterNew")}</label>${this.pickerBox("meterNew", "sensor.new_meter")}</div></div>
-      ${this.meterChecks(byId.get(this.meterOld), byId.get(this.meterNew))}
-      <div class="setrow"><div><label>${this.t("meterMode")}</label></div></div>${cards}
-      ${this.successorHints(this.meterOld, byId.get(this.meterOld)?.unit, "data-meter-pick")}<div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
   // Devices that an integration created again after they were forgotten.
@@ -5242,8 +5201,8 @@ class CleanupMixin {
     const nav = `<div class="taskgrid compactgrid setgrid navtiles compact equal" style="--cols:${this.navColumns(REPAIR_TASKS.length)}" role="group" aria-label="${this.esc(this.t("repairTitle"))}">${tiles}</div>`;
     let body;
     if (task) {
-      const card = { exchange_device: () => this.exchangeCard(), replace_references: () => this.replaceCard(), migrate_meter: () => this.meterCard(), replace_wizard: () => this.rwCard(), repair_counter: () => this.counterCard() }[task]();
-      const chosen = { repair_counter: (this.counterId || "").trim(), migrate_meter: this.meterOld, replace_references: this.replOld, exchange_device: this.exchangeState().oldDev, replace_wizard: this.rwState().step === 2 ? "set up" : "" }[task];
+      const card = { exchange_device: () => this.exchangeCard(), replace_wizard: () => this.rwCard(), repair_counter: () => this.counterCard() }[task]();
+      const chosen = { repair_counter: (this.counterId || "").trim(), exchange_device: this.exchangeState().oldDev, replace_wizard: this.rwState().single ? this.replOld : this.rwState().step === 2 ? "set up" : "" }[task];
       body = `${this.stepsBar(chosen ? 2 : 1)}${card}`;
     } else {
       body = `<p class="factnote pad">${this.t("repairHint")}</p>`;
@@ -13461,6 +13420,12 @@ class DetailActionsMixin {
 
   // The Cleanup view takes over from here: the assistant is filled in, the person looks at the preview and confirms.
   startCleanup(kind, fill) {
+    // Replacing references and carrying a meter on are one view of the replace assistant: one entity, then what should happen.
+    if (kind === "replace_references" || kind === "migrate_meter") {
+      const inner = fill, how = kind === "migrate_meter" ? "replace_statistics" : "";
+      kind = "replace_wizard";
+      fill = () => { inner(); this.rwState().single = true; this.replHow = how; };
+    }
     this.noteJump?.("cleanup");
     this.cleanupKind = kind; this.cleanupSel = new Set(); this.plan = null; fill();
     if (this.lv.cleanup) this.lv.cleanup.f = {};
@@ -13507,7 +13472,7 @@ class DetailActionsMixin {
       el.textContent = this.t(open ? "actLess" : "actMore");
     });
     root.querySelectorAll("[data-act-repair]").forEach(el => el.onclick = () => this.repairValues(el.dataset.actRepair));
-    root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.meterOld = el.dataset.actMeter; this.meterNew = ""; }));
+    root.querySelectorAll("[data-act-meter]").forEach(el => el.onclick = () => this.startCleanup("migrate_meter", () => { this.replOld = el.dataset.actMeter; this.replNew = ""; }));
     root.querySelectorAll("[data-act-exchange]").forEach(el => el.onclick = () => this.startCleanup("exchange_device", () => { const ex = this.exchangeState(); ex.oldDev = el.dataset.actExchange; ex.newDev = ""; ex.result = null; ex.choices = {}; }));
     root.querySelectorAll("[data-act-replace]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.actReplace; this.replNew = el.dataset.replNew || this.findObject(`entity:${el.dataset.actReplace}`)?.duplicate_of || ""; }));
     root.querySelectorAll("[data-act-reload]").forEach(el => el.onclick = async () => { try { await this.newPlan(el.dataset.actReload.split(",").map(object_id => ({ kind: "reload_integration", object_id }))); } catch (err) { this.failed(err); } this.render(); });
@@ -13714,22 +13679,11 @@ class PickerMixin {
       },
       replOld: {
         get: () => this.replOld || "", set: v => this.setPair("repl", "Old", v), min: 1, types: ["entity"], limit: 30,
-        filter: o => this.edgeIndex().used.has(`entity:${o.object_id}`), pick: o => this.setPair("repl", "Old", o.object_id),
+        filter: o => o.has_statistics || this.edgeIndex().used.has(`entity:${o.object_id}`), pick: o => this.setPair("repl", "Old", o.object_id),
       },
       replNew: {
         get: () => this.replNew || "", set: v => { this.replNew = v; }, min: 1, types: ["entity"], limit: 30,
         filter: o => o.status === "active" && o.object_id !== this.replOld && this.sameDomain(o, this.replOld), pick: o => { this.replNew = o.object_id; },
-      },
-      meterOld: {
-        get: () => this.meterOld || "", set: v => this.setPair("meter", "Old", v), min: 1, types: ["entity"], limit: 30,
-        filter: o => o.has_statistics && o.object_id.startsWith("sensor."), pick: o => this.setPair("meter", "Old", o.object_id),
-      },
-      meterNew: {
-        get: () => this.meterNew || "", set: v => { this.meterNew = v; }, min: 1, types: ["entity"], limit: 30,
-        filter: o => {
-          const unit = this.findObject(`entity:${this.meterOld}`)?.unit;
-          return o.status === "active" && o.object_id !== this.meterOld && this.sameDomain(o, this.meterOld) && (!unit || o.unit === unit);
-        }, pick: o => { this.meterNew = o.object_id; },
       },
       exOld: {
         get: () => this.deviceText("old"), set: v => this.setDevice("old", "", v), min: 0, browse: true, types: ["device"], limit: 30, sub: o => this.deviceSub(o),
@@ -20485,7 +20439,16 @@ Object.assign(TEXT.en, {
 
 // The assistant "Replace entities": choose several old entities, give each its new one, then one plan (see device_pairs.py suggest_entities, cleanup.py _mark_target_clashes); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  repairTaskWizard: "Entitäten ersetzen", repairTaskWizardHint: "Mehrere Entitäten auf einmal durch neue ersetzen, zum Beispiel beim Wechsel der Integration.",
+  repairTaskWizard: "Entitäten ersetzen", repairTaskWizardHint: "Eine oder mehrere Entitäten durch neue ersetzen: Verweise umstellen, Statistik und ID übernehmen. Zum Beispiel beim Wechsel eines Zählers oder einer Integration.",
+  rwOneHint: "Ersetzt eine Entität durch eine andere. Was dabei geschieht, wählst du unten; bis du die Vorschau bestätigst, ändert sich nichts.",
+  rwModeOne: "Eine Entität", rwModeMany: "Mehrere Entitäten", rwGroupKeep: "Die neue Entität behält ihre ID", rwGroupTake: "Die neue Entität übernimmt die alte ID",
+  rwOffPair: "Die beiden Entitäten passen nicht zusammen.", rwOffNoStats: "Die alte Entität hat keine Statistik.", rwOffUnused: "Die alte Entität wird nirgends verwendet, es gibt keine Verweise umzustellen.", rwOffUnit: "Einheit oder Geräteklasse weichen ab.", rwResultLabel: "Ergebnis:",
+  rwResult_replace: "{new} behält ihre ID. Verweise zeigen auf sie. {old} bleibt unverändert.",
+  rwResult_replace_statistics: "{new} behält ihre ID. Verweise zeigen auf sie, und ihre Statistik beginnt mit dem Verlauf von {old}. {old} bleibt unverändert.",
+  rwResult_statistics: "{new} behält ihre ID, ihre Statistik beginnt mit dem Verlauf von {old}. Verweise bleiben, wie sie sind.",
+  rwResult_both: "{new} übernimmt die ID {old} und den Verlauf. Verweise laufen unverändert weiter. {old} bekommt eine andere ID.",
+  rwResult_id: "{new} übernimmt die ID {old}, ihre Statistik beginnt neu. Verweise laufen unverändert weiter. {old} bekommt eine andere ID.",
+  rwHow_replace_statistics: "Verweise und Statistik", rwHowHint_replace_statistics: "Automationen, Skripte, Szenen und Dashboards zeigen danach auf die neue ID, und die alte Statistik wird an die neue gehängt. Die Statistik ist nur über das Backup umkehrbar.",
   actReplaceMany: "Ersetzen …", actHintReplaceMany: "Diese Entität durch eine neue ersetzen, mit dem Assistenten für mehrere.",
   rwPickTitle: "Welche Entitäten sollen ersetzt werden?", rwPickHint: "Wähle die alten Entitäten. Im nächsten Schritt ordnest du jeder die neue zu; bis zur bestätigten Vorschau wird nichts geändert.",
   rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "{auto} werden automatisch umgeschrieben, {manual} bleiben unverändert.",
@@ -20496,7 +20459,7 @@ Object.assign(TEXT.de, {
   rwTakeAll: "Alle Vorschläge übernehmen ({count})", rwBack: "Zurück zur Auswahl",
   rwSumPairs: "{count} Paare", rwSumChosen: "{count} zugeordnet", rwSumErrors: "{count} mit Fehler", rwSumSuggest: "{count} mit Vorschlag", rwSumNone: "{count} ohne Verwendung",
   rwColTarget: "Neue Entität", rwColHow: "Art", rwNoTarget: "Kein Ersatz (überspringen)", rwSuggested: "Vorschlag",
-  rwHow_replace: "Verweise umstellen", rwHow_both: "Neue übernimmt die ID, Verlauf bleibt", rwHow_statistics: "Nur Verlauf anhängen", rwHow_id: "Nur ID übernehmen",
+  rwHow_replace: "Verweise umstellen", rwHow_both: "Statistik und ID", rwHow_statistics: "Nur Statistik", rwHow_id: "Nur ID",
   rwHowHint_replace: "Automationen, Skripte, Szenen und Dashboards zeigen danach auf die neue ID. Eine alte Statistik bleibt unter der alten ID stehen.",
   rwHowHint_both: "Die alte Statistik wird an die neue gehängt, die neue bekommt die alte ID. Verweise bleiben unverändert. Nur über das Backup umkehrbar.",
   rwHowHint_statistics: "Beide behalten ihre ID; Verweise müssen auf die neue zeigen. Nur über das Backup umkehrbar.",
@@ -20507,7 +20470,16 @@ Object.assign(TEXT.de, {
   reason_target_duplicate: "Dieselbe neue Entität ist für mehrere alte gewählt.", reason_target_replaced: "Die neue Entität wird selbst ersetzt (oder ersetzt eine andere).",
 });
 Object.assign(TEXT.en, {
-  repairTaskWizard: "Replace entities", repairTaskWizardHint: "Replace several entities with new ones at once, for example when switching integrations.",
+  repairTaskWizard: "Replace entities", repairTaskWizardHint: "Replace one or several entities with new ones: switch references, take over statistics and ID. For example when changing a meter or an integration.",
+  rwOneHint: "Replaces one entity with another. You choose below what happens; nothing changes until you confirm the preview.",
+  rwModeOne: "One entity", rwModeMany: "Several entities", rwGroupKeep: "The new entity keeps its ID", rwGroupTake: "The new entity takes over the old ID",
+  rwOffPair: "The two entities do not fit together.", rwOffNoStats: "The old entity has no statistics.", rwOffUnused: "The old entity is not used anywhere, so there are no references to switch.", rwOffUnit: "Unit or device class differ.", rwResultLabel: "Result:",
+  rwResult_replace: "{new} keeps its ID. References point to it. {old} stays unchanged.",
+  rwResult_replace_statistics: "{new} keeps its ID. References point to it, and its statistics begin with the history of {old}. {old} stays unchanged.",
+  rwResult_statistics: "{new} keeps its ID, and its statistics begin with the history of {old}. References stay as they are.",
+  rwResult_both: "{new} takes over the ID {old} and the history. References keep working unchanged. {old} gets another ID.",
+  rwResult_id: "{new} takes over the ID {old}, and its statistics start anew. References keep working unchanged. {old} gets another ID.",
+  rwHow_replace_statistics: "References and statistics", rwHowHint_replace_statistics: "Automations, scripts, scenes and dashboards then point to the new ID, and the old statistics are attached to the new ones. The statistics can only be undone through the backup.",
   actReplaceMany: "Replace …", actHintReplaceMany: "Replace this entity with a new one, using the assistant for several.",
   rwPickTitle: "Which entities should be replaced?", rwPickHint: "Pick the old entities. In the next step you give each one its new entity; nothing changes until you confirm the preview.",
   rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "{auto} are rewritten automatically, {manual} stay unchanged.",
@@ -20518,7 +20490,7 @@ Object.assign(TEXT.en, {
   rwTakeAll: "Take all proposals ({count})", rwBack: "Back to the choice",
   rwSumPairs: "{count} pairs", rwSumChosen: "{count} assigned", rwSumErrors: "{count} with an error", rwSumSuggest: "{count} with a proposal", rwSumNone: "{count} unused",
   rwColTarget: "New entity", rwColHow: "Kind", rwNoTarget: "No replacement (skip)", rwSuggested: "suggested",
-  rwHow_replace: "Switch references", rwHow_both: "New takes the ID, history stays", rwHow_statistics: "Attach history only", rwHow_id: "Take over the ID only",
+  rwHow_replace: "Switch references", rwHow_both: "Statistics and ID", rwHow_statistics: "Statistics only", rwHow_id: "ID only",
   rwHowHint_replace: "Automations, scripts, scenes and dashboards then point at the new ID. Old statistics stay under the old ID.",
   rwHowHint_both: "The old statistics are attached to the new ones, the new entity gets the old ID. References stay unchanged. Reversible only from the backup.",
   rwHowHint_statistics: "Both keep their ID; references have to point at the new one. Reversible only from the backup.",
@@ -20529,23 +20501,24 @@ Object.assign(TEXT.en, {
   reason_target_duplicate: "The same new entity is chosen for several old ones.", reason_target_replaced: "The new entity is replaced itself (or replaces another one).",
 });
 
-const RW_HOWS = ["replace", "both", "statistics", "id"];
+const RW_HOWS = ["replace", "replace_statistics", "statistics", "both", "id"];
+const RW_KEEP = ["replace", "replace_statistics", "statistics"], RW_TAKE = ["both", "id"];
 
 class ReplaceWizardMixin {
   rwState() {
-    return (this.rw ||= { step: 1, sel: new Set(), result: null, choices: {}, scope: "", loading: false, error: "" });
+    return (this.rw ||= { single: true, step: 1, sel: new Set(), result: null, choices: {}, scope: "", loading: false, error: "" });
   }
 
   // From a detail page or a finding: the choice is filled in, the person lands on step 1 with it.
   rwStart(ids) {
-    this.startCleanup("replace_wizard", () => { this.rw = null; const rw = this.rwState(); ids.forEach(id => rw.sel.add(id)); });
+    this.startCleanup("replace_wizard", () => { this.rw = null; const rw = this.rwState(); rw.single = false; ids.forEach(id => rw.sel.add(id)); });
   }
 
   // How a pair is replaced when the person has not said: statistics are carried on, otherwise references are switched.
   // Only a real meter (a total that keeps counting) takes over the history and the ID by default; for a measurement, switching the references is enough and touches no database.
-  rwDefaultHow(pair) { return pair.has_statistics && pair.meter ? "both" : "replace"; }
+  rwDefaultHow(pair) { return pair.has_statistics && pair.meter ? "replace_statistics" : "replace"; }
 
-  rwHowsOf(pair) { return RW_HOWS.filter(h => pair.has_statistics || !["both", "statistics"].includes(h)); }
+  rwHowsOf(pair) { return RW_HOWS.filter(h => pair.has_statistics || !["replace_statistics", "statistics", "both"].includes(h)); }
 
   // Only what the person chose becomes an action: a pair without a chosen target is left out.
   rwActions() {
@@ -20657,7 +20630,7 @@ class ReplaceWizardMixin {
     const table = list.length ? this.listTable("rwpick", columns, pg.rows, { cls: "objs", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${all.length ? this.noMatches("rwpick") : this.t("rwNoEntities")}</div>`;
     const n = rw.sel.size;
     const allBtn = list.length && list.length <= 500 && list.some(r => !rw.sel.has(r.item.object_id)) ? `<button class="btn quiet" data-rw-all>${this.t("rwSelectFiltered", { count: list.length })}</button>` : "";
-    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div></div>
+    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
       <div class="toolbar${n ? "" : " nosel"}">${this.selTools("rwpick", n, "data-rw-clear")}${allBtn}<span class="toolgap"></span>
       <button class="btn primary" data-rw-next ${n ? "" : "disabled"}>${this.t("rwNext", { count: n })}</button></div>
       ${bar}${table}${pg.footer}</div>`;
@@ -20764,7 +20737,52 @@ class ReplaceWizardMixin {
   }
 
   rwCard() {
-    return this.rwState().step === 2 ? this.rwSetupCard() : this.rwPickCard();
+    const rw = this.rwState();
+    return rw.single ? this.rwOneCard() : rw.step === 2 ? this.rwSetupCard() : this.rwPickCard();
+  }
+
+  // -- one entity: the same assistant for a single pair ------------------------------------
+
+  rwSeg() {
+    const one = this.rwState().single;
+    return `<div class="seg" role="group" aria-label="${this.esc(this.t("repairTaskWizard"))}">${[["one", "rwModeOne", one], ["many", "rwModeMany", !one]].map(([v, k, on]) => `<button class="chip ${on ? "active" : ""}" data-rw-mode="${v}" aria-pressed="${on}">${this.t(k)}</button>`).join("")}</div>`;
+  }
+
+  // What the panel can say before a preview: which kinds fit this pair (the reason stands on the card that does not), and the one that is chosen.
+  rwOneInfo() {
+    const old = this.replOld && this.findObject(`entity:${this.replOld}`), nu = this.replNew && this.findObject(`entity:${this.replNew}`);
+    const checks = this.replaceChecks(this.replOld, this.replNew), known = Boolean(old && nu), off = {};
+    for (const id of RW_HOWS) {
+      off[id] = "";
+      if (!known) continue;
+      if (checks.bad) off[id] = "rwOffPair";
+      else if (["replace", "replace_statistics"].includes(id) && !this.usageTags(this.replOld).length) off[id] = "rwOffUnused";
+      else if (id !== "replace") {
+        if (!old.has_statistics && id !== "id") off[id] = "rwOffNoStats";
+        else if ((old.unit ?? "") !== (nu.unit ?? "") || (old.device_class ?? "") !== (nu.device_class ?? "")) off[id] = "rwOffUnit";
+      }
+    }
+    const meter = Boolean(old?.has_statistics && ["total", "total_increasing"].includes(old.state_class));
+    const usual = (meter ? ["replace_statistics", "statistics"] : []).find(id => !off[id]) || "replace";
+    return { known, checks, off, usual, how: this.replHow && !off[this.replHow] ? this.replHow : usual };
+  }
+
+  rwOneActions() {
+    const { how } = this.rwOneInfo();
+    return [how === "replace" ? { kind: "replace_references", object_id: this.replOld, target: this.replNew } : { kind: "migrate_meter", object_id: this.replOld, target: this.replNew, mode: how }];
+  }
+
+  rwOneCard() {
+    const info = this.rwOneInfo(), { checks, off, how, usual, known } = info;
+    const tile = id => `<button class="modecard${how === id ? " on" : ""}${off[id] ? " off" : ""}" role="radio" aria-checked="${how === id}" ${off[id] ? 'aria-disabled="true" data-off' : ""} data-rw-one-how="${id}"><strong>${this.t(`rwHow_${id}`)}${known && id === usual ? ` <span class="pill ok">${this.t("meterUsual")}</span>` : ""}</strong><small>${this.t(`rwHowHint_${id}`)}</small>${off[id] ? `<small class="modefollow">${this.t(off[id])}</small>` : ""}</button>`;
+    const group = (key, ids) => `<p class="rwgroup">${this.t(key)}</p><div class="modecards" role="radiogroup" aria-label="${this.esc(this.t(key))}">${ids.map(tile).join("")}</div>`;
+    const result = known && !checks.bad ? `<p class="factnote rwresult"><strong>${this.t("rwResultLabel")}</strong> ${this.t(`rwResult_${how}`, { old: this.esc(this.replOld), new: this.esc(this.replNew) })}</p>` : "";
+    const ready = this.replOld && this.replNew && !this.cleanupBusy && !checks.bad && !off[how];
+    const hints = this.successorHints(this.replOld, this.entityUnit(this.replOld), "data-repl-pick");
+    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("repairTaskWizard")}</h2><p>${this.t("rwOneHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
+      <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}${checks.used}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${checks.fit}</div></div>
+      ${hints}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}
+      <div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
   bindReplaceWizard(root) {
@@ -20785,6 +20803,8 @@ class ReplaceWizardMixin {
     root.querySelectorAll("[data-rw-skip]").forEach(el => el.onclick = () => { this.rwChoose(el.dataset.rwSkip, ""); this.render(); });
     root.querySelectorAll("[data-rw-how-open]").forEach(el => el.onclick = () => { rw().howOpen = el.dataset.rwHowOpen; this.render(); });
     root.querySelectorAll("[data-rw-how-pick]").forEach(el => el.onclick = () => { const c = rw().choices[rw().howOpen]; if (c) c.how = el.dataset.rwHowPick; rw().howOpen = ""; this.render(); });
+    root.querySelectorAll("[data-rw-mode]").forEach(el => el.onclick = () => { rw().single = el.dataset.rwMode === "one"; this.render(); });
+    root.querySelectorAll("[data-rw-one-how]").forEach(el => el.onclick = () => { if (el.hasAttribute("data-off")) return; this.replHow = el.dataset.rwOneHow; this.render(); });
     root.querySelectorAll("[data-act-replace-many]").forEach(el => el.onclick = () => this.rwStart([el.dataset.actReplaceMany]));
   }
 }
@@ -22291,8 +22311,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.findSel = new Set();
     this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
-    this.replOld = ""; this.replNew = "";
-    this.meterOld = ""; this.meterNew = ""; this.meterMode = "both";
+    this.replOld = ""; this.replNew = ""; this.replHow = "";
     this.ex = null; this.report = null; this.reportClear = true; this.reportMessage = "";
     this.runs = null; this.runsLoading = false; this.runsError = ""; this.exposure = null; this.exposureLoading = false; this.exposureError = ""; this._exposureRequested = false; this.policies = null; this.policiesLoading = false; this.policiesError = ""; this._policiesRequested = false; this.policyShowHidden = false; this.orphanLast = null; this.orphanLastLoading = false; this._orphanLastRequested = false; this.dbHealth = null; this.dbLoading = false; this.dbError = ""; this._dbRequested = false; this.storms = null; this.stormsLoading = false; this.stormsError = ""; this.stormsWindow = 1; this._stormsRequested = null; this.reliability = null; this.relLoading = false; this.relError = ""; this.relWindow = 7; this.relCompare = false; this.quickQuery = ""; this.quickOpen = false; this.quickIndex = 0; this.backup = null; this.backupLoading = false; this.backupError = ""; this.preflight = null; this.costs = null; this.costsLoading = false; this.preflightLoading = false;
     this.ack = new Set();
@@ -23524,14 +23543,10 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-plan-repeat-full]").forEach(el => el.addEventListener("click", () => this.repeatPlan([this.plan, ...(this.journal || [])].find(x => x?.plan_id === el.dataset.planRepeatFull), true)));
     root.querySelector("[data-plan-create]")?.addEventListener("click", () => this.createPlan());
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });
-    root.querySelectorAll("[data-meter-pick]").forEach(el => el.onclick = () => { this.meterNew = el.dataset.meterPick; this.render(); });
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRows("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
-    root.querySelectorAll("[data-meter-mode]").forEach(el => el.onclick = () => { this.meterMode = el.dataset.meterMode; this.render(); });
-    root.querySelector("[data-repl-meter]")?.addEventListener("click", () => this.startCleanup("migrate_meter", () => { this.meterOld = this.replOld; this.meterNew = this.replNew; }));
-    root.querySelector("[data-meter-refs]")?.addEventListener("click", () => this.startCleanup("replace_references", () => { this.replOld = this.meterOld; this.replNew = this.meterNew; }));
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
     root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));

@@ -1,6 +1,15 @@
 // The assistant "Replace entities": choose several old entities, give each its new one, then one plan (see device_pairs.py suggest_entities, cleanup.py _mark_target_clashes); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  repairTaskWizard: "Entitäten ersetzen", repairTaskWizardHint: "Mehrere Entitäten auf einmal durch neue ersetzen, zum Beispiel beim Wechsel der Integration.",
+  repairTaskWizard: "Entitäten ersetzen", repairTaskWizardHint: "Eine oder mehrere Entitäten durch neue ersetzen: Verweise umstellen, Statistik und ID übernehmen. Zum Beispiel beim Wechsel eines Zählers oder einer Integration.",
+  rwOneHint: "Ersetzt eine Entität durch eine andere. Was dabei geschieht, wählst du unten; bis du die Vorschau bestätigst, ändert sich nichts.",
+  rwModeOne: "Eine Entität", rwModeMany: "Mehrere Entitäten", rwGroupKeep: "Die neue Entität behält ihre ID", rwGroupTake: "Die neue Entität übernimmt die alte ID",
+  rwOffPair: "Die beiden Entitäten passen nicht zusammen.", rwOffNoStats: "Die alte Entität hat keine Statistik.", rwOffUnused: "Die alte Entität wird nirgends verwendet, es gibt keine Verweise umzustellen.", rwOffUnit: "Einheit oder Geräteklasse weichen ab.", rwResultLabel: "Ergebnis:",
+  rwResult_replace: "{new} behält ihre ID. Verweise zeigen auf sie. {old} bleibt unverändert.",
+  rwResult_replace_statistics: "{new} behält ihre ID. Verweise zeigen auf sie, und ihre Statistik beginnt mit dem Verlauf von {old}. {old} bleibt unverändert.",
+  rwResult_statistics: "{new} behält ihre ID, ihre Statistik beginnt mit dem Verlauf von {old}. Verweise bleiben, wie sie sind.",
+  rwResult_both: "{new} übernimmt die ID {old} und den Verlauf. Verweise laufen unverändert weiter. {old} bekommt eine andere ID.",
+  rwResult_id: "{new} übernimmt die ID {old}, ihre Statistik beginnt neu. Verweise laufen unverändert weiter. {old} bekommt eine andere ID.",
+  rwHow_replace_statistics: "Verweise und Statistik", rwHowHint_replace_statistics: "Automationen, Skripte, Szenen und Dashboards zeigen danach auf die neue ID, und die alte Statistik wird an die neue gehängt. Die Statistik ist nur über das Backup umkehrbar.",
   actReplaceMany: "Ersetzen …", actHintReplaceMany: "Diese Entität durch eine neue ersetzen, mit dem Assistenten für mehrere.",
   rwPickTitle: "Welche Entitäten sollen ersetzt werden?", rwPickHint: "Wähle die alten Entitäten. Im nächsten Schritt ordnest du jeder die neue zu; bis zur bestätigten Vorschau wird nichts geändert.",
   rwColEntity: "Entität", rwColStatus: "Status", rwColUsed: "Verwendet", rwNowhere: "nirgends verwendet", rwUsesShow: "Verwendungen anzeigen", rwUsesHide: "Verwendungen ausblenden", rwUseReplaced: "wird ersetzt", rwUseManual: "bleibt, von Hand prüfen", rwUsesNote: "{auto} werden automatisch umgeschrieben, {manual} bleiben unverändert.",
@@ -11,7 +20,7 @@ Object.assign(TEXT.de, {
   rwTakeAll: "Alle Vorschläge übernehmen ({count})", rwBack: "Zurück zur Auswahl",
   rwSumPairs: "{count} Paare", rwSumChosen: "{count} zugeordnet", rwSumErrors: "{count} mit Fehler", rwSumSuggest: "{count} mit Vorschlag", rwSumNone: "{count} ohne Verwendung",
   rwColTarget: "Neue Entität", rwColHow: "Art", rwNoTarget: "Kein Ersatz (überspringen)", rwSuggested: "Vorschlag",
-  rwHow_replace: "Verweise umstellen", rwHow_both: "Neue übernimmt die ID, Verlauf bleibt", rwHow_statistics: "Nur Verlauf anhängen", rwHow_id: "Nur ID übernehmen",
+  rwHow_replace: "Verweise umstellen", rwHow_both: "Statistik und ID", rwHow_statistics: "Nur Statistik", rwHow_id: "Nur ID",
   rwHowHint_replace: "Automationen, Skripte, Szenen und Dashboards zeigen danach auf die neue ID. Eine alte Statistik bleibt unter der alten ID stehen.",
   rwHowHint_both: "Die alte Statistik wird an die neue gehängt, die neue bekommt die alte ID. Verweise bleiben unverändert. Nur über das Backup umkehrbar.",
   rwHowHint_statistics: "Beide behalten ihre ID; Verweise müssen auf die neue zeigen. Nur über das Backup umkehrbar.",
@@ -22,7 +31,16 @@ Object.assign(TEXT.de, {
   reason_target_duplicate: "Dieselbe neue Entität ist für mehrere alte gewählt.", reason_target_replaced: "Die neue Entität wird selbst ersetzt (oder ersetzt eine andere).",
 });
 Object.assign(TEXT.en, {
-  repairTaskWizard: "Replace entities", repairTaskWizardHint: "Replace several entities with new ones at once, for example when switching integrations.",
+  repairTaskWizard: "Replace entities", repairTaskWizardHint: "Replace one or several entities with new ones: switch references, take over statistics and ID. For example when changing a meter or an integration.",
+  rwOneHint: "Replaces one entity with another. You choose below what happens; nothing changes until you confirm the preview.",
+  rwModeOne: "One entity", rwModeMany: "Several entities", rwGroupKeep: "The new entity keeps its ID", rwGroupTake: "The new entity takes over the old ID",
+  rwOffPair: "The two entities do not fit together.", rwOffNoStats: "The old entity has no statistics.", rwOffUnused: "The old entity is not used anywhere, so there are no references to switch.", rwOffUnit: "Unit or device class differ.", rwResultLabel: "Result:",
+  rwResult_replace: "{new} keeps its ID. References point to it. {old} stays unchanged.",
+  rwResult_replace_statistics: "{new} keeps its ID. References point to it, and its statistics begin with the history of {old}. {old} stays unchanged.",
+  rwResult_statistics: "{new} keeps its ID, and its statistics begin with the history of {old}. References stay as they are.",
+  rwResult_both: "{new} takes over the ID {old} and the history. References keep working unchanged. {old} gets another ID.",
+  rwResult_id: "{new} takes over the ID {old}, and its statistics start anew. References keep working unchanged. {old} gets another ID.",
+  rwHow_replace_statistics: "References and statistics", rwHowHint_replace_statistics: "Automations, scripts, scenes and dashboards then point to the new ID, and the old statistics are attached to the new ones. The statistics can only be undone through the backup.",
   actReplaceMany: "Replace …", actHintReplaceMany: "Replace this entity with a new one, using the assistant for several.",
   rwPickTitle: "Which entities should be replaced?", rwPickHint: "Pick the old entities. In the next step you give each one its new entity; nothing changes until you confirm the preview.",
   rwColEntity: "Entity", rwColStatus: "Status", rwColUsed: "Used", rwNowhere: "not used anywhere", rwUsesShow: "Show uses", rwUsesHide: "Hide uses", rwUseReplaced: "will be replaced", rwUseManual: "stays, check by hand", rwUsesNote: "{auto} are rewritten automatically, {manual} stay unchanged.",
@@ -33,7 +51,7 @@ Object.assign(TEXT.en, {
   rwTakeAll: "Take all proposals ({count})", rwBack: "Back to the choice",
   rwSumPairs: "{count} pairs", rwSumChosen: "{count} assigned", rwSumErrors: "{count} with an error", rwSumSuggest: "{count} with a proposal", rwSumNone: "{count} unused",
   rwColTarget: "New entity", rwColHow: "Kind", rwNoTarget: "No replacement (skip)", rwSuggested: "suggested",
-  rwHow_replace: "Switch references", rwHow_both: "New takes the ID, history stays", rwHow_statistics: "Attach history only", rwHow_id: "Take over the ID only",
+  rwHow_replace: "Switch references", rwHow_both: "Statistics and ID", rwHow_statistics: "Statistics only", rwHow_id: "ID only",
   rwHowHint_replace: "Automations, scripts, scenes and dashboards then point at the new ID. Old statistics stay under the old ID.",
   rwHowHint_both: "The old statistics are attached to the new ones, the new entity gets the old ID. References stay unchanged. Reversible only from the backup.",
   rwHowHint_statistics: "Both keep their ID; references have to point at the new one. Reversible only from the backup.",
@@ -44,23 +62,24 @@ Object.assign(TEXT.en, {
   reason_target_duplicate: "The same new entity is chosen for several old ones.", reason_target_replaced: "The new entity is replaced itself (or replaces another one).",
 });
 
-const RW_HOWS = ["replace", "both", "statistics", "id"];
+const RW_HOWS = ["replace", "replace_statistics", "statistics", "both", "id"];
+const RW_KEEP = ["replace", "replace_statistics", "statistics"], RW_TAKE = ["both", "id"];
 
 class ReplaceWizardMixin {
   rwState() {
-    return (this.rw ||= { step: 1, sel: new Set(), result: null, choices: {}, scope: "", loading: false, error: "" });
+    return (this.rw ||= { single: true, step: 1, sel: new Set(), result: null, choices: {}, scope: "", loading: false, error: "" });
   }
 
   // From a detail page or a finding: the choice is filled in, the person lands on step 1 with it.
   rwStart(ids) {
-    this.startCleanup("replace_wizard", () => { this.rw = null; const rw = this.rwState(); ids.forEach(id => rw.sel.add(id)); });
+    this.startCleanup("replace_wizard", () => { this.rw = null; const rw = this.rwState(); rw.single = false; ids.forEach(id => rw.sel.add(id)); });
   }
 
   // How a pair is replaced when the person has not said: statistics are carried on, otherwise references are switched.
   // Only a real meter (a total that keeps counting) takes over the history and the ID by default; for a measurement, switching the references is enough and touches no database.
-  rwDefaultHow(pair) { return pair.has_statistics && pair.meter ? "both" : "replace"; }
+  rwDefaultHow(pair) { return pair.has_statistics && pair.meter ? "replace_statistics" : "replace"; }
 
-  rwHowsOf(pair) { return RW_HOWS.filter(h => pair.has_statistics || !["both", "statistics"].includes(h)); }
+  rwHowsOf(pair) { return RW_HOWS.filter(h => pair.has_statistics || !["replace_statistics", "statistics", "both"].includes(h)); }
 
   // Only what the person chose becomes an action: a pair without a chosen target is left out.
   rwActions() {
@@ -172,7 +191,7 @@ class ReplaceWizardMixin {
     const table = list.length ? this.listTable("rwpick", columns, pg.rows, { cls: "objs", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${all.length ? this.noMatches("rwpick") : this.t("rwNoEntities")}</div>`;
     const n = rw.sel.size;
     const allBtn = list.length && list.length <= 500 && list.some(r => !rw.sel.has(r.item.object_id)) ? `<button class="btn quiet" data-rw-all>${this.t("rwSelectFiltered", { count: list.length })}</button>` : "";
-    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div></div>
+    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
       <div class="toolbar${n ? "" : " nosel"}">${this.selTools("rwpick", n, "data-rw-clear")}${allBtn}<span class="toolgap"></span>
       <button class="btn primary" data-rw-next ${n ? "" : "disabled"}>${this.t("rwNext", { count: n })}</button></div>
       ${bar}${table}${pg.footer}</div>`;
@@ -279,7 +298,52 @@ class ReplaceWizardMixin {
   }
 
   rwCard() {
-    return this.rwState().step === 2 ? this.rwSetupCard() : this.rwPickCard();
+    const rw = this.rwState();
+    return rw.single ? this.rwOneCard() : rw.step === 2 ? this.rwSetupCard() : this.rwPickCard();
+  }
+
+  // -- one entity: the same assistant for a single pair ------------------------------------
+
+  rwSeg() {
+    const one = this.rwState().single;
+    return `<div class="seg" role="group" aria-label="${this.esc(this.t("repairTaskWizard"))}">${[["one", "rwModeOne", one], ["many", "rwModeMany", !one]].map(([v, k, on]) => `<button class="chip ${on ? "active" : ""}" data-rw-mode="${v}" aria-pressed="${on}">${this.t(k)}</button>`).join("")}</div>`;
+  }
+
+  // What the panel can say before a preview: which kinds fit this pair (the reason stands on the card that does not), and the one that is chosen.
+  rwOneInfo() {
+    const old = this.replOld && this.findObject(`entity:${this.replOld}`), nu = this.replNew && this.findObject(`entity:${this.replNew}`);
+    const checks = this.replaceChecks(this.replOld, this.replNew), known = Boolean(old && nu), off = {};
+    for (const id of RW_HOWS) {
+      off[id] = "";
+      if (!known) continue;
+      if (checks.bad) off[id] = "rwOffPair";
+      else if (["replace", "replace_statistics"].includes(id) && !this.usageTags(this.replOld).length) off[id] = "rwOffUnused";
+      else if (id !== "replace") {
+        if (!old.has_statistics && id !== "id") off[id] = "rwOffNoStats";
+        else if ((old.unit ?? "") !== (nu.unit ?? "") || (old.device_class ?? "") !== (nu.device_class ?? "")) off[id] = "rwOffUnit";
+      }
+    }
+    const meter = Boolean(old?.has_statistics && ["total", "total_increasing"].includes(old.state_class));
+    const usual = (meter ? ["replace_statistics", "statistics"] : []).find(id => !off[id]) || "replace";
+    return { known, checks, off, usual, how: this.replHow && !off[this.replHow] ? this.replHow : usual };
+  }
+
+  rwOneActions() {
+    const { how } = this.rwOneInfo();
+    return [how === "replace" ? { kind: "replace_references", object_id: this.replOld, target: this.replNew } : { kind: "migrate_meter", object_id: this.replOld, target: this.replNew, mode: how }];
+  }
+
+  rwOneCard() {
+    const info = this.rwOneInfo(), { checks, off, how, usual, known } = info;
+    const tile = id => `<button class="modecard${how === id ? " on" : ""}${off[id] ? " off" : ""}" role="radio" aria-checked="${how === id}" ${off[id] ? 'aria-disabled="true" data-off' : ""} data-rw-one-how="${id}"><strong>${this.t(`rwHow_${id}`)}${known && id === usual ? ` <span class="pill ok">${this.t("meterUsual")}</span>` : ""}</strong><small>${this.t(`rwHowHint_${id}`)}</small>${off[id] ? `<small class="modefollow">${this.t(off[id])}</small>` : ""}</button>`;
+    const group = (key, ids) => `<p class="rwgroup">${this.t(key)}</p><div class="modecards" role="radiogroup" aria-label="${this.esc(this.t(key))}">${ids.map(tile).join("")}</div>`;
+    const result = known && !checks.bad ? `<p class="factnote rwresult"><strong>${this.t("rwResultLabel")}</strong> ${this.t(`rwResult_${how}`, { old: this.esc(this.replOld), new: this.esc(this.replNew) })}</p>` : "";
+    const ready = this.replOld && this.replNew && !this.cleanupBusy && !checks.bad && !off[how];
+    const hints = this.successorHints(this.replOld, this.entityUnit(this.replOld), "data-repl-pick");
+    return `<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("repairTaskWizard")}</h2><p>${this.t("rwOneHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
+      <div class="exgrid two"><div><label>${this.t("replaceOld")}</label>${this.pickerBox("replOld", "sensor.old_entity")}${checks.used}</div><ha-icon icon="mdi:arrow-right" aria-hidden="true"></ha-icon><div><label>${this.t("replaceNew")}</label>${this.pickerBox("replNew", "sensor.new_entity")}${checks.fit}</div></div>
+      ${hints}${group("rwGroupKeep", RW_KEEP)}${group("rwGroupTake", RW_TAKE)}${result}
+      <div class="setrow planfoot"><small class="u-m0">${this.t("repairDryRun")}</small><button class="btn primary" data-plan-create ${ready ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("replacePreview")}</button></div></div>`;
   }
 
   bindReplaceWizard(root) {
@@ -300,6 +364,8 @@ class ReplaceWizardMixin {
     root.querySelectorAll("[data-rw-skip]").forEach(el => el.onclick = () => { this.rwChoose(el.dataset.rwSkip, ""); this.render(); });
     root.querySelectorAll("[data-rw-how-open]").forEach(el => el.onclick = () => { rw().howOpen = el.dataset.rwHowOpen; this.render(); });
     root.querySelectorAll("[data-rw-how-pick]").forEach(el => el.onclick = () => { const c = rw().choices[rw().howOpen]; if (c) c.how = el.dataset.rwHowPick; rw().howOpen = ""; this.render(); });
+    root.querySelectorAll("[data-rw-mode]").forEach(el => el.onclick = () => { rw().single = el.dataset.rwMode === "one"; this.render(); });
+    root.querySelectorAll("[data-rw-one-how]").forEach(el => el.onclick = () => { if (el.hasAttribute("data-off")) return; this.replHow = el.dataset.rwOneHow; this.render(); });
     root.querySelectorAll("[data-act-replace-many]").forEach(el => el.onclick = () => this.rwStart([el.dataset.actReplaceMany]));
   }
 }
