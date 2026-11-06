@@ -14,6 +14,9 @@
 - **Oberfläche:** Kleine Verbesserungen.
   - Die Regel und der Schalter „Automatisch aufräumen“ der Backup-Seite stehen in einem Rahmen.
   - Altes und neues Gerät stehen nebeneinander, ebenso beim Ersetzen von Entitäten.
+- **Ein Stepper für alle Abläufe:** Assistenten, Plan-Seite, „Beheben“ und die erste Aufräumrunde zeigen dieselbe waagerechte Leiste: Auswahl, Einstellen, Prüfen, Bestätigen, Ausführen, Ergebnis.
+  - Erledigte Schritte sind grün, der aktuelle blau, ein fehlgeschlagener rot. Die Plan-Seite zeigt unter der Leiste nur die Unterschritte der gewählten Stufe, mit Fortschritt beim Ausführen.
+  - Auf schmalen Bildschirmen steht nur der Name des aktuellen Schritts. „1 Eintrag“ steht jetzt im Singular.
 
 ### English
 
@@ -29,6 +32,9 @@
 - **Interface:** Small improvements.
   - The rule and the "Tidy up automatically" switch of the backup page share one frame.
   - Old and new device sit side by side, and so do the entities when replacing.
+- **One stepper for every flow:** Assistants, the plan page, "Fix" and the first cleanup round show the same horizontal bar: Choose, Set up, Review, Confirm, Run, Result.
+  - Done stages are green, the current one blue, a failed one red. The plan page shows only the sub-steps of the chosen stage under the bar, with progress while it runs.
+  - On narrow screens only the current step keeps its name. "1 entry" is now singular.
 
 ## 2.0.0-beta.3 - 2026-11-05
 

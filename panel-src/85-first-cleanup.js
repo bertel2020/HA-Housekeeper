@@ -167,13 +167,11 @@ class FirstCleanupMixin {
 
   fcStepper(n) {
     const done = this.fc?.state?.done || [];
-    const steps = [1, 2, 3, 4, 5].map(i => {
+    const items = [1, 2, 3, 4, 5].map(i => {
       const isDone = done.includes(i) && !this.stageCount(i), back = i < n && n <= 5;
-      const cls = `fcstep${isDone ? " done" : ""}${i === n ? " cur" : ""}`;
-      const label = this.t("fcStage", { n: i });
-      return `<${back ? "button type=\"button\"" : "span"} class="${cls}" ${back ? `data-fc-goto="${i}"` : ""} ${i === n ? "aria-current=\"step\"" : ""} aria-label="${this.esc(`${label} · ${this.t(`fcStage${i}`)}${isDone ? ` · ${this.t("fcStageClear")}` : ""}`)}" title="${this.esc(`${label} · ${this.t(`fcStage${i}`)}`)}"><b>${isDone ? "✓" : i}</b></${back ? "button" : "span"}>`;
+      return { label: this.t(`fcStage${i}`), state: isDone ? "done" : i === n ? "cur" : "todo", note: isDone ? this.t("fcStageClear") : "", attrs: back ? `data-fc-goto="${i}"` : undefined };
     });
-    return `<nav class="fcsteps" aria-label="${this.esc(this.t("fcStepsLabel"))}">${steps.join('<i class="fcline"></i>')}</nav>`;
+    return this.stepper(items, this.t("fcStepsLabel"));
   }
 
   fcWelcome() {

@@ -931,10 +931,28 @@ class CleanupMixin {
     return `<div class="stack">${this.planHeader()}${head}${this.navTiles("journal", tabs, open, this.t("journal"), true)}${failed}${body}</div>`;
   }
 
-  // Where the person is in an assistant: choose, set up, look at the preview.
-  stepsBar(current) {
-    const names = ["stepChoose", "stepSetup", "stepPreview"];
-    return `<div class="stepsbar" role="list">${names.map((name, i) => `${i ? `<span class="line${i < current ? " done" : ""}"></span>` : ""}<span class="step${i + 1 === current ? " on" : i + 1 < current ? " done" : ""}" role="listitem"${i + 1 === current ? ' aria-current="step"' : ""}><i>${i + 1 < current ? "✓" : i + 1}</i><b class="stepname">${this.t(name)}</b></span>`).join("")}</div>`;
+  // One stepper for every flow with stages (assistant, plan, fix, first cleanup), so they look and behave the same.
+  // items: [{ label, state: "done" | "cur" | "todo" | "fail", attrs, disabled, note }]; attrs (a data attribute) makes a stage a button the person may go back to, without it the stage is only shown.
+  stepper(items, label) {
+    const mark = { done: "✓", fail: "!" }, total = items.length;
+    const parts = items.map((it, i) => {
+      const text = `${this.t("stepNOfM", { n: i + 1, total })} · ${it.label}${it.note ? ` · ${it.note}` : ""}`;
+      const common = `class="stbtn" aria-label="${this.esc(text)}" title="${this.esc(it.label)}"${it.state === "cur" ? ' aria-current="step"' : ""}`;
+      const inner = `<i class="stmark" aria-hidden="true">${mark[it.state] || i + 1}</i><b class="stname">${this.esc(it.label)}</b>`;
+      const stage = it.attrs ? `<button type="button" ${common} ${it.attrs}${it.disabled ? " disabled" : ""}>${inner}</button>` : `<span ${common}>${inner}</span>`;
+      const line = i ? `<li class="stline${items[i - 1].state === "done" ? " done" : ""}" aria-hidden="true"></li>` : "";
+      return `${line}<li class="st ${it.state}">${stage}</li>`;
+    });
+    return `<ol class="stepper" aria-label="${this.esc(label)}">${parts.join("")}</ol>`;
+  }
+
+  // The six stages of every assistant and its plan: choose, set up, review, confirm, run, result.
+  // `at` is the stage that is on; the stages before it are done and only shown (going back is the buttons' job).
+  stageNames() { return ["stepChoose", "stepSetup", "wzReview", "wzConfirm", "wzRun", "wzResult"].map(k => this.t(k)); }
+
+  stepsBar(at) {
+    const items = this.stageNames().map((label, i) => ({ label, state: i < at ? "done" : i === at ? "cur" : "todo" }));
+    return this.stepper(items, this.t("wzLabel"));
   }
 
   // Tasks that fix something that stays. A tile opens the assistant for one task; the plan is finished in the same view.
@@ -951,7 +969,7 @@ class CleanupMixin {
     if (task) {
       const card = { exchange_device: () => this.exchangeCard(), replace_wizard: () => this.rwCard(), repair_counter: () => this.counterCard() }[task]();
       const chosen = { repair_counter: (this.counterId || "").trim(), exchange_device: this.exchangeState().oldDev, replace_wizard: this.rwState().single ? this.replOld : this.rwState().step === 2 ? "set up" : "" }[task];
-      body = `${this.stepsBar(chosen ? 2 : 1)}${card}`;
+      body = `${this.stepsBar(chosen ? 1 : 0)}${card}`;
     } else {
       body = `<p class="factnote pad">${this.t("repairHint")}</p>`;
     }

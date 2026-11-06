@@ -2152,7 +2152,7 @@ test("the plan card shows the steps with text, marks undo kinds and folds the de
     act("remove_entity", { executable: false, verdict: "blocked", reasons: ["used_certain"], used_by: [{ source: "automation:automation.a", relation: "TARGETS", confidence: "certain" }] }),
   ], { backup: { job_id: "job-9", at: "2026-10-07T10:05:00+00:00" }, verification: { ok: true, checks: [] } });
   const html = el.planCard(plan);
-  assert.ok(html.indexOf('<ol class="track"') < html.indexOf('class="row planrow'), "the steps come before the actions");
+  assert.ok(html.indexOf('<ol class="stepper"') < html.indexOf('class="row planrow'), "the steps come before the actions");
   assert.equal((html.match(/aria-current="step"/g) || []).length, 0, "a finished plan has no current step");
   assert.ok(html.includes('<span class="sr-only">: done</span>') && html.includes('<span class="sr-only">: not needed</span>') === false);
   assert.ok(html.includes("Created") && html.includes(el.t("backupRestoreHint")));
@@ -4579,7 +4579,7 @@ test("a plan runs as a wizard: review, confirm with a way back, run, result; lon
   assert.deepEqual([stage(plan("dry_run")), stage(plan("dry_run"), true), stage(plan("running")), stage(plan("executed")), stage(plan("verified", { verification: { ok: true, checks: [] } })), stage(plan("aborted"))], [0, 1, 2, 2, 3, 3]);
   el.plan = plan("dry_run"); el.view = "plan"; el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("1. Review") && html.includes("sensor.s0") && html.includes("sensor.s19") && !html.includes("sensor.s20") && html.includes("data-lpage"), "a long plan comes in pages");
+  assert.ok(html.includes("stepper") && html.includes("data-plan-stage") && html.includes("sensor.s0") && html.includes("sensor.s19") && !html.includes("sensor.s20") && html.includes("data-lpage"), "a long plan comes in pages");
   el.confirmation = { plan_id: "p", token: "t", execute: ["sensor.s0"], needs_acknowledgement: [] }; el.render();
   assert.ok(!shadow.innerHTML.includes("data-plan-back") && !shadow.innerHTML.includes("data-plan-execute"), "no second screen");
   el.confirmation = null; el.render();
