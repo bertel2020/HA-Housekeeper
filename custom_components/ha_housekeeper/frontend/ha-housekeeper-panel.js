@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"4e1504a27a"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"217cf793e5"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"506b5012e0"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"26e21b07b8"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"cffbd6951b"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"b78fd4d80f"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"378014756a"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"9b834ef124"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b75a1b2a01"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"674ca52f10"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"c91ed359d7"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"bb336a8118"}];
 
 const TEXT = {
   de: {
@@ -1478,7 +1478,7 @@ Object.assign(TEXT.de, {
   expoText_stale_exposed: "{n} Entitäten sind freigegeben, obwohl sie deaktiviert oder verwaist sind.",
   expoText_alias_duplicate: "„{alias}“ heißt bei {assistant} {n} Entitäten. Der Assistent kann sie nicht auseinanderhalten.",
   expoText_webhook_orphan: "{n} Webhooks gehören zu „{domain}“, einer Integration, die nicht mehr eingerichtet ist. Die IDs zeigt Housekeeper bewusst nicht an.",
-  expoAdvice_diagnostic_exposed: "Freigabe unter Einstellungen → Sprachassistenten → Entitäten zurücknehmen.",
+  expoAdvice_diagnostic_exposed: "Freigabe zurücknehmen. Der Knopf macht daraus einen Plan mit Vorschau.",
   expoAdvice_sensitive_exposed: "Nur zur Kenntnis. Housekeeper ändert nichts.",
   expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen. Der Knopf macht daraus einen Plan mit Vorschau.",
   expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
@@ -1508,7 +1508,7 @@ Object.assign(TEXT.en, {
   expoText_stale_exposed: "{n} entities are exposed although they are disabled or orphaned.",
   expoText_alias_duplicate: "\"{alias}\" names {n} entities for {assistant}. The assistant cannot tell them apart.",
   expoText_webhook_orphan: "{n} webhooks belong to \"{domain}\", an integration that is no longer set up. Housekeeper deliberately does not show their ids.",
-  expoAdvice_diagnostic_exposed: "Take the exposure back under Settings → Voice assistants → Entities.",
+  expoAdvice_diagnostic_exposed: "Take the exposure back. The button makes a plan with a preview of it.",
   expoAdvice_sensitive_exposed: "For your information only. Housekeeper changes nothing.",
   expoAdvice_stale_exposed: "Clean up the entity or take the exposure back. The button makes a plan with a preview of it.",
   expoAdvice_alias_duplicate: "Rename one of them so voice commands are unambiguous.",
@@ -8899,12 +8899,14 @@ const EXPO_DOMAIN_ICONS = {
 // The findings that offer a plan: what it does and the name of its button.
 const EXPO_PLAN_KINDS = {
   stale_exposed: { target: "remove", label: "expoActRemove" },
+  diagnostic_exposed: { target: "remove", label: "expoActRemove" },
   google_without_pin: { target: "pin", label: "expoActPin" },
   auto_expose: { target: "off", label: "expoActNewOff", kind: "set_expose_new" },
 };
 
 // What the three dots of an entity row offer: one entity at a time for the sensitive ones, a jump to Home Assistant for voice names.
 const EXPO_ROW_MENU = {
+  diagnostic_exposed: (item, esc) => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${esc(item.entity_id)}"`]],
   sensitive_exposed: (item, esc) => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${esc(item.entity_id)}"`]],
   alias_duplicate: () => [["mdi:open-in-new", "expoOpenNames", 'data-ha-path="/config/voice-assistants/expose"']],
 };

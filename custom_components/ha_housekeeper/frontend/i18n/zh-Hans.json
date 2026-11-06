@@ -1891,7 +1891,7 @@
 "expoText_stale_exposed": "{n} 个实体已公开，尽管它们已禁用或孤立。",
 "expoText_alias_duplicate": "「{alias}」为 {assistant} 命名了 {n} 个实体。助手无法区分它们。",
 "expoText_webhook_orphan": "有 {n} 个 Webhook 属于「{domain}」，该集成已不再设置。Housekeeper 有意不显示它们的 id。",
-"expoAdvice_diagnostic_exposed": "在设置 → 语音助手 → 实体中撤销公开。",
+"expoAdvice_diagnostic_exposed": "收回开放。按钮会据此生成带预览的计划。",
 "expoAdvice_sensitive_exposed": "仅供参考。Housekeeper 不会更改任何内容。",
 "expoAdvice_stale_exposed": "请清理该实体或撤回公开。按钮会生成带预览的计划。",
 "expoAdvice_alias_duplicate": "重命名其中一个，使语音指令含义明确。",

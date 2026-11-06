@@ -1891,7 +1891,7 @@
 "expoText_stale_exposed": "{n} entités sont exposées bien qu’elles soient désactivées ou orphelines.",
 "expoText_alias_duplicate": "« {alias} » désigne {n} entités pour {assistant}. L’assistant ne peut pas les distinguer.",
 "expoText_webhook_orphan": "{n} webhooks appartiennent à « {domain} », une intégration qui n’est plus configurée. Housekeeper n’affiche volontairement pas leurs identifiants.",
-"expoAdvice_diagnostic_exposed": "Retire l’exposition sous Paramètres → Assistants vocaux → Entités.",
+"expoAdvice_diagnostic_exposed": "Retire l’exposition. Le bouton en fait un plan avec un aperçu.",
 "expoAdvice_sensitive_exposed": "À titre d’information seulement. Housekeeper ne change rien.",
 "expoAdvice_stale_exposed": "Nettoie l’entité ou retire l’exposition. Le bouton crée un plan avec un aperçu.",
 "expoAdvice_alias_duplicate": "Renomme l’un des deux pour que les commandes vocales soient sans ambiguïté.",

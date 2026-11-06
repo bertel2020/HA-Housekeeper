@@ -10,12 +10,14 @@ const EXPO_DOMAIN_ICONS = {
 // The findings that offer a plan: what it does and the name of its button.
 const EXPO_PLAN_KINDS = {
   stale_exposed: { target: "remove", label: "expoActRemove" },
+  diagnostic_exposed: { target: "remove", label: "expoActRemove" },
   google_without_pin: { target: "pin", label: "expoActPin" },
   auto_expose: { target: "off", label: "expoActNewOff", kind: "set_expose_new" },
 };
 
 // What the three dots of an entity row offer: one entity at a time for the sensitive ones, a jump to Home Assistant for voice names.
 const EXPO_ROW_MENU = {
+  diagnostic_exposed: (item, esc) => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${esc(item.entity_id)}"`]],
   sensitive_exposed: (item, esc) => [["mdi:shield-off-outline", "expoActRemoveOne", `data-expo-one="${esc(item.entity_id)}"`]],
   alias_duplicate: () => [["mdi:open-in-new", "expoOpenNames", 'data-ha-path="/config/voice-assistants/expose"']],
 };
