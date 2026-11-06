@@ -482,8 +482,8 @@ class CleanupRunner:
     ) -> dict[str, Any]:
         """Select the actions that may run and hand out a short-lived confirmation token.
 
-        ``skip_backup`` is the person's explicit choice to run without the safety backup. It is
-        refused when a selected action writes into the recorder database: that needs the backup.
+        ``skip_backup`` is the person's explicit choice to run without the safety backup, also for
+        actions that write into the recorder database (what they change is then not restorable).
         """
         self._drop_expired_tokens()
         plan = self._plan(plan_id)
@@ -506,12 +506,6 @@ class CleanupRunner:
         if not selected:
             raise CleanupError("nothing_to_do")
         self._check_mode(plan, selected)
-        if skip_backup and any(
-            action["kind"] in DATABASE_KINDS or action.get("recorder")
-            for action in plan["actions"]
-            if action["object_id"] in selected
-        ):
-            raise CleanupError("skip_backup_database")
         token = secrets.token_urlsafe(16)
         self._tokens[plan_id] = (token, _now() + TOKEN_TTL, selected, user_id)
         plan["confirmed"] = {"at": _now().isoformat(), "user_id": user_id, "object_ids": selected}
@@ -623,8 +617,15 @@ class CleanupRunner:
             selected = [by_id[object_id] for object_id in object_ids]
             kinds = {action["kind"] for action in selected}
             if kinds & BACKUP_KINDS and (plan.get("confirmed") or {}).get("skip_backup"):
-                # The person chose to run without the safety backup; never offered for database writes.
-                if not await self._others_idle(plan, False):
+                # The person chose to run without the safety backup; the checks before a database write stay.
+                writes_recorder = bool(kinds & DATABASE_KINDS) or any(
+                    action.get("recorder") for action in selected
+                )
+                if not await self._others_idle(plan, writes_recorder):
+                    return
+                if writes_recorder and not (
+                    await self._disk_has_room(plan) and await self._database_intact(plan)
+                ):
                     return
                 plan["backup_skipped"] = {"at": _now().isoformat(), "user_id": user_id}
                 _event(plan, "backup_skipped", user_id=user_id)

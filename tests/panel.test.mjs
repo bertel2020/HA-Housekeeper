@@ -1371,7 +1371,7 @@ test("a dry-run plan is confirmed, typed, executed with progress, and can be und
   } };
   el.render();
   let html = shadow.innerHTML;
-  assert.ok(html.includes("data-plan-confirm") && html.includes("data-plan-discard>Cancel") && !html.includes('data-ack-all') && !html.includes("data-plan-execute"));
+  assert.ok(html.includes("data-plan-confirm") && html.includes("data-plan-discard>Discard plan") && !html.includes('data-ack-all') && !html.includes("data-plan-execute"));
   assert.ok(shadow.innerHTML.includes("2 entities will be disabled") && shadow.innerHTML.includes('data-count="2"'), "the preview already names what runs");
   await el.confirmPlan();
   const confirm = sent.find(m => m.type === "ha_housekeeper/plan_confirm");

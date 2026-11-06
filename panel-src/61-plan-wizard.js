@@ -3,12 +3,12 @@
 Object.assign(TEXT.de, {
   wzLabel: "Schritte des Plans", wzReview: "Prüfen", wzConfirm: "Bestätigen", wzRun: "Ausführen", wzResult: "Ergebnis",
   wzSumEntries: "{n} Einträge", wzSumEntriesOne: "1 Eintrag", stepNOfM: "Schritt {n} von {total}", stepShown: "angezeigt", wzSumRun: "{done} von {total} erledigt", wzIdleTitle: "Nichts auszuführen", wzIdleBlocked: "Alle {n} Einträge sind blockiert. Die Gründe stehen bei den Einträgen.", wzIdleBlockedOne: "Der Eintrag ist blockiert. Den Grund siehst du beim Eintrag.",
-  wzIdleNothingTitle: "Nichts zu ändern", wzIdleNothing: "Housekeeper hat geprüft und nichts gefunden, das sich ändern ließe. Du musst nichts tun.", verdictNothing: "Nichts zu ändern", wzIdleNone: "Dieser Plan enthält keine ausführbare Aktion.", wzBack: "Zurück",
+  wzIdleNothingTitle: "Nichts zu ändern", wzIdleNothing: "Housekeeper hat geprüft und nichts gefunden, das sich ändern ließe. Du musst nichts tun.", verdictNothing: "Nichts zu ändern", wzIdleNone: "Dieser Plan enthält keine ausführbare Aktion.", wzBack: "Zurück", planReadyTitle: "Bereit zum Ausführen", planDiscard: "Plan verwerfen",
 });
 Object.assign(TEXT.en, {
   wzLabel: "Steps of the plan", wzReview: "Review", wzConfirm: "Confirm", wzRun: "Run", wzResult: "Result",
   wzSumEntries: "{n} entries", wzSumEntriesOne: "1 entry", stepNOfM: "Step {n} of {total}", stepShown: "shown", wzSumRun: "{done} of {total} done", wzIdleTitle: "Nothing to run", wzIdleBlocked: "All {n} entries are blocked. The reasons are shown with the entries.", wzIdleBlockedOne: "The entry is blocked. Its reason is shown with the entry.",
-  wzIdleNothingTitle: "Nothing to change", wzIdleNothing: "Housekeeper checked and found nothing that could be changed. You do not need to do anything.", verdictNothing: "Nothing to change", wzIdleNone: "This plan holds no action that can run.", wzBack: "Back",
+  wzIdleNothingTitle: "Nothing to change", wzIdleNothing: "Housekeeper checked and found nothing that could be changed. You do not need to do anything.", verdictNothing: "Nothing to change", wzIdleNone: "This plan holds no action that can run.", wzBack: "Back", planReadyTitle: "Ready to run", planDiscard: "Discard plan",
 });
 
 class PlanWizardMixin {

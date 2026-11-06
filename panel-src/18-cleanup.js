@@ -576,7 +576,7 @@ class CleanupMixin {
       const run = this.runActions(plan);
       const blocked = this.modeBlocked(plan);
       const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
-      control = `<div class="setrow planfoot planfootcol"><div>${run.length ? `<strong class="plansum">${this.confirmSummary(plan, run.length)}</strong>` : ""}${this.largeRemovalNote(plan)}<small>${this.t("cleanupDryRun")}</small>${this.purgeStatesSwitch(plan)}${this.planBackupCard(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn" data-plan-close>${this.t("planClose")}</button><button class="btn" data-plan-discard>${this.t("confirmCancel")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "skipBackup" : "runNow")}</button></span></div>`;
+      control = `<div class="setrow planfoot planfootcol"><div><div class="planready"><ha-icon icon="mdi:play-circle-outline" aria-hidden="true"></ha-icon><div><strong class="plansum">${this.t("planReadyTitle")}</strong>${run.length ? `<p class="plantext">${this.confirmSummary(plan, run.length)}</p>` : ""}<small>${this.t("cleanupDryRun")}</small></div></div>${this.largeRemovalNote(plan)}${this.purgeStatesSwitch(plan)}${this.planBackupCard(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn planback" data-plan-close><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("wzBack")}</button><button class="btn" data-plan-discard>${this.t("planDiscard")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "skipBackup" : "runNow")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {
       const small = plan.actions.some(a => a.result?.reason === "backup_small_failed");
@@ -823,7 +823,7 @@ class CleanupMixin {
   // never stored on the plan. Not offered when a selected action writes into the recorder database.
   skipBackupAllowed(plan) {
     const run = this.runActions(plan);
-    return run.some(a => BACKUP_KINDS.includes(a.kind)) && !run.some(a => DATABASE_KINDS.includes(a.kind) || a.recorder);
+    return run.some(a => BACKUP_KINDS.includes(a.kind));
   }
 
   skipBackupOn(plan) { return this.skipBackupPlan === plan?.plan_id && this.skipBackupAllowed(plan); }
@@ -851,7 +851,7 @@ class CleanupMixin {
     const meta = !info.known ? "" : info.none ? `<span>${this.t("bkNoneFound")}</span>` : `<span>${this.t("bkLast", { age })}</span>${info.where ? `<span>${this.t(`bkWhere_${info.where}`)}</span>` : ""}`;
     const control = allowed
       ? `<label class="bkswitch"><input class="policyswitch" type="checkbox" role="switch" data-skip-backup-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span>${this.t("bkSwitch")}</span></label>`
-      : `<p class="bkreq">${this.t("err_skip_backup_database")}</p>`;
+      : "";
     return `<div class="bkcard ${tone}"><ha-icon icon="mdi:${icon}" aria-hidden="true"></ha-icon><div><strong>${title}</strong><small>${sub}</small>${meta ? `<p class="bkmeta">${meta}</p>` : ""}${control}</div></div>`;
   }
 

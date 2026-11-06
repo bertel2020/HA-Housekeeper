@@ -392,8 +392,10 @@ async def test_a_plan_runs_without_backup_only_when_chosen_and_never_for_databas
     database = await make_plan(
         scanner, hass, other.entity_id, kind="remove_entity", recorder="states"
     )
-    with pytest.raises(CleanupError, match="skip_backup_database"):
-        scanner.cleanup.confirm(database["plan_id"], [other.entity_id], "user-1", skip_backup=True)
+    confirmation = scanner.cleanup.confirm(
+        database["plan_id"], [other.entity_id], "user-1", skip_backup=True
+    )
+    assert confirmation["token"]
 
 
 async def test_removal_waits_for_a_backup_removes_and_can_be_restored(hass: HomeAssistant) -> None:
