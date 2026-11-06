@@ -24,18 +24,20 @@ class PlanWizardMixin {
   // The stage that is on is shown at first; a click on a stage that is done, on or failed shows that one instead, until the plan moves on.
   planTrack(plan, stage, confirming) {
     const steps = Object.fromEntries(this.planSteps(plan, confirming).map(s => [s.id, s]));
-    const groups = [["wzReview", ["stepSelect", "stepAnalysis"]], ["wzConfirm", ["stepConfirm"]], ["wzRun", ["stepBackup", "stepRun"]], ["wzResult", ["stepVerify"]]];
+    const groups = [["wzReview", ["stepSelect", "stepAnalysis", "stepConfirm"]], ["wzRun", ["stepBackup", "stepRun"]], ["wzResult", ["stepVerify"]]];
     const total = plan.actions.length, done = plan.actions.filter(a => a.result?.state === "done").length;
     const summary = [
-      this.t(total === 1 ? "wzSumEntriesOne" : "wzSumEntries", { n: this.formatNumber(total) }), "",
+      this.t(total === 1 ? "wzSumEntriesOne" : "wzSumEntries", { n: this.formatNumber(total) }),
       stage >= 2 ? this.t("wzSumRun", { done: this.formatNumber(done), total: this.formatNumber(total) }) : "",
       "",
     ];
+    // The confirm dialog is part of the review: the plan shows three stages, the backend runs four.
+    const shown = Math.max(0, stage - 1);
     const states = groups.map(([, ids], i) => {
       const list = ids.map(id => steps[id]);
-      return list.some(x => x.state === "failed") ? "fail" : stage > i || (stage === 3 && i === 3 && list.every(x => x.state === "done")) ? "done" : stage === i ? "cur" : "todo";
+      return list.some(x => x.state === "failed") ? "fail" : shown > i || (stage === 3 && i === 2 && list.every(x => x.state === "done")) ? "done" : shown === i ? "cur" : "todo";
     });
-    const failedAt = states.indexOf("fail"), fallback = failedAt >= 0 ? failedAt : stage;
+    const failedAt = states.indexOf("fail"), fallback = failedAt >= 0 ? failedAt : shown;
     const picked = this._planShow && this._planShow.id === plan.plan_id && this._planShow.at === stage && states[this._planShow.stage] !== "todo" ? this._planShow.stage : fallback;
     const names = this.stageNames();
     const items = [
