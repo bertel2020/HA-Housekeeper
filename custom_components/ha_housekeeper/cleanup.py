@@ -1879,20 +1879,34 @@ class JournalStore:
         self._plans[:] = [plan for plan in kept if id(plan) not in dropped]
         self._compact_to(JOURNAL_MAX_BYTES)
 
+    @staticmethod
+    def _snapshot_size(snapshot: Any) -> int:
+        return (
+            len(snapshot) if isinstance(snapshot, str) else len(json.dumps(snapshot, default=str))
+        )
+
     def _compact_to(self, limit: int) -> None:
         """Drop the whole-file copies of the oldest plans until the journal fits the limit.
 
         The entry level data (what each step changed and when) stays, so the quarantine and the
-        undo of single items keep working; only the byte-exact file undo is given up.
+        undo of single items keep working; only the byte-exact file undo is given up. The size is
+        counted from the file copies alone (the rest of a plan is small), so the whole journal is
+        never serialised on the event loop.
         """
-        size = len(json.dumps(self._plans, default=str))
+        size = sum(
+            self._snapshot_size(source["file_before"])
+            for plan in self._plans
+            for action in plan.get("actions", [])
+            for source in (action.get("result") or {}).get("sources") or []
+            if isinstance(source, dict) and source.get("file_before") is not None
+        )
         for plan in reversed(self._plans):
             if size <= limit:
                 break
             for action in plan.get("actions", []):
                 for source in (action.get("result") or {}).get("sources") or []:
                     if isinstance(source, dict) and source.get("file_before") is not None:
-                        size -= len(json.dumps(source.pop("file_before"), default=str))
+                        size -= self._snapshot_size(source.pop("file_before"))
                         source.pop("file_after_hash", None)
                         source["file_snapshot_dropped"] = True
                         plan["file_snapshot_dropped"] = True
