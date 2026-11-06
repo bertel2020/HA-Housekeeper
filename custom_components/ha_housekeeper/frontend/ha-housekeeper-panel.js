@@ -1798,7 +1798,7 @@ class StylesMixin {
       @media(max-width:640px){.stepper .st{min-width:0}.stepper .st:not(.cur) .stname{display:none}.stepper .stbtn{max-width:none}.stepper .stline{margin-left:4px;margin-right:4px}}
       .panel>.stepper{margin:0;padding:14px 16px 8px}.stdetail[hidden]{display:none}.stdetail{padding:4px 16px 14px;border-bottom:1px solid var(--hk-border)}.stdetail .sthead{display:flex;align-items:baseline;gap:8px;margin:0 0 6px}.stdetail .sthead small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
       .rangechart .grid{stroke:var(--hk-border);stroke-width:1}
-      .bkcsum{padding:14px 16px 0}.bkcsum .sumtiles{margin-bottom:0}.bkcrule{display:grid;gap:8px;margin:14px 16px;padding:12px 14px;border-radius:12px;background:var(--hk-soft)}.bkcrule .line{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.bkcrule input{width:76px}.bkcrule .line .btn{margin-left:auto}.exgrid{display:grid;grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr) auto;gap:10px;align-items:end;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.modecard.off{opacity:.55;cursor:not-allowed}.modecard.mc{--mc:var(--hk-blue);border-color:color-mix(in srgb,var(--mc) 30%,var(--hk-border));background:color-mix(in srgb,var(--mc) 8%,var(--hk-surface))}.modecard.mc:hover{background:color-mix(in srgb,var(--mc) 14%,var(--hk-surface))}.modecard.mc.on{border-color:var(--mc);box-shadow:0 0 0 2px color-mix(in srgb,var(--mc) 25%,transparent);background:color-mix(in srgb,var(--mc) 14%,var(--hk-surface))}.mcico{--mdc-icon-size:20px;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:color-mix(in srgb,var(--mc) 20%,transparent);color:var(--mc)}.rwresult{margin:0;padding:10px 16px}.rwgroup{margin:0;padding:14px 16px 4px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.exgrid.two{grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr);align-items:start}.exgrid.two>ha-icon{align-self:start;margin:24px 0 0}.exgrid>div{min-width:0}.exgrid label{display:block;margin-bottom:4px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.exgrid>ha-icon{--mdc-icon-size:20px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--hk-border);background:var(--hk-soft);color:var(--hk-text);justify-self:center;margin-bottom:3px}@media(max-width:700px){.exgrid,.exgrid.two{grid-template-columns:minmax(0,1fr)}.exgrid>ha-icon,.exgrid.two>ha-icon{transform:rotate(90deg);margin:0;align-self:center}.exgrid .btn{justify-self:start}}.bkcrule .optswitch{margin:6px 0 0;padding:14px 0 0;border:0;border-top:1px solid var(--hk-border);border-radius:0;background:none}.bkcrule p,.bkcfoot small{display:block;margin:0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}.bkcwarn{display:flex;gap:6px;align-items:flex-start;margin-top:4px;color:var(--hk-amber)}.bkcwarn ha-icon{--mdc-icon-size:14px;flex:none;margin-top:1px}.bkcfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:14px 16px;border-top:1px solid var(--hk-border)}.bkcfoot>div{flex:1 1 260px;min-width:0}.bkcerr{margin:6px 0 0;color:var(--hk-red);font-size:calc(12px*var(--hk-fs,1))}@media(max-width:640px){.bkcrow{grid-auto-flow:row}.bkcrow>.pill{grid-column:2;justify-self:start}}
+      .bkcsum{padding:14px 16px 0}.bkcsum .sumtiles{margin-bottom:0}.bkcrule{display:grid;gap:8px;margin:14px 16px;padding:12px 14px;border-radius:12px;background:var(--hk-soft)}.bkcrule .line{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.bkcrule input{width:76px}.bkcrule .line .btn{margin-left:auto}.errclose{float:right;margin:-3px -5px 0 10px;padding:3px;border:0;border-radius:50%;background:none;color:inherit;cursor:pointer;line-height:0;--mdc-icon-size:18px}.errclose:hover{background:color-mix(in srgb,currentColor 14%,transparent)}.exgrid{display:grid;grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr) auto;gap:10px;align-items:end;padding:14px 16px;border-bottom:1px solid var(--hk-border)}.modecard.off{opacity:.55;cursor:not-allowed}.modecard.mc{--mc:var(--hk-blue);border-color:color-mix(in srgb,var(--mc) 30%,var(--hk-border));background:color-mix(in srgb,var(--mc) 8%,var(--hk-surface))}.modecard.mc:hover{background:color-mix(in srgb,var(--mc) 14%,var(--hk-surface))}.modecard.mc.on{border-color:var(--mc);box-shadow:0 0 0 2px color-mix(in srgb,var(--mc) 25%,transparent);background:color-mix(in srgb,var(--mc) 14%,var(--hk-surface))}.mcico{--mdc-icon-size:20px;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:color-mix(in srgb,var(--mc) 20%,transparent);color:var(--mc)}.rwresult{margin:0;padding:10px 16px}.rwgroup{margin:0;padding:14px 16px 4px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.exgrid.two{grid-template-columns:minmax(0,1fr) 36px minmax(0,1fr);align-items:start}.exgrid.two>ha-icon{align-self:start;margin:24px 0 0}.exgrid>div{min-width:0}.exgrid label{display:block;margin-bottom:4px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.exgrid>ha-icon{--mdc-icon-size:20px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--hk-border);background:var(--hk-soft);color:var(--hk-text);justify-self:center;margin-bottom:3px}@media(max-width:700px){.exgrid,.exgrid.two{grid-template-columns:minmax(0,1fr)}.exgrid>ha-icon,.exgrid.two>ha-icon{transform:rotate(90deg);margin:0;align-self:center}.exgrid .btn{justify-self:start}}.bkcrule .optswitch{margin:6px 0 0;padding:14px 0 0;border:0;border-top:1px solid var(--hk-border);border-radius:0;background:none}.bkcrule p,.bkcfoot small{display:block;margin:0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.5}.bkcwarn{display:flex;gap:6px;align-items:flex-start;margin-top:4px;color:var(--hk-amber)}.bkcwarn ha-icon{--mdc-icon-size:14px;flex:none;margin-top:1px}.bkcfoot{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:14px 16px;border-top:1px solid var(--hk-border)}.bkcfoot>div{flex:1 1 260px;min-width:0}.bkcerr{margin:6px 0 0;color:var(--hk-red);font-size:calc(12px*var(--hk-fs,1))}@media(max-width:640px){.bkcrow{grid-auto-flow:row}.bkcrow>.pill{grid-column:2;justify-self:start}}
       .pagebar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.pb-left,.pb-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.pb-right{margin-left:auto}.pagebar .btn{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.pagebar ha-icon{--mdc-icon-size:18px}.pagebar ha-icon.spin{animation:hkspin 1s linear infinite}@keyframes hkspin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.pagebar ha-icon.spin{animation:none}}
       .navtiles.compact{grid-template-columns:repeat(auto-fit,minmax(max(200px,calc(100%/var(--cols,4) - 12px)),1fr));grid-auto-rows:1fr;gap:10px}.navtiles.compact .taskcard{display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto auto auto;column-gap:14px;row-gap:3px;align-content:center;align-items:center;padding:10px 8px 10px 16px}.navtiles.compact .taskcard>ha-icon{grid-row:1 / span 4;margin:0}.navtiles.compact .taskcard>.navfacts{grid-column:2;display:flex;flex-wrap:nowrap;gap:6px;margin-top:4px;min-height:24px;overflow:hidden;min-width:0}.navtiles.compact .taskcard>.navfacts .pill{flex:none}.navtiles.fixed .taskcard>small{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(min-width:641px){.navtiles.compact.five{grid-template-columns:repeat(6,minmax(0,1fr))}.navtiles.compact.five .taskcard{grid-column:span 2}.navtiles.compact.five .taskcard:nth-child(n+4){grid-column:span 3}}@media(max-width:640px){.navtiles.compact .taskcard>.navfacts{flex-wrap:wrap;min-height:0}.navtiles.compact .taskcard>.navfacts:empty{display:none}}.navtiles.compact .taskcard>strong{grid-column:2;grid-row:1}.navtiles.compact .taskcard>.setpill{grid-column:2;grid-row:2;flex-wrap:wrap;gap:6px;min-height:0;justify-self:start}.navtiles.compact .taskcard>.setpill:empty{display:none}.navtiles.compact .taskcard>.setpill.slot:empty{display:flex;min-height:24px}.navtiles.compact .taskcard>small{grid-column:2;grid-row:3}
       @media(max-width:640px){.navtiles{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.navtiles .taskcard{grid-template-rows:auto auto;padding:10px}.navtiles .taskcard>ha-icon,.navtiles .taskcard>small{display:none}.navtiles.compact{grid-template-columns:repeat(2,minmax(0,1fr))}.navtiles.compact .taskcard{grid-template-columns:1fr}.navtiles.compact .taskcard>strong,.navtiles.compact .taskcard>.setpill,.navtiles.compact .taskcard>.navfacts{grid-column:1}.toolbar.nosel [data-fsel-clear],.toolbar.nosel [data-sel-clear],.toolbar.nosel [data-sel-only],.toolbar.nosel .fbtns{display:none}}
@@ -5129,7 +5129,7 @@ class CleanupMixin {
     const open = this.plan && this.isOpenPreview(this.plan);
     const renew = open && (this.planStale(this.plan) || this.planChanges || (from === "confirm" && this.cleanupErrorCode === "plan_too_old")) ? `<button class="btn primary" data-plan-renew="${this.esc(this.plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : "";
     const modeLink = this.cleanupError && this.cleanupError === this.t("err_protection_mode") ? ` <button class="linkbtn" data-goto-protection>${this.t("modeBlockLink")}</button>` : "";
-    const error = this.cleanupError ? `<div class="error">${lead}: ${this.esc(this.cleanupError)}${modeLink}${renew && !this.planChanges ? ` ${renew}` : ""}</div>` : "";
+    const error = this.cleanupError ? `<div class="error"><button type="button" class="errclose" data-err-close aria-label="${this.esc(this.t("planClose"))}" title="${this.esc(this.t("planClose"))}"><ha-icon icon="mdi:close" aria-hidden="true"></ha-icon></button>${lead}: ${this.esc(this.cleanupError)}${modeLink}${renew && !this.planChanges ? ` ${renew}` : ""}</div>` : "";
     const changes = this.planChanges?.length ? `<div class="panel"><div class="error"><strong>${this.t("planChangedTitle")}</strong><small class="dim7">${this.t("planChangedHint")}</small><ul class="evlist">${this.planChanges.slice(0, 10).map(c => `<li>${this.esc(c.object_id)}</li>`).join("")}</ul>${this.planChanges.length > 10 ? `<small>${this.t("planChangedMore", { count: this.planChanges.length - 10 })}</small>` : ""}${renew}</div></div>` : "";
     return `${error ? `<div class="panel">${error}</div>` : ""}${changes}${withCard && this.plan ? this.planCard(this.plan) : ""}`;
   }
@@ -12371,12 +12371,30 @@ Object.assign(TEXT.en, {
 // CounterMixin: find sensor glitches in counters (a wrong reading that comes back) and repair the recorder rows.
 class CounterMixin {
   async loadCounterScan(refresh = false) {
+    const run = this.counterRun = (this.counterRun || 0) + 1;
     this.counterLoading = true; this.counterError = ""; this.render();
     try {
       const id = (this.counterId || "").trim();
-      this.counterScan = await this._hass.callWS({ type: "ha_housekeeper/counter_scan", refresh, ...(id ? { statistic_id: id } : {}) });
-    } catch (err) { this.counterError = this.errText(err); }
+      const found = await this._hass.callWS({ type: "ha_housekeeper/counter_scan", refresh, ...(id ? { statistic_id: id } : {}) });
+      if (run !== this.counterRun) return; // cancelled meanwhile: the answer is dropped
+      this.counterScan = found;
+    } catch (err) { if (run !== this.counterRun) return; this.counterError = this.errText(err); }
     this.counterLoading = false; this.render();
+  }
+
+  // Back to the start view: the result, the error and a running check are dropped; the inputs stay so the check can be run again.
+  cancelCounterScan() {
+    this.counterRun = (this.counterRun || 0) + 1;
+    this.counterScan = null; this.counterError = ""; this.counterLoading = false;
+    this.render();
+  }
+
+  // One finding as a short line: "20.04.2026 · 05:55–23:55" on one day, both ends otherwise.
+  counterWhen(f) {
+    const a = new Date(f.bad_first * 1000), b = new Date(f.bad_last * 1000);
+    const day = d => new Intl.DateTimeFormat(this.lang, { dateStyle: "medium" }).format(d);
+    const time = d => new Intl.DateTimeFormat(this.lang, { timeStyle: "short" }).format(d);
+    return day(a) === day(b) ? `${day(a)} · ${time(a)}–${time(b)}` : `${day(a)} ${time(a)} – ${day(b)} ${time(b)}`;
   }
 
   // The reading before and after the repair around one glitch: original dashed, repaired solid.
@@ -12548,7 +12566,7 @@ class CounterMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("counterTitle")}</h2><p>${this.t("counterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>`;
     const controls = `<div class="setrow"><div><label>${this.t("counterEntity")}</label><small>${this.t("counterEntityHint")}</small></div>${this.pickerBox("counter", "sensor.water_meter", "data-counter-id")}</div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select class="w460" data-counter-mode>${["hold", "interpolate"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`counterMode_${m}`)}</option>`).join("")}</select></div>
-      <div class="setrow planfoot"><small class="u-m0">${this.t("counterScanNote")}</small><button class="btn primary" data-counter-scan ${this.counterLoading ? 'disabled aria-busy="true"' : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></div>`;
+      <div class="setrow planfoot"><small class="u-m0">${this.t("counterScanNote")}</small><span class="actions">${s || this.counterError || this.counterLoading ? `<button class="btn" data-counter-cancel>${this.t("counterCancel")}</button>` : ""}<button class="btn primary" data-counter-scan ${this.counterLoading ? 'disabled aria-busy="true"' : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></span></div>`;
     let body = "";
     if (this.counterError) body = `${this.notice("err", this.counterError)}`;
     else if (s && !s.available) body = `<div class="emptymsg">${this.t("counterNoRecorder")}</div>`;
@@ -12556,13 +12574,20 @@ class CounterMixin {
     else if (s) {
       const kindOf = item => (item.kind === "measurement" ? "measurement" : "counter");
       const n3 = v => this.formatNumber(Math.round(v * 1000) / 1000);
-      const found = item => item.findings.map(f => {
-        const extreme = Math.abs(f.high - f.good_before) > Math.abs(f.low - f.good_before) ? f.high : f.low;
-        return `<small class="u-block">${this.esc(kindOf(item) === "measurement" ? this.t("spikeFound", { range: this.counterRange(f), extreme: n3(extreme), good: n3(f.good_before), unit: item.unit || "" }) : this.t("counterFound", { range: this.counterRange(f), low: n3(f.low), good: n3(f.good_before), unit: item.unit || "" }))}</small>`;
-      }).join("");
-      const action = item => (kindOf(item) === "measurement"
-        ? `<button class="btn primary" data-range-take="${this.esc(item.statistic_id)}" data-take-from="${item.findings[0].suggest.from}" data-take-to="${item.findings[0].suggest.to}">${this.t("rangeTake")}</button>`
-        : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? 'disabled aria-busy="true"' : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterFix")}</button>`);
+      const SHOWN = 3;
+      // One sentence per sensor; the single findings fold open below it.
+      const found = item => {
+        const list = item.findings, unit = item.unit || "", measure = kindOf(item) === "measurement";
+        const first = Math.min(...list.map(f => f.bad_first)), last = Math.max(...list.map(f => f.bad_last));
+        const extreme = list.reduce((m, f) => { const v = Math.abs(f.high - f.good_before) > Math.abs(f.low - f.good_before) ? f.high : f.low; return Math.abs(v - f.good_before) > Math.abs(m.v - m.g) ? { v, g: f.good_before } : m; }, { v: list[0].low, g: list[0].good_before });
+        const sentence = this.t(measure ? "counterSumMeasure" : "counterSumCounter", { count: list.length, extreme: n3(extreme.v), good: n3(extreme.g), unit, from: this.formatDate(first * 1000), to: this.formatDate(last * 1000) });
+        const row = f => `<small class="u-block">${this.esc(this.t(measure ? "spikeLine" : "counterLine", { when: this.counterWhen(f), low: n3(measure ? (Math.abs(f.high - f.good_before) > Math.abs(f.low - f.good_before) ? f.high : f.low) : f.low), good: n3(f.good_before), unit }))}</small>`;
+        const more = list.length > SHOWN ? `<small class="u-block u-dim">${this.esc(this.t("counterMore", { count: list.length - SHOWN }))}</small>` : "";
+        return `<details class="rowdetails"><summary>${this.esc(sentence)}</summary>${list.slice(0, SHOWN).map(row).join("")}${more}</details>`;
+      };
+      const menu = item => this.rowMenuHtml([kindOf(item) === "measurement"
+        ? ["mdi:chart-line", "rangeTake", `data-range-take="${this.esc(item.statistic_id)}" data-take-from="${item.findings[0].suggest.from}" data-take-to="${item.findings[0].suggest.to}"`]
+        : ["mdi:wrench-outline", "counterFix", `data-counter-pick="${this.esc(item.statistic_id)}"${this.cleanupBusy ? " disabled" : ""}`]]);
       const items = s.items.length ? this.sysList("counterfound", s.items, {
         sort: "name", dir: "asc", empty: "counterNone", cls: "counterfound",
         sorts: [{ key: "name", label: "counterColName", dir: "asc", get: i => i.name }, { key: "found", label: "counterColFound", dir: "desc", get: i => i.findings.length }],
@@ -12573,10 +12598,13 @@ class CounterMixin {
           { key: "name", label: "counterColName", dir: "asc", cell: i => `<div class="statcell"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><div>${this.nameCell(i.name, i.statistic_id)}</div></div>` },
           { key: "kind", label: "counterColKind", sortable: false, cell: i => this.esc(this.t(`counterKind${kindOf(i) === "measurement" ? "Measurement" : "Counter"}`)) },
           { key: "found", label: "counterColFound", dir: "desc", cell: found },
-          { key: "action", label: "counterColAction", sortable: false, cell: action },
+          { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
         ],
       }) : "";
-      body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}</div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
+      const total = s.items.reduce((sum, i) => sum + i.findings.length, 0);
+      const banner = s.items.length ? this.notice("info", this.t("counterBanner", { count: total, sensors: s.items.length })) : "";
+      const cycles = (s.cycles || []).length ? `<p class="factnote">${this.esc(this.t("counterCycles", { count: s.cycles.length }))}</p>` : "";
+      body = `${banner}${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}</div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>${cycles}`;
     }
     if (!s && !this.counterError && !this.counterLoading) body = `<div class="emptymsg info"><ha-icon icon="mdi:magnify-scan"></ha-icon><strong>${this.t("counterNotChecked")}</strong>${this.t("counterNotCheckedSub")}</div>`;
     else if (this.counterLoading) body = this.skeleton("counterScanning");
@@ -12586,6 +12614,7 @@ class CounterMixin {
   bindCounter(root) {
     root.querySelector("[data-counter-id]")?.addEventListener("change", e => { this.counterId = e.target.value.trim(); });
     root.querySelector("[data-counter-mode]")?.addEventListener("change", e => { this.counterMode = e.target.value; });
+    root.querySelectorAll("[data-counter-cancel]").forEach(el => el.addEventListener("click", () => this.cancelCounterScan()));
     root.querySelectorAll("[data-counter-scan]").forEach(el => el.addEventListener("click", () => this.loadCounterScan(true)));
     root.querySelectorAll("[data-counter-pick]").forEach(el => el.addEventListener("click", () => { this.counterSel = el.dataset.counterPick; this.counterRangeReq = null; this.createPlan(); }));
     root.querySelector("[data-range-mode]")?.addEventListener("change", () => { this.saveRange(root); this.render(); });
@@ -12599,10 +12628,15 @@ class CounterMixin {
 }
 Object.assign(TEXT.de, {
   kindCounter: "Sensorfehler bereinigen (falsche Werte in Verlauf und Statistik, Zähler und Messwerte, mit Backup)",
-  counterTitle: "Sensorfehler bereinigen", counterHint: "Ein Zähler darf nie sinken. Hat ein Sensor kurz einen falschen Wert geliefert (zum Beispiel ein Wasserzähler), zählt Home Assistant den Rücksprung als neuen Verbrauch. Housekeeper findet solche Ausreißer (bei Messwerten wie einer Temperatur auch Ausschläge weit außerhalb des Üblichen, etwa 85 °C) und ersetzt die falschen Werte im Verlauf, in den 5-Minuten-Werten und in den Stundenwerten; die verfälschte Summe wird neu berechnet. Ein Wert, der dauerhaft niedrig bleibt (Reset, Zählertausch), wird nie angefasst. Vor jedem Lauf entsteht ein Home-Assistant-Backup; die alten Werte bleiben im Journal und lassen sich zurückspielen, solange niemand die Zeilen danach geändert hat.",
+  counterTitle: "Sensorfehler bereinigen", counterHint: "A counter must never fall. If a sensor briefly reports a wrong value, Home Assistant counts the jump back as consumption (for measurements such as a temperature, spikes far outside the usual range count too). Housekeeper finds such outliers and replaces them in the history, in the 5-minute rows and in the hourly rows. A Home Assistant backup is created before every run and the old values stay in the journal. Counters that fall back on schedule (a reset, a daily meter) are never touched.",
   counterEntity: "Nur diesen Sensor prüfen", counterEntityHint: "Leer lassen, um alle Zähler und Messwerte mit Statistik zu prüfen (letztes Jahr).", counterMode: "Womit werden falsche Werte ersetzt?",
   counterMode_hold: "Letzter guter Wert (empfohlen)", counterMode_interpolate: "Gerade Linie zum nächsten guten Wert",
   counterScan: "Sensoren prüfen", counterScanning: "Wird geprüft …", counterScanNote: "Liest nur. Bei vielen Zählern kann das einen Moment dauern.", counterNoRecorder: "Ohne Recorder gibt es nichts zu prüfen.",
+  counterCancel: "Abbrechen", counterBanner: "{count} Auffälligkeiten bei {sensors} Sensoren gefunden. Noch wurde nichts geändert.",
+  counterSumCounter: "{count} Mal fiel der Wert zurück, bis auf {extreme} {unit} statt etwa {good} {unit} ({from} bis {to})",
+  counterSumMeasure: "{count} Ausreißer, bis {extreme} {unit} statt etwa {good} {unit} ({from} bis {to})",
+  counterLine: "{when}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", spikeLine: "{when}: Wert {low} {unit} statt etwa {good} {unit}",
+  counterMore: "{count} weitere", counterCycles: "{count} Zähler fallen planmäßig auf null zurück (zum Beispiel Tageszähler) und wurden nicht als Fehler gewertet.",
   counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Vorschau erstellen", counterFix: "Diesen Fund bereinigen", rangePreview: "Zeitraum bereinigen",
   counterFound: "{range}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", counterFinding: "Fehlerhafte Werte {range}: zwischen {low} und {high} {unit}. Gute Werte davor {before} und danach {after} {unit}.",
   counterRows: "Geändert werden {states} Verlaufswerte, {short} 5-Minuten-Werte und {long} Stundenwerte; die Summe wird in {tail} späteren Statistikzeilen berichtigt.",
@@ -12623,6 +12657,11 @@ Object.assign(TEXT.en, {
   counterEntity: "Check this sensor only", counterEntityHint: "Leave empty to check every counter and measurement with statistics (last year).", counterMode: "What replaces the wrong values?",
   counterMode_hold: "Last good value (recommended)", counterMode_interpolate: "Straight line to the next good value",
   counterScan: "Check sensors", counterScanning: "Checking …", counterScanNote: "Only reads. With many counters this can take a moment.", counterNoRecorder: "There is nothing to check without a recorder.",
+  counterCancel: "Cancel", counterBanner: "{count} irregularities found in {sensors} sensors. Nothing has been changed yet.",
+  counterSumCounter: "The value fell back {count} times, down to {extreme} {unit} instead of about {good} {unit} ({from} to {to})",
+  counterSumMeasure: "{count} outliers, up to {extreme} {unit} instead of about {good} {unit} ({from} to {to})",
+  counterLine: "{when}: lowest value {low} {unit} instead of about {good} {unit}", spikeLine: "{when}: value {low} {unit} instead of about {good} {unit}",
+  counterMore: "{count} more", counterCycles: "{count} counters fall back to zero on schedule (a daily meter, for example) and were not counted as errors.",
   counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Create preview", counterFix: "Clean up this finding", rangePreview: "Clean up this range",
   counterFound: "{range}: lowest value {low} {unit} instead of about {good} {unit}", counterFinding: "Faulty values {range}: between {low} and {high} {unit}. Good values before {before} and after {after} {unit}.",
   counterRows: "{states} history values, {short} 5-minute rows and {long} hourly rows change; the sum is corrected in {tail} later statistics rows.",
@@ -23690,6 +23729,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-merge]")?.addEventListener("click", () => this.mergePlans());
     root.querySelector("[data-merge-delete]")?.addEventListener("click", () => { const n = this.mergeSel?.size || 0; if (n) this.confirmAsk(this.t("confirmPlansDelete", { count: n }), () => this.deletePlans()); });
     root.querySelectorAll("[data-merge-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.dataset.mergePage.split(",").forEach(id => (el.checked ? this.mergeSel.add(id) : this.mergeSel.delete(id))); this.render(); }; });
+    root.querySelectorAll("[data-err-close]").forEach(el => el.onclick = () => { this.cleanupError = ""; this.render(); });
     root.querySelectorAll("[data-plan-renew]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.renewPlan(el.dataset.planRenew); });
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => { const id = el.dataset.planDelete, plan = (this.journal || []).find(p => p.plan_id === id) || this.plan; this.confirmAsk(this.t("confirmPlanDelete", { date: this.formatDate(plan?.created_at) }), () => this.deletePlan(id)); });
     root.querySelector("[data-opts-save]")?.addEventListener("click", () => this.saveOptions());

@@ -323,6 +323,7 @@ async def websocket_counter_scan(
             "busy": False,
             "items": items,
             "checked": found.raw["checked"],
+            "cycles": found.raw.get("cycles", []),
             "cached": found.cached,
         }
     connection.send_result(msg["id"], _versioned(result))

@@ -877,7 +877,7 @@ class CleanupMixin {
     const open = this.plan && this.isOpenPreview(this.plan);
     const renew = open && (this.planStale(this.plan) || this.planChanges || (from === "confirm" && this.cleanupErrorCode === "plan_too_old")) ? `<button class="btn primary" data-plan-renew="${this.esc(this.plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : "";
     const modeLink = this.cleanupError && this.cleanupError === this.t("err_protection_mode") ? ` <button class="linkbtn" data-goto-protection>${this.t("modeBlockLink")}</button>` : "";
-    const error = this.cleanupError ? `<div class="error">${lead}: ${this.esc(this.cleanupError)}${modeLink}${renew && !this.planChanges ? ` ${renew}` : ""}</div>` : "";
+    const error = this.cleanupError ? `<div class="error"><button type="button" class="errclose" data-err-close aria-label="${this.esc(this.t("planClose"))}" title="${this.esc(this.t("planClose"))}"><ha-icon icon="mdi:close" aria-hidden="true"></ha-icon></button>${lead}: ${this.esc(this.cleanupError)}${modeLink}${renew && !this.planChanges ? ` ${renew}` : ""}</div>` : "";
     const changes = this.planChanges?.length ? `<div class="panel"><div class="error"><strong>${this.t("planChangedTitle")}</strong><small class="dim7">${this.t("planChangedHint")}</small><ul class="evlist">${this.planChanges.slice(0, 10).map(c => `<li>${this.esc(c.object_id)}</li>`).join("")}</ul>${this.planChanges.length > 10 ? `<small>${this.t("planChangedMore", { count: this.planChanges.length - 10 })}</small>` : ""}${renew}</div></div>` : "";
     return `${error ? `<div class="panel">${error}</div>` : ""}${changes}${withCard && this.plan ? this.planCard(this.plan) : ""}`;
   }

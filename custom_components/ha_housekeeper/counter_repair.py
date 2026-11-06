@@ -48,6 +48,8 @@ SPIKE_FENCE = (
     3.0  # spreads beyond the 1 % / 99 % readings; a spike must lie outside everything normal
 )
 SPIKE_MIN_POINTS = 30
+CYCLE_MIN_RUNS = 3  # this many "glitches" that all start near zero are a counter that resets
+CYCLE_LEVEL = 0.05  # near zero: below this share of the highest reading in the glitches
 EPS = 1e-9
 
 
@@ -173,18 +175,40 @@ def merge_runs(by_table: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]
     return findings
 
 
+def is_cycle(runs: list[dict[str, Any]]) -> bool:
+    """A counter that falls back to about zero again and again (a daily meter) has no glitches.
+
+    Every cycle looks like a run: good low reading, readings that rise above it, the next
+    cycle's low reading. A real glitch sits on a high level, so it never passes this.
+    """
+    if len(runs) < CYCLE_MIN_RUNS:
+        return False
+    top = max(run["high"] for run in runs)
+    return top > 0 and all(max(run["gb"], run["ga"]) <= CYCLE_LEVEL * top for run in runs)
+
+
+def analyse_cycle(
+    short_rows: list[dict[str, Any]],
+    long_rows: list[dict[str, Any]],
+    max_span: float = MAX_SPAN,
+) -> tuple[list[dict[str, Any]], bool]:
+    """Findings of one counter and whether it is a resetting one (then it has no findings)."""
+    runs = {
+        "short_term": find_runs(ref_points(short_rows, "short_term"), max_span),
+        "long_term": find_runs(ref_points(long_rows, "long_term"), max_span),
+    }
+    if any(is_cycle(found) for found in runs.values()):
+        return [], True
+    return merge_runs(runs), False
+
+
 def analyse(
     short_rows: list[dict[str, Any]],
     long_rows: list[dict[str, Any]],
     max_span: float = MAX_SPAN,
 ) -> list[dict[str, Any]]:
     """Findings of one counter from its 5-minute and hourly rows (``ts``, ``state``, ``sum``)."""
-    return merge_runs(
-        {
-            "short_term": find_runs(ref_points(short_rows, "short_term"), max_span),
-            "long_term": find_runs(ref_points(long_rows, "long_term"), max_span),
-        }
-    )
+    return analyse_cycle(short_rows, long_rows, max_span)[0]
 
 
 def find_spikes(
@@ -912,12 +936,14 @@ def _gather(
     meta_id, unit = meta
     short_rows = _load_stats(session, "short_term", meta_id, since)
     long_rows = _load_stats(session, "long_term", meta_id, since)
+    findings, cycle = analyse_cycle(short_rows, long_rows, max_span)
     return {
         "meta_id": meta_id,
         "unit": unit,
         "short": short_rows,
         "long": long_rows,
-        "findings": analyse(short_rows, long_rows, max_span),
+        "findings": findings,
+        "cycle": cycle,
     }
 
 
@@ -951,6 +977,7 @@ def scan_blocking(
     meta = _models()["meta"]
     since = (datetime.now(UTC) - timedelta(days=days)).timestamp() if days else None
     items: list[dict[str, Any]] = []
+    cycles: list[str] = []
     checked = 0
     with session_scope(hass=hass, read_only=True) as session:
         if statistic_ids is None:
@@ -971,6 +998,8 @@ def scan_blocking(
             if data is None:
                 continue
             checked += 1
+            if data.get("cycle"):
+                cycles.append(statistic_id)
             if data["findings"]:
                 items.append(
                     {
@@ -983,7 +1012,7 @@ def scan_blocking(
                         ],
                     }
                 )
-    return {"items": items, "checked": checked}
+    return {"items": items, "checked": checked, "cycles": cycles}
 
 
 def series_blocking(

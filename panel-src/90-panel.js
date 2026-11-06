@@ -1383,6 +1383,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-merge]")?.addEventListener("click", () => this.mergePlans());
     root.querySelector("[data-merge-delete]")?.addEventListener("click", () => { const n = this.mergeSel?.size || 0; if (n) this.confirmAsk(this.t("confirmPlansDelete", { count: n }), () => this.deletePlans()); });
     root.querySelectorAll("[data-merge-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.dataset.mergePage.split(",").forEach(id => (el.checked ? this.mergeSel.add(id) : this.mergeSel.delete(id))); this.render(); }; });
+    root.querySelectorAll("[data-err-close]").forEach(el => el.onclick = () => { this.cleanupError = ""; this.render(); });
     root.querySelectorAll("[data-plan-renew]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.renewPlan(el.dataset.planRenew); });
     root.querySelectorAll("[data-plan-delete]").forEach(el => el.onclick = () => { const id = el.dataset.planDelete, plan = (this.journal || []).find(p => p.plan_id === id) || this.plan; this.confirmAsk(this.t("confirmPlanDelete", { date: this.formatDate(plan?.created_at) }), () => this.deletePlan(id)); });
     root.querySelector("[data-opts-save]")?.addEventListener("click", () => this.saveOptions());

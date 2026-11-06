@@ -1,12 +1,30 @@
 // CounterMixin: find sensor glitches in counters (a wrong reading that comes back) and repair the recorder rows.
 class CounterMixin {
   async loadCounterScan(refresh = false) {
+    const run = this.counterRun = (this.counterRun || 0) + 1;
     this.counterLoading = true; this.counterError = ""; this.render();
     try {
       const id = (this.counterId || "").trim();
-      this.counterScan = await this._hass.callWS({ type: "ha_housekeeper/counter_scan", refresh, ...(id ? { statistic_id: id } : {}) });
-    } catch (err) { this.counterError = this.errText(err); }
+      const found = await this._hass.callWS({ type: "ha_housekeeper/counter_scan", refresh, ...(id ? { statistic_id: id } : {}) });
+      if (run !== this.counterRun) return; // cancelled meanwhile: the answer is dropped
+      this.counterScan = found;
+    } catch (err) { if (run !== this.counterRun) return; this.counterError = this.errText(err); }
     this.counterLoading = false; this.render();
+  }
+
+  // Back to the start view: the result, the error and a running check are dropped; the inputs stay so the check can be run again.
+  cancelCounterScan() {
+    this.counterRun = (this.counterRun || 0) + 1;
+    this.counterScan = null; this.counterError = ""; this.counterLoading = false;
+    this.render();
+  }
+
+  // One finding as a short line: "20.04.2026 · 05:55–23:55" on one day, both ends otherwise.
+  counterWhen(f) {
+    const a = new Date(f.bad_first * 1000), b = new Date(f.bad_last * 1000);
+    const day = d => new Intl.DateTimeFormat(this.lang, { dateStyle: "medium" }).format(d);
+    const time = d => new Intl.DateTimeFormat(this.lang, { timeStyle: "short" }).format(d);
+    return day(a) === day(b) ? `${day(a)} · ${time(a)}–${time(b)}` : `${day(a)} ${time(a)} – ${day(b)} ${time(b)}`;
   }
 
   // The reading before and after the repair around one glitch: original dashed, repaired solid.
@@ -178,7 +196,7 @@ class CounterMixin {
     const head = `<div class="panelhead"><div><h2>${this.t("counterTitle")}</h2><p>${this.t("counterHint")}</p></div><div class="actions">${this.kindSelect()}</div></div>`;
     const controls = `<div class="setrow"><div><label>${this.t("counterEntity")}</label><small>${this.t("counterEntityHint")}</small></div>${this.pickerBox("counter", "sensor.water_meter", "data-counter-id")}</div>
       <div class="setrow"><div><label>${this.t("counterMode")}</label></div><select class="w460" data-counter-mode>${["hold", "interpolate"].map(m => `<option value="${m}" ${mode === m ? "selected" : ""}>${this.t(`counterMode_${m}`)}</option>`).join("")}</select></div>
-      <div class="setrow planfoot"><small class="u-m0">${this.t("counterScanNote")}</small><button class="btn primary" data-counter-scan ${this.counterLoading ? 'disabled aria-busy="true"' : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></div>`;
+      <div class="setrow planfoot"><small class="u-m0">${this.t("counterScanNote")}</small><span class="actions">${s || this.counterError || this.counterLoading ? `<button class="btn" data-counter-cancel>${this.t("counterCancel")}</button>` : ""}<button class="btn primary" data-counter-scan ${this.counterLoading ? 'disabled aria-busy="true"' : ""}>${this.counterLoading ? this.t("counterScanning") : this.t("counterScan")}</button></span></div>`;
     let body = "";
     if (this.counterError) body = `${this.notice("err", this.counterError)}`;
     else if (s && !s.available) body = `<div class="emptymsg">${this.t("counterNoRecorder")}</div>`;
@@ -186,13 +204,20 @@ class CounterMixin {
     else if (s) {
       const kindOf = item => (item.kind === "measurement" ? "measurement" : "counter");
       const n3 = v => this.formatNumber(Math.round(v * 1000) / 1000);
-      const found = item => item.findings.map(f => {
-        const extreme = Math.abs(f.high - f.good_before) > Math.abs(f.low - f.good_before) ? f.high : f.low;
-        return `<small class="u-block">${this.esc(kindOf(item) === "measurement" ? this.t("spikeFound", { range: this.counterRange(f), extreme: n3(extreme), good: n3(f.good_before), unit: item.unit || "" }) : this.t("counterFound", { range: this.counterRange(f), low: n3(f.low), good: n3(f.good_before), unit: item.unit || "" }))}</small>`;
-      }).join("");
-      const action = item => (kindOf(item) === "measurement"
-        ? `<button class="btn primary" data-range-take="${this.esc(item.statistic_id)}" data-take-from="${item.findings[0].suggest.from}" data-take-to="${item.findings[0].suggest.to}">${this.t("rangeTake")}</button>`
-        : `<button class="btn primary" data-counter-pick="${this.esc(item.statistic_id)}" ${this.cleanupBusy ? 'disabled aria-busy="true"' : ""}>${this.cleanupBusy ? this.t("planCreating") : this.t("counterFix")}</button>`);
+      const SHOWN = 3;
+      // One sentence per sensor; the single findings fold open below it.
+      const found = item => {
+        const list = item.findings, unit = item.unit || "", measure = kindOf(item) === "measurement";
+        const first = Math.min(...list.map(f => f.bad_first)), last = Math.max(...list.map(f => f.bad_last));
+        const extreme = list.reduce((m, f) => { const v = Math.abs(f.high - f.good_before) > Math.abs(f.low - f.good_before) ? f.high : f.low; return Math.abs(v - f.good_before) > Math.abs(m.v - m.g) ? { v, g: f.good_before } : m; }, { v: list[0].low, g: list[0].good_before });
+        const sentence = this.t(measure ? "counterSumMeasure" : "counterSumCounter", { count: list.length, extreme: n3(extreme.v), good: n3(extreme.g), unit, from: this.formatDate(first * 1000), to: this.formatDate(last * 1000) });
+        const row = f => `<small class="u-block">${this.esc(this.t(measure ? "spikeLine" : "counterLine", { when: this.counterWhen(f), low: n3(measure ? (Math.abs(f.high - f.good_before) > Math.abs(f.low - f.good_before) ? f.high : f.low) : f.low), good: n3(f.good_before), unit }))}</small>`;
+        const more = list.length > SHOWN ? `<small class="u-block u-dim">${this.esc(this.t("counterMore", { count: list.length - SHOWN }))}</small>` : "";
+        return `<details class="rowdetails"><summary>${this.esc(sentence)}</summary>${list.slice(0, SHOWN).map(row).join("")}${more}</details>`;
+      };
+      const menu = item => this.rowMenuHtml([kindOf(item) === "measurement"
+        ? ["mdi:chart-line", "rangeTake", `data-range-take="${this.esc(item.statistic_id)}" data-take-from="${item.findings[0].suggest.from}" data-take-to="${item.findings[0].suggest.to}"`]
+        : ["mdi:wrench-outline", "counterFix", `data-counter-pick="${this.esc(item.statistic_id)}"${this.cleanupBusy ? " disabled" : ""}`]]);
       const items = s.items.length ? this.sysList("counterfound", s.items, {
         sort: "name", dir: "asc", empty: "counterNone", cls: "counterfound",
         sorts: [{ key: "name", label: "counterColName", dir: "asc", get: i => i.name }, { key: "found", label: "counterColFound", dir: "desc", get: i => i.findings.length }],
@@ -203,10 +228,13 @@ class CounterMixin {
           { key: "name", label: "counterColName", dir: "asc", cell: i => `<div class="statcell"><span class="tile warn"><ha-icon icon="mdi:chart-line-variant"></ha-icon></span><div>${this.nameCell(i.name, i.statistic_id)}</div></div>` },
           { key: "kind", label: "counterColKind", sortable: false, cell: i => this.esc(this.t(`counterKind${kindOf(i) === "measurement" ? "Measurement" : "Counter"}`)) },
           { key: "found", label: "counterColFound", dir: "desc", cell: found },
-          { key: "action", label: "counterColAction", sortable: false, cell: action },
+          { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
         ],
       }) : "";
-      body = `${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}</div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>`;
+      const total = s.items.reduce((sum, i) => sum + i.findings.length, 0);
+      const banner = s.items.length ? this.notice("info", this.t("counterBanner", { count: total, sensors: s.items.length })) : "";
+      const cycles = (s.cycles || []).length ? `<p class="factnote">${this.esc(this.t("counterCycles", { count: s.cycles.length }))}</p>` : "";
+      body = `${banner}${items || `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon><strong>${this.t("counterNone")}</strong>${this.t("counterNoneSub", { count: this.formatNumber(s.checked) })}</div>`}<p class="factnote">${this.t("counterChecked", { count: this.formatNumber(s.checked) })}</p>${cycles}`;
     }
     if (!s && !this.counterError && !this.counterLoading) body = `<div class="emptymsg info"><ha-icon icon="mdi:magnify-scan"></ha-icon><strong>${this.t("counterNotChecked")}</strong>${this.t("counterNotCheckedSub")}</div>`;
     else if (this.counterLoading) body = this.skeleton("counterScanning");
@@ -216,6 +244,7 @@ class CounterMixin {
   bindCounter(root) {
     root.querySelector("[data-counter-id]")?.addEventListener("change", e => { this.counterId = e.target.value.trim(); });
     root.querySelector("[data-counter-mode]")?.addEventListener("change", e => { this.counterMode = e.target.value; });
+    root.querySelectorAll("[data-counter-cancel]").forEach(el => el.addEventListener("click", () => this.cancelCounterScan()));
     root.querySelectorAll("[data-counter-scan]").forEach(el => el.addEventListener("click", () => this.loadCounterScan(true)));
     root.querySelectorAll("[data-counter-pick]").forEach(el => el.addEventListener("click", () => { this.counterSel = el.dataset.counterPick; this.counterRangeReq = null; this.createPlan(); }));
     root.querySelector("[data-range-mode]")?.addEventListener("change", () => { this.saveRange(root); this.render(); });
@@ -229,10 +258,15 @@ class CounterMixin {
 }
 Object.assign(TEXT.de, {
   kindCounter: "Sensorfehler bereinigen (falsche Werte in Verlauf und Statistik, Zähler und Messwerte, mit Backup)",
-  counterTitle: "Sensorfehler bereinigen", counterHint: "Ein Zähler darf nie sinken. Hat ein Sensor kurz einen falschen Wert geliefert (zum Beispiel ein Wasserzähler), zählt Home Assistant den Rücksprung als neuen Verbrauch. Housekeeper findet solche Ausreißer (bei Messwerten wie einer Temperatur auch Ausschläge weit außerhalb des Üblichen, etwa 85 °C) und ersetzt die falschen Werte im Verlauf, in den 5-Minuten-Werten und in den Stundenwerten; die verfälschte Summe wird neu berechnet. Ein Wert, der dauerhaft niedrig bleibt (Reset, Zählertausch), wird nie angefasst. Vor jedem Lauf entsteht ein Home-Assistant-Backup; die alten Werte bleiben im Journal und lassen sich zurückspielen, solange niemand die Zeilen danach geändert hat.",
+  counterTitle: "Sensorfehler bereinigen", counterHint: "A counter must never fall. If a sensor briefly reports a wrong value, Home Assistant counts the jump back as consumption (for measurements such as a temperature, spikes far outside the usual range count too). Housekeeper finds such outliers and replaces them in the history, in the 5-minute rows and in the hourly rows. A Home Assistant backup is created before every run and the old values stay in the journal. Counters that fall back on schedule (a reset, a daily meter) are never touched.",
   counterEntity: "Nur diesen Sensor prüfen", counterEntityHint: "Leer lassen, um alle Zähler und Messwerte mit Statistik zu prüfen (letztes Jahr).", counterMode: "Womit werden falsche Werte ersetzt?",
   counterMode_hold: "Letzter guter Wert (empfohlen)", counterMode_interpolate: "Gerade Linie zum nächsten guten Wert",
   counterScan: "Sensoren prüfen", counterScanning: "Wird geprüft …", counterScanNote: "Liest nur. Bei vielen Zählern kann das einen Moment dauern.", counterNoRecorder: "Ohne Recorder gibt es nichts zu prüfen.",
+  counterCancel: "Abbrechen", counterBanner: "{count} Auffälligkeiten bei {sensors} Sensoren gefunden. Noch wurde nichts geändert.",
+  counterSumCounter: "{count} Mal fiel der Wert zurück, bis auf {extreme} {unit} statt etwa {good} {unit} ({from} bis {to})",
+  counterSumMeasure: "{count} Ausreißer, bis {extreme} {unit} statt etwa {good} {unit} ({from} bis {to})",
+  counterLine: "{when}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", spikeLine: "{when}: Wert {low} {unit} statt etwa {good} {unit}",
+  counterMore: "{count} weitere", counterCycles: "{count} Zähler fallen planmäßig auf null zurück (zum Beispiel Tageszähler) und wurden nicht als Fehler gewertet.",
   counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Vorschau erstellen", counterFix: "Diesen Fund bereinigen", rangePreview: "Zeitraum bereinigen",
   counterFound: "{range}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", counterFinding: "Fehlerhafte Werte {range}: zwischen {low} und {high} {unit}. Gute Werte davor {before} und danach {after} {unit}.",
   counterRows: "Geändert werden {states} Verlaufswerte, {short} 5-Minuten-Werte und {long} Stundenwerte; die Summe wird in {tail} späteren Statistikzeilen berichtigt.",
@@ -253,6 +287,11 @@ Object.assign(TEXT.en, {
   counterEntity: "Check this sensor only", counterEntityHint: "Leave empty to check every counter and measurement with statistics (last year).", counterMode: "What replaces the wrong values?",
   counterMode_hold: "Last good value (recommended)", counterMode_interpolate: "Straight line to the next good value",
   counterScan: "Check sensors", counterScanning: "Checking …", counterScanNote: "Only reads. With many counters this can take a moment.", counterNoRecorder: "There is nothing to check without a recorder.",
+  counterCancel: "Cancel", counterBanner: "{count} irregularities found in {sensors} sensors. Nothing has been changed yet.",
+  counterSumCounter: "The value fell back {count} times, down to {extreme} {unit} instead of about {good} {unit} ({from} to {to})",
+  counterSumMeasure: "{count} outliers, up to {extreme} {unit} instead of about {good} {unit} ({from} to {to})",
+  counterLine: "{when}: lowest value {low} {unit} instead of about {good} {unit}", spikeLine: "{when}: value {low} {unit} instead of about {good} {unit}",
+  counterMore: "{count} more", counterCycles: "{count} counters fall back to zero on schedule (a daily meter, for example) and were not counted as errors.",
   counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Create preview", counterFix: "Clean up this finding", rangePreview: "Clean up this range",
   counterFound: "{range}: lowest value {low} {unit} instead of about {good} {unit}", counterFinding: "Faulty values {range}: between {low} and {high} {unit}. Good values before {before} and after {after} {unit}.",
   counterRows: "{states} history values, {short} 5-minute rows and {long} hourly rows change; the sum is corrected in {tail} later statistics rows.",
