@@ -421,3 +421,15 @@ def test_helper_area_and_input_number_config() -> None:
         "input_number.out",
         "input_number.step",
     ]
+
+
+def test_helper_cycle() -> None:
+    helpers = [obj("config_entry", k, domain="template") for k in ("a", "b", "c")]
+    items = [obj("entity", f"sensor.{k}", config_entry_id=k) for k in ("a", "b", "c")]
+    edge = lambda src, dst: {  # noqa: E731
+        "source": f"config_entry:{src}",
+        "target": f"entity:sensor.{dst}",
+        "relation": "REFERENCES",
+    }
+    edges = [edge("a", "b"), edge("b", "a"), edge("c", "a")]
+    assert ids(run([*helpers, *items], "helper_cycle", edges=edges)) == ["a", "b"]

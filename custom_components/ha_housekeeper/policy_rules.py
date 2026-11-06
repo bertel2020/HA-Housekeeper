@@ -189,6 +189,40 @@ def helper_write_only(entities: dict[str, dict[str, Any]], edges: list[dict[str,
             yield item
 
 
+def helper_cycle(
+    integrations: list[dict[str, Any]],
+    entities: dict[str, dict[str, Any]],
+    edges: list[dict[str, Any]],
+):
+    """Helper entries that read their own entities, directly or through other helpers (a hint)."""
+    owner = {
+        i["object_id"]: i["config_entry_id"] for i in entities.values() if i.get("config_entry_id")
+    }
+    follows: dict[str, set[str]] = {}
+    for edge in edges:
+        source, target = str(edge.get("source", "")), str(edge.get("target", ""))
+        if source.startswith("config_entry:") and target.startswith("entity:"):
+            other = owner.get(target.split(":", 1)[1])
+            if other:
+                follows.setdefault(source.split(":", 1)[1], set()).add(other)
+
+    def reaches_itself(start: str) -> bool:
+        seen: set[str] = set()
+        todo = list(follows.get(start, ()))
+        while todo:
+            node = todo.pop()
+            if node == start:
+                return True
+            if node not in seen:
+                seen.add(node)
+                todo.extend(follows.get(node, ()))
+        return False
+
+    for item in integrations:
+        if item.get("domain") in HELPER_DOMAINS and reaches_itself(item["object_id"]):
+            yield item
+
+
 def helper_area(entities: dict[str, dict[str, Any]], devices: dict[str, dict[str, Any]]):
     """Helpers (input helpers, counters, timers, helper entries) that belong to no area (a hint)."""
     for item in entities.values():
