@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"9a3c1a8861"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"b80d2e3339"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7d0126c535"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"1a21871d1a"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"3030ded4ed"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"295e8830fb"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"d227abebb8"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"9c67ce095e"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"461d5c51a0"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"af3d0aef0e"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"483ab9e922"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"c663b96277"}];
 
 const TEXT = {
   de: {
@@ -17180,14 +17180,14 @@ class BackupCleanupMixin {
 // Giving findings "without an area" one: the bulk form under the selection bar and the plan. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   fselArea: "Bereich zuweisen", state_area: "Bereich zuweisen", areaChoose: "Bereich", areaSuggest: "Je Eintrag nach Vorschlag", areaNone: "Es gibt noch keinen Bereich. Lege einen in Home Assistant an.",
-  areaNoItems: "Wähle Entitäten oder Geräte aus.", areaSuggested: "vorgeschlagen", areaNote: "Der Vorschlag kommt vom Gerät oder von der Integration, nie vom Namen.",
+  areaNoItems: "Wähle Entitäten oder Geräte aus.", areaSuggested: "vorgeschlagen", areaNote: "Der Vorschlag kommt vom Gerät oder von der Integration, nie vom Namen.", deAreaKept: "Der Bereich ist schon gesetzt. Ändere ihn in Home Assistant.",
   reason_no_suggestion: "Kein sicherer Vorschlag. Wähle einen Bereich aus.", reason_area_missing: "Den Bereich gibt es nicht.", reason_has_area: "Hat inzwischen einen Bereich.",
   check_area_set: "Bereich ist gesetzt", confirmedSummaryArea: "{count} Einträge bekommen einen Bereich. Das lässt sich vollständig rückgängig machen.", result_area: "Bereich gesetzt",
   abort_area_not_allowed: "Home Assistant erlaubt diesen Bereich nicht. Setze ihn am Gerät.",
 });
 Object.assign(TEXT.en, {
   fselArea: "Assign area", state_area: "Assign area", areaChoose: "Area", areaSuggest: "Per entry, as suggested", areaNone: "There is no area yet. Create one in Home Assistant.",
-  areaNoItems: "Select entities or devices.", areaSuggested: "suggested", areaNote: "The suggestion comes from the device or the integration, never from the name.",
+  areaNoItems: "Select entities or devices.", areaSuggested: "suggested", areaNote: "The suggestion comes from the device or the integration, never from the name.", deAreaKept: "The area is already set. Change it in Home Assistant.",
   reason_no_suggestion: "No safe suggestion. Choose an area.", reason_area_missing: "That area does not exist.", reason_has_area: "Has an area now.",
   check_area_set: "Area is set", confirmedSummaryArea: "{count} entries get an area. This can be fully undone.", result_area: "Area set",
   abort_area_not_allowed: "Home Assistant does not allow this area here. Set it on the device.",
@@ -17285,7 +17285,8 @@ class DetailEditMixin {
     const now = this.areaName(item), suggest = !item.area_id;
     const renameControls = item.object_type === "entity" ? `<span class="deid"><span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="de-id" data-de-id value="${this.esc(e.value)}" autocomplete="off" spellcheck="false" aria-label="${this.esc(this.t("deNewId"))}"></span>
         <button type="submit" class="btn primary" data-de-rename-btn ${this.detailIdOk(item, e.value) && !this.planBusy ? "" : "disabled"}>${this.t(short ? "deRenameShort" : "deRename")}</button>` : "";
-    const areaControls = areas.length ? `<select id="de-area" data-de-area-select aria-label="${this.esc(this.t("deArea"))}">${suggest ? `<option value="">${this.t("areaSuggest")}</option>` : ""}${areas.map(a => `<option value="${this.esc(a.object_id)}" ${e.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
+    // The backend only fills an empty area, so a set one is not offered for change here.
+    const areaControls = areas.length && item.area_id ? `<small class="factnote">${this.t("deAreaKept")}</small>` : areas.length ? `<select id="de-area" data-de-area-select aria-label="${this.esc(this.t("deArea"))}">${suggest ? `<option value="">${this.t("areaSuggest")}</option>` : ""}${areas.map(a => `<option value="${this.esc(a.object_id)}" ${e.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
         <button type="submit" class="btn primary" data-de-area-btn ${(suggest || e.area !== item.area_id) && !this.planBusy ? "" : "disabled"}>${this.t(short ? "deAssignShort" : "deAssign")}</button>` : "";
     return { e, now, suggest, renameControls, areaControls, hasAreas: areas.length > 0 };
   }

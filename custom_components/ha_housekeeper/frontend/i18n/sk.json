@@ -5358,6 +5358,7 @@
 "areaNoItems": "Vyber entity alebo zariadenia.",
 "areaSuggested": "navrhnuté",
 "areaNote": "Návrh vychádza zo zariadenia alebo integrácie, nikdy z názvu.",
+"deAreaKept": "Oblasť je už nastavená. Zmeň ju v Home Assistant.",
 "reason_no_suggestion": "Žiadny bezpečný návrh. Vyber oblasť.",
 "reason_area_missing": "Táto oblasť neexistuje.",
 "reason_has_area": "Už má priradenú oblasť.",

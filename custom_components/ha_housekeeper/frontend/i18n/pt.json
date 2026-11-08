@@ -4900,6 +4900,7 @@
 "areaNoItems": "Seleciona entidades ou dispositivos.",
 "areaSuggested": "sugerida",
 "areaNote": "A sugestão vem do dispositivo ou da integração, nunca do nome.",
+"deAreaKept": "A área já está definida. Altera-a no Home Assistant.",
 "reason_no_suggestion": "Sem sugestão segura. Escolhe uma área.",
 "reason_area_missing": "Essa área não existe.",
 "reason_has_area": "Já tem uma área.",

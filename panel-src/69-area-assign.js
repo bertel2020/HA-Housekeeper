@@ -1,14 +1,14 @@
 // Giving findings "without an area" one: the bulk form under the selection bar and the plan. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   fselArea: "Bereich zuweisen", state_area: "Bereich zuweisen", areaChoose: "Bereich", areaSuggest: "Je Eintrag nach Vorschlag", areaNone: "Es gibt noch keinen Bereich. Lege einen in Home Assistant an.",
-  areaNoItems: "Wähle Entitäten oder Geräte aus.", areaSuggested: "vorgeschlagen", areaNote: "Der Vorschlag kommt vom Gerät oder von der Integration, nie vom Namen.",
+  areaNoItems: "Wähle Entitäten oder Geräte aus.", areaSuggested: "vorgeschlagen", areaNote: "Der Vorschlag kommt vom Gerät oder von der Integration, nie vom Namen.", deAreaKept: "Der Bereich ist schon gesetzt. Ändere ihn in Home Assistant.",
   reason_no_suggestion: "Kein sicherer Vorschlag. Wähle einen Bereich aus.", reason_area_missing: "Den Bereich gibt es nicht.", reason_has_area: "Hat inzwischen einen Bereich.",
   check_area_set: "Bereich ist gesetzt", confirmedSummaryArea: "{count} Einträge bekommen einen Bereich. Das lässt sich vollständig rückgängig machen.", result_area: "Bereich gesetzt",
   abort_area_not_allowed: "Home Assistant erlaubt diesen Bereich nicht. Setze ihn am Gerät.",
 });
 Object.assign(TEXT.en, {
   fselArea: "Assign area", state_area: "Assign area", areaChoose: "Area", areaSuggest: "Per entry, as suggested", areaNone: "There is no area yet. Create one in Home Assistant.",
-  areaNoItems: "Select entities or devices.", areaSuggested: "suggested", areaNote: "The suggestion comes from the device or the integration, never from the name.",
+  areaNoItems: "Select entities or devices.", areaSuggested: "suggested", areaNote: "The suggestion comes from the device or the integration, never from the name.", deAreaKept: "The area is already set. Change it in Home Assistant.",
   reason_no_suggestion: "No safe suggestion. Choose an area.", reason_area_missing: "That area does not exist.", reason_has_area: "Has an area now.",
   check_area_set: "Area is set", confirmedSummaryArea: "{count} entries get an area. This can be fully undone.", result_area: "Area set",
   abort_area_not_allowed: "Home Assistant does not allow this area here. Set it on the device.",

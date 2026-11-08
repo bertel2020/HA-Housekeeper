@@ -4900,6 +4900,7 @@
 "areaNoItems": "请选择实体或设备。",
 "areaSuggested": "建议",
 "areaNote": "建议来自设备或集成，绝不来自名称。",
+"deAreaKept": "区域已设置。请在 Home Assistant 中修改。",
 "reason_no_suggestion": "没有可靠的建议。请选择一个区域。",
 "reason_area_missing": "该区域不存在。",
 "reason_has_area": "现在已有区域。",

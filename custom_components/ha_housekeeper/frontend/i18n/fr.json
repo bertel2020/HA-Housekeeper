@@ -4900,6 +4900,7 @@
 "areaNoItems": "Sélectionne des entités ou des appareils.",
 "areaSuggested": "suggérée",
 "areaNote": "La suggestion vient de l’appareil ou de l’intégration, jamais du nom.",
+"deAreaKept": "La zone est déjà définie. Modifie-la dans Home Assistant.",
 "reason_no_suggestion": "Aucune suggestion sûre. Choisis une zone.",
 "reason_area_missing": "Cette zone n’existe pas.",
 "reason_has_area": "A maintenant une zone.",

@@ -20,7 +20,8 @@ class DetailEditMixin {
     const now = this.areaName(item), suggest = !item.area_id;
     const renameControls = item.object_type === "entity" ? `<span class="deid"><span class="mono">${this.esc(item.object_id.split(".")[0])}.</span><input id="de-id" data-de-id value="${this.esc(e.value)}" autocomplete="off" spellcheck="false" aria-label="${this.esc(this.t("deNewId"))}"></span>
         <button type="submit" class="btn primary" data-de-rename-btn ${this.detailIdOk(item, e.value) && !this.planBusy ? "" : "disabled"}>${this.t(short ? "deRenameShort" : "deRename")}</button>` : "";
-    const areaControls = areas.length ? `<select id="de-area" data-de-area-select aria-label="${this.esc(this.t("deArea"))}">${suggest ? `<option value="">${this.t("areaSuggest")}</option>` : ""}${areas.map(a => `<option value="${this.esc(a.object_id)}" ${e.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
+    // The backend only fills an empty area, so a set one is not offered for change here.
+    const areaControls = areas.length && item.area_id ? `<small class="factnote">${this.t("deAreaKept")}</small>` : areas.length ? `<select id="de-area" data-de-area-select aria-label="${this.esc(this.t("deArea"))}">${suggest ? `<option value="">${this.t("areaSuggest")}</option>` : ""}${areas.map(a => `<option value="${this.esc(a.object_id)}" ${e.area === a.object_id ? "selected" : ""}>${this.esc(a.name)}</option>`).join("")}</select>
         <button type="submit" class="btn primary" data-de-area-btn ${(suggest || e.area !== item.area_id) && !this.planBusy ? "" : "disabled"}>${this.t(short ? "deAssignShort" : "deAssign")}</button>` : "";
     return { e, now, suggest, renameControls, areaControls, hasAreas: areas.length > 0 };
   }
