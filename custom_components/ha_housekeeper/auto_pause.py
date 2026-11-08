@@ -349,6 +349,8 @@ class AutoPause:
             if entry.state is ConfigEntryState.LOADED:
                 self._recovered(entry_id)
                 return
+            if self.paused.get(entry_id) is not rec:
+                return  # resumed while the attempt waited: it stays on
             await self._disable(entry_id)
             if scheduled and entry_id in self.paused:
                 rec["done"] += 1

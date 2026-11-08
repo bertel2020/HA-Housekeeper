@@ -97,6 +97,20 @@ async def test_the_outage_of_a_paused_entry_keeps_its_start_after_the_pause(hass
     assert pause.outage_start(entry.entry_id, "active", None) is None and not pause.carry
 
 
+async def test_an_entry_resumed_during_an_attempt_stays_on(hass) -> None:
+    entry, _scanner, pause = _setup(hass)
+    await pause.pause(entry.entry_id, reason="manual", confirm=True)
+
+    async def resume_while_waiting(_seconds):
+        if entry.entry_id in pause.paused:
+            await pause.resume(entry.entry_id)
+
+    with patch("custom_components.ha_housekeeper.auto_pause.asyncio.sleep", resume_while_waiting):
+        await pause._attempt(entry.entry_id, scheduled=False)
+    assert entry.entry_id not in pause.paused and entry.disabled_by is None
+    pause.start()()
+
+
 async def test_no_attempt_starts_while_home_assistant_is_starting(hass) -> None:
     entry, scanner, pause = _setup(hass)
     scanner.warming_up = True
