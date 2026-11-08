@@ -412,7 +412,10 @@ def apply(
 def applied(item: dict[str, Any], fix: str, values: dict[str, Any]) -> bool:
     """Whether the edit is in this configuration (checked after it was written)."""
     if fix == "add_description":
-        return str(item.get("description") or "").strip() == values.get("description")
+        return (
+            str(item.get("description") or "").strip()
+            == str(values.get("description") or "").strip()
+        )
     if fix == "remove_duplicate_triggers":
         return not duplicates(item)
     if fix == "set_timeout":

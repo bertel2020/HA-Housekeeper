@@ -1718,3 +1718,11 @@ def test_deleting_the_old_entity_can_take_its_history_along_and_the_end_state_sa
         [{"kind": "replace_references", "object_id": OLD, "executable": True, "disable_old": True}]
     )
     assert off["disabled"] == 1 and off["removed"] == 0
+
+
+def test_an_added_description_is_confirmed_even_with_blanks_at_the_edge() -> None:
+    from custom_components.ha_housekeeper import refactor
+
+    assert refactor.applied(
+        {"description": "Heats the house"}, "add_description", {"description": " Heats the house\n"}
+    )
