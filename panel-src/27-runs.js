@@ -14,7 +14,7 @@ class RunsMixin {
     this.runsLoading = false; this.render();
   }
 
-  // Loaded once per visit; the button counts again.
+  // Loaded on the first visit and again after a new scan; the button counts again.
   ensureRuns() {
     if (this.runsLoading || this._runsRequested) return;
     this._runsRequested = true;

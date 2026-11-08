@@ -260,6 +260,8 @@ class HAHousekeeperPanel extends HTMLElement {
   // What these views computed from the last scan is out of date after a new one: the next time a view is drawn it asks again (the old rows stay until the answer is there).
   forgetScanViews() {
     this._policiesRequested = false; this._exposureRequested = false; this._qualityRequested = false; this._blueprintsRequested = false;
+    this._btRequested = false; this._runsRequested = false;
+    this._btEpoch = (this._btEpoch || 0) + 1;  // a forecast still on its way was asked for before the scan
   }
 
   // Asks again until the final scan has replaced the preliminary one; a busy panel or a failed request tries again later.
