@@ -4249,7 +4249,7 @@ class SettingsMixin {
       this.optionsMessage = this.t("optionsSaved");
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
-      setTimeout(() => { this.optionsMessage = ""; this.busy = false; this.load(false); }, 4000);
+      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
     } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : err?.code === "thresholds_order" ? this.t("optionsOrder") : this.errText(err); this.render(); }
   }
 }
@@ -8697,7 +8697,7 @@ class DbHealthMixin {
     // The full check runs on in the background: look again until it is done (cached reply, no new query),
     // but only while the Recorder is open; elsewhere the timer just waits for the way back.
     globalThis.clearTimeout?.(this._dbCheckTimer);
-    const look = () => { this._dbCheckTimer = setTimeout(() => (this.view === "recorder" ? this.loadDbHealth(false, false, true) : look()), 5000); };
+    const look = () => { if (this._gone) return; this._dbCheckTimer = setTimeout(() => (this.view === "recorder" ? this.loadDbHealth(false, false, true) : look()), 5000); };
     if (this.dbHealth?.integrity?.running) look();
   }
 
@@ -22911,7 +22911,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.stopScanWatch();
     window.removeEventListener?.("popstate", this._onPop);
     window.removeEventListener?.("resize", this._onResize);
-    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer"]) {
+    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer", "_dbCheckTimer"]) {
       if (this[name]) globalThis.clearTimeout?.(this[name]);
       this[name] = null;
     }

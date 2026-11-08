@@ -10,7 +10,7 @@ class DbHealthMixin {
     // The full check runs on in the background: look again until it is done (cached reply, no new query),
     // but only while the Recorder is open; elsewhere the timer just waits for the way back.
     globalThis.clearTimeout?.(this._dbCheckTimer);
-    const look = () => { this._dbCheckTimer = setTimeout(() => (this.view === "recorder" ? this.loadDbHealth(false, false, true) : look()), 5000); };
+    const look = () => { if (this._gone) return; this._dbCheckTimer = setTimeout(() => (this.view === "recorder" ? this.loadDbHealth(false, false, true) : look()), 5000); };
     if (this.dbHealth?.integrity?.running) look();
   }
 

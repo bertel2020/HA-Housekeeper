@@ -431,7 +431,7 @@ class SettingsMixin {
       this.optionsMessage = this.t("optionsSaved");
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
-      setTimeout(() => { this.optionsMessage = ""; this.busy = false; this.load(false); }, 4000);
+      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
     } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : err?.code === "thresholds_order" ? this.t("optionsOrder") : this.errText(err); this.render(); }
   }
 }

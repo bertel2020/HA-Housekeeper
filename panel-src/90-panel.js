@@ -127,7 +127,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.stopScanWatch();
     window.removeEventListener?.("popstate", this._onPop);
     window.removeEventListener?.("resize", this._onResize);
-    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer"]) {
+    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer", "_dbCheckTimer"]) {
       if (this[name]) globalThis.clearTimeout?.(this[name]);
       this[name] = null;
     }
