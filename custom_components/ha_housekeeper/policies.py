@@ -492,18 +492,15 @@ def policies(
         + list(rules_more.SYSTEM_OBJECTS)
         + [user["id"] for user in (auth or {}).get("users") or []]
     )
-    keys = {
-        policy_key(rule, object_id)
-        for rule in RULES
-        for object_id in object_ids
-        if ignored.is_ignored(policy_key(rule, object_id))
-    }
-    due = {
-        policy_key(rule, object_id)
-        for rule in RULES
-        for object_id in object_ids
-        if ignored.is_due(policy_key(rule, object_id))
-    }
+    keys: set[str] = set()
+    due: set[str] = set()
+    for rule in RULES:
+        for object_id in object_ids:
+            key = policy_key(rule, object_id)  # built once: two lookups share it
+            if ignored.is_ignored(key):
+                keys.add(key)
+            elif ignored.is_due(key):
+                due.add(key)
     decisions = {key: ignored.info(key) for key in keys}
     return evaluate(
         snapshot,
