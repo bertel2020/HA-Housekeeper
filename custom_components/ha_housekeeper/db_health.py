@@ -380,7 +380,9 @@ def query_db(hass: HomeAssistant, now: float) -> dict[str, Any]:
             ).all()
             if h is not None
         )
-        bucket = cast(States.last_updated_ts / 60, Integer)
+        # SQLite cuts the quotient off, MySQL and PostgreSQL round it: half a minute back evens that.
+        rounds = session.get_bind().dialect.name != "sqlite"
+        bucket = cast((States.last_updated_ts - (30 if rounds else 0)) / 60, Integer)
         window = now - STATE_GAP_WINDOW_DAYS * DAY
         result["state_minutes"] = sorted(
             int(minute)
