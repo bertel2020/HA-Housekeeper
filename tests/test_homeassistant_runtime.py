@@ -1777,6 +1777,43 @@ async def test_open_previews_merge_into_one_plan_and_conflicts_are_reported(
     assert (await client.receive_json())["error"]["code"] == "plan_not_open"
 
 
+async def test_a_merge_ends_when_a_preview_goes_away_while_it_is_built(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    from unittest.mock import patch
+
+    from custom_components.ha_housekeeper import websocket_api
+
+    registry = er.async_get(hass)
+    one = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="g-1", suggested_object_id="gone_one"
+    )
+    two = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="g-2", suggested_object_id="gone_two"
+    )
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    ids = []
+    for entry in (one, two):
+        await client.send_json_auto_id(
+            {
+                "type": "ha_housekeeper/plan_create",
+                "actions": [{"kind": "disable_entity", "object_id": entry.entity_id}],
+            }
+        )
+        ids.append((await client.receive_json())["result"]["plan_id"])
+    build = websocket_api._plan_from_requests
+
+    async def build_and_lose(*args, **kwargs):
+        scanner.journal.remove(ids[0])
+        return await build(*args, **kwargs)
+
+    with patch.object(websocket_api, "_plan_from_requests", build_and_lose):
+        await client.send_json_auto_id({"type": "ha_housekeeper/plan_merge", "plan_ids": ids})
+        assert (await client.receive_json())["error"]["code"] == "plan_not_open"
+    assert [p["plan_id"] for p in scanner.journal.plans] == [ids[1]]
+
+
 async def test_an_open_preview_is_checked_against_the_current_state_and_renewed(
     hass: HomeAssistant, hass_ws_client
 ) -> None:

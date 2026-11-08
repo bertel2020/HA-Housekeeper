@@ -1191,6 +1191,13 @@ async def websocket_plan_merge(
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
     plan = await _plan_from_requests(hass, snapshot, requests, scanner.refactor.enabled)
+    # The scan above takes a while: a preview that was run or removed meanwhile ends the merge.
+    if any(
+        (now := scanner.journal.get(i)) is None or now.get("executed") or now.get("run")
+        for i in ids
+    ):
+        connection.send_error(msg["id"], "plan_not_open", "A preview changed while merging")
+        return
     plan["events"].append({"at": datetime.now(UTC).isoformat(), "type": "merged", "plans": ids})
     scanner.journal.add(plan)
     for plan_id in ids:
@@ -1256,6 +1263,9 @@ async def websocket_plan_renew(
     if rebuilt is None:
         return
     old, plan = rebuilt
+    if scanner.journal.get(old["plan_id"]) is not old or old.get("executed") or old.get("run"):
+        connection.send_error(msg["id"], "plan_not_open", "The preview changed while renewing")
+        return
     if old.get("full_backup"):
         plan["full_backup"] = True
     if backup_is_local_only(hass):
