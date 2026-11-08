@@ -8,11 +8,14 @@ shared recorder query lock.
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 MAX_IDS = 50
 QUERY_WAIT = 30  # seconds to wait for a running recorder query before giving up
@@ -74,10 +77,15 @@ async def delete_statistics(
         instance.async_clear_statistics(statistic_ids)
         await instance.async_block_till_done()
         states_left: dict[str, dict[str, Any]] = {}
+        states_failed = False
         if states:
-            await hass.services.async_call(
-                "recorder", "purge_entities", {"entity_id": statistic_ids}, blocking=True
-            )
+            try:
+                await hass.services.async_call(
+                    "recorder", "purge_entities", {"entity_id": statistic_ids}, blocking=True
+                )
+            except Exception:  # noqa: BLE001 - the statistics are gone already: say what is left
+                _LOGGER.warning("Deleting the state rows failed", exc_info=True)
+                states_failed = True
 
             async def remaining() -> int | None:
                 nonlocal states_left
@@ -86,7 +94,8 @@ async def delete_statistics(
                 states_left = found or {}
                 return None if found is None else sum(v["rows"] for v in found.values())
 
-            await _settle(instance, remaining)
+            if not states_failed:
+                await _settle(instance, remaining)
         left = await statistics_left(hass, statistic_ids)
     finally:
         lock.release()
@@ -99,7 +108,7 @@ async def delete_statistics(
         + [
             {"id": sid, "reason": "states_left"}
             for sid in statistic_ids
-            if sid not in left and (states_left.get(sid) or {}).get("rows")
+            if sid not in left and (states_failed or (states_left.get(sid) or {}).get("rows"))
         ],
         None,
     )

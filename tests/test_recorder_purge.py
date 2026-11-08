@@ -108,6 +108,24 @@ async def test_the_purge_waits_for_a_running_query_and_gives_up_without_deleting
     assert not lock.locked()
 
 
+async def test_a_failing_state_purge_keeps_the_finished_statistics_removal_and_says_so(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from custom_components.ha_housekeeper import recorder_purge
+
+    hass, cleared = _recorder(monkeypatch)
+
+    async def broken(*args, **kwargs):
+        raise RuntimeError("service gone")
+
+    hass.services = type("S", (), {"async_call": staticmethod(broken)})()
+    removed, left, error = await recorder_purge.delete_statistics(
+        hass, ["sensor.gone"], states=True
+    )
+    assert error is None and removed == ["sensor.gone"] and cleared == [["sensor.gone"]]
+    assert left == [{"id": "sensor.gone", "reason": "states_left"}]
+
+
 async def test_trimming_waits_for_every_batch_and_stops_when_nothing_moves(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
