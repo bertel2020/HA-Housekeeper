@@ -202,6 +202,26 @@ async def test_sources_are_put_back_newest_first(hass: HomeAssistant) -> None:
     assert outcome == "undone" and seen == ["b", "a"]
 
 
+async def test_a_step_that_raises_during_undo_does_not_stop_the_others(
+    hass: HomeAssistant,
+) -> None:
+    first, second = orphan(hass, "undo_a"), orphan(hass, "undo_b")
+    scanner = await make_scanner(hass)
+    plan = await make_plan(scanner, hass, first.entity_id, second.entity_id)
+    await run(scanner, plan)
+    real = scanner.cleanup._undo_step
+
+    async def flaky(registry, action, result):
+        if action["object_id"] == second.entity_id:
+            raise RuntimeError("boom")
+        return await real(registry, action, result)
+
+    scanner.cleanup._undo_step = flaky
+    outcome = await scanner.cleanup.undo(plan["plan_id"], None)
+    assert [r["outcome"] for r in outcome["results"]] == ["undone", "unknown_error"]
+    assert er.async_get(hass).async_get(first.entity_id).disabled_by is None
+
+
 async def test_a_token_only_works_for_the_administrator_who_confirmed(
     hass: HomeAssistant,
 ) -> None:

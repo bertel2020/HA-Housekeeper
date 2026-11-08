@@ -2479,51 +2479,12 @@ class CleanupRunner:
             ):
                 continue
             kind = action["kind"]
-            if kind == "remove_entity":
-                outcome = self._restore(registry, action["object_id"], result["restore"])
-            elif kind in {"remove_device", "forget_device"}:
-                outcome = self._restore_device(result["restore"])
-            elif kind == "disable_device":
-                outcome = self._reenable_device(action["object_id"], result)
-            elif kind in RENAME_KINDS:
-                outcome = await self._undo_rename(result)
-            elif kind in REFERENCE_KINDS | REFACTOR_KINDS:
-                outcome = await self._undo_references(result)
-                if outcome == "undone":
-                    outcome = self._undo_disable_old(action["object_id"], result)
-                if outcome == "undone":
-                    outcome = await self._undo_delete_old(action["object_id"], result)
-            elif kind in METER_KINDS:
-                outcome = await self._undo_meter(result)
-                if outcome == "undone":
-                    outcome = self._undo_disable_old(action["object_id"], result)
-                if outcome == "undone":
-                    outcome = await self._undo_delete_old(action["object_id"], result)
-            elif kind in AREA_KINDS:
-                outcome = self._unset_area(action["object_id"], result)
-            elif kind in STATE_KINDS:
-                outcome = self._undo_entity_state(registry, action["object_id"], result)
-            elif kind in EXPOSE_NEW_KINDS:
-                outcome = exposure_edit.undo_expose_new(self.hass, action["object_id"], result)
-            elif kind in EXPOSURE_KINDS:
-                outcome = exposure_edit.undo(self.hass, action["object_id"], result)
-            elif kind in LABEL_KINDS:
-                outcome = self._unlabel(registry, action["object_id"], result)
-            elif kind in REPAIR_KINDS:
-                try:
-                    outcome = await self._undo_counter(result)
-                except StepAbort as stop:
-                    outcome = stop.reason
-            elif kind in DELETE_AUTOMATION_KINDS:
-                outcome = await self._undo_automation_delete(result)
-            elif kind in HELPER_KINDS:
-                outcome = await self._undo_helper(result)
-            elif kind in HELPER_IMPORT_KINDS:
-                outcome = await self._undo_import(result)
-            elif kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS | RELOAD_KINDS:
-                outcome = "irreversible"
-            else:
-                outcome = self._reenable(registry, action["object_id"], result)
+            try:
+                outcome = await self._undo_step(registry, action, result)
+            except Exception:
+                # One step that raises must not stop the rest, nor lose the journal save below.
+                _LOGGER.warning("Undoing %s failed", action["object_id"], exc_info=True)
+                outcome = "unknown_error"
             if outcome == "undone":
                 result["state"] = "undone"
                 result["undone_at"] = _now().isoformat()
@@ -2546,6 +2507,58 @@ class CleanupRunner:
             with contextlib.suppress(Exception):
                 await self.scanner.async_scan()
         return {"results": results, "status": plan["status"]}
+
+    async def _undo_step(
+        self, registry: Any, action: dict[str, Any], result: dict[str, Any]
+    ) -> str:
+        """Put one finished step back; the outcome is ``undone`` or the reason it was not."""
+        kind = action["kind"]
+        if kind == "remove_entity":
+            outcome = self._restore(registry, action["object_id"], result["restore"])
+        elif kind in {"remove_device", "forget_device"}:
+            outcome = self._restore_device(result["restore"])
+        elif kind == "disable_device":
+            outcome = self._reenable_device(action["object_id"], result)
+        elif kind in RENAME_KINDS:
+            outcome = await self._undo_rename(result)
+        elif kind in REFERENCE_KINDS | REFACTOR_KINDS:
+            outcome = await self._undo_references(result)
+            if outcome == "undone":
+                outcome = self._undo_disable_old(action["object_id"], result)
+            if outcome == "undone":
+                outcome = await self._undo_delete_old(action["object_id"], result)
+        elif kind in METER_KINDS:
+            outcome = await self._undo_meter(result)
+            if outcome == "undone":
+                outcome = self._undo_disable_old(action["object_id"], result)
+            if outcome == "undone":
+                outcome = await self._undo_delete_old(action["object_id"], result)
+        elif kind in AREA_KINDS:
+            outcome = self._unset_area(action["object_id"], result)
+        elif kind in STATE_KINDS:
+            outcome = self._undo_entity_state(registry, action["object_id"], result)
+        elif kind in EXPOSE_NEW_KINDS:
+            outcome = exposure_edit.undo_expose_new(self.hass, action["object_id"], result)
+        elif kind in EXPOSURE_KINDS:
+            outcome = exposure_edit.undo(self.hass, action["object_id"], result)
+        elif kind in LABEL_KINDS:
+            outcome = self._unlabel(registry, action["object_id"], result)
+        elif kind in REPAIR_KINDS:
+            try:
+                outcome = await self._undo_counter(result)
+            except StepAbort as stop:
+                outcome = stop.reason
+        elif kind in DELETE_AUTOMATION_KINDS:
+            outcome = await self._undo_automation_delete(result)
+        elif kind in HELPER_KINDS:
+            outcome = await self._undo_helper(result)
+        elif kind in HELPER_IMPORT_KINDS:
+            outcome = await self._undo_import(result)
+        elif kind in PURGE_KINDS | TRIM_KINDS | DELETE_BACKUP_KINDS | RELOAD_KINDS:
+            outcome = "irreversible"
+        else:
+            outcome = self._reenable(registry, action["object_id"], result)
+        return outcome
 
     async def _undo_meter(self, result: dict[str, Any]) -> str:
         """Only the ID takeover or the references can be undone; statistics need the backup."""
