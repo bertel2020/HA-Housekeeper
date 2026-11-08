@@ -751,6 +751,32 @@ async def test_switching_entities_disables_and_hides_them_and_the_undo_restores_
     assert registry.async_get(hidden.entity_id).hidden_by is None
 
 
+async def test_a_use_found_after_the_preview_stops_the_disabling(hass: HomeAssistant) -> None:
+    from unittest.mock import patch
+
+    registry = er.async_get(hass)
+    entry = orphan(hass, "used_later")
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    info = {
+        entry.entity_id: {
+            "exists": True,
+            "disabled_by": "",
+            "hidden_by": "",
+            "fingerprint": registry_fingerprint(registry.async_get(entry.entity_id)),
+        }
+    }
+    request = [{"kind": "set_entity_state", "object_id": entry.entity_id, "target": "disable"}]
+    plan = build_plan(snapshot, request, datetime.now(UTC), state_data=info)
+    scanner.journal.add(plan)
+    assert plan["actions"][0]["verdict"] == "ok"
+    certain = [{"confidence": "certain", "source": "automation.x"}]
+    with patch("custom_components.ha_housekeeper.cleanup_exec._used_by", return_value=certain):
+        await run(scanner, plan)
+    assert registry.async_get(entry.entity_id).disabled_by is None
+    assert plan["actions"][0]["result"]["reason"] == "now_blocked"
+
+
 async def test_trimming_the_history_of_one_entity_is_judged_run_verified_and_not_undone(
     hass: HomeAssistant, hass_ws_client
 ) -> None:

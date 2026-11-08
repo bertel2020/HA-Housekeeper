@@ -99,6 +99,7 @@ from .cleanup import (
     REPAIR_KINDS,
     STATE_KINDS,
     TRIM_KINDS,
+    _used_by,
     device_fingerprint,
     device_support,
     end_interrupted,
@@ -107,6 +108,7 @@ from .cleanup import (
     judge_id_replace_action,
     judge_purge_action,
     judge_rename_action,
+    judge_state_action,
     registry_fingerprint,
     trim_is_plain,
 )
@@ -1990,6 +1992,25 @@ class CleanupRunner:
                 or registry_fingerprint(entry) != action["fingerprint"]
             ):
                 return "entity_changed"
+            if action.get("target") == "disable":
+                # A use or a keep mark that came after the preview leaves the registry as it was.
+                item = context["entities"].get(object_id) or {}
+                verdict = judge_state_action(
+                    object_id,
+                    "disable",
+                    action.get("name") or object_id,
+                    {
+                        "exists": True,
+                        "disabled_by": str(entry.disabled_by or ""),
+                        "marked_keep": item.get("marked_keep"),
+                        "critical": item.get("critical"),
+                    },
+                    _used_by(snapshot["edges"], f"entity:{object_id}"),
+                )
+                if verdict["verdict"] == "blocked":
+                    return "now_blocked"
+                if verdict["verdict"] == "review" and object_id not in context["acknowledged"]:
+                    return "needs_acknowledgement"
             return None
         if kind in EXPOSE_NEW_KINDS:
             now = exposure_edit.expose_new(self.hass, object_id)
