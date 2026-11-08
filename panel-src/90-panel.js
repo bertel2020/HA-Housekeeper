@@ -1183,6 +1183,9 @@ class HAHousekeeperPanel extends HTMLElement {
       const kind = el.dataset.bhSave, date = root.querySelector(`[data-bh-date="${kind}"]`)?.value;
       this.loadBackup({ type: "ha_housekeeper/backup_attest", kind, ...(date ? { date } : {}) });
     });
+    const betaSeen = () => { try { globalThis.localStorage?.setItem("ha_housekeeper.v2_beta_hint", "1"); } catch (_) { /* no storage */ } };
+    root.querySelector("[data-beta-ok]")?.addEventListener("click", () => { betaSeen(); this.render(); });
+    root.querySelector("[data-beta-open]")?.addEventListener("click", betaSeen);
     root.querySelector("[data-levels-ok]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.render(); });
     root.querySelector("[data-levels-go]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.noteJump("settings"); this.settingsTab = "scan"; this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
     this.bindOften(root);
