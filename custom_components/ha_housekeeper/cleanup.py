@@ -922,8 +922,12 @@ def judge_automation_deletion(
         reasons.append("not_a_candidate")
     elif source is None or source.get("error"):
         reasons.append((source or {}).get("error") or "not_in_yaml")
+    elif item.get("marked_keep"):
+        reasons.append("marked_keep")
     else:
         reasons.append("deletes_config")
+        if (item.get("labels") and IGNORE_LABEL in item["labels"]) or item.get("excepted"):
+            reasons.append("ignored_by_label")
         if action["used_by"]:
             reasons.append("used_by_mentions")
     _verdict(action)
@@ -1570,7 +1574,7 @@ def build_plan(
                 {
                     f["object_id"]
                     for f in snapshot.get("findings", [])
-                    if f["rule_id"] in DELETE_CANDIDATE_RULES
+                    if f["rule_id"] in DELETE_CANDIDATE_RULES and not f.get("ignored")
                 },
                 found,
             )

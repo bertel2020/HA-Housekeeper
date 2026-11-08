@@ -1466,6 +1466,21 @@ async def test_an_unused_automation_is_removed_from_its_file_and_the_undo_puts_t
             delete_data={"automation.heating": found},
         )
         assert "not_a_candidate" in not_listed["actions"][0]["reasons"]
+        # a kept automation, or one whose finding was decided to be kept, is never deleted
+        kept = {
+            **snapshot,
+            "objects": [
+                {**o, "marked_keep": True} if o["object_id"] == "automation.heating" else o
+                for o in snapshot["objects"]
+            ],
+        }
+        decided = {**snapshot, "findings": [{**f, "ignored": True} for f in snapshot["findings"]]}
+        for case, reason in ((kept, "marked_keep"), (decided, "not_a_candidate")):
+            blocked = build_plan(
+                case, request, datetime.now(UTC), delete_data={"automation.heating": found}
+            )
+            assert blocked["actions"][0]["verdict"] == "blocked"
+            assert reason in blocked["actions"][0]["reasons"]
         missing = build_plan(
             snapshot,
             request,

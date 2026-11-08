@@ -2042,8 +2042,16 @@ class CleanupRunner:
             if found["error"] or found["fingerprint"] != action["sources"][0]["hash"]:
                 return "source_changed"
             if not any(
-                f["object_id"] == object_id and f["rule_id"] in DELETE_CANDIDATE_RULES
+                f["object_id"] == object_id
+                and f["rule_id"] in DELETE_CANDIDATE_RULES
+                and not f.get("ignored")
                 for f in snapshot.get("findings", [])
+            ):
+                return "now_blocked"
+            if any(
+                o["object_id"] == object_id and o.get("marked_keep")
+                for o in snapshot["objects"]
+                if o["object_type"] == "automation"
             ):
                 return "now_blocked"
             return None if object_id in context["acknowledged"] else "needs_acknowledgement"
