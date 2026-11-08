@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.0.0-beta.4 - 2026-11-08
 
 ### Neu
 
@@ -37,6 +37,11 @@
 - **Backup-Karte bei der Bestätigung:** Alles zum Backup eines Plans steht in einer Karte: was vorher passiert, wann das letzte Backup war und wo es liegt, und der Schalter „Ohne neues Backup ausführen“ (nicht mehr hinter „Erweitert“).
   - Die Karte ist grün bei einem frischen Backup, gelb bei einem Backup, das älter als 3 Tage ist oder fehlt, und rot, wenn du ohne neues Backup ausführst. Dann steht dort, auf welchen Stand du zurückfielest.
   - Die Zusammenfassungen der Pläne sind kürzer, der Satz zum Backup steht nur noch in der Karte. „Entitäts-Verweise ersetzen“ heißt jetzt „N Stellen werden umgestellt“.
+
+### Behoben
+
+- **Einstellungen und Ansichten:** Eingegebene Schwellenwerte bleiben bis zum Speichern erhalten. Batterie- und Laufdaten werden nach einem neuen Scan neu geladen. Die Detailansicht bietet keinen Bereichswechsel an, den der Plan ablehnt.
+- **Typprüfung:** Der MyPy-Check der CI läuft wieder durch.
 
 ### English
 
@@ -75,6 +80,11 @@
 - **Backup card on the confirmation:** Everything about the backup of a plan sits in one card: what happens first, when the last backup was and where it is, and the switch "Run without a new backup" (no longer behind "Advanced").
   - The card is green for a fresh backup, yellow for one older than 3 days or none, and red when you run without a new backup. It then says which state you would be back at.
   - The plan summaries are shorter, the sentence about the backup is only in the card. "Replace entity references" now reads "N places are switched".
+
+#### Fixed
+
+- **Settings and views:** Typed thresholds stay until they are saved. Battery and run data are loaded again after a new scan. The detail view no longer offers an area change that the plan rejects.
+- **Type check:** The MyPy check of the CI passes again.
 
 ## 2.0.0-beta.3 - 2026-11-05
 
