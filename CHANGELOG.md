@@ -4,6 +4,18 @@
 >
 > **Beta of 2.0:** The pre-release [2.0.0-beta.4](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.4) is there to try: findings by topic with a page of its own, "Fix", a guided tour for cleaning up, the view "Simple" or "Full" and new names for the outcomes. In HACS (from Home Assistant 2026.11: Marketplace) it shows under "Redownload" with beta versions switched on. A normal update stays on 1.x.
 
+## 1.14.3 - 2026-11-08
+
+### Neu
+
+- **Hinweis auf Version 2.0:** Die Übersicht weist einmal pro Browser auf die Beta von 2.0 hin (wegklickbar). Unter Einstellungen → Info bleibt ein Link zu den Vorabversionen.
+
+### English
+
+#### New
+
+- **Note about version 2.0:** The overview points to the 2.0 beta once per browser (can be dismissed). Settings → Info keeps a link to the pre-releases.
+
 ## 1.14.2 - 2026-11-08
 
 ### Neu
