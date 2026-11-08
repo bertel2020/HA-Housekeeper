@@ -157,15 +157,24 @@ TRIM_MAX_DAYS = 3650
 TRIM_IDS = 200
 
 
-def _count_older(hass: HomeAssistant, ids: list[str], keep_days: int) -> dict[str, dict[str, Any]]:
-    """Blocking: state rows older than ``keep_days`` days per entity, with the oldest time."""
+def _count_older(
+    hass: HomeAssistant, ids: list[str], keep_days: int, at: float | None = None
+) -> dict[str, dict[str, Any]]:
+    """Blocking: state rows older than ``keep_days`` days per entity, with the oldest time.
+
+    ``at`` is the moment the days count back from (epoch seconds); a run fixes it once, so that
+    the check after a deletion does not count rows that only aged past the line meanwhile.
+    """
     from datetime import UTC, datetime, timedelta
 
     from homeassistant.components.recorder.db_schema import States, StatesMeta
     from homeassistant.components.recorder.util import session_scope
     from sqlalchemy import func, select
 
-    cutoff = (datetime.now(UTC) - timedelta(days=keep_days)).timestamp()
+    cutoff = (datetime.fromtimestamp(at, UTC) if at else datetime.now(UTC)) - timedelta(
+        days=keep_days
+    )
+    cutoff = cutoff.timestamp()
     found: dict[str, dict[str, Any]] = {i: {"rows": 0, "oldest": None} for i in ids}
     with session_scope(hass=hass, read_only=True) as session:
         for entity_id, rows, oldest in session.execute(
@@ -181,7 +190,12 @@ def _count_older(hass: HomeAssistant, ids: list[str], keep_days: int) -> dict[st
 
 
 async def count_older(
-    hass: HomeAssistant, ids: list[str], keep_days: int, *, locked: bool = False
+    hass: HomeAssistant,
+    ids: list[str],
+    keep_days: int,
+    *,
+    at: float | None = None,
+    locked: bool = False,
 ) -> dict[str, dict[str, Any]] | None:
     """State rows that ``trim_history`` would delete; None when they cannot be counted.
 
@@ -204,7 +218,7 @@ async def count_older(
             return None
     try:
         return await get_instance(hass).async_add_executor_job(
-            _count_older, hass, wanted, keep_days
+            _count_older, hass, wanted, keep_days, at
         )
     except Exception:  # noqa: BLE001 - without the count the plan cannot judge, it says so
         return None
@@ -214,7 +228,7 @@ async def count_older(
 
 
 async def trim_states(
-    hass: HomeAssistant, entity_id: str, keep_days: int
+    hass: HomeAssistant, entity_id: str, keep_days: int, at: float | None = None
 ) -> tuple[int | None, str | None]:
     """Delete the state rows of one entity older than ``keep_days`` days; statistics stay.
 
@@ -240,7 +254,7 @@ async def trim_states(
         )
 
         async def remaining() -> int | None:
-            found = await count_older(hass, [entity_id], keep_days, locked=True)
+            found = await count_older(hass, [entity_id], keep_days, at=at, locked=True)
             return None if found is None else found[entity_id]["rows"]
 
         left = await _settle(get_instance(hass), remaining)
@@ -257,15 +271,15 @@ DELETE_BATCH = 2000  # state rows deleted per round of a range
 
 
 def _trim_window(
-    keep_days: int | None, rng: dict[str, Any] | None
+    keep_days: int | None, rng: dict[str, Any] | None, at: float | None = None
 ) -> tuple[float | None, float | None]:
     """The half-open window ``[start, end)`` in epoch seconds a trim removes (start None: none)."""
     from datetime import UTC, datetime, timedelta
 
     if rng:
         return float(rng["from"]), float(rng["to"])
-    cutoff = (datetime.now(UTC) - timedelta(days=keep_days or 0)).timestamp()
-    return None, cutoff
+    base = datetime.fromtimestamp(at, UTC) if at else datetime.now(UTC)
+    return None, (base - timedelta(days=keep_days or 0)).timestamp()
 
 
 def _count_trim(
@@ -274,6 +288,7 @@ def _count_trim(
     keep_days: int | None,
     rng: dict[str, Any] | None,
     tables: list[str],
+    at: float | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Blocking: rows each chosen table would lose, with the oldest and the newest time."""
     from homeassistant.components.recorder.db_schema import (
@@ -286,7 +301,7 @@ def _count_trim(
     from homeassistant.components.recorder.util import session_scope
     from sqlalchemy import func, select
 
-    start, end = _trim_window(keep_days, rng)
+    start, end = _trim_window(keep_days, rng, at)
     found: dict[str, dict[str, Any]] = {
         t: {"rows": 0, "oldest": None, "newest": None} for t in tables
     }
@@ -339,6 +354,7 @@ async def count_trim(
     rng: dict[str, Any] | None,
     tables: list[str],
     *,
+    at: float | None = None,
     locked: bool = False,
 ) -> dict[str, Any] | None:
     """What a trim of ``tables`` would delete: ``{"rows", "oldest", "tables": {...}}``.
@@ -359,7 +375,7 @@ async def count_trim(
             return None
     try:
         per_table = await get_instance(hass).async_add_executor_job(
-            _count_trim, hass, entity_id, keep_days, rng, list(tables)
+            _count_trim, hass, entity_id, keep_days, rng, list(tables), at
         )
     except Exception:  # noqa: BLE001 - without the count the plan cannot judge, it says so
         return None
@@ -380,6 +396,7 @@ def _delete_trim(
     keep_days: int | None,
     rng: dict[str, Any] | None,
     tables: list[str],
+    at: float | None = None,
 ) -> dict[str, int]:
     """In the recorder thread: delete the rows of the chosen tables; returns rows deleted per table.
 
@@ -396,7 +413,7 @@ def _delete_trim(
     from homeassistant.components.recorder.util import session_scope
     from sqlalchemy import delete, select, update
 
-    start, end = _trim_window(keep_days, rng)
+    start, end = _trim_window(keep_days, rng, at)
     deleted = dict.fromkeys(tables, 0)
     with session_scope(session=instance.get_session()) as session:
         stat_meta = session.execute(
@@ -433,6 +450,11 @@ def _delete_trim(
                 session.execute(delete(States).where(States.state_id.in_(ids)))
                 deleted["states"] += len(ids)
                 session.commit()
+                # The recorder remembers the newest state id of each entity for the next row's
+                # old_state_id; a deleted id left there fails the foreign key of that insert.
+                manager = getattr(instance, "states_manager", None)
+                if manager is not None:
+                    manager.evict_purged_state_ids(set(ids))
     return deleted
 
 
@@ -442,6 +464,7 @@ async def trim_extra(
     keep_days: int | None,
     rng: dict[str, Any] | None,
     tables: list[str],
+    at: float | None = None,
 ) -> tuple[dict[str, int] | None, str | None]:
     """Delete statistics older than ``keep_days`` and/or a stretch of states, as a recorder task.
 
@@ -459,7 +482,7 @@ async def trim_extra(
         return None, "recorder_busy"
     try:
         deleted = await run_in_recorder(
-            hass, lambda instance: _delete_trim(instance, entity_id, keep_days, rng, tables)
+            hass, lambda instance: _delete_trim(instance, entity_id, keep_days, rng, tables, at)
         )
     finally:
         lock.release()

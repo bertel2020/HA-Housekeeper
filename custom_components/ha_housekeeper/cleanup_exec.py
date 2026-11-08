@@ -52,6 +52,7 @@ import inspect
 import json
 import logging
 import secrets
+import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -1310,11 +1311,12 @@ class CleanupRunner:
         entity_id, keep_days = action["object_id"], action["keep_days"]
         if not trim_is_plain(action):
             return await self._trim_extra(action)
-        left, error = await trim_states(self.hass, entity_id, keep_days)
+        at = time.time()  # the line the days count back from: fixed once for delete and check
+        left, error = await trim_states(self.hass, entity_id, keep_days, at)
         if error:
             raise StepAbort(error)
         # Rows were deleted either way: the step stays done (irreversible) and the plan stops.
-        deleted = {"keep_days": keep_days, "irreversible": True}
+        deleted = {"keep_days": keep_days, "irreversible": True, "cutoff_at": at}
         if left is None:  # whether all of it is gone cannot be told
             raise StepAbort("trim_unverified", deleted)
         if left:
@@ -1324,13 +1326,19 @@ class CleanupRunner:
         self.scanner.events.record(
             "purge", _now(), requested=1, removed=0, skipped=0, states=True, rows=rows
         )
-        return {"keep_days": keep_days, "rows": rows, "irreversible": True}
+        return {"keep_days": keep_days, "rows": rows, "irreversible": True, "cutoff_at": at}
 
     async def _trim_extra(self, action: dict[str, Any]) -> dict[str, Any]:
         """Delete statistics older than ``keep_days`` and/or a stretch of states; noted, never undone."""
         tables = action.get("tables") or ["states"]
+        at = time.time()
         deleted, error = await trim_extra(
-            self.hass, action["object_id"], action.get("keep_days"), action.get("range"), tables
+            self.hass,
+            action["object_id"],
+            action.get("keep_days"),
+            action.get("range"),
+            tables,
+            at,
         )
         if error or deleted is None:
             raise StepAbort(error or "recorder_busy")
@@ -1339,11 +1347,17 @@ class CleanupRunner:
             "tables": tables,
             "deleted": deleted,
             "irreversible": True,
+            "cutoff_at": at,
         }
         if action.get("range"):
             result["range"] = action["range"]
         left = await count_trim(
-            self.hass, action["object_id"], action.get("keep_days"), action.get("range"), tables
+            self.hass,
+            action["object_id"],
+            action.get("keep_days"),
+            action.get("range"),
+            tables,
+            at=at,
         )
         if left is None:  # rows were deleted either way: the step stays done and the plan stops
             raise StepAbort("trim_unverified", result)
@@ -2350,8 +2364,9 @@ class CleanupRunner:
                     gone = True
                 checks.append({"check": "automation_gone", "object_id": object_id, "ok": gone})
             elif kind in TRIM_KINDS:
+                at = (action.get("result") or {}).get("cutoff_at")
                 if trim_is_plain(action):
-                    older = await count_older(self.hass, [object_id], action["keep_days"])
+                    older = await count_older(self.hass, [object_id], action["keep_days"], at=at)
                     ok = older is not None and not older[object_id]["rows"]
                 else:
                     trimmed = await count_trim(
@@ -2360,6 +2375,7 @@ class CleanupRunner:
                         action.get("keep_days"),
                         action.get("range"),
                         action.get("tables") or ["states"],
+                        at=at,
                     )
                     ok = trimmed is not None and not trimmed["rows"]
                 checks.append({"check": "history_trimmed", "object_id": object_id, "ok": ok})

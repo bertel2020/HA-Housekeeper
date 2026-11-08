@@ -126,7 +126,7 @@ async def test_trimming_waits_for_every_batch_and_stops_when_nothing_moves(
     async def call(*args, **kwargs):
         return None
 
-    async def counted(hass_, ids, keep_days, locked=False):
+    async def counted(hass_, ids, keep_days, at=None, locked=False):
         assert locked  # trim_states holds the shared lock while it counts
         return {i: {"rows": rows["n"], "oldest": None} for i in ids}
 
@@ -239,7 +239,18 @@ async def test_trimming_deletes_old_states_a_stretch_and_old_statistics_only(
     }
     before = await recorder_purge.count_trim(hass, "sensor.meter", None, rng, ["states"])
     assert before["rows"] == 1
-    deleted, error = await recorder_purge.trim_extra(hass, "sensor.meter", None, rng, ["states"])
+    from unittest.mock import patch
+
+    from homeassistant.components.recorder import get_instance
+
+    manager = get_instance(hass).states_manager
+    with patch.object(
+        manager, "evict_purged_state_ids", wraps=manager.evict_purged_state_ids
+    ) as ev:
+        deleted, error = await recorder_purge.trim_extra(
+            hass, "sensor.meter", None, rng, ["states"]
+        )
+    assert ev.call_count == 1  # the recorder must forget the deleted ids, or its next insert fails
     assert (deleted, error) == ({"states": 1}, None)
     assert (await recorder_purge.count_trim(hass, "sensor.meter", None, rng, ["states"]))[
         "rows"

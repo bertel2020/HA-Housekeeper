@@ -830,10 +830,10 @@ async def test_trimming_the_history_of_one_entity_is_judged_run_verified_and_not
     manager, _ = fake_backup()
     trimmed: list[tuple[str, int]] = []
 
-    async def counted(hass_, ids, days):
+    async def counted(hass_, ids, days, **kwargs):
         return {i: {"rows": 0 if trimmed else 5000, "oldest": 1.0} for i in ids}
 
-    async def trim(hass_, entity_id, days):
+    async def trim(hass_, entity_id, days, at=None):
         trimmed.append((entity_id, days))
         return 0, None
 
@@ -920,6 +920,7 @@ def test_judging_a_trim_of_statistics_or_a_stretch() -> None:
         (["long_term"], {"from": 1.0, "to": 5.0}, "range_states_only"),
         (None, {"from": 5.0, "to": 1.0}, "bad_range"),
         (["other"], None, "bad_tables"),
+        (None, {"from": 1.0, "to": 4e12}, "bad_range"),  # a window reaching into the future
     ):
         judged = judge_trim_action("sensor.a", 30, {}, found, True, tables=tables, rng=rng)
         assert judged["verdict"] == "blocked" and reason in judged["reasons"]
@@ -1278,13 +1279,13 @@ async def test_trimming_beyond_old_states_reports_what_it_could_not_confirm(
     scanner = await make_scanner(hass)
     action = {"object_id": "sensor.meter", "keep_days": 7, "tables": ["long_term"]}
 
-    async def deleted(*args):
+    async def deleted(*args, **kwargs):
         return {"long_term": 3}, None
 
     monkeypatch.setattr(cleanup_exec, "trim_extra", deleted)
     for counted, reason in ((None, "trim_unverified"), ({"rows": 2}, "trim_left")):
 
-        async def count(*args, counted=counted):
+        async def count(*args, counted=counted, **kwargs):
             return counted
 
         monkeypatch.setattr(cleanup_exec, "count_trim", count)
@@ -1292,7 +1293,7 @@ async def test_trimming_beyond_old_states_reports_what_it_could_not_confirm(
             await scanner.cleanup._trim_extra(action)
         assert stop.value.reason == reason and stop.value.result["deleted"] == {"long_term": 3}
 
-    async def nothing_left(*args):
+    async def nothing_left(*args, **kwargs):
         return {"rows": 0}
 
     monkeypatch.setattr(cleanup_exec, "count_trim", nothing_left)
@@ -1333,7 +1334,7 @@ async def test_the_check_before_a_step_refuses_a_gone_or_changed_target(
     monkeypatch.setattr(cleanup_exec, "recorder_ready", lambda hass: True)
     for counted, reason in ((None, "no_recorder"), ({entry.entity_id: {"rows": 0}}, "now_blocked")):
 
-        async def count(*args, counted=counted):
+        async def count(*args, counted=counted, **kwargs):
             return counted
 
         monkeypatch.setattr(cleanup_exec, "count_older", count)

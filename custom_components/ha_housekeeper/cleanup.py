@@ -844,6 +844,8 @@ def judge_trim_action(
         reasons.append("bad_tables")
     elif rng and (chosen != list(TRIM_STATES) or not rng["from"] < rng["to"]):
         reasons.append("bad_range" if chosen == list(TRIM_STATES) else "range_states_only")
+    elif rng and rng["to"] > datetime.now(UTC).timestamp():
+        reasons.append("bad_range")  # rows written after the preview would be caught by the run
     elif not rng and not TRIM_DAYS[0] <= keep_days <= TRIM_DAYS[1]:
         reasons.append("bad_keep_days")
     elif counted is None:
