@@ -142,17 +142,19 @@ class SettingsMixin {
   scanCard() {
     const m = this.data?.meta || {};
     if (!this.data) return `${this.skeleton("loading")}`;
+    const draft = this.optDraft || {};  // typed but not saved yet: it survives every render
+    const shown = key => draft[key] ?? m[key];
     const card = ([key, title, hint, unit, standard]) => {
       const [min, max] = OPTION_LIMITS[key];
       return `<div class="optcard"><label for="opt-${key}"><strong>${this.t(title)}</strong></label><p>${this.t(hint)}</p>
-        <div class="unitrow"><input id="opt-${key}" type="number" data-opt="${key}" data-saved="${this.esc(m[key] ?? "")}" min="${min}" max="${max}" step="1" value="${this.esc(m[key] ?? "")}"><span>${this.t(unit)}</span><em data-conv="${key}">${this.optConversion(unit, m[key])}</em></div>
-        <div class="optfoot"><span>${this.t("optDefault", { n: standard, min, max })}</span><button class="optreset" data-opt-reset="${key}" ${String(m[key]) === String(standard) ? "hidden" : ""}>${this.t("optToDefault")}</button></div></div>`;
+        <div class="unitrow"><input id="opt-${key}" type="number" data-opt="${key}" data-saved="${this.esc(m[key] ?? "")}" min="${min}" max="${max}" step="1" value="${this.esc(shown(key) ?? "")}"><span>${this.t(unit)}</span><em data-conv="${key}">${this.optConversion(unit, shown(key))}</em></div>
+        <div class="optfoot"><span>${this.t("optDefault", { n: standard, min, max })}</span><button class="optreset" data-opt-reset="${key}" ${String(shown(key)) === String(standard) ? "hidden" : ""}>${this.t("optToDefault")}</button></div></div>`;
     };
     const outage = OPTION_FIELDS.filter(f => OUTAGE_OPTION_KEYS.includes(f[0])).map(card).join("");
     const other = OPTION_FIELDS.filter(f => !OUTAGE_OPTION_KEYS.includes(f[0])).map(card).join("");
     const cards = `<div class="optgroup"><h3>${this.t("optGroupOutage")}</h3><p>${this.t("optGroupOutageHint")}</p></div><div class="optgrid optgrid4">${outage}</div><div class="optgroup"><h3>${this.t("optGroupOther")}</h3></div><div class="optgrid">${other}</div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>${cards}
-      <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save disabled>${this.t("saveOptions")}</button></div></section>`;
+      <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save ${Object.keys(draft).length ? "" : "disabled"}>${this.t("saveOptions")}</button></div></section>`;
   }
 
   // The decisions about findings that are away right now: they rest and hold again when the finding comes back. Each one
@@ -429,6 +431,7 @@ class SettingsMixin {
     try {
       await this._hass.callWS({ type: "ha_housekeeper/set_options", ...changes });
       this.optionsMessage = this.t("optionsSaved");
+      this.optDraft = {};
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
       setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);

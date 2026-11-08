@@ -969,6 +969,10 @@ test("scan settings are validated and sent to the options command", async () => 
   el.view = "settings"; el.settingsTab = "scan";
   el.render();
   assert.ok(shadow.innerHTML.includes('data-opt="scan_interval_hours"') && shadow.innerHTML.includes('value="24"'));
+  el.optDraft = { scan_interval_hours: "25" };
+  el.render();
+  assert.ok(shadow.innerHTML.includes('id="opt-scan_interval_hours" type="number" data-opt="scan_interval_hours" data-saved="24"') && shadow.innerHTML.includes('value="25"') && !/data-opts-save disabled/.test(shadow.innerHTML));
+  el.optDraft = {};
   const input = (key, value) => ({ dataset: { opt: key }, value });
   el.shadowRoot.querySelectorAll = selector => (selector === "[data-opt]" ? [input("scan_interval_hours", "6"), input("low_battery_percent", "500")] : []);
   await el.saveOptions();
