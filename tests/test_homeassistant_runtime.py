@@ -176,7 +176,6 @@ async def test_diagnostics_exports_only_aggregates(hass: HomeAssistant) -> None:
     scanner.snapshot["meta"]["warmup_names"] = ["Private Integration"]
 
     result = await async_get_config_entry_diagnostics(hass, config_entry)
-
     assert result["loaded"] is True
     assert result["meta"]["object_count"] >= 1
     assert result["meta"]["state_only_entities"] == 1

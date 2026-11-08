@@ -211,6 +211,23 @@
 - **Guide:** The protection mode is called there as in the interface: Watch, Change and Everything.
 - **Area suggestion:** It now compares with the sibling devices instead of with their IDs.
 - **Activity:** Taking over earlier entries at the first start never ran and does now.
+## 1.14.1 - 2026-11-04
+
+### Behoben
+
+- **Sicherheit:** Namen und Links aus Daten von Integrationen werden im Panel sicher angezeigt.
+  - Bereichs- und Entitätsnamen werden nicht mehr als Markup gelesen.
+  - Links zur Dokumentation und zu Reparaturhinweisen werden nur mit `http`, `https` oder als Pfad geöffnet.
+- **Diagnose:** Der Diagnose-Download enthält keine Titel von Integrationen und keine Entitäts-IDs mehr, nur noch deren Anzahl.
+
+### English
+
+#### Fixed
+
+- **Security:** Names and links from integration data are shown safely in the panel.
+  - Area and entity names are no longer read as markup.
+  - Links to documentation and repair hints only open with `http`, `https` or as a path.
+- **Diagnostics:** The diagnostics download no longer contains integration titles or entity IDs, only their count.
 
 ## 1.14.0 - 2026-10-31
 
