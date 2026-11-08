@@ -2267,7 +2267,7 @@ class CleanupRunner:
                         {
                             "check": "not_recurring",
                             "object_id": object_id,
-                            "ok": not recurring,
+                            "ok": object_id not in recurring,
                         }
                     )
             elif kind in METER_KINDS:

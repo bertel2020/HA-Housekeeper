@@ -226,8 +226,20 @@ def integrity_fresh(events: Any, now: datetime) -> bool:
 
 
 def check_running(hass: HomeAssistant) -> bool:
-    task = hass.data.get(DOMAIN, {}).get("integrity_task")
-    return task is not None and not task.done()
+    data = hass.data.get(DOMAIN, {})
+    task = data.get("integrity_task")
+    # After the timeout the task is over but the thread keeps reading: no second check beside it.
+    return (task is not None and not task.done()) or bool(data.get("integrity_thread"))
+
+
+def _run_check(hass: HomeAssistant) -> list[str]:
+    """The check in the recorder's thread; the flag tells while it still reads."""
+    data = hass.data.setdefault(DOMAIN, {})
+    data["integrity_thread"] = True
+    try:
+        return integrity_lines(hass)
+    finally:
+        data["integrity_thread"] = False
 
 
 async def _check(hass: HomeAssistant, events: Any) -> None:
@@ -237,7 +249,7 @@ async def _check(hass: HomeAssistant, events: Any) -> None:
     state, lines = "ok", []
     try:
         async with asyncio.timeout(INTEGRITY_TIMEOUT):
-            lines = await get_instance(hass).async_add_executor_job(integrity_lines, hass)
+            lines = await get_instance(hass).async_add_executor_job(_run_check, hass)
         state = "damaged" if lines else "ok"
     except Exception as err:
         if is_corruption_error(err):
