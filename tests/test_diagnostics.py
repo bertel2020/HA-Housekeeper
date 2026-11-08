@@ -398,3 +398,17 @@ def test_scripts_get_four_dimensions_and_count_their_callers(hass: HomeAssistant
     assert scripts["script.used"]["callers"] == {"automation": 1, "script": 1}
     assert scripts["script.lonely"]["callers"] == {"automation": 0, "script": 0}
     assert len(result["items"]) == 2 and result["scripts_total"] == 3
+
+
+def test_the_diagnostic_meta_keeps_no_path_or_agent_account() -> None:
+    from custom_components.ha_housekeeper.diagnostics import _agent_kinds, diagnostic_meta
+
+    meta = {
+        "coverage": [
+            {"source": "dashboards", "state": "partial", "items": [{"id": "kinderzimmer-anna"}]},
+            {"source": "scenes", "state": "checked"},
+        ]
+    }
+    shown = diagnostic_meta(meta)["coverage"]
+    assert shown[0]["items"] == 1 and "kinderzimmer-anna" not in str(shown)
+    assert _agent_kinds(["onedrive.account-123", "backup.local"]) == ["onedrive", "backup"]

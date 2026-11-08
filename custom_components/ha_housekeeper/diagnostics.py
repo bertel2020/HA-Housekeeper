@@ -33,10 +33,27 @@ _META_COUNT = ("unchecked", "state_only_entities", "warmup_names", "repairs", "h
 _VACATION_KEEP = ("active", "missing", "ended_at", "grace_hours", "held", "rules")
 
 
+def _agent_kinds(agents: Any) -> list[str] | None:
+    """Where a backup is stored, by integration only: the rest of an agent id can name an account."""
+    if not isinstance(agents, (list, tuple)):
+        return None
+    return [str(agent).split(".", 1)[0] for agent in agents]
+
+
 def diagnostic_meta(meta: dict[str, Any]) -> dict[str, Any]:
     """The scan meta without any id or name: a list allowed by name, so a new field stays out."""
     result = {key: meta[key] for key in _META_KEEP if key in meta}
     result.update({key: len(meta.get(key) or []) for key in _META_COUNT})
+    if isinstance(meta.get("coverage"), list):
+        # A gap may name what could not be read (a dashboard's path): only how many.
+        result["coverage"] = [
+            {
+                key: (len(value) if key == "items" and isinstance(value, list) else value)
+                for key, value in entry.items()
+            }
+            for entry in meta["coverage"]
+            if isinstance(entry, dict)
+        ]
     vacation = meta.get("vacation")
     result["vacation"] = {key: vacation.get(key) for key in _VACATION_KEEP} if vacation else None
     watch = meta.get("watch")
@@ -87,7 +104,7 @@ async def async_get_config_entry_diagnostics(
                         "database",
                     )
                 }
-                | {"agents": item.get("agents")}
+                | {"agents": _agent_kinds(item.get("agents"))}
                 for item in backups["backups"][:10]
             ]
             if backups.get("backups")
