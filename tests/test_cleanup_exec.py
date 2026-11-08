@@ -169,6 +169,24 @@ async def test_review_actions_need_an_individual_acknowledgement(hass: HomeAssis
     )
 
 
+async def test_an_action_that_turns_to_review_after_confirming_does_not_run(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    entry = orphan(hass, "turns_review")
+    scanner = await make_scanner(hass)
+    plan = await make_plan(scanner, hass, entry.entity_id)
+    assert plan["actions"][0]["verdict"] == "ok"
+    confirmation = scanner.cleanup.confirm(plan["plan_id"], [], "user-1")
+    statistics = [{"statistic_id": entry.entity_id, "source": "recorder"}]
+    with patch.object(InventoryScanner, "_statistics", AsyncMock(return_value=statistics)):
+        scanner.cleanup.start(plan["plan_id"], confirmation["token"], "user-1")
+        await scanner.cleanup._task
+    assert er.async_get(hass).async_get(entry.entity_id).disabled_by is None
+    assert plan["actions"][0]["result"]["state"] == "not_run"
+
+
 async def test_a_token_only_works_for_the_administrator_who_confirmed(
     hass: HomeAssistant,
 ) -> None:

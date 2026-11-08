@@ -579,7 +579,19 @@ class CleanupRunner:
         self._check_mode(plan, selected)
         token = secrets.token_urlsafe(16)
         self._tokens[plan_id] = (token, _now() + TOKEN_TTL, selected, user_id)
-        plan["confirmed"] = {"at": _now().isoformat(), "user_id": user_id, "object_ids": selected}
+        # Only what the person actually acknowledged counts: an action that was "ok" now and turns
+        # to "review" before it runs must be confirmed again.
+        confirmed_ack = [
+            a["object_id"]
+            for a in plan["actions"]
+            if a["object_id"] in selected and a["verdict"] != "ok"
+        ]
+        plan["confirmed"] = {
+            "at": _now().isoformat(),
+            "user_id": user_id,
+            "object_ids": selected,
+            "acknowledged": confirmed_ack,
+        }
         if skip_backup:
             plan["confirmed"]["skip_backup"] = True
         _event(plan, "confirmed", user_id=user_id, count=len(selected))
@@ -931,7 +943,7 @@ class CleanupRunner:
                 o["object_id"]: o for o in snapshot["objects"] if o["object_type"] == "device"
             },
             "quarantine": {q["object_id"]: q["since"] for q in snapshot.get("quarantine", [])},
-            "acknowledged": set(object_ids),
+            "acknowledged": set((plan.get("confirmed") or {}).get("acknowledged") or []),
         }
         by_id = {action["object_id"]: action for action in plan["actions"]}
         skipped = False  # an independent recorder step that did not run (or did not finish)
