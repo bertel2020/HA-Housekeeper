@@ -187,6 +187,21 @@ async def test_an_action_that_turns_to_review_after_confirming_does_not_run(
     assert plan["actions"][0]["result"]["state"] == "not_run"
 
 
+async def test_sources_are_put_back_newest_first(hass: HomeAssistant) -> None:
+    scanner = await make_scanner(hass)
+    seen: list[str] = []
+
+    async def revert(source):
+        seen.append(source["source"])
+        return "undone"
+
+    scanner.cleanup._revert_source = revert
+    outcome = await scanner.cleanup._undo_references(
+        {"sources": [{"source": "a"}, {"source": "b"}]}
+    )
+    assert outcome == "undone" and seen == ["b", "a"]
+
+
 async def test_a_token_only_works_for_the_administrator_who_confirmed(
     hass: HomeAssistant,
 ) -> None:

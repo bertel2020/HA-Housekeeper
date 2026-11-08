@@ -2470,7 +2470,9 @@ class CleanupRunner:
         plan = self._plan(plan_id)
         registry = er.async_get(self.hass)
         results = []
-        for action in plan["actions"]:
+        # Newest step first: a later step may have changed a file this one left, which would look
+        # like a foreign change to the earlier one.
+        for action in reversed(plan["actions"]):
             result = action.get("result") or {}
             if result.get("state") != "done" or (
                 object_ids is not None and action["object_id"] not in object_ids
@@ -2531,6 +2533,7 @@ class CleanupRunner:
                     object_id=action["object_id"],
                 )
             results.append({"object_id": action["object_id"], "outcome": outcome})
+        results.reverse()  # reported in plan order
         if any(r["outcome"] == "undone" for r in results):
             open_actions = [
                 a for a in plan["actions"] if (a.get("result") or {}).get("state") == "done"
@@ -2567,7 +2570,12 @@ class CleanupRunner:
         try:
             updated = registry.async_update_entity(old, new_entity_id=new)
         except Exception as err:
-            await self._undo_references(result)
+            if await self._undo_references(result) != "undone":
+                # A file that stays rewritten is journalled with the step, so a later undo can try.
+                raise StepAbort(
+                    "rollback_incomplete",
+                    {"before": before, "sources": result["sources"], "cause": "rename_failed"},
+                ) from err
             raise StepAbort("rename_failed") from err
         return {
             **result,
@@ -2601,7 +2609,7 @@ class CleanupRunner:
     async def _undo_references(self, result: dict[str, Any]) -> str:
         outcomes = [
             await self._revert_source(source)
-            for source in result["sources"]
+            for source in reversed(result["sources"])
             if source.get("state") != "undone"
         ]
         failed = [o for o in outcomes if o != "undone"]
