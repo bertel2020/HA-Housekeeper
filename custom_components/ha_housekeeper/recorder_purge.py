@@ -413,6 +413,7 @@ def _delete_trim(
     recorder's own purge does, then deletes in batches so no transaction grows without bound.
     """
     from homeassistant.components.recorder.db_schema import (
+        StateAttributes,
         States,
         StatesMeta,
         Statistics,
@@ -453,10 +454,31 @@ def _delete_trim(
                 )
                 if not ids:
                     break
+                attribute_ids = set(
+                    session.execute(
+                        select(States.attributes_id).where(
+                            States.state_id.in_(ids), States.attributes_id.is_not(None)
+                        )
+                    ).scalars()
+                )
                 session.execute(
                     update(States).where(States.old_state_id.in_(ids)).values(old_state_id=None)
                 )
                 session.execute(delete(States).where(States.state_id.in_(ids)))
+                if attribute_ids:
+                    # What no remaining row points at is dropped with its rows, as the recorder's
+                    # own purge does; otherwise the attribute rows of a trimmed stretch stay.
+                    still_used = set(
+                        session.execute(
+                            select(States.attributes_id).where(
+                                States.attributes_id.in_(attribute_ids)
+                            )
+                        ).scalars()
+                    )
+                    if unused := attribute_ids - still_used:
+                        session.execute(
+                            delete(StateAttributes).where(StateAttributes.attributes_id.in_(unused))
+                        )
                 deleted["states"] += len(ids)
                 session.commit()
                 # The recorder remembers the newest state id of each entity for the next row's
