@@ -264,7 +264,7 @@ def quarantine_entries(
         (
             entry
             for key, entry in latest.items()
-            if (item := live.get(key)) and item.get("disabled_by") == "user"
+            if (now := live.get(key)) and now.get("disabled_by") == "user"
         ),
         key=lambda entry: entry["since"],
     )

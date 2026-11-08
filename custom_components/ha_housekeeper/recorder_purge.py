@@ -180,10 +180,10 @@ def _count_older(
     from homeassistant.components.recorder.util import session_scope
     from sqlalchemy import func, select
 
-    cutoff = (datetime.fromtimestamp(at, UTC) if at else datetime.now(UTC)) - timedelta(
+    cutoff_at = (datetime.fromtimestamp(at, UTC) if at else datetime.now(UTC)) - timedelta(
         days=keep_days
     )
-    cutoff = cutoff.timestamp()
+    cutoff = cutoff_at.timestamp()
     found: dict[str, dict[str, Any]] = {i: {"rows": 0, "oldest": None} for i in ids}
     with session_scope(hass=hass, read_only=True) as session:
         for entity_id, rows, oldest in session.execute(

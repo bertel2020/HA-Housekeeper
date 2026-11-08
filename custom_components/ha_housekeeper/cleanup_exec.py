@@ -1129,11 +1129,12 @@ class CleanupRunner:
         if entry is None:
             return result
         if action["delete_old"] == "helper":
-            note = export_helper(self.hass, entry.config_entry_id or "")
-            if note is None:
+            entry_id = entry.config_entry_id
+            note = export_helper(self.hass, entry_id) if entry_id else None
+            if entry_id is None or note is None:
                 return result
             try:
-                await self.hass.config_entries.async_remove(entry.config_entry_id)
+                await self.hass.config_entries.async_remove(entry_id)
             except Exception:
                 return result
             result["deleted_old"] = {"helper": note}
@@ -2314,7 +2315,10 @@ class CleanupRunner:
                 checks.append({"check": "helper_gone", "object_id": object_id, "ok": gone})
             elif kind in HELPER_IMPORT_KINDS:
                 created = ((action.get("result") or {}).get("created") or {}).get("entry_id")
-                ok = bool(created) and self.hass.config_entries.async_get_entry(created) is not None
+                ok = (
+                    isinstance(created, str)
+                    and self.hass.config_entries.async_get_entry(created) is not None
+                )
                 checks.append({"check": "helper_created", "object_id": object_id, "ok": ok})
             elif kind in RELOAD_KINDS:
                 checks.extend(self._verify_reload(object_id))

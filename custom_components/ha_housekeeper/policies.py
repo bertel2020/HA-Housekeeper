@@ -568,7 +568,7 @@ def _extra(
                 "object_id": entry.entry_id,
                 "name": entry.title,
                 "domain": entry.domain,
-                "source": (entry.options or {}).get("source"),
+                "source": entry.options.get("source"),
             }
             for domain in ("utility_meter", "integration", "derivative")
             for entry in hass.config_entries.async_entries(domain)
@@ -592,7 +592,7 @@ def template_facts(hass: HomeAssistant, enabled: Any) -> dict[str, Any]:
                 "object_type": "config_entry",
                 "object_id": entry.entry_id,
                 "name": entry.title,
-                "state": (entry.options or {}).get("state"),
+                "state": entry.options.get("state"),
             }
             for entry in hass.config_entries.async_entries("template")
         ]
