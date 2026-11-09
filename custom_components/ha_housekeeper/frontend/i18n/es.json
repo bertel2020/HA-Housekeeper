@@ -6579,5 +6579,8 @@
 "planOldDeleted": "Entidad antigua: eliminada",
 "planOldHelper": "Ayudante antiguo: eliminado",
 "rwRecHintMixed": "Solo para los pares cuyas estadísticas no pasan a la entidad nueva. «Conservar» lo deja en el recorder como estadística huérfana.",
-"rwRecCarried": "Las estadísticas pasan a la entidad nueva, no queda historial."
+"rwRecCarried": "Las estadísticas pasan a la entidad nueva, no queda historial.",
+"optGroupSidebar": "Barra lateral",
+"optSidebarTitle": "Mostrar entrada en la barra lateral",
+"optSidebarHint": "Desactivado: Housekeeper desaparece de la barra lateral de todos los usuarios y sigue accesible desde la página de la integración. La página se recarga al guardar."
 }

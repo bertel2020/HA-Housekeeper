@@ -133,6 +133,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
     )
     scanner.history.retention_days = entry.options.get(CONF_HISTORY_DAYS, DEFAULT_HISTORY_DAYS)
     scanner.watch_hours = entry.options.get(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS)
+    scanner.show_in_sidebar = entry.options.get(CONF_SHOW_IN_SIDEBAR, DEFAULT_SHOW_IN_SIDEBAR)
     scanner.monitor.retention_days = scanner.history.retention_days
     await scanner.async_initialize()
     entry.runtime_data = scanner

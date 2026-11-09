@@ -6579,5 +6579,8 @@
 "planOldDeleted": "Ancienne entité : supprimée",
 "planOldHelper": "Ancien auxiliaire : supprimé",
 "rwRecHintMixed": "Seulement pour les paires dont les statistiques ne passent pas à la nouvelle entité. « Conserver » le laisse dans le recorder comme statistique orpheline.",
-"rwRecCarried": "Les statistiques passent à la nouvelle entité, aucun historique ne reste."
+"rwRecCarried": "Les statistiques passent à la nouvelle entité, aucun historique ne reste.",
+"optGroupSidebar": "Barre latérale",
+"optSidebarTitle": "Afficher l'entrée dans la barre latérale",
+"optSidebarHint": "Désactivé : Housekeeper disparaît de la barre latérale de tous les utilisateurs et reste accessible depuis la page de l'intégration. La page se recharge à l'enregistrement."
 }

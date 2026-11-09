@@ -2,7 +2,7 @@
 Object.assign(TEXT.de, {
   setTabLook: "Darstellung", setTabScan: "Scan und Meldungen", setTabInfo: "Info",
   setReadability: "Lesbarkeit",
-  unitDays: "Tage", unitHours: "Std.", unitPercent: "%", optDefault: "Standard {n} · {min}–{max}", optToDefault: "Standard", optGroupOutage: "Ausfälle", optGroupOutageHint: "Ab welcher Dauer ein Ausfall welche Stufe hat. Die Schwellen müssen aufsteigen; bei Ausfällen scannt Housekeeper zusätzlich, damit sie zur Zeit greifen.", optGroupOther: "Weitere Schwellen", optConvDay: "= 1 Tag",
+  unitDays: "Tage", unitHours: "Std.", unitPercent: "%", optDefault: "Standard {n} · {min}–{max}", optToDefault: "Standard", optGroupOutage: "Ausfälle", optGroupOutageHint: "Ab welcher Dauer ein Ausfall welche Stufe hat. Die Schwellen müssen aufsteigen; bei Ausfällen scannt Housekeeper zusätzlich, damit sie zur Zeit greifen.", optGroupOther: "Weitere Schwellen", optGroupSidebar: "Seitenleiste", optSidebarTitle: "Eintrag in der Seitenleiste anzeigen", optSidebarHint: "Aus: Housekeeper verschwindet aus der Seitenleiste aller Nutzer und bleibt über die Integrationsseite erreichbar. Beim Speichern lädt die Seite neu.", optConvDay: "= 1 Tag",
   optOutageInfoTitle: "Info", optOutageInfoHint: "Ab so vielen Minuten ohne Zustand gilt ein Ausfall als Info. Davor ist er kein Befund.",
   optOutageLowTitle: "Niedrig", optOutageLowHint: "Ab so vielen Stunden ist ein Ausfall niedrig.",
   optOutageMediumTitle: "Mittel", optOutageMediumHint: "Ab so vielen Stunden ist ein Ausfall mittel. Ab hier erscheint er in der Übersicht.",
@@ -32,7 +32,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   setTabLook: "Appearance", setTabScan: "Scan and messages", setTabInfo: "Info",
   setReadability: "Readability",
-  unitDays: "days", unitHours: "h", unitPercent: "%", optDefault: "Default {n} · {min}–{max}", optToDefault: "Default", optGroupOutage: "Outages", optGroupOutageHint: "From which duration an outage has which level. The thresholds must rise; during outages Housekeeper scans extra so that they apply on time.", optGroupOther: "Further thresholds", optConvDay: "= 1 day",
+  unitDays: "days", unitHours: "h", unitPercent: "%", optDefault: "Default {n} · {min}–{max}", optToDefault: "Default", optGroupOutage: "Outages", optGroupOutageHint: "From which duration an outage has which level. The thresholds must rise; during outages Housekeeper scans extra so that they apply on time.", optGroupOther: "Further thresholds", optGroupSidebar: "Sidebar", optSidebarTitle: "Show entry in the sidebar", optSidebarHint: "Off: Housekeeper disappears from every user's sidebar and stays reachable from the integration page. The page reloads when you save.", optConvDay: "= 1 day",
   optOutageInfoTitle: "Info", optOutageInfoHint: "After so many minutes without a state an outage counts as info. Before that it is no finding.",
   optOutageLowTitle: "Low", optOutageLowHint: "After so many hours an outage is low.",
   optOutageMediumTitle: "Medium", optOutageMediumHint: "After so many hours an outage is medium. From here it shows on the overview.",

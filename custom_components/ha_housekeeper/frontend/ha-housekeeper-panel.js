@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"d227abebb8"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"9c67ce095e"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"461d5c51a0"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"af3d0aef0e"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"483ab9e922"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"c663b96277"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"7af5d71882"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"2da6bfefb7"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"077f79f7de"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"d899a29a91"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"297b613fb0"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"f00678a543"}];
 
 const TEXT = {
   de: {
@@ -1090,7 +1090,7 @@ Object.assign(TEXT.en, {
 Object.assign(TEXT.de, {
   setTabLook: "Darstellung", setTabScan: "Scan und Meldungen", setTabInfo: "Info",
   setReadability: "Lesbarkeit",
-  unitDays: "Tage", unitHours: "Std.", unitPercent: "%", optDefault: "Standard {n} · {min}–{max}", optToDefault: "Standard", optGroupOutage: "Ausfälle", optGroupOutageHint: "Ab welcher Dauer ein Ausfall welche Stufe hat. Die Schwellen müssen aufsteigen; bei Ausfällen scannt Housekeeper zusätzlich, damit sie zur Zeit greifen.", optGroupOther: "Weitere Schwellen", optConvDay: "= 1 Tag",
+  unitDays: "Tage", unitHours: "Std.", unitPercent: "%", optDefault: "Standard {n} · {min}–{max}", optToDefault: "Standard", optGroupOutage: "Ausfälle", optGroupOutageHint: "Ab welcher Dauer ein Ausfall welche Stufe hat. Die Schwellen müssen aufsteigen; bei Ausfällen scannt Housekeeper zusätzlich, damit sie zur Zeit greifen.", optGroupOther: "Weitere Schwellen", optGroupSidebar: "Seitenleiste", optSidebarTitle: "Eintrag in der Seitenleiste anzeigen", optSidebarHint: "Aus: Housekeeper verschwindet aus der Seitenleiste aller Nutzer und bleibt über die Integrationsseite erreichbar. Beim Speichern lädt die Seite neu.", optConvDay: "= 1 Tag",
   optOutageInfoTitle: "Info", optOutageInfoHint: "Ab so vielen Minuten ohne Zustand gilt ein Ausfall als Info. Davor ist er kein Befund.",
   optOutageLowTitle: "Niedrig", optOutageLowHint: "Ab so vielen Stunden ist ein Ausfall niedrig.",
   optOutageMediumTitle: "Mittel", optOutageMediumHint: "Ab so vielen Stunden ist ein Ausfall mittel. Ab hier erscheint er in der Übersicht.",
@@ -1120,7 +1120,7 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   setTabLook: "Appearance", setTabScan: "Scan and messages", setTabInfo: "Info",
   setReadability: "Readability",
-  unitDays: "days", unitHours: "h", unitPercent: "%", optDefault: "Default {n} · {min}–{max}", optToDefault: "Default", optGroupOutage: "Outages", optGroupOutageHint: "From which duration an outage has which level. The thresholds must rise; during outages Housekeeper scans extra so that they apply on time.", optGroupOther: "Further thresholds", optConvDay: "= 1 day",
+  unitDays: "days", unitHours: "h", unitPercent: "%", optDefault: "Default {n} · {min}–{max}", optToDefault: "Default", optGroupOutage: "Outages", optGroupOutageHint: "From which duration an outage has which level. The thresholds must rise; during outages Housekeeper scans extra so that they apply on time.", optGroupOther: "Further thresholds", optGroupSidebar: "Sidebar", optSidebarTitle: "Show entry in the sidebar", optSidebarHint: "Off: Housekeeper disappears from every user's sidebar and stays reachable from the integration page. The page reloads when you save.", optConvDay: "= 1 day",
   optOutageInfoTitle: "Info", optOutageInfoHint: "After so many minutes without a state an outage counts as info. Before that it is no finding.",
   optOutageLowTitle: "Low", optOutageLowHint: "After so many hours an outage is low.",
   optOutageMediumTitle: "Medium", optOutageMediumHint: "After so many hours an outage is medium. From here it shows on the overview.",
@@ -3971,7 +3971,8 @@ class SettingsMixin {
     const outage = OPTION_FIELDS.filter(f => OUTAGE_OPTION_KEYS.includes(f[0])).map(card).join("");
     const other = OPTION_FIELDS.filter(f => !OUTAGE_OPTION_KEYS.includes(f[0])).map(card).join("");
     const cards = `<div class="optgroup"><h3>${this.t("optGroupOutage")}</h3><p>${this.t("optGroupOutageHint")}</p></div><div class="optgrid optgrid4">${outage}</div><div class="optgroup"><h3>${this.t("optGroupOther")}</h3></div><div class="optgrid">${other}</div>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>${cards}
+    const sidebar = `<div class="optgroup"><h3>${this.t("optGroupSidebar")}</h3></div><label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-opt-bool="show_in_sidebar" data-saved="${m.show_in_sidebar === false ? "0" : "1"}" ${(draft.show_in_sidebar ?? (m.show_in_sidebar !== false)) ? "checked" : ""}><span><strong>${this.t("optSidebarTitle")}</strong><small>${this.t("optSidebarHint")}</small></span></label>`;
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>${cards}${sidebar}
       <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save ${Object.keys(draft).length ? "" : "disabled"}>${this.t("saveOptions")}</button></div></section>`;
   }
 
@@ -4244,6 +4245,8 @@ class SettingsMixin {
       if (input.value === "" || !Number.isInteger(value) || value < min || value > max) { this.optionsMessage = this.t("optionsInvalid"); this.render(); return; }
       changes[input.dataset.opt] = value;
     }
+    const sidebarBox = this.shadowRoot.querySelector("[data-opt-bool]");
+    if (sidebarBox) changes.show_in_sidebar = sidebarBox.checked;
     const steps = [changes.outage_info_minutes / 60, changes.outage_low_hours, changes.outage_medium_hours, changes.outage_high_hours];
     if (steps.every(Number.isFinite) && !steps.every((x, i) => i === 0 || steps[i - 1] < x)) { this.optionsMessage = this.t("optionsOrder"); this.render(); return; }
     try {
@@ -24188,8 +24191,16 @@ class HAHousekeeperPanel extends HTMLElement {
       this.optDraft = this.optDraft || {};
       if (el.value === el.dataset.saved) delete this.optDraft[el.dataset.opt]; else this.optDraft[el.dataset.opt] = el.value;
       const save = root.querySelector("[data-opts-save]");
-      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved);
+      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved) && !sidebarDiffers();
     });
+    const sidebarBox = root.querySelector("[data-opt-bool]");
+    const sidebarDiffers = () => Boolean(sidebarBox) && (sidebarBox.checked ? "1" : "0") !== sidebarBox.dataset.saved;
+    if (sidebarBox) sidebarBox.onchange = () => {
+      this.optDraft = this.optDraft || {};
+      if (sidebarDiffers()) this.optDraft.show_in_sidebar = sidebarBox.checked; else delete this.optDraft.show_in_sidebar;
+      const save = root.querySelector("[data-opts-save]");
+      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved) && !sidebarDiffers();
+    };
     root.querySelectorAll("[data-opt-reset]").forEach(el => el.onclick = () => {
       const input = root.querySelector(`[data-opt="${el.dataset.optReset}"]`), field = OPTION_FIELDS.find(f => f[0] === el.dataset.optReset);
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }

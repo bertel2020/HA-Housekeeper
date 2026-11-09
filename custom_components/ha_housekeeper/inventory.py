@@ -1063,6 +1063,7 @@ class InventoryScanner:
         self.stale_hours = DEFAULT_STALE_HOURS
         self.scan_interval_hours = DEFAULT_SCAN_INTERVAL_HOURS
         self.watch_hours = DEFAULT_WATCH_HOURS
+        self.show_in_sidebar = True
         self.version: str | None = None
         self.load_failures: list[str] = []  # stores whose saved data could not be read
         self.status: dict[str, Any] = {
@@ -2009,6 +2010,7 @@ class InventoryScanner:
                 "stale_hours": self.stale_hours,
                 "history_days": self.history.retention_days,
                 "watch_hours": self.watch_hours,
+                "show_in_sidebar": self.show_in_sidebar,
                 "watch": self.watch_summary(),
                 "low_batteries": len(low_battery_ids(entities, self.low_battery_percent)),
                 "object_count": len(listed_objects(objects)),

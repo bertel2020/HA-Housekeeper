@@ -7110,5 +7110,8 @@
 "planOldDeleted": "Stará entita: odstránená",
 "planOldHelper": "Starý pomocník: odstránený",
 "rwRecHintMixed": "Len pre dvojice, ktorých štatistiky sa neprenášajú do novej entity. „Ponechať“ ju necháva v recorderi ako osirelú štatistiku.",
-"rwRecCarried": "Štatistiky sa prenesú do novej entity, žiadna história nezostane."
+"rwRecCarried": "Štatistiky sa prenesú do novej entity, žiadna história nezostane.",
+"optGroupSidebar": "Bočný panel",
+"optSidebarTitle": "Zobraziť položku v bočnom paneli",
+"optSidebarHint": "Vypnuté: Housekeeper zmizne z bočného panela všetkých používateľov a zostane dostupný zo stránky integrácie. Po uložení sa stránka znovu načíta."
 }

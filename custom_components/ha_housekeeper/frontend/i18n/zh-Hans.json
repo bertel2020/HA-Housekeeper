@@ -6579,5 +6579,8 @@
 "planOldDeleted": "旧实体：已删除",
 "planOldHelper": "旧辅助元素：已删除",
 "rwRecHintMixed": "仅适用于统计不转移到新实体的配对。“保留”会让它作为孤立统计留在 recorder 中。",
-"rwRecCarried": "统计会转移到新实体，不会留下历史。"
+"rwRecCarried": "统计会转移到新实体，不会留下历史。",
+"optGroupSidebar": "侧边栏",
+"optSidebarTitle": "在侧边栏显示入口",
+"optSidebarHint": "关闭后，Housekeeper 会从所有用户的侧边栏消失，但仍可从集成页面访问。保存时页面会重新加载。"
 }
