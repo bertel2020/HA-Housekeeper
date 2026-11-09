@@ -17,6 +17,7 @@
         "title": "HA-Housekeeper-Optionen",
         "description": "Ein Ausfall wird nach der ersten Schwelle ein Befund und steigt mit der Dauer: Info, niedrig, mittel, hoch. Die Schwellen müssen aufsteigen. Automationen, die ausgeschaltet sind oder die angegebene Zahl an Tagen nie laufen, werden als ungenutzt gemeldet. Regelmäßige Scans halten Verlauf und Reparaturhinweise aktuell; bei Ausfällen folgen zusätzliche Scans.",
         "data": {
+          "show_in_sidebar": "Seitenleisten-Eintrag anzeigen",
           "outage_info_minutes": "Ausfall als Info melden nach (Minuten)",
           "outage_low_hours": "Ausfall als niedrig melden nach (Stunden)",
           "outage_medium_hours": "Ausfall als mittel melden nach (Stunden)",
@@ -29,6 +30,7 @@
           "watch_hours": "Nach Updates beobachten (Stunden, 0 = aus)"
         },
         "data_description": {
+          "show_in_sidebar": "Zeigt Housekeeper in der Seitenleiste. Aus: das Panel bleibt über die Integrationsseite und /ha-housekeeper erreichbar.",
           "outage_info_minutes": "Eine Entität oder Integration, die so lange ausgefallen ist, wird ein Befund der Stufe Info.",
           "outage_low_hours": "Ab dieser Dauer ist der Ausfall ein niedriger Befund.",
           "outage_medium_hours": "Ab dieser Dauer ist der Ausfall ein mittlerer Befund und zählt in den Sensoren.",

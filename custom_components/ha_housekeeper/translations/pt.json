@@ -17,6 +17,7 @@
         "title": "Opções do HA Housekeeper",
         "description": "Uma falha passa a ser uma ocorrência após o primeiro limiar e sobe com a sua duração: info, baixa, média, alta. Os limiares têm de ser crescentes. As automatizações desligadas ou que nunca são executadas durante o número de dias indicado são comunicadas como não utilizadas. As análises regulares mantêm o histórico e as sugestões de reparação atualizados; após falhas, são feitas análises adicionais.",
         "data": {
+          "show_in_sidebar": "Mostrar entrada na barra lateral",
           "outage_info_minutes": "Comunicar uma falha como info após (minutos)",
           "outage_low_hours": "Comunicar uma falha como baixa após (horas)",
           "outage_medium_hours": "Comunicar uma falha como média após (horas)",
@@ -29,6 +30,7 @@
           "watch_hours": "Vigiar após atualizações (horas, 0 = desligado)"
         },
         "data_description": {
+          "show_in_sidebar": "Mostra o Housekeeper na barra lateral. Desligado: o painel continua acessível pela página da integração e em /ha-housekeeper.",
           "outage_info_minutes": "Uma entidade ou integração que esteja em baixo durante este tempo passa a ser uma ocorrência de info.",
           "outage_low_hours": "A partir desta duração, a falha é uma ocorrência baixa.",
           "outage_medium_hours": "A partir desta duração, a falha é uma ocorrência média e conta nos sensores.",

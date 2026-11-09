@@ -17,6 +17,7 @@
         "title": "HA Housekeeper options",
         "description": "An outage becomes a finding after the first threshold and rises with its duration: info, low, medium, high. The thresholds must rise. Automations that are switched off or never run for the given number of days are reported as unused. Regular scans keep the history and the repair hints current; outages are followed by extra scans.",
         "data": {
+          "show_in_sidebar": "Show sidebar entry",
           "outage_info_minutes": "Report an outage as info after (minutes)",
           "outage_low_hours": "Report an outage as low after (hours)",
           "outage_medium_hours": "Report an outage as medium after (hours)",
@@ -29,6 +30,7 @@
           "watch_hours": "Watch after updates (hours, 0 = off)"
         },
         "data_description": {
+          "show_in_sidebar": "Shows Housekeeper in the sidebar. Off: the panel stays reachable from the integration page and at /ha-housekeeper.",
           "outage_info_minutes": "An entity or integration that is down this long becomes an info finding.",
           "outage_low_hours": "From this duration the outage is a low finding.",
           "outage_medium_hours": "From this duration the outage is a medium finding and counts in the sensors.",

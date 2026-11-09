@@ -38,12 +38,14 @@ from .const import (
     CONF_OUTAGE_LOW_HOURS,
     CONF_OUTAGE_MEDIUM_HOURS,
     CONF_SCAN_INTERVAL_HOURS,
+    CONF_SHOW_IN_SIDEBAR,
     CONF_STALE_HOURS,
     CONF_UNUSED_AUTOMATION_DAYS,
     CONF_WATCH_HOURS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
     DEFAULT_SCAN_INTERVAL_HOURS,
+    DEFAULT_SHOW_IN_SIDEBAR,
     DEFAULT_STALE_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
     DEFAULT_WATCH_HOURS,
@@ -153,14 +155,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         )
         hass.data[DOMAIN]["static_path_registered"] = True
     # A reload for new options keeps the panel: removing it makes Home Assistant leave the open page.
-    if PANEL_URL not in hass.data.get(frontend.DATA_PANELS, {}):
+    # The sidebar entry follows the option; a changed choice registers the panel anew.
+    show_sidebar = entry.options.get(CONF_SHOW_IN_SIDEBAR, DEFAULT_SHOW_IN_SIDEBAR)
+    known = hass.data.get(frontend.DATA_PANELS, {}).get(PANEL_URL)
+    if known is not None and bool(known.sidebar_title) != show_sidebar:
+        frontend.async_remove_panel(hass, PANEL_URL)
+        known = None
+    if known is None:
         await panel_custom.async_register_panel(
             hass,
             webcomponent_name=PANEL_ELEMENT,
             frontend_url_path=PANEL_URL,
             module_url=f"{FRONTEND_URL}?v={digest}",
-            sidebar_title="Housekeeper",
-            sidebar_icon="mdi:broom",
+            sidebar_title="Housekeeper" if show_sidebar else None,
+            sidebar_icon="mdi:broom" if show_sidebar else None,
             require_admin=True,
             config={"entry_id": entry.entry_id},
             config_panel_domain=DOMAIN,

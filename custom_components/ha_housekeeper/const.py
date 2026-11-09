@@ -82,6 +82,8 @@ CONF_HISTORY_DAYS: Final = "history_days"
 DEFAULT_HISTORY_DAYS: Final = 30
 CONF_WATCH_HOURS: Final = "watch_hours"
 DEFAULT_WATCH_HOURS: Final = 24
+CONF_SHOW_IN_SIDEBAR: Final = "show_in_sidebar"
+DEFAULT_SHOW_IN_SIDEBAR: Final = True
 JOURNAL_STORAGE_KEY: Final = f"{DOMAIN}.journal"
 # Earliest point at which a quarantined entity may be removed (a later step, preview only today).
 QUARANTINE_DAYS: Final = 14

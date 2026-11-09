@@ -17,6 +17,7 @@
         "title": "HA Housekeeper 选项",
         "description": "故障在达到第一个阈值后成为发现项，并随持续时间升级：信息、低、中、高。阈值必须递增。关闭或超过指定天数未运行的自动化会被报告为未使用。定期扫描会让历史记录和修复提示保持最新；出现故障后会追加扫描。",
         "data": {
+          "show_in_sidebar": "在侧边栏显示入口",
           "outage_info_minutes": "故障多久后报告为信息（分钟）",
           "outage_low_hours": "故障多久后报告为低（小时）",
           "outage_medium_hours": "故障多久后报告为中（小时）",
@@ -29,6 +30,7 @@
           "watch_hours": "更新后观察多久（小时，0 = 关闭）"
         },
         "data_description": {
+          "show_in_sidebar": "在侧边栏显示 Housekeeper。关闭后，仍可从集成页面和 /ha-housekeeper 访问面板。",
           "outage_info_minutes": "实体或集成中断达到此时长后成为信息级发现项。",
           "outage_low_hours": "从此时长起，故障成为低级发现项。",
           "outage_medium_hours": "从此时长起，故障成为中级发现项，并计入传感器。",

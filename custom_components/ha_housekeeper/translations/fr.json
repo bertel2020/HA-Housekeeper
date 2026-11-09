@@ -17,6 +17,7 @@
         "title": "Options de HA Housekeeper",
         "description": "Une indisponibilité devient un constat après le premier seuil et monte avec sa durée : info, faible, moyen, élevé. Les seuils doivent être croissants. Les automatisations désactivées ou qui n'ont pas tourné depuis le nombre de jours indiqué sont signalées comme inutilisées. Les scans réguliers gardent l'historique et les conseils de réparation à jour ; une indisponibilité déclenche des scans supplémentaires.",
         "data": {
+          "show_in_sidebar": "Afficher l'entrée dans la barre latérale",
           "outage_info_minutes": "Signaler une indisponibilité en info après (minutes)",
           "outage_low_hours": "Signaler une indisponibilité en faible après (heures)",
           "outage_medium_hours": "Signaler une indisponibilité en moyen après (heures)",
@@ -29,6 +30,7 @@
           "watch_hours": "Surveiller après une mise à jour (heures, 0 = désactivé)"
         },
         "data_description": {
+          "show_in_sidebar": "Affiche Housekeeper dans la barre latérale. Désactivé : le panneau reste accessible depuis la page de l'intégration et via /ha-housekeeper.",
           "outage_info_minutes": "Une entité ou une intégration indisponible pendant cette durée devient un constat de niveau info.",
           "outage_low_hours": "À partir de cette durée, l'indisponibilité est un constat de niveau faible.",
           "outage_medium_hours": "À partir de cette durée, l'indisponibilité est un constat de niveau moyen et compte dans les capteurs.",

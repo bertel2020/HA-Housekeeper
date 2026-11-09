@@ -17,6 +17,7 @@
         "title": "Nastavenia HA Housekeeper",
         "description": "Výpadky sa hodnotia podľa trvania: najprv informatívne, potom ako nízke, stredné alebo vysoké. Kontroly aktualizujú históriu a odporúčania. Nepoužívané automatizácie sa označujú podľa intervalu; ostatné limity upravujú kontrolu batérií, senzorov a údržby.",
         "data": {
+          "show_in_sidebar": "Zobraziť položku v bočnom paneli",
           "outage_info_minutes": "Hlásiť informatívny výpadok po (minúty)",
           "outage_low_hours": "Zvýšiť závažnosť výpadku na nízku po (hodiny)",
           "outage_medium_hours": "Zvýšiť závažnosť výpadku na strednú po (hodiny)",
@@ -29,6 +30,7 @@
           "watch_hours": "Sledovať po aktualizácii (hodiny, 0 = vypnuté)"
         },
         "data_description": {
+          "show_in_sidebar": "Zobrazí Housekeeper v bočnom paneli. Vypnuté: panel zostane dostupný zo stránky integrácie a na /ha-housekeeper.",
           "outage_info_minutes": "Ak je entita alebo integrácia nedostupná aspoň takto dlho, vytvorí sa informačný nález.",
           "outage_low_hours": "Od tohto trvania sa výpadok hodnotí ako nález s nízkou závažnosťou.",
           "outage_medium_hours": "Od tohto trvania sa výpadok hodnotí ako nález so strednou závažnosťou a započítava sa do senzorov.",

@@ -17,6 +17,7 @@
         "title": "Opciones de HA Housekeeper",
         "description": "Una caída se convierte en hallazgo tras el primer umbral y sube de nivel con su duración: info, bajo, medio, alto. Los umbrales deben ser crecientes. Las automatizaciones desactivadas o que no se ejecutan durante el número de días indicado se notifican como sin uso. Los análisis periódicos mantienen actualizados el historial y las sugerencias de reparación; tras las caídas se hacen análisis adicionales.",
         "data": {
+          "show_in_sidebar": "Mostrar entrada en la barra lateral",
           "outage_info_minutes": "Notificar una caída como info tras (minutos)",
           "outage_low_hours": "Notificar una caída como baja tras (horas)",
           "outage_medium_hours": "Notificar una caída como media tras (horas)",
@@ -29,6 +30,7 @@
           "watch_hours": "Vigilar tras las actualizaciones (horas, 0 = desactivado)"
         },
         "data_description": {
+          "show_in_sidebar": "Muestra Housekeeper en la barra lateral. Desactivado: el panel sigue accesible desde la página de la integración y en /ha-housekeeper.",
           "outage_info_minutes": "Una entidad o integración que lleva caída este tiempo se convierte en un hallazgo de nivel info.",
           "outage_low_hours": "A partir de esta duración, la caída es un hallazgo de nivel bajo.",
           "outage_medium_hours": "A partir de esta duración, la caída es un hallazgo de nivel medio y cuenta en los sensores.",
