@@ -6586,8 +6586,6 @@
 "blkRecommended": "recommandé",
 "blkOptReplaceText": "Les automatisations, tableaux de bord et l’énergie pointent ensuite vers la nouvelle entité. Les ID et les statistiques restent intacts.",
 "blkOptIdText": "La nouvelle entité reprend l’ancien ID et les statistiques restent séparées. Vérifie que les cartes et les analyses s’en accommodent.",
-"blkBackExchange": "Tu peux le changer avec « Retour » dans la colonne « Type ».",
-"blkBackMeter": "Avec « Retour », tu choisis « Reprendre l’ID uniquement ». « Remplacer les références » se lance depuis l’ancienne entité.",
 "hint_target_missing": "Choisis d’abord la nouvelle entité.",
 "hint_same_entity": "L’ancienne et la nouvelle entité sont identiques. Choisis-en une autre comme cible.",
 "hint_different_domain": "Les deux doivent être du même type, par exemple deux capteurs. Choisis une autre cible.",

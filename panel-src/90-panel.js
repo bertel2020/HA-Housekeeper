@@ -1254,6 +1254,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-ack-all]")?.addEventListener("change", e => { this.ack = new Set(e.target.checked ? this.plan.actions.filter(x => x.verdict === "review" && x.executable).map(x => x.object_id) : []); this.cleanupError = ""; this.render(); });
     root.querySelector("[data-plan-confirm]")?.addEventListener("click", ev => this.confirmAsk(this.confirmSummary(this.plan, Number(ev.currentTarget.dataset.count)), () => this.confirmAndRun(), { title: this.t("confirmRunTitle"), yes: this.t("runNow"), danger: ev.currentTarget.dataset.risky === "true", warn: this.largeRemovalWarning(this.plan) }));
     root.querySelector("[data-plan-discard]")?.addEventListener("click", () => this.discardPlan());
+    root.querySelectorAll("[data-block-way]").forEach(el => el.onclick = () => { if (!this.cleanupBusy) this.repeatPlan(this.plan, false, { object_id: el.dataset.blockObj, way: el.dataset.blockWay }); });
     root.querySelector("[data-purge-states-switch]")?.addEventListener("change", ev => this.setPurgeStates(ev.currentTarget.checked));
     root.querySelector("[data-skip-backup-switch]")?.addEventListener("change", ev => { this.skipBackupPlan = ev.currentTarget.checked ? this.plan.plan_id : null; this.render(); });
     root.querySelector("[data-plan-cancel]")?.addEventListener("click", () => this.cancelPlan());

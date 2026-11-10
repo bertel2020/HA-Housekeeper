@@ -300,11 +300,13 @@ class CleanupMixin {
   }
 
   // Creates a fresh preview with the same objects as an earlier plan, for example one that was aborted.
+  // `swap`: one blocked row is planned the other way ({ object_id, way: "replace" | "id" }).
   // `full`: the small backup failed and the person chose the full one (as the backup settings say).
-  async repeatPlan(plan, full = false) {
+  async repeatPlan(plan, full = false, swap = null) {
     this.cleanupBusy = true; this.cleanupError = ""; this.render();
     try {
       const actions = plan.actions.map(a => {
+        if (swap && a.object_id === swap.object_id) return swap.way === "replace" ? { kind: "replace_references", object_id: a.object_id, target: a.target } : { kind: "migrate_meter", object_id: a.object_id, target: a.target, mode: "id" };
         const r = { kind: a.kind, object_id: a.object_id };
         for (const key of ["target", "target_kind", "mode", "range", "recorder", "fix", "values", "tables"]) if (a[key]) r[key] = a[key];
         if (a.kind === "purge_statistics") r.states = Boolean(a.states);
@@ -585,8 +587,8 @@ class CleanupMixin {
       // What blocks the row goes first and in red, with a hint where there is one; the other reasons stay a grey note.
       const blocking = a.verdict === "blocked" && !(a.reasons || []).every(r => NOTHING_REASONS.includes(r)) ? (a.blocking || []).filter(r => !NOTHING_REASONS.includes(r)) : [];
       // A meter that cannot join its statistics has two ways on; they are shown once, as cards under the reasons.
-      const fromExchange = this.cleanupKind === "exchange_device";
-      const waysOn = blocking.some(r => STATS_BLOCKS.includes(r)) ? `<span class="blockopts"><span class="blockopt rec"><strong>${this.t("exHow_replace")}<em>${this.t("blkRecommended")}</em></strong><small>${this.t("blkOptReplaceText")}</small></span><span class="blockopt"><strong>${this.t(fromExchange ? "exHow_id" : "meterModeId")}</strong><small>${this.t("blkOptIdText")}</small></span></span><small>${this.t(fromExchange ? "blkBackExchange" : "blkBackMeter")}</small>` : "";
+      const fromExchange = this.cleanupKind === "exchange_device", wayBtn = (way, rec) => `<button class="blockopt${rec ? " rec" : ""}" data-block-way="${way}" data-block-obj="${this.esc(a.object_id)}" ${this.cleanupBusy ? "disabled" : ""}><strong>${this.t(way === "replace" ? "exHow_replace" : fromExchange ? "exHow_id" : "meterModeId")}${rec ? `<em>${this.t("blkRecommended")}</em>` : ""}</strong><small>${this.t(way === "replace" ? "blkOptReplaceText" : "blkOptIdText")}</small></button>`;
+      const waysOn = blocking.some(r => STATS_BLOCKS.includes(r)) && !a.result ? `<span class="blockopts">${wayBtn("replace", true)}${wayBtn("id", false)}</span>` : "";
       const blockWhy = blocking.length ? `<span class="blockwhy">${blocking.map(r => `<span><strong>${this.esc(this.t(`reason_${r}`))}</strong>${TEXT.de[`hint_${r}`] ? `<small>${this.esc(this.t(`hint_${r}`))}</small>` : ""}</span>`).join("")}${waysOn ? `<span>${waysOn}</span>` : ""}</span>` : "";
       const reasons = (a.reasons || []).filter(r => !blocking.includes(r) && !(a.kind === "purge_statistics" && ["irreversible", "with_states"].includes(r))).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);

@@ -7117,8 +7117,6 @@
 "blkRecommended": "odporúčané",
 "blkOptReplaceText": "Automatizácie, dashboardy a energia potom ukazujú na novú entitu. ID a štatistiky zostanú nedotknuté.",
 "blkOptIdText": "Nová entita prevezme staré ID a štatistiky zostanú oddelené. Skontroluj, či si s tým karty a vyhodnotenia poradia.",
-"blkBackExchange": "Zmeniť to môžeš cez „Späť“ v stĺpci „Spôsob“.",
-"blkBackMeter": "Cez „Späť“ vyberieš „Iba prevziať ID“. „Nahradiť odkazy“ spustíš zo starej entity.",
 "hint_target_missing": "Najprv vyber novú entitu.",
 "hint_same_entity": "Stará a nová entita sú rovnaké. Ako cieľ vyber inú.",
 "hint_different_domain": "Obe musia byť rovnakého druhu, napríklad dva senzory. Vyber iný cieľ.",

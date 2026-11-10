@@ -6586,8 +6586,6 @@
 "blkRecommended": "recomendado",
 "blkOptReplaceText": "As automações, os painéis e a energia passam a apontar para a nova entidade. Os IDs e as estatísticas ficam intactos.",
 "blkOptIdText": "A nova entidade assume o ID antigo e as estatísticas ficam separadas. Verifica se os cartões e as análises lidam bem com isso.",
-"blkBackExchange": "Podes alterar isto com «Voltar» na coluna «Tipo».",
-"blkBackMeter": "Com «Voltar» escolhes «Assumir só o ID». «Substituir referências» inicia-se a partir da entidade antiga.",
 "hint_target_missing": "Escolhe primeiro a nova entidade.",
 "hint_same_entity": "A entidade antiga e a nova são a mesma. Escolhe outra como destino.",
 "hint_different_domain": "Ambas têm de ser do mesmo tipo, por exemplo dois sensores. Escolhe outro destino.",

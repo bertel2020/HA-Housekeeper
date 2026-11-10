@@ -6586,8 +6586,6 @@
 "blkRecommended": "推荐",
 "blkOptReplaceText": "自动化、仪表盘和能源随后会指向新实体。ID 和统计保持不变。",
 "blkOptIdText": "新实体接管旧 ID，统计保持独立。请确认卡片和报表能适应这一点。",
-"blkBackExchange": "可在“方式”列中通过“返回”更改。",
-"blkBackMeter": "通过“返回”选择“仅接管 ID”。“替换引用”需从旧实体发起。",
 "hint_target_missing": "请先选择新实体。",
 "hint_same_entity": "旧实体与新实体是同一个。请选择另一个作为目标。",
 "hint_different_domain": "两者必须属于同一类型，例如都是传感器。请选择另一个目标。",
