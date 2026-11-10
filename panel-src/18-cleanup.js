@@ -1,4 +1,5 @@
 // CleanupMixin: methods of the panel element, mixed into the class in 99-register.js.
+const STATS_BLOCKS = ["stats_type_differs", "stats_unit_differs", "stats_missing_old", "stats_nothing_to_import"]; // the reasons that leave "no joined statistics" as the way on
 const OPEN_DETAIL_KINDS = ["replace_references", "rename_entity", "migrate_meter"]; // their preview is the point of the row, so it stays open
 
 class CleanupMixin {
@@ -583,7 +584,10 @@ class CleanupMixin {
       const more = (a.used_by || []).length > 4 ? `<small>+${a.used_by.length - 4}</small>` : "";
       // What blocks the row goes first and in red, with a hint where there is one; the other reasons stay a grey note.
       const blocking = a.verdict === "blocked" && !(a.reasons || []).every(r => NOTHING_REASONS.includes(r)) ? (a.blocking || []).filter(r => !NOTHING_REASONS.includes(r)) : [];
-      const blockWhy = blocking.length ? `<span class="blockwhy">${blocking.map(r => `<span><strong>${this.esc(this.t(`reason_${r}`))}</strong>${TEXT.de[`hint_${r}`] ? `<small>${this.esc(this.t(`hint_${r}`))}</small>` : ""}</span>`).join("")}</span>` : "";
+      // A meter that cannot join its statistics has two ways on; they are shown once, as cards under the reasons.
+      const fromExchange = this.cleanupKind === "exchange_device";
+      const waysOn = blocking.some(r => STATS_BLOCKS.includes(r)) ? `<span class="blockopts"><span class="blockopt rec"><strong>${this.t("exHow_replace")}<em>${this.t("blkRecommended")}</em></strong><small>${this.t("blkOptReplaceText")}</small></span><span class="blockopt"><strong>${this.t(fromExchange ? "exHow_id" : "meterModeId")}</strong><small>${this.t("blkOptIdText")}</small></span></span><small>${this.t(fromExchange ? "blkBackExchange" : "blkBackMeter")}</small>` : "";
+      const blockWhy = blocking.length ? `<span class="blockwhy">${blocking.map(r => `<span><strong>${this.esc(this.t(`reason_${r}`))}</strong>${TEXT.de[`hint_${r}`] ? `<small>${this.esc(this.t(`hint_${r}`))}</small>` : ""}</span>`).join("")}${waysOn ? `<span>${waysOn}</span>` : ""}</span>` : "";
       const reasons = (a.reasons || []).filter(r => !blocking.includes(r) && !(a.kind === "purge_statistics" && ["irreversible", "with_states"].includes(r))).map(r => (r === "quarantine_too_short" && a.quarantine_days_left ? `${this.t("reason_quarantine_too_short")} (${this.t("daysLeftShort", { days: a.quarantine_days_left })})` : this.t(`reason_${r}`))).join(" ");
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;

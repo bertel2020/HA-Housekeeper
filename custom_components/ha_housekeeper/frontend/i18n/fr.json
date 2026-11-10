@@ -6583,8 +6583,14 @@
 "optGroupSidebar": "Barre latérale",
 "optSidebarTitle": "Afficher l'entrée dans la barre latérale",
 "optSidebarHint": "Désactivé : Housekeeper disparaît de la barre latérale de tous les utilisateurs et reste accessible depuis la page de l'intégration. La page se recharge à l'enregistrement.",
-"hint_stats_type_differs": "L’ancien compteur mesure une moyenne, le nouveau un total (ou l’inverse). Les deux ne peuvent pas être fusionnés. Choisis « Reprendre l’ID uniquement » ; les statistiques restent alors séparées.",
-"hint_stats_unit_differs": "L’ancienne et la nouvelle statistique ont des unités différentes ; fusionnées, les valeurs seraient fausses. Choisis « Reprendre l’ID uniquement » ou donne la même unité à la nouvelle entité.",
-"hint_stats_missing_old": "Sans statistiques à long terme pour l’ancienne entité, il n’y a rien à reprendre. Choisis « Reprendre l’ID uniquement ».",
-"hint_stats_nothing_to_import": "L’ancienne statistique ne se termine pas avant le début de la nouvelle. Choisis « Reprendre l’ID uniquement »."
+"blkRecommended": "recommandé",
+"blkOptReplaceText": "Les automatisations, tableaux de bord et l’énergie pointent ensuite vers la nouvelle entité. Les ID et les statistiques restent intacts.",
+"blkOptIdText": "La nouvelle entité reprend l’ancien ID et les statistiques restent séparées. Vérifie que les cartes et les analyses s’en accommodent.",
+"blkBackExchange": "Tu peux le changer avec « Retour » dans la colonne « Type ».",
+"blkBackMeter": "Avec « Retour », tu choisis « Reprendre l’ID uniquement ». « Remplacer les références » se lance depuis l’ancienne entité.",
+"hint_target_missing": "Choisis d’abord la nouvelle entité.",
+"hint_same_entity": "L’ancienne et la nouvelle entité sont identiques. Choisis-en une autre comme cible.",
+"hint_different_domain": "Les deux doivent être du même type, par exemple deux capteurs. Choisis une autre cible.",
+"hint_target_not_working": "La nouvelle entité ne fournit pas encore de valeurs. Attends qu’elle fonctionne ou choisis-en une autre.",
+"hint_nothing_to_replace": "Rien n’utilise l’ancienne entité, il n’y a donc rien à remplacer."
 }

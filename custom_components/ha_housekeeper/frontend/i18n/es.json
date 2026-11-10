@@ -6583,8 +6583,14 @@
 "optGroupSidebar": "Barra lateral",
 "optSidebarTitle": "Mostrar entrada en la barra lateral",
 "optSidebarHint": "Desactivado: Housekeeper desaparece de la barra lateral de todos los usuarios y sigue accesible desde la página de la integración. La página se recarga al guardar.",
-"hint_stats_type_differs": "El contador antiguo mide una media y el nuevo una suma (o al revés). No se pueden unir. Elige «Solo asumir el ID»; las estadísticas quedan entonces separadas.",
-"hint_stats_unit_differs": "La estadística antigua y la nueva usan unidades distintas; unidas, los valores serían incorrectos. Elige «Solo asumir el ID» o pon la misma unidad a la nueva entidad.",
-"hint_stats_missing_old": "Sin estadísticas a largo plazo de la entidad antigua no hay nada que trasladar. Elige «Solo asumir el ID».",
-"hint_stats_nothing_to_import": "La estadística antigua no termina antes de que empiece la nueva. Elige «Solo asumir el ID»."
+"blkRecommended": "recomendado",
+"blkOptReplaceText": "Las automatizaciones, los paneles y la energía apuntan después a la nueva entidad. Los ID y las estadísticas no se tocan.",
+"blkOptIdText": "La nueva entidad asume el ID antiguo y las estadísticas quedan separadas. Comprueba que las tarjetas y los informes lo toleran.",
+"blkBackExchange": "Puedes cambiarlo con «Atrás» en la columna «Tipo».",
+"blkBackMeter": "Con «Atrás» eliges «Solo asumir el ID». «Reemplazar referencias» se inicia desde la entidad antigua.",
+"hint_target_missing": "Elige primero la nueva entidad.",
+"hint_same_entity": "La entidad antigua y la nueva son la misma. Elige otra como destino.",
+"hint_different_domain": "Ambas deben ser del mismo tipo, por ejemplo dos sensores. Elige otro destino.",
+"hint_target_not_working": "La nueva entidad aún no informa valores. Espera a que funcione o elige otra.",
+"hint_nothing_to_replace": "Nada usa la entidad antigua, así que no hay nada que reemplazar."
 }
