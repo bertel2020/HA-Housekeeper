@@ -449,6 +449,8 @@ def _verdict(action: dict[str, Any]) -> None:
     reasons = set(action["reasons"])
     if BLOCKING_REASONS & reasons:
         action["verdict"] = "blocked"
+        # The panel shows these first and apart from the notes that only ask for a look.
+        action["blocking"] = [reason for reason in action["reasons"] if reason in BLOCKING_REASONS]
     elif reasons:
         action["verdict"] = "review"
     else:

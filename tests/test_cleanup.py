@@ -61,6 +61,7 @@ def test_certain_use_blocks_and_probable_use_needs_review() -> None:
     a, b = verdict(objects, edges, "sensor.a"), verdict(objects, edges, "sensor.b")
     assert a["verdict"] == "blocked" and "used_certain" in a["reasons"]
     assert b["verdict"] == "review" and "used_probable" in b["reasons"]
+    assert a["blocking"] == ["used_certain"] and "blocking" not in b
     assert a["used_by"][0]["source"] == "automation:automation.x"
 
 
