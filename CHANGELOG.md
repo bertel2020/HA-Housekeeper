@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.0.0-beta.5 - 2026-11-10
+
+### Neu
+
+- **Seitenleiste:** Der Eintrag „Housekeeper“ lässt sich ausblenden (Einstellungen → Scan). Das Panel bleibt über die Integrationsseite erreichbar.
+
+### Geändert
+
+- **Vorschau eines Plans:**
+  - Gesperrte Zeilen nennen den Grund zuerst und in Rot, die übrigen Hinweise stehen darunter.
+  - Beim Zählerwechsel mit unterschiedlichen Statistik-Arten bietet die Zeile zwei Wege an: „Referenzen ersetzen“ oder „nur ID“. Ein Klick plant die Zeile neu.
+
+### English
+
+#### New
+
+- **Sidebar:** The "Housekeeper" entry can be hidden (Settings → Scan). The panel stays reachable from the integration page.
+
+#### Changed
+
+- **Plan preview:**
+  - Blocked rows name the reason first and in red; the other notes follow below.
+  - For a meter swap with different statistic types, the row offers two ways on: "Replace references" or "ID only". One click plans the row again.
+
 ## 2.0.0-beta.4 - 2026-11-08
 
 ### Neu
