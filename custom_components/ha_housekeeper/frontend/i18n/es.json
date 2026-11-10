@@ -6582,5 +6582,9 @@
 "rwRecCarried": "Las estadísticas pasan a la entidad nueva, no queda historial.",
 "optGroupSidebar": "Barra lateral",
 "optSidebarTitle": "Mostrar entrada en la barra lateral",
-"optSidebarHint": "Desactivado: Housekeeper desaparece de la barra lateral de todos los usuarios y sigue accesible desde la página de la integración. La página se recarga al guardar."
+"optSidebarHint": "Desactivado: Housekeeper desaparece de la barra lateral de todos los usuarios y sigue accesible desde la página de la integración. La página se recarga al guardar.",
+"hint_stats_type_differs": "El contador antiguo mide una media y el nuevo una suma (o al revés). No se pueden unir. Elige «Solo asumir el ID»; las estadísticas quedan entonces separadas.",
+"hint_stats_unit_differs": "La estadística antigua y la nueva usan unidades distintas; unidas, los valores serían incorrectos. Elige «Solo asumir el ID» o pon la misma unidad a la nueva entidad.",
+"hint_stats_missing_old": "Sin estadísticas a largo plazo de la entidad antigua no hay nada que trasladar. Elige «Solo asumir el ID».",
+"hint_stats_nothing_to_import": "La estadística antigua no termina antes de que empiece la nueva. Elige «Solo asumir el ID»."
 }

@@ -7113,5 +7113,9 @@
 "rwRecCarried": "Štatistiky sa prenesú do novej entity, žiadna história nezostane.",
 "optGroupSidebar": "Bočný panel",
 "optSidebarTitle": "Zobraziť položku v bočnom paneli",
-"optSidebarHint": "Vypnuté: Housekeeper zmizne z bočného panela všetkých používateľov a zostane dostupný zo stránky integrácie. Po uložení sa stránka znovu načíta."
+"optSidebarHint": "Vypnuté: Housekeeper zmizne z bočného panela všetkých používateľov a zostane dostupný zo stránky integrácie. Po uložení sa stránka znovu načíta.",
+"hint_stats_type_differs": "Starý merač meria priemer, nový súčet (alebo naopak). Nedajú sa spojiť. Vyber „Iba prevziať ID“; štatistiky potom zostanú oddelené.",
+"hint_stats_unit_differs": "Stará a nová štatistika majú rôzne jednotky; po spojení by boli hodnoty nesprávne. Vyber „Iba prevziať ID“ alebo nastav novej entite rovnakú jednotku.",
+"hint_stats_missing_old": "Bez dlhodobých štatistík starej entity nie je čo prevziať. Vyber „Iba prevziať ID“.",
+"hint_stats_nothing_to_import": "Stará štatistika nekončí pred začiatkom novej. Vyber „Iba prevziať ID“."
 }

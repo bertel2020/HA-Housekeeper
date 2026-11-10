@@ -6582,5 +6582,9 @@
 "rwRecCarried": "统计会转移到新实体，不会留下历史。",
 "optGroupSidebar": "侧边栏",
 "optSidebarTitle": "在侧边栏显示入口",
-"optSidebarHint": "关闭后，Housekeeper 会从所有用户的侧边栏消失，但仍可从集成页面访问。保存时页面会重新加载。"
+"optSidebarHint": "关闭后，Housekeeper 会从所有用户的侧边栏消失，但仍可从集成页面访问。保存时页面会重新加载。",
+"hint_stats_type_differs": "旧计量器记录的是平均值，新的记录的是累计值（或相反），两者无法合并。请选择“仅接管 ID”，统计将保持独立。",
+"hint_stats_unit_differs": "旧统计与新统计的单位不同，合并后数值会出错。请选择“仅接管 ID”，或将新实体设为相同单位。",
+"hint_stats_missing_old": "旧实体没有长期统计，没有可迁移的内容。请选择“仅接管 ID”。",
+"hint_stats_nothing_to_import": "旧统计在新统计开始之前并未结束。请选择“仅接管 ID”。"
 }

@@ -6582,5 +6582,9 @@
 "rwRecCarried": "Les statistiques passent à la nouvelle entité, aucun historique ne reste.",
 "optGroupSidebar": "Barre latérale",
 "optSidebarTitle": "Afficher l'entrée dans la barre latérale",
-"optSidebarHint": "Désactivé : Housekeeper disparaît de la barre latérale de tous les utilisateurs et reste accessible depuis la page de l'intégration. La page se recharge à l'enregistrement."
+"optSidebarHint": "Désactivé : Housekeeper disparaît de la barre latérale de tous les utilisateurs et reste accessible depuis la page de l'intégration. La page se recharge à l'enregistrement.",
+"hint_stats_type_differs": "L’ancien compteur mesure une moyenne, le nouveau un total (ou l’inverse). Les deux ne peuvent pas être fusionnés. Choisis « Reprendre l’ID uniquement » ; les statistiques restent alors séparées.",
+"hint_stats_unit_differs": "L’ancienne et la nouvelle statistique ont des unités différentes ; fusionnées, les valeurs seraient fausses. Choisis « Reprendre l’ID uniquement » ou donne la même unité à la nouvelle entité.",
+"hint_stats_missing_old": "Sans statistiques à long terme pour l’ancienne entité, il n’y a rien à reprendre. Choisis « Reprendre l’ID uniquement ».",
+"hint_stats_nothing_to_import": "L’ancienne statistique ne se termine pas avant le début de la nouvelle. Choisis « Reprendre l’ID uniquement »."
 }

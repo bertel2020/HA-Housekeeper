@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"7af5d71882"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"2da6bfefb7"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"077f79f7de"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"d899a29a91"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"297b613fb0"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"f00678a543"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"3b611554d3"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"15944bd978"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a96691f0d9"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"7daaaa7d97"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"654eac8811"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"562699d250"}];
 
 const TEXT = {
   de: {
@@ -780,6 +780,10 @@ Object.assign(TEXT.de, {
   meterStatsKept: "IDs zurückgegeben; die zusammengeführte Statistik bleibt bestehen und lässt sich nur mit dem Backup zurücksetzen.",
   reason_nothing_to_do: "Nichts auszuführen.", reason_stats_missing_old: "Für die alte Entität gibt es keine Langzeitstatistik.", reason_stats_unit_differs: "Die Einheiten der Statistiken unterscheiden sich.",
   reason_stats_type_differs: "Die Statistik-Arten (Summe oder Mittelwert) unterscheiden sich.", reason_stats_nothing_to_import: "Es gibt keine alten Werte vor dem Start der neuen Statistik.",
+  hint_stats_type_differs: "Der alte Zähler misst als Mittelwert, der neue als Summe (oder umgekehrt). Beides lässt sich nicht zusammenführen. Wähle „Nur ID übernehmen“; die Statistiken bleiben dann getrennt.",
+  hint_stats_unit_differs: "Alte und neue Statistik haben verschiedene Einheiten. Zusammengeführt wären die Werte falsch. Wähle „Nur ID übernehmen“ oder gleiche die Einheit der neuen Entität an.",
+  hint_stats_missing_old: "Ohne Langzeitstatistik der alten Entität gibt es nichts zu übernehmen. Wähle „Nur ID übernehmen“.",
+  hint_stats_nothing_to_import: "Die alte Statistik endet nicht vor dem Start der neuen. Wähle „Nur ID übernehmen“.",
   reason_no_recorder: "Der Recorder läuft nicht.", reason_old_not_in_registry: "Die alte Entität ist nicht (mehr) in der Entitäts-Registry; die ID lässt sich nicht tauschen.",
   reason_target_not_in_registry: "Die neue Entität ist nicht in der Entitäts-Registry.", reason_alt_id_taken: "Es ist keine freie Ausweich-ID für die alte Entität da.",
   reason_stats_overlap: "Die Statistiken überlappen; nur Werte vor dem Start der neuen Statistik werden kopiert.", reason_stats_gap: "Zwischen altem Ende und neuem Start fehlen Werte.",
@@ -826,6 +830,10 @@ Object.assign(TEXT.en, {
   meterStatsKept: "IDs given back; the joined statistics remain and can only be reset with the backup.",
   reason_nothing_to_do: "Nothing to do.", reason_stats_missing_old: "The old entity has no long-term statistics.", reason_stats_unit_differs: "The units of the statistics differ.",
   reason_stats_type_differs: "The statistic types (total or mean) differ.", reason_stats_nothing_to_import: "There are no old values before the new series starts.",
+  hint_stats_type_differs: "The old meter measures a mean, the new one a total (or the other way round). The two cannot be joined. Choose “Take over the ID only”; the statistics then stay separate.",
+  hint_stats_unit_differs: "The old and the new statistic use different units, so joined they would be wrong. Choose “Take over the ID only” or give the new entity the same unit.",
+  hint_stats_missing_old: "Without long-term statistics for the old entity there is nothing to carry over. Choose “Take over the ID only”.",
+  hint_stats_nothing_to_import: "The old statistic does not end before the new one starts. Choose “Take over the ID only”.",
   reason_no_recorder: "The recorder is not running.", reason_old_not_in_registry: "The old entity is not (any more) in the entity registry; the ID cannot be swapped.",
   reason_target_not_in_registry: "The new entity is not in the entity registry.", reason_alt_id_taken: "There is no free fallback ID for the old entity.",
   reason_stats_overlap: "The statistics overlap; only values before the new series' start are copied.", reason_stats_gap: "Values are missing between the old end and the new start.",
