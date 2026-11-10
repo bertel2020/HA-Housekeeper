@@ -1401,16 +1401,10 @@ class HAHousekeeperPanel extends HTMLElement {
       this.optDraft = this.optDraft || {};
       if (el.value === el.dataset.saved) delete this.optDraft[el.dataset.opt]; else this.optDraft[el.dataset.opt] = el.value;
       const save = root.querySelector("[data-opts-save]");
-      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved) && !sidebarDiffers();
+      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved);
     });
-    const sidebarBox = root.querySelector("[data-opt-bool]");
-    const sidebarDiffers = () => Boolean(sidebarBox) && (sidebarBox.checked ? "1" : "0") !== sidebarBox.dataset.saved;
-    if (sidebarBox) sidebarBox.onchange = () => {
-      this.optDraft = this.optDraft || {};
-      if (sidebarDiffers()) this.optDraft.show_in_sidebar = sidebarBox.checked; else delete this.optDraft.show_in_sidebar;
-      const save = root.querySelector("[data-opts-save]");
-      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved) && !sidebarDiffers();
-    };
+    root.querySelector("[data-sidebar-switch]")?.addEventListener("change", ev => { this.sidebarDraft = ev.target.checked; this.optionsMessage = ""; this.render(); });
+    root.querySelector("[data-sidebar-save]")?.addEventListener("click", () => this.saveSidebar());
     root.querySelectorAll("[data-opt-reset]").forEach(el => el.onclick = () => {
       const input = root.querySelector(`[data-opt="${el.dataset.optReset}"]`), field = OPTION_FIELDS.find(f => f[0] === el.dataset.optReset);
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }

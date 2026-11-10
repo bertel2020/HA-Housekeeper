@@ -3962,6 +3962,24 @@ class SettingsMixin {
       ${row(this.t("motion"), this.t("motionHint"), this.segment("motion", [["auto", this.t("motionAuto")], ["reduced", this.t("motionReduced")]]))}</section>`;
   }
 
+  // The sidebar entry is a setting of the whole installation, so it saves with its own button; saving reloads the integration.
+  sidebarCard() {
+    const saved = this.data?.meta?.show_in_sidebar !== false, on = this.sidebarDraft ?? saved;
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("optGroupSidebar")}</h2></div>
+      <div class="row"><span class="tile ${on ? "ok" : "mute"}"><ha-icon icon="mdi:dock-left"></ha-icon></span><span class="row-text"><strong>${this.t("optSidebarTitle")}</strong><small>${this.t("optSidebarHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("optSidebarTitle"))}" data-sidebar-switch ${on ? "checked" : ""}></div>
+      ${on !== saved ? `<div class="setrow"><small>${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-sidebar-save>${this.t("saveOptions")}</button></div>` : ""}</section>`;
+  }
+
+  async saveSidebar() {
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/set_options", show_in_sidebar: this.sidebarDraft });
+      this.sidebarDraft = undefined; this.optionsMessage = this.t("optionsSaved");
+      this.data = null; // the integration reloads; fetch again once it is back
+      this.render();
+      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+    } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : this.errText(err); this.render(); }
+  }
+
   behaviorCard() {
     const p = this.prefs;
     const row = (label, control) => `<div class="setrow"><div>${label}</div>${control}</div>`;
@@ -3987,8 +4005,7 @@ class SettingsMixin {
     const outage = OPTION_FIELDS.filter(f => OUTAGE_OPTION_KEYS.includes(f[0])).map(card).join("");
     const other = OPTION_FIELDS.filter(f => !OUTAGE_OPTION_KEYS.includes(f[0])).map(card).join("");
     const cards = `<div class="optgroup"><h3>${this.t("optGroupOutage")}</h3><p>${this.t("optGroupOutageHint")}</p></div><div class="optgrid optgrid4">${outage}</div><div class="optgroup"><h3>${this.t("optGroupOther")}</h3></div><div class="optgrid">${other}</div>`;
-    const sidebar = `<div class="optgroup"><h3>${this.t("optGroupSidebar")}</h3></div><label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-opt-bool="show_in_sidebar" data-saved="${m.show_in_sidebar === false ? "0" : "1"}" ${(draft.show_in_sidebar ?? (m.show_in_sidebar !== false)) ? "checked" : ""}><span><strong>${this.t("optSidebarTitle")}</strong><small>${this.t("optSidebarHint")}</small></span></label>`;
-    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>${cards}${sidebar}
+    return `<section class="panel"><div class="panelhead"><div><h2>${this.t("scanSettings")}</h2><p>${this.t("scanSettingsHint")}</p></div></div>${cards}
       <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save ${Object.keys(draft).length ? "" : "disabled"}>${this.t("saveOptions")}</button></div></section>`;
   }
 
@@ -4240,7 +4257,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}</div></div>`, protection: () => this.protectionCard(), view: () => this.viewCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}${this.sidebarCard()}</div></div>`, protection: () => this.protectionCard(), view: () => this.viewCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
@@ -4261,8 +4278,6 @@ class SettingsMixin {
       if (input.value === "" || !Number.isInteger(value) || value < min || value > max) { this.optionsMessage = this.t("optionsInvalid"); this.render(); return; }
       changes[input.dataset.opt] = value;
     }
-    const sidebarBox = this.shadowRoot.querySelector("[data-opt-bool]");
-    if (sidebarBox) changes.show_in_sidebar = sidebarBox.checked;
     const steps = [changes.outage_info_minutes / 60, changes.outage_low_hours, changes.outage_medium_hours, changes.outage_high_hours];
     if (steps.every(Number.isFinite) && !steps.every((x, i) => i === 0 || steps[i - 1] < x)) { this.optionsMessage = this.t("optionsOrder"); this.render(); return; }
     try {
@@ -24217,16 +24232,10 @@ class HAHousekeeperPanel extends HTMLElement {
       this.optDraft = this.optDraft || {};
       if (el.value === el.dataset.saved) delete this.optDraft[el.dataset.opt]; else this.optDraft[el.dataset.opt] = el.value;
       const save = root.querySelector("[data-opts-save]");
-      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved) && !sidebarDiffers();
+      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved);
     });
-    const sidebarBox = root.querySelector("[data-opt-bool]");
-    const sidebarDiffers = () => Boolean(sidebarBox) && (sidebarBox.checked ? "1" : "0") !== sidebarBox.dataset.saved;
-    if (sidebarBox) sidebarBox.onchange = () => {
-      this.optDraft = this.optDraft || {};
-      if (sidebarDiffers()) this.optDraft.show_in_sidebar = sidebarBox.checked; else delete this.optDraft.show_in_sidebar;
-      const save = root.querySelector("[data-opts-save]");
-      if (save) save.disabled = !optInputs.some(input => input.value !== input.dataset.saved) && !sidebarDiffers();
-    };
+    root.querySelector("[data-sidebar-switch]")?.addEventListener("change", ev => { this.sidebarDraft = ev.target.checked; this.optionsMessage = ""; this.render(); });
+    root.querySelector("[data-sidebar-save]")?.addEventListener("click", () => this.saveSidebar());
     root.querySelectorAll("[data-opt-reset]").forEach(el => el.onclick = () => {
       const input = root.querySelector(`[data-opt="${el.dataset.optReset}"]`), field = OPTION_FIELDS.find(f => f[0] === el.dataset.optReset);
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }
