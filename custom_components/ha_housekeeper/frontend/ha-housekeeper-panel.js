@@ -17464,6 +17464,7 @@ class BatteryKindMixin {
     const mine = [], proposed = [];
     for (const o of this.data.objects) {
       if (o.object_type !== "entity" || (o.device_class !== "battery" && !o.battery_kind) || o.status !== "active") continue;
+      if (!["sensor", "binary_sensor"].includes(o.object_id.split(".")[0])) continue; // a number or a switch is a setting, not a battery
       if (BATTERY_KINDS.includes(o.battery_kind)) mine.push(o);
       else if (!o.battery_kind && o.battery_suggest) proposed.push(o);
     }

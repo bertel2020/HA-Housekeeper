@@ -111,6 +111,7 @@ def test_battery_kinds_are_proposed_from_the_device_and_left_out_of_the_counts()
         entity("sensor.mower_battery", "d4", "battery"),
         entity("lawn_mower.mower", "d4", None),
         entity("sensor.kept_battery", "d2", "battery"),
+        entity("number.charge_target", "d3", "battery"),
     ]
     apply_battery_kinds(objects, {"sensor.kept_battery": "keep"})
     by_id = {o["object_id"]: o for o in objects}
@@ -122,6 +123,7 @@ def test_battery_kinds_are_proposed_from_the_device_and_left_out_of_the_counts()
         "signals": ["energy_storage", "power"],
     }
     assert by_id["sensor.car_battery"]["battery_suggest"]["kind"] == "other"
+    assert "battery_suggest" not in by_id["number.charge_target"]  # a setting, not a battery
     assert by_id["sensor.mower_battery"]["battery_suggest"] == {
         "kind": "device",
         "signals": ["lawn_mower"],

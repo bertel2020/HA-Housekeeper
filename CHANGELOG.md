@@ -16,6 +16,7 @@
 ### Behoben
 
 - **Batterien:** Das Formular für die Art öffnet sich in einer eigenen Zeile statt in der schmalen Menüspalte.
+- **Batterien:** Einstellwerte wie ein Ladeziel (`number`, `switch`) erscheinen nicht mehr als Batterie oder Vorschlag.
 
 ### English
 
@@ -33,6 +34,7 @@
 #### Fixed
 
 - **Batteries:** The form for the kind opens in a row of its own instead of the narrow menu column.
+- **Batteries:** Settings such as a charge target (`number`, `switch`) no longer show up as a battery or a proposal.
 
 ## 2.0.0-beta.5 - 2026-11-10
 
