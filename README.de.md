@@ -30,7 +30,7 @@ Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunäc
 
 > Housekeeper liest und analysiert zunächst. Änderungen gibt es ausschließlich nach ausdrücklicher Bestätigung eines Plans. Pläne umfassen Quarantäne und Entfernen, das Neuladen einer Integration, Reparaturen, das Ersetzen von Verweisen, das Umbenennen von Entitäten, das Zuweisen von Bereichen, das Löschen ungenutzter Automationen, das Kürzen des Recorder-Verlaufs und weitere Wartungsaufgaben. Je nach Aktion verlangt Housekeeper eine Quarantänezeit, eine zusätzliche Bestätigung und ein erfolgreiches Backup. Umkehrbare Änderungen lassen sich zurücksetzen, solange ihre Ziele unverändert sind; endgültige Recorder- und Backup-Löschungen werden deutlich gekennzeichnet. Integrationen und Hubs werden nie umkonfiguriert (das Neuladen einer Integration ist ein bestätigter Plan wie jeder andere), und Housekeeper ändert nur, was ein bestätigter Plan nennt.
 
-> **Beta von 2.0:** Die Vorabversion [2.0.0-beta.5](https://github.com/bertel2020/HA-Housekeeper/releases/tag/v2.0.0-beta.5) ist zum Ausprobieren da: Befunde nach Themen mit einer eigenen Seite „Beheben“, ein geführter Rundgang beim Aufräumen, die Ansicht „Einfach“ oder „Vollständig“ und neue Namen für die Ausgänge. In HACS (ab Home Assistant 2026.11: Marketplace) erscheint sie unter „Neu herunterladen“ mit eingeschalteten Beta-Versionen. Ein normales Update bleibt auf 1.x.
+> **Neu in 2.0:** Befunde nach Themen mit einer eigenen Seite, „Beheben“, ein geführter Rundgang beim Aufräumen, die Ansicht „Einfach“ oder „Vollständig“, neue Namen für die Ausgänge und weitere Sprachen. Die Einzelheiten stehen im [Changelog](CHANGELOG.md); mach vor dem Update von 1.x ein Backup.
 
 ## Einblicke
 
