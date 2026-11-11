@@ -7140,5 +7140,6 @@
 "hint_different_domain": "Obe musia byť rovnakého druhu, napríklad dva senzory. Vyber iný cieľ.",
 "hint_target_not_working": "Nová entita zatiaľ neposiela hodnoty. Počkaj, kým bude fungovať, alebo vyber inú.",
 "hint_target_no_value": "Jednotku a triedu stavu možno skontrolovať až po prvej hodnote. Bez triedy stavu Home Assistant neukladá dlhodobé štatistiky.",
-"hint_nothing_to_replace": "Starú entitu nič nepoužíva, takže nie je čo nahradiť."
+"hint_nothing_to_replace": "Starú entitu nič nepoužíva, takže nie je čo nahradiť.",
+"reason_no_references": "Nie sú žiadne odkazy na nahradenie; štatistiky sa aj tak prenesú."
 }

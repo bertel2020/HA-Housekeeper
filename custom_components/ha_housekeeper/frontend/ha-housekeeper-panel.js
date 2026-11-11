@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"2e331df059"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"3c58c132d1"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b6ea036397"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"1292221df8"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"b8f2dc9d42"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"f816200600"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"2183b493c2"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"a078671fb8"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"33cf652c07"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f139653229"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"545d4286da"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"367b4c1e6c"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"213f899406"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"9b75cd2d6d"}];
 
 const TEXT = {
   de: {
@@ -789,6 +789,7 @@ Object.assign(TEXT.de, {
   hint_target_not_working: "Die neue Entität liefert noch keine Werte. Warte, bis sie arbeitet, oder wähle eine andere.",
   hint_target_no_value: "Einheit und Statistik-Klasse lassen sich erst nach dem ersten Wert prüfen. Ohne Statistik-Klasse schreibt Home Assistant keine Langzeitstatistik.",
   hint_nothing_to_replace: "Die alte Entität wird nirgends verwendet, also gibt es nichts zu ersetzen.",
+  reason_no_references: "Es gibt keine Verweise zu ersetzen; die Statistik wird trotzdem übernommen.",
   reason_no_recorder: "Der Recorder läuft nicht.", reason_old_not_in_registry: "Die alte Entität ist nicht (mehr) in der Entitäts-Registry; die ID lässt sich nicht tauschen.",
   reason_target_not_in_registry: "Die neue Entität ist nicht in der Entitäts-Registry.", reason_alt_id_taken: "Es ist keine freie Ausweich-ID für die alte Entität da.",
   reason_stats_overlap: "Die Statistiken überlappen; nur Werte vor dem Start der neuen Statistik werden kopiert.", reason_stats_gap: "Zwischen altem Ende und neuem Start fehlen Werte.",
@@ -844,6 +845,7 @@ Object.assign(TEXT.en, {
   hint_target_not_working: "The new entity does not report values yet. Wait until it works, or pick another one.",
   hint_target_no_value: "Unit and state class can only be checked after the first value. Without a state class, Home Assistant records no long-term statistics.",
   hint_nothing_to_replace: "Nothing uses the old entity, so there is nothing to replace.",
+  reason_no_references: "There are no references to replace; the statistics are still carried over.",
   reason_no_recorder: "The recorder is not running.", reason_old_not_in_registry: "The old entity is not (any more) in the entity registry; the ID cannot be swapped.",
   reason_target_not_in_registry: "The new entity is not in the entity registry.", reason_alt_id_taken: "There is no free fallback ID for the old entity.",
   reason_stats_overlap: "The statistics overlap; only values before the new series' start are copied.", reason_stats_gap: "Values are missing between the old end and the new start.",

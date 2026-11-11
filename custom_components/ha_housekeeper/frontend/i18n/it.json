@@ -936,6 +936,7 @@
 "hint_target_not_working": "La nuova entità non riporta ancora valori. Attendi che funzioni oppure scegline un'altra.",
 "hint_target_no_value": "Unità e classe di stato si possono controllare solo dopo il primo valore. Senza classe di stato, Home Assistant non registra statistiche a lungo termine.",
 "hint_nothing_to_replace": "Nulla usa la vecchia entità, quindi non c'è niente da sostituire.",
+"reason_no_references": "Non ci sono riferimenti da sostituire; le statistiche vengono comunque riportate.",
 "reason_no_recorder": "Il Recorder non è in esecuzione.",
 "reason_old_not_in_registry": "La vecchia entità non è (più) nel registro delle entità; l'ID non può essere scambiato.",
 "reason_target_not_in_registry": "La nuova entità non è nel registro delle entità.",

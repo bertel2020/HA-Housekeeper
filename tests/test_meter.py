@@ -580,7 +580,16 @@ def test_joining_the_statistics_and_replacing_the_references_is_judged_as_both()
     nothing = judge_meter_action(
         OLD, NEW, objects(), [], good_meter(mode="replace_statistics", old_in_registry=False)
     )
-    assert nothing["verdict"] == "blocked" and "nothing_to_replace" in nothing["reasons"]
+    assert nothing["verdict"] == "review"  # nothing names the old entity: the statistics still move
+    assert "no_references" in nothing["reasons"] and "config_rewrite" not in nothing["reasons"]
+    unwritable = judge_meter_action(
+        OLD,
+        NEW,
+        objects(),
+        [],
+        good_meter(mode="replace_statistics", sources=[{**WRITE, "writable": False}]),
+    )
+    assert unwritable["verdict"] == "blocked" and "nothing_to_replace" in unwritable["reasons"]
     no_stats = judge_meter_action(
         OLD,
         NEW,

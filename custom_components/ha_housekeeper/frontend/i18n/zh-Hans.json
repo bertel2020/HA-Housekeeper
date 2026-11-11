@@ -6605,5 +6605,6 @@
 "hint_different_domain": "两者必须属于同一类型，例如都是传感器。请选择另一个目标。",
 "hint_target_not_working": "新实体尚未上报数值。请等它正常工作，或选择另一个。",
 "hint_target_no_value": "单位和状态类别要等第一个数值出现后才能检查。没有状态类别，Home Assistant 不会记录长期统计。",
-"hint_nothing_to_replace": "没有任何内容使用旧实体，因此无需替换。"
+"hint_nothing_to_replace": "没有任何内容使用旧实体，因此无需替换。",
+"reason_no_references": "没有需要替换的引用；统计数据仍会被转移。"
 }

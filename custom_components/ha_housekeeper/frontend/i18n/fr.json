@@ -6605,5 +6605,6 @@
 "hint_different_domain": "Les deux doivent être du même type, par exemple deux capteurs. Choisis une autre cible.",
 "hint_target_not_working": "La nouvelle entité ne fournit pas encore de valeurs. Attends qu’elle fonctionne ou choisis-en une autre.",
 "hint_target_no_value": "L’unité et la classe d’état ne peuvent être vérifiées qu’après la première valeur. Sans classe d’état, Home Assistant n’enregistre pas de statistiques à long terme.",
-"hint_nothing_to_replace": "Rien n’utilise l’ancienne entité, il n’y a donc rien à remplacer."
+"hint_nothing_to_replace": "Rien n’utilise l’ancienne entité, il n’y a donc rien à remplacer.",
+"reason_no_references": "Il n’y a aucune référence à remplacer ; les statistiques sont tout de même reprises."
 }

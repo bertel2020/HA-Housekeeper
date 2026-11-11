@@ -2451,7 +2451,7 @@ class CleanupRunner:
                 ok = bool(stats["verified"]) and len(rows) >= stats["imported"]
                 ok = ok and bool(rows) and rows[0]["start"] == stats["first"]
             checks.append({"check": "meter_statistics", "object_id": object_id, "ok": ok})
-        if result.get("mode") == METER_REFERENCE_MODE:
+        if result.get("mode") == METER_REFERENCE_MODE and action.get("sources"):
             # References that were not rewritten (a stop after the statistics) fail the check.
             check = _references_check(action, snapshot)
             check["ok"] = check["ok"] and bool(result.get("sources")) and not result.get("stopped")

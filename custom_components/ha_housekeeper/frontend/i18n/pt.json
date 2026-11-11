@@ -6605,5 +6605,6 @@
 "hint_different_domain": "Ambas têm de ser do mesmo tipo, por exemplo dois sensores. Escolhe outro destino.",
 "hint_target_not_working": "A nova entidade ainda não envia valores. Espera que funcione ou escolhe outra.",
 "hint_target_no_value": "A unidade e a classe de estado só podem ser verificadas depois do primeiro valor. Sem classe de estado, o Home Assistant não regista estatísticas de longo prazo.",
-"hint_nothing_to_replace": "Nada usa a entidade antiga, por isso não há nada para substituir."
+"hint_nothing_to_replace": "Nada usa a entidade antiga, por isso não há nada para substituir.",
+"reason_no_references": "Não há referências para substituir; as estatísticas são transferidas na mesma."
 }

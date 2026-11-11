@@ -1339,8 +1339,11 @@ def judge_meter_action(
         reasons.extend(analysis.get("reasons", []))
         reasons.append("stats_write")
     if mode == METER_REFERENCE_MODE:
-        _source_reasons(action["sources"], reasons)
-        reasons.append("config_rewrite")
+        if action["sources"]:
+            _source_reasons(action["sources"], reasons)
+            reasons.append("config_rewrite")
+        else:  # nothing names the old entity: only the statistics are moved
+            reasons.append("no_references")
     if mode in {"both", "id"}:
         if not meter.get("old_in_registry"):
             reasons.append("old_not_in_registry")

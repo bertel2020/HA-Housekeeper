@@ -18,6 +18,7 @@
 - **Batterien:** Das Formular für die Art öffnet sich in einer eigenen Zeile statt in der schmalen Menüspalte.
 - **Batterien:** Einstellwerte wie ein Ladeziel (`number`, `switch`) erscheinen nicht mehr als Batterie oder Vorschlag.
 - **Zählerwechsel:** Eine neue Entität ohne Wert (unbekannt oder nicht verfügbar) sperrt die Übertragung der Statistik nicht mehr, sie steht als Hinweis in der Vorschau.
+- **Zählerwechsel:** „Referenzen ersetzen und Statistik übernehmen“ ist nicht mehr gesperrt, wenn nichts auf die alte Entität verweist; die Statistik wird trotzdem übernommen, die Vorschau nennt es als Hinweis.
 
 ### English
 
@@ -37,6 +38,7 @@
 - **Batteries:** The form for the kind opens in a row of its own instead of the narrow menu column.
 - **Batteries:** Settings such as a charge target (`number`, `switch`) no longer show up as a battery or a proposal.
 - **Meter change:** A new entity without a value (unknown or unavailable) no longer blocks moving the statistics; it shows as a note in the preview.
+- **Meter change:** "Replace references and carry over statistics" is no longer blocked when nothing refers to the old entity; the statistics are still carried over, and the preview says so as a note.
 
 ## 2.0.0-beta.5 - 2026-11-10
 
