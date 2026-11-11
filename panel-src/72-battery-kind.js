@@ -4,20 +4,20 @@
 const BATTERY_KINDS = ["device", "storage", "vehicle", "other"];
 
 Object.assign(TEXT.de, {
-  bkSet: "Keine Wechselbatterie?", bkLabel: "Was ist {name}?", bkSave: "Speichern", bkBack: "Doch Batterie", bkConfirm: "Stimmt", bkNote: "Danach zählt der Sensor nicht mehr in Niedrigstand, Prognose und Statusrechnung. Gespeichert nur in Housekeeper.",
-  bkKind_device: "Akku eines Geräts", bkKind_storage: "Speicher", bkKind_vehicle: "Fahrzeug", bkKind_other: "Sonstiges",
-  bkProposed: "Vermutlich keine Wechselbatterie", bkProposedHint: "Geräte, die auch Leistung, Energie oder Ladevorgang melden. Sie zählen nicht in Niedrigstand und Prognose, bis du sie bestätigst oder zurückholst.",
-  bkMine: "Keine Wechselbatterie", bkMineHint: "Von dir oder aus einem Vorschlag bestätigt.",
+  bkSet: "Nur zur Information?", bkLabel: "Was ist {name}?", bkSave: "Speichern", bkBack: "Doch Batterie", bkConfirm: "Stimmt", bkNote: "Danach zählt der Sensor nicht mehr in Niedrigstand, Prognose und Statusrechnung. Gespeichert nur in Housekeeper.",
+  bkKind_device: "Akku (lädt selbst)", bkKind_storage: "Speicher", bkKind_vehicle: "Fahrzeug", bkKind_other: "Sonstiges",
+  bkProposed: "Vermutlich Akku oder Speicher", bkProposedHint: "Geräte, die auch Leistung, Energie oder Ladevorgang melden. Sie zählen nicht in Niedrigstand und Prognose, bis du sie bestätigst oder zurückholst.",
+  bkMine: "Akkus und Speicher", bkMineHint: "Laden sich selbst oder brauchen kein Eingreifen. Von dir oder aus einem Vorschlag bestätigt.",
   bkTakeN: "Übernehmen ({n})",
   bkWhy: "Gerät meldet auch {list}", bkWhyMower: "Gerät ist ein Mähroboter", bkWhyVacuum: "Gerät ist ein Staubsauger",
   bkSig_power: "Leistung", bkSig_energy: "Energie", bkSig_energy_storage: "Speicher", bkSig_current: "Strom", bkSig_battery_charging: "Ladevorgang", bkSig_plug: "Stecker",
   bkFailed: "Das hat nicht geklappt: {detail}", bkColReason: "Grund", bkColKind: "Art",
 });
 Object.assign(TEXT.en, {
-  bkSet: "Not a replaceable battery?", bkLabel: "What is {name}?", bkSave: "Save", bkBack: "It is a battery", bkConfirm: "Correct", bkNote: "Afterwards the sensor no longer counts in lowest level, forecast and the status. Stored only in Housekeeper.",
-  bkKind_device: "A device's own pack", bkKind_storage: "Storage", bkKind_vehicle: "Vehicle", bkKind_other: "Other",
-  bkProposed: "Probably not a replaceable battery", bkProposedHint: "Devices that also report power, energy or charging. They do not count in lowest level and forecast until you confirm them or bring them back.",
-  bkMine: "Not a replaceable battery", bkMineHint: "Set by you or confirmed from a proposal.",
+  bkSet: "Information only?", bkLabel: "What is {name}?", bkSave: "Save", bkBack: "It is a battery", bkConfirm: "Correct", bkNote: "Afterwards the sensor no longer counts in lowest level, forecast and the status. Stored only in Housekeeper.",
+  bkKind_device: "Battery pack (charges itself)", bkKind_storage: "Storage", bkKind_vehicle: "Vehicle", bkKind_other: "Other",
+  bkProposed: "Probably a pack or storage", bkProposedHint: "Devices that also report power, energy or charging. They do not count in lowest level and forecast until you confirm them or bring them back.",
+  bkMine: "Packs and storage", bkMineHint: "They charge themselves or need no action. Set by you or confirmed from a proposal.",
   bkTakeN: "Confirm ({n})",
   bkWhy: "Device also reports {list}", bkWhyMower: "Device is a mowing robot", bkWhyVacuum: "Device is a vacuum",
   bkSig_power: "power", bkSig_energy: "energy", bkSig_energy_storage: "storage", bkSig_current: "current", bkSig_battery_charging: "charging", bkSig_plug: "plug",

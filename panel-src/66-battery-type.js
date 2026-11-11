@@ -1,6 +1,12 @@
 // Battery type per sensor, the shopping list and detected replacements in the Batteries view.
 // Mixed into the panel in 99-register.js. Only Housekeeper's own list changes.
 Object.assign(TEXT.de, {
+  btRecharge: "Akku (ich lade ihn)",
+  btGroupChange: "Wird gewechselt",
+  btGroupCharge: "Wird von mir geladen",
+  btLeftCharge: "Laden in {n} Tagen",
+  btLeftChargeNow: "jetzt laden",
+  btNeedCharge: "Akkus zum Laden",
   btTypeSet: "Typ", btTypeSetN: "Batterietyp setzen ({n})", btTypeSetTitle: "Batterietyp für {n} Batterien", btTypeNone: "Typ fehlt", btTypeSave: "Speichern", btTypeCustom: "Eigener Text …", btTypeLabel: "Batterietyp für {name}", btTypeHint: "Gespeichert nur in Housekeeper.",
   btCtTitle: "Eigene Batterietypen", btCtHint: "Eigene Typen stehen bei jedem Sensor in der Auswahl. Eingebaute und genutzte Typen lassen sich nicht löschen.", btCtNone: "Noch keine eigenen Typen. Ein Typ, den du bei einem Sensor eintippst, landet hier.",
   btCtUsed: "von {n} Sensoren genutzt", btCtUsed1: "von 1 Sensor genutzt", btCtUnused: "nicht genutzt", btCtAdd: "Hinzufügen", btCtNew: "Neuer Typ", btCtRename: "Umbenennen", btCtDelete: "Löschen", btCtInUse: "Wird genutzt: erst bei den Sensoren ändern", btCtSave: "Speichern",
@@ -10,6 +16,12 @@ Object.assign(TEXT.de, {
   btReplTitleEntry: "Batterie gewechselt: {name}", btReplDone: "Eingetragen.", btReplDoneRem: "Eingetragen, {count} Erinnerung aktualisiert.", btReplFailed: "Das hat nicht geklappt: {detail}",
 });
 Object.assign(TEXT.en, {
+  btRecharge: "Rechargeable (I charge it)",
+  btGroupChange: "Replaced",
+  btGroupCharge: "Charged by me",
+  btLeftCharge: "Charge in {n} days",
+  btLeftChargeNow: "charge now",
+  btNeedCharge: "packs to charge",
   btTypeSet: "Type", btTypeSetN: "Set battery type ({n})", btTypeSetTitle: "Battery type for {n} batteries", btTypeNone: "Type missing", btTypeSave: "Save", btTypeCustom: "Own text …", btTypeLabel: "Battery type for {name}", btTypeHint: "Stored only in Housekeeper.",
   btCtTitle: "Own battery types", btCtHint: "Own types appear in the choice of every sensor. Built-in and used types cannot be deleted.", btCtNone: "No own types yet. A type you enter for a sensor ends up here.",
   btCtUsed: "used by {n} sensors", btCtUsed1: "used by 1 sensor", btCtUnused: "not used", btCtAdd: "Add", btCtNew: "New type", btCtRename: "Rename", btCtDelete: "Delete", btCtInUse: "In use: change the sensors first", btCtSave: "Save",
@@ -20,6 +32,9 @@ Object.assign(TEXT.en, {
 });
 
 const BATTERY_TYPES = ["2× AAA", "2× AA", "CR2016", "CR2032", "CR2450", "9 V"];
+// A battery you charge yourself: stored as this type (Battery Notes uses the same word), shown as "Akku (ich lade ihn)".
+const BATTERY_RECHARGE = "Rechargeable";
+const isRecharge = type => String(type || "").toLowerCase() === BATTERY_RECHARGE.toLowerCase();
 
 class BatteryTypeMixin {
   // The device name when the sensor has one, else the entity name: what reminders are matched by.
@@ -30,18 +45,21 @@ class BatteryTypeMixin {
 
   // The built-in types and the own ones, which are stored and so offered for every sensor.
   batteryTypeChoices() {
-    return [...BATTERY_TYPES, ...(this.batteryTrend?.custom_types || [])];
+    return [...BATTERY_TYPES, ...(this.batteryTrend?.custom_types || []).filter(x => !isRecharge(x))];
   }
+
+  batteryTypeLabel(type) { return isRecharge(type) ? this.t("btRecharge") : type; }
 
   batteryTypeControls(entityId) {
     const type = this.batteryTrend?.types?.[entityId];
     if (this.btEdit === entityId) {
       const choices = this.batteryTypeChoices();
-      const known = !type || choices.includes(type);
-      const options = choices.map(o => `<option value="${this.esc(o)}" ${o === type ? "selected" : ""}>${this.esc(o)}</option>`).join("");
+      const known = !type || choices.includes(type) || isRecharge(type);
+      const opt = (o, label = o) => `<option value="${this.esc(o)}" ${o === type || (isRecharge(o) && isRecharge(type)) ? "selected" : ""}>${this.esc(label)}</option>`;
+      const options = `<optgroup label="${this.esc(this.t("btGroupChange"))}">${choices.map(o => opt(o)).join("")}</optgroup><optgroup label="${this.esc(this.t("btGroupCharge"))}">${opt(BATTERY_RECHARGE, this.t("btRecharge"))}</optgroup>`;
       return `<span class="btedit"><label class="factnote" for="hk-bt-type">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select id="hk-bt-type" data-bt-type-select><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn accent" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
     }
-    return `<span class="btctl">${type ? `<span class="pill">${this.esc(type)}</span>` : `<span class="pill mute">${this.t("btTypeNone")}</span>`}<button class="btn quiet" data-bt-type="${this.esc(entityId)}">${this.t("btTypeSet")}</button></span>`;
+    return `<span class="btctl">${type ? `<span class="pill">${this.esc(this.batteryTypeLabel(type))}</span>` : `<span class="pill mute">${this.t("btTypeNone")}</span>`}<button class="btn quiet" data-bt-type="${this.esc(entityId)}">${this.t("btTypeSet")}</button></span>`;
   }
 
   batterySuggestions() {

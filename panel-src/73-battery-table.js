@@ -85,9 +85,10 @@ class BatteryTableMixin {
   batteryLeftCell(row) {
     const fc = row.fc;
     // Already below the limit: it is empty for the purpose of the list now; the tooltip says why.
-    if (row.low) return `<b class="red" title="${this.esc(this.t("btLeftLowHint"))}">${this.t("btLeftLow")}</b>`;
+    const charge = isRecharge(row.type); // a battery you charge: the same forecast, worded as charging
+    if (row.low) return `<b class="red" title="${this.esc(this.t("btLeftLowHint"))}">${this.t(charge ? "btLeftChargeNow" : "btLeftLow")}</b>`;
     if (!fc) return `<span class="muted">—</span>`;
-    if (fc.state === "falling") return `<b class="${fc.days <= BATTERY_SOON_DAYS ? "red" : fc.days <= BATTERY_NEED_DAYS ? "amber" : ""}">${this.t("btLeftDays", { n: fc.days })}</b>`;
+    if (fc.state === "falling") return `<b class="${fc.days <= BATTERY_SOON_DAYS ? "red" : fc.days <= BATTERY_NEED_DAYS ? "amber" : ""}">${this.t(charge ? "btLeftCharge" : "btLeftDays", { n: fc.days })}</b>`;
     if (fc.state === "far") return `<span class="muted">${this.t("btLeftFar", { n: BATTERY_FAR_DAYS })}</span>`;
     return `<span class="muted">${this.t("btLeftStable")}</span>`;
   }
@@ -95,7 +96,7 @@ class BatteryTableMixin {
   batteryTypeCell(row) {
     const id = row.item.object_id;
     if (this.btEdit === id) return this.batteryTypeControls(id);
-    if (row.type) return `<span class="btctl"><span class="pill">${this.esc(row.type)}</span><button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.esc(this.t("btTypeChange"))}" aria-label="${this.esc(this.t("btTypeLabel", { name: this.batteryName(row.item).title }))}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button></span>`;
+    if (row.type) return `<span class="btctl"><span class="pill">${this.esc(this.batteryTypeLabel(row.type))}</span><button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.esc(this.t("btTypeChange"))}" aria-label="${this.esc(this.t("btTypeLabel", { name: this.batteryName(row.item).title }))}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button></span>`;
     if (row.volt) return `<span class="muted" title="${this.esc(this.t("bvLine", { now: this.voltNum(row.level), kind: this.t(`bvType_${row.volt.type}`), limit: this.voltNum(row.volt.limit) }))}">${this.esc(this.t(`bvType_${row.volt.type}`).split(" (")[0])}</span><button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.t("btTypeChange")}" aria-label="${this.t("btTypeChange")}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button>`;
     return `<button class="btn quiet miss" data-bt-type="${this.esc(id)}" title="${this.esc(this.t("btTypeChange"))}">${this.t("btTypeNone")}<ha-icon icon="mdi:pencil-outline"></ha-icon></button>`;
   }
@@ -170,16 +171,18 @@ class BatteryTableMixin {
     if (b.busy) return `<div class="panel"><p class="factnote">${this.t("relBusy")}</p></div>`;
     const soon = this.batteryNeedRows();
     const counts = new Map();
-    let untyped = 0;
+    let untyped = 0, toCharge = 0;
     for (const r of soon) {
       const type = b.types?.[r.entity_id];
       if (!type) { untyped++; continue; }
+      if (isRecharge(type)) { toCharge++; continue; } // charged, not bought
       const match = /^(\d+)\s*[×x]\s*(.+)$/i.exec(type);
       const [n, name] = match ? [Number(match[1]), match[2].trim()] : [1, type];
       counts.set(name, (counts.get(name) || 0) + n);
     }
     const tile = (count, name, cls = "") => `<div class="needtile ${cls}"><b>${this.esc(count)}</b><span>${this.esc(name)}</span></div>`;
     const tiles = [...counts].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0])).map(([name, n]) => tile(`${this.formatNumber(n)}×`, name));
+    if (toCharge) tiles.push(tile(this.formatNumber(toCharge), this.t("btNeedCharge"), "mute"));
     if (untyped) tiles.push(tile(this.formatNumber(untyped), `${this.t("needUntyped")} · ${this.t("needUntypedHint")}`, "miss"));
     const slots = new Map();
     for (const r of rows) {
