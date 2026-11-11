@@ -5383,6 +5383,7 @@
 "secFootnote": "O Housekeeper reconhece credenciais pelo nome de um campo na configuração de uma integração (password, token, api_key, secret, webhook, pin, também pass, passcode, cookie, session_id e otp) e só verifica se está vazio. Os valores, partes deles e o seu comprimento não são lidos, mostrados nem exportados. A deteção é uma indicação: faltam credenciais com outro nome, e um campo com um destes nomes pode conter algo inofensivo. “Início de sessão necessário” significa que a integração pediu ao Home Assistant um novo início de sessão, por exemplo porque um token expirou ou uma palavra-passe mudou; fica então listada mesmo sem um campo reconhecido. Uma integração desativada mantém as suas credenciais enquanto estiver configurada; se já não for necessária, eliminar a integração remove-as também. Um clique numa linha abre a integração no Home Assistant, onde as credenciais podem ser alteradas. Nada é alterado e nada é guardado.",
 "btColName": "Dispositivo",
 "btColArea": "Área",
+"btNoArea": "sem área",
 "btColType": "Tipo",
 "btColLevel": "Nível",
 "btColSlope": "Descarga",

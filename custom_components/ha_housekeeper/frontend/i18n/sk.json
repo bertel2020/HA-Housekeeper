@@ -5841,6 +5841,7 @@
 "secFootnote": "Housekeeper rozpoznáva prihlasovacie údaje podľa názvu poľa v konfigurácii integrácie (password, token, api_key, secret, webhook, pin) a kontroluje iba to, či je prázdne. Hodnoty, ich časti ani dĺžka sa nečítajú, nezobrazujú ani neexportujú. Detekcia je orientačná: údaje s iným názvom môžu uniknúť a podobne pomenované pole môže obsahovať neškodné údaje. Kliknutím otvoríš integráciu v Home Assistante, kde môžeš údaje zmeniť. Nič sa nemení ani neukladá.",
 "btColName": "Zariadenie",
 "btColArea": "Oblasť",
+"btNoArea": "bez oblasti",
 "btColType": "Typ",
 "btColLevel": "Stav",
 "btColSlope": "Vybíjanie",

@@ -5383,6 +5383,7 @@
 "secFootnote": "Housekeeper reconnaît les identifiants au nom d’un champ dans la configuration d’une intégration (password, token, api_key, secret, webhook, pin, ainsi que pass, passcode, cookie, session_id et otp) et vérifie seulement s’il est vide. Les valeurs, leurs parties et leur longueur ne sont ni lues, ni affichées, ni exportées. La détection est un indice : les identifiants sous un autre nom manquent, et un champ portant un tel nom peut contenir quelque chose d’inoffensif. « Connexion requise » signifie que l’intégration a demandé une nouvelle connexion à Home Assistant, par exemple parce qu’un jeton a expiré ou qu’un mot de passe a changé ; elle est alors listée même sans champ reconnu. Une intégration désactivée garde ses identifiants tant qu’elle est configurée ; si elle n’est plus nécessaire, supprimer l’intégration les supprime aussi. Un clic sur une ligne ouvre l’intégration dans Home Assistant, où les identifiants peuvent être modifiés. Rien n’est modifié et rien n’est stocké.",
 "btColName": "Appareil",
 "btColArea": "Zone",
+"btNoArea": "aucune zone",
 "btColType": "Type",
 "btColLevel": "Niveau",
 "btColSlope": "Décharge",

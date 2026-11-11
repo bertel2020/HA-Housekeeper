@@ -7,6 +7,7 @@ const BATTERY_FAR_DAYS = 90;
 const BATTERY_GROUP_DAYS = 14;
 
 Object.assign(TEXT.de, {
+  btNoArea: "kein Bereich",
   btColName: "Gerät", btColArea: "Bereich", btColType: "Typ", btColLevel: "Stand", btColSlope: "Verbrauch", btColLeft: "Leer in", btColAct: "Aktion", btColDate: "Datum", btTypeChange: "Typ ändern", btLevelOk: "in Ordnung",
   btSlopeDay: "{n} %/Tag", btVoltDay: "{n} V/Tag", btSlopeStable: "stabil", btLeftLow: "jetzt", btLeftLowHint: "Schon unter der Grenze", btLeftDays: "{n} Tage", btLeftFar: "> {n} Tage", btLeftStable: "nicht absehbar",
   btFilterSoon: "Bald leer", btFilterUntyped: "Ohne Typ", btAllTypes: "Alle Typen",
@@ -17,6 +18,7 @@ Object.assign(TEXT.de, {
   fcWindow: "In {from} bis {to} Tagen", fcTogether: "Gemeinsam wechseln", 
 });
 Object.assign(TEXT.en, {
+  btNoArea: "no area",
   btColName: "Device", btColArea: "Area", btColType: "Type", btColLevel: "Level", btColSlope: "Drain", btColLeft: "Empty in", btColAct: "Action", btColDate: "Date", btTypeChange: "Change type", btLevelOk: "ok",
   btSlopeDay: "{n} %/day", btVoltDay: "{n} V/day", btSlopeStable: "stable", btLeftLow: "now", btLeftLowHint: "Already below the limit", btLeftDays: "{n} days", btLeftFar: "> {n} days", btLeftStable: "no forecast",
   btFilterSoon: "Empty soon", btFilterUntyped: "No type", btAllTypes: "All types",
@@ -110,8 +112,8 @@ class BatteryTableMixin {
       { key: "sel", label: "selectPage", narrow: true, sortable: false,
         allBox: () => { const n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-bat-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
         cell: r => `<input type="checkbox" class="selbox" data-bat-sel="${this.esc(r.item.object_id)}" ${sel.has(r.item.object_id) ? "checked" : ""} aria-label="${this.esc(this.batteryName(r.item).title)}">` },
-      { key: "name", label: "btColName", dir: "asc", cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
-      { key: "area", label: "btColArea", dir: "asc", cell: r => this.esc(this.areaName(r.item) || "—") },
+      { key: "name", label: "btColName", dir: "asc", cell: r => this.batteryNameCell(r.item) },
+      { key: "area", label: "btColArea", dir: "asc", cell: r => this.esc(this.areaName(r.item)) || `<span class="muted">${this.t("btNoArea")}</span>` },
       { key: "type", label: "btColType", dir: "asc", cell: r => this.batteryTypeCell(r) },
       { key: "level", label: "btColLevel", dir: "asc", cell: r => this.batteryLevelCell(r, limit) },
       { key: "slope", label: "btColSlope", dir: "asc", cell: r => this.batterySlopeCell(r) },
@@ -196,8 +198,8 @@ class BatteryTableMixin {
     }
     this.lvState("batwin", "left", "asc");
     const columns = [
-      { key: "name", label: "btColName", sortable: false, cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
-      { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item) || "—") },
+      { key: "name", label: "btColName", sortable: false, cell: r => this.batteryNameCell(r.item) },
+      { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item)) || `<span class="muted">${this.t("btNoArea")}</span>` },
       { key: "type", label: "btColType", sortable: false, cell: r => this.batteryTypeCell(r) }, // the same cell as in the list: a missing type is a button
       { key: "level", label: "btColLevel", sortable: false, cell: r => this.batteryLevelCell(r, this.data.meta.low_battery_percent ?? 20) },
       { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDate(new Date(Date.now() + r.days * 86400000).toISOString()).split(",")[0])) },

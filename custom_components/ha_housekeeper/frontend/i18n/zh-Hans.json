@@ -5383,6 +5383,7 @@
 "secFootnote": "Housekeeper 通过集成配置中字段的名称识别凭据（password、token、api_key、secret、webhook、pin，以及 pass、passcode、cookie、session_id 和 otp），并且只检查其是否为空。具体值、值的片段及其长度既不会被读取，也不会显示或导出。此检测仅为提示：使用其他名称的凭据会被遗漏，而使用此类名称的字段也可能存放无害内容。「需要登录」表示该集成要求 Home Assistant 进行新的登录，例如令牌过期或密码更改；此时即使没有识别到字段，也会列出该集成。已禁用的集成只要仍处于设置状态就会保留其凭据；如果不再需要，删除该集成也会一并移除凭据。点击某一行会在 Home Assistant 中打开该集成，可在其中更改凭据。不会更改任何内容，也不会存储任何内容。",
 "btColName": "设备",
 "btColArea": "区域",
+"btNoArea": "无区域",
 "btColType": "类型",
 "btColLevel": "电量",
 "btColSlope": "耗电速度",

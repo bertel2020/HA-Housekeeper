@@ -6591,7 +6591,8 @@
 "hint_same_entity": "356f09aa",
 "hint_different_domain": "805fb371",
 "hint_target_not_working": "05d0fc79",
-"hint_nothing_to_replace": "c8351bbd"
+"hint_nothing_to_replace": "c8351bbd",
+"btNoArea": "820aab1c"
 },
 "setup": {
 "title": "644c2647",

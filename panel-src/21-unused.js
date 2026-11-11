@@ -337,6 +337,14 @@ class UnusedMixin {
     return { title: device?.name || item.name, entity: device?.name && device.name !== item.name ? item.name : "", device };
   }
 
+  // The name cell of a battery: the device, where it comes from (maker, model, integration) and the entity id, so that two
+  // batteries with the same name can still be told apart.
+  batteryNameCell(item) {
+    const n = this.batteryName(item);
+    const origin = [[n.device?.manufacturer, n.device?.model].filter(Boolean).join(" "), item.platform].filter(Boolean).join(" · ");
+    return `${this.nameCell(n.title, item.object_id)}${origin ? `<small class="cut">${this.esc(origin)}</small>` : ""}`;
+  }
+
   batterySorts() {
     return [
       // Low batteries first, then the lowest level.

@@ -5031,7 +5031,7 @@ test("batteries are named by their device: the tile, the rows and the search", (
   el.batteryVoltRows = () => [];
   const html = el.batteriesView();
   assert.ok(html.includes("Lowest level") && html.includes("Kitchen window sensor · Kitchen") && html.includes('data-object="entity:sensor.kitchen_window_battery"'), "the tile names the device and opens the sensor");
-  assert.ok(/<strong class="cut">Kitchen window sensor<\/strong><span class="id cut">Battery/.test(html), "the row titles the device and keeps the entity below");
+  assert.ok(/<strong class="cut">Kitchen window sensor<\/strong><span class="id cut">sensor\.kitchen_window_battery/.test(html), "the row titles the device and shows the entity id below");
   assert.equal(el.batteryName(battery).title, "Kitchen window sensor"); assert.equal(el.batteryName(battery).entity, "Battery");
   assert.equal(el.batteryName({ ...battery, device_id: "" }).title, "Battery");
 });

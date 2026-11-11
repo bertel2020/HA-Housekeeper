@@ -5519,6 +5519,7 @@
 "secFootnote": "Housekeeper riconosce le credenziali dal nome di un campo nella configurazione di un’integrazione (password, token, api_key, secret, webhook, pin, anche pass, passcode, cookie, session_id e otp) e controlla solo se è vuoto. I valori, le loro parti e la loro lunghezza non vengono né letti, né mostrati, né esportati. Il rilevamento è un indizio: le credenziali con un altro nome mancano, e un campo con un nome simile può contenere qualcosa di innocuo. “Accesso necessario” significa che l’integrazione ha chiesto a Home Assistant un nuovo accesso, ad esempio perché un token è scaduto o una password è cambiata; viene allora elencata anche senza un campo riconosciuto. Un’integrazione disattivata conserva le sue credenziali finché è configurata; se non serve più, eliminarla le rimuove. Un clic su una riga apre l’integrazione in Home Assistant, dove si possono modificare le credenziali. Non viene cambiato né salvato nulla.",
 "btColName": "Dispositivo",
 "btColArea": "Area",
+"btNoArea": "nessuna area",
 "btColType": "Tipo",
 "btColLevel": "Livello",
 "btColSlope": "Consumo",

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"94e51223f7"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"105773e0bc"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"ac57d42b1f"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"1b55d248ed"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"ce90fd9f46"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"6f7c1a5c0c"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"c89a9300dd"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"d2f9347f45"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"dca4a0dea1"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"38a077a8e1"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a13b1002f2"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"b6a37a1c65"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"3a77207a39"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"15eabb8146"}];
 
 const TEXT = {
   de: {
@@ -6206,6 +6206,14 @@ class UnusedMixin {
   batteryName(item) {
     const device = item.device_id ? this.findObject(`device:${item.device_id}`) : null;
     return { title: device?.name || item.name, entity: device?.name && device.name !== item.name ? item.name : "", device };
+  }
+
+  // The name cell of a battery: the device, where it comes from (maker, model, integration) and the entity id, so that two
+  // batteries with the same name can still be told apart.
+  batteryNameCell(item) {
+    const n = this.batteryName(item);
+    const origin = [[n.device?.manufacturer, n.device?.model].filter(Boolean).join(" "), item.platform].filter(Boolean).join(" · ");
+    return `${this.nameCell(n.title, item.object_id)}${origin ? `<small class="cut">${this.esc(origin)}</small>` : ""}`;
   }
 
   batterySorts() {
@@ -17725,6 +17733,7 @@ const BATTERY_FAR_DAYS = 90;
 const BATTERY_GROUP_DAYS = 14;
 
 Object.assign(TEXT.de, {
+  btNoArea: "kein Bereich",
   btColName: "Gerät", btColArea: "Bereich", btColType: "Typ", btColLevel: "Stand", btColSlope: "Verbrauch", btColLeft: "Leer in", btColAct: "Aktion", btColDate: "Datum", btTypeChange: "Typ ändern", btLevelOk: "in Ordnung",
   btSlopeDay: "{n} %/Tag", btVoltDay: "{n} V/Tag", btSlopeStable: "stabil", btLeftLow: "jetzt", btLeftLowHint: "Schon unter der Grenze", btLeftDays: "{n} Tage", btLeftFar: "> {n} Tage", btLeftStable: "nicht absehbar",
   btFilterSoon: "Bald leer", btFilterUntyped: "Ohne Typ", btAllTypes: "Alle Typen",
@@ -17735,6 +17744,7 @@ Object.assign(TEXT.de, {
   fcWindow: "In {from} bis {to} Tagen", fcTogether: "Gemeinsam wechseln", 
 });
 Object.assign(TEXT.en, {
+  btNoArea: "no area",
   btColName: "Device", btColArea: "Area", btColType: "Type", btColLevel: "Level", btColSlope: "Drain", btColLeft: "Empty in", btColAct: "Action", btColDate: "Date", btTypeChange: "Change type", btLevelOk: "ok",
   btSlopeDay: "{n} %/day", btVoltDay: "{n} V/day", btSlopeStable: "stable", btLeftLow: "now", btLeftLowHint: "Already below the limit", btLeftDays: "{n} days", btLeftFar: "> {n} days", btLeftStable: "no forecast",
   btFilterSoon: "Empty soon", btFilterUntyped: "No type", btAllTypes: "All types",
@@ -17828,8 +17838,8 @@ class BatteryTableMixin {
       { key: "sel", label: "selectPage", narrow: true, sortable: false,
         allBox: () => { const n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-bat-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
         cell: r => `<input type="checkbox" class="selbox" data-bat-sel="${this.esc(r.item.object_id)}" ${sel.has(r.item.object_id) ? "checked" : ""} aria-label="${this.esc(this.batteryName(r.item).title)}">` },
-      { key: "name", label: "btColName", dir: "asc", cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
-      { key: "area", label: "btColArea", dir: "asc", cell: r => this.esc(this.areaName(r.item) || "—") },
+      { key: "name", label: "btColName", dir: "asc", cell: r => this.batteryNameCell(r.item) },
+      { key: "area", label: "btColArea", dir: "asc", cell: r => this.esc(this.areaName(r.item)) || `<span class="muted">${this.t("btNoArea")}</span>` },
       { key: "type", label: "btColType", dir: "asc", cell: r => this.batteryTypeCell(r) },
       { key: "level", label: "btColLevel", dir: "asc", cell: r => this.batteryLevelCell(r, limit) },
       { key: "slope", label: "btColSlope", dir: "asc", cell: r => this.batterySlopeCell(r) },
@@ -17914,8 +17924,8 @@ class BatteryTableMixin {
     }
     this.lvState("batwin", "left", "asc");
     const columns = [
-      { key: "name", label: "btColName", sortable: false, cell: r => { const n = this.batteryName(r.item); return this.nameCell(n.title, n.entity || r.item.object_id); } },
-      { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item) || "—") },
+      { key: "name", label: "btColName", sortable: false, cell: r => this.batteryNameCell(r.item) },
+      { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item)) || `<span class="muted">${this.t("btNoArea")}</span>` },
       { key: "type", label: "btColType", sortable: false, cell: r => this.batteryTypeCell(r) }, // the same cell as in the list: a missing type is a button
       { key: "level", label: "btColLevel", sortable: false, cell: r => this.batteryLevelCell(r, this.data.meta.low_battery_percent ?? 20) },
       { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDate(new Date(Date.now() + r.days * 86400000).toISOString()).split(",")[0])) },
