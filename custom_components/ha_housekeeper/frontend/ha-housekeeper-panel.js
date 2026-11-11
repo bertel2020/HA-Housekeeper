@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"0e7aeb0e61"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"433a45407b"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b3e81ee68e"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"00a45dab52"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"beac0bf786"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"96c40cea09"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"f8f5b82920"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"3dd1cf81e4"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"40722338e9"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"8b195b3e30"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"80ae0d630b"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"57d8cfdf14"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"78e54d2b97"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"647dd62c19"}];
 
 const TEXT = {
   de: {
@@ -2492,6 +2492,14 @@ class OverviewMixin {
     return `<div class="panel u-mb14" data-levels-hint><div class="row levelsrow"><span class="tile mute"><ha-icon icon="mdi:stairs-up"></ha-icon></span><span class="row-text"><strong>${this.t("levelsHintTitle")}</strong><small>${this.t("levelsHintText")}</small></span><button class="btn" data-levels-go>${this.t("levelsHintSettings")}</button><button class="btn quiet" data-levels-ok>${this.t("levelsHintOk")}</button></div></div>`;
   }
 
+  // Said once per browser: 2.0 is out as a beta. The links row on the info tab stays for good.
+  betaBanner() {
+    let seen = false;
+    try { seen = globalThis.localStorage?.getItem("ha_housekeeper.v2_beta_hint") === "1"; } catch (_) { seen = false; }
+    if (seen || this.data?.meta?.preliminary) return "";
+    return `<div class="panel u-mb14" data-beta-hint><div class="row levelsrow"><span class="tile mute"><ha-icon icon="mdi:flask-outline"></ha-icon></span><span class="row-text"><strong>${this.t("betaHintTitle")}</strong><small>${this.t("betaHintText")}</small></span><a class="btn" href="${REPO_URL}/releases" target="_blank" rel="noopener noreferrer" data-beta-open>${this.t("betaHintOpen")}</a><button class="btn quiet" data-beta-ok>${this.t("betaHintOk")}</button></div></div>`;
+  }
+
   // A scan that failed, or none that succeeded for a long time: the counts shown then come from an older scan.
   healthBanner() {
     const h = this.data?.meta?.scan_health;
@@ -4242,7 +4250,7 @@ class SettingsMixin {
     return `<div class="stack"><section class="panel"><div class="panelhead"><h2>${this.t("about")}</h2></div><div class="aboutintro"><p>${this.t("aboutIntro")}</p><p><strong>${this.t("aboutIntroSafe")}</strong> ${this.t("aboutIntroPlan")}</p></div><div class="facts">${facts}</div></section>${this.housekeeperUpdateCard()}
       ${this.scanCoverageCard()}${this.scanTimingCard()}
       <section class="panel"><div class="panelhead"><div><h2>${this.t("setKeptTitle")}</h2><p>${this.t("setKeptHint")} ${this.t("storeHintBytes")}</p></div></div>${kept}<p class="factnote">${this.t("setPrivacy")}</p></section>
-      <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}
+      <section class="panel"><div class="panelhead"><h2>${this.t("setLinks")}</h2></div>${link("mdi:github", REPO_URL, this.t("repository"), "")}${link("mdi:bug-outline", `${REPO_URL}/issues`, this.t("reportIssue"), "")}${link("mdi:history", `${REPO_URL}/blob/main/CHANGELOG.md`, this.t("changelog"), "")}${link("mdi:flask-outline", `${REPO_URL}/releases`, this.t("betaLink"), this.t("betaLinkHint"))}
         <button class="row" data-diagnostics><span class="tile mute"><ha-icon icon="mdi:stethoscope"></ha-icon></span><span class="row-text"><strong>${this.t("diagDownload")}</strong><small>${this.t("diagHint")}</small></span><ha-icon icon="mdi:download"></ha-icon></button>
         <button class="row" data-diag-copy><span class="tile mute"><ha-icon icon="mdi:content-copy"></ha-icon></span><span class="row-text"><strong>${this.t("diagCopy")}</strong><small>${this.t("diagCopyHint")}</small></span></button></section></div>`;
   }
@@ -10766,6 +10774,8 @@ class OftenMixin {
 
 // Texts for the impact of a finding (see impact.py); merged into TEXT.
 Object.assign(TEXT.de, {
+  betaHintTitle: "Housekeeper 2.0 gibt es als Beta zum Ausprobieren", betaHintText: "Befunde nach Themen mit eigener Seite, „Beheben“, ein geführter Rundgang beim Aufräumen und die Ansicht „Einfach“ oder „Vollständig“. In HACS erscheint sie unter „Neu herunterladen“ mit eingeschalteten Beta-Versionen; ein normales Update bleibt auf 1.x. Mach vorher ein Backup.", betaHintOpen: "Was ist neu", betaHintOk: "Nicht mehr anzeigen",
+  betaLink: "Housekeeper 2.0 (Beta)", betaLinkHint: "Vorabversionen und was neu ist",
   levelsHintTitle: "Ausfälle werden nach Dauer gestuft", levelsHintText: "Ein Ausfall wird nach der Info-Schwelle ein Befund und steigt über niedrig und mittel auf hoch. Die Übersicht zählt ab mittel, dringend ist ein Ausfall ab hoch; Info und niedrig stehen auf der Befundseite. Die Schwellen stellst du in den Einstellungen ein.", levelsHintSettings: "Schwellen ansehen", levelsHintOk: "Verstanden", changesNewRating: "Neue Bewertung: Seit dieser Version werden Ausfälle nach Dauer gestuft. Befunde, die dadurch anders gelten, stehen unter „Ohne Reparatur beendet“, nicht als erledigt.",
   ogSites: "{n} Objekte", ogSites1: "1 Objekt", tileFindings: "{n} Befunde", tileFindings1: "1 Befund", tileObjects: "Objekte", tileOutages: "{o} Ausfälle mit {n} Folgen", tileOutages1: "1 Ausfall mit {n} Folgen", allObjectsTile: "Objekte mit Befunden", openObjects: "Objekte mit Befunden",
   openFindingsQuiet: "davon {n} Info/niedrig", whyOpenLevel: "Befunde dieser Stufe anzeigen",
@@ -10775,6 +10785,8 @@ Object.assign(TEXT.de, {
   impactWhy_label: "Label", impactWhy_device_label: "Label am Gerät", impactWhy_area_label: "Label am Bereich", impactWhy_kind: "Art des Objekts",
 });
 Object.assign(TEXT.en, {
+  betaHintTitle: "Housekeeper 2.0 is out as a beta to try", betaHintText: "Findings by topic with a page of their own, \"Fix\", a guided tour for cleaning up and the view \"Simple\" or \"Full\". In HACS it shows under \"Redownload\" with beta versions switched on; a normal update stays on 1.x. Make a backup first.", betaHintOpen: "What's new", betaHintOk: "Don't show again",
+  betaLink: "Housekeeper 2.0 (beta)", betaLinkHint: "Pre-releases and what's new",
   levelsHintTitle: "Outages are graded by how long they last", levelsHintText: "An outage becomes a finding after the info threshold and rises through low and medium to high. The overview counts from medium on and calls an outage urgent from high on; info and low are on the findings page. You set the thresholds in the settings.", levelsHintSettings: "See thresholds", levelsHintOk: "Got it", changesNewRating: "New rating: since this version outages are graded by duration. Findings that read differently now are listed under “Ended without a repair”, not as resolved.",
   ogSites: "{n} objects", ogSites1: "1 object", tileFindings: "{n} findings", tileFindings1: "1 finding", tileObjects: "objects", tileOutages: "{o} outages with {n} follow-ups", tileOutages1: "1 outage with {n} follow-ups", allObjectsTile: "Objects with findings", openObjects: "Objects with findings",
   openFindingsQuiet: "{n} of them info/low", whyOpenLevel: "Show the findings of this level",
@@ -24176,6 +24188,9 @@ class HAHousekeeperPanel extends HTMLElement {
       const kind = el.dataset.bhSave, date = root.querySelector(`[data-bh-date="${kind}"]`)?.value;
       this.loadBackup({ type: "ha_housekeeper/backup_attest", kind, ...(date ? { date } : {}) });
     });
+    const betaSeen = () => { try { globalThis.localStorage?.setItem("ha_housekeeper.v2_beta_hint", "1"); } catch (_) { /* no storage */ } };
+    root.querySelector("[data-beta-ok]")?.addEventListener("click", () => { betaSeen(); this.render(); });
+    root.querySelector("[data-beta-open]")?.addEventListener("click", betaSeen);
     root.querySelector("[data-levels-ok]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.render(); });
     root.querySelector("[data-levels-go]")?.addEventListener("click", () => { try { globalThis.localStorage?.setItem("ha_housekeeper.levels_hint", "1"); } catch (_) { /* no storage */ } this.noteJump("settings"); this.settingsTab = "scan"; this.view = "settings"; this.selected = null; this.pages = {}; this.render(); });
     this.bindOften(root);

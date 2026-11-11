@@ -24,6 +24,44 @@
   - Blocked rows name the reason first and in red; the other notes follow below.
   - For a meter swap with different statistic types, the row offers two ways on: "Replace references" or "ID only". One click plans the row again.
 
+## 1.14.3 - 2026-11-08
+
+### Neu
+
+- **Hinweis auf Version 2.0:** Die Übersicht weist einmal pro Browser auf die Beta von 2.0 hin (wegklickbar). Unter Einstellungen → Info bleibt ein Link zu den Vorabversionen.
+
+### English
+
+#### New
+
+- **Note about version 2.0:** The overview points to the 2.0 beta once per browser (can be dismissed). Settings → Info keeps a link to the pre-releases.
+
+## 1.14.2 - 2026-11-08
+
+### Neu
+
+- **Vorschau:** Eine Vorschau, die von einer anderen Seite aus geöffnet wurde, hat den Knopf „Zurück zur Auswahl“. Er verwirft die Vorschau.
+
+### Behoben
+
+- **Rückgängig:** Ohne Auswahl macht „Rückgängig“ nichts rückgängig, statt alles.
+- **Regel „Ungenutztes Label“:** Sie geht jetzt über die Geräte-Objekte statt über deren IDs.
+- **Speicherseite:** Eine gemerkte Ordnerzahl bricht die Seite nicht mehr, wenn eine Blueprint hinzukam oder entfernt wurde.
+- **Schutzmodus:** Das Setzen des Schutzmodus gilt nur für die Sitzung des Panels.
+
+### English
+
+#### New
+
+- **Preview:** A preview opened from another page has a "Back to the choice" button. It drops the preview.
+
+#### Fixed
+
+- **Undo:** With nothing selected, "Undo" reverts nothing instead of everything.
+- **Rule "Unused label":** It now iterates the device objects instead of their IDs.
+- **Storage page:** A kept folder count no longer breaks the page after a blueprint was added or removed.
+- **Protection mode:** Setting the protection mode is limited to the session of the panel.
+
 ## 2.0.0-beta.4 - 2026-11-08
 
 ### Neu

@@ -6598,7 +6598,13 @@
 "btGroupCharge": "6ab19af7",
 "btLeftCharge": "8410321f",
 "btLeftChargeNow": "335caf28",
-"btNeedCharge": "45cdf02c"
+"btNeedCharge": "45cdf02c",
+"betaHintTitle": "543a06bf",
+"betaHintText": "4a635174",
+"betaHintOpen": "135e912e",
+"betaHintOk": "d16d035f",
+"betaLink": "2de00b52",
+"betaLinkHint": "981c2e92"
 },
 "setup": {
 "title": "644c2647",

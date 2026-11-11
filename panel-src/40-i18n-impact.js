@@ -1,5 +1,7 @@
 // Texts for the impact of a finding (see impact.py); merged into TEXT.
 Object.assign(TEXT.de, {
+  betaHintTitle: "Housekeeper 2.0 gibt es als Beta zum Ausprobieren", betaHintText: "Befunde nach Themen mit eigener Seite, „Beheben“, ein geführter Rundgang beim Aufräumen und die Ansicht „Einfach“ oder „Vollständig“. In HACS erscheint sie unter „Neu herunterladen“ mit eingeschalteten Beta-Versionen; ein normales Update bleibt auf 1.x. Mach vorher ein Backup.", betaHintOpen: "Was ist neu", betaHintOk: "Nicht mehr anzeigen",
+  betaLink: "Housekeeper 2.0 (Beta)", betaLinkHint: "Vorabversionen und was neu ist",
   levelsHintTitle: "Ausfälle werden nach Dauer gestuft", levelsHintText: "Ein Ausfall wird nach der Info-Schwelle ein Befund und steigt über niedrig und mittel auf hoch. Die Übersicht zählt ab mittel, dringend ist ein Ausfall ab hoch; Info und niedrig stehen auf der Befundseite. Die Schwellen stellst du in den Einstellungen ein.", levelsHintSettings: "Schwellen ansehen", levelsHintOk: "Verstanden", changesNewRating: "Neue Bewertung: Seit dieser Version werden Ausfälle nach Dauer gestuft. Befunde, die dadurch anders gelten, stehen unter „Ohne Reparatur beendet“, nicht als erledigt.",
   ogSites: "{n} Objekte", ogSites1: "1 Objekt", tileFindings: "{n} Befunde", tileFindings1: "1 Befund", tileObjects: "Objekte", tileOutages: "{o} Ausfälle mit {n} Folgen", tileOutages1: "1 Ausfall mit {n} Folgen", allObjectsTile: "Objekte mit Befunden", openObjects: "Objekte mit Befunden",
   openFindingsQuiet: "davon {n} Info/niedrig", whyOpenLevel: "Befunde dieser Stufe anzeigen",
@@ -9,6 +11,8 @@ Object.assign(TEXT.de, {
   impactWhy_label: "Label", impactWhy_device_label: "Label am Gerät", impactWhy_area_label: "Label am Bereich", impactWhy_kind: "Art des Objekts",
 });
 Object.assign(TEXT.en, {
+  betaHintTitle: "Housekeeper 2.0 is out as a beta to try", betaHintText: "Findings by topic with a page of their own, \"Fix\", a guided tour for cleaning up and the view \"Simple\" or \"Full\". In HACS it shows under \"Redownload\" with beta versions switched on; a normal update stays on 1.x. Make a backup first.", betaHintOpen: "What's new", betaHintOk: "Don't show again",
+  betaLink: "Housekeeper 2.0 (beta)", betaLinkHint: "Pre-releases and what's new",
   levelsHintTitle: "Outages are graded by how long they last", levelsHintText: "An outage becomes a finding after the info threshold and rises through low and medium to high. The overview counts from medium on and calls an outage urgent from high on; info and low are on the findings page. You set the thresholds in the settings.", levelsHintSettings: "See thresholds", levelsHintOk: "Got it", changesNewRating: "New rating: since this version outages are graded by duration. Findings that read differently now are listed under “Ended without a repair”, not as resolved.",
   ogSites: "{n} objects", ogSites1: "1 object", tileFindings: "{n} findings", tileFindings1: "1 finding", tileObjects: "objects", tileOutages: "{o} outages with {n} follow-ups", tileOutages1: "1 outage with {n} follow-ups", allObjectsTile: "Objects with findings", openObjects: "Objects with findings",
   openFindingsQuiet: "{n} of them info/low", whyOpenLevel: "Show the findings of this level",
