@@ -17863,9 +17863,10 @@ class BatteryTableMixin {
       { key: "level", label: "btColLevel", dir: "asc", cell: r => this.batteryLevelCell(r, limit) },
       { key: "slope", label: "btColSlope", dir: "asc", cell: r => this.batterySlopeCell(r) },
       { key: "left", label: "btColLeft", dir: "asc", cell: r => this.batteryLeftCell(r) },
-      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.bkEdit === r.item.object_id ? this.batteryKindForm(r.item) : this.rowMenuHtml([["mdi:battery-off-outline", "bkSet", `data-bk-open="${this.esc(r.item.object_id)}"`]]) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml([["mdi:battery-off-outline", "bkSet", `data-bk-open="${this.esc(r.item.object_id)}"`]]) },
     ];
-    const table = this.listTable("batteries", columns, pg.rows, { cls: "batt", rowAttrs: r => `${r.low ? 'data-rowtone="red" ' : ""}data-object="${this.esc(this.objectKey(r.item))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(r.item).title)}"` });
+    // The form for the kind opens in a row of its own below, over the whole width: the menu column is too narrow for it.
+    const table = this.listTable("batteries", columns, pg.rows, { cls: "batt", after: r => (this.bkEdit === r.item.object_id ? `<tr class="static"><td colspan="${columns.length}">${this.batteryKindForm(r.item)}</td></tr>` : ""), rowAttrs: r => `${r.low ? 'data-rowtone="red" ' : ""}data-object="${this.esc(this.objectKey(r.item))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(r.item).title)}"` });
     const n = sel.size, form = this.batBulk;
     const tools = this.batteryTrend?.available ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("batteries", n, "data-bat-clear")}<span class="toolgap"></span><button type="button" class="btn" data-bat-bulk ${n ? "" : "disabled"}><ha-icon icon="mdi:battery-heart-variant"></ha-icon>${this.t("btTypeSetN", { n: this.formatNumber(n) })}</button></div>${n && form ? this.batteryBulkForm(form, n) : ""}` : "";
     return `${tools}${table}${pg.footer}`;
