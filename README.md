@@ -64,6 +64,8 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 
 - **Inventory and diagnostics**: entities, devices, integrations, areas and automations in one place; every object is classified (active, unavailable, disabled, orphaned) with a reason.
 - **Findings with impact**: broken references, orphaned and long-unavailable entities, possible duplicates, unused automations and low batteries, ranked by how much depends on them.
+- **Fix by topic**: findings sit in four topics (Down, Broken references, Failing automations, Unneeded), each with a page of its own and the ways to fix it, a guided tour for cleaning up, and the view “Simple” or “Full” for how much you want to see.
+- **Replace entities**: one assistant moves references, statistics and IDs from old entities to new ones, helpers included.
 - **Dependencies**: see what an entity, device or automation is connected to, and what would break if you removed it.
 - **Guided cleanup**: preview, explicit confirmation, backup, verification and undo, step by step. Nothing runs on its own.
 - **Maintenance views**: batteries, reliability of integrations, recorder load and database, backup protection, automation runs, start times of Home Assistant and more.
