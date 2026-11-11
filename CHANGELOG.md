@@ -1,68 +1,112 @@
 # Changelog
 
-## Unreleased
+## 2.0.0 - 2026-11-11
+
+Gegenüber 1.14.3. Die Vorabversionen 2.0.0-beta.1 bis beta.5 sind hier zusammengefasst.
 
 ### Neu
 
-- **Batterien:** Die Liste ist leichter zuzuordnen und kennt Akkus.
-  - Unter dem Namen stehen Hersteller, Modell und Integration sowie die Entität; ohne Bereich steht „kein Bereich“.
-  - „Akku (ich lade ihn)“ ist ein eigener Typ: Die Liste nennt „Laden in …“ statt „Leer in …“, und er zählt nicht in der Einkaufsliste.
+- **Befunde nach Themen:** Jeder Befund gehört zu einem von vier Themen: Ausgefallen, Kaputte Verweise, Fehlerhafte Automationen, Überflüssig. Die Wirkung (Hoch bis Info) sagt, wie dringend es ist.
+  - Themenkacheln mit Wirkungsbalken, ein Filter „Thema“; Übersicht und Befunde-Seite zählen Objekte statt Befunde.
+  - Ein fehlendes Ziel ist ab dem ersten Verweis eine Ursache, die verweisenden Automationen sind die Folgen. Automationen und Skripte mit wiederholten Fehlern sind eigene Befunde.
+  - Die Spalte „Sicherheit“ heißt „Gewissheit“, mit vier Stufen und einer Begründung im Tooltip.
+- **Seit dem letzten Besuch:** Die Befunde-Seite öffnet auf dem, was neu oder schlechter geworden ist, je Benutzer, dazu der Sensor „Neue Befunde“. „Fällig“ sammelt, was wieder angesehen werden will.
+- **Beheben:** Jeder Befund hat eine eigene Seite mit vier Schritten (Verstehen, Entscheiden, Ausführen, Nachprüfen) und den Wegen seines Themas.
+  - Ziel ersetzen, Verweis entfernen, Fehler abfangen, „Alle n beheben“ für ein fehlendes Ziel; der letzte Fehler einer Automation aus dem Ablaufprotokoll.
+  - Geändert wird nur über einen Plan mit Vorschau und Bestätigung. Alle Abläufe zeigen dieselbe Leiste: Einrichten, Prüfen, Bestätigen, Ausführen, Ergebnis.
+- **Aufräumen als Rundgang:** Ab 25 offenen Befunden führt ein geführter Rundgang in fünf Etappen durch die Liste, vom Wichtigsten bis zum ruhigen Rest. Jede Antwort lässt sich zurücknehmen.
+- **Ansicht „Einfach“ oder „Vollständig“:** Du wählst unter Einstellungen, wie viel von Housekeeper du siehst; die Wahl gilt für dein Benutzerprofil. Vollständig ist die bisherige Oberfläche, eine neue Installation beginnt in Einfach. Die Ansicht ändert keine Regeln.
+- **Entitäten ersetzen:** Ein Assistent ersetzt eine oder mehrere Entitäten in einem Plan; „Zähler wechseln“ und „Verweise ersetzen“ gehen darin auf.
+  - Fünf Arten je Entität: Verweise umstellen, Verweise und Statistik, Nur Statistik, Statistik und ID, Nur ID. Was bei einem Paar nicht möglich ist, ist gesperrt und sagt warum.
+  - Verlauf und ID übernimmt die neue Entität von selbst nur bei echten Zählern. Die Verwendungen lassen sich aufklappen, die alte Entität lässt sich danach deaktivieren oder löschen.
+- **Helfer:** Housekeeper erkennt Helfer (Template, Derivative, Min/Max …) besser.
+  - „Helfer löschen“ ist ein Plan mit Vorschau und Backup; Rückgängig erstellt den Helfer neu. Helfer lassen sich als Datei exportieren und wieder importieren.
+  - Pläne und Diagnose nennen die Quellen eines Helfers; der Ersetzen-Assistent stellt sie mit um.
+  - Neue Qualitätsregeln für Helfer und Templates (aus, Hinweise).
+- **Entfernen, Deaktivieren, Ausblenden:** Die Seite eines Geräts bietet „Gerät entfernen“ oder „Gerät lokal vergessen“, die einer Entität „Deaktivieren“ und „Ausblenden“, jeweils per Plan mit Vorschau und Undo.
+- **Freigaben ändern:** Freigaben für Assist, Alexa und Google lassen sich per Plan entfernen (Liste, Befund, Zeilenmenü); „Neue nicht mehr automatisch freigeben“ und „PIN wieder verlangen“ gibt es auch. Sensible Entitäten nimmst du einzeln oder gesammelt zurück.
+- **Zugangsdaten und Zugriffe:** Beide Seiten beginnen mit „Zu prüfen“, nennen den Grund einer Stufe und haben mehr Auffälligkeiten, etwa Admin von außen ohne Zwei-Faktor oder lange nicht angemeldete Konten. Bekanntes lässt sich als „Ist so gewollt“ vermerken.
+- **Notizen und Regeln:** Eine Objekt-Notiz kann von selbst enden. Eine Wirkungszeile zeigt vor dem Speichern, was ausgeblendet wird und wann es zurückkommt.
+- **Backups:** Eine Karte bei der Bestätigung zeigt Backup und Folgen; ein Plan kann ohne neues Backup laufen (nicht bei Recorder-Änderungen). Alte Housekeeper-Backups lassen sich stündlich automatisch aufräumen.
+- **Batterien:** Die Liste zeigt Hersteller, Modell, Integration, Entität und Bereich. „Akku (ich lade ihn)“ ist ein eigener Typ mit „Laden in …“.
+- **Weitere Sprachen:** Französisch, Spanisch, Portugiesisch, Italienisch, Slowakisch, Russisch und Chinesisch (vereinfacht), in der Oberfläche, bei der Einrichtung und in den Meldungen. Die Übersetzungen sind Entwürfe; `docs/TRANSLATING.md` erklärt, wie man sie verbessert.
+- **Sonstiges:**
+  - Der Seitenleisten-Eintrag „Housekeeper“ lässt sich ausblenden (Einstellungen → Darstellung); das Panel bleibt über die Integrationsseite erreichbar.
+  - KI-Zugriff: neue Dienste `finding_fix_options` (lesend) und `finding_fix_plan` hinter dem Schalter „Befunde beheben“ (aus); den Plan bestätigt nur ein Administrator im Panel.
 
 ### Geändert
 
-- **Batterien:** Die Liste ohne Wechselbatterie heißt „Akkus und Speicher“; die Art „Akku eines Geräts“ heißt „Akku (lädt selbst)“.
-- **Einstellungen:** Der Schalter für den Seitenleisten-Eintrag steht jetzt unter „Darstellung“, als eigene Karte mit eigenem Speichern-Knopf.
+- **Neue Namen für die Ausgänge:** „Bekannt“ heißt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“, „Ausgeblendet“ heißt „Fehlalarm“, „Vermerk“ heißt „Objekt-Notiz“, bei den Ausnahmeregeln heißt „Ausblenden“ „Nicht melden“ (mit Prüfdatum). Gespeicherte Entscheidungen und der Dienst `finding_decide` bleiben unverändert; „Ist so gewollt“ bleibt beim Wechsel von 1.x unbefristet.
+- **Menü neu geordnet:** Befunde, Überwachen, Pflegen, Betrieb, Sicherheit, Bestand. Die Ausnahmen haben eine eigene Seite, „Regeln & Ziele“ fasst Richtlinien und Wartungsziele zusammen, alte Links führen auf die neuen Seiten.
+- **Schutzmodus mit drei Stufen:** Beobachten, Ändern und Alles. „Nur Quarantäne“ entfällt und steht danach auf „Beobachten“.
+- **Befunde, Bedienung:** Die Auswahlleiste hat ein Menü „Aktionen“; die Regel für genau eine Entität entfällt (dafür gibt es die Objekt-Notiz). Status, Notiz und Regel haben dasselbe Gerüst.
+- **Plan:**
+  - Ein Plan fasst 250 Entitäten, größere Auswahlen laufen in Runden.
+  - Gesperrte Zeilen nennen den Grund zuerst und in Rot. Bei einem Zählerwechsel mit unterschiedlichen Statistik-Arten bietet die Zeile „Referenzen ersetzen“ oder „nur ID“ an.
+- **Oberfläche allgemein:** Aktionen je Zeile stehen im ⋮-Menü, die Kacheln von „Beheben“ sind gleich groß, Schrittknöpfe und Reiter haben Namen für Screenreader, Standardfristen sind einheitlich (365 Tage, bei kritischen Objekten 90).
+- **Rückweg auf 1.x:** Pläne, die Freigaben ändern (Assistenten, Neu laden), vorher zurücknehmen; 1.x kennt sie nicht und meldet beim Rückgängig einen Konflikt. Die neuen Felder der Entscheidungen gehen beim Wechsel zurück verloren.
 
 ### Behoben
 
-- **Batterien:** Das Formular für die Art öffnet sich in einer eigenen Zeile statt in der schmalen Menüspalte.
-- **Batterien:** Einstellwerte wie ein Ladeziel (`number`, `switch`) erscheinen nicht mehr als Batterie oder Vorschlag.
-- **Zählerwechsel:** Eine neue Entität ohne Wert (unbekannt oder nicht verfügbar) sperrt die Übertragung der Statistik nicht mehr, sie steht als Hinweis in der Vorschau.
-- **Zählerwechsel:** „Referenzen ersetzen und Statistik übernehmen“ ist nicht mehr gesperrt, wenn nichts auf die alte Entität verweist; die Statistik wird trotzdem übernommen, die Vorschau nennt es als Hinweis.
+- **Sicherheit:** Namen und Links aus Daten von Integrationen werden im Panel sicher angezeigt; der Diagnose-Download enthält keine Titel und Entitäts-IDs mehr, nur Anzahlen.
+- **Automationen:** Der letzte Fehlschlag einer Automation und die Laufliste im Vergleich fanden nie etwas und tun es jetzt.
+- **Prüfungen und Scan:** Der Ereignisverlauf wird auch zur Laufzeit gespeichert; Speicher- und Plattenwerte an einer Schwelle springen nicht mehr alle fünf Minuten; die Backup-Ziele werden alle 45 statt alle 5 Minuten abgefragt; ein Scan mit unlesbarer Quelle vergisst keine „zuerst gesehen“-Daten mehr.
+- **Aktivität und Rundgang:** Seiten überspringen keine Einträge mehr, „Rückgängig“ greift nur, solange die Entscheidung noch so steht, „Behalten“ überschreibt keine Notiz.
+- **Freigaben und Neu laden:** Ein Filter eines anderen Assistenten sperrt den Plan nicht mehr; eine Integration, die lange lädt, wird nicht halb abgebrochen.
+- **Sonstiges:** Eingegebene Schwellenwerte bleiben bis zum Speichern erhalten; Batterie- und Laufdaten werden nach einem neuen Scan neu geladen; der Bereichsvorschlag vergleicht mit den Nachbargeräten.
 
 ### English
 
 #### New
 
-- **Batteries:** The list is easier to place and knows rechargeables.
-  - Under the name you see maker, model and integration and the entity; without an area it says "no area".
-  - "Rechargeable (I charge it)" is a type of its own: the list says "Charge in …" instead of "Empty in …", and it does not count in the shopping list.
+- **Findings by topic:** Every finding belongs to one of four topics: Down, Broken references, Failing automations, Unneeded. The impact (High to Info) says how urgent it is.
+  - Topic tiles with an impact bar, a filter "Topic"; the overview and the findings page count objects instead of findings.
+  - A missing target is a cause from the first reference on, the automations that refer to it are the follow-ups. Automations and scripts with repeated failures are findings of their own.
+  - The column "Sicherheit" is now "Certainty", with four levels and a reason in the tooltip.
+- **Since your last visit:** The findings page opens on what is new or got worse, for each user, plus the sensor "New findings". "Due" collects what wants another look.
+- **Fix:** Every finding has a page of its own with four steps (Understand, Decide, Carry out, Check) and the ways of its topic.
+  - Replace the target, remove the reference, catch the error, "Fix all n" for a missing target; the last error of an automation from the run log.
+  - Anything is changed only through a plan with preview and confirmation. All flows show the same bar: Set up, Review, Confirm, Run, Result.
+- **Cleanup as a tour:** From 25 open findings a guided tour in five stages goes through the list, from the most important to the quiet rest. Every answer can be taken back.
+- **View "Simple" or "Full":** Under Settings you choose how much of Housekeeper you see; the choice applies to your user profile. Full is the interface as it was, a new installation starts in Simple. The view changes no rules.
+- **Replace entities:** An assistant replaces one or several entities in one plan; "Replace a meter" and "Replace references" are part of it.
+  - Five kinds per entity: Switch references, References and statistics, Statistics only, Statistics and ID, ID only. What is not possible for a pair is blocked and says why.
+  - The new entity takes over history and ID by default only for real meters. The uses can be unfolded, and the old entity can be disabled or deleted afterwards.
+- **Helpers:** Housekeeper knows helpers (template, derivative, min/max …) better.
+  - "Delete the helper" is a plan with a preview and a backup; Undo creates the helper again. Helpers can be exported to a file and imported again.
+  - Plans and diagnosis name the sources of a helper; the replace assistant switches them too.
+  - New quality rules for helpers and templates (off, hints).
+- **Remove, disable, hide:** The page of a device offers "Remove device" or "Forget device locally", the page of an entity "Disable" and "Hide", each as a plan with preview and undo.
+- **Change exposures:** Exposures for Assist, Alexa and Google can be removed by a plan (list, finding, row menu); "Stop exposing new ones automatically" and "Ask for the PIN again" are there too. Sensitive entities are taken back one at a time or together.
+- **Credentials and access:** Both pages start with "To check", name the reason for a level and have more findings, such as admin reachable from outside without two-factor or accounts not signed in for a long time. Known cases can be marked "Intended".
+- **Notes and rules:** An object note can end by itself. An effect line shows before saving what is hidden and when it comes back.
+- **Backups:** A card on the confirmation shows the backup and its consequences; a plan can run without a new backup (not for recorder changes). Old Housekeeper backups can be tidied automatically every hour.
+- **Batteries:** The list shows maker, model, integration, entity and area. "Rechargeable (I charge it)" is a type of its own with "Charge in …".
+- **More languages:** French, Spanish, Portuguese, Italian, Slovak, Russian and Chinese (Simplified), in the interface, the setup and the messages. The translations are drafts; `docs/TRANSLATING.md` explains how to improve them.
+- **Other:**
+  - The sidebar entry "Housekeeper" can be hidden (Settings → Appearance); the panel stays reachable from the integration page.
+  - AI access: new services `finding_fix_options` (read) and `finding_fix_plan` behind the switch "Fix findings" (off); only an administrator can confirm the plan in the panel.
 
 #### Changed
 
-- **Batteries:** The list of non-replaceable batteries is now "Packs and storage"; the kind "A device's own pack" is now "Battery pack (charges itself)".
-- **Settings:** The switch for the sidebar entry now sits under "Appearance", as a card of its own with its own save button.
+- **New names for the exits:** "Bekannt" is now "Ist so gewollt" (Intended), "Zurückgestellt" is now "Später" (Later), "Hidden" is now "False alarm", "Vermerk" is now "Object note", and in the exception rules "Ausblenden" is now "Do not report" (with a review date). Stored decisions and the service `finding_decide` stay as they are; "Intended" stays unlimited on the way from 1.x.
+- **Menu in a new order:** Findings, Monitoring, Maintain, Operation, Security, Catalog. The exceptions have a page of their own, "Rules & goals" brings policies and maintenance goals together, old links lead to the new pages.
+- **Protection mode with three steps:** Watch, Change and Everything. "Quarantine only" is gone and is kept as "Watch".
+- **Findings, handling:** The selection bar has an "Actions" menu; the rule for exactly one entity is gone (the object note covers it). Status, note and rule share one layout.
+- **Plan:**
+  - A plan holds 250 entities, larger selections run in rounds.
+  - Blocked rows name the reason first and in red. For a meter swap with different statistic types, the row offers "Replace references" or "ID only".
+- **Interface, general:** Actions per row are in the ⋮ menu, the tiles of "Fix" are the same size, step buttons and tabs have names for screen readers, default time limits are the same everywhere (365 days, critical objects 90).
+- **Way back to 1.x:** Undo plans that change exposures (assistants, reload) first; 1.x does not know them and reports a conflict on undo. The new fields of the decisions are lost when going back.
 
 #### Fixed
 
-- **Batteries:** The form for the kind opens in a row of its own instead of the narrow menu column.
-- **Batteries:** Settings such as a charge target (`number`, `switch`) no longer show up as a battery or a proposal.
-- **Meter change:** A new entity without a value (unknown or unavailable) no longer blocks moving the statistics; it shows as a note in the preview.
-- **Meter change:** "Replace references and carry over statistics" is no longer blocked when nothing refers to the old entity; the statistics are still carried over, and the preview says so as a note.
-
-## 2.0.0-beta.5 - 2026-11-10
-
-### Neu
-
-- **Seitenleiste:** Der Eintrag „Housekeeper“ lässt sich ausblenden (Einstellungen → Scan). Das Panel bleibt über die Integrationsseite erreichbar.
-
-### Geändert
-
-- **Vorschau eines Plans:**
-  - Gesperrte Zeilen nennen den Grund zuerst und in Rot, die übrigen Hinweise stehen darunter.
-  - Beim Zählerwechsel mit unterschiedlichen Statistik-Arten bietet die Zeile zwei Wege an: „Referenzen ersetzen“ oder „nur ID“. Ein Klick plant die Zeile neu.
-
-### English
-
-#### New
-
-- **Sidebar:** The "Housekeeper" entry can be hidden (Settings → Scan). The panel stays reachable from the integration page.
-
-#### Changed
-
-- **Plan preview:**
-  - Blocked rows name the reason first and in red; the other notes follow below.
-  - For a meter swap with different statistic types, the row offers two ways on: "Replace references" or "ID only". One click plans the row again.
+- **Security:** Names and links from integration data are shown safely in the panel; the diagnostics download no longer contains titles and entity IDs, only counts.
+- **Automations:** The last failed run of an automation and the run list in the comparison never found anything and do now.
+- **Checks and scan:** The event log is also saved while running; memory and disk values at a threshold no longer flip every five minutes; the backup targets are queried every 45 instead of every 5 minutes; a scan with an unreadable source no longer forgets "first seen" dates.
+- **Activity and tour:** Pages no longer skip entries, "Undo" applies only while the decision still stands as left, "Keep" no longer overwrites a note.
+- **Exposures and reload:** A filter of another assistant no longer blocks the plan; an integration that takes long to load is no longer cancelled half way.
+- **Other:** Typed thresholds stay until they are saved; battery and run data are loaded again after a new scan; the area suggestion compares with the sibling devices.
 
 ## 1.14.3 - 2026-11-08
 
@@ -102,227 +146,6 @@
 - **Storage page:** A kept folder count no longer breaks the page after a blueprint was added or removed.
 - **Protection mode:** Setting the protection mode is limited to the session of the panel.
 
-## 2.0.0-beta.4 - 2026-11-08
-
-### Neu
-
-- **Plan ohne Backup:** In der Plan-Vorschau gibt es unter „Erweitert“ den Schalter „Ohne Backup ausführen“, mit Warnmeldung. Nicht möglich bei Plänen, die in die Recorder-Datenbank schreiben; der Prüfbericht vermerkt das Überspringen.
-- **Backups automatisch aufräumen:** Auf der Seite „Housekeeper-Backups aufräumen“ gibt es einen Schalter (aus), der stündlich nach der dortigen Regel löscht. Geschützte Backups und solche, die die einzige Rückkehr nach einer Recorder-Änderung sind, bleiben.
-- **Verwendungen sehen:** In „Entitäten ersetzen“ und „Gerät austauschen“ lässt sich die Zahl der Verwendungen aufklappen. Die Liste zeigt jede Stelle und ob sie ersetzt wird oder von Hand zu prüfen bleibt.
-- **Statistik übernehmen nur bei Zählern:** Im Ersetzen-Assistenten übernimmt die neue Entität Verlauf und ID nur noch bei echten Zählern von selbst. Bei Messwerten werden standardmäßig nur die Verweise umgestellt. Die Vorschau spricht von „Statistik übernehmen“ statt „Zählerwechsel“.
-- **Helfer:** Housekeeper erkennt Helfer (Template, Derivative, Min/Max …) besser.
-  - Die Aktionsseite einer Helfer-Entität nennt ihren Helfer. „Helfer löschen“ ist ein Plan mit Vorschau und Backup, gesperrt, solange etwas den Helfer sicher verwendet. Input-Helfer, Zähler und Timer sind davon ausgenommen.
-  - Ein gelöschter Helfer lässt sich mit „Rückgängig“ neu erstellen: Housekeeper legt vorher Optionen, Entitäts-IDs, Namen, Bereiche und Labels im Journal ab und führt den Einrichtungsdialog des Helfers damit aus. Klappt das nicht, bringt ihn das Backup zurück.
-  - „Helfer exportieren“ speichert einen Helfer (auf der Helfer-Seite) oder alle der Liste (Inventar, Typ „Helfer“) als Datei. „Importieren …“ erzeugt daraus einen Plan mit Vorschau; Rückgängig löscht den neuen Helfer wieder.
-  - Wird eine Entität deaktiviert oder entfernt, die ein Helfer liest, sagt der Plan, dass der Helfer seine Quelle verliert. Meldet die Entität eines Helfers „nicht verfügbar“, nennt die Diagnose die ausgefallenen Quellen.
-  - Der Ersetzen-Assistent stellt auch die Quellen von Helfer-Einträgen auf die neue Entität um, mit Undo. Templates in Helfern bleiben von Hand zu prüfen.
-  - Im Inventar zeigt der Typ „Helfer“ die Spalten „Bereich“ und „Labels“ und den Filter „Ohne Bereich“ / „Ohne Label“.
-  - Nennt ein Template-Helfer eine Entität eindeutig (`states('sensor.x')`, `is_state(…)`) und gibt es sie nicht mehr, wird er als „Entität fehlt“ gemeldet.
-- **Qualitätsregeln für Helfer und Templates** (aus, Hinweise):
-  - Templates: Helfer ohne Verwendung, Zahl ohne Schutz vor fehlenden Werten, Template-Entität aus der YAML ohne `unique_id`.
-  - Helfer: wird nur beschrieben, ohne Bereich, Zahlenbereich unstimmig, liest sich selbst, Auswahl mit unbekannter Option, Zähler-Helfer mit ungeeigneter Quelle, doppelt (gleiche Einstellungen), Gruppe mit nur einem oder fehlenden Mitgliedern.
-- **Geräte entfernen auf der Geräteseite:** Ein von Hand deaktiviertes Gerät zählt als in Quarantäne (ab der letzten Änderung in Home Assistant) und erscheint unter „Quarantäne und Entfernen“. Unter „Weitere Aktionen“ bietet seine Seite „Gerät entfernen“ (fragt die Integration) oder, wenn sie das nicht kann, „Gerät lokal vergessen“, jeweils mit Vorschau und Backup.
-- **Deaktivieren und Ausblenden auf der Entitätsseite:** Unter „Weitere Aktionen“ lässt sich jede Entität per Plan deaktivieren oder ausblenden, mit Vorschau und Undo. Wird sie noch sicher verwendet, bleibt das Deaktivieren gesperrt.
-- **Alte Entität deaktivieren oder löschen:** Der Ersetzen-Assistent kann die alte Entität nach dem Umstellen deaktivieren (Quarantäne) oder löschen. Löschen geht nur, wenn ihre Integration sie nicht mehr liefert (sonst käme sie zurück) oder wenn sie einem Helfer gehört, dann wird der Helfer gelöscht. Mit Warnhinweis und Backup; Rückgängig stellt den Eintrag oder den Helfer wieder her, nicht den Verlauf. Optional wird der Verlauf mitgelöscht (nur per Backup umkehrbar); Plan und Endzustand nennen die alte Entität und was mit ihr geschieht.
-- **Ein Assistent zum Ersetzen:** „Entitäten ersetzen“ ersetzt eine oder mehrere Entitäten. „Zähler wechseln“ und „Verweise ersetzen“ gehen darin auf, Reparieren hat drei Kacheln.
-  - Für eine Entität gibt es fünf Arten, nach der ID gruppiert: Verweise umstellen, Verweise und Statistik (neu), Nur Statistik, Statistik und ID, Nur ID.
-  - Was bei diesem Paar nicht möglich ist, ist gesperrt und sagt warum.
-- **Oberfläche:** Kleine Verbesserungen.
-  - Die Regel und der Schalter „Automatisch aufräumen“ der Backup-Seite stehen in einem Rahmen.
-  - Altes und neues Gerät stehen nebeneinander, ebenso beim Ersetzen von Entitäten.
-  - Welche Helfer-Arten Housekeeper kennt, steht nur noch im Backend; ein Test meldet, wenn Home Assistant eine neue Helfer-Art bringt.
-- **Ein Stepper für alle Abläufe:** Assistenten, Plan-Seite, „Beheben“ und die erste Aufräumrunde zeigen dieselbe waagerechte Leiste: Einrichten, Prüfen, Bestätigen, Ausführen, Ergebnis. Im Ersetzen-Assistenten mit mehreren Entitäten steht über den zwei Seiten von „Einrichten“ „Teil 1 von 2“ und „Teil 2 von 2“.
-  - Erledigte Schritte sind grün, der aktuelle blau, ein fehlgeschlagener rot. Die Plan-Seite zeigt unter der Leiste nur die Unterschritte der gewählten Stufe, mit Fortschritt beim Ausführen.
-  - Auf schmalen Bildschirmen steht nur der Name des aktuellen Schritts. „1 Eintrag“ steht jetzt im Singular.
-- **Ersetzen für eine Entität:** Der Vorschlag für die neue Entität kommt jetzt wie bei mehreren Entitäten aus Geräteklasse, Einheit, Bereich, Name und ID-Endung, mit den Gründen. Unter den Feldern steht „Hier wird sie verwendet“ über die ganze Breite, mit jeder Stelle einzeln.
-  - Neben „Vorschau erstellen“ gibt es „Abbrechen“. Es leert den Assistenten und führt zur Auswahl der Aufgabe zurück; es wurde nichts angelegt.
-- **Backup-Karte bei der Bestätigung:** Alles zum Backup eines Plans steht in einer Karte: was vorher passiert, wann das letzte Backup war und wo es liegt, und der Schalter „Ohne neues Backup ausführen“ (nicht mehr hinter „Erweitert“).
-  - Die Karte ist grün bei einem frischen Backup, gelb bei einem Backup, das älter als 3 Tage ist oder fehlt, und rot, wenn du ohne neues Backup ausführst. Dann steht dort, auf welchen Stand du zurückfielest.
-  - Die Zusammenfassungen der Pläne sind kürzer, der Satz zum Backup steht nur noch in der Karte. „Entitäts-Verweise ersetzen“ heißt jetzt „N Stellen werden umgestellt“.
-
-### Behoben
-
-- **Einstellungen und Ansichten:** Eingegebene Schwellenwerte bleiben bis zum Speichern erhalten. Batterie- und Laufdaten werden nach einem neuen Scan neu geladen. Die Detailansicht bietet keinen Bereichswechsel an, den der Plan ablehnt.
-- **Typprüfung:** Der MyPy-Check der CI läuft wieder durch.
-
-### English
-
-#### New
-
-- **Helpers:** Housekeeper knows helpers (template, derivative, min/max …) better.
-  - The actions page of a helper's entity names its helper. "Delete the helper" is a plan with a preview and a backup, blocked while something certainly uses the helper. Input helpers, counters and timers are left out.
-  - A deleted helper can be created again with "Undo": Housekeeper keeps options, entity IDs, names, areas and labels in the journal first and runs the helper's own setup dialog with them. If that fails, the backup brings it back.
-  - "Export the helper" saves one helper (on its page) or all in the list (inventory, type "Helpers") as a file. "Import …" turns it into a plan with a preview; Undo deletes the new helper again.
-  - When an entity a helper reads is disabled or removed, the plan says the helper loses its source. When a helper's entity reports unavailable, the diagnosis names the sources that are down.
-  - The replace assistant also switches the sources of helper entries to the new entity, with undo. Templates in helpers stay for a manual check.
-  - In the inventory the type "Helpers" shows the columns "Area" and "Labels" and the filter "No area" / "No label".
-  - When a template helper names an entity clearly (`states('sensor.x')`, `is_state(…)`) and it no longer exists, the helper is reported as "entity missing".
-- **Quality rules for helpers and templates** (off, hints):
-  - Templates: helper without use, number without protection against missing values, YAML template entity without `unique_id`.
-  - Helpers: only written, without area, inconsistent number range, reads itself, select with an unknown option, meter helper with an unsuitable source, twice (same settings), group with a single or missing members.
-- **Remove devices on the device page:** A device disabled by hand counts as quarantined (from its last change in Home Assistant) and appears under "Quarantine and removal". Under "More actions" its page offers "Remove device" (asks the integration) or, when that cannot, "Forget device locally", each with a preview and a backup.
-- **Disable, hide and remove on the entity page:** Under "More actions" any entity can be disabled or hidden by a plan, with preview and undo.
-- **Disable or delete the old entity:** The replace assistant can disable the old entity after switching over (quarantine) or delete it. Deleting only works if its integration no longer provides it (it would come back otherwise) or if it belongs to a helper, then the helper is deleted. With a warning and a backup; undo restores the entry or the helper, not the history. Optionally the history is deleted too (reversible only from the backup); the plan and its end state name the old entity and what happens to it.
-- **Plan without a backup:** The plan preview has a switch "Run without a backup" under "Advanced", with a warning. Not possible for plans that write into the recorder database; the audit report notes that the backup was skipped.
-- **Tidy backups automatically:** The "Tidy up Housekeeper backups" page has a switch (off) that deletes every hour by the rule there. Protected backups and those that are the only way back after a recorder change stay.
-- **See the uses:** In "Replace entities" and "Exchange a device" the count of uses unfolds into a list of every place and whether it is replaced or left for a manual check.
-- **Statistics takeover only for meters:** In the replace assistant the new entity takes over history and ID by default only for real meters. For measurements only the references are switched. The preview says "statistics takeover" instead of "meter change".
-- **One assistant to replace:** "Replace entities" replaces one or several entities. "Replace a meter" and "Replace references" are part of it, and Repair has three tiles.
-  - For one entity there are five kinds, grouped by the ID: Switch references, References and statistics (new), Statistics only, Statistics and ID, ID only.
-  - What is not possible for this pair is blocked and says why.
-- **Interface:** Small improvements.
-  - The rule and the "Tidy up automatically" switch of the backup page share one frame.
-  - Old and new device sit side by side, and so do the entities when replacing.
-  - The helper types Housekeeper knows are kept in the backend only; a test reports when Home Assistant adds a new helper type.
-- **One stepper for every flow:** Assistants, the plan page, "Fix" and the first cleanup round show the same horizontal bar: Set up, Review, Confirm, Run, Result. In the replace assistant for several entities the two pages of "Set up" are marked "Part 1 of 2" and "Part 2 of 2".
-  - Done stages are green, the current one blue, a failed one red. The plan page shows only the sub-steps of the chosen stage under the bar, with progress while it runs.
-  - On narrow screens only the current step keeps its name. "1 entry" is now singular.
-- **Replace for one entity:** The proposal for the new entity now comes, as for several entities, from device class, unit, area, name and ID ending, with the reasons. "Where it is used" sits under the fields over the full width, with every place named.
-  - "Cancel" sits next to "Create preview". It empties the assistant and returns to the choice of a task; nothing was created.
-- **Backup card on the confirmation:** Everything about the backup of a plan sits in one card: what happens first, when the last backup was and where it is, and the switch "Run without a new backup" (no longer behind "Advanced").
-  - The card is green for a fresh backup, yellow for one older than 3 days or none, and red when you run without a new backup. It then says which state you would be back at.
-  - The plan summaries are shorter, the sentence about the backup is only in the card. "Replace entity references" now reads "N places are switched".
-
-#### Fixed
-
-- **Settings and views:** Typed thresholds stay until they are saved. Battery and run data are loaded again after a new scan. The detail view no longer offers an area change that the plan rejects.
-- **Type check:** The MyPy check of the CI passes again.
-
-## 2.0.0-beta.3 - 2026-11-05
-
-### Neu
-
-- **Weitere Sprachen:** Französisch, Spanisch, Portugiesisch, Italienisch, Slowakisch, Russisch und Chinesisch (vereinfacht) sind dabei, in der Oberfläche, bei der Einrichtung und in den Meldungen.
-  - Die Sprache wählst du in den Einstellungen; was noch nicht übersetzt ist, erscheint auf Englisch.
-  - Die Übersetzungen sind Entwürfe und noch nicht von Muttersprachlern gelesen. `docs/TRANSLATING.md` erklärt, wie man eine Sprache ergänzt oder verbessert.
-  - Alle Sprachen reden dich mit „du“ an.
-- **Entitäten ersetzen:** Ein neuer Assistent unter „Beheben“ gibt mehreren gewählten Entitäten in einem Plan ihre neuen. Er schlägt Paare vor, ein doppelt genanntes Ziel wird gesperrt. Auch in den Aktionen jeder Entität als „Ersetzen …“.
-
-### Geändert
-
-- **Plan:** Ein Plan fasst 250 Entitäten; eine größere Auswahl aus dem Inventar oder der Freigabeliste läuft in Runden.
-- **„Ist so gewollt“ ohne Frist:** Beim Wechsel von 1.x bleibt es unbefristet. Fristen, die beta.1 und beta.2 einmalig mit 90 Tagen gesetzt haben, bleiben.
-- **Rückweg auf 1.x:** Pläne, die Freigaben ändern (Assistenten, Neu laden), vorher zurücknehmen; 1.x kennt sie nicht und meldet beim Rückgängig einen Konflikt. Der Schutzmodus „Nur Quarantäne“ wird in 2.0 als „Beobachten“ geführt und bleibt es auch in 1.x.
-- **Oberfläche allgemein:**
-  - Aktionen je Zeile stehen im ⋮-Menü (Aufräum-Runde, Aktivität, Verlauf, Statusband).
-  - Die Kacheln der Seite „Beheben“ sind gleich groß, der Ersetzen-Assistent passt auf das Smartphone.
-  - Schrittknöpfe und Reiter haben Namen für Screenreader.
-  - Standardfristen sind einheitlich: Notizen und Entscheidungen 365 Tage, bei kritischen Objekten 90.
-
-### Behoben
-
-- **Sicherheit:** Namen und Links aus Daten von Integrationen werden im Panel sicher angezeigt; der Diagnose-Download enthält keine Titel und Entitäts-IDs mehr, nur Anzahlen.
-- **Fehlerinfo und Vergleich:** Der letzte Fehlschlag einer Automation und die Laufliste im Vergleich fanden nie etwas und tun es jetzt.
-- **Ereignisverlauf und Prüfungen:** Er wird auch zur Laufzeit gespeichert; Speicher- und Plattenwerte an einer Schwelle springen nicht mehr alle fünf Minuten.
-- **Backup-Abfrage:** Die Ziele werden alle 45 statt alle 5 Minuten abgefragt, ein hängender Teil hält die anderen nicht mehr auf.
-- **Aktivität:** Seiten überspringen keine Einträge mehr; „Rückgängig“ greift nur, solange die Entscheidung noch so steht; „Rest auf später“ ist ein Eintrag mit einem Rückgängig.
-- **Freigabe-Pläne:** Ein Filter eines anderen Assistenten sperrt den Plan nicht mehr, ein nicht lesbarer Filter gilt nicht mehr als „kein Filter“.
-- **Neu laden:** Eine Integration, die lange lädt, wird nicht mehr halb abgebrochen und danach geprüft.
-- **Aufräum-Assistent:** „Behalten“ überschreibt keine vorhandene Notiz mehr, ein Ladefehler zeigt „Erneut versuchen“, der Verlauf zählt richtig, die Runde prüft höchstens 1000 Objekte und sagt, wenn sie abgeschnitten wurde.
-- **Ausnahmeregeln und Objekt-Notizen:** Löschen fragt vorher, schnelle Änderungen heben sich nicht gegenseitig auf, ein Doppelklick tut nichts zweimal, Fristen bleiben beim neuen Prüfdatum erhalten.
-- **Befunde:** Nach der Rückkehr steht „Neu“ nicht mehr über einer leeren Liste. Ein „Später“ für einen Ausfall fällt nicht mehr nach Stunden weg.
-- **Sonst:** Ein Scan mit unlesbarer Quelle vergisst keine „zuerst gesehen“-Daten mehr; der Timer-Aufräumer, Doppel-Escaping und Anführungszeichen je Sprache sind korrigiert.
-
-### English
-
-#### New
-
-- **More languages:** French, Spanish, Portuguese, Italian, Slovak, Russian and Chinese (Simplified) are there, in the interface, the setup and the messages.
-  - You choose the language in the settings; what is not translated yet shows in English.
-  - The translations are drafts and not yet read by native speakers. `docs/TRANSLATING.md` explains how to add or improve a language.
-  - Every language addresses you informally.
-- **Replace entities:** A new assistant under “Fix” gives several chosen entities their new ones in one plan. It suggests pairs, a target named twice is blocked. Also in the actions of each entity as “Replace …”.
-
-#### Changed
-
-- **Plan:** A plan holds 250 entities; a larger selection from the inventory or the exposure list runs in rounds.
-- **“Intended” without a time limit:** It stays unlimited on the way from 1.x. Limits that beta.1 and beta.2 set once to 90 days stay.
-- **Way back to 1.x:** Undo plans that change exposures (assistants, reload) first; 1.x does not know them and reports a conflict on undo. The protection mode “Quarantine only” is kept as “Watch” in 2.0 and stays so in 1.x.
-- **Interface, general:**
-  - Actions per row are in the ⋮ menu (cleanup round, activity, history, status band).
-  - The tiles of the “Fix” page are the same size, the replace assistant fits a phone.
-  - Step buttons and tabs have names for screen readers.
-  - Default time limits are the same everywhere: notes and decisions 365 days, critical objects 90.
-
-#### Fixed
-
-- **Security:** Names and links from integration data are shown safely in the panel; the diagnostics download no longer contains titles and entity IDs, only counts.
-- **Failure info and comparison:** The last failed run of an automation and the run list in the comparison never found anything and do now.
-- **Event log and checks:** It is also saved while running; memory and disk values at a threshold no longer flip every five minutes.
-- **Backup query:** The targets are queried every 45 instead of every 5 minutes, a part that hangs no longer stops the others.
-- **Activity:** Pages no longer skip entries; “Undo” applies only while the decision still stands as left; “Put the rest off” is one entry with one undo.
-- **Exposure plans:** A filter of another assistant no longer blocks the plan, an unreadable filter is no longer taken for “no filter”.
-- **Reload:** An integration that takes long to load is no longer cancelled half way and checked afterwards.
-- **Cleanup assistant:** “Keep” no longer overwrites an existing note, a loading error shows “Try again”, the history counts correctly, the round judges at most 1000 objects and says when it was cut off.
-- **Rules and object notes:** Deleting asks first, quick changes do not undo each other, a double click does nothing twice, time limits stay when the review date changes.
-- **Findings:** After coming back, “New” is no longer shown over an empty list. A “Later” for an outage no longer lapses after hours.
-- **Other:** A scan with an unreadable source no longer forgets “first seen” dates; timer cleanup, double escaping and quotation marks per language are corrected.
-
-## 2.0.0-beta.2 - 2026-11-01
-
-### Neu
-
-- **Objekt-Notiz mit Ende:** Eine Objekt-Notiz kann von selbst enden, sobald das Objekt wieder meldet. Die Wartezeit sitzt neben der Option und heißt „Warten“.
-- **Wirkungszeile:** Status, Objekt-Notiz und Regel zeigen vor dem Speichern, was ausgeblendet wird, ob das Aufräumen gesperrt ist und wann es zurückkommt.
-- **Schon ausgeblendet:** Hat ein Weg mit höherem Vorrang einen Befund schon ausgeblendet, sagt das Formular es. Ein ausgeblendeter Befund nennt die übrigen Wege, die ebenfalls greifen würden.
-- **Zugriffe & Datenfluss:** Der Grund für eine Stufe steht unter ihr. Die Liste lässt sich auf „Neu oder Stufe gestiegen“, „Deaktiviert, mit Zugriff“, „Fremdcode“ und „Gewollt“ eingrenzen; im Zeilenmenü „Ist so gewollt“ nimmt einem bekannten Zugriff die Farbe, bis seine Stufe steigt. Der Export hat eine Spalte „Zustand“.
-- **Zugangsdaten und Zugriffe im Look der übrigen Sicherheitsseiten:** Bei den Zugangsdaten sind die Karten die Reiter und die Seite beginnt mit „Zu prüfen“ (Anmeldung nötig, Felder ohne Wert, deaktiviert mit Wert, Admin ohne Zwei-Faktor, alte Tokens), die Feldnamen stehen aufgeklappt, der Sprung nach Home Assistant im Zeilenmenü. Die Zugriffe beginnen mit „Zu prüfen“ (neu, deaktiviert mit Zugriff, Fremdcode) und haben ein Symbol je Zeile.
-- **Zugangsdaten, mehr Auffälligkeiten:** „Leere Felder sind gewollt“ im Zeilenmenü nimmt einen Eintrag aus „Felder ohne Wert“, bis mehr Felder leer sind. Neue Falten: Admin von außen erreichbar ohne Zwei-Faktor, Konto lange nicht angemeldet, neu gespeicherte Zugangsdaten. Eine Zeile zeigt „Cloud“ oder „Systemzugriff“, wenn dieselbe Integration auch Daten in die Cloud sendet oder das System erreicht.
-- **Freigaben in der Liste entfernen:** Die Liste jedes Assistenten (Assist, Alexa, Google Assistant) hat Kästchen und eine Leiste „Aus … entfernen“ wie das Inventar sowie ein Zeilenmenü; der Plan nimmt die Entitäten nur aus diesem Assistenten, mit den Filtern auch viele auf einmal.
-- **Freigaben ändern:** Bei „Freigabe für deaktivierte oder verwaiste Entitäten“ und „Google ohne PIN“ gibt es einen Knopf, der daraus einen Plan macht (Vorschau, Journal, Rückgängig): Freigaben entfernen, PIN wieder verlangen. Auch „Neue nicht mehr automatisch freigeben“ bei Alexa und Google, und bei sensiblen Entitäten im Zeilenmenü „Freigabe entfernen“, immer einzeln. Bei Alexa und Google wird sofort synchronisiert; Hinzufügen und HomeKit gibt es nicht.
-
-### Geändert
-
-- **Aufräumen:** Das Angebot erscheint schon ab 25 offenen Befunden statt ab 50.
-- **Befunde, Bedienung:**
-  - Die Auswahlleiste hat ein Menü „Aktionen“ statt dreier Knöpfe, die Einträge heißen „Befund entscheiden“, „Objekt-Notiz setzen“ und „Regel für dieses Objekt“.
-  - Die Regel für genau eine Entität entfällt, sie beginnt beim Gerät, Bereich oder der Integration. Für das einzelne Objekt gibt es die Objekt-Notiz.
-  - Beim Setzen einer Notiz für mehrere Objekte gibt es Zeitfenster und Selbstaufhebung wie bei einer einzelnen.
-  - Die Vorschau einer Regel nennt die betroffenen Objekte.
-  - Status, Objekt-Notiz und Regel haben dasselbe Gerüst: eine Übersicht der betroffenen Befunde oder Objekte (einzeln herausnehmbar), dann die Wahl als Kacheln, die Details und zuletzt die Wirkungszeile.
-  - Die Art der Objekt-Notiz sind Kacheln mit einer Erklärzeile, „Wann gilt die Objekt-Notiz“ sind Chips.
-  - „Ist so gewollt“ weist darauf hin, dass das Objekt beim Aufräumen trotzdem vorgeschlagen werden kann, und nennt die Objekt-Notiz „Nicht löschen“.
-  - „Nicht entfernen“ heißt „Nicht löschen“. Status: „Wieder melden nach“, Notiz und Regel: „Erinnern in“.
-  - „Nächste Schritte“ ist auf dem Smartphone eine wischbare Zeile mit kurzen Texten.
-
-### Behoben
-
-- **Anleitung:** Der Schutzmodus heißt dort wie in der Oberfläche Beobachten, Ändern und Alles.
-- **Bereichsvorschlag:** Er vergleicht jetzt mit den Nachbargeräten statt mit deren Kennungen.
-- **Aktivität:** Das Nachtragen früherer Einträge beim ersten Start lief nie und läuft jetzt.
-
-### English
-
-#### New
-
-- **Object note with an end:** An object note can end by itself once the object reports again. The wait sits next to the option and is called “Wait”.
-- **Effect line:** Status, object note and rule show before saving what is hidden, whether the cleanup is blocked and when it comes back.
-- **Already hidden:** If a way of a higher rank has hidden a finding already, the form says so. A hidden finding names the other ways that would apply as well.
-- **Access & data flow:** The reason for a level is written under it. The list can be narrowed to “New or level risen”, “Disabled, with access”, “Custom code” and “Meant to be so”; “Meant to be so” in the row menu takes the colour off a known access until its level rises. The export has a “State” column.
-- **Credentials and access in the look of the other Security pages:** On the credentials page the cards are the tabs and the page starts with “To check” (sign-in needed, fields without a value, disabled with a value, admin without two-factor, old tokens), the field names are folded away and the jump to Home Assistant is in the row menu. The access page starts with “To check” (new, disabled with access, custom code) and has a symbol per row.
-- **Credentials, more findings:** “Empty fields are meant so” in the row menu takes an entry out of “Fields without a value” until more fields are empty. New folds: admin reachable from outside without two-factor, account not signed in for a long time, newly stored credentials. A row shows “Cloud” or “System access” when the same integration also sends data to the cloud or reaches the system.
-- **Remove exposures in the list:** The list of each assistant (Assist, Alexa, Google Assistant) has boxes and a bar “Remove from …” like the inventory, and a row menu; the plan takes the entities out of that assistant only, with the filters many at once.
-- **Change exposures:** The findings “Exposure of disabled or orphaned entities” and “Google without PIN” have a button that makes a plan of it (preview, journal, undo): remove exposures, ask for the PIN again. Also “Stop exposing new ones automatically” for Alexa and Google, and “Remove exposure” in the row menu of sensitive entities, always one at a time. Alexa and Google synchronise at once; there is no adding and no HomeKit.
-
-#### Changed
-
-- **Cleanup:** The offer shows from 25 open findings instead of 50.
-- **Findings, handling:**
-  - The selection bar has an “Actions” menu instead of three buttons; the entries are “Decide on finding”, “Set object note” and “Rule for this object”.
-  - A rule for exactly one entity is gone, it starts at the device, area or integration. A single object has the object note.
-  - The object note for several objects has a time window and self-ending like the one for a single object.
-  - The preview of a rule names the objects it affects.
-  - Status, object note and rule share one layout: an overview of the findings or objects affected (each can be taken out), then the choice as tiles, the details and finally the effect line.
-  - The kind of an object note is a set of tiles with an explanation, “When does the object note apply” is a row of chips.
-  - “Intended” points out that the object can still be suggested in the cleanup, and names the object note “Do not delete”.
-  - “Do not remove” is now “Do not delete”. Status: “Report again after”, note and rule: “Remind in”.
-  - “Next steps” is a swipeable line with short texts on a phone.
-
-#### Fixed
-
-- **Guide:** The protection mode is called there as in the interface: Watch, Change and Everything.
-- **Area suggestion:** It now compares with the sibling devices instead of with their IDs.
-- **Activity:** Taking over earlier entries at the first start never ran and does now.
 ## 1.14.1 - 2026-11-04
 
 ### Behoben
@@ -366,116 +189,6 @@
 
 - **Flow of an automation:** An entity that only exists as a state (such as `zone.home`) is no longer reported as missing in the “Flow” tab.
 - **New rule:** The cards of “For what” are no longer squeezed by the full-width input field.
-
-## 2.0.0-beta.1 - 2026-10-26
-
-### Neu
-
-- **Themen statt Klassen:** Jeder Befund gehört zu einem von vier Themen: Ausgefallen, Kaputte Verweise, Fehlerhafte Automationen, Überflüssig. Die Wirkung (Hoch bis Info) sagt, wie dringend es ist.
-  - Themenkacheln mit Wirkungsbalken, eine Spalte und ein Filter „Thema“.
-  - Die Kacheln auf Befunde-Seite und Übersicht zählen Objekte statt Befunde: „Objekte mit Befunden“, je Thema die Objekte mit eigenem Befund (Folgen sind keine zweite Aufgabe); die Befunde und Ausfälle stehen darunter, die Kurven zählen mit.
-  - Ein fehlendes Ziel ist ab dem ersten Verweis eine Ursache, die verweisenden Automationen sind die Folgen.
-  - Automationen und Skripte mit wiederholten Fehlern sind jetzt eigene Befunde.
-  - Die Spalte „Sicherheit“ heißt „Gewissheit“, mit vier Stufen und einer Begründung im Tooltip.
-- **Seit dem letzten Besuch:** Die Befunde-Seite öffnet auf dem, was neu oder schlechter geworden ist, je Benutzer. Dazu der Sensor „Neue Befunde“. Ein „Später“, das schlechter wird, kommt sofort zurück; „Fällig“ sammelt, was wieder angesehen werden will.
-- **Beheben:** Jeder Befund hat eine eigene Seite mit vier Schritten (Verstehen, Entscheiden, Ausführen, Nachprüfen) und den Wegen seines Themas.
-  - Ziel ersetzen, auch bei Bereich, Etage und Label; Verweis entfernen und Fehler abfangen (beide über „Verbessern“); „Alle n beheben“ für ein fehlendes Ziel.
-  - Der letzte Fehler einer Automation aus dem Ablaufprotokoll, die Aufräum-Runde für alles Überflüssige und „Jetzt ansehen“ zum Nachprüfen.
-  - „In Arbeit“ merkt, was jemand angefangen hat, ohne etwas auszublenden.
-  - Geändert wird nur über einen Plan mit Vorschau und Bestätigung.
-- **Aufräumen:** Ab 50 offenen Befunden führt ein geführter Rundgang in fünf Etappen durch die Liste, vom Wichtigsten bis zum ruhigen Rest. Der Stand gilt fürs ganze Haus.
-  - Eine Karte je Befund (bei Etappe 3 je Objekt) mit Link zum Objekt und seinen Folgen; „Beheben“ öffnet die Seite, ein Band führt zurück.
-  - „Ist so gewollt“, „Später erinnern“, „Vorheriger“, „Überspringen“ und „Als Liste ansehen“ je Karte.
-  - Jede Antwort lässt sich gleich oder über den Verlauf zurücknehmen; Pause und Zurücksetzen im Menü.
-  - Der Schluss zeigt, was offen bleibt, mit Weg dorthin, und wann Zurückgestelltes wiederkommt.
-  - Der Rest in Etappe 5 kann gesammelt auf „Später“ gelegt werden.
-- **KI-Zugriff:** Neue Dienste `finding_fix_options` (lesend) und `finding_fix_plan` hinter dem neuen Schalter „Befunde beheben“ (standardmäßig aus). Der Plan ist nur eine Vorschau, bestätigen kann ihn nur ein Administrator im Panel. Befunde lassen sich nach Thema filtern; der kopierbare Anweisungstext ist angepasst.
-- **Ansicht: Einfach und Vollständig:** Du wählst unter Einstellungen, Ansicht, wie viel von Housekeeper du siehst; die Wahl gilt für dein Benutzerprofil. Vollständig ist die bisherige Oberfläche.
-  - Einfach zeigt Übersicht, Befunde, Wartung, Batterien, Erinnerungen und Ausnahmen. Alles andere bleibt über die Suche, „Beheben“ und die Hinweise der Übersicht erreichbar; eine geöffnete Seite bleibt in der Leiste.
-  - „Technische Details anzeigen“ blendet Regel-ID, Objekt-ID, Gewissheit, Beziehungen, Rohdaten, JSON-Export und einzelne Menüeinträge aus. Der Schalter folgt der Ansicht und lässt sich einzeln ändern.
-  - Die Ansicht steht in der Infoleiste neben dem Schutzmodus. Eine neue Installation beginnt in Einfach und fragt nach dem ersten Scan, ob es mehr sein soll.
-  - Die Ansicht ändert keine Regeln: Schutzmodus, Bestätigungen, Backups und Prüfungen bleiben gleich.
-
-### Geändert
-
-- **Neue Namen für die Ausgänge:** „Bekannt“ heißt „Ist so gewollt“, „Zurückgestellt“ heißt „Später“ (englisch Intended und Later). Gespeicherte Entscheidungen und der Dienst `finding_decide` bleiben unverändert.
-  - „Ist so gewollt“ ohne Frist bekommt einmalig 90 Tage; ein Hinweis erklärt das. Bei kritischen Objekten ist eine Frist Pflicht.
-  - Die Daten bleiben lesbar: Wer auf 1.x zurückgeht, verliert nur die neuen Felder.
-  - „Ausgeblendet“ heißt „Fehlalarm“ (die Regel irrt sich); der Reiter „Ausgeblendet“ heißt „Nicht gezeigt“ und sammelt alles, was gerade nicht erscheint.
-  - Die Ausnahmen haben eine eigene Seite unter „Überwachen“ mit den Bereichen Ausnahmeregeln, Urlaubsmodus, Entscheidungen und Objekt-Notizen; Seitenleiste und Übersicht zählen, was zu prüfen ist.
-  - Bei den Ausnahmeregeln heißt „Ausblenden“ jetzt „Nicht melden“. Es hat ein Prüfdatum (30 bis 365 Tage, 180 vorgewählt); danach wirkt die Regel weiter und steht als „zu prüfen“ in der Liste und auf der Übersicht. Auf eine ganze Domain braucht es einen Grund.
-  - Die Labels heißen in der Liste „Nicht anfassen“ (`housekeeper_keep`), „Ganz ausnehmen“ (`housekeeper_ignore`, auch Ausfälle werden nicht mehr gemeldet) und „Kritisch“; die Namen in Home Assistant bleiben.
-  - „Vermerk“ heißt „Objekt-Notiz“. Bei „Ist so gewollt“ und „Fehlalarm“ füllt eine Auswahl den Grund vor; „Ist so gewollt“ schlägt 365 Tage vor.
-- **Menü neu geordnet:** Die Gruppen folgen dem, was du gerade willst: Befunde, Überwachen, Pflegen, Betrieb, Sicherheit, Bestand.
-  - Neue Gruppe „Überwachen“ für alles, was von selbst läuft: Hausfunktionen, Auto-Pause (jetzt eigene Seite), Erinnerungen, Regeln & Ziele, Ausnahmen. Jeder Eintrag zeigt im Menü seinen Zustand, etwa „1 pausiert“, „2 fällig“ oder „aus“.
-  - „Regeln & Ziele“ fasst die Richtlinien und die Wartungsziele zusammen; Wartung behält Backups, Updates und Blueprints.
-  - „Bereinigen“ geht in „Pflegen“ auf, „Betrieb“ zeigt nur noch an. Alte Links führen auf die neuen Seiten.
-- **Befunde-Seite und Übersicht:** Die Themenkacheln ersetzen die Kacheln je Klasse. Die Übersichtszeile „Neu kritisch seit dem letzten Scan“ ist durch „n neu · n fällig“ ersetzt und führt auf die Befunde-Seite.
-- **Oberfläche, Korrekturen:**
-  - Der Zurück-Knopf nennt seine Seite statt der internen Bezeichnung.
-  - Ausnahmeregeln, Objekt-Notizen, pausierte Dienste, unreferenzierte Entitäten und Batterien haben eine Auswahl mit Sammelaktionen; die Aktionen je Zeile liegen im Menü ⋮.
-  - Karten und Zeilen ohne Auswahlkästchen behalten ihren Knopf im Blick.
-  - „Alle n beheben“ und die Auswahl mit jedem Ort ohne einzelne Befunde zeigen die richtigen Einzahl-Texte.
-  - Die Frage in Etappe 5 spricht nicht mehr von Löschen.
-  - Die Seiten unterhalb der Befunde tragen keine falsche Gruppenüberschrift mehr.
-- **Schutzmodus mit drei Stufen:** Beobachten, Ändern und Alles statt vier Stufen, in Auswahl, Pille und Statusleiste mit denselben Namen; die Karte nennt je Stufe, was erlaubt und was gesperrt ist, und zeigt eine Tabelle.
-  - „Nur Quarantäne“ entfällt. Wer sie gewählt hatte, steht danach auf „Beobachten“ (nie auf einer höheren Stufe); eine Notiz sagt es, bis eine Stufe gewählt wird.
-  - Ist die Stufe unbekannt, zeigt das Panel „Beobachten“ statt „Alles“.
-
-### English
-
-#### New
-
-- **Topics instead of classes:** Every finding belongs to one of four topics: Down, Broken references, Failing automations, Unneeded. The impact (High to Info) says how urgent it is.
-  - Topic tiles with an impact bar, a column and a filter “Topic”.
-  - The tiles on the findings page and the overview count objects instead of findings: “Objects with findings”, per topic the objects with a finding of their own (a follow-up is no second job); the findings and outages stand beneath, and the curves count along.
-  - A missing target is a cause from the first reference on; the automations that refer to it are the follow-ups.
-  - Automations and scripts with repeated failures are now findings of their own.
-  - The column “Certainty” (German “Sicherheit”, now “Gewissheit”) shows four levels and a reason in the tooltip.
-- **Since your last visit:** The findings page opens on what is new or got worse, for each user. Also the sensor “New findings”. A “Later” that gets worse comes back at once; “Due” collects what wants another look.
-- **Fix:** Every finding has a page of its own with four steps (Understand, Decide, Carry out, Check) and the ways of its topic.
-  - Replace the target, also for an area, floor and label; remove the reference and catch the error (both through “Improve”); “Fix all n” for a missing target.
-  - The last error of an automation from the run log, the cleanup round for everything unneeded, and “Look now” to check.
-  - “In work” remembers what someone has started, without hiding anything.
-  - Anything is changed only through a plan with preview and confirmation.
-- **Cleanup:** From 50 open findings a guided tour in five stages goes through the list, from the most important to the quiet rest. The state is for the whole house.
-  - One card per finding (per object in stage 3) with a link to the object and its follow-ups; “Fix” opens the page, a band leads back.
-  - “Intended”, “Remind me later”, “Previous”, “Skip” and “View as list” on each card.
-  - Every answer can be taken back at once or through the history; pause and reset are in the menu.
-  - The end shows what stays open, with a way to it, and when what was put off comes back.
-  - The rest in stage 5 can be put off together to “Later”.
-- **AI access:** New services `finding_fix_options` (read) and `finding_fix_plan` behind the new switch “Fix findings” (off by default). The plan is only a preview that only an administrator can confirm in the panel. Findings can be filtered by topic; the copyable instruction is updated.
-- **View: Simple and Full:** Under Settings, View, you choose how much of Housekeeper you see; the choice applies to your user profile. Full is the interface as it was.
-  - Simple shows overview, findings, maintenance, batteries, reminders and exceptions. Everything else stays reachable through the search, “Fix” and the notes of the overview; an open page stays in the bar.
-  - “Show technical details” hides rule ID, object ID, certainty, relations, raw data, JSON export and some menu entries. The switch follows the view and can be changed on its own.
-  - The view stands in the info bar next to the protection mode. A new installation starts in Simple and asks after the first scan whether it should be more.
-  - The view changes no rules: protection mode, confirmations, backups and checks stay the same.
-
-#### Changed
-
-- **New names for the exits:** “Bekannt” is now “Ist so gewollt” and “Zurückgestellt” is now “Später” (in English Intended and Later). Stored decisions and the service `finding_decide` stay as they are.
-  - “Intended” without a time gets 90 days once; a note explains it. A critical object needs a time.
-  - The data stay readable: going back to 1.x loses only the new fields.
-  - “Hidden” is now “False alarm” (the rule is wrong); the tab “Hidden” is now “Not shown” and collects everything that is not shown right now.
-  - The exceptions have a page of their own under “Monitoring” with the areas Exception rules, Vacation mode, Decisions and Object notes; the sidebar and the overview count what is to review.
-  - In the exception rules “Ausblenden” is now “Do not report”. It has a review date (30 to 365 days, 180 preselected); after it the rule keeps working and shows as “to review” in the list and on the overview. For a whole domain it needs a reason.
-  - The labels are called “Do not touch” (`housekeeper_keep`), “Leave out completely” (`housekeeper_ignore`, outages are not reported either) and “Critical” in the list; the names in Home Assistant stay.
-  - “Vermerk” (mark) is now “Object note”. For “Intended” and “False alarm” a choice fills in the reason; “Intended” proposes 365 days.
-- **Menu in a new order:** The groups follow what you want right now: Findings, Monitoring, Maintain, Operation, Security, Catalog.
-  - New group “Monitoring” for everything that runs by itself: Home functions, Auto-pause (now a page of its own), Reminders, Rules & goals, Exceptions. Each entry shows its state in the menu, such as “1 paused”, “2 due” or “off”.
-  - “Rules & goals” brings the policies and the maintenance goals together; Maintenance keeps backups, updates and blueprints.
-  - “Clean up” becomes part of “Maintain”, “Operation” only shows. Old links lead to the new pages.
-- **Findings page and overview:** The topic tiles replace the tiles per class. The overview line “New critical since the last scan” is replaced by “n new · n due” and leads to the findings page.
-- **Interface, corrections:**
-  - The back button names its page instead of the internal name.
-  - Exception rules, object notes, paused services, unreferenced entities and batteries have a selection with bulk actions; the actions of a row sit in the ⋮ menu.
-  - Cards and rows without a checkbox keep their button in view.
-  - “Fix all n” and a selection with every place but no single findings show the right singular texts.
-  - The question of stage 5 no longer speaks of deleting.
-  - The pages below the findings no longer carry a wrong group heading.
-- **Protection mode with three steps:** Watch, Change and Everything instead of four steps, with the same names in the choice, the pill and the status line; the card names what each step allows and blocks and shows a table.
-  - “Quarantine only” is gone. Whoever had chosen it is set to “Watch” (never to a higher step); a note says so until a step is chosen.
-  - If the step is unknown, the panel shows “Watch” instead of “Everything”.
 
 ## 1.13.0 - 2026-10-26
 
