@@ -26,14 +26,6 @@ class OverviewMixin {
     return `<div class="panel u-mb14" data-levels-hint><div class="row levelsrow"><span class="tile mute"><ha-icon icon="mdi:stairs-up"></ha-icon></span><span class="row-text"><strong>${this.t("levelsHintTitle")}</strong><small>${this.t("levelsHintText")}</small></span><button class="btn" data-levels-go>${this.t("levelsHintSettings")}</button><button class="btn quiet" data-levels-ok>${this.t("levelsHintOk")}</button></div></div>`;
   }
 
-  // Said once per browser: 2.0 is out as a beta. The links row on the info tab stays for good.
-  betaBanner() {
-    let seen = false;
-    try { seen = globalThis.localStorage?.getItem("ha_housekeeper.v2_beta_hint") === "1"; } catch (_) { seen = false; }
-    if (seen || this.data?.meta?.preliminary) return "";
-    return `<div class="panel u-mb14" data-beta-hint><div class="row levelsrow"><span class="tile mute"><ha-icon icon="mdi:flask-outline"></ha-icon></span><span class="row-text"><strong>${this.t("betaHintTitle")}</strong><small>${this.t("betaHintText")}</small></span><a class="btn" href="${REPO_URL}/releases" target="_blank" rel="noopener noreferrer" data-beta-open>${this.t("betaHintOpen")}</a><button class="btn quiet" data-beta-ok>${this.t("betaHintOk")}</button></div></div>`;
-  }
-
   // A scan that failed, or none that succeeded for a long time: the counts shown then come from an older scan.
   healthBanner() {
     const h = this.data?.meta?.scan_health;
