@@ -1,5 +1,39 @@
 # Changelog
 
+## Unreleased
+
+### Neu
+
+- **Batterien:** Die Liste ist leichter zuzuordnen und kennt Akkus.
+  - Unter dem Namen stehen Hersteller, Modell und Integration sowie die Entität; ohne Bereich steht „kein Bereich“.
+  - „Akku (ich lade ihn)“ ist ein eigener Typ: Die Liste nennt „Laden in …“ statt „Leer in …“, und er zählt nicht in der Einkaufsliste.
+
+### Geändert
+
+- **Batterien:** Die Liste ohne Wechselbatterie heißt „Akkus und Speicher“; die Art „Akku eines Geräts“ heißt „Akku (lädt selbst)“.
+- **Einstellungen:** Der Schalter für den Seitenleisten-Eintrag steht jetzt unter „Darstellung“, als eigene Karte mit eigenem Speichern-Knopf.
+
+### Behoben
+
+- **Batterien:** Das Formular für die Art öffnet sich in einer eigenen Zeile statt in der schmalen Menüspalte.
+
+### English
+
+#### New
+
+- **Batteries:** The list is easier to place and knows rechargeables.
+  - Under the name you see maker, model and integration and the entity; without an area it says "no area".
+  - "Rechargeable (I charge it)" is a type of its own: the list says "Charge in …" instead of "Empty in …", and it does not count in the shopping list.
+
+#### Changed
+
+- **Batteries:** The list of non-replaceable batteries is now "Packs and storage"; the kind "A device's own pack" is now "Battery pack (charges itself)".
+- **Settings:** The switch for the sidebar entry now sits under "Appearance", as a card of its own with its own save button.
+
+#### Fixed
+
+- **Batteries:** The form for the kind opens in a row of its own instead of the narrow menu column.
+
 ## 2.0.0-beta.5 - 2026-11-10
 
 ### Neu
@@ -152,7 +186,7 @@
 
 ### Neu
 
-- **Weitere Sprachen:** Französisch, Spanisch, Portugiesisch, Slowakisch, Russisch und Chinesisch (vereinfacht) sind dabei, in der Oberfläche, bei der Einrichtung und in den Meldungen.
+- **Weitere Sprachen:** Französisch, Spanisch, Portugiesisch, Italienisch, Slowakisch, Russisch und Chinesisch (vereinfacht) sind dabei, in der Oberfläche, bei der Einrichtung und in den Meldungen.
   - Die Sprache wählst du in den Einstellungen; was noch nicht übersetzt ist, erscheint auf Englisch.
   - Die Übersetzungen sind Entwürfe und noch nicht von Muttersprachlern gelesen. `docs/TRANSLATING.md` erklärt, wie man eine Sprache ergänzt oder verbessert.
   - Alle Sprachen reden dich mit „du“ an.
@@ -187,7 +221,7 @@
 
 #### New
 
-- **More languages:** French, Spanish, Portuguese, Slovak, Russian and Chinese (Simplified) are there, in the interface, the setup and the messages.
+- **More languages:** French, Spanish, Portuguese, Italian, Slovak, Russian and Chinese (Simplified) are there, in the interface, the setup and the messages.
   - You choose the language in the settings; what is not translated yet shows in English.
   - The translations are drafts and not yet read by native speakers. `docs/TRANSLATING.md` explains how to add or improve a language.
   - Every language addresses you informally.
