@@ -21,7 +21,7 @@ def hass(language: str) -> SimpleNamespace:
 def test_the_region_does_not_matter_and_english_is_the_fallback() -> None:
     assert language_of(hass("de_AT")) == language_of(hass("DE-ch")) == "de"
     assert pick(hass("de-AT"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["de"]
-    assert pick(hass("it"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["en"]
+    assert pick(hass("nl"), LOGBOOK_DEVICE) is LOGBOOK_DEVICE["en"]
 
 
 def test_every_language_has_the_same_texts() -> None:

@@ -13,7 +13,7 @@ A text that is missing shows in English, so a translation can start small and gr
 
 ## Rules
 
-- **Address the user informally** ("du" in German): tu in French and Portuguese, tú in Spanish, ty in Slovak, ты in Russian, 你 in Chinese. Imperatives follow ("Verifica", "Нажми"). Texts about an object ("its triggers") stay in the third person.
+- **Address the user informally** ("du" in German): tu in French, Italian and Portuguese, tú in Spanish, ty in Slovak, ты in Russian, 你 in Chinese. Imperatives follow ("Verifica", "Нажми"). Texts about an object ("its triggers") stay in the third person.
 - Keep every `{placeholder}`, markdown link, `` `code` `` and symbol exactly. A translation may use fewer placeholders than English, never others.
 - Do not translate product and technical names (Housekeeper, Home Assistant, HACS, Recorder, entity IDs, service names).
 - Texts of a counted noun come as a pair, such as `x_1` and `x_n`. A language with more plural forms writes the `_n` text as an object `{"one": "…", "few": "…", "many": "…", "other": "…"}`; the number that picks the form is `count`, else `n`. `other` is required.
