@@ -735,6 +735,7 @@
 "reason_same_entity": "旧实体和新实体相同。",
 "reason_different_domain": "旧实体和新实体类型不同。",
 "reason_target_not_working": "新实体目前还不可用。",
+"reason_target_no_value": "新实体目前还没有数值。",
 "reason_nothing_to_replace": "没有 Housekeeper 能安全改写的内容。",
 "reason_source_manual": "并非所有内容都能自动替换：你需要手动调整模板以及无法编辑的来源。",
 "reason_energy_changes": "会更改能源仪表板；新实体的统计将从头开始。",
@@ -6603,5 +6604,6 @@
 "hint_same_entity": "旧实体与新实体是同一个。请选择另一个作为目标。",
 "hint_different_domain": "两者必须属于同一类型，例如都是传感器。请选择另一个目标。",
 "hint_target_not_working": "新实体尚未上报数值。请等它正常工作，或选择另一个。",
+"hint_target_no_value": "单位和状态类别要等第一个数值出现后才能检查。没有状态类别，Home Assistant 不会记录长期统计。",
 "hint_nothing_to_replace": "没有任何内容使用旧实体，因此无需替换。"
 }

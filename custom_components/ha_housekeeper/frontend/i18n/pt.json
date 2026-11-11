@@ -735,6 +735,7 @@
 "reason_same_entity": "A entidade antiga e a nova são a mesma.",
 "reason_different_domain": "A entidade antiga e a nova são de tipos diferentes.",
 "reason_target_not_working": "A nova entidade ainda não funciona.",
+"reason_target_no_value": "A nova entidade ainda não tem nenhum valor.",
 "reason_nothing_to_replace": "Nada que o Housekeeper possa reescrever com segurança.",
 "reason_source_manual": "Nem tudo pode ser substituído automaticamente: tens de ajustar os modelos e origens que não podem ser editados à mão.",
 "reason_energy_changes": "Altera o painel de Energia; as estatísticas da nova entidade começam do zero.",
@@ -6603,5 +6604,6 @@
 "hint_same_entity": "A entidade antiga e a nova são a mesma. Escolhe outra como destino.",
 "hint_different_domain": "Ambas têm de ser do mesmo tipo, por exemplo dois sensores. Escolhe outro destino.",
 "hint_target_not_working": "A nova entidade ainda não envia valores. Espera que funcione ou escolhe outra.",
+"hint_target_no_value": "A unidade e a classe de estado só podem ser verificadas depois do primeiro valor. Sem classe de estado, o Home Assistant não regista estatísticas de longo prazo.",
 "hint_nothing_to_replace": "Nada usa a entidade antiga, por isso não há nada para substituir."
 }

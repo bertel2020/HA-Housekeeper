@@ -735,6 +735,7 @@
 "reason_same_entity": "L’ancienne et la nouvelle entité sont les mêmes.",
 "reason_different_domain": "L’ancienne et la nouvelle entité sont de types différents.",
 "reason_target_not_working": "La nouvelle entité ne fonctionne pas encore.",
+"reason_target_no_value": "La nouvelle entité n’a pas encore de valeur.",
 "reason_nothing_to_replace": "Rien que Housekeeper puisse réécrire en toute sécurité.",
 "reason_source_manual": "Tout ne peut pas être remplacé automatiquement : tu dois adapter à la main les modèles et sources non modifiables.",
 "reason_energy_changes": "Modifie le tableau de bord Énergie ; les statistiques de la nouvelle entité repartent de zéro.",
@@ -6603,5 +6604,6 @@
 "hint_same_entity": "L’ancienne et la nouvelle entité sont identiques. Choisis-en une autre comme cible.",
 "hint_different_domain": "Les deux doivent être du même type, par exemple deux capteurs. Choisis une autre cible.",
 "hint_target_not_working": "La nouvelle entité ne fournit pas encore de valeurs. Attends qu’elle fonctionne ou choisis-en une autre.",
+"hint_target_no_value": "L’unité et la classe d’état ne peuvent être vérifiées qu’après la première valeur. Sans classe d’état, Home Assistant n’enregistre pas de statistiques à long terme.",
 "hint_nothing_to_replace": "Rien n’utilise l’ancienne entité, il n’y a donc rien à remplacer."
 }

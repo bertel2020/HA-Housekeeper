@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"3dd1cf81e4"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"40722338e9"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"8b195b3e30"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"80ae0d630b"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"57d8cfdf14"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"78e54d2b97"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"647dd62c19"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"2e331df059"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"3c58c132d1"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b6ea036397"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"1292221df8"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"b8f2dc9d42"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"f816200600"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"2183b493c2"}];
 
 const TEXT = {
   de: {
@@ -668,7 +668,7 @@ Object.assign(TEXT.de, {
   reason_integration_no_support: "Die Integration bietet kein reguläres Entfernen. Dann bleibt nur „lokal vergessen“.", reason_regular_removal_available: "Die Integration kann das Gerät regulär entfernen; Erzwingen ist dann nicht vorgesehen.",
   reason_forced_forget: "Erzwungen: Die Integration wird nicht gefragt, das Quellsystem (Gerät, Hub, Cloud) bleibt unverändert, und das Gerät kann wiederkehren.",
   reason_restore_limited: "Das Gerät und seine Entitäten werden entfernt. Wiederherstellen legt nur den Registry-Eintrag neu an; ob die Integration die Entitäten wieder bereitstellt, entscheidet sie selbst.",
-  reason_target_missing: "Die neue Entität existiert nicht.", reason_same_entity: "Alte und neue Entität sind identisch.", reason_different_domain: "Alte und neue Entität haben unterschiedliche Typen.", reason_target_not_working: "Die neue Entität funktioniert noch nicht.",
+  reason_target_missing: "Die neue Entität existiert nicht.", reason_same_entity: "Alte und neue Entität sind identisch.", reason_different_domain: "Alte und neue Entität haben unterschiedliche Typen.", reason_target_not_working: "Die neue Entität funktioniert noch nicht.", reason_target_no_value: "Die neue Entität hat noch keinen Wert.",
   reason_nothing_to_replace: "Nichts, was Housekeeper sicher umschreiben kann.", reason_source_manual: "Nicht alles lässt sich automatisch ersetzen: Templates und nicht bearbeitbare Quellen musst du von Hand anpassen.",
   reason_energy_changes: "Ändert das Energie-Dashboard; die Statistik der neuen Entität beginnt neu.", reason_config_rewrite: "Schreibt Konfiguration um (in YAML-Dateien gehen Kommentare verloren).", reason_unit_differs: "Die Einheiten unterscheiden sich.", reason_class_differs: "Die Geräteklassen unterscheiden sich.",
   source_not_in_yaml: "nicht in der YAML-Datei gefunden (anderswo definiert)", source_yaml_uses_tags: "YAML nutzt !secret oder !include", source_yaml_mode: "YAML-Dashboard", source_not_editable: "nicht bearbeitbar",
@@ -701,7 +701,7 @@ Object.assign(TEXT.en, {
   reason_integration_no_support: "The integration offers no regular removal. Only “forget locally” remains.", reason_regular_removal_available: "The integration can remove the device regularly; forcing is not intended then.",
   reason_forced_forget: "Forced: the integration is not asked, the source system (device, hub, cloud) stays unchanged, and the device may come back.",
   reason_restore_limited: "The device and its entities are removed. Restoring only recreates the registry entry; whether the integration provides the entities again is up to it.",
-  reason_target_missing: "The new entity does not exist.", reason_same_entity: "Old and new entity are the same.", reason_different_domain: "Old and new entity are of different types.", reason_target_not_working: "The new entity does not work yet.",
+  reason_target_missing: "The new entity does not exist.", reason_same_entity: "Old and new entity are the same.", reason_different_domain: "Old and new entity are of different types.", reason_target_not_working: "The new entity does not work yet.", reason_target_no_value: "The new entity has no value yet.",
   reason_nothing_to_replace: "Nothing Housekeeper can safely rewrite.", reason_source_manual: "Not everything can be replaced automatically: you have to adjust templates and sources that cannot be edited by hand.",
   reason_energy_changes: "Changes the Energy dashboard; the new entity's statistics start fresh.", reason_config_rewrite: "Rewrites configuration (comments in YAML files are lost).", reason_unit_differs: "The units differ.", reason_class_differs: "The device classes differ.",
   source_not_in_yaml: "not found in the YAML file (defined elsewhere)", source_yaml_uses_tags: "YAML uses !secret or !include", source_yaml_mode: "YAML dashboard", source_not_editable: "not editable",
@@ -787,6 +787,7 @@ Object.assign(TEXT.de, {
   hint_same_entity: "Alte und neue Entität sind dieselbe. Wähle eine andere als Ziel.",
   hint_different_domain: "Beide müssen von derselben Art sein, etwa beide Sensor. Wähle ein anderes Ziel.",
   hint_target_not_working: "Die neue Entität liefert noch keine Werte. Warte, bis sie arbeitet, oder wähle eine andere.",
+  hint_target_no_value: "Einheit und Statistik-Klasse lassen sich erst nach dem ersten Wert prüfen. Ohne Statistik-Klasse schreibt Home Assistant keine Langzeitstatistik.",
   hint_nothing_to_replace: "Die alte Entität wird nirgends verwendet, also gibt es nichts zu ersetzen.",
   reason_no_recorder: "Der Recorder läuft nicht.", reason_old_not_in_registry: "Die alte Entität ist nicht (mehr) in der Entitäts-Registry; die ID lässt sich nicht tauschen.",
   reason_target_not_in_registry: "Die neue Entität ist nicht in der Entitäts-Registry.", reason_alt_id_taken: "Es ist keine freie Ausweich-ID für die alte Entität da.",
@@ -841,6 +842,7 @@ Object.assign(TEXT.en, {
   hint_same_entity: "The old and the new entity are the same. Pick another one as the target.",
   hint_different_domain: "Both must be of the same kind, for example both sensors. Pick another target.",
   hint_target_not_working: "The new entity does not report values yet. Wait until it works, or pick another one.",
+  hint_target_no_value: "Unit and state class can only be checked after the first value. Without a state class, Home Assistant records no long-term statistics.",
   hint_nothing_to_replace: "Nothing uses the old entity, so there is nothing to replace.",
   reason_no_recorder: "The recorder is not running.", reason_old_not_in_registry: "The old entity is not (any more) in the entity registry; the ID cannot be swapped.",
   reason_target_not_in_registry: "The new entity is not in the entity registry.", reason_alt_id_taken: "There is no free fallback ID for the old entity.",

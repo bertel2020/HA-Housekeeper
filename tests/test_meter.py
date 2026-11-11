@@ -156,6 +156,15 @@ def test_meter_judging() -> None:
     blocked("target_not_in_registry", target_in_registry=False)
     blocked("stats_missing_old", analysis={"reasons": ["stats_missing_old"]})
     blocked("nothing_to_do", mode="nothing")
+    for status, verdict, reason in (
+        ("unknown", "review", "target_no_value"),
+        ("unavailable", "review", "target_no_value"),
+        ("disabled", "blocked", "target_not_working"),
+    ):
+        waiting = objects()
+        waiting[NEW]["status"] = status
+        action = judge_meter_action(OLD, NEW, waiting, [], good_meter())
+        assert action["verdict"] == verdict and reason in action["reasons"]
     wrong = judge_meter_action(OLD, "light.other", objects(), [], good_meter())
     assert "target_missing" in wrong["reasons"] and wrong["verdict"] == "blocked"
     used = judge_meter_action(

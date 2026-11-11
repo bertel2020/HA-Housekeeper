@@ -1324,6 +1324,9 @@ def judge_meter_action(
         reasons.append("same_entity")
     elif target.split(".", 1)[0] != object_id.split(".", 1)[0]:
         reasons.append("different_domain")
+    elif new["status"] in ("unknown", "unavailable"):
+        # A new meter often has no value yet: nothing to block, the statistics can be moved first.
+        reasons.append("target_no_value")
     elif new["status"] != "active":
         reasons.append("target_not_working")
     old = objects.get(object_id)
