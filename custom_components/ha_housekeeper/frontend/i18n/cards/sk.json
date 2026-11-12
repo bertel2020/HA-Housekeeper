@@ -1,0 +1,16 @@
+{
+  "cardNotFound": "HA Housekeeper sa nenašiel. Je integrácia nastavená?",
+  "cardNoData": "Zatiaľ žiadne údaje: prvé skenovanie ešte len príde.",
+  "cardQuietHidden": "Táto karta je skrytá, kým je všetko pokojné. V editore ju aj tak vidíš.",
+  "cardOpenPanel": "Otvoriť v paneli →",
+  "edit_title": "Názov",
+  "edit_quiet": "Keď je pokoj",
+  "edit_quiet_summary": "Zobraziť súhrn",
+  "edit_quiet_hide": "Skryť kartu",
+  "edit_quiet_help": "Pokoj znamená, že nie je čo robiť. Skrytá karta zmizne z dashboardu, kým sa znova niečo nenahromadí.",
+  "edit_tap": "Ťuknutie otvorí",
+  "edit_tap_panel": "Panel Housekeeper",
+  "edit_tap_none": "Nič",
+  "edit_tap_help": "Panel môžu otvoriť len správcovia.",
+  "edit_compact": "Kompaktná"
+}

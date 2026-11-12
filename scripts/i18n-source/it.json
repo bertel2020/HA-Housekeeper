@@ -6852,5 +6852,21 @@
 "exceptions.no_last_failure.message": "13560541",
 "exceptions.way_not_plannable.message": "68a80fb7",
 "exceptions.plan_blocked.message": "cbcdc0fe"
+},
+"cards": {
+"cardNotFound": "dee6374c",
+"cardNoData": "db57cebc",
+"cardQuietHidden": "7d272f28",
+"cardOpenPanel": "36e9709d",
+"edit_title": "7e8cd205",
+"edit_quiet": "877050ad",
+"edit_quiet_summary": "5467b50a",
+"edit_quiet_hide": "f7329fb0",
+"edit_quiet_help": "7fb50395",
+"edit_tap": "db2dcf4c",
+"edit_tap_panel": "9e037f50",
+"edit_tap_none": "67e1bca0",
+"edit_tap_help": "57de3db4",
+"edit_compact": "99452646"
 }
 }

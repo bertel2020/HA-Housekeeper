@@ -24,19 +24,22 @@ const hash = text => crypto.createHash("sha256").update(typeof text === "string"
 
 class FakeElement { attachShadow() { return {}; } }
 const context = { HTMLElement: FakeElement, customElements: { get: () => undefined, define() {} }, document: {}, URLSearchParams, Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, setTimeout: () => 0 };
+const cardContext = { ...context };
 vm.runInNewContext(fs.readFileSync(path.join(component, "frontend/ha-housekeeper-panel.js"), "utf8") + "\nthis.TEXT = TEXT;", context);
+vm.runInNewContext(fs.readFileSync(path.join(component, "frontend/ha-housekeeper-cards.js"), "utf8") + "\nthis.CARD_TEXT = CARD_TEXT;", cardContext);
 
 const leaves = (value, prefix = "") => typeof value === "object" && value !== null && !Array.isArray(value)
   ? Object.entries(value).flatMap(([key, child]) => leaves(child, prefix ? `${prefix}.${key}` : key)) : [prefix];
 const flat = value => Object.fromEntries(leaves(value).map(key => [key, key.split(".").reduce((o, part) => o[part], value)]));
 
-const english = { panel: context.TEXT.en, setup: flat(read(path.join(component, "translations/en.json"))) };
+const english = { panel: context.TEXT.en, setup: flat(read(path.join(component, "translations/en.json"))), cards: cardContext.CARD_TEXT.en };
 const translated = code => ({
   panel: read(path.join(component, `frontend/i18n/${code}.json`)),
   setup: exists(path.join(component, `translations/${code}.json`)) ? flat(read(path.join(component, `translations/${code}.json`))) : {},
+  cards: exists(path.join(component, `frontend/i18n/cards/${code}.json`)) ? read(path.join(component, `frontend/i18n/cards/${code}.json`)) : {},
 });
 const recordFile = code => path.join(sourceDir, `${code}.json`);
-const records = code => (exists(recordFile(code)) ? read(recordFile(code)) : { panel: {}, setup: {} });
+const records = code => (exists(recordFile(code)) ? read(recordFile(code)) : { panel: {}, setup: {}, cards: {} });
 
 const languages = read(path.join(component, "languages.json")).filter(l => l.code !== "de" && l.code !== "en");
 const args = process.argv.slice(2);
@@ -46,7 +49,7 @@ if (mode && !languages.some(l => l.code === only)) { console.error(`Usage: node 
 
 function state(code) {
   const have = translated(code), rec = records(code), out = {};
-  for (const part of ["panel", "setup"]) {
+  for (const part of ["panel", "setup", "cards"]) {
     const missing = [], outdated = [], fresh = [], unrecorded = [];
     for (const key of Object.keys(english[part])) {
       if (!(key in have[part])) missing.push(key);
@@ -61,7 +64,7 @@ function state(code) {
 
 if (mode === "--accept") {
   const rec = records(only), st = state(only), keys = args.slice(2);
-  for (const part of ["panel", "setup"]) {
+  for (const part of ["panel", "setup", "cards"]) {
     rec[part] ||= {};
     const take = keys.length ? keys.filter(k => k in english[part] && k in translated(only)[part]) : st[part].unrecorded;
     for (const key of take) rec[part][key] = hash(english[part][key]);
@@ -69,7 +72,7 @@ if (mode === "--accept") {
   }
   fs.mkdirSync(sourceDir, { recursive: true });
   const part = name => `"${name}": {\n${Object.entries(rec[name]).map(([k, v]) => `${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(",\n")}\n}`;
-  fs.writeFileSync(recordFile(only), `{\n${part("panel")},\n${part("setup")}\n}\n`); // one key per line keeps the diff readable
+  fs.writeFileSync(recordFile(only), `{\n${part("panel")},\n${part("setup")},\n${part("cards")}\n}\n`); // one key per line keeps the diff readable
   process.exit(0);
 }
 
@@ -79,11 +82,13 @@ for (const { code, status } of languages) {
   console.log(`${code} (${status || "stable"})`);
   console.log("  " + line("panel  ", st.panel));
   console.log("  " + line("setup  ", st.setup));
+  console.log("  " + line("cards  ", st.cards));
   const backend = exists(path.join(component, `locales/${code}.json`)) ? leaves(read(path.join(component, `locales/${code}.json`))).length : 0;
   console.log(`  backend ${String(backend).padStart(5)} texts in locales/${code}.json`);
-  if (st.panel.unrecorded.length + st.setup.unrecorded.length) console.log(`  ${st.panel.unrecorded.length + st.setup.unrecorded.length} translated keys without a record: node scripts/i18n_report.mjs --accept ${code}`);
+  const unrecorded = st.panel.unrecorded.length + st.setup.unrecorded.length + st.cards.unrecorded.length;
+  if (unrecorded) console.log(`  ${unrecorded} translated keys without a record: node scripts/i18n_report.mjs --accept ${code}`);
   if (mode === "--list") {
-    for (const part of ["panel", "setup"]) {
+    for (const part of ["panel", "setup", "cards"]) {
       for (const [label, keys] of [["missing", st[part].missing], ["outdated", st[part].outdated]]) if (keys.length) console.log(`  ${part} ${label}:\n    ${keys.join("\n    ")}`);
     }
   }

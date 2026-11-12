@@ -1,0 +1,16 @@
+{
+  "cardNotFound": "找不到 HA Housekeeper。集成已经设置好了吗？",
+  "cardNoData": "暂无数据：首次扫描尚未进行。",
+  "cardQuietHidden": "一切平静时，这张卡片会被隐藏。在编辑器里你仍然能看到它。",
+  "cardOpenPanel": "在面板中打开 →",
+  "edit_title": "标题",
+  "edit_quiet": "一切平静时",
+  "edit_quiet_summary": "显示摘要",
+  "edit_quiet_hide": "隐藏卡片",
+  "edit_quiet_help": "平静表示无事可做。隐藏后，卡片会从仪表板上消失，直到再次有事需要处理。",
+  "edit_tap": "点按后打开",
+  "edit_tap_panel": "Housekeeper 面板",
+  "edit_tap_none": "无",
+  "edit_tap_help": "只有管理员可以打开面板。",
+  "edit_compact": "紧凑"
+}

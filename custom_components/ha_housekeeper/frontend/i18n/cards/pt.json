@@ -1,0 +1,16 @@
+{
+  "cardNotFound": "O HA Housekeeper não foi encontrado. A integração está configurada?",
+  "cardNoData": "Ainda sem dados: a primeira análise ainda está por vir.",
+  "cardQuietHidden": "Este cartão fica oculto enquanto tudo estiver tranquilo. No editor, vês na mesma o cartão.",
+  "cardOpenPanel": "Abrir no painel →",
+  "edit_title": "Título",
+  "edit_quiet": "Quando está tudo tranquilo",
+  "edit_quiet_summary": "Mostrar o resumo",
+  "edit_quiet_hide": "Ocultar o cartão",
+  "edit_quiet_help": "Tranquilo significa que não há nada a fazer. Oculto, o cartão desaparece do painel de controlo até voltar a haver algo pendente.",
+  "edit_tap": "Um toque abre",
+  "edit_tap_panel": "O painel do Housekeeper",
+  "edit_tap_none": "Nada",
+  "edit_tap_help": "Só os administradores podem abrir o painel.",
+  "edit_compact": "Compacto"
+}

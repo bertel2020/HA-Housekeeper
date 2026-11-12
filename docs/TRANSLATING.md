@@ -5,6 +5,7 @@ German and English are the source languages and live in the code. Every other la
 | What | File | Source of truth |
 |---|---|---|
 | The panel | `custom_components/ha_housekeeper/frontend/i18n/<code>.json` | `TEXT.en` in `panel-src/` |
+| The Lovelace cards | `custom_components/ha_housekeeper/frontend/i18n/cards/<code>.json` | `CARD_TEXT.en` in `cards-src/10-texts.js` |
 | Setup, entities, services, issues | `custom_components/ha_housekeeper/translations/<code>.json` | `translations/en.json` |
 | Notifications, logbook, audit report | `custom_components/ha_housekeeper/locales/<code>.json` | the `en` entries of the text tables in the Python files |
 | The list of languages | `custom_components/ha_housekeeper/languages.json` | |
@@ -22,11 +23,11 @@ A text that is missing shows in English, so a translation can start small and gr
 
 ## Adding or updating a language
 
-1. Copy the files of a similar language, or start with an empty `frontend/i18n/<code>.json` (`{}`) and an entry in `languages.json`: `code` (the code Home Assistant uses, e.g. `zh-Hans`), `name` in the language itself, `patterns` (Home Assistant language codes that map to it, lower case, e.g. `["pt", "pt-pt", "pt-br"]`; `zh-Hant` must not match `zh-Hans`), `quotes`, `lowerKind` (whether a noun is written in lower case inside a sentence) and `status: "community"` while it is a draft.
-2. Translate. The panel bundle is built from `panel-src/`, never edit `ha-housekeeper-panel.js` by hand: `node scripts/build_panel.mjs`.
+1. Copy the files of a similar language, or start with an empty `frontend/i18n/<code>.json` and `frontend/i18n/cards/<code>.json` (`{}`, the build needs both) and an entry in `languages.json`: `code` (the code Home Assistant uses, e.g. `zh-Hans`), `name` in the language itself, `patterns` (Home Assistant language codes that map to it, lower case, e.g. `["pt", "pt-pt", "pt-br"]`; `zh-Hant` must not match `zh-Hans`), `quotes`, `lowerKind` (whether a noun is written in lower case inside a sentence) and `status: "community"` while it is a draft.
+2. Translate. The panel bundle is built from `panel-src/` and the cards bundle from `cards-src/`, never edit `ha-housekeeper-panel.js` or `ha-housekeeper-cards.js` by hand: `node scripts/build_panel.mjs`.
 3. See what is left: `node scripts/i18n_report.mjs` (counts), `node scripts/i18n_report.mjs --list <code>` (the missing and outdated keys).
 4. When English changed after a text was translated, the report calls the key *outdated*. Check the translation, then `node scripts/i18n_report.mjs --accept <code> <key> …` records the current English text for it. `--accept <code>` alone records only keys that were never recorded, so a new translation starts clean and never hides an outdated one.
-5. Run the checks: `node --test tests/panel.test.mjs` and `pytest` (they fail on a key English does not have, a placeholder English does not have, and a plural text without `other`).
+5. Run the checks: `node --test tests/panel.test.mjs tests/cards.test.mjs` and `pytest` (they fail on a key English does not have, a placeholder English does not have, and a plural text without `other`).
 
 ## When English changes
 

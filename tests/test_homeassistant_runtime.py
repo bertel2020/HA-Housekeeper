@@ -852,6 +852,27 @@ async def test_orphaned_statistics_are_listed_without_becoming_findings(
     assert snapshot["findings"] == []
 
 
+async def test_the_cards_bundle_loads_on_every_dashboard_while_the_entry_is_loaded(
+    hass: HomeAssistant,
+) -> None:
+    """The Lovelace cards are not part of the admin panel: their bundle is an extra module of the frontend."""
+    from homeassistant.components import frontend
+
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+
+    urls = hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+    assert any(url.startswith("/ha_housekeeper/ha-housekeeper-cards.js?v=") for url in urls)
+
+    assert await hass.config_entries.async_unload(entry.entry_id)
+    urls = hass.data[frontend.DATA_EXTRA_MODULE_URL].urls
+    assert not any("ha-housekeeper-cards.js" in url for url in urls)
+
+
 async def test_a_refused_unload_keeps_the_runtime_objects(hass: HomeAssistant) -> None:
     """If the platforms stay loaded, the panel and the scanner must stay as well."""
     from unittest.mock import patch
