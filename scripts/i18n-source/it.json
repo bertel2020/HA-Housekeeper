@@ -6857,7 +6857,8 @@
 "entity.sensor.house_health.state.attention": "c1ebc781",
 "entity.sensor.house_health.state.urgent": "1b015904",
 "entity.sensor.battery_weakest.name": "a5bd0256",
-"entity.sensor.battery_next_change.name": "0abacb04"
+"entity.sensor.battery_next_change.name": "0abacb04",
+"entity.sensor.auto_pause.name": "65feaab7"
 },
 "cards": {
 "cardNotFound": "dee6374c",
@@ -6950,6 +6951,34 @@
 "edit_history_30": "ffd72805",
 "edit_history_14": "60acc36e",
 "edit_history_7": "7f920bb6",
-"edit_history_0": "ca7981b4"
+"edit_history_0": "ca7981b4",
+"cardApTitle": "65feaab7",
+"cardApOnSub": "c70db68c",
+"cardApChip": "251b1c7f",
+"cardApNone": "033995db",
+"cardApAllRuns": "9697ba7e",
+"cardApOff": "598893d1",
+"cardApOffSub": "f248e171",
+"cardApEnable": "269c6858",
+"cardApWhyAuto": "5d340a59",
+"cardApWhyManual": "5ad8eccb",
+"cardApSince": "6fb66dfd",
+"cardApNext": "3a7ba48b",
+"cardApTrying": "9c1e0949",
+"cardApExhausted": "8b48af65",
+"cardApStep": "3012543d",
+"cardApFoot": "915560c2",
+"cardApMenu": "ff8059dc",
+"cardApTry": "549f5e23",
+"cardApResume": "49c45698",
+"cardApNever": "b2c02cd1",
+"cardApOpen": "bb59775c",
+"cardApTried": "06375563",
+"cardApResumed": "63cd89cd",
+"cardApExcluded": "4dd182ae",
+"cardApFailed": "8a76848b",
+"edit_actions": "3c3d1a05",
+"edit_actions_help": "80c72019",
+"edit_progress": "23925d03"
 }
 }

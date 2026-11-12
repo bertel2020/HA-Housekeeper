@@ -25,6 +25,7 @@ from .battery_care import noted_types
 from .const import (
     DOMAIN,
     NAME,
+    SIGNAL_AUTO_PAUSE,
     SIGNAL_MONITOR_DEFINITIONS,
     SIGNAL_PLAN_ACTIVITY,
     SIGNAL_SCAN_COMPLETE,
@@ -126,6 +127,12 @@ BATTERY_NEXT_DESCRIPTION = SensorEntityDescription(
 )
 
 
+AUTO_PAUSE_DESCRIPTION = SensorEntityDescription(
+    key="auto_pause",
+    translation_key="auto_pause",
+)
+
+
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
@@ -163,6 +170,7 @@ async def async_setup_entry(
             HouseHealthSensor(entry, HOUSE_DESCRIPTION),
             BatteryWeakestSensor(entry, BATTERY_WEAKEST_DESCRIPTION),
             BatteryNextChangeSensor(entry, BATTERY_NEXT_DESCRIPTION),
+            AutoPauseSensor(entry, AUTO_PAUSE_DESCRIPTION),
         ]
     )
     scanner = entry.runtime_data
@@ -282,6 +290,30 @@ class HouseHealthSensor(HousekeeperSensor):
         health = house_health(snapshot, scanner.history.previous)
         self._attr_native_value = health.pop("state")
         self._attr_extra_state_attributes = health
+
+
+class AutoPauseSensor(HousekeeperSensor):
+    """How many integrations are paused; who, why and when the next attempt is as attributes, for the card.
+
+    It follows every change of the pauses, not only the scans. The attributes stay out of the recorder.
+    """
+
+    _unrecorded_attributes = frozenset({"enabled", "paused", "max_days"})
+
+    async def async_added_to_hass(self) -> None:
+        self._update()
+        for signal in (SIGNAL_SCAN_COMPLETE, SIGNAL_AUTO_PAUSE):
+            self.async_on_remove(async_dispatcher_connect(self.hass, signal, self._handle_update))
+
+    def _update(self) -> None:
+        scanner = self.scanner
+        if scanner is None:
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
+        view = scanner.auto_pause.card_view()
+        self._attr_native_value = len(view["paused"])
+        self._attr_extra_state_attributes = view
 
 
 class _BatterySensor(HousekeeperSensor):

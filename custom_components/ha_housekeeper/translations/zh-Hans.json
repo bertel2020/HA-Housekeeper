@@ -122,6 +122,9 @@
       "battery_next_change": {
         "name": "下次更换电池"
       },
+      "auto_pause": {
+        "name": "已暂停的集成"
+      },
       "new_findings": {
         "name": "新发现项"
       },

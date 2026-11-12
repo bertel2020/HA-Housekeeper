@@ -13,6 +13,7 @@ function loadCards() {
     attachShadow() { this.shadowRoot = { innerHTML: "", querySelectorAll: () => [] }; return this.shadowRoot; }
     addEventListener() {}
     appendChild() {}
+    dispatchEvent(event) { (this.fired ||= []).push(event); }
   }
   const context = {
     HTMLElement: FakeElement,
@@ -24,7 +25,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -222,4 +223,54 @@ test("the home functions card puts the troubled functions first, says why in wor
   card.setConfig({});
   card.hass = hass({});
   assert.match(html(), /Noch keine Hausfunktion/);
+});
+
+test("the auto-pause card names who is paused and when the next try is, and its menu acts only for administrators through the command of the panel", async () => {
+  const { HKAutoPauseCard, registered } = loadCards();
+  assert.ok(registered["ha-housekeeper-auto-pause-card"], "the card is registered");
+  const entities = { p: ENTITY("sensor.paused", "auto_pause") };
+  const at = minutes => new Date(Date.now() + minutes * 60000).toISOString();
+  const waiting = { entry_id: "e1", title: "Wetterdienst Alpen", reason: "auto", failures: 25, attempts_done: 2, attempts_total: 21, step_hours: 1, next: at(54), since: at(-120), trying: false, exhausted: false };
+  const given = { entry_id: "e2", title: "Heizungsregler", reason: "manual", failures: null, attempts_done: 21, attempts_total: 21, step_hours: 12, next: null, since: at(-9000), trying: false, exhausted: true };
+  let stamp = 0;
+  const calls = [];
+  const hass = (attrs, admin = true, fail = false) => ({ language: "de", user: { is_admin: admin }, entities, states: { "sensor.paused": { state: String(attrs.paused.length), last_updated: String(++stamp), attributes: attrs } }, callWS: async msg => { calls.push(msg); if (fail) throw new Error("boom"); } });
+  const card = new HKAutoPauseCard();
+  card.setConfig({});
+  card.hass = hass({ enabled: true, max_days: 7, paused: [waiting, given] });
+  const html = () => card.shadowRoot.innerHTML;
+  assert.match(html(), /Wetterdienst Alpen[\s\S]*25 Fehlversuche · pausiert vor 2 Stunden/);
+  assert.match(html(), /Nächster Versuch in 54 Minuten/);
+  assert.match(html(), /Versuch 2 von 21 · alle 1 Std\./);
+  assert.match(html(), /Aufgegeben: nach 7 Tagen nicht wieder eingerichtet/);
+  assert.match(html(), /von dir pausiert/);
+  assert.match(html(), /2 pausiert/);
+  assert.match(html(), /Die Pause endet spätestens nach 7 Tagen/);
+  assert.ok(!html().includes("hk-menu\" style"), "no menu until the button is pressed");
+  card.act("menu:e1", { currentTarget: { getBoundingClientRect: () => ({ bottom: 100, right: 300 }) } });
+  assert.match(html(), /class="hk-menu" style="top:104px;right:/);
+  assert.match(html(), /Jetzt versuchen[\s\S]*Pause beenden[\s\S]*Nie pausieren/);
+  card.act("try:e1");
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/auto_pause_set", action: "try", entry_id: "e1" }));
+  assert.equal(card.fired.at(-1).detail.message, "Neuer Versuch gestartet");
+  assert.ok(!html().includes('class="hk-menu"'), "the menu closes after an action");
+  card.act("never:e2");
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(calls[1].on, true, "never pause switches the exclusion on");
+  card.hass = hass({ enabled: true, max_days: 7, paused: [waiting] }, true, true);
+  card.act("resume:e1");
+  await new Promise(resolve => setTimeout(resolve, 0));
+  assert.equal(card.fired.at(-1).detail.message, "Das hat nicht geklappt: boom");
+  card.hass = hass({ enabled: true, max_days: 7, paused: [waiting] }, false);
+  assert.ok(!html().includes("hk-kebab\"") && !html().includes("data-hk-act"), "a person who is no administrator sees the list without a menu");
+  const before = calls.length;
+  card.act("try:e1");
+  assert.equal(calls.length, before, "and cannot act");
+  card.setConfig({ quiet: "hide" });
+  card.hass = hass({ enabled: true, max_days: 7, paused: [] });
+  assert.equal(card.style.display, "none", "auto-pause is on and nothing is paused");
+  card.setConfig({});
+  card.hass = hass({ enabled: false, max_days: 7, paused: [] });
+  assert.match(html(), /Auto-Pause ist aus[\s\S]*Im Panel einschalten/);
 });

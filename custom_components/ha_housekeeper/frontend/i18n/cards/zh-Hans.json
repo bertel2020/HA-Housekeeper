@@ -109,5 +109,41 @@
   "edit_history_30": "30 天",
   "edit_history_14": "14 天",
   "edit_history_7": "7 天",
-  "edit_history_0": "关闭"
+  "edit_history_0": "关闭",
+  "cardApTitle": "已暂停的集成",
+  "cardApOnSub": "自动暂停已开启",
+  "cardApChip": {
+    "other": "{n} 个已暂停"
+  },
+  "cardApNone": "没有已暂停的集成",
+  "cardApAllRuns": "一切运行正常",
+  "cardApOff": "自动暂停已关闭",
+  "cardApOffSub": "Housekeeper 不会自行暂停任何集成",
+  "cardApEnable": "在面板中开启 →",
+  "cardApWhyAuto": {
+    "other": "{n} 次失败尝试"
+  },
+  "cardApWhyManual": "由你暂停",
+  "cardApSince": "已暂停 {ago}",
+  "cardApNext": "下次尝试 {when}",
+  "cardApTrying": "正在尝试 …",
+  "cardApExhausted": {
+    "other": "已放弃：{n} 天内未能恢复"
+  },
+  "cardApStep": "第 {done} 次，共 {total} 次 · 每 {step} 小时",
+  "cardApFoot": {
+    "other": "暂停最迟在 {n} 天后结束"
+  },
+  "cardApMenu": "操作",
+  "cardApTry": "立即尝试",
+  "cardApResume": "结束暂停",
+  "cardApNever": "从不暂停",
+  "cardApOpen": "在面板中打开",
+  "cardApTried": "已开始新的尝试",
+  "cardApResumed": "暂停已结束",
+  "cardApExcluded": "已排除出自动暂停",
+  "cardApFailed": "操作失败：{detail}",
+  "edit_actions": "菜单中的操作",
+  "edit_actions_help": "只有管理员能看到该菜单。",
+  "edit_progress": "显示尝试进度"
 }

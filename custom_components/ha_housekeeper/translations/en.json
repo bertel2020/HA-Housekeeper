@@ -122,6 +122,9 @@
       "battery_next_change": {
         "name": "Next battery change"
       },
+      "auto_pause": {
+        "name": "Paused integrations"
+      },
       "new_findings": {
         "name": "New findings"
       },

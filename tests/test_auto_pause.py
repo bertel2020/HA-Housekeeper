@@ -69,6 +69,35 @@ async def test_a_data_integration_is_paused_after_enough_failed_attempts(hass) -
     pause.start()()
 
 
+async def test_the_card_view_names_who_is_paused_how_far_the_tries_are_and_when_the_next_one_is(
+    hass,
+) -> None:
+    from homeassistant.helpers.dispatcher import async_dispatcher_connect
+
+    from custom_components.ha_housekeeper.const import SIGNAL_AUTO_PAUSE
+
+    entry, scanner, pause = _setup(hass)
+    seen: list[int] = []
+    async_dispatcher_connect(hass, SIGNAL_AUTO_PAUSE, lambda: seen.append(1))
+    assert pause.card_view() == {"enabled": False, "paused": [], "max_days": END_HOURS // 24}
+
+    await pause.pause(entry.entry_id, reason="manual")
+    assert seen, "a change of the pauses tells the sensor"
+    view = pause.card_view()
+    row = view["paused"][0]
+    assert (row["title"], row["reason"], row["attempts_done"]) == ("Ravensburg", "manual", 0)
+    assert (row["attempts_total"], row["step_hours"]) == (len(OFFSETS), OFFSETS[0])
+    since = datetime.fromisoformat(row["since"])
+    assert row["next"] == (since + timedelta(hours=OFFSETS[0])).isoformat()
+
+    pause.paused[entry.entry_id]["done"] = 3  # three tries are done: the next one is three hours on
+    row = pause.card_view()["paused"][0]
+    assert row["step_hours"] == OFFSETS[3] - OFFSETS[2]
+    pause.paused[entry.entry_id]["exhausted"] = True
+    assert pause.card_view()["paused"][0]["next"] is None
+    pause.start()()
+
+
 async def test_a_control_integration_needs_a_confirmation_and_a_user_disabled_one_is_left_alone(
     hass,
 ) -> None:

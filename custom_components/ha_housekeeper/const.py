@@ -120,6 +120,7 @@ SIGNAL_SCAN_STARTED: Final = f"{DOMAIN}_scan_started"
 # A cleanup plan starts or ends; the activity sensor follows it.
 SIGNAL_PLAN_ACTIVITY: Final = f"{DOMAIN}_plan_activity"
 SIGNAL_MONITOR_DEFINITIONS: Final = f"{DOMAIN}_monitor_definitions"
+SIGNAL_AUTO_PAUSE: Final = f"{DOMAIN}_auto_pause"
 SIGNAL_MONITOR_EVENT: Final = f"{DOMAIN}_monitor_event"
 
 # Undo data kept in the journal for a rewritten YAML file: files up to MAX_FILE_BACKUP are kept

@@ -86,6 +86,18 @@ class HKCard extends HTMLElement {
     return (id && this._hass?.states?.[id]) || null;
   }
 
+  // "in 54 minutes" for a time ahead, in the language of the card; "" when the time is not known.
+  until(iso) {
+    const then = Date.parse(iso || "");
+    if (!Number.isFinite(then)) return "";
+    const minutes = Math.max(0, Math.round((then - Date.now()) / 60000));
+    const [value, unit] = minutes < 60 ? [minutes, "minute"] : minutes < 1440 ? [Math.round(minutes / 60), "hour"] : [Math.round(minutes / 1440), "day"];
+    try { return new Intl.RelativeTimeFormat(this.lang, { numeric: "auto" }).format(value, unit); } catch (_) { return ""; }
+  }
+
+  // A short message at the foot of the screen, the way Home Assistant shows them.
+  toast(message) { this.dispatchEvent(new CustomEvent("hass-notification", { detail: { message }, bubbles: true, composed: true })); }
+
   // "12 minutes ago" for a time, in the language of the card; "" when the time is not known.
   ago(iso) {
     const then = Date.parse(iso || "");
@@ -130,11 +142,11 @@ class HKCard extends HTMLElement {
     const banner = mode === "placeholder" ? `<div class="hk-banner">${this.esc(this.t("cardQuietHidden"))}</div>` : "";
     this.shadowRoot.innerHTML = `<style>${CARD_CSS}</style><ha-card class="${this._config.compact ? "hk-compact" : ""}">${banner}${body}</ha-card>`;
     this.shadowRoot.querySelectorAll("[data-hk-panel]").forEach(el => el.addEventListener("click", () => this.openPanel(el.getAttribute("data-hk-panel"))));
-    this.shadowRoot.querySelectorAll("[data-hk-act]").forEach(el => el.addEventListener("click", () => this.act(el.getAttribute("data-hk-act"))));
+    this.shadowRoot.querySelectorAll("[data-hk-act]").forEach(el => el.addEventListener("click", event => this.act(el.getAttribute("data-hk-act"), event)));
   }
 
   // A card overrides: what a click on an element with data-hk-act does.
-  act(_name) {}
+  act(_name, _event) {}
 
   // Open the Housekeeper panel when the configuration allows it and the person is an administrator. The panel
   // reads its deep link from the query (view=findingsNav&filter=topic:down).

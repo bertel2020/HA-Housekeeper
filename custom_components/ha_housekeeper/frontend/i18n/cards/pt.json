@@ -119,5 +119,45 @@
   "edit_history_30": "30 dias",
   "edit_history_14": "14 dias",
   "edit_history_7": "7 dias",
-  "edit_history_0": "Desativado"
+  "edit_history_0": "Desativado",
+  "cardApTitle": "Integrações em pausa",
+  "cardApOnSub": "A pausa automática está ligada",
+  "cardApChip": {
+    "one": "{n} em pausa",
+    "other": "{n} em pausa"
+  },
+  "cardApNone": "Nenhuma integração em pausa",
+  "cardApAllRuns": "Tudo a funcionar",
+  "cardApOff": "A pausa automática está desligada",
+  "cardApOffSub": "O Housekeeper não pausa nada sozinho",
+  "cardApEnable": "Ligar no painel →",
+  "cardApWhyAuto": {
+    "one": "{n} tentativa falhada",
+    "other": "{n} tentativas falhadas"
+  },
+  "cardApWhyManual": "pausada por ti",
+  "cardApSince": "em pausa {ago}",
+  "cardApNext": "Próxima tentativa {when}",
+  "cardApTrying": "A tentar agora …",
+  "cardApExhausted": {
+    "one": "Desistido: não voltou a ser configurada em {n} dia",
+    "other": "Desistido: não voltou a ser configurada em {n} dias"
+  },
+  "cardApStep": "Tentativa {done} de {total} · a cada {step} h",
+  "cardApFoot": {
+    "one": "A pausa termina, no máximo, após {n} dia",
+    "other": "A pausa termina, no máximo, após {n} dias"
+  },
+  "cardApMenu": "Ações",
+  "cardApTry": "Tentar agora",
+  "cardApResume": "Terminar a pausa",
+  "cardApNever": "Nunca pausar",
+  "cardApOpen": "Abrir no painel",
+  "cardApTried": "Começou uma nova tentativa",
+  "cardApResumed": "Pausa terminada",
+  "cardApExcluded": "Excluída da pausa automática",
+  "cardApFailed": "Não funcionou: {detail}",
+  "edit_actions": "Ações no menu",
+  "edit_actions_help": "Só os administradores veem o menu.",
+  "edit_progress": "Mostrar o progresso das tentativas"
 }

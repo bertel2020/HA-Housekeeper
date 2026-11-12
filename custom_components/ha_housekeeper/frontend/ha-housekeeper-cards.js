@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"c99c557258"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"57fcde9529"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"1817ac2e40"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"71eecc4f91"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"9149a22325"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"dc8181874e"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"948f80923a"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"14f155fa23"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"3efbfa03a0"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"2d088fbf5c"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"87c71c1607"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"8d4c85e7f7"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"c83f9f325e"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"453b442711"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -118,6 +118,34 @@ const CARD_TEXT = {
     edit_history_14: "14 Tage",
     edit_history_7: "7 Tage",
     edit_history_0: "Aus",
+    cardApTitle: "Pausierte Integrationen",
+    cardApOnSub: "Auto-Pause ist an",
+    cardApChip: {"one": "{n} pausiert", "other": "{n} pausiert"},
+    cardApNone: "Keine Integration pausiert",
+    cardApAllRuns: "Alles läuft",
+    cardApOff: "Auto-Pause ist aus",
+    cardApOffSub: "Housekeeper pausiert nichts von selbst",
+    cardApEnable: "Im Panel einschalten →",
+    cardApWhyAuto: {"one": "{n} Fehlversuch", "other": "{n} Fehlversuche"},
+    cardApWhyManual: "von dir pausiert",
+    cardApSince: "pausiert {ago}",
+    cardApNext: "Nächster Versuch {when}",
+    cardApTrying: "Versuch läuft …",
+    cardApExhausted: {"one": "Aufgegeben: nach {n} Tag nicht wieder eingerichtet", "other": "Aufgegeben: nach {n} Tagen nicht wieder eingerichtet"},
+    cardApStep: "Versuch {done} von {total} · alle {step} Std.",
+    cardApFoot: {"one": "Die Pause endet spätestens nach {n} Tag", "other": "Die Pause endet spätestens nach {n} Tagen"},
+    cardApMenu: "Aktionen",
+    cardApTry: "Jetzt versuchen",
+    cardApResume: "Pause beenden",
+    cardApNever: "Nie pausieren",
+    cardApOpen: "Im Panel öffnen",
+    cardApTried: "Neuer Versuch gestartet",
+    cardApResumed: "Pause beendet",
+    cardApExcluded: "Von der Auto-Pause ausgenommen",
+    cardApFailed: "Das hat nicht geklappt: {detail}",
+    edit_actions: "Aktionen im Menü",
+    edit_actions_help: "Nur Administratoren sehen das Menü.",
+    edit_progress: "Fortschritt der Versuche zeigen",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -207,6 +235,34 @@ const CARD_TEXT = {
     edit_history_14: "14 days",
     edit_history_7: "7 days",
     edit_history_0: "Off",
+    cardApTitle: "Paused integrations",
+    cardApOnSub: "Auto-pause is on",
+    cardApChip: {"one": "{n} paused", "other": "{n} paused"},
+    cardApNone: "No integration is paused",
+    cardApAllRuns: "All running",
+    cardApOff: "Auto-pause is off",
+    cardApOffSub: "Housekeeper pauses nothing by itself",
+    cardApEnable: "Switch on in the panel →",
+    cardApWhyAuto: {"one": "{n} failed attempt", "other": "{n} failed attempts"},
+    cardApWhyManual: "paused by you",
+    cardApSince: "paused {ago}",
+    cardApNext: "Next attempt {when}",
+    cardApTrying: "Trying now …",
+    cardApExhausted: {"one": "Given up: not set up again in {n} day", "other": "Given up: not set up again in {n} days"},
+    cardApStep: "Attempt {done} of {total} · every {step} h",
+    cardApFoot: {"one": "The pause ends after {n} day at the latest", "other": "The pause ends after {n} days at the latest"},
+    cardApMenu: "Actions",
+    cardApTry: "Try now",
+    cardApResume: "End the pause",
+    cardApNever: "Never pause",
+    cardApOpen: "Open in the panel",
+    cardApTried: "A new attempt has started",
+    cardApResumed: "Pause ended",
+    cardApExcluded: "Excluded from auto-pause",
+    cardApFailed: "That did not work: {detail}",
+    edit_actions: "Actions in the menu",
+    edit_actions_help: "Only administrators see the menu.",
+    edit_progress: "Show the progress of the attempts",
   },
 };
 
@@ -284,6 +340,16 @@ const CARD_CSS = `
   .hk-strip i.unverified { background: var(--disabled-text-color, #bdbdbd); opacity: .8; }
   .hk-strip i.none { background: var(--secondary-background-color); opacity: 1; }
   @media (max-width: 520px) { .hk-row.fn { grid-template-columns: 22px minmax(0, 1fr) auto; } .hk-row.fn .hk-strip { display: none; } }
+  .hk-row.ap { grid-template-columns: minmax(0, 1fr) 34px; align-items: start; }
+  .hk-next { font-size: 13px; font-weight: 600; color: var(--primary-text-color); margin-top: 4px; }
+  .hk-row.ap .hk-bar { margin: 6px 0 2px; max-width: 280px; }
+  .hk-kebab { width: 34px; height: 34px; border-radius: 10px; border: 1px solid transparent; background: none; color: var(--secondary-text-color); font-size: 18px; font-weight: 700; cursor: pointer; }
+  .hk-kebab.open, .hk-kebab:hover { border-color: var(--divider-color); background: var(--secondary-background-color); color: var(--primary-text-color); }
+  .hk-backdrop { position: fixed; inset: 0; z-index: 9; }
+  .hk-menu { position: fixed; z-index: 10; min-width: 210px; border: 1px solid var(--divider-color); border-radius: 12px; background: var(--card-background-color); box-shadow: 0 8px 24px rgba(0, 0, 0, .25); padding: 6px; display: grid; }
+  .hk-menu button { text-align: left; padding: 8px 10px; border: 0; border-radius: 8px; background: none; color: var(--primary-text-color); font: inherit; font-size: 13px; cursor: pointer; }
+  .hk-menu button:first-child { font-weight: 600; background: var(--secondary-background-color); }
+  .hk-menu button:hover { background: var(--secondary-background-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
 
@@ -409,6 +475,18 @@ class HKCard extends HTMLElement {
     return (id && this._hass?.states?.[id]) || null;
   }
 
+  // "in 54 minutes" for a time ahead, in the language of the card; "" when the time is not known.
+  until(iso) {
+    const then = Date.parse(iso || "");
+    if (!Number.isFinite(then)) return "";
+    const minutes = Math.max(0, Math.round((then - Date.now()) / 60000));
+    const [value, unit] = minutes < 60 ? [minutes, "minute"] : minutes < 1440 ? [Math.round(minutes / 60), "hour"] : [Math.round(minutes / 1440), "day"];
+    try { return new Intl.RelativeTimeFormat(this.lang, { numeric: "auto" }).format(value, unit); } catch (_) { return ""; }
+  }
+
+  // A short message at the foot of the screen, the way Home Assistant shows them.
+  toast(message) { this.dispatchEvent(new CustomEvent("hass-notification", { detail: { message }, bubbles: true, composed: true })); }
+
   // "12 minutes ago" for a time, in the language of the card; "" when the time is not known.
   ago(iso) {
     const then = Date.parse(iso || "");
@@ -453,11 +531,11 @@ class HKCard extends HTMLElement {
     const banner = mode === "placeholder" ? `<div class="hk-banner">${this.esc(this.t("cardQuietHidden"))}</div>` : "";
     this.shadowRoot.innerHTML = `<style>${CARD_CSS}</style><ha-card class="${this._config.compact ? "hk-compact" : ""}">${banner}${body}</ha-card>`;
     this.shadowRoot.querySelectorAll("[data-hk-panel]").forEach(el => el.addEventListener("click", () => this.openPanel(el.getAttribute("data-hk-panel"))));
-    this.shadowRoot.querySelectorAll("[data-hk-act]").forEach(el => el.addEventListener("click", () => this.act(el.getAttribute("data-hk-act"))));
+    this.shadowRoot.querySelectorAll("[data-hk-act]").forEach(el => el.addEventListener("click", event => this.act(el.getAttribute("data-hk-act"), event)));
   }
 
   // A card overrides: what a click on an element with data-hk-act does.
-  act(_name) {}
+  act(_name, _event) {}
 
   // Open the Housekeeper panel when the configuration allows it and the person is an administrator. The panel
   // reads its deep link from the query (view=findingsNav&filter=topic:down).
@@ -795,6 +873,89 @@ class HKFunctionsCard extends HKCard {
   }
 }
 
+// The auto-pause card: integrations that are paused because they keep failing, with the time to the next attempt.
+// The numbers come from the sensor "paused integrations" and its attributes. The menu of a row (try now, end the
+// pause, never pause it) is for administrators and calls the same command as the panel.
+class HKAutoPauseCard extends HKCard {
+  static tag = "ha-housekeeper-auto-pause-card";
+  static pickerName = "HA Housekeeper: Auto-pause";
+  static pickerDescription = "Integrations that are paused because they keep failing, with the time to the next attempt.";
+  static get defaults() { return { actions: true, progress: true }; }
+
+  static editorSchema() {
+    return [
+      { name: "actions", selector: { boolean: {} } },
+      { name: "progress", selector: { boolean: {} } },
+    ];
+  }
+
+  get titleKey() { return "cardApTitle"; }
+  watchedIds() { return [this.idOf("auto_pause")].filter(Boolean); }
+  data() { return this.stateOf("auto_pause")?.attributes || {}; }
+  hasData() { return Array.isArray(this.data().paused); }
+  // Quiet is: auto-pause is on and nothing is paused. A card that says "off" is no news to hide.
+  isQuiet() { return this.hasData() && this.data().enabled === true && !this.data().paused.length; }
+  canAct() { return Boolean(this._config.actions && this._hass?.user?.is_admin); }
+
+  row(item) {
+    const why = item.reason === "manual" ? this.t("cardApWhyManual") : this.t("cardApWhyAuto", { n: item.failures ?? 0, count: item.failures ?? 0 });
+    const next = item.exhausted ? this.t("cardApExhausted", { n: this.data().max_days || 7, count: this.data().max_days || 7 })
+      : item.trying ? this.t("cardApTrying")
+      : this.t("cardApNext", { when: this.until(item.next) });
+    const share = Math.min(100, Math.round(((item.attempts_done || 0) / (item.attempts_total || 1)) * 100));
+    const progress = this._config.progress && !item.exhausted
+      ? `<div class="hk-bar warn"><i style="width:${Math.max(3, share)}%"></i></div><small>${this.esc(this.t("cardApStep", { done: item.attempts_done, total: item.attempts_total, step: item.step_hours }))}</small>` : "";
+    const kebab = this.canAct() ? `<button type="button" class="hk-kebab${this._menu?.id === item.entry_id ? " open" : ""}" data-hk-act="menu:${this.esc(item.entry_id)}" aria-label="${this.esc(this.t("cardApMenu"))}">⋮</button>` : "<span></span>";
+    return `<div class="hk-row ap"><div class="hk-name"><b>${this.esc(item.title)}</b><small>${this.esc(why)} · ${this.esc(this.t("cardApSince", { ago: this.ago(item.since) }))}</small><div class="hk-next">${this.esc(next)}</div>${progress}</div>${kebab}</div>`;
+  }
+
+  // The menu sits at the button, in front of everything (the card clips what runs over its edge).
+  menuHtml() {
+    const menu = this._menu;
+    if (!menu || !this.canAct()) return "";
+    const item = (name, key) => `<button type="button" data-hk-act="${name}:${this.esc(menu.id)}">${this.esc(this.t(key))}</button>`;
+    return `<div class="hk-backdrop" data-hk-act="menu-close"></div><div class="hk-menu" style="top:${menu.top}px;right:${menu.right}px">${item("try", "cardApTry")}${item("resume", "cardApResume")}${item("never", "cardApNever")}<button type="button" data-hk-act="open">${this.esc(this.t("cardApOpen"))}</button></div>`;
+  }
+
+  renderBody() {
+    const data = this.data(), paused = data.paused || [], admin = this._hass?.user?.is_admin && this._config.tap !== "none";
+    if (!paused.length && !data.enabled) {
+      const link = admin ? `<span class="hk-link" data-hk-panel="view=autopause">${this.esc(this.t("cardApEnable"))}</span>` : "";
+      return this.head(this.t("cardApOffSub"), link, false, "", this.t("cardApOff"));
+    }
+    if (!paused.length) return this.head(this.t("cardApNone"), `<span class="hk-chip">${this.esc(this.t("cardApAllRuns"))}</span>`);
+    const days = data.max_days || 7;
+    return this.head(this.t("cardApOnSub"), `<span class="hk-chip">${this.esc(this.t("cardApChip", { n: paused.length, count: paused.length }))}</span>`, true)
+      + paused.map(item => this.row(item)).join("") + this.foot(this.t("cardApFoot", { n: days, count: days }), "view=autopause") + this.menuHtml();
+  }
+
+  act(name, event) {
+    const [action, id] = String(name).split(":");
+    if (action === "menu-close") { this._menu = null; this.update(true); return; }
+    if (action === "menu") {
+      const box = event?.currentTarget?.getBoundingClientRect?.();
+      this._menu = this._menu?.id === id ? null : { id, top: Math.round((box?.bottom ?? 0) + 4), right: Math.round((globalThis.innerWidth ?? 0) - (box?.right ?? 0)) };
+      this.update(true);
+      return;
+    }
+    if (action === "open") { this._menu = null; this.openPanel("view=autopause"); this.update(true); return; }
+    if (["try", "resume", "never"].includes(action) && this.canAct()) this.run(action, id);
+  }
+
+  // Do what the menu says through the command of the panel; say how it went.
+  async run(action, id) {
+    this._menu = null;
+    const done = { try: "cardApTried", resume: "cardApResumed", never: "cardApExcluded" }[action];
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/auto_pause_set", action, entry_id: id, ...(action === "never" ? { on: true } : {}) });
+      this.toast(this.t(done));
+    } catch (err) {
+      this.toast(this.t("cardApFailed", { detail: err?.message || String(err) }));
+    }
+    this.update(true);
+  }
+}
+
 // Every card is registered here: its element, its editor and its entry in the card picker.
 // The picker shows English only, it has no way to translate a name.
 function registerCard(CardClass) {
@@ -810,3 +971,4 @@ function registerCard(CardClass) {
 registerCard(HKHealthCard);
 registerCard(HKBatteryCard);
 registerCard(HKFunctionsCard);
+registerCard(HKAutoPauseCard);

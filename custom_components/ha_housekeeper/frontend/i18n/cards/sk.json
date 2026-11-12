@@ -129,5 +129,49 @@
   "edit_history_30": "30 dní",
   "edit_history_14": "14 dní",
   "edit_history_7": "7 dní",
-  "edit_history_0": "Vypnuté"
+  "edit_history_0": "Vypnuté",
+  "cardApTitle": "Pozastavené integrácie",
+  "cardApOnSub": "Automatické pozastavenie je zapnuté",
+  "cardApChip": {
+    "one": "{n} pozastavená",
+    "few": "{n} pozastavené",
+    "other": "{n} pozastavených"
+  },
+  "cardApNone": "Žiadna integrácia nie je pozastavená",
+  "cardApAllRuns": "Všetko beží",
+  "cardApOff": "Automatické pozastavenie je vypnuté",
+  "cardApOffSub": "Housekeeper nič sám nepozastavuje",
+  "cardApEnable": "Zapnúť v paneli →",
+  "cardApWhyAuto": {
+    "one": "{n} neúspešný pokus",
+    "few": "{n} neúspešné pokusy",
+    "other": "{n} neúspešných pokusov"
+  },
+  "cardApWhyManual": "pozastavil si ty",
+  "cardApSince": "pozastavená {ago}",
+  "cardApNext": "Ďalší pokus {when}",
+  "cardApTrying": "Prebieha pokus …",
+  "cardApExhausted": {
+    "one": "Vzdané: za {n} deň sa nepodarilo obnoviť",
+    "few": "Vzdané: za {n} dni sa nepodarilo obnoviť",
+    "other": "Vzdané: za {n} dní sa nepodarilo obnoviť"
+  },
+  "cardApStep": "Pokus {done} z {total} · každých {step} h",
+  "cardApFoot": {
+    "one": "Pozastavenie skončí najneskôr po {n} dni",
+    "few": "Pozastavenie skončí najneskôr po {n} dňoch",
+    "other": "Pozastavenie skončí najneskôr po {n} dňoch"
+  },
+  "cardApMenu": "Akcie",
+  "cardApTry": "Skúsiť teraz",
+  "cardApResume": "Ukončiť pozastavenie",
+  "cardApNever": "Nikdy nepozastavovať",
+  "cardApOpen": "Otvoriť v paneli",
+  "cardApTried": "Spustil sa nový pokus",
+  "cardApResumed": "Pozastavenie ukončené",
+  "cardApExcluded": "Vyňaté z automatického pozastavenia",
+  "cardApFailed": "Nepodarilo sa: {detail}",
+  "edit_actions": "Akcie v ponuke",
+  "edit_actions_help": "Ponuku vidia len správcovia.",
+  "edit_progress": "Zobraziť priebeh pokusov"
 }

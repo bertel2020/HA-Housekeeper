@@ -122,6 +122,9 @@
       "battery_next_change": {
         "name": "Ďalšia výmena batérie"
       },
+      "auto_pause": {
+        "name": "Pozastavené integrácie"
+      },
       "new_findings": {
         "name": "Nové nálezy"
       },

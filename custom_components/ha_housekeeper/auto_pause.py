@@ -25,10 +25,17 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.helpers.storage import Store
 
-from .const import AUTO_PAUSE_STORAGE_KEY, DOMAIN, PANEL_URL, STORAGE_VERSION
+from .const import (
+    AUTO_PAUSE_STORAGE_KEY,
+    DOMAIN,
+    PANEL_URL,
+    SIGNAL_AUTO_PAUSE,
+    STORAGE_VERSION,
+)
 from .sensitive_fields import reauth_entry_ids
 from .texts import localize, pick
 
@@ -223,6 +230,39 @@ class AutoPause:
             },
             SAVE_DELAY,
         )
+        # Every change goes through here: the sensor behind the dashboard card follows it.
+        async_dispatcher_send(self.hass, SIGNAL_AUTO_PAUSE)
+
+    def card_view(self) -> dict[str, Any]:
+        """The paused integrations for the dashboard card: who, why, how far the retries are and when the next one is."""
+        paused = []
+        for entry_id, rec in self.paused.items():
+            done = rec["done"]
+            due = self._due(rec)
+            before = OFFSETS[done - 1] if 0 < done <= len(OFFSETS) else 0
+            after = OFFSETS[done] if done < len(OFFSETS) else END_HOURS
+            paused.append(
+                {
+                    "entry_id": entry_id,
+                    "title": rec.get("title") or entry_id,
+                    "domain": rec.get("domain") or "",
+                    "since": rec["since"],
+                    "reason": rec.get("reason") or "auto",
+                    "failures": rec.get("failures"),
+                    "attempts_done": done,
+                    "attempts_total": len(OFFSETS),
+                    "step_hours": after - before,
+                    "next": due.isoformat() if due else None,
+                    "trying": bool(rec.get("trying")),
+                    "exhausted": bool(rec.get("exhausted")),
+                }
+            )
+        paused.sort(key=lambda item: item["since"])
+        return {
+            "enabled": bool(self.settings["enabled"]),
+            "paused": paused,
+            "max_days": END_HOURS // 24,
+        }
 
     def _note(self, action: str, entry_id: str) -> None:
         rec = self.paused.get(entry_id) or {}

@@ -119,5 +119,45 @@
   "edit_history_30": "30 jours",
   "edit_history_14": "14 jours",
   "edit_history_7": "7 jours",
-  "edit_history_0": "Désactivé"
+  "edit_history_0": "Désactivé",
+  "cardApTitle": "Intégrations en pause",
+  "cardApOnSub": "La pause automatique est activée",
+  "cardApChip": {
+    "one": "{n} en pause",
+    "other": "{n} en pause"
+  },
+  "cardApNone": "Aucune intégration en pause",
+  "cardApAllRuns": "Tout fonctionne",
+  "cardApOff": "La pause automatique est désactivée",
+  "cardApOffSub": "Housekeeper ne met rien en pause de lui-même",
+  "cardApEnable": "Activer dans le panneau →",
+  "cardApWhyAuto": {
+    "one": "{n} échec",
+    "other": "{n} échecs"
+  },
+  "cardApWhyManual": "mise en pause par toi",
+  "cardApSince": "en pause {ago}",
+  "cardApNext": "Prochain essai {when}",
+  "cardApTrying": "Essai en cours …",
+  "cardApExhausted": {
+    "one": "Abandonné : pas rétablie en {n} jour",
+    "other": "Abandonné : pas rétablie en {n} jours"
+  },
+  "cardApStep": "Essai {done} sur {total} · toutes les {step} h",
+  "cardApFoot": {
+    "one": "La pause se termine au plus tard après {n} jour",
+    "other": "La pause se termine au plus tard après {n} jours"
+  },
+  "cardApMenu": "Actions",
+  "cardApTry": "Réessayer maintenant",
+  "cardApResume": "Terminer la pause",
+  "cardApNever": "Ne jamais mettre en pause",
+  "cardApOpen": "Ouvrir dans le panneau",
+  "cardApTried": "Un nouvel essai a démarré",
+  "cardApResumed": "Pause terminée",
+  "cardApExcluded": "Exclue de la pause automatique",
+  "cardApFailed": "Ça n’a pas marché : {detail}",
+  "edit_actions": "Actions dans le menu",
+  "edit_actions_help": "Seuls les administrateurs voient le menu.",
+  "edit_progress": "Afficher la progression des essais"
 }

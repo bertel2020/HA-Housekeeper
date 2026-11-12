@@ -72,5 +72,15 @@ const CARD_CSS = `
   .hk-strip i.unverified { background: var(--disabled-text-color, #bdbdbd); opacity: .8; }
   .hk-strip i.none { background: var(--secondary-background-color); opacity: 1; }
   @media (max-width: 520px) { .hk-row.fn { grid-template-columns: 22px minmax(0, 1fr) auto; } .hk-row.fn .hk-strip { display: none; } }
+  .hk-row.ap { grid-template-columns: minmax(0, 1fr) 34px; align-items: start; }
+  .hk-next { font-size: 13px; font-weight: 600; color: var(--primary-text-color); margin-top: 4px; }
+  .hk-row.ap .hk-bar { margin: 6px 0 2px; max-width: 280px; }
+  .hk-kebab { width: 34px; height: 34px; border-radius: 10px; border: 1px solid transparent; background: none; color: var(--secondary-text-color); font-size: 18px; font-weight: 700; cursor: pointer; }
+  .hk-kebab.open, .hk-kebab:hover { border-color: var(--divider-color); background: var(--secondary-background-color); color: var(--primary-text-color); }
+  .hk-backdrop { position: fixed; inset: 0; z-index: 9; }
+  .hk-menu { position: fixed; z-index: 10; min-width: 210px; border: 1px solid var(--divider-color); border-radius: 12px; background: var(--card-background-color); box-shadow: 0 8px 24px rgba(0, 0, 0, .25); padding: 6px; display: grid; }
+  .hk-menu button { text-align: left; padding: 8px 10px; border: 0; border-radius: 8px; background: none; color: var(--primary-text-color); font: inherit; font-size: 13px; cursor: pointer; }
+  .hk-menu button:first-child { font-weight: 600; background: var(--secondary-background-color); }
+  .hk-menu button:hover { background: var(--secondary-background-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;

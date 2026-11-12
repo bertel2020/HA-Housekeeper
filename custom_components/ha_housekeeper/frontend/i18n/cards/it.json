@@ -119,5 +119,45 @@
   "edit_history_30": "30 giorni",
   "edit_history_14": "14 giorni",
   "edit_history_7": "7 giorni",
-  "edit_history_0": "Disattivato"
+  "edit_history_0": "Disattivato",
+  "cardApTitle": "Integrazioni in pausa",
+  "cardApOnSub": "La pausa automatica è attiva",
+  "cardApChip": {
+    "one": "{n} in pausa",
+    "other": "{n} in pausa"
+  },
+  "cardApNone": "Nessuna integrazione in pausa",
+  "cardApAllRuns": "Tutto funziona",
+  "cardApOff": "La pausa automatica è disattivata",
+  "cardApOffSub": "Housekeeper non mette nulla in pausa da solo",
+  "cardApEnable": "Attiva nel pannello →",
+  "cardApWhyAuto": {
+    "one": "{n} tentativo fallito",
+    "other": "{n} tentativi falliti"
+  },
+  "cardApWhyManual": "messa in pausa da te",
+  "cardApSince": "in pausa {ago}",
+  "cardApNext": "Prossimo tentativo {when}",
+  "cardApTrying": "Tentativo in corso …",
+  "cardApExhausted": {
+    "one": "Rinunciato: non ripristinata in {n} giorno",
+    "other": "Rinunciato: non ripristinata in {n} giorni"
+  },
+  "cardApStep": "Tentativo {done} di {total} · ogni {step} h",
+  "cardApFoot": {
+    "one": "La pausa termina al più tardi dopo {n} giorno",
+    "other": "La pausa termina al più tardi dopo {n} giorni"
+  },
+  "cardApMenu": "Azioni",
+  "cardApTry": "Riprova ora",
+  "cardApResume": "Termina la pausa",
+  "cardApNever": "Non mettere mai in pausa",
+  "cardApOpen": "Apri nel pannello",
+  "cardApTried": "È iniziato un nuovo tentativo",
+  "cardApResumed": "Pausa terminata",
+  "cardApExcluded": "Esclusa dalla pausa automatica",
+  "cardApFailed": "Non ha funzionato: {detail}",
+  "edit_actions": "Azioni nel menu",
+  "edit_actions_help": "Solo gli amministratori vedono il menu.",
+  "edit_progress": "Mostra l’avanzamento dei tentativi"
 }

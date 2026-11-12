@@ -13,3 +13,4 @@ function registerCard(CardClass) {
 registerCard(HKHealthCard);
 registerCard(HKBatteryCard);
 registerCard(HKFunctionsCard);
+registerCard(HKAutoPauseCard);
