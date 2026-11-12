@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
+  <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Default-41BDF5.svg" alt="HACS Default"></a>
   <a href="https://www.home-assistant.io/"><img src="https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-18BCF2.svg?logo=home-assistant&logoColor=white" alt="Home Assistant"></a>
   <a href="https://github.com/bertel2020/HA-Housekeeper/releases"><img src="https://img.shields.io/github/v/release/bertel2020/HA-Housekeeper?sort=semver&include_prereleases" alt="Release"></a>
   <a href="https://github.com/bertel2020/HA-Housekeeper/actions/workflows/validate.yml"><img src="https://github.com/bertel2020/HA-Housekeeper/actions/workflows/validate.yml/badge.svg" alt="Validate"></a>
@@ -90,7 +90,7 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 
 > New installs start in protection mode **Watch**. To let Housekeeper change something, raise it under **Settings → Protection mode**.
 
-More on installation (manual, custom repository), every view and all settings is in the **[User Guide](docs/USER-GUIDE.md)**.
+More on installation (manual), every view and all settings is in the **[User Guide](docs/USER-GUIDE.md)**.
 
 ## Safety in short
 

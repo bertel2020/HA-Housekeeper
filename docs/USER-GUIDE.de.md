@@ -54,13 +54,7 @@ Ab Home Assistant 2026.11 ist HACS als **Marketplace** eingebaut. Die Schritte s
    nicht; ohne diesen Schritt erscheint kein Menüpunkt.
 4. Anschließend als Administrator **Housekeeper** in der Seitenleiste öffnen.
 
-Falls der erste Button nicht funktioniert, in HACS unter **Integrationen →
-Benutzerdefinierte Repositories** `https://github.com/bertel2020/HA-Housekeeper`
-als Kategorie **Integration** eintragen.
-
-Solange Housekeeper noch nicht in der normalen HACS-Suche erscheint, registriert
-der erste Button das Projekt als benutzerdefiniertes Repository. Den Stand der
-Aufnahme zeigt [hacs/default#11766](https://github.com/hacs/default/pull/11766).
+Falls der erste Button nicht funktioniert, in HACS nach **HA Housekeeper** suchen.
 
 ### Manuell
 

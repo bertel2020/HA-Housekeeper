@@ -54,13 +54,7 @@ From Home Assistant 2026.11 HACS is built in as the **Marketplace**. The steps a
    without this step no sidebar entry appears.
 4. Then open **Housekeeper** in the sidebar while signed in as an administrator.
 
-If the first button does not work, add
-`https://github.com/bertel2020/HA-Housekeeper` in HACS under **Integrations →
-Custom repositories** with the category **Integration**.
-
-While Housekeeper is not yet visible in the default HACS search, the first button
-registers it as a custom repository. The status of its inclusion is tracked in
-[hacs/default#11766](https://github.com/hacs/default/pull/11766).
+If the first button does not work, search for **HA Housekeeper** in HACS.
 
 ### Manual
 
