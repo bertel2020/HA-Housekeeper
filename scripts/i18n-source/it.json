@@ -6851,7 +6851,11 @@
 "exceptions.refactor_disabled.message": "7cbbf8e6",
 "exceptions.no_last_failure.message": "13560541",
 "exceptions.way_not_plannable.message": "68a80fb7",
-"exceptions.plan_blocked.message": "cbcdc0fe"
+"exceptions.plan_blocked.message": "cbcdc0fe",
+"entity.sensor.house_health.name": "41abe0d3",
+"entity.sensor.house_health.state.ok": "565339bc",
+"entity.sensor.house_health.state.attention": "c1ebc781",
+"entity.sensor.house_health.state.urgent": "1b015904"
 },
 "cards": {
 "cardNotFound": "dee6374c",
@@ -6867,6 +6871,30 @@
 "edit_tap_panel": "9e037f50",
 "edit_tap_none": "67e1bca0",
 "edit_tap_help": "57de3db4",
-"edit_compact": "99452646"
+"edit_compact": "99452646",
+"cardTopic_down": "b86d11af",
+"cardTopic_broken_references": "9fc437f7",
+"cardTopic_failing_automations": "d0fcca7a",
+"cardTopic_unneeded": "aa86f6e2",
+"cardHealthOk": "314f8427",
+"cardHealthAttention": "81977862",
+"cardHealthUrgent": "cc7b0f71",
+"cardHealthScanBad": "a68c6539",
+"cardScanOld": "4c3f50bf",
+"cardLastScan": "d513c472",
+"cardScan": "ea1c510d",
+"cardScanning": "6cb1ff22",
+"cardSince": "2a41756f",
+"cardNew": "60616cd9",
+"cardResolved": "cac188bc",
+"cardNoChanges": "26baeedb",
+"cardNoFindings": "a775c844",
+"edit_tiles": "4da22a36",
+"edit_tiles_findings": "4b210ea6",
+"edit_tiles_always": "de9f057a",
+"edit_tiles_never": "6300ef80",
+"edit_changes": "9db5aa43",
+"edit_scan_button": "b754ab00",
+"edit_scan_button_help": "75aba550"
 }
 }

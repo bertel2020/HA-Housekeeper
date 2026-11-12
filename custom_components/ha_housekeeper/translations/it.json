@@ -140,6 +140,14 @@
           "starting": "In attesa dell'avvio"
         }
       },
+      "house_health": {
+        "name": "Stato della casa",
+        "state": {
+          "ok": "In ordine",
+          "attention": "Richiede attenzione",
+          "urgent": "Urgente"
+        }
+      },
       "monitor": {
         "name": "Funzione della casa {name}",
         "state": {

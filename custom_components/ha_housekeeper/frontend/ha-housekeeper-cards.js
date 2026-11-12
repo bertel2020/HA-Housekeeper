@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"b4cab019ad"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"22fef61cd1"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9ca1b7c5ee"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"35900f59ee"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"931fae709c"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"b0796e36b1"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"3b2ecfe79a"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"dd8d5787ea"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"645c1fd480"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b8c4f81b46"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"303421ed1c"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"e46b8591a5"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"0895e6d773"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"10931aa9d9"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -41,6 +41,30 @@ const CARD_TEXT = {
     edit_tap: "Tipp öffnet", edit_tap_panel: "Panel von Housekeeper", edit_tap_none: "Nichts",
     edit_tap_help: "Ins Panel kommen nur Administratoren.",
     edit_compact: "Kompakt",
+    cardTopic_down: "Ausgefallen",
+    cardTopic_broken_references: "Kaputte Verweise",
+    cardTopic_failing_automations: "Fehlerhafte Automationen",
+    cardTopic_unneeded: "Überflüssig",
+    cardHealthOk: "Alles in Ordnung",
+    cardHealthAttention: {"one": "{n} Objekt braucht Aufmerksamkeit", "other": "{n} Objekte brauchen Aufmerksamkeit"},
+    cardHealthUrgent: "Es gibt Dringendes",
+    cardHealthScanBad: "Der Scan läuft nicht durch",
+    cardScanOld: "Die Zahlen können veraltet sein.",
+    cardLastScan: "Letzter Scan {ago}",
+    cardScan: "Scan",
+    cardScanning: "Scan läuft …",
+    cardSince: "Seit dem letzten Scan:",
+    cardNew: "+{n} neu",
+    cardResolved: "−{n} behoben",
+    cardNoChanges: "Keine Änderungen seit dem letzten Scan",
+    cardNoFindings: "Keine offenen Befunde",
+    edit_tiles: "Kacheln",
+    edit_tiles_findings: "Nur bei Befunden",
+    edit_tiles_always: "Immer",
+    edit_tiles_never: "Nie",
+    edit_changes: "Änderungen seit dem letzten Scan zeigen",
+    edit_scan_button: "Scan-Knopf zeigen",
+    edit_scan_button_help: "Nur Administratoren sehen den Knopf.",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -53,6 +77,30 @@ const CARD_TEXT = {
     edit_tap: "A tap opens", edit_tap_panel: "The Housekeeper panel", edit_tap_none: "Nothing",
     edit_tap_help: "Only administrators can open the panel.",
     edit_compact: "Compact",
+    cardTopic_down: "Down",
+    cardTopic_broken_references: "Broken references",
+    cardTopic_failing_automations: "Failing automations",
+    cardTopic_unneeded: "Unneeded",
+    cardHealthOk: "All in order",
+    cardHealthAttention: {"one": "{n} object needs attention", "other": "{n} objects need attention"},
+    cardHealthUrgent: "Something is urgent",
+    cardHealthScanBad: "The scan is not getting through",
+    cardScanOld: "The numbers may be out of date.",
+    cardLastScan: "Last scan {ago}",
+    cardScan: "Scan",
+    cardScanning: "Scanning …",
+    cardSince: "Since the last scan:",
+    cardNew: "+{n} new",
+    cardResolved: "−{n} fixed",
+    cardNoChanges: "No changes since the last scan",
+    cardNoFindings: "No open findings",
+    edit_tiles: "Tiles",
+    edit_tiles_findings: "Only when there are findings",
+    edit_tiles_always: "Always",
+    edit_tiles_never: "Never",
+    edit_changes: "Show the changes since the last scan",
+    edit_scan_button: "Show the scan button",
+    edit_scan_button_help: "Only administrators see the button.",
   },
 };
 
@@ -73,6 +121,26 @@ const CARD_CSS = `
   .hk-foot .hk-sp { flex: 1; }
   .hk-link { color: var(--primary-color); font-weight: 600; cursor: pointer; }
   .hk-note { padding: 14px 16px; color: var(--secondary-text-color); font-size: 13px; }
+  .hk-dot { width: 38px; height: 38px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff; }
+  .hk-dot.ok { background: var(--success-color); }
+  .hk-dot.warn { background: var(--warning-color); }
+  .hk-dot.bad { background: var(--error-color); }
+  .hk-btn { min-height: 36px; padding: 6px 12px; border-radius: 10px; border: 1px solid var(--divider-color); background: var(--card-background-color); color: var(--primary-text-color); font: inherit; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .hk-btn[disabled] { opacity: .6; cursor: default; }
+  .hk-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--divider-color); border-top: 1px solid var(--divider-color); }
+  .hk-tiles + .hk-foot { border-top: 1px solid var(--divider-color); }
+  .hk-tile { background: var(--card-background-color); padding: 12px 14px; min-width: 0; box-shadow: none; }
+  .hk-tile.go { cursor: pointer; }
+  .hk-tile .n { font-size: 26px; font-weight: 700; line-height: 1.1; color: var(--primary-text-color); }
+  .hk-tile .l { font-size: 12px; color: var(--secondary-text-color); margin-top: 2px; }
+  .hk-tile.zero .n { color: var(--secondary-text-color); font-weight: 600; }
+  .hk-tile.warn { box-shadow: inset 0 3px 0 var(--warning-color); }
+  .hk-tile.bad { box-shadow: inset 0 3px 0 var(--error-color); }
+  .hk-compact .hk-tile { padding: 8px 10px; }
+  .hk-compact .hk-tile .n { font-size: 20px; }
+  @media (max-width: 520px) { .hk-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .hk-up { color: var(--error-color); font-weight: 600; }
+  .hk-down { color: var(--success-color); font-weight: 600; }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
 
@@ -146,6 +214,8 @@ class HKCard extends HTMLElement {
   static get editorTag() { return `${this.tag}-editor`; }
   static getConfigElement() { return globalThis.document.createElement(this.editorTag); }
   static getStubConfig() { return {}; }
+  // A card overrides: the defaults of its own options (merged after the common ones).
+  static get defaults() { return {}; }
 
   constructor() {
     super();
@@ -163,7 +233,7 @@ class HKCard extends HTMLElement {
 
   setConfig(config) {
     if (!config || typeof config !== "object") throw new Error("Invalid configuration");
-    this._config = { ...HK_DEFAULTS, ...config };
+    this._config = { ...HK_DEFAULTS, ...this.constructor.defaults, ...config };
     this.update(true);
   }
 
@@ -185,10 +255,24 @@ class HKCard extends HTMLElement {
     return this._found;
   }
 
-  // The state of the first entity with this translation key, or null.
-  stateOf(key) {
-    const id = this.found().byKey[key]?.[0];
+  // The entity id for a translation key in a domain (a sensor and an event can share a key).
+  idOf(key, domain = "sensor") {
+    return this.found().byKey[key]?.find(id => id.startsWith(`${domain}.`)) || null;
+  }
+
+  // The state of that entity, or null.
+  stateOf(key, domain = "sensor") {
+    const id = this.idOf(key, domain);
     return (id && this._hass?.states?.[id]) || null;
+  }
+
+  // "12 minutes ago" for a time, in the language of the card; "" when the time is not known.
+  ago(iso) {
+    const then = Date.parse(iso || "");
+    if (!Number.isFinite(then)) return "";
+    const minutes = Math.max(0, Math.round((Date.now() - then) / 60000));
+    const [value, unit] = minutes < 60 ? [minutes, "minute"] : minutes < 1440 ? [Math.round(minutes / 60), "hour"] : [Math.round(minutes / 1440), "day"];
+    try { return new Intl.RelativeTimeFormat(this.lang, { numeric: "auto" }).format(-value, unit); } catch (_) { return ""; }
   }
 
   // A card overrides: the entity ids whose changes it shows (default: every Housekeeper entity).
@@ -226,24 +310,32 @@ class HKCard extends HTMLElement {
     const banner = mode === "placeholder" ? `<div class="hk-banner">${this.esc(this.t("cardQuietHidden"))}</div>` : "";
     this.shadowRoot.innerHTML = `<style>${CARD_CSS}</style><ha-card class="${this._config.compact ? "hk-compact" : ""}">${banner}${body}</ha-card>`;
     this.shadowRoot.querySelectorAll("[data-hk-panel]").forEach(el => el.addEventListener("click", () => this.openPanel(el.getAttribute("data-hk-panel"))));
+    this.shadowRoot.querySelectorAll("[data-hk-act]").forEach(el => el.addEventListener("click", () => this.act(el.getAttribute("data-hk-act"))));
   }
 
-  // Open the Housekeeper panel (or a page of it) when the configuration allows it and the person is an administrator.
-  openPanel(page = "") {
+  // A card overrides: what a click on an element with data-hk-act does.
+  act(_name) {}
+
+  // Open the Housekeeper panel when the configuration allows it and the person is an administrator. The panel
+  // reads its deep link from the query (view=findingsNav&filter=topic:down).
+  openPanel(query = "") {
     if (this._config?.tap === "none" || !this._hass?.user?.is_admin) return;
-    globalThis.history.pushState(null, "", page ? `${HK_PANEL_PATH}/${page}` : HK_PANEL_PATH);
+    globalThis.history.pushState(null, "", query ? `${HK_PANEL_PATH}?${query}` : HK_PANEL_PATH);
     globalThis.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
   }
 
   // The head of a card: a title, a line below it and, on the right, what the card puts there (a chip, a button).
-  head(subtitle = "", right = "", line = false) {
-    return `<div class="hk-head${line ? " line" : ""}"><div class="hk-t"><b>${this.esc(this.titleText())}</b>${subtitle ? `<small>${this.esc(subtitle)}</small>` : ""}</div>${right}</div>`;
+  head(subtitle = "", right = "", line = false, left = "", title = this.titleText()) {
+    return `<div class="hk-head${line ? " line" : ""}">${left}<div class="hk-t"><b>${this.esc(title)}</b>${subtitle ? `<small>${this.esc(subtitle)}</small>` : ""}</div>${right}</div>`;
   }
 
   // The foot of a card: a line on the left, the link to the panel on the right (only for administrators).
-  foot(left = "", page = "") {
-    const link = this._config.tap !== "none" && this._hass?.user?.is_admin ? `<span class="hk-link" data-hk-panel="${this.esc(page)}">${this.esc(this.t("cardOpenPanel"))}</span>` : "";
-    return `<div class="hk-foot"><span>${this.esc(left)}</span><span class="hk-sp"></span>${link}</div>`;
+  foot(left = "", query = "") { return this.footHtml(this.esc(left), query); }
+
+  // The same with a left part that is HTML already (the caller escaped it).
+  footHtml(leftHtml = "", query = "") {
+    const link = this._config.tap !== "none" && this._hass?.user?.is_admin ? `<span class="hk-link" data-hk-panel="${this.esc(query)}">${this.esc(this.t("cardOpenPanel"))}</span>` : "";
+    return `<div class="hk-foot"><span>${leftHtml}</span><span class="hk-sp"></span>${link}</div>`;
   }
 }
 
@@ -272,7 +364,7 @@ function makeEditor(CardClass) {
     connectedCallback() { CardTexts.listeners.add(this.refresh); }
     disconnectedCallback() { CardTexts.listeners.delete(this.refresh); }
 
-    setConfig(config) { this._config = { ...HK_DEFAULTS, ...config }; this.render(); }
+    setConfig(config) { this._config = { ...HK_DEFAULTS, ...CardClass.defaults, ...config }; this.render(); }
     set hass(hass) { this._hass = hass; CardTexts.ensure(CardTexts.language(hass)); this.render(); }
 
     // The options of the card itself come after the common ones; a card names them in static editorSchema(t).
@@ -301,6 +393,82 @@ function makeEditor(CardClass) {
   };
 }
 
+// The health card: how the house is doing at a glance, without opening the panel. The numbers are those of the
+// tiles on the overview page of the panel; they come from the sensor "house health" and its attributes.
+const HK_TOPICS = ["down", "broken_references", "failing_automations", "unneeded"];
+
+class HKHealthCard extends HKCard {
+  static tag = "ha-housekeeper-health-card";
+  static pickerName = "HA Housekeeper: House health";
+  static pickerDescription = "How the house is doing: what is down, broken, failing or no longer needed, and what changed since the last scan.";
+  static get defaults() { return { tiles: "findings", changes: true, scan_button: true }; }
+
+  static editorSchema(t) {
+    return [
+      { name: "tiles", selector: { select: { mode: "dropdown", options: ["findings", "always", "never"].map(value => ({ value, label: t(`edit_tiles_${value}`) })) } } },
+      { name: "changes", selector: { boolean: {} } },
+      { name: "scan_button", selector: { boolean: {} } },
+    ];
+  }
+
+  watchedIds() { return ["house_health", "scan_health", "activity", "last_scan"].map(key => this.idOf(key)).filter(Boolean); }
+
+  // Where the numbers come from: the state of the house, the health of the scans and what Housekeeper does right now.
+  health() { return this.stateOf("house_health"); }
+  scanState() { return this.stateOf("scan_health")?.state; }
+  scanBroken() { return ["failed", "stale"].includes(this.scanState()); }
+  scanning() { return this.stateOf("activity")?.state === "scanning"; }
+
+  hasData() { return Boolean(this.health()) && !["unknown", "unavailable"].includes(this.health().state); }
+  // Quiet is: nothing is due and the scans run. A card that cannot trust its numbers never hides.
+  isQuiet() { return this.hasData() && this.health().state === "ok" && !this.scanBroken(); }
+
+  // The colour of the dot and the sentence beside it.
+  verdict() {
+    const attrs = this.health().attributes || {}, n = attrs.objects || 0;
+    if (this.scanBroken()) return { tone: "bad", glyph: "!", text: this.t("cardHealthScanBad") };
+    if (this.health().state === "urgent") return { tone: "bad", glyph: "!", text: this.t("cardHealthUrgent") };
+    if (this.health().state === "attention") return { tone: "warn", glyph: "!", text: this.t("cardHealthAttention", { n, count: n }) };
+    return { tone: "ok", glyph: "✓", text: this.t("cardHealthOk") };
+  }
+
+  tile(name, topics) {
+    const info = topics[name] || {}, n = info.objects || 0;
+    const tone = n && info.level === "high" ? "bad" : n && info.level === "medium" ? "warn" : n ? "" : "zero";
+    const go = this._config.tap !== "none" && this._hass?.user?.is_admin && n;
+    const link = go ? ` data-hk-panel="view=findingsNav&amp;filter=topic:${name}"` : "";
+    return `<div class="hk-tile ${tone}${go ? " go" : ""}"${link}><div class="n">${this.esc(n)}</div><div class="l">${this.esc(this.t(`cardTopic_${name}`))}</div></div>`;
+  }
+
+  // What changed since the scan before: "+2 new · −1 fixed", or the plain statement that nothing did.
+  changesHtml(attrs, any) {
+    if (!this._config.changes || attrs.new == null) return "";
+    const parts = [attrs.new ? `<span class="hk-up">${this.esc(this.t("cardNew", { n: attrs.new }))}</span>` : "", attrs.resolved ? `<span class="hk-down">${this.esc(this.t("cardResolved", { n: attrs.resolved }))}</span>` : ""].filter(Boolean);
+    return parts.length ? `${this.esc(this.t("cardSince"))} ${parts.join(" · ")}` : any ? this.esc(this.t("cardNoChanges")) : "";
+  }
+
+  renderBody() {
+    const attrs = this.health().attributes || {}, topics = attrs.topics || {};
+    const verdict = this.verdict(), scanAgo = this.ago(this.stateOf("last_scan")?.state);
+    const subtitle = this.scanBroken() ? this.t("cardScanOld") : scanAgo ? this.t("cardLastScan", { ago: scanAgo }) : "";
+    const title = this._config.title, busy = this.scanning();
+    const button = this._config.scan_button && this._hass?.user?.is_admin && this.idOf("scan", "button")
+      ? `<button type="button" class="hk-btn" data-hk-act="scan"${busy ? " disabled" : ""}>${this.esc(busy ? this.t("cardScanning") : `⟳ ${this.t("cardScan")}`)}</button>` : "";
+    const head = this.head(title ? [verdict.text, subtitle].filter(Boolean).join(" · ") : subtitle, button, false, `<span class="hk-dot ${verdict.tone}">${verdict.glyph}</span>`, title || verdict.text);
+    const any = HK_TOPICS.some(name => (topics[name]?.objects || 0) > 0);
+    const tiles = this._config.tiles === "always" || (this._config.tiles === "findings" && any)
+      ? `<div class="hk-tiles">${HK_TOPICS.map(name => this.tile(name, topics)).join("")}</div>` : "";
+    const left = [any || this.scanBroken() ? "" : this.esc(this.t("cardNoFindings")), this.changesHtml(attrs, any)].filter(Boolean).join(" · ");
+    return head + tiles + this.footHtml(left, "");
+  }
+
+  // The scan button: the same entity the panel and automations use.
+  act(name) {
+    const id = this.idOf("scan", "button");
+    if (name === "scan" && id && this._hass?.user?.is_admin && !this.scanning()) this._hass.callService("button", "press", { entity_id: id });
+  }
+}
+
 // Every card is registered here: its element, its editor and its entry in the card picker.
 // The picker shows English only, it has no way to translate a name.
 function registerCard(CardClass) {
@@ -313,5 +481,4 @@ function registerCard(CardClass) {
   }
 }
 
-// The cards themselves come with the next steps; this file lists them:
-// registerCard(HKHealthCard);
+registerCard(HKHealthCard);

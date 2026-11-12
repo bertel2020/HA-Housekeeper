@@ -140,6 +140,14 @@
           "starting": "Waiting for startup"
         }
       },
+      "house_health": {
+        "name": "House health",
+        "state": {
+          "ok": "OK",
+          "attention": "Needs attention",
+          "urgent": "Urgent"
+        }
+      },
       "monitor": {
         "name": "Home function {name}",
         "state": {

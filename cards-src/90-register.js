@@ -10,5 +10,4 @@ function registerCard(CardClass) {
   }
 }
 
-// The cards themselves come with the next steps; this file lists them:
-// registerCard(HKHealthCard);
+registerCard(HKHealthCard);

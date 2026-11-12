@@ -599,11 +599,16 @@ async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> No
         "unknown",
         "unavailable",
     }
+    health = hass.states.get("sensor.ha_housekeeper_house_health")
+    assert health.state in {"ok", "attention", "urgent"}
+    assert health.attributes["topics"]["unneeded"]["objects"] == 1
 
     finding = scanner.snapshot["findings"][0]
     scanner.set_finding_ignored(finding["key"], True)
     await hass.async_block_till_done(wait_background_tasks=True)
     assert hass.states.get("sensor.ha_housekeeper_findings").state == "0"
+    health = hass.states.get("sensor.ha_housekeeper_house_health")
+    assert health.attributes["topics"]["unneeded"]["objects"] == 0
 
 
 async def test_scan_button_is_available_after_a_scan(hass: HomeAssistant) -> None:

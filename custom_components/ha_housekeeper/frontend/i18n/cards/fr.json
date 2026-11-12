@@ -12,5 +12,32 @@
   "edit_tap_panel": "Le panneau Housekeeper",
   "edit_tap_none": "Rien",
   "edit_tap_help": "Seuls les administrateurs peuvent ouvrir le panneau.",
-  "edit_compact": "Affichage compact"
+  "edit_compact": "Affichage compact",
+  "cardTopic_down": "En panne",
+  "cardTopic_broken_references": "Références cassées",
+  "cardTopic_failing_automations": "Automatisations en échec",
+  "cardTopic_unneeded": "Superflu",
+  "cardHealthOk": "Tout est en ordre",
+  "cardHealthAttention": {
+    "one": "{n} objet demande de l’attention",
+    "other": "{n} objets demandent de l’attention"
+  },
+  "cardHealthUrgent": "Quelque chose est urgent",
+  "cardHealthScanBad": "Le scan ne s’exécute pas correctement",
+  "cardScanOld": "Les chiffres peuvent être périmés.",
+  "cardLastScan": "Dernière analyse {ago}",
+  "cardScan": "Analyser",
+  "cardScanning": "Analyse en cours …",
+  "cardSince": "Depuis la dernière analyse :",
+  "cardNew": "+{n} nouveaux",
+  "cardResolved": "−{n} résolus",
+  "cardNoChanges": "Aucun changement depuis la dernière analyse",
+  "cardNoFindings": "Aucun constat ouvert",
+  "edit_tiles": "Tuiles",
+  "edit_tiles_findings": "Seulement s’il y a des constats",
+  "edit_tiles_always": "Toujours",
+  "edit_tiles_never": "Jamais",
+  "edit_changes": "Afficher les changements depuis la dernière analyse",
+  "edit_scan_button": "Afficher le bouton d’analyse",
+  "edit_scan_button_help": "Seuls les administrateurs voient le bouton."
 }

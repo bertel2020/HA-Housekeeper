@@ -140,6 +140,14 @@
           "starting": "Wartet auf Start"
         }
       },
+      "house_health": {
+        "name": "Zustand des Hauses",
+        "state": {
+          "ok": "In Ordnung",
+          "attention": "Braucht Aufmerksamkeit",
+          "urgent": "Dringend"
+        }
+      },
       "monitor": {
         "name": "Hausfunktion {name}",
         "state": {

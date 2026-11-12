@@ -23,7 +23,7 @@ function makeEditor(CardClass) {
     connectedCallback() { CardTexts.listeners.add(this.refresh); }
     disconnectedCallback() { CardTexts.listeners.delete(this.refresh); }
 
-    setConfig(config) { this._config = { ...HK_DEFAULTS, ...config }; this.render(); }
+    setConfig(config) { this._config = { ...HK_DEFAULTS, ...CardClass.defaults, ...config }; this.render(); }
     set hass(hass) { this._hass = hass; CardTexts.ensure(CardTexts.language(hass)); this.render(); }
 
     // The options of the card itself come after the common ones; a card names them in static editorSchema(t).

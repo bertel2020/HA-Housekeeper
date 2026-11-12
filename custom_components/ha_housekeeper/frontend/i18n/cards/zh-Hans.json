@@ -12,5 +12,31 @@
   "edit_tap_panel": "Housekeeper 面板",
   "edit_tap_none": "无",
   "edit_tap_help": "只有管理员可以打开面板。",
-  "edit_compact": "紧凑"
+  "edit_compact": "紧凑",
+  "cardTopic_down": "宕机",
+  "cardTopic_broken_references": "失效引用",
+  "cardTopic_failing_automations": "失败的自动化",
+  "cardTopic_unneeded": "不再需要",
+  "cardHealthOk": "一切正常",
+  "cardHealthAttention": {
+    "other": "{n} 个对象需要关注"
+  },
+  "cardHealthUrgent": "有紧急事项",
+  "cardHealthScanBad": "扫描无法完成",
+  "cardScanOld": "数字可能已过时。",
+  "cardLastScan": "上次扫描 {ago}",
+  "cardScan": "扫描",
+  "cardScanning": "正在扫描…",
+  "cardSince": "自上次扫描以来：",
+  "cardNew": "+{n} 新增",
+  "cardResolved": "−{n} 已解决",
+  "cardNoChanges": "自上次扫描以来无变化",
+  "cardNoFindings": "没有未处理的发现项",
+  "edit_tiles": "磁贴",
+  "edit_tiles_findings": "仅在有发现项时",
+  "edit_tiles_always": "始终",
+  "edit_tiles_never": "从不",
+  "edit_changes": "显示自上次扫描以来的变化",
+  "edit_scan_button": "显示扫描按钮",
+  "edit_scan_button_help": "只有管理员能看到该按钮。"
 }

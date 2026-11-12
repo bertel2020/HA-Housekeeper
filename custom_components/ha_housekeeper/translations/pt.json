@@ -140,6 +140,14 @@
           "starting": "A aguardar o arranque"
         }
       },
+      "house_health": {
+        "name": "Estado da casa",
+        "state": {
+          "ok": "Em ordem",
+          "attention": "Precisa de atenção",
+          "urgent": "Urgente"
+        }
+      },
       "monitor": {
         "name": "Função da casa {name}",
         "state": {

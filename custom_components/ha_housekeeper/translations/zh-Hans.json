@@ -140,6 +140,14 @@
           "starting": "等待启动"
         }
       },
+      "house_health": {
+        "name": "住宅状况",
+        "state": {
+          "ok": "正常",
+          "attention": "需要关注",
+          "urgent": "紧急"
+        }
+      },
       "monitor": {
         "name": "家庭功能 {name}",
         "state": {

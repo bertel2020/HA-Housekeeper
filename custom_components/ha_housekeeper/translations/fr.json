@@ -140,6 +140,14 @@
           "starting": "En attente du démarrage"
         }
       },
+      "house_health": {
+        "name": "État de la maison",
+        "state": {
+          "ok": "En ordre",
+          "attention": "À surveiller",
+          "urgent": "Urgent"
+        }
+      },
       "monitor": {
         "name": "Fonction de la maison {name}",
         "state": {

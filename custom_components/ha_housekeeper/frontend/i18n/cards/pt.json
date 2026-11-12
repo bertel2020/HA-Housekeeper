@@ -12,5 +12,32 @@
   "edit_tap_panel": "O painel do Housekeeper",
   "edit_tap_none": "Nada",
   "edit_tap_help": "Só os administradores podem abrir o painel.",
-  "edit_compact": "Compacto"
+  "edit_compact": "Compacto",
+  "cardTopic_down": "Em baixo",
+  "cardTopic_broken_references": "Referências quebradas",
+  "cardTopic_failing_automations": "Automatizações com falhas",
+  "cardTopic_unneeded": "Desnecessário",
+  "cardHealthOk": "Tudo em ordem",
+  "cardHealthAttention": {
+    "one": "{n} objeto precisa de atenção",
+    "other": "{n} objetos precisam de atenção"
+  },
+  "cardHealthUrgent": "Há algo urgente",
+  "cardHealthScanBad": "A análise não termina",
+  "cardScanOld": "Os números podem estar desatualizados.",
+  "cardLastScan": "Última análise {ago}",
+  "cardScan": "Analisar",
+  "cardScanning": "A analisar …",
+  "cardSince": "Desde a última análise:",
+  "cardNew": "+{n} novas",
+  "cardResolved": "−{n} resolvidas",
+  "cardNoChanges": "Sem alterações desde a última análise",
+  "cardNoFindings": "Sem ocorrências em aberto",
+  "edit_tiles": "Mosaicos",
+  "edit_tiles_findings": "Só quando há ocorrências",
+  "edit_tiles_always": "Sempre",
+  "edit_tiles_never": "Nunca",
+  "edit_changes": "Mostrar as alterações desde a última análise",
+  "edit_scan_button": "Mostrar o botão de análise",
+  "edit_scan_button_help": "Só os administradores veem o botão."
 }

@@ -12,5 +12,32 @@
   "edit_tap_panel": "Il pannello di Housekeeper",
   "edit_tap_none": "Niente",
   "edit_tap_help": "Solo gli amministratori possono aprire il pannello.",
-  "edit_compact": "Compatta"
+  "edit_compact": "Compatta",
+  "cardTopic_down": "Fuori uso",
+  "cardTopic_broken_references": "Riferimenti interrotti",
+  "cardTopic_failing_automations": "Automazioni che falliscono",
+  "cardTopic_unneeded": "Non necessari",
+  "cardHealthOk": "Tutto a posto",
+  "cardHealthAttention": {
+    "one": "{n} oggetto richiede attenzione",
+    "other": "{n} oggetti richiedono attenzione"
+  },
+  "cardHealthUrgent": "C’è qualcosa di urgente",
+  "cardHealthScanBad": "La scansione non va a buon fine",
+  "cardScanOld": "I numeri potrebbero essere superati.",
+  "cardLastScan": "Ultima scansione {ago}",
+  "cardScan": "Scansiona",
+  "cardScanning": "Scansione in corso …",
+  "cardSince": "Dall’ultima scansione:",
+  "cardNew": "+{n} nuovi",
+  "cardResolved": "−{n} risolti",
+  "cardNoChanges": "Nessuna modifica dall’ultima scansione",
+  "cardNoFindings": "Nessun rilevamento aperto",
+  "edit_tiles": "Riquadri",
+  "edit_tiles_findings": "Solo se ci sono rilevamenti",
+  "edit_tiles_always": "Sempre",
+  "edit_tiles_never": "Mai",
+  "edit_changes": "Mostra le modifiche dall’ultima scansione",
+  "edit_scan_button": "Mostra il pulsante di scansione",
+  "edit_scan_button_help": "Solo gli amministratori vedono il pulsante."
 }

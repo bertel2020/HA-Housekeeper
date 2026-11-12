@@ -140,6 +140,14 @@
           "starting": "Čaká sa na spustenie"
         }
       },
+      "house_health": {
+        "name": "Stav domu",
+        "state": {
+          "ok": "V poriadku",
+          "attention": "Vyžaduje pozornosť",
+          "urgent": "Naliehavé"
+        }
+      },
       "monitor": {
         "name": "Domáca funkcia {name}",
         "state": {

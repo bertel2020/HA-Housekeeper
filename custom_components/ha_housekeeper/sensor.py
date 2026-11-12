@@ -28,6 +28,8 @@ from .const import (
     SIGNAL_SCAN_COMPLETE,
     SIGNAL_SCAN_STARTED,
 )
+from .house_health import STATES as HOUSE_STATES
+from .house_health import house_health
 from .outage_levels import is_quiet
 from .runtime import HousekeeperConfigEntry
 from .scan_coverage import gaps
@@ -100,6 +102,14 @@ HEALTH_DESCRIPTION = SensorEntityDescription(
 )
 
 
+HOUSE_DESCRIPTION = SensorEntityDescription(
+    key="house_health",
+    translation_key="house_health",
+    device_class=SensorDeviceClass.ENUM,
+    options=list(HOUSE_STATES),
+)
+
+
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
@@ -134,6 +144,7 @@ async def async_setup_entry(
             *(HousekeeperSensor(entry, description) for description in DESCRIPTIONS),
             ScanHealthSensor(entry, HEALTH_DESCRIPTION),
             ActivitySensor(entry, ACTIVITY_DESCRIPTION),
+            HouseHealthSensor(entry, HOUSE_DESCRIPTION),
         ]
     )
     scanner = entry.runtime_data
@@ -232,6 +243,27 @@ class ActivitySensor(HousekeeperSensor):
 
     def _update(self) -> None:
         self._attr_native_value = activity(self.scanner)
+
+
+class HouseHealthSensor(HousekeeperSensor):
+    """How the house is doing, for the dashboard card: the state, the objects per topic and what changed.
+
+    The card reads these attributes, so they stay out of the recorder: only the state is history.
+    """
+
+    _unrecorded_attributes = frozenset({"objects", "topics", "new", "resolved", "since"})
+
+    def _update(self) -> None:
+        scanner = self.scanner
+        snapshot = scanner.snapshot if scanner else None
+        # Numbers taken while Home Assistant is still starting would be wrong; stay "unknown".
+        if snapshot is None or snapshot["meta"].get("preliminary"):
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
+        health = house_health(snapshot, scanner.history.previous)
+        self._attr_native_value = health.pop("state")
+        self._attr_extra_state_attributes = health
 
 
 class MonitorSensor(SensorEntity):

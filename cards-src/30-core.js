@@ -34,6 +34,8 @@ class HKCard extends HTMLElement {
   static get editorTag() { return `${this.tag}-editor`; }
   static getConfigElement() { return globalThis.document.createElement(this.editorTag); }
   static getStubConfig() { return {}; }
+  // A card overrides: the defaults of its own options (merged after the common ones).
+  static get defaults() { return {}; }
 
   constructor() {
     super();
@@ -51,7 +53,7 @@ class HKCard extends HTMLElement {
 
   setConfig(config) {
     if (!config || typeof config !== "object") throw new Error("Invalid configuration");
-    this._config = { ...HK_DEFAULTS, ...config };
+    this._config = { ...HK_DEFAULTS, ...this.constructor.defaults, ...config };
     this.update(true);
   }
 
@@ -73,10 +75,24 @@ class HKCard extends HTMLElement {
     return this._found;
   }
 
-  // The state of the first entity with this translation key, or null.
-  stateOf(key) {
-    const id = this.found().byKey[key]?.[0];
+  // The entity id for a translation key in a domain (a sensor and an event can share a key).
+  idOf(key, domain = "sensor") {
+    return this.found().byKey[key]?.find(id => id.startsWith(`${domain}.`)) || null;
+  }
+
+  // The state of that entity, or null.
+  stateOf(key, domain = "sensor") {
+    const id = this.idOf(key, domain);
     return (id && this._hass?.states?.[id]) || null;
+  }
+
+  // "12 minutes ago" for a time, in the language of the card; "" when the time is not known.
+  ago(iso) {
+    const then = Date.parse(iso || "");
+    if (!Number.isFinite(then)) return "";
+    const minutes = Math.max(0, Math.round((Date.now() - then) / 60000));
+    const [value, unit] = minutes < 60 ? [minutes, "minute"] : minutes < 1440 ? [Math.round(minutes / 60), "hour"] : [Math.round(minutes / 1440), "day"];
+    try { return new Intl.RelativeTimeFormat(this.lang, { numeric: "auto" }).format(-value, unit); } catch (_) { return ""; }
   }
 
   // A card overrides: the entity ids whose changes it shows (default: every Housekeeper entity).
@@ -114,23 +130,31 @@ class HKCard extends HTMLElement {
     const banner = mode === "placeholder" ? `<div class="hk-banner">${this.esc(this.t("cardQuietHidden"))}</div>` : "";
     this.shadowRoot.innerHTML = `<style>${CARD_CSS}</style><ha-card class="${this._config.compact ? "hk-compact" : ""}">${banner}${body}</ha-card>`;
     this.shadowRoot.querySelectorAll("[data-hk-panel]").forEach(el => el.addEventListener("click", () => this.openPanel(el.getAttribute("data-hk-panel"))));
+    this.shadowRoot.querySelectorAll("[data-hk-act]").forEach(el => el.addEventListener("click", () => this.act(el.getAttribute("data-hk-act"))));
   }
 
-  // Open the Housekeeper panel (or a page of it) when the configuration allows it and the person is an administrator.
-  openPanel(page = "") {
+  // A card overrides: what a click on an element with data-hk-act does.
+  act(_name) {}
+
+  // Open the Housekeeper panel when the configuration allows it and the person is an administrator. The panel
+  // reads its deep link from the query (view=findingsNav&filter=topic:down).
+  openPanel(query = "") {
     if (this._config?.tap === "none" || !this._hass?.user?.is_admin) return;
-    globalThis.history.pushState(null, "", page ? `${HK_PANEL_PATH}/${page}` : HK_PANEL_PATH);
+    globalThis.history.pushState(null, "", query ? `${HK_PANEL_PATH}?${query}` : HK_PANEL_PATH);
     globalThis.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
   }
 
   // The head of a card: a title, a line below it and, on the right, what the card puts there (a chip, a button).
-  head(subtitle = "", right = "", line = false) {
-    return `<div class="hk-head${line ? " line" : ""}"><div class="hk-t"><b>${this.esc(this.titleText())}</b>${subtitle ? `<small>${this.esc(subtitle)}</small>` : ""}</div>${right}</div>`;
+  head(subtitle = "", right = "", line = false, left = "", title = this.titleText()) {
+    return `<div class="hk-head${line ? " line" : ""}">${left}<div class="hk-t"><b>${this.esc(title)}</b>${subtitle ? `<small>${this.esc(subtitle)}</small>` : ""}</div>${right}</div>`;
   }
 
   // The foot of a card: a line on the left, the link to the panel on the right (only for administrators).
-  foot(left = "", page = "") {
-    const link = this._config.tap !== "none" && this._hass?.user?.is_admin ? `<span class="hk-link" data-hk-panel="${this.esc(page)}">${this.esc(this.t("cardOpenPanel"))}</span>` : "";
-    return `<div class="hk-foot"><span>${this.esc(left)}</span><span class="hk-sp"></span>${link}</div>`;
+  foot(left = "", query = "") { return this.footHtml(this.esc(left), query); }
+
+  // The same with a left part that is HTML already (the caller escaped it).
+  footHtml(leftHtml = "", query = "") {
+    const link = this._config.tap !== "none" && this._hass?.user?.is_admin ? `<span class="hk-link" data-hk-panel="${this.esc(query)}">${this.esc(this.t("cardOpenPanel"))}</span>` : "";
+    return `<div class="hk-foot"><span>${leftHtml}</span><span class="hk-sp"></span>${link}</div>`;
   }
 }

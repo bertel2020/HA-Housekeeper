@@ -140,6 +140,14 @@
           "starting": "Esperando al arranque"
         }
       },
+      "house_health": {
+        "name": "Estado de la casa",
+        "state": {
+          "ok": "En orden",
+          "attention": "Requiere atención",
+          "urgent": "Urgente"
+        }
+      },
       "monitor": {
         "name": "Función del hogar {name}",
         "state": {
