@@ -86,5 +86,38 @@
   "edit_rows": "Lignes pour « Les plus faibles »",
   "edit_shopping": "Afficher la liste de courses",
   "edit_shopping_help": "La liste de courses fait partie de la tournée de remplacement.",
-  "edit_forecast": "Afficher la prévision et sa fiabilité"
+  "edit_forecast": "Afficher la prévision et sa fiabilité",
+  "cardFnTitle": "Fonctions de la maison",
+  "cardFnCount": {
+    "one": "{n} fonction",
+    "other": "{n} fonctions"
+  },
+  "cardFnProblems": {
+    "one": "{n} perturbée",
+    "other": "{n} perturbées"
+  },
+  "cardFnUnverified": {
+    "one": "{n} non vérifiable",
+    "other": "{n} non vérifiables"
+  },
+  "cardFnAllOk": "Tout est en ordre",
+  "cardFnMembers": {
+    "one": "{ok} sur {total} objet joignable",
+    "other": "{ok} sur {total} objets joignables"
+  },
+  "cardFnDown": "{name} est injoignable",
+  "cardFnStale": "{name} ne donne plus de nouvelles",
+  "cardFnBelow": "{name} est sous son minimum",
+  "cardFnMemberOff": "{name} est désactivé",
+  "cardFnOff": "Fonction désactivée",
+  "cardFnUnsure": "État incertain",
+  "cardFnWindow": "{n} jours",
+  "cardFnNone": "Aucune fonction de la maison pour l’instant. Tu les crées dans le panneau.",
+  "edit_entities": "Fonctions",
+  "edit_entities_help": "Laisse vide pour toutes les fonctions.",
+  "edit_history": "Historique",
+  "edit_history_30": "30 jours",
+  "edit_history_14": "14 jours",
+  "edit_history_7": "7 jours",
+  "edit_history_0": "Désactivé"
 }

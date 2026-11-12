@@ -24,7 +24,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -185,4 +185,41 @@ test("the battery card sorts out the weakest, the round by area and the shopping
   card.hass = hass({ ...calm, lowest: 52 }, new Date(Date.now() + 120 * 86400000).toISOString());
   assert.match(html(), /31 überwacht[\s\S]*Alles gut[\s\S]*Keine Batterie unter dem Grenzwert[\s\S]*Nächster Wechsel voraussichtlich im/);
   assert.ok(!html().includes("Fensterkontakt Büro"), "when quiet the card shows only the summary");
+});
+
+test("the home functions card puts the troubled functions first, says why in words and draws the days as a strip", () => {
+  const { HKFunctionsCard, registered } = loadCards();
+  assert.ok(registered["ha-housekeeper-functions-card"], "the card is registered");
+  const entities = { a: ENTITY("sensor.heat", "monitor"), b: ENTITY("sensor.pv", "monitor"), e: ENTITY("event.functions", "monitor"), n: ENTITY("sensor.other", "findings") };
+  const days = ["ok", "ok", "problem", "flapping", "unverified", "", "ok"];
+  const fn = (state, extra) => ({ state, last_updated: "1", attributes: { function_id: extra.id, function_name: extra.name, members_total: extra.total, members_ok: extra.ok, history_30d: days, availability_30d: extra.avail, reason: extra.reason, problem_object: extra.object } });
+  const states = {
+    "sensor.heat": fn("ok", { id: "f1", name: "Heizung", total: 6, ok: 6, avail: 100 }),
+    "sensor.pv": fn("problem", { id: "f2", name: "Photovoltaik", total: 3, ok: 2, avail: 83.5, reason: "rule_stale", object: "Wechselrichter 2" }),
+    "event.functions": { state: "x", last_updated: "1", attributes: {} },
+  };
+  const hass = (st, admin = true) => ({ language: "de", user: { is_admin: admin }, entities, states: st });
+  const card = new HKFunctionsCard();
+  card.setConfig({});
+  card.hass = hass(states);
+  const html = () => card.shadowRoot.innerHTML;
+  assert.match(html(), /Photovoltaik[\s\S]*Heizung/, "the troubled function comes first");
+  assert.match(html(), /Wechselrichter 2 meldet nichts mehr/);
+  assert.match(html(), /6 von 6 Objekten erreichbar/);
+  assert.match(html(), /1 gestört/);
+  assert.match(html(), /83,5 %/);
+  assert.equal((html().match(/<i class="/g) || []).length, 14, "a strip of seven days for each of the two functions");
+  assert.match(html(), /<i class="problem">/);
+  assert.match(html(), /data-hk-panel="view=monitor&amp;function=f2"/, "a click opens the function in the panel");
+  card.setConfig({ history: "0", entities: ["sensor.heat"] });
+  assert.ok(!html().includes("Photovoltaik") && !html().includes("hk-strip\""), "the chosen function only, and no strip");
+  card.hass = hass(states, false);
+  assert.ok(!html().includes("data-hk-panel"), "a person who is no administrator sees no link");
+  const calm = { ...states, "sensor.pv": fn("ok", { id: "f2", name: "Photovoltaik", total: 3, ok: 3, avail: 100 }) };
+  card.setConfig({ quiet: "hide" });
+  card.hass = hass({ ...calm, "sensor.heat": { ...calm["sensor.heat"], last_updated: "2" } });
+  assert.equal(card.style.display, "none", "every function is fine and the card was asked to hide");
+  card.setConfig({});
+  card.hass = hass({});
+  assert.match(html(), /Noch keine Hausfunktion/);
 });

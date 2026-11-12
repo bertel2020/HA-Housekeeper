@@ -699,6 +699,9 @@ async def test_a_home_function_gets_a_sensor_events_and_loses_the_sensor_when_de
     entry = hass.config_entries.async_entries(DOMAIN)[0]
     sensor = registry.async_get_entity_id("sensor", DOMAIN, f"{entry.entry_id}_monitor_{item_id}")
     assert hass.states.get(sensor).name == "HA Housekeeper Home function Flur"
+    attributes = hass.states.get(sensor).attributes
+    assert attributes["function_name"] == "Flur" and attributes["members_total"] == 1
+    assert isinstance(attributes["history_30d"], list), "the card draws its strip from this"
 
     event = registry.async_get_entity_id("event", DOMAIN, f"{entry.entry_id}_monitor_event")
     assert hass.states.get(event).name == "HA Housekeeper Home functions"

@@ -86,5 +86,38 @@
   "edit_rows": "Linhas de «As mais fracas»",
   "edit_shopping": "Mostrar a lista de compras",
   "edit_shopping_help": "A lista de compras faz parte da ronda de trocas.",
-  "edit_forecast": "Mostrar a previsão e a sua fiabilidade"
+  "edit_forecast": "Mostrar a previsão e a sua fiabilidade",
+  "cardFnTitle": "Funções da casa",
+  "cardFnCount": {
+    "one": "{n} função",
+    "other": "{n} funções"
+  },
+  "cardFnProblems": {
+    "one": "{n} afetada",
+    "other": "{n} afetadas"
+  },
+  "cardFnUnverified": {
+    "one": "{n} não verificável",
+    "other": "{n} não verificáveis"
+  },
+  "cardFnAllOk": "Tudo em ordem",
+  "cardFnMembers": {
+    "one": "{ok} de {total} objeto acessível",
+    "other": "{ok} de {total} objetos acessíveis"
+  },
+  "cardFnDown": "{name} não está acessível",
+  "cardFnStale": "{name} deixou de comunicar",
+  "cardFnBelow": "{name} está abaixo do mínimo",
+  "cardFnMemberOff": "{name} está desativado",
+  "cardFnOff": "Função desativada",
+  "cardFnUnsure": "Estado incerto",
+  "cardFnWindow": "{n} dias",
+  "cardFnNone": "Ainda não há funções da casa. Crias as funções no painel.",
+  "edit_entities": "Funções",
+  "edit_entities_help": "Deixa vazio para todas as funções.",
+  "edit_history": "Histórico",
+  "edit_history_30": "30 dias",
+  "edit_history_14": "14 dias",
+  "edit_history_7": "7 dias",
+  "edit_history_0": "Desativado"
 }

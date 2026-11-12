@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"2afb8d3e61"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"cb9feb2e20"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"e770da8052"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7c4a3174b4"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"738e78ff3f"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"ccc88673b4"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"9e5a8f8409"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"c99c557258"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"57fcde9529"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"1817ac2e40"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"71eecc4f91"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"9149a22325"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"dc8181874e"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"948f80923a"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -97,6 +97,27 @@ const CARD_TEXT = {
     edit_shopping: "Einkaufsliste zeigen",
     edit_shopping_help: "Die Einkaufsliste gehört zur Wechselrunde.",
     edit_forecast: "Prognose und Güte zeigen",
+    cardFnTitle: "Hausfunktionen",
+    cardFnCount: {"one": "{n} Funktion", "other": "{n} Funktionen"},
+    cardFnProblems: {"one": "{n} gestört", "other": "{n} gestört"},
+    cardFnUnverified: {"one": "{n} nicht überprüfbar", "other": "{n} nicht überprüfbar"},
+    cardFnAllOk: "Alles in Ordnung",
+    cardFnMembers: {"one": "{ok} von {total} Objekt erreichbar", "other": "{ok} von {total} Objekten erreichbar"},
+    cardFnDown: "{name} ist nicht erreichbar",
+    cardFnStale: "{name} meldet nichts mehr",
+    cardFnBelow: "{name} liegt unter dem Mindestwert",
+    cardFnMemberOff: "{name} ist deaktiviert",
+    cardFnOff: "Funktion ausgeschaltet",
+    cardFnUnsure: "Zustand nicht sicher bekannt",
+    cardFnWindow: "{n} Tage",
+    cardFnNone: "Noch keine Hausfunktion angelegt. Du legst sie im Panel an.",
+    edit_entities: "Funktionen",
+    edit_entities_help: "Leer lassen für alle Funktionen.",
+    edit_history: "Verlauf",
+    edit_history_30: "30 Tage",
+    edit_history_14: "14 Tage",
+    edit_history_7: "7 Tage",
+    edit_history_0: "Aus",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -165,6 +186,27 @@ const CARD_TEXT = {
     edit_shopping: "Show the shopping list",
     edit_shopping_help: "The shopping list belongs to the round of changes.",
     edit_forecast: "Show the forecast and its quality",
+    cardFnTitle: "Home functions",
+    cardFnCount: {"one": "{n} function", "other": "{n} functions"},
+    cardFnProblems: {"one": "{n} impaired", "other": "{n} impaired"},
+    cardFnUnverified: {"one": "{n} not verifiable", "other": "{n} not verifiable"},
+    cardFnAllOk: "All in order",
+    cardFnMembers: {"one": "{ok} of {total} object reachable", "other": "{ok} of {total} objects reachable"},
+    cardFnDown: "{name} cannot be reached",
+    cardFnStale: "{name} has stopped reporting",
+    cardFnBelow: "{name} is below its minimum",
+    cardFnMemberOff: "{name} is disabled",
+    cardFnOff: "Function switched off",
+    cardFnUnsure: "State not known for sure",
+    cardFnWindow: "{n} days",
+    cardFnNone: "No home function yet. You create them in the panel.",
+    edit_entities: "Functions",
+    edit_entities_help: "Leave empty for all functions.",
+    edit_history: "History",
+    edit_history_30: "30 days",
+    edit_history_14: "14 days",
+    edit_history_7: "7 days",
+    edit_history_0: "Off",
   },
 };
 
@@ -227,6 +269,21 @@ const CARD_CSS = `
   .hk-shop .w b { font-size: 13.5px; color: var(--primary-text-color); }
   .hk-shop .w small { color: var(--secondary-text-color); font-size: 12px; }
   @media (max-width: 520px) { .hk-row.r3 { grid-template-columns: minmax(0, 1fr) auto; } .hk-row.r3 .hk-bar { display: none; } }
+  .hk-row.fn { grid-template-columns: 22px minmax(0, 1.2fr) minmax(0, 1fr) auto; }
+  .hk-row.go { cursor: pointer; }
+  .hk-st { width: 14px; height: 14px; border-radius: 50%; justify-self: center; background: var(--disabled-text-color, #bdbdbd); }
+  .hk-st.ok { background: var(--success-color); }
+  .hk-st.warn { background: var(--warning-color); }
+  .hk-st.bad { background: var(--error-color); }
+  .hk-name small.bad { color: var(--error-color); font-weight: 600; }
+  .hk-name small.warn { color: var(--warning-color); font-weight: 600; }
+  .hk-strip { display: flex; gap: 1px; height: 18px; }
+  .hk-strip i { flex: 1; min-width: 2px; background: var(--success-color); opacity: .8; border-radius: 1px; }
+  .hk-strip i.problem { background: var(--error-color); opacity: 1; }
+  .hk-strip i.flapping { background: var(--warning-color); opacity: 1; }
+  .hk-strip i.unverified { background: var(--disabled-text-color, #bdbdbd); opacity: .8; }
+  .hk-strip i.none { background: var(--secondary-background-color); opacity: 1; }
+  @media (max-width: 520px) { .hk-row.fn { grid-template-columns: 22px minmax(0, 1fr) auto; } .hk-row.fn .hk-strip { display: none; } }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
 
@@ -662,6 +719,82 @@ class HKBatteryCard extends HKCard {
   }
 }
 
+// The home functions card: one row per function (heating, alarm, photovoltaics ...) with its state now, the reason in
+// words, how many of its objects are fine and the days of the last weeks as a strip. The numbers come from the sensor
+// of each function (its state and attributes); the strip is Housekeeper's own record, no query of the history.
+class HKFunctionsCard extends HKCard {
+  static tag = "ha-housekeeper-functions-card";
+  static pickerName = "HA Housekeeper: Home functions";
+  static pickerDescription = "Heating, alarm, photovoltaics: the functions of the house with their state, the reason and the last weeks.";
+  static get defaults() { return { entities: [], history: "30" }; }
+
+  static editorSchema(t) {
+    return [
+      { name: "entities", selector: { entity: { multiple: true, filter: { integration: "ha_housekeeper", domain: "sensor" } } } },
+      { name: "history", selector: { select: { mode: "dropdown", options: ["30", "14", "7", "0"].map(value => ({ value, label: t(`edit_history_${value}`) })) } } },
+    ];
+  }
+
+  get titleKey() { return "cardFnTitle"; }
+
+  // The sensors of the functions, the chosen ones when the configuration names some. Worst first, then by name.
+  functions() {
+    const chosen = new Set(this._config.entities || []);
+    const rank = { problem: 0, unverified: 1, ok: 2, disabled: 3 };
+    return (this.found().byKey.monitor || [])
+      .filter(id => id.startsWith("sensor.") && (!chosen.size || chosen.has(id)))
+      .map(id => ({ id, state: this._hass?.states?.[id] }))
+      .filter(f => f.state)
+      .sort((a, b) => (rank[a.state.state] ?? 4) - (rank[b.state.state] ?? 4) || String(a.state.attributes?.function_name).localeCompare(String(b.state.attributes?.function_name)));
+  }
+
+  watchedIds() { return this.functions().map(f => f.id); }
+  hasData() { return true; }
+  // Quiet is: every function is fine.
+  isQuiet() { return this.functions().length > 0 && this.functions().every(f => f.state.state === "ok"); }
+
+  // What is wrong, in words: the object and what it does, or that the state is not sure.
+  reason(attrs, state) {
+    if (state === "disabled") return this.t("cardFnOff");
+    const name = attrs.problem_object || attrs.function_name || "";
+    if (state === "unverified") return this.t("cardFnUnsure");
+    const code = String(attrs.reason || "");
+    if (code === "disabled") return this.t("cardFnMemberOff", { name });
+    if (code === "rule_stale") return this.t("cardFnStale", { name });
+    if (code === "rule_below_min") return this.t("cardFnBelow", { name });
+    return this.t("cardFnDown", { name });
+  }
+
+  strip(days) {
+    const count = Number(this._config.history);
+    if (!count || !Array.isArray(days) || !days.length) return "<div></div>";
+    return `<div class="hk-strip">${days.slice(-count).map(day => `<i class="${this.esc(day || "none")}"></i>`).join("")}</div>`;
+  }
+
+  row(item) {
+    const state = item.state.state, attrs = item.state.attributes || {};
+    const tone = { ok: "ok", problem: "bad", unverified: "warn", disabled: "off" }[state] || "off";
+    const sub = state === "ok" || state === "disabled" && !attrs.members_total
+      ? this.t("cardFnMembers", { ok: attrs.members_ok ?? 0, total: attrs.members_total ?? 0, count: attrs.members_total ?? 0 })
+      : this.reason(attrs, state);
+    const go = this._config.tap !== "none" && this._hass?.user?.is_admin && attrs.function_id;
+    const link = go ? ` data-hk-panel="view=monitor&amp;function=${this.esc(attrs.function_id)}"` : "";
+    const available = attrs.availability_30d == null ? "—" : `${String(attrs.availability_30d).replace(".", this.decimal())} %`;
+    return `<div class="hk-row fn${go ? " go" : ""}"${link}><span class="hk-st ${tone}"></span><div class="hk-name"><b>${this.esc(attrs.function_name)}</b><small class="${state === "problem" ? "bad" : state === "unverified" ? "warn" : ""}">${this.esc(sub)}</small></div>${this.strip(attrs.history_30d)}<div class="hk-right"><b>${this.esc(available)}</b><small>${this.esc(this.t("cardFnWindow", { n: 30 }))}</small></div></div>`;
+  }
+
+  decimal() { try { return (1.5).toLocaleString(this.lang).replace(/\d/g, ""); } catch (_) { return "."; } }
+
+  renderBody() {
+    const list = this.functions(), troubled = list.filter(f => f.state.state === "problem").length, unsure = list.filter(f => f.state.state === "unverified").length;
+    if (!list.length) return this.head("", "") + `<div class="hk-note">${this.esc(this.t("cardFnNone"))}</div>` + this.foot("", "view=monitor");
+    const chip = troubled ? `<span class="hk-chip bad">${this.esc(this.t("cardFnProblems", { n: troubled, count: troubled }))}</span>`
+      : unsure ? `<span class="hk-chip warn">${this.esc(this.t("cardFnUnverified", { n: unsure, count: unsure }))}</span>`
+      : `<span class="hk-chip">${this.esc(this.t("cardFnAllOk"))}</span>`;
+    return this.head(this.t("cardFnCount", { n: list.length, count: list.length }), chip, true) + list.map(item => this.row(item)).join("") + this.foot("", "view=monitor");
+  }
+}
+
 // Every card is registered here: its element, its editor and its entry in the card picker.
 // The picker shows English only, it has no way to translate a name.
 function registerCard(CardClass) {
@@ -676,3 +809,4 @@ function registerCard(CardClass) {
 
 registerCard(HKHealthCard);
 registerCard(HKBatteryCard);
+registerCard(HKFunctionsCard);

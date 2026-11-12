@@ -98,5 +98,46 @@
   "edit_rows": "Строк для «Самые слабые»",
   "edit_shopping": "Показывать список покупок",
   "edit_shopping_help": "Список покупок относится к обходу замены.",
-  "edit_forecast": "Показывать прогноз и его надёжность"
+  "edit_forecast": "Показывать прогноз и его надёжность",
+  "cardFnTitle": "Функции дома",
+  "cardFnCount": {
+    "one": "{n} функция",
+    "few": "{n} функции",
+    "many": "{n} функций",
+    "other": "{n} функции"
+  },
+  "cardFnProblems": {
+    "one": "{n} нарушена",
+    "few": "{n} нарушены",
+    "many": "{n} нарушено",
+    "other": "{n} нарушено"
+  },
+  "cardFnUnverified": {
+    "one": "{n} не проверена",
+    "few": "{n} не проверены",
+    "many": "{n} не проверено",
+    "other": "{n} не проверено"
+  },
+  "cardFnAllOk": "Всё в порядке",
+  "cardFnMembers": {
+    "one": "доступен {ok} из {total} объекта",
+    "few": "доступно {ok} из {total} объектов",
+    "many": "доступно {ok} из {total} объектов",
+    "other": "доступно {ok} из {total} объекта"
+  },
+  "cardFnDown": "{name} недоступен",
+  "cardFnStale": "{name} больше не передаёт данные",
+  "cardFnBelow": "{name} ниже минимума",
+  "cardFnMemberOff": "{name} отключён",
+  "cardFnOff": "Функция отключена",
+  "cardFnUnsure": "Состояние неизвестно",
+  "cardFnWindow": "{n} дн.",
+  "cardFnNone": "Функций дома пока нет. Создай их в панели.",
+  "edit_entities": "Функции",
+  "edit_entities_help": "Оставь пустым, чтобы показать все функции.",
+  "edit_history": "История",
+  "edit_history_30": "30 дней",
+  "edit_history_14": "14 дней",
+  "edit_history_7": "7 дней",
+  "edit_history_0": "Выкл."
 }

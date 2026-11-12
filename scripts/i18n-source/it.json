@@ -6929,6 +6929,27 @@
 "edit_rows": "9d62059b",
 "edit_shopping": "06e2d065",
 "edit_shopping_help": "b97dd97a",
-"edit_forecast": "c78c08e7"
+"edit_forecast": "c78c08e7",
+"cardFnTitle": "f980a6d9",
+"cardFnCount": "f5389138",
+"cardFnProblems": "6a3e36ff",
+"cardFnUnverified": "f13d9b83",
+"cardFnAllOk": "314f8427",
+"cardFnMembers": "e4e14ff9",
+"cardFnDown": "0c5717ae",
+"cardFnStale": "54acf4a6",
+"cardFnBelow": "939134f5",
+"cardFnMemberOff": "ec4d46f8",
+"cardFnOff": "f0cde9cd",
+"cardFnUnsure": "170489ab",
+"cardFnWindow": "901bac8a",
+"cardFnNone": "96f73847",
+"edit_entities": "75e942e5",
+"edit_entities_help": "dc4ac9b0",
+"edit_history": "0e769600",
+"edit_history_30": "ffd72805",
+"edit_history_14": "60acc36e",
+"edit_history_7": "7f920bb6",
+"edit_history_0": "ca7981b4"
 }
 }

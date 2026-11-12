@@ -80,5 +80,34 @@
   "edit_rows": "“最弱的”显示行数",
   "edit_shopping": "显示购物清单",
   "edit_shopping_help": "购物清单属于更换巡检。",
-  "edit_forecast": "显示预测及其可靠性"
+  "edit_forecast": "显示预测及其可靠性",
+  "cardFnTitle": "家庭功能",
+  "cardFnCount": {
+    "other": "{n} 项功能"
+  },
+  "cardFnProblems": {
+    "other": "{n} 项受影响"
+  },
+  "cardFnUnverified": {
+    "other": "{n} 项无法确认"
+  },
+  "cardFnAllOk": "一切正常",
+  "cardFnMembers": {
+    "other": "{total} 个对象中 {ok} 个可用"
+  },
+  "cardFnDown": "{name} 无法连接",
+  "cardFnStale": "{name} 不再上报",
+  "cardFnBelow": "{name} 低于最小值",
+  "cardFnMemberOff": "{name} 已停用",
+  "cardFnOff": "功能已关闭",
+  "cardFnUnsure": "状态不确定",
+  "cardFnWindow": "{n} 天",
+  "cardFnNone": "尚无家庭功能。请在面板中创建。",
+  "edit_entities": "功能",
+  "edit_entities_help": "留空则显示全部功能。",
+  "edit_history": "历史",
+  "edit_history_30": "30 天",
+  "edit_history_14": "14 天",
+  "edit_history_7": "7 天",
+  "edit_history_0": "关闭"
 }

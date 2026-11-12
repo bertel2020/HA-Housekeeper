@@ -86,5 +86,38 @@
   "edit_rows": "Righe per «Le più scariche»",
   "edit_shopping": "Mostra la lista della spesa",
   "edit_shopping_help": "La lista della spesa fa parte del giro di sostituzioni.",
-  "edit_forecast": "Mostra la previsione e la sua affidabilità"
+  "edit_forecast": "Mostra la previsione e la sua affidabilità",
+  "cardFnTitle": "Funzioni della casa",
+  "cardFnCount": {
+    "one": "{n} funzione",
+    "other": "{n} funzioni"
+  },
+  "cardFnProblems": {
+    "one": "{n} compromessa",
+    "other": "{n} compromesse"
+  },
+  "cardFnUnverified": {
+    "one": "{n} non verificabile",
+    "other": "{n} non verificabili"
+  },
+  "cardFnAllOk": "Tutto a posto",
+  "cardFnMembers": {
+    "one": "{ok} su {total} oggetto raggiungibile",
+    "other": "{ok} su {total} oggetti raggiungibili"
+  },
+  "cardFnDown": "{name} non è raggiungibile",
+  "cardFnStale": "{name} non segnala più nulla",
+  "cardFnBelow": "{name} è sotto il minimo",
+  "cardFnMemberOff": "{name} è disattivato",
+  "cardFnOff": "Funzione disattivata",
+  "cardFnUnsure": "Stato incerto",
+  "cardFnWindow": "{n} giorni",
+  "cardFnNone": "Ancora nessuna funzione della casa. Le crei nel pannello.",
+  "edit_entities": "Funzioni",
+  "edit_entities_help": "Lascia vuoto per tutte le funzioni.",
+  "edit_history": "Cronologia",
+  "edit_history_30": "30 giorni",
+  "edit_history_14": "14 giorni",
+  "edit_history_7": "7 giorni",
+  "edit_history_0": "Disattivato"
 }

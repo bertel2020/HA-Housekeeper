@@ -363,6 +363,19 @@ class BatteryNextChangeSensor(_BatterySensor):
 class MonitorSensor(SensorEntity):
     """The current, possibly unverified state of one selected function."""
 
+    # What the dashboard card reads besides the state; it changes rarely and is no history of its own.
+    _unrecorded_attributes = frozenset(
+        {
+            "function_id",
+            "function_name",
+            "members_total",
+            "members_ok",
+            "members_problem",
+            "members_unverified",
+            "problem_object",
+            "history_30d",
+        }
+    )
     _attr_has_entity_name = True
     _attr_should_poll = False
     _attr_device_class = SensorDeviceClass.ENUM
@@ -424,11 +437,37 @@ class MonitorSensor(SensorEntity):
                 "reason": result["reason"],
                 "scanned_at": result["scanned_at"],
                 "last_verified_at": result["last_verified_at"],
+                **self._member_attributes(result, scanner),
                 **self._history_attributes(scanner.monitor),
             }
             if result
             else {}
         )
+
+    def _member_attributes(self, result: dict[str, Any], scanner: Any) -> dict[str, Any]:
+        """The name of the function, how many of its objects are fine and which one is the reason."""
+        members = result.get("members") or []
+        attributes: dict[str, Any] = {
+            "function_id": self.function_id,
+            "function_name": self._definition_name(),
+            "members_total": len(members),
+            "members_ok": sum(1 for m in members if m["state"] == "ok"),
+            "members_problem": sum(1 for m in members if m["state"] == "problem"),
+            "members_unverified": sum(1 for m in members if m["state"] == "unverified"),
+        }
+        key = result.get("reason_key")
+        if key and result["state"] in ("problem", "unverified"):
+            snapshot = scanner.snapshot or {}
+            found = next(
+                (
+                    o
+                    for o in snapshot.get("objects", ())
+                    if f"{o['object_type']}:{o['object_id']}" == key
+                ),
+                None,
+            )
+            attributes["problem_object"] = (found or {}).get("name") or key.partition(":")[2]
+        return attributes
 
     def _history_attributes(self, monitor: Any) -> dict[str, Any]:
         """What the history says about the last 30 days; whole minutes and tenths of a percent keep the recorder quiet."""
@@ -441,4 +480,6 @@ class MonitorSensor(SensorEntity):
             "availability_30d": math.floor(shares["ok_seconds"] / observed * 1000) / 10
             if observed
             else None,
+            # The worst state of each day, oldest first, for the strip of the card ("" = nothing known that day).
+            "history_30d": [day["state"] or "" for day in shares["days"]],
         }

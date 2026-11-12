@@ -92,5 +92,42 @@
   "edit_rows": "Riadky pre „Najslabšie“",
   "edit_shopping": "Zobraziť nákupný zoznam",
   "edit_shopping_help": "Nákupný zoznam patrí ku kolu výmen.",
-  "edit_forecast": "Zobraziť predpoveď a jej spoľahlivosť"
+  "edit_forecast": "Zobraziť predpoveď a jej spoľahlivosť",
+  "cardFnTitle": "Funkcie domu",
+  "cardFnCount": {
+    "one": "{n} funkcia",
+    "few": "{n} funkcie",
+    "other": "{n} funkcií"
+  },
+  "cardFnProblems": {
+    "one": "{n} narušená",
+    "few": "{n} narušené",
+    "other": "{n} narušených"
+  },
+  "cardFnUnverified": {
+    "one": "{n} neoveriteľná",
+    "few": "{n} neoveriteľné",
+    "other": "{n} neoveriteľných"
+  },
+  "cardFnAllOk": "Všetko v poriadku",
+  "cardFnMembers": {
+    "one": "{ok} z {total} objektu dostupný",
+    "few": "{ok} z {total} objektov dostupných",
+    "other": "{ok} z {total} objektov dostupných"
+  },
+  "cardFnDown": "{name} nie je dostupný",
+  "cardFnStale": "{name} už nehlási",
+  "cardFnBelow": "{name} je pod minimom",
+  "cardFnMemberOff": "{name} je vypnutý",
+  "cardFnOff": "Funkcia je vypnutá",
+  "cardFnUnsure": "Stav nie je istý",
+  "cardFnWindow": "{n} dní",
+  "cardFnNone": "Zatiaľ nie je žiadna funkcia domu. Vytvoríš ich v paneli.",
+  "edit_entities": "Funkcie",
+  "edit_entities_help": "Nechaj prázdne pre všetky funkcie.",
+  "edit_history": "História",
+  "edit_history_30": "30 dní",
+  "edit_history_14": "14 dní",
+  "edit_history_7": "7 dní",
+  "edit_history_0": "Vypnuté"
 }

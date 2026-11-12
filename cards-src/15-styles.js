@@ -57,5 +57,20 @@ const CARD_CSS = `
   .hk-shop .w b { font-size: 13.5px; color: var(--primary-text-color); }
   .hk-shop .w small { color: var(--secondary-text-color); font-size: 12px; }
   @media (max-width: 520px) { .hk-row.r3 { grid-template-columns: minmax(0, 1fr) auto; } .hk-row.r3 .hk-bar { display: none; } }
+  .hk-row.fn { grid-template-columns: 22px minmax(0, 1.2fr) minmax(0, 1fr) auto; }
+  .hk-row.go { cursor: pointer; }
+  .hk-st { width: 14px; height: 14px; border-radius: 50%; justify-self: center; background: var(--disabled-text-color, #bdbdbd); }
+  .hk-st.ok { background: var(--success-color); }
+  .hk-st.warn { background: var(--warning-color); }
+  .hk-st.bad { background: var(--error-color); }
+  .hk-name small.bad { color: var(--error-color); font-weight: 600; }
+  .hk-name small.warn { color: var(--warning-color); font-weight: 600; }
+  .hk-strip { display: flex; gap: 1px; height: 18px; }
+  .hk-strip i { flex: 1; min-width: 2px; background: var(--success-color); opacity: .8; border-radius: 1px; }
+  .hk-strip i.problem { background: var(--error-color); opacity: 1; }
+  .hk-strip i.flapping { background: var(--warning-color); opacity: 1; }
+  .hk-strip i.unverified { background: var(--disabled-text-color, #bdbdbd); opacity: .8; }
+  .hk-strip i.none { background: var(--secondary-background-color); opacity: 1; }
+  @media (max-width: 520px) { .hk-row.fn { grid-template-columns: 22px minmax(0, 1fr) auto; } .hk-row.fn .hk-strip { display: none; } }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
