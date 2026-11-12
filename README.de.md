@@ -5,7 +5,7 @@
 <h1 align="center">HA Housekeeper</h1>
 
 <p align="center">
-  Housekeeping und Aufräumen für Home Assistant: verwaiste Entitäten, Geräte und Statistiken finden, Abhängigkeiten sehen und mit Bestätigung und Rückgängig aufräumen.
+  Housekeeping für Home Assistant: kaputte Verweise, verwaiste Entitäten und fehlerhafte Automationen finden, sehen, was davon abhängt, und beheben oder aufräumen – nur nach Bestätigung, mit Backup und Rückgängig.
 </p>
 
 <p align="center">

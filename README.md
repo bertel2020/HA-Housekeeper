@@ -5,7 +5,7 @@
 <h1 align="center">HA Housekeeper</h1>
 
 <p align="center">
-  Housekeeping and cleanup for Home Assistant: find orphaned entities, devices and statistics, see their dependencies, and clean up with confirmation and undo.
+  Housekeeping for Home Assistant: find broken references, orphaned entities and failing automations, see what depends on them, and fix or clean up – only after confirmation, with backup and undo.
 </p>
 
 <p align="center">
