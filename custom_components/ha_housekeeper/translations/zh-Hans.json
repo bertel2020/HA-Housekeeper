@@ -116,6 +116,12 @@
       "low_batteries": {
         "name": "低电量电池"
       },
+      "battery_weakest": {
+        "name": "电量最低的电池"
+      },
+      "battery_next_change": {
+        "name": "下次更换电池"
+      },
       "new_findings": {
         "name": "新发现项"
       },

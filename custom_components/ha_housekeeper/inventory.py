@@ -41,6 +41,7 @@ from .automation_blocked import blocked_automation_findings, dead_effect_finding
 from .backup_auto import BackupAutoStore
 from .backup_health import AttestStore, backup_health
 from .battery_care import BatteryStore
+from .battery_forecast import battery_forecast
 from .battery_kind import apply_battery_kinds
 from .blueprints import async_available, blueprint_path, missing_blueprint_findings
 from .causes import apply_causes, device_down_findings
@@ -178,6 +179,10 @@ from .watch import WATCH_KINDS, WatchStore, evaluate, make_before, next_due
 from .work import WorkStore
 
 _LOGGER = logging.getLogger(__name__)
+
+BATTERY_FORECAST_EVERY = timedelta(
+    hours=20
+)  # the forecast rests on daily means: a new reading each day is enough
 SUGGEST_LIMIT = 200
 # An entity not provided for this long may be removed without quarantine: one that stays so for a
 # day of scans, restarts included, is no integration still waiting for its first data.
@@ -1021,6 +1026,10 @@ class InventoryScanner:
         self.backup_auto = BackupAutoStore(hass)
         hass.data.setdefault(DOMAIN, {})["hints"] = self.hints
         self.backup_report: dict[str, Any] | None = None  # the last one that could be read
+        # The forecast of the batteries is read from the statistics about once a day, for the dashboard card.
+        self.battery_forecast: dict[str, Any] | None = None
+        self.battery_forecast_at: datetime | None = None
+        self._battery_forecast_running = False
         self.mcp = McpStore(hass)
         self.monitor = MonitorStore(hass)
         self.runs = RunStore(hass)
@@ -1285,6 +1294,11 @@ class InventoryScanner:
                     self.hass.async_create_background_task(
                         self._announce(snapshot), "HA Housekeeper events"
                     )
+                    if self._battery_forecast_due():
+                        self.hass.async_create_background_task(
+                            self.async_refresh_battery_forecast(snapshot),
+                            "HA Housekeeper battery forecast",
+                        )
                 self.last_scan_seconds = time.monotonic() - began
                 self.health.succeeded(datetime.now(UTC), self.last_scan_seconds, preliminary)
                 if not preliminary:
@@ -1400,6 +1414,29 @@ class InventoryScanner:
         async_sync_scan_issue(self.hass, self.health_report())
         async_sync_database_issue(self.hass, self.events.integrity)
         self.monitor.refresh(self._snapshot, self.health_report(), new_scan=False)
+        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+
+    def _battery_forecast_due(self) -> bool:
+        """Whether the forecast is to be read again: never read yet, or the last reading is a day old."""
+        at = self.battery_forecast_at
+        return not self._battery_forecast_running and (
+            at is None or datetime.now(UTC) - at >= BATTERY_FORECAST_EVERY
+        )
+
+    async def async_refresh_battery_forecast(self, snapshot: dict[str, Any]) -> None:
+        """Read the battery forecast and tell the sensors. A failure or a busy recorder is tried again by the next scan."""
+        self._battery_forecast_running = True
+        try:
+            result = await battery_forecast(self.hass, self, snapshot)
+        except Exception:  # noqa: BLE001 - without a forecast the card shows the levels only
+            _LOGGER.debug("The battery forecast could not be read", exc_info=True)
+            return
+        finally:
+            self._battery_forecast_running = False
+        if result.get("busy"):
+            return
+        self.battery_forecast = result
+        self.battery_forecast_at = datetime.now(UTC)
         async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
 
     async def _announce(self, snapshot: dict[str, Any]) -> None:

@@ -39,5 +39,52 @@
   "edit_tiles_never": "Jamais",
   "edit_changes": "Afficher les changements depuis la dernière analyse",
   "edit_scan_button": "Afficher le bouton d’analyse",
-  "edit_scan_button_help": "Seuls les administrateurs voient le bouton."
+  "edit_scan_button_help": "Seuls les administrateurs voient le bouton.",
+  "cardBatTitle": "Piles",
+  "cardBatWeakestSub": "{n} plus faibles sur {total}",
+  "cardBatRoundSub": {
+    "one": "Dans les {days} prochains jours : {n} pile",
+    "other": "Dans les {days} prochains jours : {n} piles"
+  },
+  "cardBatLowChip": {
+    "one": "{n} faible",
+    "other": "{n} faibles"
+  },
+  "cardBatAllGood": "Tout va bien",
+  "cardBatQuietSub": "{total} surveillées · la plus basse {lowest} %",
+  "cardBatQuietFoot": "Aucune pile sous la limite",
+  "cardBatNext": "Prochain changement prévu en {when}",
+  "cardBatLowNow": "À changer",
+  "cardBatDays": {
+    "one": "env. {n} jour",
+    "other": "env. {n} jours"
+  },
+  "cardBatWeeks": {
+    "one": "env. {n} semaine",
+    "other": "env. {n} semaines"
+  },
+  "cardBatMonths": {
+    "one": "env. {n} mois",
+    "other": "env. {n} mois"
+  },
+  "cardBatSoon": "bientôt",
+  "cardBatStable": "presque aucune usure",
+  "cardBatFollows": "Prévision à venir",
+  "cardBatQEstimate": "Estimation",
+  "cardBatQStable": "stable",
+  "cardBatQFew": "trop peu de données",
+  "cardBatRound": "Tournée de remplacement",
+  "cardBatNoArea": "Sans zone",
+  "cardBatShopping": "Liste de courses",
+  "cardBatUnknown": "Type inconnu",
+  "cardBatUnknownHint": "définis le type dans le panneau",
+  "cardBatNoRechargeable": "Les accus (« Rechargeable ») ne figurent pas dans la liste",
+  "edit_view": "Affichage",
+  "edit_view_weakest": "Les plus faibles",
+  "edit_view_round": "Tournée de remplacement",
+  "edit_view_both": "Les deux",
+  "edit_rows": "Lignes pour « Les plus faibles »",
+  "edit_shopping": "Afficher la liste de courses",
+  "edit_shopping_help": "La liste de courses fait partie de la tournée de remplacement.",
+  "edit_forecast": "Afficher la prévision et sa fiabilité"
 }

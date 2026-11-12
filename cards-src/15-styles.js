@@ -35,5 +35,27 @@ const CARD_CSS = `
   @media (max-width: 520px) { .hk-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .hk-up { color: var(--error-color); font-weight: 600; }
   .hk-down { color: var(--success-color); font-weight: 600; }
+  .hk-row { display: grid; gap: 12px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--divider-color); }
+  .hk-head.line + .hk-row { border-top: 0; }
+  .hk-row.r3 { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; }
+  .hk-row.r2 { grid-template-columns: minmax(0, 1fr) auto; }
+  .hk-name b { display: block; font-size: 13.5px; color: var(--primary-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hk-name small, .hk-right small { display: block; color: var(--secondary-text-color); font-size: 12px; }
+  .hk-right { text-align: right; min-width: 70px; }
+  .hk-right b { font-size: 14px; color: var(--primary-text-color); }
+  .hk-q { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 99px; background: var(--secondary-background-color); color: var(--secondary-text-color); margin-top: 2px; }
+  .hk-bar { height: 8px; border-radius: 99px; background: var(--secondary-background-color); overflow: hidden; }
+  .hk-bar i { display: block; height: 100%; border-radius: 99px; background: var(--success-color); }
+  .hk-bar.warn i { background: var(--warning-color); }
+  .hk-bar.bad i { background: var(--error-color); }
+  .hk-area { padding: 8px 16px 2px; font-size: 12px; font-weight: 700; color: var(--primary-color); border-top: 1px solid var(--divider-color); }
+  .hk-sec { padding: 10px 16px 4px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--secondary-text-color); font-weight: 600; }
+  .hk-sec.top { border-top: 1px solid var(--divider-color); }
+  .hk-shop { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; padding: 4px 16px 12px; align-items: baseline; }
+  .hk-shop .q { font-weight: 700; font-size: 15px; text-align: right; min-width: 52px; color: var(--primary-text-color); }
+  .hk-shop .q.mute { color: var(--secondary-text-color); }
+  .hk-shop .w b { font-size: 13.5px; color: var(--primary-text-color); }
+  .hk-shop .w small { color: var(--secondary-text-color); font-size: 12px; }
+  @media (max-width: 520px) { .hk-row.r3 { grid-template-columns: minmax(0, 1fr) auto; } .hk-row.r3 .hk-bar { display: none; } }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;

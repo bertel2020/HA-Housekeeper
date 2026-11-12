@@ -39,5 +39,52 @@
   "edit_tiles_never": "Mai",
   "edit_changes": "Mostra le modifiche dall’ultima scansione",
   "edit_scan_button": "Mostra il pulsante di scansione",
-  "edit_scan_button_help": "Solo gli amministratori vedono il pulsante."
+  "edit_scan_button_help": "Solo gli amministratori vedono il pulsante.",
+  "cardBatTitle": "Batterie",
+  "cardBatWeakestSub": "Le {n} più scariche su {total}",
+  "cardBatRoundSub": {
+    "one": "Nei prossimi {days} giorni: {n} batteria",
+    "other": "Nei prossimi {days} giorni: {n} batterie"
+  },
+  "cardBatLowChip": {
+    "one": "{n} scarica",
+    "other": "{n} scariche"
+  },
+  "cardBatAllGood": "Tutto bene",
+  "cardBatQuietSub": "{total} monitorate · la più bassa {lowest} %",
+  "cardBatQuietFoot": "Nessuna batteria sotto il limite",
+  "cardBatNext": "Prossimo cambio previsto a {when}",
+  "cardBatLowNow": "Da cambiare",
+  "cardBatDays": {
+    "one": "circa {n} giorno",
+    "other": "circa {n} giorni"
+  },
+  "cardBatWeeks": {
+    "one": "circa {n} settimana",
+    "other": "circa {n} settimane"
+  },
+  "cardBatMonths": {
+    "one": "circa {n} mese",
+    "other": "circa {n} mesi"
+  },
+  "cardBatSoon": "a breve",
+  "cardBatStable": "consumo minimo",
+  "cardBatFollows": "Previsione in arrivo",
+  "cardBatQEstimate": "Stima",
+  "cardBatQStable": "stabile",
+  "cardBatQFew": "dati insufficienti",
+  "cardBatRound": "Giro di sostituzioni",
+  "cardBatNoArea": "Senza area",
+  "cardBatShopping": "Lista della spesa",
+  "cardBatUnknown": "Tipo sconosciuto",
+  "cardBatUnknownHint": "imposta il tipo nel pannello",
+  "cardBatNoRechargeable": "Le ricaricabili («Rechargeable») non sono nella lista",
+  "edit_view": "Vista",
+  "edit_view_weakest": "Le più scariche",
+  "edit_view_round": "Giro di sostituzioni",
+  "edit_view_both": "Entrambe",
+  "edit_rows": "Righe per «Le più scariche»",
+  "edit_shopping": "Mostra la lista della spesa",
+  "edit_shopping_help": "La lista della spesa fa parte del giro di sostituzioni.",
+  "edit_forecast": "Mostra la previsione e la sua affidabilità"
 }

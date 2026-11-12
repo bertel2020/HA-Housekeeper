@@ -40,5 +40,57 @@
   "edit_tiles_never": "Nikdy",
   "edit_changes": "Zobraziť zmeny od poslednej kontroly",
   "edit_scan_button": "Zobraziť tlačidlo kontroly",
-  "edit_scan_button_help": "Tlačidlo vidia len správcovia."
+  "edit_scan_button_help": "Tlačidlo vidia len správcovia.",
+  "cardBatTitle": "Batérie",
+  "cardBatWeakestSub": "Najslabších {n} z {total}",
+  "cardBatRoundSub": {
+    "one": "V nasledujúcich {days} dňoch: {n} batéria",
+    "few": "V nasledujúcich {days} dňoch: {n} batérie",
+    "other": "V nasledujúcich {days} dňoch: {n} batérií"
+  },
+  "cardBatLowChip": {
+    "one": "{n} slabá",
+    "few": "{n} slabé",
+    "other": "{n} slabých"
+  },
+  "cardBatAllGood": "Všetko v poriadku",
+  "cardBatQuietSub": "{total} sledovaných · najnižšia {lowest} %",
+  "cardBatQuietFoot": "Žiadna batéria pod hranicou",
+  "cardBatNext": "Ďalšia výmena predpokladaná: {when}",
+  "cardBatLowNow": "Treba vymeniť",
+  "cardBatDays": {
+    "one": "asi {n} deň",
+    "few": "asi {n} dni",
+    "other": "asi {n} dní"
+  },
+  "cardBatWeeks": {
+    "one": "asi {n} týždeň",
+    "few": "asi {n} týždne",
+    "other": "asi {n} týždňov"
+  },
+  "cardBatMonths": {
+    "one": "asi {n} mesiac",
+    "few": "asi {n} mesiace",
+    "other": "asi {n} mesiacov"
+  },
+  "cardBatSoon": "čoskoro",
+  "cardBatStable": "takmer žiadna spotreba",
+  "cardBatFollows": "Predpoveď príde",
+  "cardBatQEstimate": "Odhad",
+  "cardBatQStable": "stabilná",
+  "cardBatQFew": "primálo údajov",
+  "cardBatRound": "Kolo výmen",
+  "cardBatNoArea": "Bez oblasti",
+  "cardBatShopping": "Nákupný zoznam",
+  "cardBatUnknown": "Typ neznámy",
+  "cardBatUnknownHint": "nastav typ v paneli",
+  "cardBatNoRechargeable": "Akumulátory („Rechargeable“) nie sú v zozname",
+  "edit_view": "Zobrazenie",
+  "edit_view_weakest": "Najslabšie",
+  "edit_view_round": "Kolo výmen",
+  "edit_view_both": "Obe",
+  "edit_rows": "Riadky pre „Najslabšie“",
+  "edit_shopping": "Zobraziť nákupný zoznam",
+  "edit_shopping_help": "Nákupný zoznam patrí ku kolu výmen.",
+  "edit_forecast": "Zobraziť predpoveď a jej spoľahlivosť"
 }

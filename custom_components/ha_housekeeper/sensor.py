@@ -13,13 +13,15 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import EntityCategory
+from homeassistant.const import PERCENTAGE, EntityCategory
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from .battery_card import battery_overview
+from .battery_care import noted_types
 from .const import (
     DOMAIN,
     NAME,
@@ -110,6 +112,20 @@ HOUSE_DESCRIPTION = SensorEntityDescription(
 )
 
 
+BATTERY_WEAKEST_DESCRIPTION = SensorEntityDescription(
+    key="battery_weakest",
+    translation_key="battery_weakest",
+    device_class=SensorDeviceClass.BATTERY,
+    native_unit_of_measurement=PERCENTAGE,
+)
+
+BATTERY_NEXT_DESCRIPTION = SensorEntityDescription(
+    key="battery_next_change",
+    translation_key="battery_next_change",
+    device_class=SensorDeviceClass.TIMESTAMP,
+)
+
+
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
@@ -145,6 +161,8 @@ async def async_setup_entry(
             ScanHealthSensor(entry, HEALTH_DESCRIPTION),
             ActivitySensor(entry, ACTIVITY_DESCRIPTION),
             HouseHealthSensor(entry, HOUSE_DESCRIPTION),
+            BatteryWeakestSensor(entry, BATTERY_WEAKEST_DESCRIPTION),
+            BatteryNextChangeSensor(entry, BATTERY_NEXT_DESCRIPTION),
         ]
     )
     scanner = entry.runtime_data
@@ -264,6 +282,82 @@ class HouseHealthSensor(HousekeeperSensor):
         health = house_health(snapshot, scanner.history.previous)
         self._attr_native_value = health.pop("state")
         self._attr_extra_state_attributes = health
+
+
+class _BatterySensor(HousekeeperSensor):
+    """What the battery card shows; the lists stay out of the recorder, only the state is history."""
+
+    def _overview(self) -> dict[str, Any] | None:
+        scanner = self.scanner
+        snapshot = scanner.snapshot if scanner else None
+        # Numbers taken while Home Assistant is still starting would be wrong; stay "unknown".
+        if snapshot is None or snapshot["meta"].get("preliminary"):
+            return None
+        ids = [
+            o["object_id"]
+            for o in snapshot["objects"]
+            if o["object_type"] == "entity" and o.get("device_class") == "battery"
+        ]
+        types = {**noted_types(snapshot["objects"], ids), **scanner.batteries.types}
+        return battery_overview(
+            snapshot, types, scanner.battery_forecast, scanner.battery_forecast_at
+        )
+
+
+class BatteryWeakestSensor(_BatterySensor):
+    """The lowest level of all batteries; the weakest ones, the next round of changes and what to buy as attributes."""
+
+    _unrecorded_attributes = frozenset(
+        {
+            "weakest",
+            "round",
+            "round_days",
+            "shopping",
+            "unknown_type",
+            "total",
+            "low",
+            "forecast_at",
+        }
+    )
+
+    def _update(self) -> None:
+        overview = self._overview()
+        if overview is None:
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
+        self._attr_native_value = overview["lowest"]
+        self._attr_extra_state_attributes = {
+            key: overview[key]
+            for key in (
+                "weakest",
+                "round",
+                "round_days",
+                "shopping",
+                "unknown_type",
+                "total",
+                "low",
+                "forecast_at",
+            )
+        }
+
+
+class BatteryNextChangeSensor(_BatterySensor):
+    """When the first battery will probably run low, for automations: who is due and what to buy as attributes."""
+
+    _unrecorded_attributes = frozenset({"names", "shopping"})
+
+    def _update(self) -> None:
+        overview = self._overview()
+        if overview is None:
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
+        self._attr_native_value = overview["first_change"]
+        self._attr_extra_state_attributes = {
+            "names": [item["name"] for item in overview["round"]][:10],
+            "shopping": {entry["type"]: entry["count"] for entry in overview["shopping"]},
+        }
 
 
 class MonitorSensor(SensorEntity):

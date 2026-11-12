@@ -1,0 +1,184 @@
+"""The batteries for the dashboard card: the weakest, the next round of changes by room and what to buy.
+
+The levels and flags come from the scan, the forecast ("about 5 days left") from the daily read of the statistics
+(``battery_forecast``). Without a forecast the card still lists the weakest by level and says it follows.
+"""
+
+from __future__ import annotations
+
+import re
+from datetime import UTC, date, datetime, timedelta
+from typing import Any, Final
+
+from .battery_kind import excluded
+from .hygiene import battery_level
+
+ROUND_DAYS: Final = 14  # what runs low within this many days belongs to the next round of changes
+WEAKEST_MAX: Final = 10
+ROUND_MAX: Final = 30
+SHOP_MAX: Final = 20
+_NO_PURCHASE: Final = {"rechargeable"}  # a rechargeable battery is charged, not bought
+
+# What the forecast of a row says about itself.
+ESTIMATE: Final = "estimate"  # a line through the days since the last change
+STABLE: Final = "stable"  # hardly any use, or further away than the line can tell
+FEW_DATA: Final = "few_data"  # less than a week of daily means, or none
+PENDING: Final = "pending"  # the forecast is not read yet
+LOW: Final = "low"
+
+_COUNT = re.compile(r"^\s*(\d+)\s*[×x]\s*(.+?)\s*$", re.IGNORECASE)
+
+
+def parse_type(value: str | None) -> tuple[str, int] | None:
+    """The cell and the number of cells of a battery type: ``"2× AA"`` is two AA, ``"CR2032"`` is one CR2032."""
+    text = (value or "").strip()
+    if not text:
+        return None
+    found = _COUNT.match(text)
+    return (found.group(2), int(found.group(1))) if found else (text, 1)
+
+
+def _names(snapshot: dict[str, Any]) -> tuple[dict[str, str], dict[str, dict[str, Any]]]:
+    areas = {o["object_id"]: o["name"] for o in snapshot["objects"] if o["object_type"] == "area"}
+    devices = {o["object_id"]: o for o in snapshot["objects"] if o["object_type"] == "device"}
+    return areas, devices
+
+
+def _forecast_rows(forecast: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    """The forecast rows by entity: the percent batteries and the voltage ones."""
+    if not forecast or not forecast.get("available") or forecast.get("busy"):
+        return {}
+    rows = {r["entity_id"]: r for r in forecast.get("rows") or []}
+    for row in (forecast.get("voltage") or {}).get("rows") or []:
+        rows.setdefault(row["entity_id"], row)
+    return rows
+
+
+def battery_items(
+    snapshot: dict[str, Any],
+    types: dict[str, str],
+    forecast: dict[str, Any] | None,
+    elapsed_days: int,
+) -> list[dict[str, Any]]:
+    """One row per working battery: name, room, type, level, flag and what the forecast says.
+
+    ``elapsed_days`` is how long ago the forecast was read: the days it counted down have passed since.
+    """
+    areas, devices = _names(snapshot)
+    rows = _forecast_rows(forecast)
+    pending = forecast is None or bool(forecast.get("busy"))  # not read yet, or not now: it follows
+    limit = snapshot["meta"].get("low_battery_percent") or 20
+    items: list[dict[str, Any]] = []
+    for o in snapshot["objects"]:
+        if o["object_type"] != "entity" or o.get("device_class") != "battery" or excluded(o):
+            continue
+        level, flagged = battery_level(o)
+        found = rows.get(o["object_id"])
+        percent = level if level is not None else (found or {}).get("percent")
+        if level is None and not flagged and found is None:
+            continue
+        device = devices.get(o.get("device_id") or "") or {}
+        area = areas.get(o.get("area_id") or device.get("area_id") or "", "")
+        low = (
+            flagged
+            or (percent is not None and percent <= limit)
+            or (found or {}).get("state") == "low"
+        )
+        days = found.get("days_left") if found else None
+        if days is not None and not low:
+            days = max(0, days - elapsed_days)
+        if low:
+            quality = LOW
+        elif pending:
+            quality = PENDING
+        elif found is None:
+            quality = FEW_DATA
+        elif found.get("state") in ("stable", "far"):
+            quality = STABLE
+        else:
+            quality = ESTIMATE
+        items.append(
+            {
+                "entity_id": o["object_id"],
+                "name": device.get("name") or o["name"],
+                "area": area,
+                "type": types.get(o["object_id"]) or "",
+                "percent": None if percent is None else round(percent),
+                "low": bool(low),
+                "days_left": days,
+                "quality": quality,
+            }
+        )
+    return items
+
+
+def _order(item: dict[str, Any]) -> tuple[Any, ...]:
+    # Low ones first, then the soonest empty, then the lowest level; what has no forecast sorts by level.
+    return (
+        not item["low"],
+        item["days_left"] is None,
+        item["days_left"] if item["days_left"] is not None else 0,
+        item["percent"] if item["percent"] is not None else 101,
+        item["name"],
+    )
+
+
+def shopping_list(items: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[str]]:
+    """What to buy for these batteries: [{type, count, names}] by cell, and the names whose type is not known.
+
+    A type like ``2× AA`` counts two cells for that device; a rechargeable battery is left out.
+    """
+    wanted: dict[str, dict[str, Any]] = {}
+    unknown: list[str] = []
+    for item in items:
+        parsed = parse_type(item["type"])
+        if parsed is None:
+            unknown.append(item["name"])
+            continue
+        cell, count = parsed
+        if cell.casefold() in _NO_PURCHASE:
+            continue
+        entry = wanted.setdefault(cell, {"type": cell, "count": 0, "names": []})
+        entry["count"] += count
+        entry["names"].append(item["name"])
+    return sorted(wanted.values(), key=lambda e: (-e["count"], e["type"]))[:SHOP_MAX], unknown
+
+
+def battery_overview(
+    snapshot: dict[str, Any],
+    types: dict[str, str],
+    forecast: dict[str, Any] | None,
+    forecast_at: datetime | None,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    """The numbers of the card: the weakest, the round of the next days, the shopping list and the first change."""
+    now = now or datetime.now(UTC)
+    elapsed = (now.date() - forecast_at.date()).days if forecast_at else 0
+    items = battery_items(snapshot, types, forecast, elapsed)
+    items.sort(key=_order)
+    due = [
+        i
+        for i in items
+        if i["low"] or (i["days_left"] is not None and i["days_left"] <= ROUND_DAYS)
+    ]
+    shopping, unknown = shopping_list(due)
+    soonest = [i["days_left"] for i in items if i["days_left"] is not None]
+    base: date = (forecast_at or now).date()
+    first = (
+        datetime.combine(base + timedelta(days=min(soonest)), datetime.min.time(), UTC)
+        if soonest
+        else None
+    )
+    levels = [i["percent"] for i in items if i["percent"] is not None]
+    return {
+        "lowest": min(levels) if levels else None,
+        "weakest": items[:WEAKEST_MAX],
+        "round": due[:ROUND_MAX],
+        "round_days": ROUND_DAYS,
+        "shopping": shopping,
+        "unknown_type": unknown,
+        "total": len(items),
+        "low": sum(1 for i in items if i["low"]),
+        "first_change": first,
+        "forecast_at": forecast_at.isoformat() if forecast_at else None,
+    }

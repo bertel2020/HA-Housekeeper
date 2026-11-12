@@ -39,5 +39,52 @@
   "edit_tiles_never": "Nunca",
   "edit_changes": "Mostrar as alterações desde a última análise",
   "edit_scan_button": "Mostrar o botão de análise",
-  "edit_scan_button_help": "Só os administradores veem o botão."
+  "edit_scan_button_help": "Só os administradores veem o botão.",
+  "cardBatTitle": "Baterias",
+  "cardBatWeakestSub": "As {n} mais fracas de {total}",
+  "cardBatRoundSub": {
+    "one": "Nos próximos {days} dias: {n} bateria",
+    "other": "Nos próximos {days} dias: {n} baterias"
+  },
+  "cardBatLowChip": {
+    "one": "{n} fraca",
+    "other": "{n} fracas"
+  },
+  "cardBatAllGood": "Tudo bem",
+  "cardBatQuietSub": "{total} monitorizadas · a mais baixa {lowest} %",
+  "cardBatQuietFoot": "Nenhuma bateria abaixo do limite",
+  "cardBatNext": "Próxima troca prevista em {when}",
+  "cardBatLowNow": "Troca pendente",
+  "cardBatDays": {
+    "one": "cerca de {n} dia",
+    "other": "cerca de {n} dias"
+  },
+  "cardBatWeeks": {
+    "one": "cerca de {n} semana",
+    "other": "cerca de {n} semanas"
+  },
+  "cardBatMonths": {
+    "one": "cerca de {n} mês",
+    "other": "cerca de {n} meses"
+  },
+  "cardBatSoon": "em breve",
+  "cardBatStable": "quase sem consumo",
+  "cardBatFollows": "Previsão em breve",
+  "cardBatQEstimate": "Estimativa",
+  "cardBatQStable": "estável",
+  "cardBatQFew": "poucos dados",
+  "cardBatRound": "Ronda de trocas",
+  "cardBatNoArea": "Sem área",
+  "cardBatShopping": "Lista de compras",
+  "cardBatUnknown": "Tipo desconhecido",
+  "cardBatUnknownHint": "define o tipo no painel",
+  "cardBatNoRechargeable": "As recarregáveis («Rechargeable») não estão na lista",
+  "edit_view": "Vista",
+  "edit_view_weakest": "As mais fracas",
+  "edit_view_round": "Ronda de trocas",
+  "edit_view_both": "Ambas",
+  "edit_rows": "Linhas de «As mais fracas»",
+  "edit_shopping": "Mostrar a lista de compras",
+  "edit_shopping_help": "A lista de compras faz parte da ronda de trocas.",
+  "edit_forecast": "Mostrar a previsão e a sua fiabilidade"
 }

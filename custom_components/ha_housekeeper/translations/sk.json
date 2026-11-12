@@ -116,6 +116,12 @@
       "low_batteries": {
         "name": "Slabé batérie"
       },
+      "battery_weakest": {
+        "name": "Najslabšia batéria"
+      },
+      "battery_next_change": {
+        "name": "Ďalšia výmena batérie"
+      },
       "new_findings": {
         "name": "Nové nálezy"
       },

@@ -116,6 +116,12 @@
       "low_batteries": {
         "name": "Baterías bajas"
       },
+      "battery_weakest": {
+        "name": "Batería más baja"
+      },
+      "battery_next_change": {
+        "name": "Próximo cambio de batería"
+      },
       "new_findings": {
         "name": "Hallazgos nuevos"
       },

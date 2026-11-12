@@ -11,3 +11,4 @@ function registerCard(CardClass) {
 }
 
 registerCard(HKHealthCard);
+registerCard(HKBatteryCard);

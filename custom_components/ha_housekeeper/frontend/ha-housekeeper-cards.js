@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"dd8d5787ea"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"645c1fd480"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b8c4f81b46"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"303421ed1c"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"e46b8591a5"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"0895e6d773"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"10931aa9d9"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"2afb8d3e61"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"cb9feb2e20"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"e770da8052"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7c4a3174b4"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"738e78ff3f"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"ccc88673b4"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"9e5a8f8409"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -65,6 +65,38 @@ const CARD_TEXT = {
     edit_changes: "Änderungen seit dem letzten Scan zeigen",
     edit_scan_button: "Scan-Knopf zeigen",
     edit_scan_button_help: "Nur Administratoren sehen den Knopf.",
+    cardBatTitle: "Batterien",
+    cardBatWeakestSub: "Schwächste {n} von {total}",
+    cardBatRoundSub: {"one": "In den nächsten {days} Tagen: {n} Batterie", "other": "In den nächsten {days} Tagen: {n} Batterien"},
+    cardBatLowChip: {"one": "{n} schwach", "other": "{n} schwach"},
+    cardBatAllGood: "Alles gut",
+    cardBatQuietSub: "{total} überwacht · niedrigste {lowest} %",
+    cardBatQuietFoot: "Keine Batterie unter dem Grenzwert",
+    cardBatNext: "Nächster Wechsel voraussichtlich im {when}",
+    cardBatLowNow: "Wechsel fällig",
+    cardBatDays: {"one": "ca. {n} Tag", "other": "ca. {n} Tage"},
+    cardBatWeeks: {"one": "ca. {n} Woche", "other": "ca. {n} Wochen"},
+    cardBatMonths: {"one": "ca. {n} Monat", "other": "ca. {n} Monate"},
+    cardBatSoon: "in Kürze",
+    cardBatStable: "kaum Verbrauch",
+    cardBatFollows: "Prognose folgt",
+    cardBatQEstimate: "Schätzung",
+    cardBatQStable: "stabil",
+    cardBatQFew: "zu wenig Daten",
+    cardBatRound: "Wechselrunde",
+    cardBatNoArea: "Ohne Bereich",
+    cardBatShopping: "Einkaufsliste",
+    cardBatUnknown: "Typ unbekannt",
+    cardBatUnknownHint: "Typ im Panel setzen",
+    cardBatNoRechargeable: "Akkus („Rechargeable“) stehen nicht auf der Liste",
+    edit_view: "Ansicht",
+    edit_view_weakest: "Schwächste",
+    edit_view_round: "Wechselrunde",
+    edit_view_both: "Beides",
+    edit_rows: "Zeilen bei „Schwächste“",
+    edit_shopping: "Einkaufsliste zeigen",
+    edit_shopping_help: "Die Einkaufsliste gehört zur Wechselrunde.",
+    edit_forecast: "Prognose und Güte zeigen",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -101,6 +133,38 @@ const CARD_TEXT = {
     edit_changes: "Show the changes since the last scan",
     edit_scan_button: "Show the scan button",
     edit_scan_button_help: "Only administrators see the button.",
+    cardBatTitle: "Batteries",
+    cardBatWeakestSub: "Weakest {n} of {total}",
+    cardBatRoundSub: {"one": "In the next {days} days: {n} battery", "other": "In the next {days} days: {n} batteries"},
+    cardBatLowChip: {"one": "{n} low", "other": "{n} low"},
+    cardBatAllGood: "All good",
+    cardBatQuietSub: "{total} watched · lowest {lowest} %",
+    cardBatQuietFoot: "No battery below the limit",
+    cardBatNext: "Next change expected in {when}",
+    cardBatLowNow: "Change due",
+    cardBatDays: {"one": "about {n} day", "other": "about {n} days"},
+    cardBatWeeks: {"one": "about {n} week", "other": "about {n} weeks"},
+    cardBatMonths: {"one": "about {n} month", "other": "about {n} months"},
+    cardBatSoon: "soon",
+    cardBatStable: "hardly any use",
+    cardBatFollows: "Forecast follows",
+    cardBatQEstimate: "Estimate",
+    cardBatQStable: "stable",
+    cardBatQFew: "too little data",
+    cardBatRound: "Round of changes",
+    cardBatNoArea: "No area",
+    cardBatShopping: "Shopping list",
+    cardBatUnknown: "Type unknown",
+    cardBatUnknownHint: "set the type in the panel",
+    cardBatNoRechargeable: "Rechargeable batteries are not on the list",
+    edit_view: "View",
+    edit_view_weakest: "Weakest",
+    edit_view_round: "Round of changes",
+    edit_view_both: "Both",
+    edit_rows: "Rows for “Weakest”",
+    edit_shopping: "Show the shopping list",
+    edit_shopping_help: "The shopping list belongs to the round of changes.",
+    edit_forecast: "Show the forecast and its quality",
   },
 };
 
@@ -141,6 +205,28 @@ const CARD_CSS = `
   @media (max-width: 520px) { .hk-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .hk-up { color: var(--error-color); font-weight: 600; }
   .hk-down { color: var(--success-color); font-weight: 600; }
+  .hk-row { display: grid; gap: 12px; align-items: center; padding: 10px 16px; border-top: 1px solid var(--divider-color); }
+  .hk-head.line + .hk-row { border-top: 0; }
+  .hk-row.r3 { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; }
+  .hk-row.r2 { grid-template-columns: minmax(0, 1fr) auto; }
+  .hk-name b { display: block; font-size: 13.5px; color: var(--primary-text-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hk-name small, .hk-right small { display: block; color: var(--secondary-text-color); font-size: 12px; }
+  .hk-right { text-align: right; min-width: 70px; }
+  .hk-right b { font-size: 14px; color: var(--primary-text-color); }
+  .hk-q { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 99px; background: var(--secondary-background-color); color: var(--secondary-text-color); margin-top: 2px; }
+  .hk-bar { height: 8px; border-radius: 99px; background: var(--secondary-background-color); overflow: hidden; }
+  .hk-bar i { display: block; height: 100%; border-radius: 99px; background: var(--success-color); }
+  .hk-bar.warn i { background: var(--warning-color); }
+  .hk-bar.bad i { background: var(--error-color); }
+  .hk-area { padding: 8px 16px 2px; font-size: 12px; font-weight: 700; color: var(--primary-color); border-top: 1px solid var(--divider-color); }
+  .hk-sec { padding: 10px 16px 4px; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--secondary-text-color); font-weight: 600; }
+  .hk-sec.top { border-top: 1px solid var(--divider-color); }
+  .hk-shop { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 14px; padding: 4px 16px 12px; align-items: baseline; }
+  .hk-shop .q { font-weight: 700; font-size: 15px; text-align: right; min-width: 52px; color: var(--primary-text-color); }
+  .hk-shop .q.mute { color: var(--secondary-text-color); }
+  .hk-shop .w b { font-size: 13.5px; color: var(--primary-text-color); }
+  .hk-shop .w small { color: var(--secondary-text-color); font-size: 12px; }
+  @media (max-width: 520px) { .hk-row.r3 { grid-template-columns: minmax(0, 1fr) auto; } .hk-row.r3 .hk-bar { display: none; } }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
 
@@ -469,6 +555,113 @@ class HKHealthCard extends HKCard {
   }
 }
 
+// The battery card: the weakest batteries with a forecast, the next round of changes by area and what to buy for it.
+// The numbers come from the sensor "weakest battery" and its attributes; the forecast is read once a day, so until it
+// is there the card sorts by level and says "forecast follows".
+class HKBatteryCard extends HKCard {
+  static tag = "ha-housekeeper-battery-card";
+  static pickerName = "HA Housekeeper: Batteries";
+  static pickerDescription = "The weakest batteries with a forecast, the next round of changes by area and what to buy for it.";
+  static get defaults() { return { view: "weakest", rows: 5, shopping: true, forecast: true }; }
+
+  static editorSchema(t) {
+    return [
+      { name: "view", selector: { select: { mode: "dropdown", options: ["weakest", "round", "both"].map(value => ({ value, label: t(`edit_view_${value}`) })) } } },
+      { name: "rows", selector: { number: { min: 3, max: 10, mode: "box" } } },
+      { name: "shopping", selector: { boolean: {} } },
+      { name: "forecast", selector: { boolean: {} } },
+    ];
+  }
+
+  get titleKey() { return "cardBatTitle"; }
+  watchedIds() { return ["battery_weakest", "battery_next_change"].map(key => this.idOf(key)).filter(Boolean); }
+
+  data() { return this.stateOf("battery_weakest")?.attributes || {}; }
+  hasData() { return Array.isArray(this.data().weakest); }
+  // Quiet is: no battery is low and none is due within the round.
+  isQuiet() { return this.hasData() && !this.data().low && !(this.data().round || []).length; }
+
+  // "about 5 days", "about 3 weeks", "about 4 months": the unit that fits the distance.
+  span(days) {
+    if (days < 1) return this.t("cardBatSoon");
+    if (days < 14) return this.t("cardBatDays", { n: days, count: days });
+    if (days < 60) { const n = Math.round(days / 7); return this.t("cardBatWeeks", { n, count: n }); }
+    const n = Math.round(days / 30);
+    return this.t("cardBatMonths", { n, count: n });
+  }
+
+  // What the forecast of one battery says, and how far to trust it.
+  outlook(item) {
+    const quality = { estimate: "cardBatQEstimate", stable: "cardBatQStable", few_data: "cardBatQFew" }[item.quality];
+    const text = item.quality === "low" ? this.t("cardBatLowNow")
+      : item.quality === "estimate" ? this.span(item.days_left ?? 0)
+      : item.quality === "stable" ? this.t("cardBatStable")
+      : this.t("cardBatFollows");
+    return { text, quality: quality ? this.t(quality) : "" };
+  }
+
+  tone(item) { return item.low ? "bad" : item.days_left != null && item.days_left <= (this.data().round_days || 14) ? "warn" : "ok"; }
+
+  weakestRow(item) {
+    const out = this._config.forecast ? this.outlook(item) : { text: "", quality: "" };
+    const where = [item.area, item.type].filter(Boolean).join(" · ");
+    const bar = item.percent == null ? "<div></div>" : `<div class="hk-bar ${this.tone(item)}"><i style="width:${Math.max(2, Math.min(100, item.percent))}%"></i></div>`;
+    const percent = item.percent == null ? "" : `<b>${this.esc(item.percent)} %</b>`;
+    return `<div class="hk-row r3"><div class="hk-name"><b>${this.esc(item.name)}</b>${where ? `<small>${this.esc(where)}</small>` : ""}</div>${bar}<div class="hk-right">${percent}${out.text ? `<small>${this.esc(out.text)}</small>` : ""}${out.quality ? `<span class="hk-q">${this.esc(out.quality)}</span>` : ""}</div></div>`;
+  }
+
+  // The round of the next days, by area: the nearest area first, inside it the soonest.
+  roundHtml(items) {
+    const groups = new Map();
+    for (const item of items) {
+      const key = item.area || "";
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    }
+    const soonest = list => Math.min(...list.map(i => i.days_left ?? 0));
+    const ordered = [...groups.entries()].sort((a, b) => soonest(a[1]) - soonest(b[1]) || a[0].localeCompare(b[0]));
+    return ordered.map(([area, list]) => `<div class="hk-area">${this.esc(area || this.t("cardBatNoArea"))}</div>${list.map(item => {
+      const out = this.outlook(item);
+      return `<div class="hk-row r2"><div class="hk-name"><b>${this.esc(item.name)}</b>${item.type ? `<small>${this.esc(item.type)}</small>` : ""}</div><div class="hk-right"><b>${this.esc(out.text)}</b></div></div>`;
+    }).join("")}`).join("");
+  }
+
+  shoppingHtml(data) {
+    const lines = (data.shopping || []).map(entry => `<span class="q">${this.esc(entry.count)} ×</span><span class="w"><b>${this.esc(entry.type)}</b><br><small>${this.esc(entry.names.join(", "))}</small></span>`);
+    const unknown = data.unknown_type || [];
+    if (unknown.length) lines.push(`<span class="q mute">${this.esc(unknown.length)}</span><span class="w"><b>${this.esc(this.t("cardBatUnknown"))}</b><br><small>${this.esc(unknown.join(", "))} · ${this.esc(this.t("cardBatUnknownHint"))}</small></span>`);
+    return lines.length ? `<div class="hk-sec">${this.esc(this.t("cardBatShopping"))}</div><div class="hk-shop">${lines.join("")}</div>` : "";
+  }
+
+  // When the first battery will probably run low, said in months: "in March".
+  nextText() {
+    const when = Date.parse(this.stateOf("battery_next_change")?.state || "");
+    if (!Number.isFinite(when) || when < Date.now() - 86400000) return "";
+    const date = new Date(when), sameYear = date.getFullYear() === new Date().getFullYear();
+    try { return this.t("cardBatNext", { when: new Intl.DateTimeFormat(this.lang, sameYear ? { month: "long" } : { month: "long", year: "numeric" }).format(date) }); } catch (_) { return ""; }
+  }
+
+  renderBody() {
+    const data = this.data(), view = this._config.view, round = data.round || [], low = data.low || 0;
+    const showWeakest = view === "weakest" || view === "both", showRound = view === "round" || view === "both";
+    const chip = low ? `<span class="hk-chip warn">${this.esc(this.t("cardBatLowChip", { n: low, count: low }))}</span>` : `<span class="hk-chip">${this.esc(this.t("cardBatAllGood"))}</span>`;
+    if (this.isQuiet()) {
+      const sub = data.lowest == null ? "" : this.t("cardBatQuietSub", { total: data.total || 0, lowest: data.lowest });
+      return this.head(sub, chip) + this.foot([this.t("cardBatQuietFoot"), this.nextText()].filter(Boolean).join(" · "), "view=batteries");
+    }
+    const rows = (data.weakest || []).slice(0, Number(this._config.rows) || 5);
+    const sub = showWeakest ? this.t("cardBatWeakestSub", { n: rows.length, total: data.total || 0 })
+      : this.t("cardBatRoundSub", { days: data.round_days || 14, n: round.length, count: round.length });
+    let body = this.head(sub, chip, true);
+    if (showWeakest) body += rows.map(item => this.weakestRow(item)).join("");
+    if (showRound && round.length) {
+      body += `<div class="hk-sec top">${this.esc(this.t("cardBatRound"))}</div>${this.roundHtml(round)}`;
+      if (this._config.shopping) body += this.shoppingHtml(data);
+    }
+    return body + this.foot(this._config.shopping && showRound ? this.t("cardBatNoRechargeable") : "", "view=batteries");
+  }
+}
+
 // Every card is registered here: its element, its editor and its entry in the card picker.
 // The picker shows English only, it has no way to translate a name.
 function registerCard(CardClass) {
@@ -482,3 +675,4 @@ function registerCard(CardClass) {
 }
 
 registerCard(HKHealthCard);
+registerCard(HKBatteryCard);

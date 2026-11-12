@@ -24,7 +24,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -150,4 +150,39 @@ test("the health card names what is wrong in the words of the panel, scans on a 
   card.hass = hass(states({}, { "sensor.house": { ...calm, last_updated: "4" }, "sensor.scan": { state: "failed", last_updated: "4" } }));
   assert.notEqual(card.style.display, "none", "a card that cannot trust its numbers stays");
   assert.match(html(), /Der Scan läuft nicht durch/);
+});
+
+test("the battery card sorts out the weakest, the round by area and the shopping list, and says when the forecast follows", () => {
+  const { HKBatteryCard, registered } = loadCards();
+  assert.ok(registered["ha-housekeeper-battery-card"], "the card is registered");
+  const entities = { w: ENTITY("sensor.weak", "battery_weakest"), n: ENTITY("sensor.next", "battery_next_change") };
+  const smoke = { name: "Rauchmelder Flur", area: "Flur", type: "9 V", percent: 8, low: true, days_left: 0, quality: "low" };
+  const door = { name: "Türsensor Keller", area: "Keller", type: "CR2032", percent: 44, low: false, days_left: 12, quality: "estimate" };
+  const office = { name: "Fensterkontakt Büro", area: "Büro", type: "CR2032", percent: 52, low: false, days_left: null, quality: "stable" };
+  const garage = { name: "Garage", area: "", type: "", percent: 60, low: false, days_left: null, quality: "pending" };
+  const attrs = { weakest: [smoke, door, office, garage], round: [smoke, door], round_days: 14, total: 31, low: 1, shopping: [{ type: "9 V", count: 1, names: ["Rauchmelder Flur"] }, { type: "CR2032", count: 2, names: ["Türsensor Keller", "Fensterkontakt Keller"] }], unknown_type: ["Garage"] };
+  let stamp = 0;
+  const hass = (a, next = "") => ({ language: "de", user: { is_admin: true }, entities, states: { "sensor.weak": { state: "8", last_updated: String(++stamp), attributes: a }, "sensor.next": { state: next, last_updated: String(stamp) } } });
+  const card = new HKBatteryCard();
+  card.setConfig({ view: "both" });
+  card.hass = hass(attrs);
+  const html = () => card.shadowRoot.innerHTML;
+  assert.match(html(), /Rauchmelder Flur[\s\S]*Türsensor Keller/);
+  assert.match(html(), /Wechsel fällig/);
+  assert.match(html(), /ca\. 12 Tage/);
+  assert.match(html(), /Schätzung/);
+  assert.match(html(), /kaum Verbrauch[\s\S]*stabil/);
+  assert.match(html(), /Prognose folgt/, "a battery without a forecast yet says so");
+  assert.match(html(), /1 schwach/);
+  assert.match(html(), /Wechselrunde[\s\S]*Flur[\s\S]*Keller/, "the round names the areas, the nearest first");
+  assert.match(html(), /2 ×<\/span><span class="w"><b>CR2032/);
+  assert.match(html(), /Typ unbekannt[\s\S]*Garage/);
+  card.setConfig({ view: "weakest", rows: 3, forecast: false });
+  assert.ok(!/Schätzung|Prognose folgt/.test(html()) && !html().includes("Wechselrunde</div>"), "only what was asked for");
+  assert.equal((html().match(/class="hk-row r3"/g) || []).length, 3);
+  const calm = { weakest: [office], round: [], round_days: 14, total: 31, low: 0, shopping: [], unknown_type: [], lowest: 52 };
+  card.setConfig({ view: "both" });
+  card.hass = hass({ ...calm, lowest: 52 }, new Date(Date.now() + 120 * 86400000).toISOString());
+  assert.match(html(), /31 überwacht[\s\S]*Alles gut[\s\S]*Keine Batterie unter dem Grenzwert[\s\S]*Nächster Wechsel voraussichtlich im/);
+  assert.ok(!html().includes("Fensterkontakt Büro"), "when quiet the card shows only the summary");
 });

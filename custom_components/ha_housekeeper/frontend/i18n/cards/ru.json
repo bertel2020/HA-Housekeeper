@@ -41,5 +41,62 @@
   "edit_tiles_never": "Никогда",
   "edit_changes": "Показывать изменения с последней проверки",
   "edit_scan_button": "Показывать кнопку проверки",
-  "edit_scan_button_help": "Кнопку видят только администраторы."
+  "edit_scan_button_help": "Кнопку видят только администраторы.",
+  "cardBatTitle": "Батареи",
+  "cardBatWeakestSub": "Самые слабые: {n} из {total}",
+  "cardBatRoundSub": {
+    "one": "В ближайшие {days} дн.: {n} батарея",
+    "few": "В ближайшие {days} дн.: {n} батареи",
+    "many": "В ближайшие {days} дн.: {n} батарей",
+    "other": "В ближайшие {days} дн.: {n} батареи"
+  },
+  "cardBatLowChip": {
+    "one": "{n} разряжена",
+    "few": "{n} разряжены",
+    "many": "{n} разряжено",
+    "other": "{n} разряжено"
+  },
+  "cardBatAllGood": "Всё в порядке",
+  "cardBatQuietSub": "Под наблюдением: {total} · минимум {lowest} %",
+  "cardBatQuietFoot": "Ни одна батарея не ниже порога",
+  "cardBatNext": "Следующая замена ожидается: {when}",
+  "cardBatLowNow": "Пора менять",
+  "cardBatDays": {
+    "one": "около {n} дня",
+    "few": "около {n} дней",
+    "many": "около {n} дней",
+    "other": "около {n} дня"
+  },
+  "cardBatWeeks": {
+    "one": "около {n} недели",
+    "few": "около {n} недель",
+    "many": "около {n} недель",
+    "other": "около {n} недели"
+  },
+  "cardBatMonths": {
+    "one": "около {n} месяца",
+    "few": "около {n} месяцев",
+    "many": "около {n} месяцев",
+    "other": "около {n} месяца"
+  },
+  "cardBatSoon": "скоро",
+  "cardBatStable": "почти не расходуется",
+  "cardBatFollows": "Прогноз появится позже",
+  "cardBatQEstimate": "Оценка",
+  "cardBatQStable": "стабильно",
+  "cardBatQFew": "мало данных",
+  "cardBatRound": "Обход замены",
+  "cardBatNoArea": "Без зоны",
+  "cardBatShopping": "Список покупок",
+  "cardBatUnknown": "Тип неизвестен",
+  "cardBatUnknownHint": "укажи тип в панели",
+  "cardBatNoRechargeable": "Аккумуляторы («Rechargeable») в список не входят",
+  "edit_view": "Вид",
+  "edit_view_weakest": "Самые слабые",
+  "edit_view_round": "Обход замены",
+  "edit_view_both": "Оба",
+  "edit_rows": "Строк для «Самые слабые»",
+  "edit_shopping": "Показывать список покупок",
+  "edit_shopping_help": "Список покупок относится к обходу замены.",
+  "edit_forecast": "Показывать прогноз и его надёжность"
 }

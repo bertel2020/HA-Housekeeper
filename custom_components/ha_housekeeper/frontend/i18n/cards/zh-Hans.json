@@ -38,5 +38,47 @@
   "edit_tiles_never": "从不",
   "edit_changes": "显示自上次扫描以来的变化",
   "edit_scan_button": "显示扫描按钮",
-  "edit_scan_button_help": "只有管理员能看到该按钮。"
+  "edit_scan_button_help": "只有管理员能看到该按钮。",
+  "cardBatTitle": "电池",
+  "cardBatWeakestSub": "最弱的 {n} 个，共 {total} 个",
+  "cardBatRoundSub": {
+    "other": "未来 {days} 天内：{n} 个电池"
+  },
+  "cardBatLowChip": {
+    "other": "{n} 个电量低"
+  },
+  "cardBatAllGood": "一切正常",
+  "cardBatQuietSub": "监控 {total} 个 · 最低 {lowest} %",
+  "cardBatQuietFoot": "没有电池低于下限",
+  "cardBatNext": "预计下次更换：{when}",
+  "cardBatLowNow": "该更换了",
+  "cardBatDays": {
+    "other": "约 {n} 天"
+  },
+  "cardBatWeeks": {
+    "other": "约 {n} 周"
+  },
+  "cardBatMonths": {
+    "other": "约 {n} 个月"
+  },
+  "cardBatSoon": "很快",
+  "cardBatStable": "几乎不耗电",
+  "cardBatFollows": "预测稍后给出",
+  "cardBatQEstimate": "估算",
+  "cardBatQStable": "稳定",
+  "cardBatQFew": "数据不足",
+  "cardBatRound": "更换巡检",
+  "cardBatNoArea": "无区域",
+  "cardBatShopping": "购物清单",
+  "cardBatUnknown": "类型未知",
+  "cardBatUnknownHint": "请在面板中设置类型",
+  "cardBatNoRechargeable": "可充电电池（“Rechargeable”）不在清单中",
+  "edit_view": "视图",
+  "edit_view_weakest": "最弱的",
+  "edit_view_round": "更换巡检",
+  "edit_view_both": "两者",
+  "edit_rows": "“最弱的”显示行数",
+  "edit_shopping": "显示购物清单",
+  "edit_shopping_help": "购物清单属于更换巡检。",
+  "edit_forecast": "显示预测及其可靠性"
 }

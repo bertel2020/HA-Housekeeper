@@ -116,6 +116,12 @@
       "low_batteries": {
         "name": "Низкий заряд батарей"
       },
+      "battery_weakest": {
+        "name": "Самая слабая батарея"
+      },
+      "battery_next_change": {
+        "name": "Следующая замена батареи"
+      },
       "new_findings": {
         "name": "Новые находки"
       },
