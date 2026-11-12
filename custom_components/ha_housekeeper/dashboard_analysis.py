@@ -128,9 +128,9 @@ def extract_entry_references(
 
     ``parts`` are ``(label, data)`` pairs; the label starts the location (a sub-entry's title).
     Only a value that is exactly the ID of an existing entity counts, whatever its key is called,
-    so free text and secrets never produce a reference and no missing target can be guessed. The
-    keys of an integration are not known, so every reference is ``probable``. Entities the entry
-    provides itself (``own``) are left out.
+    so free text and secrets never produce a reference and no missing target can be guessed. A
+    value that is exactly an entity ID is no coincidence, so the reference is ``certain``. Entities
+    the entry provides itself (``own``) are left out.
     """
     found: list[dict[str, str]] = []
     seen: set[tuple[str, str]] = set()
@@ -155,7 +155,7 @@ def extract_entry_references(
                     "object_id": value,
                     "relation": "REFERENCES",
                     "location": path,
-                    "confidence": "probable",
+                    "confidence": "certain",
                 }
             )
 

@@ -155,7 +155,7 @@ class GraphMixin {
       const hit = hitKeys && (hitKeys.has(edge.source) && (hitKeys.has(edge.target) || edge.target === model.key));
       const cls = ["gedge", edge.confidence === "certain" ? "" : "prob", cycle ? "cycle" : "", hit ? "hit" : "", hitKeys && !hit ? "gdim" : ""].filter(Boolean).join(" ");
       const mark = forward ? 'marker-end="url(#hk-arrow)"' : 'marker-start="url(#hk-arrow)"';
-      return `<path class="${cls}" d="M${x1},${y1} C${x1 + dx},${y1} ${sameColumn ? x2 + dx : x2 - dx},${y2} ${x2},${y2}" ${mark}><title>${this.esc(`${edge.source} → ${edge.target}: ${this.t(edge.relation)} (${this.t(edge.confidence)})`)}</title></path>`;
+      return `<path class="${cls}" d="M${x1},${y1} C${x1 + dx},${y1} ${sameColumn ? x2 + dx : x2 - dx},${y2} ${x2},${y2}" ${mark}><title>${this.esc(`${edge.source} → ${edge.target}: ${this.t(edge.relation)} (${this.t(edge.confidence)})${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`)}</title></path>`;
     }).join("");
     const headSvg = layout.heads.map((h, i) => `<text class="gcol" x="${i * layout.step}" y="12">${this.esc(h.side === "center" ? this.t("graphColCenter") : this.t(h.side === "left" ? "graphColLeft" : "graphColRight", { n: h.level }))}</text>`).join("");
     const nodeSvg = [...at.entries()].map(([key, { x, y, node }]) => {

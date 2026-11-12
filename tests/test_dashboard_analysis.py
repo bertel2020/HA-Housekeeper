@@ -191,5 +191,5 @@ def test_config_entry_values_that_are_entity_ids_count_as_references() -> None:
     refs = extract_entry_references(parts, KNOWN, own={"light.kitchen"})
 
     assert [(r["object_id"], r["location"], r["confidence"]) for r in refs] == [
-        ("sensor.temp", "Konvektor/thermostat/room_sensor", "probable")
+        ("sensor.temp", "Konvektor/thermostat/room_sensor", "certain")
     ]
