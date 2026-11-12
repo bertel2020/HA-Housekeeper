@@ -4483,6 +4483,8 @@ test("the relations of an object are two columns by direction: rows open known o
   el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.rel", name: "Rel", status: "active" }, { object_type: "automation", object_id: "automation.rel", name: "Rel auto", status: "active" }, { object_type: "device", object_id: "drel", name: "Rel device", status: "active" }],
     edges: [
       { source: "device:drel", target: "entity:sensor.rel", relation: "PROVIDES", confidence: "certain" },
+      { source: "config_entry:CE", target: "device:drel", relation: "OWNS", confidence: "certain" },
+      { source: "config_entry:CE", target: "entity:sensor.rel", relation: "PROVIDES", confidence: "certain" },
       { source: "automation:automation.rel", target: "entity:sensor.rel", relation: "TARGETS", confidence: "certain" },
       { source: "entity:sensor.rel", target: "entity:sensor.gone", relation: "TARGETS", confidence: "certain", location: "a" },
       { source: "entity:sensor.rel", target: "entity:sensor.gone", relation: "TARGETS", confidence: "certain", location: "b" }],
@@ -4492,6 +4494,8 @@ test("the relations of an object are two columns by direction: rows open known o
   assert.ok(rel.includes('data-object="automation:automation.rel"') && rel.includes('data-object="device:drel"'), "a known object opens");
   assert.ok(!rel.includes('data-object="entity:sensor.gone"') && rel.includes('pill red">Missing'), "a missing target is marked and does not open");
   assert.ok(rel.includes("2 places"), "the same relation at two places is one row");
+  assert.ok(rel.indexOf("owns Rel device") < rel.indexOf("provides this object") && rel.includes("deprow ind1"), "the origin is a chain from the integration down to the device");
+  assert.equal((rel.match(/provides this object/g) || []).length, 1, "the integration does not provide the entity a second time");
   assert.ok(rel.includes("Where does it come from?") && rel.includes("Where is it used?"), "the two blocks are named by direction");
   assert.ok(rel.includes("provides this object") && rel.includes("controls this object") && rel.includes("is controlled by this object"), "each row says who does what to this object");
 });
