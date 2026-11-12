@@ -148,7 +148,7 @@ class OftenMixin {
   // rows are marked or left out from the selection bar; one row alone through its menu. A click on a row opens the object.
   // The picked suggestions: what to do with them, in the bar of the list beside the search.
   oftenTools(n) {
-    return `${this.selTools("often", n, "data-often-clear")}<button type="button" class="btn quiet" data-often-skip-picked ${n ? "" : "disabled"}>${this.t("oftenSkip")}</button><button type="button" class="btn primary" data-often-picked ${n ? "" : "disabled"}>${this.t("oftenTakeN", { n: this.formatNumber(n) })}</button>`;
+    return `${this.selTools("often", n, "data-often-clear")}${n ? `<button type="button" class="btn quiet" data-often-skip-picked>${this.t("oftenSkip")}</button><button type="button" class="btn primary" data-often-picked>${this.t("oftenTakeN", { n: this.formatNumber(n) })}</button>` : ""}`;
   }
 
   oftenCard() {

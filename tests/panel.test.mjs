@@ -5353,7 +5353,9 @@ test("battery sensors that are no replaceable battery leave the list, wait in a 
   assert.ok(ids.includes("sensor.door_battery") && ids.includes("sensor.back_battery") && !ids.includes("sensor.bank_battery") && !ids.includes("sensor.car_battery"));
   const card = el.batteryKindCard();
   assert.ok(card.includes("Probably a pack or storage") && card.includes("Device also reports power, storage") && card.includes('data-bk-accept="sensor.bank_battery"'));
-  assert.ok(card.includes('data-bk-sel="sensor.bank_battery"') && card.includes("data-bk-take") && card.includes('class="menuitem" data-bk-back="sensor.bank_battery"'), "boxes and a selection bar; It is a battery sits in the menu");
+  assert.ok(card.includes('data-bk-sel="sensor.bank_battery"') && !card.includes("data-bk-take") && card.includes('class="menuitem" data-bk-back="sensor.bank_battery"'), "boxes, no action before a pick; It is a battery sits in the menu");
+  el.bkSel = new Set(["sensor.bank_battery"]);
+  assert.ok(el.batteryKindCard().includes("data-bk-take"), "the action comes with the first pick");
   await el.batterySetKinds([{ entity_id: "sensor.bank_battery", kind: "storage" }, { entity_id: "sensor.door_battery", kind: "" }]);
   assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/battery_kind_set", items: [{ entity_id: "sensor.bank_battery", kind: "storage" }, { entity_id: "sensor.door_battery", kind: "" }] }));
 });
@@ -6613,7 +6615,9 @@ test("the suggestions gather the entities of a device that fail together; the ma
   assert.equal(items.map(s => `${s.key}:${s.hides}`).join(), "group:tv:3");
   el.folds = { ...(el.folds || {}), often: true };
   const card = el.oftenCard();
-  assert.ok(card.includes('data-often-sel="group:tv"') && card.includes("data-often-page") && card.includes("data-often-picked"), "a box per row, one for the page and the selection bar");
+  assert.ok(card.includes('data-often-sel="group:tv"') && card.includes("data-often-page") && !card.includes("data-often-picked"), "a box per row, one for the page, no action before a pick");
+  el.oftenSel = new Set(["group:tv"]);
+  assert.ok(el.oftenCard().includes("data-often-picked"), "the action comes with the first pick");
   assert.ok(card.includes('class="menuitem" data-often-take="group:tv"') && card.includes('class="menuitem" data-often-skip="group:tv"'), "one row alone through its menu");
   assert.ok(card.includes("TV: 3 entities") && card.includes("the other entity stays watched") && card.includes('data-object="device:tv"'), card);
   assert.ok(el.oftenFindings(1) === "1 finding" && el.oftenFindings(3) === "3 findings", "singular and plural");

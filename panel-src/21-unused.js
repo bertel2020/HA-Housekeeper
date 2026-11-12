@@ -228,7 +228,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = n > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span><button class="btn dangersoft" data-purge-run ${n && !this.purgeBusy ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button>${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   async purgeRun() {
@@ -300,7 +300,7 @@ class UnusedMixin {
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     const n = sel.size, form = this.unrefBulk;
-    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear")}<span class="toolgap"></span><button type="button" class="btn" data-unref-bulk ${n ? "" : "disabled"}><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button></div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
+    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-unref-bulk><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button>` : ""}</div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
     return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${tools}${table}${pg.footer}</div></div>`;
   }
 

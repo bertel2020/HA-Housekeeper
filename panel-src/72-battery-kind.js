@@ -89,7 +89,7 @@ class BatteryKindMixin {
       ],
     });
     const n = sel.size;
-    const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("bk_proposed", n, "data-bk-clear")}<span class="toolgap"></span><button type="button" class="btn" data-bk-take ${n ? "" : "disabled"}><ha-icon icon="mdi:check"></ha-icon>${this.t("bkTakeN", { n: this.formatNumber(n) })}</button></div>`;
+    const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("bk_proposed", n, "data-bk-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-bk-take><ha-icon icon="mdi:check"></ha-icon>${this.t("bkTakeN", { n: this.formatNumber(n) })}</button>` : ""}</div>`;
     const shown = this.selOnlyOn("bk_proposed", sel.size) ? proposed.filter(o => sel.has(o.object_id)) : proposed;
     const parts = [];
     if (proposed.length) parts.push(this.fold("bk_proposed", { tone: "warn", title: this.t("bkProposed"), sub: this.t("bkProposedHint"), pill: this.formatNumber(proposed.length) }, `${tools}${table("bk_proposed", shown, o => this.bkPick?.[o.object_id] || o.battery_suggest?.kind || "other", false)}`, true));

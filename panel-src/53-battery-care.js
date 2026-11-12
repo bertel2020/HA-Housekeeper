@@ -108,7 +108,7 @@ class BatteryCareMixin {
     this._remVisible = pg.rows.map(r => r.id);
     // Several reminders done at once: tick them, then one button.
     const n = sel.size;
-    const tools = items.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("reminders", n, "data-rem-clear")}<span class="toolgap"></span><button type="button" class="btn" data-rem-done-picked ${n ? "" : "disabled"}><ha-icon icon="mdi:check"></ha-icon>${this.t("remDoneN", { n: this.formatNumber(n) })}</button></div>` : "";
+    const tools = items.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("reminders", n, "data-rem-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-rem-done-picked><ha-icon icon="mdi:check"></ha-icon>${this.t("remDoneN", { n: this.formatNumber(n) })}</button>` : ""}</div>` : "";
     const table = !items.length ? `<div class="emptymsg"><ha-icon icon="mdi:calendar-clock-outline"></ha-icon>${this.t("remEmpty")}</div>`
       : rows.length ? this.listTable("reminders", this.reminderColumns(pg.rows), pg.rows, { cls: "rem", rowAttrs: r => `data-rem-row="${this.esc(r.id)}" tabindex="0" role="button" aria-expanded="${(this.remOpen || []).includes(r.id)}"`, after: r => this.reminderHistory(r) }) : `<div class="emptymsg">${this.noMatches("reminders")}</div>`;
     return `${tiles}<div class="panel">${head}${bar}${tools}${table}${pg.footer}</div>`;

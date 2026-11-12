@@ -4097,7 +4097,7 @@ class SettingsMixin {
     // The resting ones stand under a head of their own: they do nothing right now.
     table = table.replace(/<tr class="static restrow/, `<tr class="static grprow"><td colspan="${columns.length}">${this.t("decRestHead", { n: this.formatNumber(restN) })}</td></tr>$&`);
     const n = sel.size;
-    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("decided", n, "data-dec-clear")}<span class="toolgap"></span><button type="button" class="btn" data-dec-remove ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("decRemoveN", { n: this.formatNumber(n) })}</button></div>` : "";
+    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("decided", n, "data-dec-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-dec-remove><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("decRemoveN", { n: this.formatNumber(n) })}</button>` : ""}</div>` : "";
     const body = refined.length ? table : `<div class="emptymsg">${list.length ? this.noMatches("decided") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("decStatusNone")}`}</div>`;
     return `<section class="panel" id="hk-sec-status"><div class="panelhead"><div><h2>${this.t("decStatusTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decStatusHint")}</p></div></div>${bar}${tools}${body}${pg.footer}</section>`;
   }
@@ -6213,7 +6213,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = n > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span><button class="btn dangersoft" data-purge-run ${n && !this.purgeBusy ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${n ? this.t("purgeOpenCount", { n: this.formatNumber(n) }) : this.t("purgeOpen")}</button>${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   async purgeRun() {
@@ -6285,7 +6285,7 @@ class UnusedMixin {
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     const n = sel.size, form = this.unrefBulk;
-    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear")}<span class="toolgap"></span><button type="button" class="btn" data-unref-bulk ${n ? "" : "disabled"}><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button></div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
+    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-unref-bulk><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button>` : ""}</div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
     return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${tools}${table}${pg.footer}</div></div>`;
   }
 
@@ -10781,7 +10781,7 @@ class OftenMixin {
   // rows are marked or left out from the selection bar; one row alone through its menu. A click on a row opens the object.
   // The picked suggestions: what to do with them, in the bar of the list beside the search.
   oftenTools(n) {
-    return `${this.selTools("often", n, "data-often-clear")}<button type="button" class="btn quiet" data-often-skip-picked ${n ? "" : "disabled"}>${this.t("oftenSkip")}</button><button type="button" class="btn primary" data-often-picked ${n ? "" : "disabled"}>${this.t("oftenTakeN", { n: this.formatNumber(n) })}</button>`;
+    return `${this.selTools("often", n, "data-often-clear")}${n ? `<button type="button" class="btn quiet" data-often-skip-picked>${this.t("oftenSkip")}</button><button type="button" class="btn primary" data-often-picked>${this.t("oftenTakeN", { n: this.formatNumber(n) })}</button>` : ""}`;
   }
 
   oftenCard() {
@@ -12605,7 +12605,7 @@ class BatteryCareMixin {
     this._remVisible = pg.rows.map(r => r.id);
     // Several reminders done at once: tick them, then one button.
     const n = sel.size;
-    const tools = items.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("reminders", n, "data-rem-clear")}<span class="toolgap"></span><button type="button" class="btn" data-rem-done-picked ${n ? "" : "disabled"}><ha-icon icon="mdi:check"></ha-icon>${this.t("remDoneN", { n: this.formatNumber(n) })}</button></div>` : "";
+    const tools = items.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("reminders", n, "data-rem-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-rem-done-picked><ha-icon icon="mdi:check"></ha-icon>${this.t("remDoneN", { n: this.formatNumber(n) })}</button>` : ""}</div>` : "";
     const table = !items.length ? `<div class="emptymsg"><ha-icon icon="mdi:calendar-clock-outline"></ha-icon>${this.t("remEmpty")}</div>`
       : rows.length ? this.listTable("reminders", this.reminderColumns(pg.rows), pg.rows, { cls: "rem", rowAttrs: r => `data-rem-row="${this.esc(r.id)}" tabindex="0" role="button" aria-expanded="${(this.remOpen || []).includes(r.id)}"`, after: r => this.reminderHistory(r) }) : `<div class="emptymsg">${this.noMatches("reminders")}</div>`;
     return `${tiles}<div class="panel">${head}${bar}${tools}${table}${pg.footer}</div>`;
@@ -17630,7 +17630,7 @@ class BatteryKindMixin {
       ],
     });
     const n = sel.size;
-    const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("bk_proposed", n, "data-bk-clear")}<span class="toolgap"></span><button type="button" class="btn" data-bk-take ${n ? "" : "disabled"}><ha-icon icon="mdi:check"></ha-icon>${this.t("bkTakeN", { n: this.formatNumber(n) })}</button></div>`;
+    const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("bk_proposed", n, "data-bk-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-bk-take><ha-icon icon="mdi:check"></ha-icon>${this.t("bkTakeN", { n: this.formatNumber(n) })}</button>` : ""}</div>`;
     const shown = this.selOnlyOn("bk_proposed", sel.size) ? proposed.filter(o => sel.has(o.object_id)) : proposed;
     const parts = [];
     if (proposed.length) parts.push(this.fold("bk_proposed", { tone: "warn", title: this.t("bkProposed"), sub: this.t("bkProposedHint"), pill: this.formatNumber(proposed.length) }, `${tools}${table("bk_proposed", shown, o => this.bkPick?.[o.object_id] || o.battery_suggest?.kind || "other", false)}`, true));

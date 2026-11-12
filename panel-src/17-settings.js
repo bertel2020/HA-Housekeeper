@@ -243,7 +243,7 @@ class SettingsMixin {
     // The resting ones stand under a head of their own: they do nothing right now.
     table = table.replace(/<tr class="static restrow/, `<tr class="static grprow"><td colspan="${columns.length}">${this.t("decRestHead", { n: this.formatNumber(restN) })}</td></tr>$&`);
     const n = sel.size;
-    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("decided", n, "data-dec-clear")}<span class="toolgap"></span><button type="button" class="btn" data-dec-remove ${n ? "" : "disabled"}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("decRemoveN", { n: this.formatNumber(n) })}</button></div>` : "";
+    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("decided", n, "data-dec-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-dec-remove><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("decRemoveN", { n: this.formatNumber(n) })}</button>` : ""}</div>` : "";
     const body = refined.length ? table : `<div class="emptymsg">${list.length ? this.noMatches("decided") : `<ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("decStatusNone")}`}</div>`;
     return `<section class="panel" id="hk-sec-status"><div class="panelhead"><div><h2>${this.t("decStatusTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decStatusHint")}</p></div></div>${bar}${tools}${body}${pg.footer}</section>`;
   }
