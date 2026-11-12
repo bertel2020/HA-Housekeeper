@@ -5281,7 +5281,7 @@ class CleanupMixin {
       { key: "follow", label: "journalColFollow", sortable: false, cell: plan => (fuState(plan) ? `<span class="pill ${this.followupTone(fuState(plan))}">${this.t(`fu_${fuState(plan)}`)}</span>` : "–") },
       { key: "act", label: "journalColAct", sortable: false, cell: plan => `<span class="jbtns">${this.planStale(plan) ? `<button type="button" class="btn small" data-plan-renew="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : ""}${plan.executed || plan.run ? "" : this.rowMenuHtml([["mdi:delete-outline", "deletePlan", `data-plan-delete="${this.esc(plan.plan_id)}"`]])}</span>` },
     ];
-    const table = plans.length ? this.sysList("journal", plans, {
+    const table = plans.length ? this.sysList("journal", this.selOnlyOn("journal", this.mergeSel?.size || 0) ? plans.filter(p => this.mergeSel.has(p.plan_id)) : plans, {
       sort: "date", dir: "desc", columns, cls: "journal", empty: "journalEmpty",
       rowAttrs: plan => `data-plan-open="${this.esc(plan.plan_id)}" tabindex="0" role="button" aria-label="${this.esc(`${this.t("openPlan")}: ${this.formatDate(plan.created_at)}`)}"`,
       sorts: [
@@ -5297,7 +5297,7 @@ class CleanupMixin {
       text: p => `${this.formatDate(p.created_at)} ${this.t(`plan_status_${statusOf(p)}`)}`, tie: p => p.created_at,
     }) : `<div class="emptymsg mute"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon><strong>${this.t("journalEmpty")}</strong>${this.t("journalEmptyNext")}<button class="btn" data-jump="repair">${this.t("repair")}</button></div>`;
     const picked = this.mergeSel?.size || 0;
-    const tools = plans.some(p => this.mergeable(p)) ? `<div class="toolbar${picked ? "" : " nosel"}"><button class="btn" data-merge ${picked >= 2 && picked <= 10 && !this.cleanupBusy ? "" : "disabled"}${picked > 10 ? ` title="${this.esc(this.t("mergeTooMany"))}"` : ""}>${this.t("mergeButton", { count: picked })}</button><button class="btn dangersoft" data-merge-delete ${picked && !this.cleanupBusy ? "" : "disabled"}>${this.t("deleteSelectedPlans", { count: picked })}</button><span class="selcount" aria-live="polite">${this.t("selectedCount", { count: picked })}</span>${this.viewCount(this.lv.journal?.shown ?? plans.length)}</div>` : "";
+    const tools = plans.some(p => this.mergeable(p)) ? `<div class="toolbar${picked ? "" : " nosel"}">${this.selTools("journal", picked, "data-merge-clear")}<span class="toolgap"></span>${picked ? `<button class="btn" data-merge ${picked >= 2 && picked <= 10 && !this.cleanupBusy ? "" : "disabled"}${picked > 10 ? ` title="${this.esc(this.t("mergeTooMany"))}"` : ""}>${this.t("mergeButton", { count: picked })}</button><button class="btn dangersoft" data-merge-delete ${this.cleanupBusy ? "disabled" : ""}>${this.t("deleteSelectedPlans", { count: picked })}</button>` : ""}${this.viewCount(this.lv.journal?.shown ?? plans.length)}</div>` : "";
     const journalCard = `<div class="panel"><div class="panelhead"><div><h2>${this.t("journalPlans")}</h2><p>${this.t("journalHint")}</p></div></div>${this.mergeNote ? `<div class="pad"><small role="status">${this.esc(this.mergeNote)}</small></div>` : ""}${tools}${table}</div>`;
     const removed = this.removed || [], purges = this.purges || [];
     const tabs = [
@@ -9671,7 +9671,8 @@ class PoliciesMixin {
     ];
     const bar = this.listBar(id, { table: true, dense: true, sorts, filters: [{ name: "rule", all: this.t("polAllRules"), options: on.map(rule => [rule.id, `${this.t(`polRule_${rule.id}`)} (${this.formatNumber(rule.count)})`]) }] });
     const items = on.flatMap(rule => rule.items.map(item => ({ ...item, rule: rule.id }))).filter(item => this.policyShowHidden || !item.ignored);
-    const shown = this.refine(id, items, { text: item => [item.name, item.object_id, ...(item.also || [])].join(" "), filters: { rule: (item, v) => item.rule === v }, sorts, tie: item => item.key });
+    const refined = this.refine(id, items, { text: item => [item.name, item.object_id, ...(item.also || [])].join(" "), filters: { rule: (item, v) => item.rule === v }, sorts, tie: item => item.key });
+    const shown = this.selOnlyOn("areaassign", this.polSel?.size || 0) ? refined.filter(item => this.polSel.has(item.key)) : refined;
     const pg = this.paginate(id, shown);
     this._polPage = pg.rows.filter(i => !i.ignored && ["entity", "device"].includes(i.object_type)).map(i => i.key);
     const columns = [
@@ -15190,7 +15191,7 @@ class ExcludeMixin {
     const leftNote = left.ids.length && left.ids.some(id => !this.excludeSel.has(id))
       ? `<span class="date">${this.t("exLeft", { count: this.formatNumber(left.ids.length), rows: this.formatNumber(left.rows) })}</span><button class="btn quiet" data-ex-left>${this.t("exLeftPick")}</button>` : "";
     const any = n || trim;
-    const bar = `<div class="toolbar exbar${any ? "" : " nosel"}">${only && (sug || this.exOnlySug) ? `<button class="btn quiet${this.exOnlySug ? " on" : ""}" data-ex-only aria-pressed="${Boolean(this.exOnlySug)}">${this.t("exOnlySug")}</button>` : ""}${sug ? `<button class="btn quiet" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${any ? `<button class="btn quiet" data-ex-clear>${this.t("exClear")}</button>` : ""}${label ? `<span class="selcount" role="status" title="${this.esc(this.t("exclHint"))}">${label}</span>` : ""}<span class="toolgap"></span>${n ? `<button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}${leftNote}</div>`;
+    const bar = `<div class="toolbar exbar${any ? "" : " nosel"}">${only && (sug || this.exOnlySug) ? `<button type="button" class="chip${this.exOnlySug ? " active" : ""}" data-ex-only aria-pressed="${Boolean(this.exOnlySug)}">${this.t("exOnlySug")}</button>` : ""}${sug ? `<button type="button" class="chip" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${any ? `<button type="button" class="chip" data-ex-clear>${this.t("clearSelection")}</button>` : ""}${label ? `<span class="selcount" role="status" title="${this.esc(this.t("exclHint"))}">${label}</span>` : ""}<span class="toolgap"></span>${n ? `<button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}${leftNote}</div>`;
     const steps = `<div class="exsteps"><strong>${this.t("exStepsTitle")}</strong><ol><li>${this.t("exStep1")}</li><li>${this.t("exStep2")}</li><li>${this.t("exStep3")}</li></ol></div>`;
     const rule = `<p class="factnote exrule">${this.t("exRule", { min: EXCLUDE_MIN_PER_DAY })}</p>`;
     return `${bar}${rule}${n ? `<pre class="code exblock">${this.esc(this.excludeSnippet())}</pre>${steps}` : ""}${any ? this.trimBlock() : ""}`;
@@ -16118,10 +16119,10 @@ class ExportMixin {
     const options = (label, values) => `<option value="">${this.esc(label)}</option>${values.map(([v, text]) => `<option value="${this.esc(v)}">${this.esc(text)}</option>`).join("")}`;
     const byName = (a, b) => a[1].localeCompare(b[1]);
     const filtered = this.filtered().filter(o => o.object_type === "entity");
-    const pickRows = hits.map(o => `<label class="row xprow"><input type="checkbox" class="selbox" data-xp-pick="${this.esc(o.object_id)}" ${x.sel.has(o.object_id) ? "checked" : ""}><span class="row-text"><strong>${this.esc(o.name)}</strong>${this.rowId(o.object_id, this.areaName(o) || "")}</span></label>`);
+    const pickRows = (this.selOnlyOn("export", x.sel.size) ? hits.filter(o => x.sel.has(o.object_id)) : hits).map(o => `<label class="row xprow"><input type="checkbox" class="selbox" data-xp-pick="${this.esc(o.object_id)}" ${x.sel.has(o.object_id) ? "checked" : ""}><span class="row-text"><strong>${this.esc(o.name)}</strong>${this.rowId(o.object_id, this.areaName(o) || "")}</span></label>`);
     const pickPage = this.paginate("xppick", pickRows), rows = pickPage.rows.join("") + pickPage.footer;
     return `<h3>${this.t("xpSelTitle")}</h3><p class="factnote">${this.t("xpSelHint")}</p>
-      <div class="chips"><button class="chip" data-xp-quick="all">${this.t("xpQuickAll", { n: this.formatNumber(all.length) })}</button><button class="chip" data-xp-quick="filtered">${this.t("xpQuickFiltered", { n: this.formatNumber(filtered.length) })}</button>${q ? `<button class="chip" data-xp-quick="shown">${this.t("xpQuickShown", { n: this.formatNumber(hits.length) })}</button>` : ""}<button class="chip" data-xp-quick="clear">${this.t("xpQuickClear")}</button><span class="pill xpcount ${x.sel.size ? "ok" : "mute"}" role="status"><ha-icon icon="mdi:check-circle-outline" class="u-ic14"></ha-icon>${this.t("xpSelected", { n: this.formatNumber(x.sel.size) })}</span></div>
+      <div class="chips"><button class="chip" data-xp-quick="all">${this.t("xpQuickAll", { n: this.formatNumber(all.length) })}</button><button class="chip" data-xp-quick="filtered">${this.t("xpQuickFiltered", { n: this.formatNumber(filtered.length) })}</button>${q ? `<button class="chip" data-xp-quick="shown">${this.t("xpQuickShown", { n: this.formatNumber(hits.length) })}</button>` : ""}${this.selTools("export", x.sel.size, 'data-xp-quick="clear"')}</div>
       <div class="filters"><select data-xp-add="area" aria-label="${this.esc(this.t("xpPickArea"))}">${options(this.t("xpPickArea"), [...areas].sort(byName))}</select><select data-xp-add="domain" aria-label="${this.esc(this.t("xpPickDomain"))}">${options(this.t("xpPickDomain"), [...domains].sort().map(d => [d, d]))}</select><select data-xp-add="platform" aria-label="${this.esc(this.t("xpPickPlatform"))}">${options(this.t("xpPickPlatform"), [...platforms].sort().map(p => [p, p]))}</select></div>
       <input type="search" data-xp-q value="${this.esc(x.q)}" placeholder="${this.esc(this.t("xpSearch"))}">
       ${rows ? `<div class="xplist">${rows}</div>` : `<div class="emptymsg">${this.t("xpNone")}</div>`}`;
@@ -17396,7 +17397,7 @@ class AreaAssignMixin {
   // The bar over the policy list: how many are ticked and what can be done with them, both from the first tick on.
   polSelBar(total = 0) {
     const n = this.polSel?.size || 0;
-    return `<div class="toolbar${n ? "" : " nosel"}">${n ? `<button class="btn quiet" data-pol-sel-clear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span>` : ""}<span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
+    return `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("areaassign", n, "data-pol-sel-clear")}<span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
   }
 
   // Only entities and devices can be ticked: the action for several at once assigns an area. A greyed box says why.
@@ -24447,6 +24448,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-plan-open]").forEach(el => el.onclick = ev => { if (el.tagName === "BUTTON") ev?.stopPropagation?.(); const inner = ev?.target?.closest?.("button, select, input, a, label"); if (inner && inner !== el && el.contains(inner)) return; this.openPlan(el.dataset.planOpen); });
     root.querySelectorAll("[data-merge-sel]").forEach(el => el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.checked ? this.mergeSel.add(el.dataset.mergeSel) : this.mergeSel.delete(el.dataset.mergeSel); this.render(); });
     root.querySelector("[data-merge]")?.addEventListener("click", () => this.mergePlans());
+    root.querySelector("[data-merge-clear]")?.addEventListener("click", () => { this.mergeSel = new Set(); this.render(); });
     root.querySelector("[data-merge-delete]")?.addEventListener("click", () => { const n = this.mergeSel?.size || 0; if (n) this.confirmAsk(this.t("confirmPlansDelete", { count: n }), () => this.deletePlans()); });
     root.querySelectorAll("[data-merge-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { this.mergeSel = new Set(this.mergeSel || []); el.dataset.mergePage.split(",").forEach(id => (el.checked ? this.mergeSel.add(id) : this.mergeSel.delete(id))); this.render(); }; });
     root.querySelectorAll("[data-err-close]").forEach(el => el.onclick = () => { this.cleanupError = ""; this.render(); });

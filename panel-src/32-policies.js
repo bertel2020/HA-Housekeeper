@@ -126,7 +126,8 @@ class PoliciesMixin {
     ];
     const bar = this.listBar(id, { table: true, dense: true, sorts, filters: [{ name: "rule", all: this.t("polAllRules"), options: on.map(rule => [rule.id, `${this.t(`polRule_${rule.id}`)} (${this.formatNumber(rule.count)})`]) }] });
     const items = on.flatMap(rule => rule.items.map(item => ({ ...item, rule: rule.id }))).filter(item => this.policyShowHidden || !item.ignored);
-    const shown = this.refine(id, items, { text: item => [item.name, item.object_id, ...(item.also || [])].join(" "), filters: { rule: (item, v) => item.rule === v }, sorts, tie: item => item.key });
+    const refined = this.refine(id, items, { text: item => [item.name, item.object_id, ...(item.also || [])].join(" "), filters: { rule: (item, v) => item.rule === v }, sorts, tie: item => item.key });
+    const shown = this.selOnlyOn("areaassign", this.polSel?.size || 0) ? refined.filter(item => this.polSel.has(item.key)) : refined;
     const pg = this.paginate(id, shown);
     this._polPage = pg.rows.filter(i => !i.ignored && ["entity", "device"].includes(i.object_type)).map(i => i.key);
     const columns = [

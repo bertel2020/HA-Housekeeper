@@ -3001,7 +3001,10 @@ test("open previews can be selected and merged into one plan; a ran plan cannot"
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return { plan: { ...short("n"), actions: [] }, merged: msg.plan_ids, conflicts: [{ object_id: "sensor.x", kinds: ["remove_entity", "replace_references"] }], dropped: 0 }; } };
   el.render();
   assert.ok(shadow.innerHTML.includes('data-merge-sel="a"') && shadow.innerHTML.includes('data-merge-sel="b"') && !shadow.innerHTML.includes('data-merge-sel="c"'));
+  assert.ok(!/<button class="btn" data-merge/.test(shadow.innerHTML), "no action before a pick");
+  el.mergeSel = new Set(["a"]); el.render();
   assert.ok(/data-merge disabled/.test(shadow.innerHTML), "needs two");
+  el.mergeSel = new Set(); el.render();
   assert.ok(shadow.innerHTML.includes('data-merge-page="a,b"') && shadow.innerHTML.includes("<table"), "the journal is a table with a page box for the plans that can be merged");
   assert.ok(/<tr data-plan-open="a" tabindex="0" role="button"/.test(shadow.innerHTML) && !/<button class="btn" data-plan-open/.test(shadow.innerHTML) && shadow.innerHTML.includes('class="jsum"'), "the row opens the plan, there is no open button, the check column wraps");
   el.toggleDenseList("journal");
