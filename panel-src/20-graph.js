@@ -13,7 +13,8 @@ class GraphMixin {
   // edges pointing at it). Right: what uses it (usage edges pointing at it) and what it uses
   // (edges leaving it). Returns nodes per level, the edges between included nodes and the notes.
   graphModel(item, key, { depth = 1, relation = "", certainOnly = false, limit = GRAPH_NODE_STEP, group = true, open = new Set() } = {}) {
-    const keep = e => (!relation || e.relation === relation) && (!certainOnly || e.confidence === "certain");
+    const matches = r => !relation || (relation === "@origin" ? !USAGE_RELATIONS.includes(r) : relation === "@usage" ? USAGE_RELATIONS.includes(r) : r === relation);
+    const keep = e => matches(e.relation) && (!certainOnly || e.confidence === "certain");
     const sides = {
       left: { levels: [], seen: new Map(), next: node => this.edgesTo(node).filter(e => !USAGE_RELATIONS.includes(e.relation) && keep(e)).map(e => [e.source, e]) },
       right: { levels: [], seen: new Map(), next: (node, via) => (via === "out"
@@ -110,14 +111,15 @@ class GraphMixin {
     };
     const columns = [...order(model.left).reverse(), [{ key: model.key, center: true }], ...order(model.right)];
     const tallest = Math.max(...columns.map(c => c.length));
-    const height = tallest * H + (tallest - 1) * GAPY;
+    const HEAD = 24, bodyHeight = tallest * H + (tallest - 1) * GAPY, height = bodyHeight + HEAD;
+    const nl = model.left.length, heads = columns.map((_, i) => (i < nl ? { side: "left", level: nl - i } : i === nl ? { side: "center" } : { side: "right", level: i - nl }));
     const at = new Map();
     columns.forEach((column, i) => {
-      const top = (height - (column.length * H + (column.length - 1) * GAPY)) / 2;
+      const top = HEAD + (bodyHeight - (column.length * H + (column.length - 1) * GAPY)) / 2;
       column.forEach((node, j) => at.set(node.key, { x: i * (W + GAPX), y: top + j * (H + GAPY), node }));
     });
     // Room on the right for the arcs between nodes of one column.
-    return { W, H, width: columns.length * W + (columns.length - 1) * GAPX + 48, height, at };
+    return { W, H, width: columns.length * W + (columns.length - 1) * GAPX + 48, height, at, heads, step: W + GAPX };
   }
 
   graphClip(text, max) { const s = String(text ?? ""); return s.length > max ? `${s.slice(0, max - 1)}…` : s; }
@@ -153,6 +155,7 @@ class GraphMixin {
       const mark = forward ? 'marker-end="url(#hk-arrow)"' : 'marker-start="url(#hk-arrow)"';
       return `<path class="${cls}" d="M${x1},${y1} C${x1 + dx},${y1} ${sameColumn ? x2 + dx : x2 - dx},${y2} ${x2},${y2}" ${mark}><title>${this.esc(`${edge.source} → ${edge.target}: ${this.t(edge.relation)} (${this.t(edge.confidence)})`)}</title></path>`;
     }).join("");
+    const headSvg = layout.heads.map((h, i) => `<text class="gcol" x="${i * layout.step}" y="12">${this.esc(h.side === "center" ? this.t("graphColCenter") : this.t(h.side === "left" ? "graphColLeft" : "graphColRight", { n: h.level }))}</text>`).join("");
     const nodeSvg = [...at.entries()].map(([key, { x, y, node }]) => {
       if (node.group) {
         const type = node.group[0].split(":")[0], hit = hitKeys && node.group.some(k => hitKeys.has(k));
@@ -172,7 +175,7 @@ class GraphMixin {
         <text x="14" y="36">${this.esc(this.graphClip(name, 27))}</text></g>`;
     }).join("");
     return `<div class="graphwrap"><svg class="graphsvg" role="group" aria-label="${this.esc(this.t("graphLabel", { name: item.name }))}" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}">
-      <defs><marker id="hk-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="garrow" d="M0,0 L8,4 L0,8z"></path></marker></defs>${edgeSvg}${nodeSvg}</svg></div>`;
+      <defs><marker id="hk-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="garrow" d="M0,0 L8,4 L0,8z"></path></marker></defs>${headSvg}${edgeSvg}${nodeSvg}</svg></div>`;
   }
 
   // The switch between list and graph, and for the graph the depth, filters and the removal highlight.
@@ -182,7 +185,7 @@ class GraphMixin {
     if (!graph) return toggle ? `<div class="panel graphbar">${toggle}</div>` : `<p class="factnote graphphone">${this.t("graphPhone")}</p>`;
     const depth = [1, 2, 3].map(n => `<button class="btn ${this.graphDepth === n ? "primary" : ""}" data-graph-depth="${n}" aria-pressed="${this.graphDepth === n}">${n}</button>`).join("");
     const relations = [...new Set(this.graphModel(item, key, { depth: this.graphDepth, limit: 400 }).edges.map(e => e.edge.relation))].sort();
-    const relSelect = `<select id="graphRel" aria-label="${this.esc(this.t("graphRelation"))}"><option value="">${this.t("graphAllRelations")}</option>${relations.map(r => `<option value="${r}" ${this.graphRel === r ? "selected" : ""}>${this.t(r)}</option>`).join("")}</select>`;
+    const relSelect = `<select id="graphRel" aria-label="${this.esc(this.t("graphRelation"))}"><option value="">${this.t("graphAllRelations")}</option><option value="@origin" ${this.graphRel === "@origin" ? "selected" : ""}>${this.t("graphRelOrigin")}</option><option value="@usage" ${this.graphRel === "@usage" ? "selected" : ""}>${this.t("graphRelUsage")}</option>${relations.map(r => `<option value="${r}" ${this.graphRel === r ? "selected" : ""}>${this.t(r)}</option>`).join("")}</select>`;
     const confSelect = `<select id="graphConf" aria-label="${this.esc(this.t("graphConfidence"))}"><option value="all" ${this.graphConf === "all" ? "selected" : ""}>${this.t("graphAllConf")}</option><option value="certain" ${this.graphConf === "certain" ? "selected" : ""}>${this.t("graphCertainOnly")}</option></select>`;
     const impact = this.impact(item, key);
     const impactBtn = impact ? `<button class="btn ${this.graphImpact ? "primary" : ""}" data-graph-impact aria-pressed="${this.graphImpact}">${this.t("graphImpact")}</button>` : "";
@@ -203,6 +206,6 @@ class GraphMixin {
     const more = (model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "") + (this.graphOpen.size ? ` <button class="btn" data-graph-regroup>${this.t("graphRegroup")}</button>` : "");
     return `<div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("graphNodes", { n: model.count })}</span></div>
       ${nothing ? `<p class="emptyrel">${this.t("noRelations")}</p>` : this.graphSvg(model, item, hitKeys)}
-      ${notes || more.trim() ? `<p class="factnote">${this.esc(notes)} ${more}</p>` : ""}${this.fold("graph_legend", { title: this.t("graphLegendTitle") }, `<p class="factnote">${this.t("graphLegend")}</p>`, false)}</div>`;
+      ${notes || more.trim() ? `<p class="factnote">${this.esc(notes)} ${more}</p>` : ""}${this.fold("graph_legend", { title: this.t("graphLegendTitle") }, `<p class="factnote">${this.t("graphLegendDir")}</p><p class="factnote">${this.t("graphLegend")}</p>`, false)}</div>`;
   }
 }

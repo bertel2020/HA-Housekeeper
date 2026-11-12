@@ -2214,6 +2214,9 @@ test("the graph model walks origin to the left and users to the right, level by 
   assert.equal(three.count, 6);
   assert.equal(three.hidden, 0);
   assert.equal(three.right[1][0].via, "in");
+  const svg = el.graphSvg(three, item, null);
+  assert.ok(svg.includes("Origin · level 2") && svg.includes("Origin · level 1") && svg.includes("This object") && svg.includes("Usage · level 2"), "the columns are headed by origin, object and usage with their level");
+  assert.equal(el.graphModel(item, key, { depth: 1, relation: "@origin" }).left.length, 1, "the origin filter keeps the origin relations");
 });
 
 test("graph filters by relation and certainty, and limits the nodes", () => {
@@ -4475,7 +4478,7 @@ test("the overview of an object offers its actions: decide a finding, replace a 
   assert.ok(!rel.includes("style="), "no inline style");
 });
 
-test("the relations of an object are one table: rows open known objects, a missing target is marked, the kind filter and the export follow", () => {
+test("the relations of an object are two tables by direction: rows open known objects, a missing target is marked, the sentence names who does what, and the export follows", () => {
   const { el } = panel("en");
   el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.rel", name: "Rel", status: "active" }, { object_type: "automation", object_id: "automation.rel", name: "Rel auto", status: "active" }, { object_type: "device", object_id: "drel", name: "Rel device", status: "active" }],
     edges: [
@@ -4485,14 +4488,15 @@ test("the relations of an object are one table: rows open known objects, a missi
       { source: "entity:sensor.rel", target: "entity:sensor.gone", relation: "TARGETS", confidence: "certain", location: "b" }],
     findings: [{ key: "kg", rule_id: "x", classification: "broken_reference", affected_object: "sensor.gone", object_id: "sensor.rel" }] };
   const rel = el.relationsCard("entity:sensor.rel");
-  assert.ok(rel.includes("<table") && rel.includes('data-lsort="relations|name'), "a table");
+  assert.ok(rel.includes("<table") && rel.includes('data-lsort="relations_origin|name') && rel.includes('data-lsort="relations_usage|name'), "a table");
   assert.ok(rel.includes('data-object="automation:automation.rel"') && rel.includes('data-object="device:drel"'), "a known object opens");
   assert.ok(!rel.includes('data-object="entity:sensor.gone"') && rel.includes('class="pill red">Missing'), "a missing target is marked and does not open");
   assert.ok(rel.includes("2 places"), "the same relation at two places is one row");
-  const rows = () => el._exporters.relations.rows();
-  assert.equal(rows().length, 3);
-  el.lvState("relations", "name", "asc").f.group = "origin"; el.relationsCard("entity:sensor.rel");
-  assert.equal(JSON.stringify(rows().map(r => r[1])), '["device:drel"]', "the kind filter keeps only the origin rows");
+  assert.ok(rel.includes("Where does it come from?") && rel.includes("Where is it used?"), "the two blocks are named by direction");
+  assert.ok(rel.includes("provides this object") && rel.includes("controls this object") && rel.includes("is controlled by this object"), "each row says who does what to this object");
+  assert.equal(el._exporters.relations_origin.rows().length, 1);
+  assert.equal(JSON.stringify(el._exporters.relations_origin.rows().map(r => r[1])), '["device:drel"]', "the origin table keeps only the origin rows");
+  assert.equal(el._exporters.relations_usage.rows().length, 2);
 });
 
 test("the repair view offers its tasks as tiles; one opens its assistant and the plan is finished there", () => {

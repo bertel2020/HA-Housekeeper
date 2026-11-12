@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"95ff61519c"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"a112251980"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"42cc641a27"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"50cc332537"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"8d84b7ef3d"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"14152885d9"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"f5b045cf1a"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"575224d73c"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"ddee6f4c9d"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5d1fc55754"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"da29e26733"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"974bb83f00"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"388bb125b0"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"38f8db11a1"}];
 
 const TEXT = {
   de: {
@@ -1689,7 +1689,7 @@ class StylesMixin {
       .graphbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;padding:10px 14px;margin-bottom:14px}.graphctl{display:flex;align-items:center;gap:8px}.graphctl small{color:var(--hk-muted)}.graphwrap{overflow:auto;padding:14px;min-height:360px;display:grid;align-content:center;justify-items:start}.graphphone{margin:0 0 14px;border:0;padding:0 2px}@media(max-width:600px){.node strong{white-space:normal;overflow-wrap:anywhere}.node span.meta{overflow-wrap:anywhere}}.graphsvg{display:block;max-width:none}
       .gedge{fill:none;stroke:var(--hk-muted);stroke-width:1.5}.gedge.prob{stroke-dasharray:7 4}.gedge.cycle{stroke:var(--hk-red);stroke-dasharray:2 3}.gedge.hit{stroke:var(--hk-red);stroke-width:2.5}.garrow{fill:var(--hk-muted)}.gdim{opacity:.3}
       .gnode{cursor:pointer}.gnode.center{cursor:default}.gnode rect{fill:var(--hk-surface);stroke:var(--hk-border);stroke-width:1.5}.gnode.center rect{stroke:var(--hk-blue);stroke-width:2.5}.gnode.missing rect{stroke:var(--hk-red);stroke-dasharray:4 3}.gnode.ggroup rect{stroke-dasharray:2 3}.gnode.hit rect{stroke:var(--hk-red);stroke-width:2.5}.gnode rect.bar{stroke:none;fill:var(--hk-blue)}.gnode rect.bar.ok{fill:var(--hk-green)}.gnode rect.bar.warn{fill:var(--hk-amber)}.gnode rect.bar.red{fill:var(--hk-red)}.gnode rect.bar.mute{fill:var(--hk-gray)}.gnode rect.bar.violet{fill:var(--hk-violet)}
-      .gnode text{fill:var(--hk-text);font-size:calc(12px*var(--hk-fs,1));font-weight:600}.gnode text.t1{fill:var(--hk-muted);font-size:calc(10px*var(--hk-fs,1));font-weight:400}.gnode:focus-visible{outline:none}.gnode:focus-visible rect:first-of-type{stroke:var(--hk-blue);stroke-width:3.5}.gnode:hover rect:first-of-type{stroke:var(--hk-blue)}
+      .graphsvg text.gcol{fill:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:500}.gnode text{fill:var(--hk-text);font-size:calc(12px*var(--hk-fs,1));font-weight:600}.gnode text.t1{fill:var(--hk-muted);font-size:calc(10px*var(--hk-fs,1));font-weight:400}.gnode:focus-visible{outline:none}.gnode:focus-visible rect:first-of-type{stroke:var(--hk-blue);stroke-width:3.5}.gnode:hover rect:first-of-type{stroke:var(--hk-blue)}
       .pathcard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:16px;margin-bottom:14px}.pathcard h2{font-size:calc(17px*var(--hk-fs,1));font-weight:600}
       .path{padding:16px;display:grid;gap:0}.node{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px 13px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:inherit;text-align:left;width:100%}button.node:hover{border-color:var(--hk-blue)}
       .node.current{border:2px solid var(--hk-blue);background:color-mix(in srgb,var(--hk-blue) 8%,var(--hk-surface))}.node .tile{width:34px;height:34px}.node small{display:block;color:var(--hk-blue-text);font-size:calc(11px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}.node strong{display:block;font-size:calc(13px*var(--hk-fs,1));font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.node span.meta{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}
@@ -5679,7 +5679,8 @@ class GraphMixin {
   // edges pointing at it). Right: what uses it (usage edges pointing at it) and what it uses
   // (edges leaving it). Returns nodes per level, the edges between included nodes and the notes.
   graphModel(item, key, { depth = 1, relation = "", certainOnly = false, limit = GRAPH_NODE_STEP, group = true, open = new Set() } = {}) {
-    const keep = e => (!relation || e.relation === relation) && (!certainOnly || e.confidence === "certain");
+    const matches = r => !relation || (relation === "@origin" ? !USAGE_RELATIONS.includes(r) : relation === "@usage" ? USAGE_RELATIONS.includes(r) : r === relation);
+    const keep = e => matches(e.relation) && (!certainOnly || e.confidence === "certain");
     const sides = {
       left: { levels: [], seen: new Map(), next: node => this.edgesTo(node).filter(e => !USAGE_RELATIONS.includes(e.relation) && keep(e)).map(e => [e.source, e]) },
       right: { levels: [], seen: new Map(), next: (node, via) => (via === "out"
@@ -5776,14 +5777,15 @@ class GraphMixin {
     };
     const columns = [...order(model.left).reverse(), [{ key: model.key, center: true }], ...order(model.right)];
     const tallest = Math.max(...columns.map(c => c.length));
-    const height = tallest * H + (tallest - 1) * GAPY;
+    const HEAD = 24, bodyHeight = tallest * H + (tallest - 1) * GAPY, height = bodyHeight + HEAD;
+    const nl = model.left.length, heads = columns.map((_, i) => (i < nl ? { side: "left", level: nl - i } : i === nl ? { side: "center" } : { side: "right", level: i - nl }));
     const at = new Map();
     columns.forEach((column, i) => {
-      const top = (height - (column.length * H + (column.length - 1) * GAPY)) / 2;
+      const top = HEAD + (bodyHeight - (column.length * H + (column.length - 1) * GAPY)) / 2;
       column.forEach((node, j) => at.set(node.key, { x: i * (W + GAPX), y: top + j * (H + GAPY), node }));
     });
     // Room on the right for the arcs between nodes of one column.
-    return { W, H, width: columns.length * W + (columns.length - 1) * GAPX + 48, height, at };
+    return { W, H, width: columns.length * W + (columns.length - 1) * GAPX + 48, height, at, heads, step: W + GAPX };
   }
 
   graphClip(text, max) { const s = String(text ?? ""); return s.length > max ? `${s.slice(0, max - 1)}…` : s; }
@@ -5819,6 +5821,7 @@ class GraphMixin {
       const mark = forward ? 'marker-end="url(#hk-arrow)"' : 'marker-start="url(#hk-arrow)"';
       return `<path class="${cls}" d="M${x1},${y1} C${x1 + dx},${y1} ${sameColumn ? x2 + dx : x2 - dx},${y2} ${x2},${y2}" ${mark}><title>${this.esc(`${edge.source} → ${edge.target}: ${this.t(edge.relation)} (${this.t(edge.confidence)})`)}</title></path>`;
     }).join("");
+    const headSvg = layout.heads.map((h, i) => `<text class="gcol" x="${i * layout.step}" y="12">${this.esc(h.side === "center" ? this.t("graphColCenter") : this.t(h.side === "left" ? "graphColLeft" : "graphColRight", { n: h.level }))}</text>`).join("");
     const nodeSvg = [...at.entries()].map(([key, { x, y, node }]) => {
       if (node.group) {
         const type = node.group[0].split(":")[0], hit = hitKeys && node.group.some(k => hitKeys.has(k));
@@ -5838,7 +5841,7 @@ class GraphMixin {
         <text x="14" y="36">${this.esc(this.graphClip(name, 27))}</text></g>`;
     }).join("");
     return `<div class="graphwrap"><svg class="graphsvg" role="group" aria-label="${this.esc(this.t("graphLabel", { name: item.name }))}" width="${layout.width}" height="${layout.height}" viewBox="0 0 ${layout.width} ${layout.height}">
-      <defs><marker id="hk-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="garrow" d="M0,0 L8,4 L0,8z"></path></marker></defs>${edgeSvg}${nodeSvg}</svg></div>`;
+      <defs><marker id="hk-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="garrow" d="M0,0 L8,4 L0,8z"></path></marker></defs>${headSvg}${edgeSvg}${nodeSvg}</svg></div>`;
   }
 
   // The switch between list and graph, and for the graph the depth, filters and the removal highlight.
@@ -5848,7 +5851,7 @@ class GraphMixin {
     if (!graph) return toggle ? `<div class="panel graphbar">${toggle}</div>` : `<p class="factnote graphphone">${this.t("graphPhone")}</p>`;
     const depth = [1, 2, 3].map(n => `<button class="btn ${this.graphDepth === n ? "primary" : ""}" data-graph-depth="${n}" aria-pressed="${this.graphDepth === n}">${n}</button>`).join("");
     const relations = [...new Set(this.graphModel(item, key, { depth: this.graphDepth, limit: 400 }).edges.map(e => e.edge.relation))].sort();
-    const relSelect = `<select id="graphRel" aria-label="${this.esc(this.t("graphRelation"))}"><option value="">${this.t("graphAllRelations")}</option>${relations.map(r => `<option value="${r}" ${this.graphRel === r ? "selected" : ""}>${this.t(r)}</option>`).join("")}</select>`;
+    const relSelect = `<select id="graphRel" aria-label="${this.esc(this.t("graphRelation"))}"><option value="">${this.t("graphAllRelations")}</option><option value="@origin" ${this.graphRel === "@origin" ? "selected" : ""}>${this.t("graphRelOrigin")}</option><option value="@usage" ${this.graphRel === "@usage" ? "selected" : ""}>${this.t("graphRelUsage")}</option>${relations.map(r => `<option value="${r}" ${this.graphRel === r ? "selected" : ""}>${this.t(r)}</option>`).join("")}</select>`;
     const confSelect = `<select id="graphConf" aria-label="${this.esc(this.t("graphConfidence"))}"><option value="all" ${this.graphConf === "all" ? "selected" : ""}>${this.t("graphAllConf")}</option><option value="certain" ${this.graphConf === "certain" ? "selected" : ""}>${this.t("graphCertainOnly")}</option></select>`;
     const impact = this.impact(item, key);
     const impactBtn = impact ? `<button class="btn ${this.graphImpact ? "primary" : ""}" data-graph-impact aria-pressed="${this.graphImpact}">${this.t("graphImpact")}</button>` : "";
@@ -5869,7 +5872,7 @@ class GraphMixin {
     const more = (model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "") + (this.graphOpen.size ? ` <button class="btn" data-graph-regroup>${this.t("graphRegroup")}</button>` : "");
     return `<div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("graphNodes", { n: model.count })}</span></div>
       ${nothing ? `<p class="emptyrel">${this.t("noRelations")}</p>` : this.graphSvg(model, item, hitKeys)}
-      ${notes || more.trim() ? `<p class="factnote">${this.esc(notes)} ${more}</p>` : ""}${this.fold("graph_legend", { title: this.t("graphLegendTitle") }, `<p class="factnote">${this.t("graphLegend")}</p>`, false)}</div>`;
+      ${notes || more.trim() ? `<p class="factnote">${this.esc(notes)} ${more}</p>` : ""}${this.fold("graph_legend", { title: this.t("graphLegendTitle") }, `<p class="factnote">${this.t("graphLegendDir")}</p><p class="factnote">${this.t("graphLegend")}</p>`, false)}</div>`;
   }
 }
 
@@ -6512,38 +6515,37 @@ class DiagnosisMixin {
   relationsCard(key) {
     const USAGE = USAGE_RELATIONS;
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
+    // The text of a row says who does what to this object, so the direction is readable without arrows.
+    const into = e => this.t(`relIn_${e.relation}`), from = e => this.t(`relOut_${e.relation}`);
     const groups = [
-      [this.t("origin"), incoming.filter(e => !USAGE.includes(e.relation)).map(e => ({ other: e.source, label: this.t(e.relation), edge: e }))],
-      [this.t("usage"), [
-        ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ other: e.source, label: `${this.t("usedBy")} · ${this.t(e.relation)}`, edge: e })),
-        ...outgoing.map(e => ({ other: e.target, label: this.t(e.relation), edge: e })),
+      ["origin", this.t("relGroupOrigin"), incoming.filter(e => !USAGE.includes(e.relation)).map(e => ({ other: e.source, label: into(e), edge: e }))],
+      ["usage", this.t("relGroupUsage"), [
+        ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ other: e.source, label: into(e), edge: e })),
+        ...outgoing.map(e => ({ other: e.target, label: from(e), edge: e })),
       ]],
-    ].map(([title, list]) => [title, this.mergePlaces(list)]).filter(([, list]) => list.length);
+    ].map(([id, title, list]) => [id, title, this.mergePlaces(list)]).filter(([, , list]) => list.length);
     // A target without an inventory object is missing only where a finding says so; helpers and
     // built-in entities such as sun.sun exist without a registry entry.
     const gone = new Set((this.data.findings || []).filter(f => f.classification === "broken_reference").map(f => f.affected_object));
-    const items = groups.flatMap(([title, list], i) => list.map(x => ({ ...x, group: i ? "usage" : "origin", groupName: title })));
     const nameOf = x => this.findObject(x.other)?.name || x.other.split(":").slice(1).join(":");
     const typeOf = x => this.findObject(x.other)?.object_type || x.other.split(":")[0];
     const note = x => (x.places.length > 1 ? `${x.label} · ${this.t("relPlaces", { n: x.places.length })}` : `${x.label}${x.places[0] ? ` · ${x.places[0]}` : ""}`);
     const goneLabel = x => (gone.has(x.other.split(":").slice(1).join(":")) ? this.t("missing") : this.t("notInInventory"));
-    const table = items.length ? this.sysList("relations", items, {
-      sort: "name", dir: "asc", cls: "rel", tie: x => `${x.other}|${x.label}`, exportName: "relations",
+    const tableOf = (id, list) => this.sysList(`relations_${id}`, list, {
+      sort: "name", dir: "asc", cls: "rel", tie: x => `${x.other}|${x.label}`, exportName: `relations_${id}`,
       sorts: [{ key: "name", label: "relColObject", dir: "asc", get: nameOf }, { key: "type", label: "relColType", dir: "asc", get: typeOf }, { key: "relation", label: "relColRelation", dir: "asc", get: x => x.label }],
       text: x => `${nameOf(x)} ${x.other} ${x.label}`,
-      filters: [{ name: "group", all: this.t("relAllGroups"), options: [["origin", this.t("origin")], ["usage", this.t("usage")]] }],
-      filterFns: { group: (x, v) => x.group === v },
       rowAttrs: x => (this.findObject(x.other) ? `data-object="${this.esc(x.other)}" tabindex="0" role="button" aria-label="${this.esc(nameOf(x))}"${x.places.length > 1 ? ` title="${this.esc(x.places.filter(Boolean).join("\n"))}"` : ""}` : 'class="static"'),
       columns: [
         { key: "name", label: "relColObject", dir: "asc", cell: x => { const obj = this.findObject(x.other); return `<div class="statcell">${this.tile(typeOf(x), obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : gone.has(x.other.split(":").slice(1).join(":")) ? "red" : "")}<div>${this.nameCell(nameOf(x), x.other)}</div></div>`; } },
         { key: "type", label: "relColType", dir: "asc", cell: x => this.esc(this.t(typeOf(x))) },
         { key: "relation", label: "relColRelation", dir: "asc", cell: x => this.esc(note(x)) },
-        { key: "group", label: "relColKind", sortable: false, cell: x => this.esc(x.groupName) },
         { key: "status", label: "relColStatus", sortable: false, cell: x => { const obj = this.findObject(x.other); return obj ? this.pill(obj.status) : `<span class="pill ${gone.has(x.other.split(":").slice(1).join(":")) ? "red" : ""}">${this.esc(goneLabel(x))}</span>`; } },
       ],
-      header: [this.t("relColObject"), "ID", this.t("relColType"), this.t("relColRelation"), this.t("relColKind")], rows: x => [nameOf(x), x.other, this.t(typeOf(x)), note(x), x.groupName],
-    }) : "";
-    return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${table || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
+      header: [this.t("relColObject"), "ID", this.t("relColType"), this.t("relColRelation")], rows: x => [nameOf(x), x.other, this.t(typeOf(x)), note(x)],
+    });
+    const blocks = groups.map(([id, title, list]) => `<div class="sectionlabel">${title} (${list.length})</div>${tableOf(id, list)}`).join("");
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${blocks || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
   }
 
   entrySourceLabel(source) {
@@ -19203,6 +19205,72 @@ class ConfirmMixin {
     if (this._confirmFocus) { this._confirmFocus = false; modal.querySelector("[data-confirm-no]")?.focus(); }
   }
 }
+
+// Texts for the direction of relations (relation table groups, graph column heads); merged into TEXT.
+Object.assign(TEXT.de, {
+  relGroupOrigin: "Woher kommt es?",
+  relGroupUsage: "Wo wird es verwendet?",
+  graphColLeft: "Herkunft · Ebene {n}",
+  graphColCenter: "Dieses Objekt",
+  graphColRight: "Verwendung · Ebene {n}",
+  graphLegendDir: "Pfeile zeigen von der Quelle zum Ziel („A stellt B bereit“: A → B). Links steht, woher das Objekt kommt, rechts, wo es verwendet wird. Eine Ebene ist ein Schritt vom gewählten Objekt weg.",
+  graphRelOrigin: "Herkunft (stellt bereit, besitzt, enthält)",
+  graphRelUsage: "Verwendung (steuert, zeigt an, reagiert auf)",
+  relIn_PROVIDES: "stellt dieses Objekt bereit",
+  relOut_PROVIDES: "wird von diesem Objekt bereitgestellt",
+  relIn_CONNECTED: "ist vermutlich mit diesem Objekt verbunden",
+  relOut_CONNECTED: "ist vermutlich mit diesem Objekt verbunden",
+  relIn_OWNS: "besitzt dieses Objekt",
+  relOut_OWNS: "gehört zu diesem Objekt",
+  relIn_CONTAINS: "enthält dieses Objekt",
+  relOut_CONTAINS: "ist in diesem Objekt enthalten",
+  relIn_VIA_DEVICE: "ist das übergeordnete Gerät dieses Geräts",
+  relOut_VIA_DEVICE: "ist über dieses Gerät angebunden",
+  relIn_TRIGGERS_ON: "reagiert auf dieses Objekt",
+  relOut_TRIGGERS_ON: "löst dieses Objekt aus",
+  relIn_USES_AS_CONDITION: "prüft dieses Objekt als Bedingung",
+  relOut_USES_AS_CONDITION: "ist Bedingung für dieses Objekt",
+  relIn_TARGETS: "steuert dieses Objekt",
+  relOut_TARGETS: "wird von diesem Objekt gesteuert",
+  relIn_REFERENCES: "verweist auf dieses Objekt",
+  relOut_REFERENCES: "wird von diesem Objekt referenziert",
+  relIn_SHOWS: "zeigt dieses Objekt an",
+  relOut_SHOWS: "wird von diesem Objekt angezeigt",
+  relIn_INCLUDES: "bindet dieses Objekt ein",
+  relOut_INCLUDES: "ist in diesem Objekt eingebunden",
+});
+Object.assign(TEXT.en, {
+  relGroupOrigin: "Where does it come from?",
+  relGroupUsage: "Where is it used?",
+  graphColLeft: "Origin · level {n}",
+  graphColCenter: "This object",
+  graphColRight: "Usage · level {n}",
+  graphLegendDir: "Arrows point from source to target (“A provides B”: A → B). The left shows where the object comes from, the right where it is used. A level is one step away from the chosen object.",
+  graphRelOrigin: "Origin (provides, owns, contains)",
+  graphRelUsage: "Usage (controls, shows, triggers on)",
+  relIn_PROVIDES: "provides this object",
+  relOut_PROVIDES: "is provided by this object",
+  relIn_CONNECTED: "is probably connected to this object",
+  relOut_CONNECTED: "is probably connected to this object",
+  relIn_OWNS: "owns this object",
+  relOut_OWNS: "belongs to this object",
+  relIn_CONTAINS: "contains this object",
+  relOut_CONTAINS: "is contained in this object",
+  relIn_VIA_DEVICE: "is the parent device of this one",
+  relOut_VIA_DEVICE: "is connected through this device",
+  relIn_TRIGGERS_ON: "reacts to this object",
+  relOut_TRIGGERS_ON: "triggers this object",
+  relIn_USES_AS_CONDITION: "checks this object as a condition",
+  relOut_USES_AS_CONDITION: "is a condition of this object",
+  relIn_TARGETS: "controls this object",
+  relOut_TARGETS: "is controlled by this object",
+  relIn_REFERENCES: "refers to this object",
+  relOut_REFERENCES: "is referenced by this object",
+  relIn_SHOWS: "shows this object",
+  relOut_SHOWS: "is shown by this object",
+  relIn_INCLUDES: "includes this object",
+  relOut_INCLUDES: "is included in this object",
+});
 
 // BrokenCardsMixin: where a broken dashboard reference sits (tab and card instead of a raw path), the close names that
 // do exist, and one row per card instead of one per reference. Mixed into the panel in 99-register.js.
