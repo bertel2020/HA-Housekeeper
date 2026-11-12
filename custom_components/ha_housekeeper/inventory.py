@@ -86,6 +86,7 @@ from .dashboard_analysis import (
     dashboard_health,
     extract_dashboard_references,
     extract_entity_references,
+    extract_entry_references,
     extract_helper_references,
     suggest_replacements,
     view_keys,
@@ -2821,10 +2822,23 @@ class InventoryScanner:
         """Link helper config entries (template, derivative, ...) to the entities they use."""
         edges: list[dict[str, str]] = []
         findings: list[dict[str, Any]] = []
+        registry = er.async_get(self.hass)
         for entry in self.hass.config_entries.async_entries():
-            if entry.domain not in HELPER_DOMAINS:
+            if entry.domain in HELPER_DOMAINS:
+                references = extract_helper_references(dict(entry.options), existing["entity"])
+            elif entry.domain == DOMAIN or entry.source == SOURCE_IGNORE:
                 continue
-            references = extract_helper_references(dict(entry.options), existing["entity"])
+            else:
+                # Any other integration may keep entities in its settings, a sub-entry (a device
+                # with a thermostat, say) included; an exact entity ID there is a use.
+                own = {
+                    e.entity_id for e in er.async_entries_for_config_entry(registry, entry.entry_id)
+                }
+                parts = [("data", dict(entry.data)), ("options", dict(entry.options))] + [
+                    (str(sub.title), dict(sub.data))
+                    for sub in getattr(entry, "subentries", {}).values()
+                ]
+                references = extract_entry_references(parts, existing["entity"], own)
             edges.extend(
                 {
                     "source": f"config_entry:{entry.entry_id}",

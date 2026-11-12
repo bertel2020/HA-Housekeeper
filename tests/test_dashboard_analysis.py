@@ -179,3 +179,17 @@ def test_every_helper_of_the_installed_home_assistant_is_known() -> None:
 
     # otp keeps a secret in its options: it must never be exported to a file.
     assert set(FLOWS["helper"]) - HELPER_DOMAINS - {"otp"} == set()
+
+
+def test_config_entry_values_that_are_entity_ids_count_as_references() -> None:
+    from custom_components.ha_housekeeper.dashboard_analysis import extract_entry_references
+
+    parts = [
+        ("data", {"host": "10.0.0.2", "token": "sensor.temp.x"}),
+        ("Konvektor", {"thermostat": {"room_sensor": "sensor.temp", "own": "light.kitchen"}}),
+    ]
+    refs = extract_entry_references(parts, KNOWN, own={"light.kitchen"})
+
+    assert [(r["object_id"], r["location"], r["confidence"]) for r in refs] == [
+        ("sensor.temp", "Konvektor/thermostat/room_sensor", "probable")
+    ]

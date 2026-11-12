@@ -19,6 +19,7 @@ Gegenüber 1.14.3. Die Vorabversionen 2.0.0-beta.1 bis beta.5 sind hier zusammen
 - **Entitäten ersetzen:** Ein Assistent ersetzt eine oder mehrere Entitäten in einem Plan; „Zähler wechseln“ und „Verweise ersetzen“ gehen darin auf.
   - Fünf Arten je Entität: Verweise umstellen, Verweise und Statistik, Nur Statistik, Statistik und ID, Nur ID. Was bei einem Paar nicht möglich ist, ist gesperrt und sagt warum.
   - Verlauf und ID übernimmt die neue Entität von selbst nur bei echten Zählern. Die Verwendungen lassen sich aufklappen, die alte Entität lässt sich danach deaktivieren oder löschen.
+- **Verwendung in Integrationen:** Entitäten, die eine Integration in ihren Einstellungen oder Untereinträgen nennt (etwa ein Raumtemperatursensor im Thermostat eines Geräts), gelten als verwendet. Sie erscheinen in den Abhängigkeiten, in der Auswirkung einer Entfernung und im Aufräumen.
 - **Helfer:** Housekeeper erkennt Helfer (Template, Derivative, Min/Max …) besser.
   - „Helfer löschen“ ist ein Plan mit Vorschau und Backup; Rückgängig erstellt den Helfer neu. Helfer lassen sich als Datei exportieren und wieder importieren.
   - Pläne und Diagnose nennen die Quellen eines Helfers; der Ersetzen-Assistent stellt sie mit um.
@@ -73,6 +74,7 @@ Gegenüber 1.14.3. Die Vorabversionen 2.0.0-beta.1 bis beta.5 sind hier zusammen
 - **Replace entities:** An assistant replaces one or several entities in one plan; "Replace a meter" and "Replace references" are part of it.
   - Five kinds per entity: Switch references, References and statistics, Statistics only, Statistics and ID, ID only. What is not possible for a pair is blocked and says why.
   - The new entity takes over history and ID by default only for real meters. The uses can be unfolded, and the old entity can be disabled or deleted afterwards.
+- **Use in integrations:** Entities that an integration names in its settings or sub-entries (such as a room temperature sensor in a device's thermostat) count as used. They show up in dependencies, in the impact of a removal and in cleanup.
 - **Helpers:** Housekeeper knows helpers (template, derivative, min/max …) better.
   - "Delete the helper" is a plan with a preview and a backup; Undo creates the helper again. Helpers can be exported to a file and imported again.
   - Plans and diagnosis name the sources of a helper; the replace assistant switches them too.
