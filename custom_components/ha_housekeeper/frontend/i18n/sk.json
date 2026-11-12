@@ -7165,5 +7165,7 @@
 "relIn_SHOWS": "zobrazuje tento objekt",
 "relOut_SHOWS": "je zobrazený týmto objektom",
 "relIn_INCLUDES": "zahŕňa tento objekt",
-"relOut_INCLUDES": "je zahrnutý v tomto objekte"
+"relOut_INCLUDES": "je zahrnutý v tomto objekte",
+"relGroupPlace": "Kde sa nachádza?",
+"relPlace": "Umiestnenie"
 }

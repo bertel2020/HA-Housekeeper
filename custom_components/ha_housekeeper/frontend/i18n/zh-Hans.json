@@ -6630,5 +6630,7 @@
 "relIn_SHOWS": "显示此对象",
 "relOut_SHOWS": "由此对象显示",
 "relIn_INCLUDES": "引入此对象",
-"relOut_INCLUDES": "被此对象引入"
+"relOut_INCLUDES": "被此对象引入",
+"relGroupPlace": "所在位置",
+"relPlace": "位置"
 }

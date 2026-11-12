@@ -6630,5 +6630,7 @@
 "relIn_SHOWS": "mostra questo oggetto",
 "relOut_SHOWS": "è mostrato da questo oggetto",
 "relIn_INCLUDES": "include questo oggetto",
-"relOut_INCLUDES": "è incluso in questo oggetto"
+"relOut_INCLUDES": "è incluso in questo oggetto",
+"relGroupPlace": "Dove si trova?",
+"relPlace": "Posizione"
 }

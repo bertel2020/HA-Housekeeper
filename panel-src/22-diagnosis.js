@@ -244,13 +244,14 @@ class DiagnosisMixin {
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
     // The text of a row says who does what to this object, so the direction is readable without arrows.
     const into = e => this.t(`relIn_${e.relation}`), from = e => this.t(`relOut_${e.relation}`);
+    const place = this.locationPath(key);
     const groups = [
       ["origin", this.t("relGroupOrigin"), this.originChain(key).map(c => ({ other: c.key, edge: c.edge, indent: c.indent, places: c.edge.location && c.edge.location !== "runtime_extraction" ? [c.edge.location] : [], label: c.up === 1 ? into(c.edge) : `${this.t(c.edge.relation)} ${this.findObject(c.below)?.name || c.below.split(":").slice(1).join(":")}` }))],
       ["usage", this.t("relGroupUsage"), [
         ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ other: e.source, label: into(e), edge: e })),
         ...outgoing.map(e => ({ other: e.target, label: from(e), edge: e })),
       ]],
-    ].map(([id, title, list]) => [id, title, id === "origin" ? list : this.mergePlaces(list)]).filter(([, , list]) => list.length);
+    ].map(([id, title, list]) => [id, title, id === "origin" ? list : this.mergePlaces(list)]).filter(([id, , list]) => list.length || (id === "origin" && place.path.length));
     // A target without an inventory object is missing only where a finding says so; helpers and
     // built-in entities such as sun.sun exist without a registry entry.
     const gone = new Set((this.data.findings || []).filter(f => f.classification === "broken_reference").map(f => f.affected_object));
@@ -268,7 +269,14 @@ class DiagnosisMixin {
       const tip = x.places.length > 1 ? ` title="${this.esc(x.places.filter(Boolean).join("\n"))}"` : "";
       return `<div class="deprow${x.indent ? ` ind${x.indent}` : ""}" ${attrs}${tip}>${this.tile(typeOf(x), obj ? (this.tone(obj.status) === "ok" ? "" : this.tone(obj.status)) : isGone ? "red" : "")}<div class="deptext"><strong>${this.esc(nameOf(x))}${where}</strong><span>${this.esc(this.t(typeOf(x)))} · ${this.esc(x.label)}</span>${place}</div>${shown}<span class="depdot ${x.edge.confidence === "certain" ? "" : "prob"}" title="${this.esc(this.t(x.edge.confidence))}" aria-label="${this.esc(this.t(x.edge.confidence))}"></span></div>`;
     };
-    const column = ([, title, list]) => `<div class="depcol"><div class="dephead"><ha-icon icon="mdi:arrow-right-bold-outline" class="u-ic14"></ha-icon>${title}<span>${list.length}</span></div>${(list.some(x => x.indent !== undefined) ? list : [...list].sort((p, q) => nameOf(p).localeCompare(nameOf(q)))).map(row).join("")}</div>`;
+    const placeBlock = () => {
+      if (!place.path.length) return "";
+      const names = place.path.map(k => this.findObject(k)?.name || k.split(":").slice(1).join(":")), last = place.path[place.path.length - 1];
+      const via = place.via ? `${this.t("CONTAINS")} ${this.findObject(place.via)?.name || place.via.split(":").slice(1).join(":")}` : this.t(`relIn_CONTAINS`);
+      const obj = this.findObject(last);
+      return `<div class="dephead sub"><ha-icon icon="mdi:map-marker-outline" class="u-ic14"></ha-icon>${this.t("relGroupPlace")}</div><div class="deprow" ${obj ? `data-object="${this.esc(last)}" tabindex="0" role="button" aria-label="${this.esc(names.join(" › "))}"` : 'class="static"'}>${this.tile(last.split(":")[0], "")}<div class="deptext"><strong>${this.esc(names.join(" › "))}</strong><span>${this.esc(place.path.map(k => this.t(k.split(":")[0])).join(" › "))} · ${this.esc(via)}</span></div><span class="depdot"></span></div>`;
+    };
+    const column = ([id, title, list]) => `<div class="depcol"><div class="dephead"><ha-icon icon="mdi:arrow-right-bold-outline" class="u-ic14"></ha-icon>${title}<span>${list.length}</span></div>${(list.some(x => x.indent !== undefined) ? list : [...list].sort((p, q) => nameOf(p).localeCompare(nameOf(q)))).map(row).join("")}${id === "origin" ? placeBlock() : ""}</div>`;
     const legend = `<div class="deplegend"><span><i class="depdot"></i>${this.t("certain")}</span><span><i class="depdot prob"></i>${this.t("probable")}</span></div>`;
     const blocks = groups.length ? `<div class="depcols">${groups.map(column).join("")}</div>${legend}` : "";
     return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${blocks || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;

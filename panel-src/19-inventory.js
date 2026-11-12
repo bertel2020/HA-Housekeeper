@@ -215,10 +215,28 @@ class InventoryMixin {
     return `<div class="panel">${this.fold("inv_types", { title: this.esc(this.t("byType")), pill: filtered ? this.t("invOfAll", { n: this.formatNumber(shown), total: this.formatNumber(all.length) }) : "" }, `<div class="invbody">${donut}<div class="tablewrap">${table}</div></div>`, true)}</div>`;
   }
 
+  // Where an object stands: the floor and area that contain it, or those of the device it comes from. Not part of the origin chain.
+  locationPath(key) {
+    const above = k => this.edgesTo(k).filter(e => e.relation === "CONTAINS").map(e => e.source);
+    let start = key, via = null;
+    if (!above(start).length) {
+      const device = this.originParents(key).map(e => e.source).find(k => k.startsWith("device:") && above(k).length);
+      if (device) { start = device; via = device; }
+    }
+    const path = [];
+    for (let cur = start, i = 0; i < 3; i++) {
+      const next = above(cur)[0];
+      if (!next) break;
+      path.unshift(next);
+      cur = next;
+    }
+    return { path, via };
+  }
+
   // The origin of an object is a chain: integration, device, entity. A parent that is also reached through
   // another parent (the integration that provides the entity and owns its device) is dropped, so the chain is not drawn twice.
   originParents(k) {
-    const parentsOf = x => this.edgesTo(x).filter(e => !USAGE_RELATIONS.includes(e.relation));
+    const parentsOf = x => this.edgesTo(x).filter(e => !USAGE_RELATIONS.includes(e.relation) && e.relation !== "CONTAINS");
     const reach = (x, seen = new Set()) => { for (const e of parentsOf(x)) if (!seen.has(e.source)) { seen.add(e.source); reach(e.source, seen); } return seen; };
     const edges = parentsOf(k), via = new Set(edges.flatMap(e => [...reach(e.source)]));
     return [...new Map(edges.filter(e => !via.has(e.source)).map(e => [e.source, e])).values()];
@@ -257,7 +275,7 @@ class InventoryMixin {
     if (this.useGraph()) return `${search}${head}${this.graphBar(item, key)}${this.graphPanel(item, key)}`;
     const USAGE = USAGE_RELATIONS;
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
-    const chainNode = edge => `${this.nodeButton(edge.source, `${this.t(edge.confidence)}${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`)}<div class="link-label"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${this.t(edge.relation)}</div>`;
+    const chainNode = edge => `${this.nodeButton(edge.source, `${this.t(edge.confidence)}${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`)}<div class="deplink"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${this.t(edge.relation)}</div>`;
     const chain = (k, depth) => {
       if (depth > 4) return "";
       const edges = this.originParents(k);
@@ -272,8 +290,10 @@ class InventoryMixin {
     ]);
     const note = u => (u.places.length > 1 ? `${this.t(u.edge.confidence)} · ${this.t("relPlaces", { n: u.places.length })}` : `${this.t(u.edge.confidence)}${u.places[0] ? ` · ${u.places[0]}` : ""}`);
     const branches = list => `<div class="deptree">${list.map(u => `<div class="depbranch">${this.nodeButton(u.other, note(u), "", u.label, u.places.length > 1 ? u.places.filter(Boolean).join("\n") : "")}</div>`).join("")}</div>`;
-    const group = (title, list) => (list.length ? `<div class="deplabel"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${title}</div>${branches(list)}` : "");
-    const current = `<div class="node current">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><small>${this.t(item.object_type)}</small><strong>${this.esc(item.name)}</strong><span class="meta">${this.esc(item.object_id)}</span></span>${this.pill(item.status)}</div>`;
+    const group = (title, list) => (list.length ? `<div class="deplink label"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${title}</div>${branches(list)}` : "");
+    const place = this.locationPath(key);
+    const where = place.path.length ? `<span class="depplace"><ha-icon icon="mdi:map-marker-outline" class="u-ic14"></ha-icon>${this.t("relPlace")}: ${place.path.map(k => `<button type="button" class="linkbtn" data-graph="${this.esc(k)}">${this.esc(this.findObject(k)?.name || k.split(":").slice(1).join(":"))}</button>`).join(" › ")}</span>` : "";
+    const current = `<div class="node current">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><small>${this.t(item.object_type)}</small><strong>${this.esc(item.name)}</strong><span class="meta">${this.esc(item.object_id)}</span>${where}</span>${this.pill(item.status)}</div>`;
     const none = originCount + usageEntries.length ? "" : `<p class="emptyrel sm">${this.t("noRelations")}</p>`;
     return `${search}${head}${this.graphBar(item, key)}
       <div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("origin")} ${originCount} · ${this.t("usage")} ${usageEntries.length}</span></div>

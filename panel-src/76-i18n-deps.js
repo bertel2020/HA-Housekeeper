@@ -1,5 +1,7 @@
 // Texts for the direction of relations (relation table groups, graph column heads); merged into TEXT.
 Object.assign(TEXT.de, {
+  relGroupPlace: "Wo steht es?",
+  relPlace: "Standort",
   relGroupOrigin: "Woher kommt es?",
   relGroupUsage: "Wo wird es verwendet?",
   graphColLeft: "Herkunft · Ebene {n}",
@@ -32,6 +34,8 @@ Object.assign(TEXT.de, {
   relOut_INCLUDES: "ist in diesem Objekt eingebunden",
 });
 Object.assign(TEXT.en, {
+  relGroupPlace: "Where is it?",
+  relPlace: "Location",
   relGroupOrigin: "Where does it come from?",
   relGroupUsage: "Where is it used?",
   graphColLeft: "Origin · level {n}",

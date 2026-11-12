@@ -4484,6 +4484,8 @@ test("the relations of an object are two columns by direction: rows open known o
     edges: [
       { source: "device:drel", target: "entity:sensor.rel", relation: "PROVIDES", confidence: "certain" },
       { source: "config_entry:CE", target: "device:drel", relation: "OWNS", confidence: "certain" },
+      { source: "area:A", target: "device:drel", relation: "CONTAINS", confidence: "certain" },
+      { source: "floor:F", target: "area:A", relation: "CONTAINS", confidence: "certain" },
       { source: "config_entry:CE", target: "entity:sensor.rel", relation: "PROVIDES", confidence: "certain" },
       { source: "automation:automation.rel", target: "entity:sensor.rel", relation: "TARGETS", confidence: "certain" },
       { source: "entity:sensor.rel", target: "entity:sensor.gone", relation: "TARGETS", confidence: "certain", location: "a" },
@@ -4496,6 +4498,8 @@ test("the relations of an object are two columns by direction: rows open known o
   assert.ok(rel.includes("2 places"), "the same relation at two places is one row");
   assert.ok(rel.indexOf("owns Rel device") < rel.indexOf("provides this object") && rel.includes("deprow ind1"), "the origin is a chain from the integration down to the device");
   assert.equal((rel.match(/provides this object/g) || []).length, 1, "the integration does not provide the entity a second time");
+  assert.ok(rel.includes("Where is it?") && rel.includes("F › A") && !rel.includes("contains this object"), "floor and area are a location, not part of the origin chain");
+  assert.equal(JSON.stringify(el.locationPath("entity:sensor.rel").path), '["floor:F","area:A"]');
   assert.ok(rel.includes("Where does it come from?") && rel.includes("Where is it used?"), "the two blocks are named by direction");
   assert.ok(rel.includes("provides this object") && rel.includes("controls this object") && rel.includes("is controlled by this object"), "each row says who does what to this object");
 });
