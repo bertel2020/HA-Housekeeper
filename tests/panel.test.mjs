@@ -2210,7 +2210,9 @@ test("the graph model walks origin to the left and users to the right, level by 
   const three = el.graphModel(item, key, { depth: 3 });
   assert.equal(JSON.stringify(keysOf(three.left)), JSON.stringify(["device:D", "config_entry:C"]));
   assert.equal(JSON.stringify(keysOf(three.right)), JSON.stringify(["automation:automation.a,entity:sensor.gone,script:script.s", "automation:automation.b"]));
-  assert.equal(three.cycles, 1, "script S targets automation A, which already stands one level closer");
+  assert.equal(three.cycles, 0, "a second way to a node (script S reaches automation A directly and through the entity) is no loop");
+  el.data.edges.push({ source: "automation:automation.a", target: "script:script.s", relation: "TARGETS", confidence: "certain" }); el._memo = null;
+  assert.equal(el.graphModel(item, key, { depth: 3 }).cycles, 1, "automation A and script S target each other: that is one loop");
   assert.equal(three.count, 6);
   assert.equal(three.hidden, 0);
   assert.equal(three.right[1][0].via, "in");
@@ -2394,6 +2396,7 @@ test("a long journal and long relation groups get a search box", () => {
 test("the graph is an SVG with focusable nodes, edge directions and text for what colour shows", () => {
   const { el, shadow } = graphPanel();
   el.graphDepth = 3;
+  el.data.edges.push({ source: "automation:automation.a", target: "script:script.s", relation: "TARGETS", confidence: "certain" }); el._memo = null; // a loop with S targeting A
   el.render();
   const html = shadow.innerHTML;
   assert.ok(html.includes('<svg class="graphsvg" role="group" aria-label="Dependency graph of'));

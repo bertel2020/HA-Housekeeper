@@ -21,7 +21,7 @@ class GraphMixin {
         ? this.edgesFrom(node).filter(keep).map(e => [e.target, e])
         : this.edgesTo(node).filter(e => USAGE_RELATIONS.includes(e.relation) && keep(e)).map(e => [e.source, e])) },
     };
-    const edges = [], cycles = new Set();
+    const edges = [], cycles = new Set(), loops = new Map();
     let hidden = 0;
     const record = (from, to, edge, cycle) => {
       edges.push({ from, to, edge, cycle });
@@ -38,9 +38,8 @@ class GraphMixin {
           for (const [other, edge, via] of candidates) {
             const known = side.seen.get(other);
             const opposite = (name === "left" ? sides.right : sides.left).seen.has(other);
-            // Back to the object, to an earlier level or to the other side closes a loop.
-            if (other === key || opposite || (known && known.level <= level - 1)) { record(other, parent.key, edge, true); continue; }
-            if (known) { record(other, parent.key, edge, false); continue; } // a second way to a node of this level
+            // A node that is known already is a second way to it; whether the edges form a loop is decided afterwards.
+            if (other === key || opposite || known) { record(other, parent.key, edge, false); continue; }
             if (side.seen.size >= limit) { hidden++; continue; }
             const node = { key: other, level, via, parent: parent.key };
             side.seen.set(other, node);
@@ -51,6 +50,29 @@ class GraphMixin {
         if (found.length) side.levels.push(found);
         frontier = found;
       }
+    }
+    // A loop is a group of nodes that reach each other along the edges. A second way to a node (the integration that provides
+    // the entity and also owns its device) is no loop.
+    const out = new Map();
+    for (const r of edges) (out.get(r.edge.source) || out.set(r.edge.source, []).get(r.edge.source)).push(r.edge.target);
+    const index = new Map(), low = new Map(), stack = [], onStack = new Set(), comp = new Map(), sizes = new Map();
+    let counter = 0, groups = 0;
+    const visit = v => {
+      index.set(v, counter); low.set(v, counter); counter++; stack.push(v); onStack.add(v);
+      for (const w of out.get(v) || []) {
+        if (!index.has(w)) { visit(w); low.set(v, Math.min(low.get(v), low.get(w))); }
+        else if (onStack.has(w)) low.set(v, Math.min(low.get(v), index.get(w)));
+      }
+      if (low.get(v) === index.get(v)) {
+        let size = 0, w;
+        do { w = stack.pop(); onStack.delete(w); comp.set(w, groups); size++; } while (w !== v);
+        sizes.set(groups++, size);
+      }
+    };
+    for (const v of out.keys()) if (!index.has(v)) visit(v);
+    for (const r of edges) {
+      r.cycle = r.edge.source === r.edge.target || (comp.has(r.edge.source) && comp.get(r.edge.source) === comp.get(r.edge.target) && sizes.get(comp.get(r.edge.source)) > 1);
+      if (r.cycle) { cycles.add(r.edge); loops.set(r.edge, comp.get(r.edge.source)); }
     }
     // Leaf nodes of one type that hang on the same node, five or more of them, become one node ("12 × Sensor") until it is opened.
     const repl = new Map();
@@ -89,7 +111,7 @@ class GraphMixin {
     const all = [...sides.left.seen.values(), ...sides.right.seen.values()];
     return {
       key, left: sides.left.levels, right: sides.right.levels, edges: shown,
-      hidden, cycles: [...cycles].filter(e => shown.some(s => s.edge === e)).length,
+      hidden, cycles: new Set([...cycles].filter(e => shown.some(s => s.edge === e)).map(e => loops.get(e))).size, // one per group of nodes that reach each other
       missing: all.filter(n => !this.findObject(n.key)).length,
       probable: shown.filter(e => e.edge.confidence !== "certain").length,
       count: all.length,
