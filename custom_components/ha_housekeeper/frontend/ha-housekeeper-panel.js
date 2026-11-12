@@ -4140,10 +4140,9 @@ class SettingsMixin {
     ];
     const table = refined.length ? this.listTable("marks", columns, pg.rows, { cls: "objs", rowAttrs: o => `class="static${o.mark_due ? " duerow" : ""}"` }) : "";
     const n = sel.size, bulk = this.markBulk;
-    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("marks", n, "data-mark-selclear")}<span class="toolgap"></span>
-      <button type="button" class="btn" data-mark-bulk="review" ${n ? "" : "disabled"}><ha-icon icon="mdi:calendar-refresh-outline"></ha-icon>${this.t("marksReviewN", { n: this.formatNumber(n) })}</button>
-      <button type="button" class="btn" data-mark-bulk="kind" ${n ? "" : "disabled"}><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("marksKindN", { n: this.formatNumber(n) })}</button>
-      <button type="button" class="btn" data-mark-bulk-remove ${n ? "" : "disabled"}><ha-icon icon="mdi:bookmark-remove-outline"></ha-icon>${this.t("marksRemoveN", { n: this.formatNumber(n) })}</button></div>${n && bulk ? this.markBulkForm(bulk, n) : ""}` : "";
+    const bulkItem = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon><span>${this.t(label, { n: this.formatNumber(n) })}</span></button>`;
+    const bulkMenu = n ? `<div class="fbtns"><details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${bulkItem("mdi:calendar-refresh-outline", "marksReviewN", 'data-mark-bulk="review"')}${bulkItem("mdi:swap-horizontal", "marksKindN", 'data-mark-bulk="kind"')}${bulkItem("mdi:bookmark-remove-outline", "marksRemoveN", "data-mark-bulk-remove")}</div></details></div>` : "";
+    const tools = list.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("marks", n, "data-mark-selclear")}<span class="toolgap"></span>${bulkMenu}</div>${n && bulk ? this.markBulkForm(bulk, n) : ""}` : "";
     const body = refined.length ? table : `<div class="emptymsg">${list.length ? this.noMatches("marks") : `<ha-icon icon="mdi:bookmark-outline"></ha-icon>${this.t("decMarksNone")}`}</div>`;
     const pickerOpen = this._picker?.name === "markadd" && this._picker.open;
     return `<section class="panel${pickerOpen ? " ovvis" : ""}" id="hk-sec-marks"><div class="panelhead"><div><h2>${this.t("decMarksTitle")} (${this.formatNumber(list.length)})</h2><p>${this.t("decMarksHint")}</p></div><div class="apmanual">${this.pickerBox("markadd", this.t("marksSet"))}</div></div>${bar}${tools}${body}${pg.footer}</section>`;
@@ -7636,15 +7635,16 @@ class AutoPauseMixin {
       <div class="row"><span class="tile ${s.enabled ? "ok" : "mute"}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t("apSwitch")}</strong><small>${this.t(s.enabled ? "apStatusOn" : "apStatusOff", { n: this.formatNumber(watched.length) })}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("apSwitch"))}" data-ap-setting="enabled" ${s.enabled ? "checked" : ""}></div>`;
     const apSel = (this.apSel ||= new Set());
     for (const id of [...apSel]) if (!a.paused.some(p => p.entry_id === id)) apSel.delete(id);
-    const pausedRows = a.paused.map(p => {
+    const pausedRows = (this.selOnlyOn("autopause", apSel.size) ? a.paused.filter(p => apSel.has(p.entry_id)) : a.paused).map(p => {
       const due = p.next ? new Date(p.next).getTime() - now : null;
       const sub = [p.exhausted ? this.t("apExhausted") : due !== null ? `${this.t("apTry", { n: Math.min(p.done + 1, a.schedule.offsets.length), total: a.schedule.offsets.length })}, ${this.t("apNext", { span: this.apSpan(Math.max(due, 0)) })}` : "",
         p.reason === "manual" ? this.t("apReasonManual") : this.t("apReasonAuto", { n: this.formatNumber(p.failures || 0) })].filter(Boolean).join(" · ");
       return `<div class="row aprow"><input type="checkbox" class="selbox" data-ap-sel="${this.esc(p.entry_id)}" ${apSel.has(p.entry_id) ? "checked" : ""} aria-label="${this.esc(p.title || p.domain)}"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(p.entry_id, p.title || p.domain)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
         <span class="apbtns">${menu(p.entry_id, ["apTryNow", "data-ap-try", "mdi:refresh"], ["apEnd", "data-ap-end", "mdi:play-circle-outline"], ["apNever", "data-ap-never", "mdi:cancel"])}</span></div>`;
     }).join("");
-    const apN = apSel.size, apCount = this.formatNumber(apN), apBtn = (mode, icon, label) => `<button type="button" class="btn" data-ap-bulk="${mode}" ${apN ? "" : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(label, { n: apCount })}</button>`;
-    const apTools = a.paused.length > 1 ? `<div class="toolbar${apN ? "" : " nosel"}"><label class="nw"><input type="checkbox" class="selbox" data-ap-selall ${apN === a.paused.length ? "checked" : ""} ${apN && apN < a.paused.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}"> ${this.t("selectPage")}</label>${apN ? `<button class="btn quiet" data-ap-selclear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: apN })}</span>` : ""}<span class="toolgap"></span>${apBtn("try", "mdi:refresh", "apTryNowN")}${apBtn("resume", "mdi:play-circle-outline", "apEndN")}${apBtn("never", "mdi:cancel", "apNeverN")}</div>` : "";
+    const apN = apSel.size, apCount = this.formatNumber(apN), apItem = (mode, icon, label) => `<button type="button" class="menuitem" data-ap-bulk="${mode}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(label, { n: apCount })}</span></button>`;
+    const apMenu = apN ? `<div class="fbtns"><details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${apItem("try", "mdi:refresh", "apTryNowN")}${apItem("resume", "mdi:play-circle-outline", "apEndN")}${apItem("never", "mdi:cancel", "apNeverN")}</div></details></div>` : "";
+    const apTools = a.paused.length > 1 ? `<div class="toolbar${apN ? "" : " nosel"}">${this.selTools("autopause", apN, "data-ap-selclear", { attr: "data-ap-selall", label: this.t("selAllOfList", { count: this.formatNumber(a.paused.length) }) })}<span class="toolgap"></span>${apMenu}</div>` : "";
     const paused = a.paused.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apPaused")} <span class="pill warn">${this.formatNumber(a.paused.length)}</span></h2></div></div>${apTools}${pausedRows}</section>` : "";
     const failing = c => !c.excluded && (c.window > 0 || c.state !== "loaded");
     const filters = [["all", "apFAll", () => true], ["failing", "apFFailing", failing], ["never", "apNever", c => c.excluded], ["house", "apHousePill", c => c.house_function]];
@@ -7681,7 +7681,7 @@ class AutoPauseMixin {
     root.querySelectorAll("[data-ap-end]").forEach(el => el.onclick = () => this.apCall({ action: "resume", entry_id: el.dataset.apEnd }));
     const apSel = () => (this.apSel ||= new Set());
     root.querySelectorAll("[data-ap-sel]").forEach(el => el.onchange = () => { (el.checked ? apSel().add(el.dataset.apSel) : apSel().delete(el.dataset.apSel)); this.render(); });
-    root.querySelectorAll("[data-ap-selall]").forEach(box => { box.indeterminate = box.hasAttribute("data-partial"); box.onchange = ev => { (this.autoPause?.paused || []).forEach(p => (ev.target.checked ? apSel().add(p.entry_id) : apSel().delete(p.entry_id))); this.render(); }; });
+    root.querySelectorAll("[data-ap-selall]").forEach(el => el.onclick = () => { (this.autoPause?.paused || []).forEach(p => apSel().add(p.entry_id)); this.render(); });
     root.querySelectorAll("[data-ap-selclear]").forEach(el => el.onclick = () => { apSel().clear(); this.render(); });
     root.querySelectorAll("[data-ap-bulk]").forEach(el => el.onclick = async () => {
       const mode = el.dataset.apBulk, ids = [...apSel()];
@@ -9104,11 +9104,13 @@ class ExposureMixin {
     return ids.length ? `<input type="checkbox" class="selbox" data-expo-sel-page="${this.esc(sourceId)}" ${n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">` : "";
   }
 
-  // The bar over the table, as over the inventory: how many are ticked and what can be done with them.
-  expoSelBar(source, rows) {
+  // The bar over the table, as over the inventory: the chips, the pill of the picks and the one action.
+  // `rows` are the rows shown, `all` the rows the filters leave.
+  expoSelBar(source, rows, all = rows) {
     const sel = this.expoSelOf(source.id), n = sel.size, over = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
-    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: this.esc(source.label) })}</button>`;
-    return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-expo-sel-all="${this.esc(source.id)}" ${rows.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(rows.length) })}</button><button class="btn quiet" data-expo-sel-clear="${this.esc(source.id)}" ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn}</div>${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    const tools = this.selTools(`expo:${source.id}`, n, `data-expo-sel-clear="${this.esc(source.id)}"`, { attr: `data-expo-sel-all="${this.esc(source.id)}"`, label: this.t("stateAllFiltered", { count: this.formatNumber(all.length) }), disabled: !all.length }, over ? { label: this.t("selOverMax", { n: this.formatNumber(n), max: MAX_PLAN_ACTIONS }), over: true } : {});
+    const btn = n ? `<div class="fbtns"><button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${busy}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: this.esc(source.label) })}</button></div>` : "";
+    return `<div class="toolbar${n ? "" : " nosel"}">${tools}<span class="toolgap"></span>${btn}${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   bindExpoSel(root) {
@@ -9278,10 +9280,11 @@ class ExposureMixin {
       { name: "domain", all: this.t("expoAllDomains"), options: domains.map(d => [d, d]) },
       ...(others.length ? [{ name: "also", all: this.t("expoAllAlso"), options: others.map(o => [o, this.expoAssistantName(o)]) }] : []),
     ] }) : "";
-    const rows = all.length ? this.refine(id, all, { text: e => [e.name, e.entity_id, e.area].join(" "), filters: { domain: (e, v) => e.domain === v, also: (e, v) => e.others.includes(v) }, sorts, tie: e => e.entity_id }) : [];
+    const refined = all.length ? this.refine(id, all, { text: e => [e.name, e.entity_id, e.area].join(" "), filters: { domain: (e, v) => e.domain === v, also: (e, v) => e.others.includes(v) }, sorts, tie: e => e.entity_id }) : [];
+    const picks = this.expoSelOf(source.id), rows = this.selOnlyOn(`expo:${source.id}`, picks.size) ? refined.filter(e => picks.has(e.entity_id)) : refined;
     const pg = this.paginate(id, rows);
     const editable = EXPO_ASSISTANTS.includes(source.id);
-    (this._expoRows ||= {})[source.id] = rows.map(e => e.entity_id);
+    (this._expoRows ||= {})[source.id] = refined.map(e => e.entity_id);
     (this._expoPage ||= {})[source.id] = pg.rows.map(e => e.entity_id);
     const columns = [
       ...(editable ? [{ key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: () => this.expoHeadBox(source.id, pg.rows), cell: e => this.expoSelBox(source.id, e) }] : []),
@@ -9296,7 +9299,7 @@ class ExposureMixin {
     const where = source.titles?.length ? ` (${this.esc(source.titles.join(", "))})` : "";
     const capped = r.exposed_total > (r.exposed_entities || []).length ? `<p class="factnote">${this.t("expoCapped", { n: this.formatNumber(r.exposed_entities.length) })}</p>` : "";
     const empty = all.length ? "" : `<div class="emptymsg">${this.t(source.status === "inactive" ? "expoInactiveText" : "expoNoneFor")}</div>`;
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.esc(source.label)}${where}</h2><p>${this.t("expoSourceHint", { n: this.formatNumber(source.count), name: this.esc(source.label) })}</p></div></div>${bar}${none}${empty}${editable && rows.length ? this.expoSelBar(source, rows) : ""}${table}${pg.footer}${capped}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.esc(source.label)}${where}</h2><p>${this.t("expoSourceHint", { n: this.formatNumber(source.count), name: this.esc(source.label) })}</p></div></div>${bar}${none}${empty}${editable && rows.length ? this.expoSelBar(source, rows, refined) : ""}${table}${pg.footer}${capped}</div>`;
   }
 
   exposureView() {

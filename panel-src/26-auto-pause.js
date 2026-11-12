@@ -178,15 +178,16 @@ class AutoPauseMixin {
       <div class="row"><span class="tile ${s.enabled ? "ok" : "mute"}"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t("apSwitch")}</strong><small>${this.t(s.enabled ? "apStatusOn" : "apStatusOff", { n: this.formatNumber(watched.length) })}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("apSwitch"))}" data-ap-setting="enabled" ${s.enabled ? "checked" : ""}></div>`;
     const apSel = (this.apSel ||= new Set());
     for (const id of [...apSel]) if (!a.paused.some(p => p.entry_id === id)) apSel.delete(id);
-    const pausedRows = a.paused.map(p => {
+    const pausedRows = (this.selOnlyOn("autopause", apSel.size) ? a.paused.filter(p => apSel.has(p.entry_id)) : a.paused).map(p => {
       const due = p.next ? new Date(p.next).getTime() - now : null;
       const sub = [p.exhausted ? this.t("apExhausted") : due !== null ? `${this.t("apTry", { n: Math.min(p.done + 1, a.schedule.offsets.length), total: a.schedule.offsets.length })}, ${this.t("apNext", { span: this.apSpan(Math.max(due, 0)) })}` : "",
         p.reason === "manual" ? this.t("apReasonManual") : this.t("apReasonAuto", { n: this.formatNumber(p.failures || 0) })].filter(Boolean).join(" · ");
       return `<div class="row aprow"><input type="checkbox" class="selbox" data-ap-sel="${this.esc(p.entry_id)}" ${apSel.has(p.entry_id) ? "checked" : ""} aria-label="${this.esc(p.title || p.domain)}"><span class="tile warn"><ha-icon icon="mdi:pause-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.apName(p.entry_id, p.title || p.domain)}</strong><small>${this.esc(p.domain)} · ${this.esc(this.t("apSince", { span: this.apSpan(now - new Date(p.since).getTime()) }))}</small><small>${this.esc(sub)}</small></span>
         <span class="apbtns">${menu(p.entry_id, ["apTryNow", "data-ap-try", "mdi:refresh"], ["apEnd", "data-ap-end", "mdi:play-circle-outline"], ["apNever", "data-ap-never", "mdi:cancel"])}</span></div>`;
     }).join("");
-    const apN = apSel.size, apCount = this.formatNumber(apN), apBtn = (mode, icon, label) => `<button type="button" class="btn" data-ap-bulk="${mode}" ${apN ? "" : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(label, { n: apCount })}</button>`;
-    const apTools = a.paused.length > 1 ? `<div class="toolbar${apN ? "" : " nosel"}"><label class="nw"><input type="checkbox" class="selbox" data-ap-selall ${apN === a.paused.length ? "checked" : ""} ${apN && apN < a.paused.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}"> ${this.t("selectPage")}</label>${apN ? `<button class="btn quiet" data-ap-selclear>${this.t("clearSelection")}</button><span class="selcount" role="status">${this.t("selectedCount", { count: apN })}</span>` : ""}<span class="toolgap"></span>${apBtn("try", "mdi:refresh", "apTryNowN")}${apBtn("resume", "mdi:play-circle-outline", "apEndN")}${apBtn("never", "mdi:cancel", "apNeverN")}</div>` : "";
+    const apN = apSel.size, apCount = this.formatNumber(apN), apItem = (mode, icon, label) => `<button type="button" class="menuitem" data-ap-bulk="${mode}"><ha-icon icon="${icon}"></ha-icon><span>${this.t(label, { n: apCount })}</span></button>`;
+    const apMenu = apN ? `<div class="fbtns"><details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${apItem("try", "mdi:refresh", "apTryNowN")}${apItem("resume", "mdi:play-circle-outline", "apEndN")}${apItem("never", "mdi:cancel", "apNeverN")}</div></details></div>` : "";
+    const apTools = a.paused.length > 1 ? `<div class="toolbar${apN ? "" : " nosel"}">${this.selTools("autopause", apN, "data-ap-selclear", { attr: "data-ap-selall", label: this.t("selAllOfList", { count: this.formatNumber(a.paused.length) }) })}<span class="toolgap"></span>${apMenu}</div>` : "";
     const paused = a.paused.length ? `<section class="panel"><div class="panelhead"><div><h2>${this.t("apPaused")} <span class="pill warn">${this.formatNumber(a.paused.length)}</span></h2></div></div>${apTools}${pausedRows}</section>` : "";
     const failing = c => !c.excluded && (c.window > 0 || c.state !== "loaded");
     const filters = [["all", "apFAll", () => true], ["failing", "apFFailing", failing], ["never", "apNever", c => c.excluded], ["house", "apHousePill", c => c.house_function]];
@@ -223,7 +224,7 @@ class AutoPauseMixin {
     root.querySelectorAll("[data-ap-end]").forEach(el => el.onclick = () => this.apCall({ action: "resume", entry_id: el.dataset.apEnd }));
     const apSel = () => (this.apSel ||= new Set());
     root.querySelectorAll("[data-ap-sel]").forEach(el => el.onchange = () => { (el.checked ? apSel().add(el.dataset.apSel) : apSel().delete(el.dataset.apSel)); this.render(); });
-    root.querySelectorAll("[data-ap-selall]").forEach(box => { box.indeterminate = box.hasAttribute("data-partial"); box.onchange = ev => { (this.autoPause?.paused || []).forEach(p => (ev.target.checked ? apSel().add(p.entry_id) : apSel().delete(p.entry_id))); this.render(); }; });
+    root.querySelectorAll("[data-ap-selall]").forEach(el => el.onclick = () => { (this.autoPause?.paused || []).forEach(p => apSel().add(p.entry_id)); this.render(); });
     root.querySelectorAll("[data-ap-selclear]").forEach(el => el.onclick = () => { apSel().clear(); this.render(); });
     root.querySelectorAll("[data-ap-bulk]").forEach(el => el.onclick = async () => {
       const mode = el.dataset.apBulk, ids = [...apSel()];

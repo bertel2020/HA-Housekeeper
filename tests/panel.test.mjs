@@ -3317,10 +3317,10 @@ test("the list of an assistant ticks entities and takes them out of that assista
   el.viewTab = { exposure: "conversation" };
   let html = el.exposureView();
   assert.ok(html.includes('data-expo-sel="conversation|light.a"') && html.includes("data-expo-sel-page") && html.includes('data-expo-from="conversation|light.a"'), "boxes in the rows and the head, and the row menu");
-  assert.ok(html.includes("Aus Assist entfernen …") && html.includes("0 ausgewählt") && html.includes("Alle 2 Entitäten der Liste"), "the bar is that of the inventory");
+  assert.ok(html.includes("Alle 2 Entitäten der Liste") && !html.includes("Aus Assist entfernen …") && !html.includes("0 ausgewählt"), "the bar is that of the inventory: the action comes with the first pick");
   el.expoSelOf("conversation").add("light.a");
   html = el.exposureView();
-  assert.ok(html.includes("1 ausgewählt") && html.includes('data-expo-sel="conversation|light.a" checked'));
+  assert.ok(html.includes("1 ausgewählt") && html.includes("Aus Assist entfernen …") && html.includes('data-expo-sel="conversation|light.a" checked'));
   await el.makeExposureFrom("conversation");
   assert.equal(JSON.stringify(calls.find(c => c.type.endsWith("/plan_create"))?.actions), JSON.stringify([{ kind: "set_exposure", object_id: "light.a", target: "remove", assistants: ["conversation"] }]));
   assert.equal(el.expoSelOf("conversation").size, 0, "the selection is cleared once the plan is made");

@@ -40,11 +40,13 @@ class ExposureMixin {
     return ids.length ? `<input type="checkbox" class="selbox" data-expo-sel-page="${this.esc(sourceId)}" ${n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">` : "";
   }
 
-  // The bar over the table, as over the inventory: how many are ticked and what can be done with them.
-  expoSelBar(source, rows) {
+  // The bar over the table, as over the inventory: the chips, the pill of the picks and the one action.
+  // `rows` are the rows shown, `all` the rows the filters leave.
+  expoSelBar(source, rows, all = rows) {
     const sel = this.expoSelOf(source.id), n = sel.size, over = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
-    const btn = `<button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${n ? busy : "disabled"}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: this.esc(source.label) })}</button>`;
-    return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-expo-sel-all="${this.esc(source.id)}" ${rows.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(rows.length) })}</button><button class="btn quiet" data-expo-sel-clear="${this.esc(source.id)}" ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn}</div>${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    const tools = this.selTools(`expo:${source.id}`, n, `data-expo-sel-clear="${this.esc(source.id)}"`, { attr: `data-expo-sel-all="${this.esc(source.id)}"`, label: this.t("stateAllFiltered", { count: this.formatNumber(all.length) }), disabled: !all.length }, over ? { label: this.t("selOverMax", { n: this.formatNumber(n), max: MAX_PLAN_ACTIONS }), over: true } : {});
+    const btn = n ? `<div class="fbtns"><button class="btn" data-expo-sel-plan="${this.esc(source.id)}" ${busy}><ha-icon icon="mdi:shield-off-outline"></ha-icon>${this.t("expoActRemoveFrom", { name: this.esc(source.label) })}</button></div>` : "";
+    return `<div class="toolbar${n ? "" : " nosel"}">${tools}<span class="toolgap"></span>${btn}${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   bindExpoSel(root) {
@@ -214,10 +216,11 @@ class ExposureMixin {
       { name: "domain", all: this.t("expoAllDomains"), options: domains.map(d => [d, d]) },
       ...(others.length ? [{ name: "also", all: this.t("expoAllAlso"), options: others.map(o => [o, this.expoAssistantName(o)]) }] : []),
     ] }) : "";
-    const rows = all.length ? this.refine(id, all, { text: e => [e.name, e.entity_id, e.area].join(" "), filters: { domain: (e, v) => e.domain === v, also: (e, v) => e.others.includes(v) }, sorts, tie: e => e.entity_id }) : [];
+    const refined = all.length ? this.refine(id, all, { text: e => [e.name, e.entity_id, e.area].join(" "), filters: { domain: (e, v) => e.domain === v, also: (e, v) => e.others.includes(v) }, sorts, tie: e => e.entity_id }) : [];
+    const picks = this.expoSelOf(source.id), rows = this.selOnlyOn(`expo:${source.id}`, picks.size) ? refined.filter(e => picks.has(e.entity_id)) : refined;
     const pg = this.paginate(id, rows);
     const editable = EXPO_ASSISTANTS.includes(source.id);
-    (this._expoRows ||= {})[source.id] = rows.map(e => e.entity_id);
+    (this._expoRows ||= {})[source.id] = refined.map(e => e.entity_id);
     (this._expoPage ||= {})[source.id] = pg.rows.map(e => e.entity_id);
     const columns = [
       ...(editable ? [{ key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: () => this.expoHeadBox(source.id, pg.rows), cell: e => this.expoSelBox(source.id, e) }] : []),
@@ -232,7 +235,7 @@ class ExposureMixin {
     const where = source.titles?.length ? ` (${this.esc(source.titles.join(", "))})` : "";
     const capped = r.exposed_total > (r.exposed_entities || []).length ? `<p class="factnote">${this.t("expoCapped", { n: this.formatNumber(r.exposed_entities.length) })}</p>` : "";
     const empty = all.length ? "" : `<div class="emptymsg">${this.t(source.status === "inactive" ? "expoInactiveText" : "expoNoneFor")}</div>`;
-    return `<div class="panel"><div class="panelhead"><div><h2>${this.esc(source.label)}${where}</h2><p>${this.t("expoSourceHint", { n: this.formatNumber(source.count), name: this.esc(source.label) })}</p></div></div>${bar}${none}${empty}${editable && rows.length ? this.expoSelBar(source, rows) : ""}${table}${pg.footer}${capped}</div>`;
+    return `<div class="panel"><div class="panelhead"><div><h2>${this.esc(source.label)}${where}</h2><p>${this.t("expoSourceHint", { n: this.formatNumber(source.count), name: this.esc(source.label) })}</p></div></div>${bar}${none}${empty}${editable && rows.length ? this.expoSelBar(source, rows, refined) : ""}${table}${pg.footer}${capped}</div>`;
   }
 
   exposureView() {
