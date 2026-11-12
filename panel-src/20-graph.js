@@ -1,6 +1,6 @@
 // GraphMixin: methods of the panel element, mixed into the class in 99-register.js.
 // The graph is a second view of the dependency list: origin on the left, the object in the middle,
-// what uses it on the right, up to three levels deep. The list stays the default and the fallback.
+// what uses it on the right, up to four levels deep. The list stays the default and the fallback.
 class GraphMixin {
   // The graph needs room; on a narrow screen only the list is offered.
   canGraph() {
@@ -185,7 +185,7 @@ class GraphMixin {
     const canGraph = this.canGraph(), graph = this.useGraph();
     const toggle = canGraph ? `<div class="seg" role="group" aria-label="${this.esc(this.t("graphMode"))}">${[["list", "graphList"], ["graph", "graphGraph"]].map(([mode, label]) => `<button class="btn ${(graph ? "graph" : "list") === mode ? "primary" : ""}" data-pref="graphMode|${mode}" aria-pressed="${(graph ? "graph" : "list") === mode}">${this.t(label)}</button>`).join("")}</div>` : "";
     if (!graph) return toggle ? `<div class="panel graphbar">${toggle}</div>` : `<p class="factnote graphphone">${this.t("graphPhone")}</p>`;
-    const depth = [1, 2, 3].map(n => `<button class="btn ${this.graphDepth === n ? "primary" : ""}" data-graph-depth="${n}" aria-pressed="${this.graphDepth === n}">${n}</button>`).join("");
+    const depth = [1, 2, 3, 4].map(n => `<button class="btn ${this.graphDepth === n ? "primary" : ""}" data-graph-depth="${n}" aria-pressed="${this.graphDepth === n}">${n}</button>`).join("");
     const relations = [...new Set(this.graphModel(item, key, { depth: this.graphDepth, limit: 400 }).edges.map(e => e.edge.relation))].sort();
     const relSelect = `<select id="graphRel" aria-label="${this.esc(this.t("graphRelation"))}"><option value="">${this.t("graphAllRelations")}</option><option value="@origin" ${this.graphRel === "@origin" ? "selected" : ""}>${this.t("graphRelOrigin")}</option><option value="@usage" ${this.graphRel === "@usage" ? "selected" : ""}>${this.t("graphRelUsage")}</option>${relations.map(r => `<option value="${r}" ${this.graphRel === r ? "selected" : ""}>${this.t(r)}</option>`).join("")}</select>`;
     const confSelect = `<select id="graphConf" aria-label="${this.esc(this.t("graphConfidence"))}"><option value="all" ${this.graphConf === "all" ? "selected" : ""}>${this.t("graphAllConf")}</option><option value="certain" ${this.graphConf === "certain" ? "selected" : ""}>${this.t("graphCertainOnly")}</option></select>`;
@@ -208,6 +208,6 @@ class GraphMixin {
     const more = (model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "") + (this.graphOpen.size ? ` <button class="btn" data-graph-regroup>${this.t("graphRegroup")}</button>` : "");
     return `<div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("graphNodes", { n: model.count })}</span></div>
       ${nothing ? `<p class="emptyrel">${this.t("noRelations")}</p>` : this.graphSvg(model, item, hitKeys)}
-      ${notes || more.trim() ? `<p class="factnote">${this.esc(notes)} ${more}</p>` : ""}${this.fold("graph_legend", { title: this.t("graphLegendTitle") }, `<p class="factnote">${this.t("graphLegendDir")}</p><p class="factnote">${this.t("graphLegend")}</p>`, false)}</div>`;
+      ${notes || more.trim() ? `<p class="factnote">${this.esc(notes)} ${more}</p>` : ""}<div class="graphlegend"><p class="factnote"><strong>${this.t("graphLegendTitle")}</strong></p><p class="factnote">${this.t("graphLegendDir")}</p><p class="factnote">${this.t("graphLegend")}</p></div></div>`;
   }
 }

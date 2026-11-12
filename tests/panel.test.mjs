@@ -2407,7 +2407,7 @@ test("the graph is an SVG with focusable nodes, edge directions and text for wha
   const automation = /<path class="gedge" d="[^"]+" marker-end="url\(#hk-arrow\)"><title>automation:automation.a → entity:sensor.e/.test(html);
   assert.ok(device && automation, "arrows follow the flow of the value");
   assert.ok(html.includes("Missing targets: 1") && html.includes("Probable relations: 1") && html.includes("Cycles: 1"));
-  assert.ok(html.includes('data-fold="graph_legend"') && !html.includes("Solid: certain"));
+  assert.ok(html.includes("Solid: certain") && !html.includes('data-fold="graph_legend"'), "the legend is always shown");
 });
 
 test("the graph bar switches between list and graph, sets depth and filters", () => {
