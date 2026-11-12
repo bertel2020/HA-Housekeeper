@@ -41,6 +41,8 @@ jobs:
             echo "::error::No CHANGELOG.md section found for ${version}"
             exit 1
           fi
+      - name: Append support footer
+        run: cat .github/release-footer.md >> release-notes.md
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
