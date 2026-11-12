@@ -194,6 +194,20 @@ class GraphMixin {
     return `<div class="panel graphbar">${toggle}<span class="graphctl"><small>${this.t("graphDepth")}</small><span class="seg" role="group" aria-label="${this.esc(this.t("graphDepth"))}">${depth}</span></span>${relSelect}${confSelect}${impactBtn}</div>`;
   }
 
+  // The legend under the graph, always shown: a small sample of each line and frame, then how to read arrows and levels.
+  graphLegendBlock() {
+    const parts = this.t("graphLegend").split(" · ").map(x => x.trim().replace(/[.。]$/, ""));
+    const sample = [
+      '<svg width="30" height="12" aria-hidden="true"><path class="lgl" d="M1,6 H29"></path></svg>',
+      '<svg width="30" height="12" aria-hidden="true"><path class="lgl prob" d="M1,6 H29"></path></svg>',
+      '<svg width="30" height="12" aria-hidden="true"><path class="lgl cycle" d="M1,6 H29"></path></svg>',
+      '<svg width="30" height="16" aria-hidden="true" class="gnode"><rect class="hit" x="2" y="2" width="26" height="12" rx="3"></rect></svg>',
+      '<svg width="30" height="16" aria-hidden="true" class="gnode missing"><rect x="2" y="2" width="26" height="12" rx="3"></rect></svg>',
+    ];
+    const items = parts.length === sample.length ? `<ul class="glegend">${parts.map((text, i) => `<li>${sample[i]}<span>${this.esc(text)}</span></li>`).join("")}</ul>` : `<p>${this.esc(this.t("graphLegend"))}</p>`;
+    return `<div class="graphlegend"><strong>${this.t("graphLegendTitle")}</strong>${items}<p>${this.esc(this.t("graphLegendDir"))}</p></div>`;
+  }
+
   graphPanel(item, key) {
     const model = this.graphModel(item, key, { depth: this.graphDepth, relation: this.graphRel, certainOnly: this.graphConf === "certain", limit: this.graphLimit, open: this.graphOpen });
     const impact = this.graphImpact ? this.impact(item, key) : null;
@@ -208,6 +222,6 @@ class GraphMixin {
     const more = (model.hidden ? `<button class="btn" data-graph-more>${this.t("graphMore")}</button>` : "") + (this.graphOpen.size ? ` <button class="btn" data-graph-regroup>${this.t("graphRegroup")}</button>` : "");
     return `<div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("graphNodes", { n: model.count })}</span></div>
       ${nothing ? `<p class="emptyrel">${this.t("noRelations")}</p>` : this.graphSvg(model, item, hitKeys)}
-      ${notes || more.trim() ? `<p class="factnote">${this.esc(notes)} ${more}</p>` : ""}<div class="graphlegend"><p class="factnote"><strong>${this.t("graphLegendTitle")}</strong></p><p class="factnote">${this.t("graphLegendDir")}</p><p class="factnote">${this.t("graphLegend")}</p></div></div>`;
+      ${notes || more.trim() ? `<p class="factnote">${this.esc(notes)} ${more}</p>` : ""}${this.graphLegendBlock()}</div>`;
   }
 }
