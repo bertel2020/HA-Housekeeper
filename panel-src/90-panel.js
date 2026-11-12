@@ -1238,6 +1238,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const findPage = root.querySelector("[data-fsel-page]");
     if (findPage) { findPage.indeterminate = findPage.hasAttribute("data-partial"); findPage.onchange = ev => { (this._findPage || []).forEach(key => (ev.target.checked ? this.findSel.add(key) : this.findSel.delete(key))); this.render(); }; }
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
+    root.querySelector("[data-fsel-all]")?.addEventListener("click", () => { (this._findAll || []).forEach(key => this.findSel.add(key)); this.render(); });
     root.querySelector("[data-fsel-unhide]")?.addEventListener("click", () => this.unhideSelectedFindings());
     root.querySelector("[data-fsel-markclear]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmMarksRemove", { count: this.selectionFacts().mark.length }), () => this.clearSelectedMarks()));
     root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());

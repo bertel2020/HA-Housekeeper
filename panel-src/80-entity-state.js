@@ -19,14 +19,17 @@ Object.assign(TEXT.en, {
 });
 
 class EntityStateMixin {
-  // The bar over the inventory table: how many entities are ticked and what can be done with them.
-  invSelBar(rows) {
+  // The bar over the inventory table: the chips to pick, the pill of the picks and, from the first pick on, one menu of what can be done.
+  // `rows` are the rows shown, `all` the rows the filters leave (they differ while only the picks are shown).
+  invSelBar(rows, all = rows) {
     const sel = this.invSel ||= new Set(), n = sel.size;
-    const entities = rows.filter(r => this.invSelectable(r));
+    const entities = all.filter(r => this.invSelectable(r));
     if (!n && !entities.length) return rows.length ? `<div class="toolbar nosel"><span class="toolgap"></span>${this.viewCount(rows.length)}</div>` : "";
     const over = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
-    const btn = (target, icon) => `<button class="btn" data-inv-state="${target}" ${n ? busy : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(`state${target[0].toUpperCase()}${target.slice(1)}`)}</button>`;
-    return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-inv-sel-all ${entities.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(entities.length) })}</button><button class="btn quiet" data-inv-sel-clear ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn("disable", "mdi:cancel")}${btn("enable", "mdi:check-circle-outline")}${btn("hide", "mdi:eye-off-outline")}${btn("unhide", "mdi:eye-outline")}</div>${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    const item = (target, icon) => `<button type="button" class="menuitem" data-inv-state="${target}" ${busy}><ha-icon icon="${icon}"></ha-icon><span>${this.t(`state${target[0].toUpperCase()}${target.slice(1)}`)}</span></button>`;
+    const tools = this.selTools("inventory", n, "data-inv-sel-clear", { attr: "data-inv-sel-all", label: this.t("stateAllFiltered", { count: this.formatNumber(entities.length) }), disabled: !entities.length }, over ? { label: this.t("selOverMax", { n: this.formatNumber(n), max: MAX_PLAN_ACTIONS }), over: true } : {});
+    const menu = n ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${item("disable", "mdi:cancel")}${item("enable", "mdi:check-circle-outline")}${item("hide", "mdi:eye-off-outline")}${item("unhide", "mdi:eye-outline")}</div></details>` : "";
+    return `<div class="toolbar${n ? "" : " nosel"}">${tools}<span class="toolgap"></span>${menu ? `<div class="fbtns">${menu}</div>` : ""}${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   // The inventory lists an automation, script or scene instead of its entity, so these rows switch that entity.

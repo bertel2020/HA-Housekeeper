@@ -214,7 +214,7 @@ class SettingsMixin {
     const st = this.lvState("decided", "name", "asc");
     this.setExporter("decided", "finding-status", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("decColStatus"), this.t("decideReason"), this.t("decColUntil"), this.t("decColNow")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`), f.ignore_info?.reason || "", until(f), nowText(f)]));
     const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("decided", { sorts, filters }) : "";
-    const sorted = this.refine("decided", this.selOnly?.decided ? list.filter(f => sel.has(f.key)) : list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v, now: (f, v) => now(f) === v }, sorts, tie: f => f.key });
+    const sorted = this.refine("decided", this.selOnlyOn("decided", sel.size) ? list.filter(f => sel.has(f.key)) : list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v, now: (f, v) => now(f) === v }, sorts, tie: f => f.key });
     const refined = [...sorted.filter(f => !f.ignored), ...sorted.filter(f => f.ignored && !f.resting), ...sorted.filter(f => f.resting)];
     const pg = this.paginate("decided", refined);
     st.shown = refined.length;
@@ -262,7 +262,7 @@ class SettingsMixin {
     const st = this.lvState("marks", "name", "asc");
     this.setExporter("marks", "marks", [this.t("hidColObject"), "ID", this.t("type"), this.t("markKind"), this.t("markReason"), this.t("markReview"), this.t("decColEffect")], () => refined.map(o => [o.name || o.object_id, o.object_id, this.t(o.object_type), this.t(`mark_${o.mark.kind}`), o.mark.reason || "", o.mark.until ? this.formatDate(o.mark.until) : "", effect(o)]));
     const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("marks", { sorts, filters }) : "";
-    const sorted = this.refine("marks", this.selOnly?.marks ? list.filter(o => (this.markSel ||= new Set()).has(keyOf(o))) : list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
+    const sorted = this.refine("marks", this.selOnlyOn("marks", (this.markSel ||= new Set()).size) ? list.filter(o => (this.markSel ||= new Set()).has(keyOf(o))) : list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
     const refined = [...sorted.filter(o => o.mark_due), ...sorted.filter(o => !o.mark_due && isQuiet(o)), ...sorted.filter(o => !o.mark_due && !isQuiet(o))];
     const pg = this.paginate("marks", refined);
     st.shown = refined.length;

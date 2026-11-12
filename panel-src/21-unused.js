@@ -178,7 +178,7 @@ class UnusedMixin {
       kind: (o, v) => kind(o) === v, unit: (o, v) => o.unit === v,
       age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
     }, sorts, tie: o => o.statistic_id });
-    const rows = this.selOnly?.orphanstats ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;
+    const rows = this.selOnlyOn("orphanstats", this.purgeSel.size) ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;
     const pg = this.paginate("orphanstats", rows);
     this._purgeTotal = rows.length;
     this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
@@ -276,7 +276,7 @@ class UnusedMixin {
     ] });
     const sel = (this.unrefSel ||= new Set());
     for (const id of [...sel]) if (!all.some(o => o.object_id === id)) sel.delete(id);
-    const rows = this.refine("unreferenced", this.selOnly?.unreferenced ? all.filter(o => sel.has(o.object_id)) : all, {
+    const rows = this.refine("unreferenced", this.selOnlyOn("unreferenced", sel.size) ? all.filter(o => sel.has(o.object_id)) : all, {
       text: o => [o.name, o.object_id, this.areaName(o), deviceName(o), o.platform].join(" "),
       filters: { domain: (o, v) => domainOf(o) === v, area: (o, v) => this.areaName(o) === v, platform: (o, v) => o.platform === v }, sorts, tie: o => o.object_id,
     });

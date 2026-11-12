@@ -783,7 +783,7 @@ class CleanupMixin {
       text: r => [r.item.name, r.item.object_id, r.item.platform, r.item.manufacturer, r.item.model].join(" "),
       filters: { classification: (r, v) => r.finding && r.finding.classification === v, readiness: (r, v) => (v === "ready") === ready(r) }, sorts, tie: r => r.item.object_id,
     });
-    const shownList = this.selOnly?.cleanup ? list.filter(r => this.cleanupSel.has(r.item.object_id)) : list;
+    const shownList = this.selOnlyOn("cleanup", this.cleanupSel.size) ? list.filter(r => this.cleanupSel.has(r.item.object_id)) : list;
     const pg = this.paginate("cleanup", shownList);
     this._cleanupVisible = pg.rows.filter(ready).map(r => r.item.object_id);
     const badge = r => {

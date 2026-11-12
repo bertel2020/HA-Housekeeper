@@ -6632,5 +6632,7 @@
 "relIn_INCLUDES": "引入此对象",
 "relOut_INCLUDES": "被此对象引入",
 "relGroupPlace": "所在位置",
-"relPlace": "位置"
+"relPlace": "位置",
+"selAllOfList": "列表中的全部 {count} 项",
+"selOverMax": "{n} / 最多 {max}"
 }

@@ -114,14 +114,24 @@ class ListsMixin {
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem${e[3] ? " tech" : ""}" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem${e[3] ? " tech" : ""}" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
   }
 
-  selTools(id, count, clearAttr) {
-    if (!count) return this.selOnly?.[id] ? this.selOnlyButton(id, count) : "";
-    return `<button class="btn quiet" ${clearAttr}>${this.t("clearSelection")}</button>${this.selOnlyButton(id, count)}<span class="selcount" role="status">${this.t("selectedCount", { count })}</span>`;
+  // Whether "show only the picked" narrows the list: only while something is picked, so clearing the pick shows everything again.
+  selOnlyOn(id, count) {
+    return Boolean(this.selOnly?.[id]) && count > 0;
   }
 
-  selOnlyButton(id, count) {
+  // The left part of the bar over a list with picks: chips to pick everything and to clear, and the pill that counts the picks and shows only them.
+  // `all` is { attr, label } for a list that can pick everything it shows.
+  // `pill` may bring its own text and mark the picks as too many ({ label, over }).
+  selTools(id, count, clearAttr, all = null, pill = {}) {
+    if (!count && this.selOnly?.[id]) this.selOnly[id] = false;
+    const allChip = all ? `<button type="button" class="chip" ${all.attr} ${all.disabled ? "disabled" : ""}>${all.label}</button>` : "";
+    if (!count) return allChip;
+    return `${allChip}<button type="button" class="chip" ${clearAttr}>${this.t("clearSelection")}</button>${this.selPill(id, count, pill)}`;
+  }
+
+  selPill(id, count, { label = "", over = false } = {}) {
     const on = Boolean(this.selOnly?.[id]);
-    return `<button class="btn quiet" data-sel-only="${this.esc(id)}" aria-pressed="${on}" ${count || on ? "" : "disabled"}>${this.t(on ? "showAll" : "showSelectedOnly")}</button>`;
+    return `<button type="button" class="selcount selpill${over ? " over" : ""}" data-sel-only="${this.esc(id)}" aria-pressed="${on}" title="${this.esc(this.t(on ? "showAll" : "showSelectedOnly"))}"><ha-icon icon="${on ? "mdi:eye-off-outline" : "mdi:eye-outline"}"></ha-icon>${label || this.t("selectedCount", { count: this.formatNumber(count) })}</button>`;
   }
 
   // A range of ticks with Shift-click: from the last ticked row to this one, within the shown page.

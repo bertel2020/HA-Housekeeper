@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"090ecb0ee9"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"b47c686ca4"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"c49b4618f3"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f13719aeb3"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"48682a66f6"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"3f8cb23a50"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"5a4052eb9b"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"806229ee65"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"2f15a53161"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"604d734098"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d8e3370906"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"7fe630f34c"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"f0ff5d4e7a"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"ac98212d7c"}];
 
 const TEXT = {
   de: {
@@ -104,7 +104,7 @@ const TEXT = {
     saveOptions: "Speichern", optionsSaved: "Gespeichert. Housekeeper lädt neu …", optionsBusy: "Gerade läuft ein Plan, ein Rückgängigmachen oder eine Löschung. Die Einstellungen lassen sich danach speichern.", optionsInvalid: "Bitte Werte im erlaubten Bereich eingeben.",
     cleanupSubtitle: "Erst deaktivieren, nach der Quarantäne entfernen; Reste in der Datenbank löschen.",
     cleanupCandidates: "Kandidaten", cleanupCandidatesHint: "Verwaiste und lange nicht verfügbare Entitäten.", cleanupNone: "Keine Kandidaten gefunden.",
-    selectPage: "Seite auswählen", successorHint: "Mögliche Nachfolger (nur ein Vorschlag):", purgeOpen: "Vorschau erstellen", purgeTitle: "Statistiken aus dem Recorder löschen", purgeWarn: "{n} Statistik-Reihen werden mit Lang- und Kurzzeitwerten gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an und löscht nur, wenn es gelingt. Danach geht es nur noch aus dem Backup zurück. Reihen im Energie-Dashboard sind ausgenommen.", purgeStates: "Auch die gespeicherten Zustände dieser IDs löschen", purgeWord: "LÖSCHEN", purgeRun: "Jetzt löschen", purgeRunning: "Läuft (Backup, dann Löschen) …", purgeDone: "{n} Reihen gelöscht, {skipped} übersprungen.", purgeReason_backup_unavailable: "Backup nicht verfügbar", purgeReason_no_backup_agent: "kein Backup-Ziel eingerichtet", purgeReason_backup_failed: "Backup fehlgeschlagen", purgeReason_failed: "Fehler beim Löschen", purgeReason_busy: "ein Löschvorgang läuft schon", bpTab: "Blueprints", bpMissing: "Blueprint-Datei fehlt", bpBroken: "Blueprint lädt nicht", bpUnused: "wird nicht benutzt", bpFiles: "Dateien", bpNone: "Nichts auffällig.", notifyTitle: "Benachrichtigung", notifyHint: "Das Einzige, was Housekeeper von sich aus tut. Standardmäßig aus.", notifyLabel: "Bei neuen defekten Referenzen melden", notifyDetail: "Eine Benachrichtigung in Home Assistant, sobald eine Automation oder ein Skript auf etwas zeigt, das nicht existiert. Jeder Fund wird einmal gemeldet; beim Einschalten wird nichts Altes gemeldet.", diagDownload: "Diagnose-Datei herunterladen", diagCopy: "Angaben für eine Fehlermeldung kopieren", diagCopyHint: "Versionen, Browser oder App und die letzten Fehler im Panel, zum Einfügen in ein GitHub-Issue.", diagCopied: "Kopiert", diagHint: "Nur Zahlen und Versionen, keine Namen, IDs oder Attribute. Passend für eine Fehlermeldung auf GitHub.", weeklyBtn: "Wochenbericht", weeklyHint: "Lädt den Vergleich mit dem Stand von vor etwa einer Woche und speichert ihn als Markdown-Datei.", weeklyTitle: "Housekeeper-Bericht", weeklyRecorder: "Lauteste Entitäten im Recorder", clearSelection: "Auswahl leeren", createPlan: "Vorschau erstellen ({count})", prepareDelete: "Vorschau erstellen ({count})", selectedCount: "{count} ausgewählt",
+    selectPage: "Seite auswählen", successorHint: "Mögliche Nachfolger (nur ein Vorschlag):", purgeOpen: "Vorschau erstellen", purgeTitle: "Statistiken aus dem Recorder löschen", purgeWarn: "{n} Statistik-Reihen werden mit Lang- und Kurzzeitwerten gelöscht. Vorher legt Housekeeper ein Home-Assistant-Backup an und löscht nur, wenn es gelingt. Danach geht es nur noch aus dem Backup zurück. Reihen im Energie-Dashboard sind ausgenommen.", purgeStates: "Auch die gespeicherten Zustände dieser IDs löschen", purgeWord: "LÖSCHEN", purgeRun: "Jetzt löschen", purgeRunning: "Läuft (Backup, dann Löschen) …", purgeDone: "{n} Reihen gelöscht, {skipped} übersprungen.", purgeReason_backup_unavailable: "Backup nicht verfügbar", purgeReason_no_backup_agent: "kein Backup-Ziel eingerichtet", purgeReason_backup_failed: "Backup fehlgeschlagen", purgeReason_failed: "Fehler beim Löschen", purgeReason_busy: "ein Löschvorgang läuft schon", bpTab: "Blueprints", bpMissing: "Blueprint-Datei fehlt", bpBroken: "Blueprint lädt nicht", bpUnused: "wird nicht benutzt", bpFiles: "Dateien", bpNone: "Nichts auffällig.", notifyTitle: "Benachrichtigung", notifyHint: "Das Einzige, was Housekeeper von sich aus tut. Standardmäßig aus.", notifyLabel: "Bei neuen defekten Referenzen melden", notifyDetail: "Eine Benachrichtigung in Home Assistant, sobald eine Automation oder ein Skript auf etwas zeigt, das nicht existiert. Jeder Fund wird einmal gemeldet; beim Einschalten wird nichts Altes gemeldet.", diagDownload: "Diagnose-Datei herunterladen", diagCopy: "Angaben für eine Fehlermeldung kopieren", diagCopyHint: "Versionen, Browser oder App und die letzten Fehler im Panel, zum Einfügen in ein GitHub-Issue.", diagCopied: "Kopiert", diagHint: "Nur Zahlen und Versionen, keine Namen, IDs oder Attribute. Passend für eine Fehlermeldung auf GitHub.", weeklyBtn: "Wochenbericht", weeklyHint: "Lädt den Vergleich mit dem Stand von vor etwa einer Woche und speichert ihn als Markdown-Datei.", weeklyTitle: "Housekeeper-Bericht", weeklyRecorder: "Lauteste Entitäten im Recorder", clearSelection: "Auswahl aufheben", createPlan: "Vorschau erstellen ({count})", prepareDelete: "Vorschau erstellen ({count})", selectedCount: "{count} ausgewählt",
     stepsLabel: "Ablauf des Plans", stepSelect: "Auswahl", stepAnalysis: "Auswirkungsanalyse", stepConfirm: "Bestätigung", stepBackup: "Backup", stepRun: "Ausführung", stepVerify: "Verifikation",
     stepDone: "erledigt", stepCurrent: "aktuell", stepTodo: "ausstehend", stepSkipped: "entfällt", stepFailed: "fehlgeschlagen",
     stepAnalysisBlocked: "Keine ausführbare Aktion", stepBackupSkipped: "Nicht nötig: alles lässt sich per Housekeeper zurücknehmen", stepBackupDone: "Erstellt am {date}{name}{job}", stepBackupName: " · „{name}“ in der Backup-Liste", stepBackupJob: " · Job {id}",
@@ -1640,7 +1640,7 @@ class StylesMixin {
       .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;padding:6px 16px 14px}.optgrid4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.optgroup{padding:14px 16px 0}.optgroup h3{margin:0;font-size:calc(14px*var(--hk-fs,1));color:var(--hk-muted);font-weight:600}.optgroup p{margin:4px 0 0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.optcard{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border:1px solid var(--hk-border);border-radius:12px;min-width:0}.optcard p{margin:0;flex:1;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1));line-height:1.45}.unitrow{display:flex;align-items:center;gap:8px;margin-top:6px}.unitrow input{width:92px}.unitrow span,.unitrow em{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.unitrow em{font-style:normal;margin-left:auto}.optfoot{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--hk-border);padding-top:6px;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1))}.optreset{border:0;background:none;padding:0;color:var(--hk-blue-solid);font:inherit;cursor:pointer}.optreset[hidden]{display:none}@media(min-width:1000px){.optgrid{grid-template-columns:repeat(3,minmax(0,1fr))}.optgrid4{grid-template-columns:repeat(4,minmax(0,1fr))}}.savebar{border-bottom:0;border-top:1px solid var(--hk-border)}.quietreset{grid-template-columns:1fr auto}a.row{text-decoration:none}
       .sharebar{display:block;height:6px;border-radius:3px;background:var(--hk-soft);overflow:hidden;margin-top:4px}.sharebar i{display:block;height:100%;background:var(--hk-blue-solid)}
       .recchoice{display:inline-flex;align-items:center;gap:6px;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.recwarn{flex:1 1 100%;color:var(--hk-muted)}
-      .selcount{display:inline-flex;align-items:center;min-height:30px;box-sizing:border-box;padding:4px 10px;border:1px solid color-mix(in srgb,var(--hk-blue-solid) 28%,var(--hk-border));border-radius:999px;background:color-mix(in srgb,var(--hk-blue-solid) 10%,var(--hk-surface));color:var(--hk-blue-text);font-size:calc(12px*var(--hk-fs,1));font-weight:700;white-space:nowrap}
+      .selcount{display:inline-flex;align-items:center;min-height:30px;box-sizing:border-box;padding:4px 10px;border:1px solid color-mix(in srgb,var(--hk-blue-solid) 28%,var(--hk-border));border-radius:999px;background:color-mix(in srgb,var(--hk-blue-solid) 10%,var(--hk-surface));color:var(--hk-blue-text);font-size:calc(12px*var(--hk-fs,1));font-weight:700;white-space:nowrap}.selpill{cursor:pointer;gap:6px;font-family:inherit}.selpill ha-icon{--mdc-icon-size:15px}.selpill:hover{border-color:var(--hk-blue-solid)}.selpill[aria-pressed="true"]{background:var(--hk-blue-solid);border-color:var(--hk-blue-solid);color:var(--hk-on,#fff)}.selpill.over{border-color:var(--hk-red,#b3261e);background:color-mix(in srgb,var(--hk-red,#b3261e) 10%,var(--hk-surface));color:var(--hk-red,#b3261e)}.selpill:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
       .rem-editor .remgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:16px}.rem-editor .remfield.wide,.rem-editor .remfield.full{grid-column:1/-1}.rem-editor .remfield input{box-sizing:border-box;width:100%;height:40px;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.rem-editor .remfield:focus-within>span:first-child{color:var(--hk-blue-text)}@media(max-width:700px){.rem-editor .remgrid{grid-template-columns:1fr}}
       .exbar{border-top:1px solid var(--hk-border)}.exblock{margin:0;max-height:none;border-radius:0}.exsteps{padding:10px 16px 12px;border-bottom:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1))}.exsteps ol{margin:4px 0 0;padding-left:20px}.exsteps li{margin:2px 0}.exdone{opacity:.6}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--hk-border)}.toolgap{flex:1}.btn.quiet{box-shadow:none;border-color:transparent;background:none;color:var(--hk-blue-text);padding:8px 10px}.btn.quiet:hover{background:var(--hk-soft)}.btn.quiet[disabled]{color:var(--hk-muted);opacity:.7;cursor:default}
       .btn.primary{border-color:var(--hk-blue-solid);color:var(--hk-on,#fff);background:var(--hk-blue-solid)}.btn.primary:hover{background:#0a8ccf}.btn[disabled]{opacity:.6;cursor:not-allowed}.btn[aria-busy="true"]{cursor:wait}
@@ -2077,14 +2077,24 @@ class ListsMixin {
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${list.map(e => (!e ? '<hr class="menusep">' : e[2].startsWith("href=") ? `<a class="menuitem${e[3] ? " tech" : ""}" ${e[2]} target="_blank" rel="noopener noreferrer"><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</a>` : `<button type="button" class="menuitem${e[3] ? " tech" : ""}" ${e[2]}><ha-icon icon="${e[0]}"></ha-icon>${this.t(e[1])}</button>`)).join("")}</div></details>`;
   }
 
-  selTools(id, count, clearAttr) {
-    if (!count) return this.selOnly?.[id] ? this.selOnlyButton(id, count) : "";
-    return `<button class="btn quiet" ${clearAttr}>${this.t("clearSelection")}</button>${this.selOnlyButton(id, count)}<span class="selcount" role="status">${this.t("selectedCount", { count })}</span>`;
+  // Whether "show only the picked" narrows the list: only while something is picked, so clearing the pick shows everything again.
+  selOnlyOn(id, count) {
+    return Boolean(this.selOnly?.[id]) && count > 0;
   }
 
-  selOnlyButton(id, count) {
+  // The left part of the bar over a list with picks: chips to pick everything and to clear, and the pill that counts the picks and shows only them.
+  // `all` is { attr, label } for a list that can pick everything it shows.
+  // `pill` may bring its own text and mark the picks as too many ({ label, over }).
+  selTools(id, count, clearAttr, all = null, pill = {}) {
+    if (!count && this.selOnly?.[id]) this.selOnly[id] = false;
+    const allChip = all ? `<button type="button" class="chip" ${all.attr} ${all.disabled ? "disabled" : ""}>${all.label}</button>` : "";
+    if (!count) return allChip;
+    return `${allChip}<button type="button" class="chip" ${clearAttr}>${this.t("clearSelection")}</button>${this.selPill(id, count, pill)}`;
+  }
+
+  selPill(id, count, { label = "", over = false } = {}) {
     const on = Boolean(this.selOnly?.[id]);
-    return `<button class="btn quiet" data-sel-only="${this.esc(id)}" aria-pressed="${on}" ${count || on ? "" : "disabled"}>${this.t(on ? "showAll" : "showSelectedOnly")}</button>`;
+    return `<button type="button" class="selcount selpill${over ? " over" : ""}" data-sel-only="${this.esc(id)}" aria-pressed="${on}" title="${this.esc(this.t(on ? "showAll" : "showSelectedOnly"))}"><ha-icon icon="${on ? "mdi:eye-off-outline" : "mdi:eye-outline"}"></ha-icon>${label || this.t("selectedCount", { count: this.formatNumber(count) })}</button>`;
   }
 
   // A range of ticks with Shift-click: from the last ticked row to this one, within the shown page.
@@ -3100,7 +3110,7 @@ class FindingsMixin {
       return `<th scope="col"${cls ? ` class="${cls}"` : ""} aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|${key}|${dir}">${this.t(label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button></th>`;
     };
     const idSort = `<button type="button" class="thbtn th-alt tech" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
-    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc", "tech")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
+    const head = `<thead><tr><th scope="col" class="selcol">${this.findHeadBox()}</th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc", "tech")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
     // In the grouped view every row is a head of an object; in the flat one every row is a finding.
     const rows = body ?? items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>${this.showTech() ? "" : `<p class="factnote moreline"><button type="button" class="btn quiet" data-pref="details|true"><ha-icon icon="mdi:unfold-more-horizontal"></ha-icon>${this.t("showMore")}</button><span>${this.t("showMoreHint")}</span></p>`}`;
@@ -3247,7 +3257,9 @@ class FindingsMixin {
     const wiz = this.fcWizOn();
     if (this._impactOnce) { this.visibleFindings(); if (this.lv.findings) { this.lv.findings.f.impact = this._impactOnce; this.persistLv("findings"); } this._impactOnce = ""; }
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
-    const sorted = this.visibleFindings();
+    const visible = this.visibleFindings();
+    this._findAll = visible.map(f => f.key);
+    const sorted = this.selOnlyOn("findings", this.findSel.size) ? visible.filter(f => this.findSel.has(f.key)) : visible;
     const st = this.lv.findings;
     const open = ["", "all"].includes(this.findingStatus) && !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingOutages && !this.findingHeld && !this.findingStage && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
     const grouped = !this.showFollowers;
@@ -3361,36 +3373,40 @@ class FindingsMixin {
     const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
     const facts = this.selectionFacts(), picked = facts.picked;
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
-    const part = k => (k < n ? ` (${this.t("fselPart", { n: this.formatNumber(k), m: this.formatNumber(n) })})` : "");
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
-    // The same actions in the same order as the menu of a row: first about the findings, then about their objects.
-    const btn = (icon, label, attr, extra = "") => `<button ${attr.includes("class=") ? "" : 'class="btn" '}${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon>${this.t(label)}${extra}</button>`;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
-    // Nothing picked: only the box that picks the page. The actions appear with the first pick.
-    const onPage = this._findPage.filter(key => this.findSel.has(key)).length, whole = this._findPage.length;
-    const pageBox = `<label class="selall"><input type="checkbox" class="selbox" data-fsel-page ${whole && onPage === whole ? "checked" : ""} ${onPage && onPage < whole ? "data-partial" : ""}> ${this.t("selectPage")}</label>`;
-    if (!n) return `<div class="toolbar selhead">${pageBox}<span class="toolgap"></span>${total}</div>${exc}`;
+    // The page box sits in the column head; the bar has the chips, the pill of the picks and, from the first pick on, one menu.
+    const nf = k => this.formatNumber(k), every = this._findAll || [];
+    const tools = this.selTools("findings", n, "data-fsel-clear", { attr: "data-fsel-all", label: this.t("selAllOfList", { count: nf(every.length) }), disabled: !every.length });
+    if (!n) return `<div class="toolbar selhead">${tools}<span class="toolgap"></span>${total}</div>${exc}`;
     const decidable = facts.open.length + facts.user.length, one = set => [...set][0];
-    // The three ways to settle findings sit in one menu, each with what it reaches; the forms behind them are unchanged.
-    const item = (icon, label, attr, sub) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon><span>${this.t(label)}<small>${sub}</small></span></button>`;
-    const nf = k => this.formatNumber(k);
-    const actions = [
-      decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', this.t("actDecideSub", { n: nf(decidable) })) : "",
-      marks ? item("mark", "actMark", 'data-fsel-state="mark"', this.t("actMarkSub", { n: nf(marks) })) : "",
-      excs ? `${decidable || marks ? '<hr class="menusep">' : ""}${item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) }))}` : "",
-    ].join("");
-    const menu = actions ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${actions}</div></details>` : "";
-    const buttons = [
-      facts.user.length ? btn("mdi:eye-outline", "findUnhide", `class="btn${facts.open.length ? "" : " accent"}" data-fsel-unhide`, part(facts.user.length)) : "",
-      facts.mark.length ? btn("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", part(facts.mark.length)) : "",
-      facts.owners.size === 1 ? btn("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
-      facts.rules.size === 1 ? btn("exc", "hiddenRuleOpen", `data-exc-goto="${this.esc(one(facts.rules))}"`) : "",
-      facts.objects.size === 1 ? btn("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
-      labels ? btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels)) : "",
-      menu,
-    ].join("");
-    return `<div class="toolbar selhead">${pageBox}<span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><button class="btn quiet selclear" data-fsel-clear>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns">${buttons || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
+    // Every action sits in the menu, each with what it reaches; the forms behind them are unchanged.
+    const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon><span>${this.t(label)}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
+    const some = k => (k < n ? this.t("fselPart", { n: nf(k), m: nf(n) }) : "");
+    const groups = [
+      [
+        decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', this.t("actDecideSub", { n: nf(decidable) })) : "",
+        marks ? item("mark", "actMark", 'data-fsel-state="mark"', this.t("actMarkSub", { n: nf(marks) })) : "",
+        labels ? item("label", "fselLabel", 'data-fsel-state="label"', some(labels)) : "",
+        facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
+        facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
+      ],
+      [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
+      [
+        facts.owners.size === 1 ? item("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
+        facts.rules.size === 1 ? item("exc", "hiddenRuleOpen", `data-exc-goto="${this.esc(one(facts.rules))}"`) : "",
+        facts.objects.size === 1 ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
+      ],
+    ].map(g => g.filter(Boolean).join("")).filter(Boolean).join('<hr class="menusep">');
+    const menu = groups ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups}</div></details>` : "";
+    return `<div class="toolbar selhead">${tools}<span class="toolgap"></span><div class="fbtns">${menu || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
+  }
+
+  // The box of the column head: ticks every finding of the shown page, half-ticked when only some are picked.
+  findHeadBox() {
+    const page = this._findPage || [], on = page.filter(key => this.findSel.has(key)).length;
+    return page.length ? `<input type="checkbox" class="selbox" data-fsel-page ${on === page.length ? "checked" : ""} ${on && on < page.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">` : "";
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.
@@ -4052,7 +4068,7 @@ class SettingsMixin {
     const st = this.lvState("decided", "name", "asc");
     this.setExporter("decided", "finding-status", [this.t("hidColObject"), "ID", this.t("hidColFinding"), this.t("decColStatus"), this.t("decideReason"), this.t("decColUntil"), this.t("decColNow")], () => refined.map(f => [objectName(f), f.object_id, this.findingTitle(f), this.t(state(f) === "due" ? "dueLabel" : `state_${state(f)}`), f.ignore_info?.reason || "", until(f), nowText(f)]));
     const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("decided", { sorts, filters }) : "";
-    const sorted = this.refine("decided", this.selOnly?.decided ? list.filter(f => sel.has(f.key)) : list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v, now: (f, v) => now(f) === v }, sorts, tie: f => f.key });
+    const sorted = this.refine("decided", this.selOnlyOn("decided", sel.size) ? list.filter(f => sel.has(f.key)) : list, { text: f => [objectName(f), f.object_id, this.findingTitle(f), f.ignore_info?.reason].join(" "), filters: { state: (f, v) => state(f) === v, now: (f, v) => now(f) === v }, sorts, tie: f => f.key });
     const refined = [...sorted.filter(f => !f.ignored), ...sorted.filter(f => f.ignored && !f.resting), ...sorted.filter(f => f.resting)];
     const pg = this.paginate("decided", refined);
     st.shown = refined.length;
@@ -4100,7 +4116,7 @@ class SettingsMixin {
     const st = this.lvState("marks", "name", "asc");
     this.setExporter("marks", "marks", [this.t("hidColObject"), "ID", this.t("type"), this.t("markKind"), this.t("markReason"), this.t("markReview"), this.t("decColEffect")], () => refined.map(o => [o.name || o.object_id, o.object_id, this.t(o.object_type), this.t(`mark_${o.mark.kind}`), o.mark.reason || "", o.mark.until ? this.formatDate(o.mark.until) : "", effect(o)]));
     const bar = list.length >= 6 || st.q || Object.values(st.f).some(Boolean) ? this.listBar("marks", { sorts, filters }) : "";
-    const sorted = this.refine("marks", this.selOnly?.marks ? list.filter(o => (this.markSel ||= new Set()).has(keyOf(o))) : list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
+    const sorted = this.refine("marks", this.selOnlyOn("marks", (this.markSel ||= new Set()).size) ? list.filter(o => (this.markSel ||= new Set()).has(keyOf(o))) : list, { text: o => [o.name, o.object_id, o.mark.reason, this.t(`mark_${o.mark.kind}`)].join(" "), filters: { kind: (o, v) => (v === "due" ? Boolean(o.mark_due) : v === "quiet" ? isQuiet(o) : o.mark.kind === v) }, sorts, tie: o => keyOf(o) });
     const refined = [...sorted.filter(o => o.mark_due), ...sorted.filter(o => !o.mark_due && isQuiet(o)), ...sorted.filter(o => !o.mark_due && !isQuiet(o))];
     const pg = this.paginate("marks", refined);
     st.shown = refined.length;
@@ -5080,7 +5096,7 @@ class CleanupMixin {
       text: r => [r.item.name, r.item.object_id, r.item.platform, r.item.manufacturer, r.item.model].join(" "),
       filters: { classification: (r, v) => r.finding && r.finding.classification === v, readiness: (r, v) => (v === "ready") === ready(r) }, sorts, tie: r => r.item.object_id,
     });
-    const shownList = this.selOnly?.cleanup ? list.filter(r => this.cleanupSel.has(r.item.object_id)) : list;
+    const shownList = this.selOnlyOn("cleanup", this.cleanupSel.size) ? list.filter(r => this.cleanupSel.has(r.item.object_id)) : list;
     const pg = this.paginate("cleanup", shownList);
     this._cleanupVisible = pg.rows.filter(ready).map(r => r.item.object_id);
     const badge = r => {
@@ -5539,7 +5555,8 @@ class InventoryMixin {
   inventory() {
     if (this.xp?.open) return this.xpView();
     const st = this.invState();
-    const rows = this.filtered();
+    const filteredRows = this.filtered();
+    const rows = this.selOnlyOn("inventory", this.invSel?.size || 0) ? filteredRows.filter(r => this.invSel.has(r.object_id)) : filteredRows;
     const pg = this.paginate("inventory", rows);
     this._invPage = pg.rows.filter(item => this.invSelectable(item)).map(item => item.object_id);
     const { types, statuses, labels } = this.memo("facets", [], () => ({
@@ -5582,7 +5599,7 @@ class InventoryMixin {
       { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(item) })) },
     ];
     const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"${this.tone(item.status) === "red" ? ' data-rowtone="red"' : ""}` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
-    return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${helperMode ? this.helperIoBar(rows) : ""}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
+    return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${helperMode ? this.helperIoBar(rows) : ""}${this.invSelBar(rows, filteredRows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
   }
 
   // The types as a ring with a table beside it: the largest few, the rest behind a button. A row filters the list below (a
@@ -6147,7 +6164,7 @@ class UnusedMixin {
       kind: (o, v) => kind(o) === v, unit: (o, v) => o.unit === v,
       age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
     }, sorts, tie: o => o.statistic_id });
-    const rows = this.selOnly?.orphanstats ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;
+    const rows = this.selOnlyOn("orphanstats", this.purgeSel.size) ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;
     const pg = this.paginate("orphanstats", rows);
     this._purgeTotal = rows.length;
     this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
@@ -6245,7 +6262,7 @@ class UnusedMixin {
     ] });
     const sel = (this.unrefSel ||= new Set());
     for (const id of [...sel]) if (!all.some(o => o.object_id === id)) sel.delete(id);
-    const rows = this.refine("unreferenced", this.selOnly?.unreferenced ? all.filter(o => sel.has(o.object_id)) : all, {
+    const rows = this.refine("unreferenced", this.selOnlyOn("unreferenced", sel.size) ? all.filter(o => sel.has(o.object_id)) : all, {
       text: o => [o.name, o.object_id, this.areaName(o), deviceName(o), o.platform].join(" "),
       filters: { domain: (o, v) => domainOf(o) === v, area: (o, v) => this.areaName(o) === v, platform: (o, v) => o.platform === v }, sorts, tie: o => o.object_id,
     });
@@ -10772,7 +10789,7 @@ class OftenMixin {
     for (const key of [...sel]) if (!items.some(s => s.key === key)) sel.delete(key);
     const rows = items.map(s => this.oftenRowOf(s));
     const menu = r => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-often-take="${this.esc(r.key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("oftenTake")}</button><button type="button" class="menuitem" data-often-skip="${this.esc(r.key)}"><ha-icon icon="mdi:close"></ha-icon>${this.t("oftenSkip")}</button></div></details>`;
-    const shown = this.selOnly?.often ? rows.filter(r => sel.has(r.key)) : rows;
+    const shown = this.selOnlyOn("often", sel.size) ? rows.filter(r => sel.has(r.key)) : rows;
     const list = this.sysList("often", shown, {
       lead: this.oftenTools(sel.size), sort: "hides", dir: "desc", tie: r => r.key, empty: "oftenNone", text: r => `${r.title} ${r.id} ${r.pattern}`,
       sorts: [{ key: "name", label: "sortName", dir: "asc", get: r => r.title }, { key: "pattern", label: "oftenColPattern", dir: "asc", get: r => r.pattern }, { key: "hides", label: "oftenColFindings", dir: "desc", get: r => r.hides }],
@@ -12580,7 +12597,7 @@ class BatteryCareMixin {
     const bar = items.length ? this.listBar("reminders", { table: true, dense: true, sorts, filters: [{ name: "state", all: this.t("remAllStates"), options: [["due", this.t("remStateDue")], ["soon", this.t("remStateSoon")], ["ok", this.t("remStateOk")]] }] }) : "";
     const sel = (this.remSel ||= new Set());
     for (const id of [...sel]) if (!items.some(r => r.id === id)) sel.delete(id);
-    const rows = this.refine("reminders", this.selOnly?.reminders ? items.filter(r => sel.has(r.id)) : items, { text: r => [r.name, r.note].join(" "), filters: { state: (r, v) => r.state === v }, sorts, tie: r => r.id });
+    const rows = this.refine("reminders", this.selOnlyOn("reminders", sel.size) ? items.filter(r => sel.has(r.id)) : items, { text: r => [r.name, r.note].join(" "), filters: { state: (r, v) => r.state === v }, sorts, tie: r => r.id });
     const pg = this.paginate("reminders", rows);
     this._remVisible = pg.rows.map(r => r.id);
     // Several reminders done at once: tick them, then one button.
@@ -14042,7 +14059,7 @@ Object.assign(TEXT.de, {
   backupFailHint: "Prüfe unter Einstellungen → System → Backups, ob ein Backup-Ziel erreichbar ist, und lies das Protokoll unter Einstellungen → System → Protokolle.", previewReady: "Vorschau erstellt", toast_verified: "Plan abgeschlossen und geprüft", toast_executed: "Plan ausgeführt", toast_partial: "Plan nur teilweise ausgeführt", toast_aborted: "Plan abgebrochen", planStatusLost: "Der Planstatus lässt sich gerade nicht abrufen. Der Plan läuft weiter, Housekeeper versucht es erneut.", planCancelFailed: "Der Abbruch ist nicht bestätigt. Der Plan läuft möglicherweise weiter. Bereits ausgeführte Schritte werden durch einen Abbruch nicht zurückgenommen.",
   backupAgo: "vor {age}", backupOpen: "Details", bhResult: "Prüfungen",
   visitSince: "Seit deinem letzten Besuch ({ago})", visitAdded: "{n} neue Befunde", visitGone: "{n} erledigt",
-  loadingShort: "lädt …", resetFilters: "Filter zurücksetzen", showSelectedOnly: "Nur Ausgewählte zeigen", showAll: "Alle zeigen",
+  loadingShort: "lädt …", resetFilters: "Filter zurücksetzen", showSelectedOnly: "Nur Ausgewählte zeigen", selAllOfList: "Alle {count} der Liste", selOverMax: "{n} von max. {max}", showAll: "Alle zeigen",
   verdictIrreversible: "Nicht umkehrbar",
   acknowledgeAll: "Ich habe die {count} zu prüfenden Einträge gesehen und führe sie mit aus", acknowledgeAllHint: "Ohne Haken laufen nur die unbedenklichen Einträge; zu prüfende werden übersprungen.",
   outcomeDone: "Erfolgreich abgeschlossen: {done} von {total} erledigt, Prüfung bestanden.", outcomeVerifying: "Ausgeführt: {done} von {total} erledigt. Die Prüfung läuft noch …", outcomeCheckFailed: "{done} von {total} erledigt, aber die Prüfung hat etwas gefunden. Siehe unten.", outcomePartial: "Nur teilweise ausgeführt: {done} von {total} erledigt.", backupLocalPlanned: "Kein Backup-Ziel eingerichtet: Das Backup liegt im lokalen Speicher von Home Assistant (Ordner /backup, unverschlüsselt). Eine Kopie außerhalb von Home Assistant, etwa dein Google-Drive-Backup, bleibt sinnvoll.", backupLocalDone: "lokal, unverschlüsselt", outcomeAborted: "Abgebrochen. Es wurde nichts gelöscht und nichts geändert.",
@@ -14095,7 +14112,7 @@ Object.assign(TEXT.en, {
   backupFailHint: "Check under Settings → System → Backups that a backup location is reachable, and read the log under Settings → System → Logs.", previewReady: "Preview created", toast_verified: "Plan completed and verified", toast_executed: "Plan executed", toast_partial: "Plan only partly executed", toast_aborted: "Plan aborted", planStatusLost: "The plan status cannot be read right now. The plan keeps running, Housekeeper will try again.", planCancelFailed: "The cancellation is not confirmed. The plan may still be running. Steps that already ran are not undone by cancelling.",
   backupAgo: "{age} ago", backupOpen: "Details", bhResult: "Checks",
   visitSince: "Since your last visit ({ago})", visitAdded: "{n} new findings", visitGone: "{n} resolved",
-  loadingShort: "loading …", resetFilters: "Reset filters", showSelectedOnly: "Show selected only", showAll: "Show all",
+  loadingShort: "loading …", resetFilters: "Reset filters", showSelectedOnly: "Show selected only", selAllOfList: "All {count} in the list", selOverMax: "{n} of max. {max}", showAll: "Show all",
   verdictIrreversible: "Not reversible",
   acknowledgeAll: "I have seen the {count} entries to review and run them too", acknowledgeAllHint: "Without the tick only the unproblematic entries run; entries to review are skipped.",
   outcomeDone: "Completed successfully: {done} of {total} done, check passed.", outcomeVerifying: "Executed: {done} of {total} done. The check is still running …", outcomeCheckFailed: "{done} of {total} done, but the check found something. See below.", outcomePartial: "Only partly executed: {done} of {total} done.", backupLocalPlanned: "No backup location is set up: the backup stays in the local storage of Home Assistant (folder /backup, not encrypted). A copy outside Home Assistant, such as your Google Drive backup, is still worth having.", backupLocalDone: "local, not encrypted", outcomeAborted: "Aborted. Nothing was deleted and nothing was changed.",
@@ -17611,7 +17628,7 @@ class BatteryKindMixin {
     });
     const n = sel.size;
     const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("bk_proposed", n, "data-bk-clear")}<span class="toolgap"></span><button type="button" class="btn" data-bk-take ${n ? "" : "disabled"}><ha-icon icon="mdi:check"></ha-icon>${this.t("bkTakeN", { n: this.formatNumber(n) })}</button></div>`;
-    const shown = this.selOnly?.bk_proposed ? proposed.filter(o => sel.has(o.object_id)) : proposed;
+    const shown = this.selOnlyOn("bk_proposed", sel.size) ? proposed.filter(o => sel.has(o.object_id)) : proposed;
     const parts = [];
     if (proposed.length) parts.push(this.fold("bk_proposed", { tone: "warn", title: this.t("bkProposed"), sub: this.t("bkProposedHint"), pill: this.formatNumber(proposed.length) }, `${tools}${table("bk_proposed", shown, o => this.bkPick?.[o.object_id] || o.battery_suggest?.kind || "other", false)}`, true));
     if (mine.length) parts.push(this.fold("bk_mine", { tone: "mute", title: this.t("bkMine"), sub: this.t("bkMineHint"), pill: this.formatNumber(mine.length) }, table("bk_mine", mine, o => o.battery_kind, true), false));
@@ -19890,14 +19907,17 @@ Object.assign(TEXT.en, {
 });
 
 class EntityStateMixin {
-  // The bar over the inventory table: how many entities are ticked and what can be done with them.
-  invSelBar(rows) {
+  // The bar over the inventory table: the chips to pick, the pill of the picks and, from the first pick on, one menu of what can be done.
+  // `rows` are the rows shown, `all` the rows the filters leave (they differ while only the picks are shown).
+  invSelBar(rows, all = rows) {
     const sel = this.invSel ||= new Set(), n = sel.size;
-    const entities = rows.filter(r => this.invSelectable(r));
+    const entities = all.filter(r => this.invSelectable(r));
     if (!n && !entities.length) return rows.length ? `<div class="toolbar nosel"><span class="toolgap"></span>${this.viewCount(rows.length)}</div>` : "";
     const over = n > MAX_PLAN_ACTIONS, busy = this.planBusy ? 'disabled aria-busy="true"' : "";
-    const btn = (target, icon) => `<button class="btn" data-inv-state="${target}" ${n ? busy : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(`state${target[0].toUpperCase()}${target.slice(1)}`)}</button>`;
-    return `<div class="toolbar${n ? "" : " nosel"}"><button class="btn quiet" data-inv-sel-all ${entities.length ? "" : "disabled"}>${this.t("stateAllFiltered", { count: this.formatNumber(entities.length) })}</button><button class="btn quiet" data-inv-sel-clear ${n ? "" : "disabled"}>${this.t("stateClear")}</button><span class="selcount" role="status">${this.t("stateSel", { count: n })}</span><span class="toolgap"></span><div class="fbtns">${btn("disable", "mdi:cancel")}${btn("enable", "mdi:check-circle-outline")}${btn("hide", "mdi:eye-off-outline")}${btn("unhide", "mdi:eye-outline")}</div>${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    const item = (target, icon) => `<button type="button" class="menuitem" data-inv-state="${target}" ${busy}><ha-icon icon="${icon}"></ha-icon><span>${this.t(`state${target[0].toUpperCase()}${target.slice(1)}`)}</span></button>`;
+    const tools = this.selTools("inventory", n, "data-inv-sel-clear", { attr: "data-inv-sel-all", label: this.t("stateAllFiltered", { count: this.formatNumber(entities.length) }), disabled: !entities.length }, over ? { label: this.t("selOverMax", { n: this.formatNumber(n), max: MAX_PLAN_ACTIONS }), over: true } : {});
+    const menu = n ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${item("disable", "mdi:cancel")}${item("enable", "mdi:check-circle-outline")}${item("hide", "mdi:eye-off-outline")}${item("unhide", "mdi:eye-outline")}</div></details>` : "";
+    return `<div class="toolbar${n ? "" : " nosel"}">${tools}<span class="toolgap"></span>${menu ? `<div class="fbtns">${menu}</div>` : ""}${this.viewCount(rows.length)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   // The inventory lists an automation, script or scene instead of its entity, so these rows switch that entity.
@@ -24276,6 +24296,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const findPage = root.querySelector("[data-fsel-page]");
     if (findPage) { findPage.indeterminate = findPage.hasAttribute("data-partial"); findPage.onchange = ev => { (this._findPage || []).forEach(key => (ev.target.checked ? this.findSel.add(key) : this.findSel.delete(key))); this.render(); }; }
     root.querySelector("[data-fsel-clear]")?.addEventListener("click", () => { this.findSel.clear(); this.render(); });
+    root.querySelector("[data-fsel-all]")?.addEventListener("click", () => { (this._findAll || []).forEach(key => this.findSel.add(key)); this.render(); });
     root.querySelector("[data-fsel-unhide]")?.addEventListener("click", () => this.unhideSelectedFindings());
     root.querySelector("[data-fsel-markclear]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmMarksRemove", { count: this.selectionFacts().mark.length }), () => this.clearSelectedMarks()));
     root.querySelector("[data-fsel-hide]")?.addEventListener("click", () => this.hideSelectedFindings());

@@ -104,7 +104,7 @@ class FindingsMixin {
       return `<th scope="col"${cls ? ` class="${cls}"` : ""} aria-sort="${on ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|${key}|${dir}">${this.t(label)}${on ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button></th>`;
     };
     const idSort = `<button type="button" class="thbtn th-alt tech" data-lsort="findings|id|asc">${this.t("sortId")}${st.sort === "id" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`;
-    const head = `<thead><tr><th scope="col" class="selcol"><span class="sr-only">${this.t("selectPage")}</span></th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc", "tech")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
+    const head = `<thead><tr><th scope="col" class="selcol">${this.findHeadBox()}</th><th scope="col" aria-sort="${["name", "id"].includes(st.sort) ? (st.dir === "desc" ? "descending" : "ascending") : "none"}"><button type="button" class="thbtn" data-lsort="findings|name|asc">${this.t("sortName")}${st.sort === "name" ? ` <span aria-hidden="true">${st.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>${idSort}</th>${header("topic", "sortTopic")}${header("impact", "sortImpact", "desc")}${header("certainty", "sortCertainty", "desc", "tech")}${header("since", "sortSince", "desc")}${header("rule", "sortRuleGrouped")}<th scope="col"><span class="sr-only">${this.t("rowMenu")}</span></th></tr></thead>`;
     // In the grouped view every row is a head of an object; in the flat one every row is a finding.
     const rows = body ?? items.map(item => (item.findings ? this.nodeRows(item) : this.findingTableRow(item))).join("");
     return `<div class="tablewrap lt findings-table${this.isDenseList("findings") ? " dense-list" : ""}"><table>${head}<tbody>${rows}</tbody></table></div>${this.showTech() ? "" : `<p class="factnote moreline"><button type="button" class="btn quiet" data-pref="details|true"><ha-icon icon="mdi:unfold-more-horizontal"></ha-icon>${this.t("showMore")}</button><span>${this.t("showMoreHint")}</span></p>`}`;
@@ -251,7 +251,9 @@ class FindingsMixin {
     const wiz = this.fcWizOn();
     if (this._impactOnce) { this.visibleFindings(); if (this.lv.findings) { this.lv.findings.f.impact = this._impactOnce; this.persistLv("findings"); } this._impactOnce = ""; }
     const all = this.sortedFindings(true).filter(f => this.statusMatch(f));
-    const sorted = this.visibleFindings();
+    const visible = this.visibleFindings();
+    this._findAll = visible.map(f => f.key);
+    const sorted = this.selOnlyOn("findings", this.findSel.size) ? visible.filter(f => this.findSel.has(f.key)) : visible;
     const st = this.lv.findings;
     const open = ["", "all"].includes(this.findingStatus) && !this.findingFilter && !this.findingFollowers && !this.findingAfter && !this.findingOutages && !this.findingHeld && !this.findingStage && !this.findingCause && !this.findingCorr && !st.q && !Object.values(st.f || {}).some(Boolean);
     const grouped = !this.showFollowers;
@@ -365,36 +367,40 @@ class FindingsMixin {
     const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
     const facts = this.selectionFacts(), picked = facts.picked;
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
-    const part = k => (k < n ? ` (${this.t("fselPart", { n: this.formatNumber(k), m: this.formatNumber(n) })})` : "");
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
-    // The same actions in the same order as the menu of a row: first about the findings, then about their objects.
-    const btn = (icon, label, attr, extra = "") => `<button ${attr.includes("class=") ? "" : 'class="btn" '}${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon>${this.t(label)}${extra}</button>`;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
-    // Nothing picked: only the box that picks the page. The actions appear with the first pick.
-    const onPage = this._findPage.filter(key => this.findSel.has(key)).length, whole = this._findPage.length;
-    const pageBox = `<label class="selall"><input type="checkbox" class="selbox" data-fsel-page ${whole && onPage === whole ? "checked" : ""} ${onPage && onPage < whole ? "data-partial" : ""}> ${this.t("selectPage")}</label>`;
-    if (!n) return `<div class="toolbar selhead">${pageBox}<span class="toolgap"></span>${total}</div>${exc}`;
+    // The page box sits in the column head; the bar has the chips, the pill of the picks and, from the first pick on, one menu.
+    const nf = k => this.formatNumber(k), every = this._findAll || [];
+    const tools = this.selTools("findings", n, "data-fsel-clear", { attr: "data-fsel-all", label: this.t("selAllOfList", { count: nf(every.length) }), disabled: !every.length });
+    if (!n) return `<div class="toolbar selhead">${tools}<span class="toolgap"></span>${total}</div>${exc}`;
     const decidable = facts.open.length + facts.user.length, one = set => [...set][0];
-    // The three ways to settle findings sit in one menu, each with what it reaches; the forms behind them are unchanged.
-    const item = (icon, label, attr, sub) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon><span>${this.t(label)}<small>${sub}</small></span></button>`;
-    const nf = k => this.formatNumber(k);
-    const actions = [
-      decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', this.t("actDecideSub", { n: nf(decidable) })) : "",
-      marks ? item("mark", "actMark", 'data-fsel-state="mark"', this.t("actMarkSub", { n: nf(marks) })) : "",
-      excs ? `${decidable || marks ? '<hr class="menusep">' : ""}${item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) }))}` : "",
-    ].join("");
-    const menu = actions ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${actions}</div></details>` : "";
-    const buttons = [
-      facts.user.length ? btn("mdi:eye-outline", "findUnhide", `class="btn${facts.open.length ? "" : " accent"}" data-fsel-unhide`, part(facts.user.length)) : "",
-      facts.mark.length ? btn("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", part(facts.mark.length)) : "",
-      facts.owners.size === 1 ? btn("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
-      facts.rules.size === 1 ? btn("exc", "hiddenRuleOpen", `data-exc-goto="${this.esc(one(facts.rules))}"`) : "",
-      facts.objects.size === 1 ? btn("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
-      labels ? btn("label", "fselLabel", 'data-fsel-state="label" class="btn ha"', part(labels)) : "",
-      menu,
-    ].join("");
-    return `<div class="toolbar selhead">${pageBox}<span class="selcount" role="status">${this.t("selectedCount", { count: n })}</span><button class="btn quiet selclear" data-fsel-clear>${this.t("clearSelection")}</button><span class="toolgap"></span><div class="fbtns">${buttons || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
+    // Every action sits in the menu, each with what it reaches; the forms behind them are unchanged.
+    const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon><span>${this.t(label)}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
+    const some = k => (k < n ? this.t("fselPart", { n: nf(k), m: nf(n) }) : "");
+    const groups = [
+      [
+        decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', this.t("actDecideSub", { n: nf(decidable) })) : "",
+        marks ? item("mark", "actMark", 'data-fsel-state="mark"', this.t("actMarkSub", { n: nf(marks) })) : "",
+        labels ? item("label", "fselLabel", 'data-fsel-state="label"', some(labels)) : "",
+        facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
+        facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
+      ],
+      [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
+      [
+        facts.owners.size === 1 ? item("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
+        facts.rules.size === 1 ? item("exc", "hiddenRuleOpen", `data-exc-goto="${this.esc(one(facts.rules))}"`) : "",
+        facts.objects.size === 1 ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
+      ],
+    ].map(g => g.filter(Boolean).join("")).filter(Boolean).join('<hr class="menusep">');
+    const menu = groups ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups}</div></details>` : "";
+    return `<div class="toolbar selhead">${tools}<span class="toolgap"></span><div class="fbtns">${menu || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
+  }
+
+  // The box of the column head: ticks every finding of the shown page, half-ticked when only some are picked.
+  findHeadBox() {
+    const page = this._findPage || [], on = page.filter(key => this.findSel.has(key)).length;
+    return page.length ? `<input type="checkbox" class="selbox" data-fsel-page ${on === page.length ? "checked" : ""} ${on && on < page.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">` : "";
   }
 
   // Takes the selected findings that the person had hidden, marked as known or snoozed back into the open list.

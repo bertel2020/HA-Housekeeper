@@ -7167,5 +7167,7 @@
 "relIn_INCLUDES": "zahŕňa tento objekt",
 "relOut_INCLUDES": "je zahrnutý v tomto objekte",
 "relGroupPlace": "Kde sa nachádza?",
-"relPlace": "Umiestnenie"
+"relPlace": "Umiestnenie",
+"selAllOfList": "Všetkých {count} v zozname",
+"selOverMax": "{n} z max. {max}"
 }

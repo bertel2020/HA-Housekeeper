@@ -159,7 +159,7 @@ class OftenMixin {
     for (const key of [...sel]) if (!items.some(s => s.key === key)) sel.delete(key);
     const rows = items.map(s => this.oftenRowOf(s));
     const menu = r => `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-often-take="${this.esc(r.key)}"><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("oftenTake")}</button><button type="button" class="menuitem" data-often-skip="${this.esc(r.key)}"><ha-icon icon="mdi:close"></ha-icon>${this.t("oftenSkip")}</button></div></details>`;
-    const shown = this.selOnly?.often ? rows.filter(r => sel.has(r.key)) : rows;
+    const shown = this.selOnlyOn("often", sel.size) ? rows.filter(r => sel.has(r.key)) : rows;
     const list = this.sysList("often", shown, {
       lead: this.oftenTools(sel.size), sort: "hides", dir: "desc", tie: r => r.key, empty: "oftenNone", text: r => `${r.title} ${r.id} ${r.pattern}`,
       sorts: [{ key: "name", label: "sortName", dir: "asc", get: r => r.title }, { key: "pattern", label: "oftenColPattern", dir: "asc", get: r => r.pattern }, { key: "hides", label: "oftenColFindings", dir: "desc", get: r => r.hides }],

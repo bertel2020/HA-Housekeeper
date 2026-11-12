@@ -103,7 +103,7 @@ class BatteryCareMixin {
     const bar = items.length ? this.listBar("reminders", { table: true, dense: true, sorts, filters: [{ name: "state", all: this.t("remAllStates"), options: [["due", this.t("remStateDue")], ["soon", this.t("remStateSoon")], ["ok", this.t("remStateOk")]] }] }) : "";
     const sel = (this.remSel ||= new Set());
     for (const id of [...sel]) if (!items.some(r => r.id === id)) sel.delete(id);
-    const rows = this.refine("reminders", this.selOnly?.reminders ? items.filter(r => sel.has(r.id)) : items, { text: r => [r.name, r.note].join(" "), filters: { state: (r, v) => r.state === v }, sorts, tie: r => r.id });
+    const rows = this.refine("reminders", this.selOnlyOn("reminders", sel.size) ? items.filter(r => sel.has(r.id)) : items, { text: r => [r.name, r.note].join(" "), filters: { state: (r, v) => r.state === v }, sorts, tie: r => r.id });
     const pg = this.paginate("reminders", rows);
     this._remVisible = pg.rows.map(r => r.id);
     // Several reminders done at once: tick them, then one button.

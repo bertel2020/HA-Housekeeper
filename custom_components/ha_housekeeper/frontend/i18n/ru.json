@@ -7907,5 +7907,7 @@
 "relIn_INCLUDES": "включает этот объект",
 "relOut_INCLUDES": "включён в этот объект",
 "relGroupPlace": "Где он находится?",
-"relPlace": "Расположение"
+"relPlace": "Расположение",
+"selAllOfList": "Все {count} в списке",
+"selOverMax": "{n} из макс. {max}"
 }

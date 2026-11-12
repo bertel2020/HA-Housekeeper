@@ -6632,5 +6632,7 @@
 "relIn_INCLUDES": "inclut cet objet",
 "relOut_INCLUDES": "est inclus dans cet objet",
 "relGroupPlace": "Où se trouve-t-il ?",
-"relPlace": "Emplacement"
+"relPlace": "Emplacement",
+"selAllOfList": "Tous les {count} de la liste",
+"selOverMax": "{n} sur {max} max."
 }

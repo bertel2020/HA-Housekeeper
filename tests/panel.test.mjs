@@ -8127,7 +8127,7 @@ test("the selection bar offers each action only where it fits and says how many 
   assert.ok(html.includes("data-fsel-markclear") && !html.includes("data-fsel-unhide") && !html.includes('data-fsel-state="status"'), "a mark hides it: only the mark can go");
   el.findSel.add("k|sensor.b");
   html = el.findSelBar([]);
-  assert.ok(html.includes("data-fsel-markclear") && html.includes('data-fsel-state="status"') && html.includes("(1 of 2)"), "a mixed pick says how many each button takes");
+  assert.ok(html.includes("data-fsel-markclear") && html.includes('data-fsel-state="status"') && html.includes("<small>1 of 2</small>"), "a mixed pick says how many each menu item takes");
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
   await el.clearSelectedMarks();
   assert.deepEqual(calls.filter(c => c.type === "ha_housekeeper/mark_clear").map(c => c.object_id), ["sensor.a"]);
@@ -8562,4 +8562,17 @@ test("closing a replacement that ran empties the assistant; a preview that did n
   assert.equal(el.replOld, "sensor.old", "a preview left unrun keeps the pair");
   el.openNewPlan(plan("verified")); el.leavePlan();
   assert.equal(el.replOld + el.replNew + el.rwOld, "", "a replacement that ran starts from an empty assistant");
+});
+
+test("the bar of a selection: the pill shows only the picks and lets go when none is left; the inventory keeps its actions in one menu", () => {
+  const { el } = panel("en");
+  assert.equal(el.selTools("x", 0, "data-x-clear"), "", "nothing picked: no pill, no clear chip");
+  el.selOnly = { x: true };
+  assert.ok(el.selOnlyOn("x", 2) && el.selTools("x", 2, "data-x-clear").includes('aria-pressed="true"'), "the pill is pressed while the filter is on");
+  assert.ok(!el.selOnlyOn("x", 0) && el.selOnly.x, "no picks, no narrowing");
+  el.selTools("x", 0, "data-x-clear");
+  assert.equal(el.selOnly.x, false, "an empty pick switches the filter off for good");
+  el.invSel = new Set(["entity:a"]);
+  const bar = el.invSelBar([{ object_type: "entity", object_id: "entity:a" }]);
+  assert.ok(bar.includes("actmenu") && ["disable", "enable", "hide", "unhide"].every(t => bar.includes(`data-inv-state="${t}"`)) && !bar.includes('class="btn" data-inv-state'), "four actions, one menu");
 });

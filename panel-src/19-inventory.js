@@ -123,7 +123,8 @@ class InventoryMixin {
   inventory() {
     if (this.xp?.open) return this.xpView();
     const st = this.invState();
-    const rows = this.filtered();
+    const filteredRows = this.filtered();
+    const rows = this.selOnlyOn("inventory", this.invSel?.size || 0) ? filteredRows.filter(r => this.invSel.has(r.object_id)) : filteredRows;
     const pg = this.paginate("inventory", rows);
     this._invPage = pg.rows.filter(item => this.invSelectable(item)).map(item => item.object_id);
     const { types, statuses, labels } = this.memo("facets", [], () => ({
@@ -166,7 +167,7 @@ class InventoryMixin {
       { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(this.objectRowMenu({ key: this.objectKey(item) })) },
     ];
     const table = rows.length ? this.listTable("inventory", columns, pg.rows, { cls: "inv", rowAttrs: item => `data-object="${this.esc(this.objectKey(item))}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"${this.tone(item.status) === "red" ? ' data-rowtone="red"' : ""}` }) : `<div class="emptymsg">${this.t("noResults")}</div>`;
-    return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${helperMode ? this.helperIoBar(rows) : ""}${this.invSelBar(rows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
+    return `<div class="stack">${tiles}<div class="panel">${bar}${idleHint}${helperMode ? this.helperIoBar(rows) : ""}${this.invSelBar(rows, filteredRows)}${table}${pg.footer || `<div class="tablefoot"><span>${this.formatNumber(rows.length)} ${this.t("of_total")} ${this.formatNumber(all.length)} ${this.t("shown")}</span></div>`}</div></div>`;
   }
 
   // The types as a ring with a table beside it: the largest few, the rest behind a button. A row filters the list below (a
