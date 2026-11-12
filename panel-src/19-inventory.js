@@ -215,11 +215,11 @@ class InventoryMixin {
     return `<div class="panel">${this.fold("inv_types", { title: this.esc(this.t("byType")), pill: filtered ? this.t("invOfAll", { n: this.formatNumber(shown), total: this.formatNumber(all.length) }) : "" }, `<div class="invbody">${donut}<div class="tablewrap">${table}</div></div>`, true)}</div>`;
   }
 
-  nodeButton(key, label, tone = "") {
+  nodeButton(key, label, tone = "", sentence = "", tip = "") {
     const obj = this.findObject(key);
     const [type, ...rest] = key.split(":");
     const id = rest.join(":");
-    return `<button class="node" data-graph="${this.esc(key)}">${this.tile(type, tone)}<span><small>${this.t(type)}</small><strong>${this.esc(obj?.name || id)}</strong><span class="meta">${this.esc(label || (obj ? obj.object_id : this.t("missing")))}</span></span>${obj ? this.pill(obj.status) : `<span class="pill red">${this.t("missing")}</span>`}</button>`;
+    return `<button class="node" data-graph="${this.esc(key)}"${tip ? ` title="${this.esc(tip)}"` : ""}>${this.tile(type, tone)}<span><small>${this.t(type)}</small><strong>${this.esc(obj?.name || id)}</strong>${sentence ? `<span class="sent">${this.esc(sentence)}</span>` : ""}<span class="meta">${this.esc(label || (obj ? obj.object_id : this.t("missing")))}</span></span>${obj ? this.pill(obj.status) : `<span class="pill red">${this.t("missing")}</span>`}</button>`;
   }
 
   graph() {
@@ -232,18 +232,34 @@ class InventoryMixin {
     if (this.useGraph()) return `${search}${head}${this.graphBar(item, key)}${this.graphPanel(item, key)}`;
     const USAGE = USAGE_RELATIONS;
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
-    const originEdges = incoming.filter(e => !USAGE.includes(e.relation));
-    const usageEntries = [
-      ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ key: e.source, edge: e, label: this.t(`relIn_${e.relation}`), down: true })),
-      ...outgoing.map(e => ({ key: e.target, edge: e, label: this.t(`relOut_${e.relation}`), down: !USAGE.includes(e.relation) })),
-    ];
-    const edgeNote = edge => `${this.t(edge.confidence)}${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`;
-    const origin = originEdges.map(e => `${this.nodeButton(e.source, edgeNote(e))}<div class="link-label"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${this.t(`relIn_${e.relation}`)}</div>`).join("");
-    const usage = usageEntries.length
-      ? `<div class="branch">${usageEntries.map(u => `<div><div class="link-label flat"><ha-icon icon="mdi:arrow-${u.down ? "down" : "up"}" class="u-ic14"></ha-icon>${u.label}</div>${this.nodeButton(u.key, edgeNote(u.edge))}</div>`).join("")}</div>`
-      : `<p class="emptyrel sm">${this.t("noRelations")}</p>`;
+    // The origin is a chain: integration, device, entity. A parent that is also reached through another parent
+    // (the integration that provides the entity and owns its device) is dropped, so the chain is not drawn twice.
+    const parentsOf = k => this.edgesTo(k).filter(e => !USAGE.includes(e.relation));
+    const reach = (k, seen = new Set()) => { for (const e of parentsOf(k)) if (!seen.has(e.source)) { seen.add(e.source); reach(e.source, seen); } return seen; };
+    const direct = k => {
+      const edges = parentsOf(k), via = new Set(edges.flatMap(e => [...reach(e.source)]));
+      return [...new Map(edges.filter(e => !via.has(e.source)).map(e => [e.source, e])).values()];
+    };
+    const chainNode = edge => `${this.nodeButton(edge.source, `${this.t(edge.confidence)}${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`)}<div class="link-label"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${this.t(edge.relation)}</div>`;
+    const chain = (k, depth) => {
+      if (depth > 4) return "";
+      const edges = direct(k);
+      const parts = edges.map(e => `${chain(e.source, depth + 1)}${chainNode(e)}`);
+      return parts.length > 1 ? `<div class="deptree">${parts.map(h => `<div class="depbranch">${h}</div>`).join("")}</div>` : parts.join("");
+    };
+    const originHtml = chain(key, 1);
+    const originCount = new Set([...reach(key)]).size;
+    const usageEntries = this.mergePlaces([
+      ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ other: e.source, label: this.t(`relIn_${e.relation}`), edge: e })),
+      ...outgoing.map(e => ({ other: e.target, label: this.t(`relOut_${e.relation}`), edge: e })),
+    ]);
+    const note = u => (u.places.length > 1 ? `${this.t(u.edge.confidence)} · ${this.t("relPlaces", { n: u.places.length })}` : `${this.t(u.edge.confidence)}${u.places[0] ? ` · ${u.places[0]}` : ""}`);
+    const branches = list => `<div class="deptree">${list.map(u => `<div class="depbranch">${this.nodeButton(u.other, note(u), "", u.label, u.places.length > 1 ? u.places.filter(Boolean).join("\n") : "")}</div>`).join("")}</div>`;
+    const group = (title, list) => (list.length ? `<div class="deplabel"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${title}</div>${branches(list)}` : "");
+    const current = `<div class="node current">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><small>${this.t(item.object_type)}</small><strong>${this.esc(item.name)}</strong><span class="meta">${this.esc(item.object_id)}</span></span>${this.pill(item.status)}</div>`;
+    const none = originCount + usageEntries.length ? "" : `<p class="emptyrel sm">${this.t("noRelations")}</p>`;
     return `${search}${head}${this.graphBar(item, key)}
-      <div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("origin")} ${originEdges.length} · ${this.t("usage")} ${usageEntries.length}</span></div>
-      <div class="path">${origin}<div class="node current">${this.tile(item.object_type, this.tone(item.status) === "ok" ? "" : this.tone(item.status))}<span><small>${this.t(item.object_type)}</small><strong>${this.esc(item.name)}</strong><span class="meta">${this.esc(item.object_id)}</span></span>${this.pill(item.status)}</div>${usage}</div></div>`;
+      <div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("origin")} ${originCount} · ${this.t("usage")} ${usageEntries.length}</span></div>
+      <div class="path">${originHtml}${current}${group(this.t("relGroupUsage"), usageEntries)}${none}</div></div>`;
   }
 }

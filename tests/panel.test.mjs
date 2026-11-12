@@ -4478,7 +4478,7 @@ test("the overview of an object offers its actions: decide a finding, replace a 
   assert.ok(!rel.includes("style="), "no inline style");
 });
 
-test("the relations of an object are two tables by direction: rows open known objects, a missing target is marked, the sentence names who does what, and the export follows", () => {
+test("the relations of an object are two columns by direction: rows open known objects, a missing target is marked, the sentence names who does what", () => {
   const { el } = panel("en");
   el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.rel", name: "Rel", status: "active" }, { object_type: "automation", object_id: "automation.rel", name: "Rel auto", status: "active" }, { object_type: "device", object_id: "drel", name: "Rel device", status: "active" }],
     edges: [
@@ -4488,15 +4488,12 @@ test("the relations of an object are two tables by direction: rows open known ob
       { source: "entity:sensor.rel", target: "entity:sensor.gone", relation: "TARGETS", confidence: "certain", location: "b" }],
     findings: [{ key: "kg", rule_id: "x", classification: "broken_reference", affected_object: "sensor.gone", object_id: "sensor.rel" }] };
   const rel = el.relationsCard("entity:sensor.rel");
-  assert.ok(rel.includes("<table") && rel.includes('data-lsort="relations_origin|name') && rel.includes('data-lsort="relations_usage|name'), "a table");
+  assert.equal((rel.match(/class="depcol"/g) || []).length, 2, "one column for the origin and one for the usage");
   assert.ok(rel.includes('data-object="automation:automation.rel"') && rel.includes('data-object="device:drel"'), "a known object opens");
-  assert.ok(!rel.includes('data-object="entity:sensor.gone"') && rel.includes('class="pill red">Missing'), "a missing target is marked and does not open");
+  assert.ok(!rel.includes('data-object="entity:sensor.gone"') && rel.includes('pill red">Missing'), "a missing target is marked and does not open");
   assert.ok(rel.includes("2 places"), "the same relation at two places is one row");
   assert.ok(rel.includes("Where does it come from?") && rel.includes("Where is it used?"), "the two blocks are named by direction");
   assert.ok(rel.includes("provides this object") && rel.includes("controls this object") && rel.includes("is controlled by this object"), "each row says who does what to this object");
-  assert.equal(el._exporters.relations_origin.rows().length, 1);
-  assert.equal(JSON.stringify(el._exporters.relations_origin.rows().map(r => r[1])), '["device:drel"]', "the origin table keeps only the origin rows");
-  assert.equal(el._exporters.relations_usage.rows().length, 2);
 });
 
 test("the repair view offers its tasks as tiles; one opens its assistant and the plan is finished there", () => {
