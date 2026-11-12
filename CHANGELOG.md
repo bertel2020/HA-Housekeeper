@@ -1,5 +1,41 @@
 # Changelog
 
+## Unreleased
+
+### Geändert
+
+- **Auswahlleisten einheitlich:** Alle Listen mit Auswahl haben dieselbe Leiste.
+  - „Auswahl aufheben“ und eine klickbare Zähler-Pille, die nur die Auswahl zeigt; die Aktionen erscheinen erst ab der ersten Auswahl.
+  - Ab drei Aktionen gibt es ein Menü „Aktionen“ (Befunde, Inventar, Freigaben, Auto-Pause, Objekt-Notizen); die Befund-Zeilen einer Objektseite sammeln mehrere Aktionen im selben Menü.
+  - In den Befunden sitzt das Seiten-Häkchen im Spaltenkopf, dazu „Alle n der Liste“.
+- **Abhängigkeiten:** Die Seite zeigt, in welche Richtung ein Wert fließt.
+  - Zwei Blöcke „Woher kommt es?“ und „Wo wird es verwendet?“ mit Sätzen je Zeile, die Herkunft als eingerückte Kette, der Standort getrennt davon.
+  - Der Graph geht bis zu vier Ebenen, die Pfeile folgen dem Datenfluss, die Legende ist immer sichtbar; vom Reiter „Abhängigkeiten“ führt ein Knopf zum Diagramm.
+  - Entitäten, die eine Integration in ihren Einstellungen oder Untereinträgen nennt, zählen als verwendet.
+- **Oberfläche allgemein:**
+  - Der Filter „Neu seit letztem Besuch“ heißt kürzer und hat dieselbe Textfarbe wie die übrigen Filter.
+
+### Behoben
+
+- **Automationen:** Läufe, die absichtlich an einer Bedingung enden, werden nicht mehr als „nie erfolgreich“ gemeldet (Issue #49).
+
+### English
+
+- **One selection bar:** Every list with a selection has the same bar.
+  - “Clear selection” and a clickable count pill that shows only the picks; the actions appear from the first pick.
+  - From three actions on there is an “Actions” menu (findings, inventory, exposure, auto-pause, object notes); the finding rows of an object page gather several actions in the same menu.
+  - In the findings the page box sits in the column head, with “All n in the list”.
+- **Dependencies:** The page shows which way a value flows.
+  - Two blocks, “Where does it come from?” and “Where is it used?”, with a sentence per row, the origin as an indented chain, the location apart.
+  - The graph goes up to four levels, the arrows follow the flow of data and the legend is always shown; a button on the “Dependencies” tab leads to the diagram.
+  - Entities that an integration names in its settings or sub-entries count as used.
+- **General interface:**
+  - The filter “New since your last visit” keeps its text, now with the same text colour as the other filters.
+
+### Fixed
+
+- **Automations:** Runs that end on a condition by design are no longer reported as “never ok” (issue #49).
+
 ## 2.0.0 - 2026-11-11
 
 Gegenüber 1.14.3. Die Vorabversionen 2.0.0-beta.1 bis beta.5 sind hier zusammengefasst.
