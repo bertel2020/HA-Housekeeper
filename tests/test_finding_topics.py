@@ -70,6 +70,24 @@ def test_failing_runs_become_findings_with_their_impact() -> None:
     assert all(topic_of(rule) == FAILING_AUTOMATIONS for rule in found)
 
 
+def test_runs_ending_on_a_guard_condition_are_no_never_ok_finding() -> None:
+    from datetime import UTC, datetime
+
+    from custom_components.ha_housekeeper.run_health import run_findings
+    from custom_components.ha_housekeeper.runs import FIELDS, RUNS, STOPPED, run_key
+
+    obj = {
+        "object_type": "automation",
+        "object_id": "automation.a",
+        "name": "A",
+        "actions": [{"action": "script.x"}, {"condition": "template", "value_template": "{{ x }}"}],
+    }
+    counts = [0] * FIELDS
+    counts[RUNS], counts[STOPPED] = 12, 12
+    items = {run_key(obj): {"days": {"2026-10-21": {"c": counts, "a": {"action/1": 12}}}}}
+    assert run_findings(items, [obj], datetime(2026, 10, 22, 12, tzinfo=UTC)) == []
+
+
 def test_a_checkpoint_counts_the_topics_and_an_old_one_is_recounted_from_its_keys() -> None:
     from custom_components.ha_housekeeper.history import _topics_from_keys, make_checkpoint
 
