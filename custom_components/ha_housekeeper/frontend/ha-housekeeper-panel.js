@@ -6643,7 +6643,7 @@ class DiagnosisMixin {
     const column = ([id, title, list]) => `<div class="depcol"><div class="dephead"><ha-icon icon="mdi:arrow-right-bold-outline" class="u-ic14"></ha-icon>${title}<span>${list.length}</span></div>${(list.some(x => x.indent !== undefined) ? list : [...list].sort((p, q) => nameOf(p).localeCompare(nameOf(q)))).map(row).join("")}${id === "origin" ? placeBlock() : ""}</div>`;
     const legend = `<div class="deplegend"><span><i class="depdot"></i>${this.t("certain")}</span><span><i class="depdot prob"></i>${this.t("probable")}</span></div>`;
     const blocks = groups.length ? `<div class="depcols">${groups.map(column).join("")}</div>${legend}` : "";
-    return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2></div>${blocks || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("relations")} (${incoming.length + outgoing.length})</h2><button class="btn" data-graph-open="${this.esc(key)}"><ha-icon icon="mdi:source-fork"></ha-icon>${this.t("showInGraph")}</button></div>${blocks || `<p class="factnote">${this.t("noRelations")}</p>`}</section>`;
   }
 
   entrySourceLabel(source) {

@@ -4496,6 +4496,7 @@ test("the relations of an object are two columns by direction: rows open known o
     findings: [{ key: "kg", rule_id: "x", classification: "broken_reference", affected_object: "sensor.gone", object_id: "sensor.rel" }] };
   const rel = el.relationsCard("entity:sensor.rel");
   assert.equal((rel.match(/class="depcol"/g) || []).length, 2, "one column for the origin and one for the usage");
+  assert.ok(rel.includes('data-graph-open="entity:sensor.rel"'), "the card links to the dependency graph");
   assert.ok(rel.includes('data-object="automation:automation.rel"') && rel.includes('data-object="device:drel"'), "a known object opens");
   assert.ok(!rel.includes('data-object="entity:sensor.gone"') && rel.includes('pill red">Missing'), "a missing target is marked and does not open");
   assert.ok(rel.includes("2 places"), "the same relation at two places is one row");
