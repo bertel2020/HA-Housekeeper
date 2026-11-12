@@ -593,8 +593,18 @@ class FindingsMixin {
     // The step that answers a finding comes first in its row, as the primary button.
     const fixes = item ? this.fixItems(item, key).items : [];
     const steps = f => fixes.filter(it => it.finding === f.key).map(it => `<button class="btn primary" ${it.attr} title="${this.esc(this.t(it.hint))}"><ha-icon icon="${it.icon}"></ha-icon>${it.label}</button>`).join("");
+    // The step that answers the finding stays a button of its own; what else can be done sits in one menu, from two actions on.
+    const others = f => [
+      ...(f.rule_id === "entity.possible_duplicate" ? [{ icon: "mdi:check-circle-outline", label: "notDuplicate", attr: `data-notdup="${this.esc(f.key)}"` }, { icon: "mdi:open-in-new", label: "openTwin", attr: `data-object="entity:${this.esc(f.affected_object)}"` }] : []),
+      { icon: FSEL_ICONS.status, label: "fselStatus", attr: `data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"` },
+    ];
+    const more = f => {
+      const list = others(f);
+      if (list.length === 1) return `<button class="btn" ${list[0].attr}><ha-icon icon="${list[0].icon}"></ha-icon>${this.t(list[0].label)}</button>`;
+      return `<details class="rowmenu actmenu"><summary class="btn">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${list.map(o => `<button type="button" class="menuitem" ${o.attr}><ha-icon icon="${o.icon}"></ha-icon><span>${this.t(o.label)}</span></button>`).join("")}</div></details>`;
+    };
     const hideButton = f => this.decide && this.decide.key === f.key ? `${this.decideTabs(f, "status")}${this.decideForm(f)}`
-      : `<div class="fbtns">${steps(f)}${f.rule_id === "entity.possible_duplicate" ? `<button class="btn" data-notdup="${this.esc(f.key)}"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notDuplicate")}</button><button class="btn" data-object="entity:${this.esc(f.affected_object)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openTwin")}</button>` : ""}<button class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"><ha-icon icon="${FSEL_ICONS.status}"></ha-icon>${this.t("fselStatus")}</button></div>`;
+      : `<div class="fbtns">${steps(f)}${more(f)}</div>`;
     const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small class="fmeta">${this.pill(f.classification)}<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}${f.ignore_rule ? `<small>${this.esc(this.findingRuleLine(f))}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return rows;
   }

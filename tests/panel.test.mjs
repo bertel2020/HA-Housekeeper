@@ -8583,3 +8583,12 @@ test("the bar of a selection: the pill shows only the picks and lets go when non
   const bar = el.invSelBar([{ object_type: "entity", object_id: "entity:a" }]);
   assert.ok(bar.includes("actmenu") && ["disable", "enable", "hide", "unhide"].every(t => bar.includes(`data-inv-state="${t}"`)) && !bar.includes('class="btn" data-inv-state'), "four actions, one menu");
 });
+
+test("a possible duplicate keeps its step as a button and gathers the rest in one menu; any other finding keeps its one button", () => {
+  const { el } = panel("en");
+  const f = (id, rule) => ({ rule_id: rule, object_id: id, affected_object: "sensor.twin", classification: "duplicate", confidence: 0.8, key: `k|${id}`, ignored: false, evidence: [] });
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "a", status: "ok" }, { object_type: "entity", object_id: "sensor.b", name: "b", status: "ok" }], findings: [f("sensor.a", "entity.possible_duplicate"), f("sensor.b", "entity.state_unavailable")], causes: [] };
+  const dup = el.findingRows("entity:sensor.a"), plain = el.findingRows("entity:sensor.b");
+  assert.ok(dup.includes("actmenu") && dup.includes("data-notdup=") && dup.includes("data-decide-open="), "three actions: one menu");
+  assert.ok(!plain.includes("actmenu") && plain.includes("data-decide-open="), "one action: a button");
+});
