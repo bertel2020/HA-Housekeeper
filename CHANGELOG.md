@@ -2,7 +2,7 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
-## Unreleased
+## 2.0.1 - 2026-11-12
 
 ### Changed
 
