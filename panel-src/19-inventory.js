@@ -234,13 +234,13 @@ class InventoryMixin {
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
     const originEdges = incoming.filter(e => !USAGE.includes(e.relation));
     const usageEntries = [
-      ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ key: e.source, edge: e, label: `${this.t("usedBy")} · ${this.t(e.relation)}` })),
-      ...outgoing.map(e => ({ key: e.target, edge: e, label: this.t(e.relation) })),
+      ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ key: e.source, edge: e, label: this.t(`relIn_${e.relation}`), down: true })),
+      ...outgoing.map(e => ({ key: e.target, edge: e, label: this.t(`relOut_${e.relation}`), down: !USAGE.includes(e.relation) })),
     ];
     const edgeNote = edge => `${this.t(edge.confidence)}${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`;
-    const origin = originEdges.map(e => `${this.nodeButton(e.source, edgeNote(e))}<div class="link-label"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${this.t(e.relation)}</div>`).join("");
+    const origin = originEdges.map(e => `${this.nodeButton(e.source, edgeNote(e))}<div class="link-label"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${this.t(`relIn_${e.relation}`)}</div>`).join("");
     const usage = usageEntries.length
-      ? `<div class="branch">${usageEntries.map(u => `<div><div class="link-label flat">${u.label}</div>${this.nodeButton(u.key, edgeNote(u.edge))}</div>`).join("")}</div>`
+      ? `<div class="branch">${usageEntries.map(u => `<div><div class="link-label flat"><ha-icon icon="mdi:arrow-${u.down ? "down" : "up"}" class="u-ic14"></ha-icon>${u.label}</div>${this.nodeButton(u.key, edgeNote(u.edge))}</div>`).join("")}</div>`
       : `<p class="emptyrel sm">${this.t("noRelations")}</p>`;
     return `${search}${head}${this.graphBar(item, key)}
       <div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("origin")} ${originEdges.length} · ${this.t("usage")} ${usageEntries.length}</span></div>

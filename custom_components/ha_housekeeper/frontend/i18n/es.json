@@ -6606,7 +6606,7 @@
 "graphColLeft": "Origen · nivel {n}",
 "graphColCenter": "Este objeto",
 "graphColRight": "Uso · nivel {n}",
-"graphLegendDir": "Las flechas van del origen al destino («A proporciona B»: A → B). A la izquierda está de dónde viene el objeto; a la derecha, dónde se usa. Un nivel es un paso desde el objeto elegido.",
+"graphLegendDir": "Las flechas siguen el flujo de los datos: de lo que proporciona a lo que usa («dispositivo → entidad → panel»). A la izquierda está de dónde viene el objeto; a la derecha, dónde se usa. Un nivel es un paso desde el objeto elegido.",
 "graphRelOrigin": "Origen (proporciona, posee, contiene)",
 "graphRelUsage": "Uso (controla, muestra, reacciona a)",
 "relIn_PROVIDES": "proporciona este objeto",

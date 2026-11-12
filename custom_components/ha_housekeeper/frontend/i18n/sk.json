@@ -7141,7 +7141,7 @@
 "graphColLeft": "Pôvod · úroveň {n}",
 "graphColCenter": "Tento objekt",
 "graphColRight": "Použitie · úroveň {n}",
-"graphLegendDir": "Šípky idú od zdroja k cieľu („A poskytuje B“: A → B). Vľavo je, odkiaľ objekt pochádza, vpravo, kde sa používa. Úroveň je jeden krok od zvoleného objektu.",
+"graphLegendDir": "Šípky ukazujú smer toku údajov: od toho, čo poskytuje, k tomu, čo používa („zariadenie → entita → dashboard“). Vľavo je, odkiaľ objekt pochádza, vpravo, kde sa používa. Úroveň je jeden krok od zvoleného objektu.",
 "graphRelOrigin": "Pôvod (poskytuje, vlastní, obsahuje)",
 "graphRelUsage": "Použitie (ovláda, zobrazuje, reaguje na)",
 "relIn_PROVIDES": "poskytuje tento objekt",

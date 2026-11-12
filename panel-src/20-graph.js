@@ -149,7 +149,9 @@ class GraphMixin {
       // Arcs between nodes of one column bulge out further the more rows they span, so nested arcs do not coincide.
       const rows = Math.round(Math.abs(y2 - y1) / (H + 14));
       const dx = sameColumn ? Math.min(14 + 10 * rows, 44) : (x2 - x1) / 2;
-      const forward = edge.source === (l === a ? from : to); // the data direction runs from the first to the second end
+      // The arrow follows the flow of the value, from what provides to what uses it: along the stored direction for provision and ownership, against it for usage.
+      const flowFrom = USAGE_RELATIONS.includes(edge.relation) ? edge.target : edge.source;
+      const forward = flowFrom === (l === a ? from : to); // the flow runs from the first to the second end
       const hit = hitKeys && (hitKeys.has(edge.source) && (hitKeys.has(edge.target) || edge.target === model.key));
       const cls = ["gedge", edge.confidence === "certain" ? "" : "prob", cycle ? "cycle" : "", hit ? "hit" : "", hitKeys && !hit ? "gdim" : ""].filter(Boolean).join(" ");
       const mark = forward ? 'marker-end="url(#hk-arrow)"' : 'marker-start="url(#hk-arrow)"';

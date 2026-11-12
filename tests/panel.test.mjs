@@ -2402,10 +2402,10 @@ test("the graph is an SVG with focusable nodes, edge directions and text for wha
   assert.ok(html.includes("Orphaned") || html.includes("Verwaist") || /Entity · \w+/.test(html), "status stands in the node as text");
   assert.ok(html.includes("missing") && html.includes('class="gnode missing"'), "a missing target is marked and says so");
   assert.ok(/class="gedge prob"/.test(html) && /class="gedge cycle"/.test(html));
-  // device D provides E (left to right): the arrow is at the right end; automation A triggers on E (right to left): at the left end
+  // the arrow follows the flow of the value: device D provides E (left to right) and E feeds automation A (left to right), both arrows at the right end
   const device = /<path class="gedge" d="[^"]+" marker-end="url\(#hk-arrow\)"><title>device:D → entity:sensor.e/.test(html);
-  const automation = /<path class="gedge" d="[^"]+" marker-start="url\(#hk-arrow\)"><title>automation:automation.a → entity:sensor.e/.test(html);
-  assert.ok(device && automation, "arrows follow the direction of the data");
+  const automation = /<path class="gedge" d="[^"]+" marker-end="url\(#hk-arrow\)"><title>automation:automation.a → entity:sensor.e/.test(html);
+  assert.ok(device && automation, "arrows follow the flow of the value");
   assert.ok(html.includes("Missing targets: 1") && html.includes("Probable relations: 1") && html.includes("Cycles: 1"));
   assert.ok(html.includes('data-fold="graph_legend"') && !html.includes("Solid: certain"));
 });

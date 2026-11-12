@@ -6606,7 +6606,7 @@
 "graphColLeft": "Origine · niveau {n}",
 "graphColCenter": "Cet objet",
 "graphColRight": "Utilisation · niveau {n}",
-"graphLegendDir": "Les flèches vont de la source vers la cible (« A fournit B » : A → B). À gauche, l’origine de l’objet ; à droite, où il est utilisé. Un niveau est une étape à partir de l’objet choisi.",
+"graphLegendDir": "Les flèches suivent le flux des données : de ce qui fournit vers ce qui utilise (« appareil → entité → tableau de bord »). À gauche, l’origine de l’objet ; à droite, où il est utilisé. Un niveau est une étape à partir de l’objet choisi.",
 "graphRelOrigin": "Origine (fournit, possède, contient)",
 "graphRelUsage": "Utilisation (commande, affiche, réagit à)",
 "relIn_PROVIDES": "fournit cet objet",

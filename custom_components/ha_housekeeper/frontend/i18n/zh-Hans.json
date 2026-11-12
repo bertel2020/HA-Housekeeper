@@ -6606,7 +6606,7 @@
 "graphColLeft": "来源 · 第 {n} 级",
 "graphColCenter": "此对象",
 "graphColRight": "使用 · 第 {n} 级",
-"graphLegendDir": "箭头从来源指向目标（“A 提供 B”：A → B）。左侧是对象的来源，右侧是使用它的位置。一个层级是从所选对象出发的一步。",
+"graphLegendDir": "箭头表示数据流向：从提供者指向使用者（“设备 → 实体 → 仪表盘”）。左侧是对象的来源，右侧是使用它的位置。一个层级是从所选对象出发的一步。",
 "graphRelOrigin": "来源（提供、拥有、包含）",
 "graphRelUsage": "使用（控制、显示、响应）",
 "relIn_PROVIDES": "提供此对象",

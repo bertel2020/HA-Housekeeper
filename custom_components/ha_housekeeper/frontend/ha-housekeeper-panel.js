@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"575224d73c"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"ddee6f4c9d"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5d1fc55754"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"da29e26733"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"974bb83f00"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"388bb125b0"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"38f8db11a1"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"6cc37c2aa4"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"4f98160661"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"c51d988383"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"53e90ac1ce"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"03340fd306"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"f3d14cc61c"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"5e32a8a1b5"}];
 
 const TEXT = {
   de: {
@@ -19,7 +19,7 @@ const TEXT = {
     noResults: "Keine passenden Objekte gefunden.",
     lastScan: "Letzter Scan", evidence: "Nachweis", registry: "Registry",
     state: "Zustand & Attribute", incoming: "Eingehend", outgoing: "Ausgehend",
-    graphMode: "Darstellung", graphList: "Liste", graphGraph: "Graph", graphDepth: "Ebenen", graphRelation: "Beziehungstyp", graphAllRelations: "Alle Beziehungen", graphConfidence: "Sicherheit", graphAllConf: "Alle Sicherheiten", graphCertainOnly: "Nur sichere",
+    graphMode: "Darstellung", graphList: "Liste", graphGraph: "Graph", graphDepth: "Ebenen", graphRelation: "Beziehungstyp", graphAllRelations: "Alle Beziehungen", graphConfidence: "Gewissheit", graphAllConf: "Alle Gewissheiten", graphCertainOnly: "Nur sichere",
     graphGroup: "{n} × {type}", graphGroupOpen: "Zum Aufklappen anklicken", graphRegroup: "Wieder zusammenfassen", graphImpact: "Was bricht beim Entfernen?", graphBreaks: "bricht", graphLabel: "Abhängigkeitsgraph von {name}", graphNodes: "Objekte: {n}", graphMore: "Mehr anzeigen",
     graphLegendTitle: "Legende", graphPhone: "Auf dem Handy als Liste; der Graph braucht mehr Platz.",
     graphLegend: "Durchgezogen: sicher · Gestrichelt: wahrscheinlich · Rot gepunktet: Zyklus · Roter Rahmen: bricht beim Entfernen · Gestrichelter Rahmen: Objekt fehlt.",
@@ -5650,13 +5650,13 @@ class InventoryMixin {
     const incoming = this.edgesTo(key), outgoing = this.edgesFrom(key);
     const originEdges = incoming.filter(e => !USAGE.includes(e.relation));
     const usageEntries = [
-      ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ key: e.source, edge: e, label: `${this.t("usedBy")} · ${this.t(e.relation)}` })),
-      ...outgoing.map(e => ({ key: e.target, edge: e, label: this.t(e.relation) })),
+      ...incoming.filter(e => USAGE.includes(e.relation)).map(e => ({ key: e.source, edge: e, label: this.t(`relIn_${e.relation}`), down: true })),
+      ...outgoing.map(e => ({ key: e.target, edge: e, label: this.t(`relOut_${e.relation}`), down: !USAGE.includes(e.relation) })),
     ];
     const edgeNote = edge => `${this.t(edge.confidence)}${edge.location && edge.location !== "runtime_extraction" ? ` · ${edge.location}` : ""}`;
-    const origin = originEdges.map(e => `${this.nodeButton(e.source, edgeNote(e))}<div class="link-label"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${this.t(e.relation)}</div>`).join("");
+    const origin = originEdges.map(e => `${this.nodeButton(e.source, edgeNote(e))}<div class="link-label"><ha-icon icon="mdi:arrow-down" class="u-ic14"></ha-icon>${this.t(`relIn_${e.relation}`)}</div>`).join("");
     const usage = usageEntries.length
-      ? `<div class="branch">${usageEntries.map(u => `<div><div class="link-label flat">${u.label}</div>${this.nodeButton(u.key, edgeNote(u.edge))}</div>`).join("")}</div>`
+      ? `<div class="branch">${usageEntries.map(u => `<div><div class="link-label flat"><ha-icon icon="mdi:arrow-${u.down ? "down" : "up"}" class="u-ic14"></ha-icon>${u.label}</div>${this.nodeButton(u.key, edgeNote(u.edge))}</div>`).join("")}</div>`
       : `<p class="emptyrel sm">${this.t("noRelations")}</p>`;
     return `${search}${head}${this.graphBar(item, key)}
       <div class="panel"><div class="panelhead"><h2>${this.t("origin")} → ${this.t("usage")}</h2><span class="date">${this.t("origin")} ${originEdges.length} · ${this.t("usage")} ${usageEntries.length}</span></div>
@@ -5815,7 +5815,9 @@ class GraphMixin {
       // Arcs between nodes of one column bulge out further the more rows they span, so nested arcs do not coincide.
       const rows = Math.round(Math.abs(y2 - y1) / (H + 14));
       const dx = sameColumn ? Math.min(14 + 10 * rows, 44) : (x2 - x1) / 2;
-      const forward = edge.source === (l === a ? from : to); // the data direction runs from the first to the second end
+      // The arrow follows the flow of the value, from what provides to what uses it: along the stored direction for provision and ownership, against it for usage.
+      const flowFrom = USAGE_RELATIONS.includes(edge.relation) ? edge.target : edge.source;
+      const forward = flowFrom === (l === a ? from : to); // the flow runs from the first to the second end
       const hit = hitKeys && (hitKeys.has(edge.source) && (hitKeys.has(edge.target) || edge.target === model.key));
       const cls = ["gedge", edge.confidence === "certain" ? "" : "prob", cycle ? "cycle" : "", hit ? "hit" : "", hitKeys && !hit ? "gdim" : ""].filter(Boolean).join(" ");
       const mark = forward ? 'marker-end="url(#hk-arrow)"' : 'marker-start="url(#hk-arrow)"';
@@ -19213,7 +19215,7 @@ Object.assign(TEXT.de, {
   graphColLeft: "Herkunft · Ebene {n}",
   graphColCenter: "Dieses Objekt",
   graphColRight: "Verwendung · Ebene {n}",
-  graphLegendDir: "Pfeile zeigen von der Quelle zum Ziel („A stellt B bereit“: A → B). Links steht, woher das Objekt kommt, rechts, wo es verwendet wird. Eine Ebene ist ein Schritt vom gewählten Objekt weg.",
+  graphLegendDir: "Pfeile zeigen in Richtung des Datenflusses: von dem, was liefert, zu dem, was nutzt („Gerät → Entität → Dashboard“). Links steht, woher das Objekt kommt, rechts, wo es verwendet wird. Eine Ebene ist ein Schritt vom gewählten Objekt weg.",
   graphRelOrigin: "Herkunft (stellt bereit, besitzt, enthält)",
   graphRelUsage: "Verwendung (steuert, zeigt an, reagiert auf)",
   relIn_PROVIDES: "stellt dieses Objekt bereit",
@@ -19245,7 +19247,7 @@ Object.assign(TEXT.en, {
   graphColLeft: "Origin · level {n}",
   graphColCenter: "This object",
   graphColRight: "Usage · level {n}",
-  graphLegendDir: "Arrows point from source to target (“A provides B”: A → B). The left shows where the object comes from, the right where it is used. A level is one step away from the chosen object.",
+  graphLegendDir: "Arrows point in the direction of the data flow: from what provides to what uses (“device → entity → dashboard”). The left shows where the object comes from, the right where it is used. A level is one step away from the chosen object.",
   graphRelOrigin: "Origin (provides, owns, contains)",
   graphRelUsage: "Usage (controls, shows, triggers on)",
   relIn_PROVIDES: "provides this object",

@@ -6606,7 +6606,7 @@
 "graphColLeft": "Origem · nível {n}",
 "graphColCenter": "Este objeto",
 "graphColRight": "Utilização · nível {n}",
-"graphLegendDir": "As setas vão da origem para o destino («A fornece B»: A → B). À esquerda está de onde o objeto vem; à direita, onde é usado. Um nível é um passo a partir do objeto escolhido.",
+"graphLegendDir": "As setas seguem o fluxo dos dados: do que fornece para o que usa («dispositivo → entidade → painel»). À esquerda está de onde o objeto vem; à direita, onde é usado. Um nível é um passo a partir do objeto escolhido.",
 "graphRelOrigin": "Origem (fornece, possui, contém)",
 "graphRelUsage": "Utilização (controla, mostra, reage a)",
 "relIn_PROVIDES": "fornece este objeto",
