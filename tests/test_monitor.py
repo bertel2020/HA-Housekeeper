@@ -182,6 +182,20 @@ def test_entity_conditions_use_scan_evidence_and_keep_gaps_unknown():
     )
 
 
+def test_freshness_is_measured_at_the_scan_not_at_the_hourly_check():
+    item = definition(("entity:sensor.battery", True))
+    item["members"][0]["rules"] = [{"kind": "freshness", "value": 1}]
+    object_data = {
+        "object_type": "entity",
+        "object_id": "sensor.battery",
+        "status": "active",
+        "state": "50",
+        "last_updated": (NOW - timedelta(minutes=1)).isoformat(),
+    }
+    later = NOW + timedelta(hours=3)
+    assert evaluate(item, snapshot([object_data]), health(), later)["state"] == "ok"
+
+
 def test_unavailable_grace_period_and_rule_validation():
     item = definition(("entity:sensor.water", True))
     item["members"][0]["rules"] = [{"kind": "unavailable_for", "value": 10}]

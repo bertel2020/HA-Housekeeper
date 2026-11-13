@@ -185,6 +185,22 @@ def test_a_table_without_a_good_row_before_is_skipped_not_guessed() -> None:
     assert changes["short_term"]["skipped"][0]["reason"] == "no_before"
 
 
+def test_a_glitch_older_than_the_five_minute_rows_still_moves_their_sums() -> None:
+    _, glitchy = water()
+    rows = hourly(glitchy)
+    findings = analyse([], rows)
+    last = findings[0]["bad_last"]
+    short = [
+        {"id": i + 1, "ts": last + 600 + i * 300, "state": 91.5, "sum": 500.0 + i} for i in range(6)
+    ]
+    changes = build_changes(findings, short, rows, [], "hold")
+    (tail,) = changes["short_term"]["tails"]
+    assert tail["offset"] == pytest.approx(changes["long_term"]["tails"][0]["offset"])
+    assert tail["from"] == short[0]["ts"] and tail["probe"] == 1
+    assert changes["short_term"]["skipped"] == []
+    assert changes["counts"]["tail_short_term"] == 6
+
+
 # ---- with a real recorder --------------------------------------------------------------------
 
 SENSOR = "sensor.water_meter"
