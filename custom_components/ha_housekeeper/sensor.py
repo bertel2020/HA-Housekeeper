@@ -127,7 +127,8 @@ HOUSE_DESCRIPTION = SensorEntityDescription(
 BATTERY_WEAKEST_DESCRIPTION = SensorEntityDescription(
     key="battery_weakest",
     translation_key="battery_weakest",
-    device_class=SensorDeviceClass.BATTERY,
+    # No device class battery: the scan would list this sensor itself among the batteries.
+    icon="mdi:battery-heart-variant",
     native_unit_of_measurement=PERCENTAGE,
 )
 

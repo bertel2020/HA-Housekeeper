@@ -264,3 +264,12 @@ def test_the_next_change_starts_at_midnight_of_the_persons_day() -> None:
     assert overview["first_change"] == datetime(2026, 11, 14, 23, 0, tzinfo=UTC), (
         "the 15th starts at 00:00 in Berlin, which is 23:00 on the 14th in UTC"
     )
+
+
+def test_the_own_weakest_battery_sensor_is_not_one_of_the_batteries() -> None:
+    snapshot = _snapshot()
+    own = _battery("sensor.ha_housekeeper_weakest", "3", "", "Own")
+    own["platform"] = "ha_housekeeper"
+    snapshot["objects"].append(own)
+    overview = battery_overview(snapshot, {}, None, None, NOW)
+    assert "sensor.ha_housekeeper_weakest" not in {i["entity_id"] for i in overview["weakest"]}
