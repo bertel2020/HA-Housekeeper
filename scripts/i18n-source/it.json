@@ -6638,7 +6638,10 @@
 "confirmDecisionsRemove": "d9b53d84",
 "mcpFn_replacement_candidates": "23166a8e",
 "mcpFn_replacement_plan": "fcccfc16",
-"viaMcpHint": "61370c2c"
+"viaMcpHint": "61370c2c",
+"polRule_template_attribute": "7e2f73c1",
+"polDesc_template_attribute": "bc8bb6f5",
+"polAlso_template_attribute": "c1ed446a"
 },
 "setup": {
 "title": "644c2647",

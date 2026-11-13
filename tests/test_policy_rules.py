@@ -381,6 +381,20 @@ def test_template_rules() -> None:
         "{% if is_number(states('sensor.x')) %}1{% endif %}",
     ]
     assert ids(run([], "template_guard", templates=[tpl(bare), *map(tpl, safe)])) == [bare]
+    unknown = "{{ state_attr('sensor.d', 'mileage') }}"
+    guarded = "{{ state_attr('sensor.d', 'mileage') | default(0) }}"
+    live = {"sensor.d": {"trips"}}
+    assert ids(
+        run(
+            [],
+            "template_attribute",
+            templates=[tpl(unknown), tpl(guarded)],
+            template_attributes=live,
+        )
+    ) == [unknown]
+    assert (
+        ids(run([], "template_attribute", templates=[tpl(unknown)], template_attributes={})) == []
+    )
     own = {"object_type": "entity", "object_id": "sensor.t", "name": "T"}
     assert ids(run([], "template_no_unique_id", template_no_unique_id=[own])) == ["sensor.t"]
 
