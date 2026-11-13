@@ -146,3 +146,23 @@ async def test_a_range_takes_no_nan_or_inf() -> None:
     for bad in ("nan", "inf", "-inf", float("nan"), "x", None):
         with pytest.raises(vol.Invalid):
             finite_float(bad)
+
+
+async def test_no_command_of_the_list_answers_a_non_administrator(
+    hass: HomeAssistant, hass_ws_client, hass_admin_user
+) -> None:
+    """The decorator is counted elsewhere; here every command of both lists is really refused."""
+    from test_ws_care import READS as CARE_READS
+    from test_ws_care import WRITES as CARE_WRITES
+
+    scanner, _ = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    hass_admin_user.groups = []
+    client = await hass_ws_client(hass)
+    allowed = []
+    for message in [*READS, *WRITES, *CARE_READS, *CARE_WRITES]:
+        await client.send_json_auto_id(message)
+        reply = await client.receive_json()
+        if not (reply["success"] is False and reply["error"]["code"] == "unauthorized"):
+            allowed.append(message["type"])
+    assert not allowed, allowed
