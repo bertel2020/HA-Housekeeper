@@ -67,7 +67,7 @@ WRITES = [
     {"type": D + "decision_notice_dismiss"},
     {"type": D + "ignore", "finding_key": "nope", "ignored": True},
     {"type": D + "set_options"},
-    {"type": D + "plan_create", "actions": []},
+    {"type": D + "plan_create", "actions": [{"kind": "remove_entity", "object_id": "sensor.none"}]},
     {"type": D + "plan_merge", "plan_ids": ["a", "b"]},
     {"type": D + "plan_renew", "plan_id": "nope"},
     {"type": D + "plan_check", "plan_id": "nope"},
@@ -105,6 +105,18 @@ WRITES = [
 ]
 
 
+# A command that is gone, a message the schema rejects ("... @ data['x']") and a handler that crashed
+# all answer too: only a result or the command's own error counts as an answer.
+def answered(reply: dict) -> bool:
+    if reply["success"]:
+        return True
+    error = reply["error"]
+    return (
+        error["code"] not in ("unknown_command", "unknown_error")
+        and "@ data[" not in error["message"]
+    )
+
+
 async def test_the_commands_answer(hass: HomeAssistant, hass_ws_client) -> None:
     scanner, client = await _ws_setup(hass, hass_ws_client)
     await scanner.async_scan()
@@ -115,5 +127,11 @@ async def test_the_commands_answer(hass: HomeAssistant, hass_ws_client) -> None:
 
     for message in READS:
         assert (await send(message))["success"], message
+    rejected = []
     for message in WRITES:
-        assert "success" in await send(message), message
+        reply = await send(message)
+        if not answered(reply):
+            rejected.append(
+                (message["type"], reply["error"]["code"], reply["error"]["message"][:100])
+            )
+    assert not rejected, rejected

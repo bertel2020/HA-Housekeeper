@@ -47,18 +47,30 @@ WRITES = [
     {"type": D + "reminder_set", "action": "delete", "reminder_id": "nope"},
     {"type": D + "protection_set", "mode": "full"},
     {"type": D + "lifecycle", "device_id": "nope"},
-    {"type": D + "mark_set", "object_type": "device", "object_id": "nope", "kind": "ignore"},
+    {"type": D + "mark_set", "object_type": "device", "object_id": "nope", "kind": "keep"},
     {"type": D + "mark_clear", "object_type": "device", "object_id": "nope"},
     {"type": D + "set_stale_limit", "entity_id": "sensor.none", "hours": 5},
-    {"type": D + "goal_set", "goal": "unknown_goal"},
-    {"type": D + "exceptions_preview", "rules": [{"entity": "sensor.none"}]},
+    {"type": D + "goal_set", "goal": "backup_age"},
+    {"type": D + "exceptions_preview", "rules": [{"kind": "entity", "targets": ["sensor.none"]}]},
     {"type": D + "vacation_set", "entity": "", "grace_hours": 2},
     {"type": D + "exceptions_set", "rules": []},
     {"type": D + "notify_set", "enabled": False},
-    {"type": D + "backup_attest", "kind": "restore", "clear": True},
+    {"type": D + "backup_attest", "kind": "restore_test", "clear": True},
     {"type": D + "auto_pause_set", "action": "never", "entry_id": "nope"},
     {"type": D + "auto_pause_set", "action": "resume", "entry_id": "nope"},
 ]
+
+
+# A command that is gone, a message the schema rejects ("... @ data['x']") and a handler that crashed
+# all answer too: only a result or the command's own error counts as an answer.
+def answered(reply: dict) -> bool:
+    if reply["success"]:
+        return True
+    error = reply["error"]
+    return (
+        error["code"] not in ("unknown_command", "unknown_error")
+        and "@ data[" not in error["message"]
+    )
 
 
 async def test_the_care_commands_answer(hass: HomeAssistant, hass_ws_client) -> None:
@@ -71,6 +83,11 @@ async def test_the_care_commands_answer(hass: HomeAssistant, hass_ws_client) -> 
 
     for message in READS:
         assert (await send(message))["success"], message["type"]
+    rejected = []
     for message in WRITES:
         reply = await send(message)
-        assert "success" in reply, message
+        if not answered(reply):
+            rejected.append(
+                (message["type"], reply["error"]["code"], reply["error"]["message"][:100])
+            )
+    assert not rejected, rejected
