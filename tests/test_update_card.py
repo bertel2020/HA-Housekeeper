@@ -81,3 +81,22 @@ def test_the_start_is_compared_with_the_starts_before_it() -> None:
     starts = [{"boot_s": 150}, {"boot_s": 140}, {"boot_s": None}, {"boot_s": 192.4}]
     assert start_figures(starts) == {"start_seconds": 192.4, "start_usual_seconds": 145.0}
     assert start_figures([{"boot_s": 100}]) == {"start_seconds": 100.0, "start_usual_seconds": None}
+
+
+def test_the_start_of_the_update_is_the_first_one_after_the_watch_began_and_the_usual_is_the_mean() -> (
+    None
+):
+    starts = [
+        {"at": "2026-11-01T05:00:00+00:00", "boot_s": 100},
+        {"at": "2026-11-05T05:00:00+00:00", "boot_s": 140},
+        {"at": "2026-11-12T05:12:00+00:00", "boot_s": 192.4},
+        {"at": "2026-11-12T09:00:00+00:00", "boot_s": 60},
+    ]
+    figures = start_figures(starts, "2026-11-12T05:00:00+00:00")
+    assert figures == {"start_seconds": 192.4, "start_usual_seconds": 120.0}, (
+        "the later restart is not the start of the update, and the usual is the mean of all before"
+    )
+    assert start_figures(starts, "2026-11-13T00:00:00+00:00") == {
+        "start_seconds": None,
+        "start_usual_seconds": None,
+    }, "no start since the watch began"

@@ -6,14 +6,13 @@ and adds how long the start took. Like the watch it says "since", never "because
 
 from __future__ import annotations
 
-from statistics import median
+from datetime import datetime
 from typing import Any, Final
 
 from .watch import evaluate, next_due
 
 PROBLEMS_MAX: Final = 8
 TRIGGERS_MAX: Final = 3
-USUAL_STARTS: Final = 10  # the starts before the last one that say what is usual
 # What a person looks at first: the integration, then the device, then what it controls.
 _ORDER: Final = ("config_entry", "device", "automation", "script", "scene", "entity")
 
@@ -25,15 +24,36 @@ def _name(key: str, names: dict[str, str]) -> str:
     return names.get(key) or key.partition(":")[2]
 
 
-def start_figures(starts: list[dict[str, Any]]) -> dict[str, float | None]:
-    """How long the last start took, and the middle of the ones before it."""
-    seconds = [float(s["boot_s"]) for s in starts if isinstance(s.get("boot_s"), int | float)]
-    if not seconds:
+def _at(value: Any) -> datetime | None:
+    try:
+        return datetime.fromisoformat(str(value))
+    except ValueError:
+        return None
+
+
+def start_figures(
+    starts: list[dict[str, Any]], since: str | None = None
+) -> dict[str, float | None]:
+    """How long a start took against the mean of all the starts before it, as on the start page of the panel.
+
+    Without ``since`` it is the last start. With the time a watch began it is the first start from then on, the one that
+    belongs to the update; a restart that came later does not stand in for it, and without such a start there is none.
+    """
+    timed = [s for s in starts if isinstance(s.get("boot_s"), int | float)]
+    begin = _at(since) if since else None
+    if begin is not None:
+        timed = timed[
+            : next(
+                (i + 1 for i, s in enumerate(timed) if (at := _at(s.get("at"))) and at >= begin),
+                0,
+            )
+        ]
+    if not timed:
         return {"start_seconds": None, "start_usual_seconds": None}
-    before = seconds[-1 - USUAL_STARTS : -1]
+    before = [float(s["boot_s"]) for s in timed[:-1]]
     return {
-        "start_seconds": seconds[-1],
-        "start_usual_seconds": float(median(before)) if before else None,
+        "start_seconds": float(timed[-1]["boot_s"]),
+        "start_usual_seconds": sum(before) / len(before) if before else None,
     }
 
 
@@ -44,7 +64,7 @@ def update_view(
     starts: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """The newest watch, judged, with the objects that are worse than before named and the last start."""
-    figures = start_figures(starts)
+    figures = start_figures(starts, watch["started_at"] if watch else None)
     if watch is None:
         return {"state": NONE, **figures}
     result = evaluate(watch, marked)
