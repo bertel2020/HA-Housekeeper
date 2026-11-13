@@ -2,45 +2,24 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
-## Unreleased
+## 2.1.0 - 2026-11-13
 
 ### Neu
 
-- **Dashboard-Karte „Zustand des Hauses“:** Eine Lovelace-Karte zeigt, wie es dem Haus geht, ohne das Panel zu öffnen.
-  - Eine Statuszeile, die vier Themen als Kacheln (dieselben Zahlen wie auf der Übersicht), was sich seit dem letzten Scan geändert hat und ein Scan-Knopf.
-  - Alle sehen die Zahlen; der Link ins Panel und der Scan-Knopf sind für Administratoren.
-  - Optionen im Karten-Editor: Titel, Kacheln, Änderungen, Scan-Knopf, was im Ruhezustand geschieht, kompakt. Die Texte gibt es in allen Sprachen des Panels.
-  - Neuer Sensor „Zustand des Hauses“ (In Ordnung, Braucht Aufmerksamkeit, Dringend) mit den Objekten je Thema als Attribute.
-- **Dashboard-Karte „Batterien“:** Die schwächsten Batterien mit Prognose, die nächste Wechselrunde nach Bereich und eine Einkaufsliste.
-  - Die Prognose wird einmal am Tag aus der Statistik gelesen und sagt, wie weit man ihr trauen kann (Schätzung, stabil, zu wenig Daten); bis sie da ist, sortiert die Karte nach Stand.
-  - Die Einkaufsliste zählt die Zellen nach Typ („2× AA“ sind zwei Zellen) und nennt die Batterien, deren Typ noch nicht gesetzt ist.
-  - Neue Sensoren „Schwächste Batterie“ und „Nächster Batteriewechsel“ (eine Zeit, für eigene Automationen).
-- **Dashboard-Karte „Hausfunktionen“:** Eine Zeile je Funktion (Heizung, Alarm, Photovoltaik …) mit Zustand, Grund in Worten und wie viele ihrer Objekte in Ordnung sind.
-  - Ein Streifen der letzten 7, 14 oder 30 Tage aus Housekeepers eigener Aufzeichnung und die Verfügbarkeit der letzten 30 Tage.
-  - Gestörte Funktionen stehen zuerst; ein Klick öffnet die Funktion im Panel (Administratoren). Die Karte kann eine gewählte Auswahl an Funktionen zeigen.
-  - Der Sensor jeder Funktion bekommt die Attribute, die die Karte liest (Name, Objekte, Grund, Tage).
-- **Dashboard-Karte „Pausierte Integrationen“:** Die Integrationen, die die Auto-Pause zurückhält, mit Grund, der Zeit bis zum nächsten Versuch und dem Stand der Versuche.
-  - Administratoren haben pro Zeile ein Menü: jetzt versuchen, Pause beenden, nie pausieren. Alle anderen sehen die Liste.
-  - Sagt, wenn die Auto-Pause aus ist, und führt ins Panel zum Einschalten; sie kann sich ausblenden, solange nichts pausiert ist.
-  - Neuer Sensor „Pausierte Integrationen“, der jede Änderung sofort zeigt.
-- **Dashboard-Karte „Nach dem Update“:** Zeigt einige Stunden nach einem Update von Home Assistant, Betriebssystem oder Supervisor, was seither nicht mehr läuft, in den Worten der Nachbeobachtung („seit“, nie „weil“).
-  - Die Objekte, die schlechter sind als vorher, mit Namen, die neuen Befunde und Reparaturhinweise und wie lange der Start gedauert hat gegen das Übliche.
-  - Ist nichts auffällig, sagt sie das kurz oder blendet sich aus; ohne ein beobachtetes Update zeigt sie sich nie.
-  - Neuer Sensor „Nach dem Update“ mit dem Urteil der Nachbeobachtung.
-- **Dashboard-Karte „Überblick“:** Die Karten von Housekeeper als Abschnitte einer Karte, in Reitern oder untereinander, für ein Wandtablet oder ein kleines Dashboard.
-  - Ein Reiter zeigt, wie viele Dinge in seinem Abschnitt einen Blick brauchen; der erste Abschnitt mit etwas Auffälligem öffnet sich, ein Abschnitt, der sich ausblendet, hat keinen Reiter.
-  - Auf einem schmalen Bildschirm weichen die Reiter, und die Abschnitte stehen untereinander, damit nichts hinter einem Reiter verschwindet.
-  - Abschnitte wählt und ordnet man im Editor; die Optionen einer einzelnen Karte stehen im YAML.
-- **Dashboard-Karten „Startzeit“, „Datenbank“, „Backup“ und „Urlaubsmodus“:** Vier weitere Karten für deine eigenen Dashboards.
-  - Startzeit: wie lange der letzte Start gedauert hat gegen das Übliche, die letzten Starts als Balken und die Integrationen, die am längsten brauchten; eine Zeile, wenn der Start wie sonst war.
-  - Datenbank: wie groß die Datenbank ist, ob sie schnell wächst, die Linie der Tagesgrößen und was der Recorder aufbewahrt; dieselben Regeln wie die Datenbankseite im Panel, gelesen aus dem, was jeder Scan ohnehin weiß, ohne Abfrage der Recorder-Tabellen.
-  - Backup: wie alt das neueste Backup ist gegen die Grenze des Backup-Schutzes, ob eine Kopie außer Haus liegt, die Größe und die letzten sieben Tage als Streifen; rot nur, wenn der Schutz fehlt.
-  - Urlaubsmodus: nur solange der Modus an ist oder seine Nachfrist läuft; woher die Abwesenheit kommt, seit wann und bis wann (bei einem Kalender), wie viele Ausfälle stumm gehalten werden und die Nachfrist. Nur Anzeige, kein Schalter.
-  - Die Überblick-Karte kann alle vier auch als Abschnitte zeigen (den Urlaub nur, solange der Modus an ist).
-  - Neue Sensoren „Startdauer“, „Größe der Datenbank“, „Backup-Schutz“ und „Urlaubsmodus“.
+- **Dashboard-Karten:** Zehn Lovelace-Karten zeigen, wie es dem Haus geht, ohne das Panel zu öffnen.
+  - Alle sehen die Zahlen; Links ins Panel, Scan-Knopf und Menüs sind für Administratoren. Der Karten-Editor bietet die Optionen, die Texte gibt es in allen Sprachen des Panels.
+  - Zustand des Hauses: eine Statuszeile, die vier Themen als Kacheln, was sich seit dem letzten Scan geändert hat und ein Scan-Knopf.
+  - Batterien: die schwächsten Batterien mit Prognose, die nächste Wechselrunde nach Bereich und eine Einkaufsliste, die die Zellen nach Typ zählt.
+  - Hausfunktionen: eine Zeile je Funktion (Heizung, Alarm, Photovoltaik …) mit Zustand, Grund in Worten, den letzten 7, 14 oder 30 Tagen als Streifen und der Verfügbarkeit.
+  - Pausierte Integrationen: was die Auto-Pause zurückhält, mit Grund und Zeit bis zum nächsten Versuch; Administratoren versuchen es jetzt, beenden die Pause oder pausieren nie über ein Menü.
+  - Nach dem Update: einige Stunden nach einem Update von Home Assistant, Betriebssystem oder Supervisor, was seither nicht mehr läuft, mit der Startzeit gegen das Übliche.
+  - Startzeit, Datenbank, Backup und Urlaubsmodus: der letzte Start gegen das Übliche, Größe und Wachstum der Datenbank, das Alter des Backups und die Kopie außer Haus, und woher eine Abwesenheit kommt und was sie zurückhält. Datenbank- und Backup-Karte nutzen die Regeln der Panel-Seiten; die Urlaubskarte ist nur Anzeige.
+  - Überblick: alle als Abschnitte einer Karte, in Reitern oder untereinander, mit einer Zahl je Abschnitt.
+  - Neue Sensoren für die Karten: „Zustand des Hauses“, „Schwächste Batterie“, „Nächster Batteriewechsel“, „Pausierte Integrationen“, „Nach dem Update“, „Startdauer“, „Größe der Datenbank“, „Backup-Schutz“ und „Urlaubsmodus“; der Sensor jeder Hausfunktion bekommt die Attribute, die die Karte liest.
 - **KI-Zugriff: viele Entitäten ersetzen:** Nach einem Wechsel der Integration kann ein Agent die Umstellung vorbereiten, du bestätigst sie.
   - `replacement_candidates` listet die Entitäten, die weg sind, und die, die da sind, mit Name, Geräteklasse, Einheit, Bereich und wie viel sie benutzt; sensible Objekte bleiben draußen.
   - `replacement_plan` (braucht „Befunde beheben“) legt aus bis zu 50 Paaren alt → neu einen Plan an. Er ist eine Vorschau wie jeder andere: Die Planseite sagt, dass er über den KI-Zugriff angelegt wurde, und ein Administrator liest jedes Paar, bestätigt und führt ihn im Panel aus. Die alten Entitäten können danach abgeschaltet, nie gelöscht werden.
+- **Template-Regel „liest ein Attribut, das es nicht gibt“:** Ein Template-Helfer, der ein Attribut liest, das seine Entität nicht hat, wird als Hinweis gemeldet (standardmäßig aus). Entitäten, die aus, nicht verfügbar oder unbekannt sind, Mediaplayer und Templates mit Standardwert oder `is defined`-Prüfung bleiben außen vor.
 
 ### Behoben
 
@@ -54,9 +33,11 @@
   - Die Frische-Regel einer Hausfunktion wird am letzten Scan gemessen, nicht an der Uhrzeit von jetzt, und schlägt nicht mehr jede Stunde an, bis der nächste Scan kommt.
   - Weniger falsche Befunde: Eine An- und eine Aus-Automation am selben Sensor sind kein Konflikt; Entitäten ohne Änderung zählen in der Verfügbarkeit als erreichbar; eine HomeKit-Bridge zählt nur, was HomeKit erreicht; der Wachstumshinweis der Datenbank schlägt nicht an, nachdem sie geschrumpft ist; ein Recorder, der eine Woche nichts schrieb, erscheint als Lücke.
   - Die Qualitätsansicht bewertet alle Automationen, nicht nur die ersten 300; Custom-Karten-Ressourcen werden in Zeilen, Layouts und Badges gefunden; eine Statistik ohne Entität wird erst nach zwei Tagen zum Aufräumen angeboten.
+  - Eine Antwort aus dem Zwischenspeicher sagt, wie alt ihre Zeilen sind, damit die Lastansicht und die Batterie-Prognose sie nicht mehr als frisch zeigen; die Update-Beobachtung beginnt beim letzten Neustart nur bei Updates, die Core neu starten (Core, Betriebssystem); die Abdeckung läuft reihum, statt immer dieselben Automationen zu zählen.
 - **Stabilität:**
   - Ein Neuladen nach geänderten Optionen verliert keine verzögert gespeicherten Notizen, Kriterien oder den Schalter für den KI-Zugriff mehr; ein per Timeout abgebrochener Scan lässt nicht mehr „scannt“ stehen; viele Befehle beim Start teilen sich einen Scan; eine Entscheidung während eines Scans erreicht das neue Ergebnis.
   - Auto-Pause löst seinen Timer nicht mehr immer wieder für einen Eintrag aus, der gerade versucht wird oder entfernt wurde; die vierzehn Sensoren rechnen ihre Zahlen einmal pro Änderung statt jeder für sich.
+  - Ignorierte Entitäten und neue Entitäten ohne Wert planen nach einem Ausfall keinen Scan mehr; Erinnerungen und Kriterien zählen den Tag der Person, nicht den in UTC; ein Bereich nimmt kein nan oder inf; eine als beschädigt beiseitegelegte Datenbankkopie steht bei den großen Einträgen.
 - **KI-Zugriff:**
   - Das Limit für Änderungen lässt sich nicht durch eine Flut abgelehnter Aufrufe zurücksetzen, das Protokoll behält nur wenige kurze Schlüssel pro Aufruf, „Sensible Objekte zurückhalten“ deckt auch die Geräte von Schlössern und Kameras ab, und Pläne, die eine KI angelegt hat, sind im Journal markiert.
 - **Panel:**

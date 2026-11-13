@@ -2,45 +2,24 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
-## Unreleased
+## 2.1.0 - 2026-11-13
 
 ### New
 
-- **Dashboard card “House health”:** A Lovelace card shows how the house is doing without opening the panel.
-  - A status line, the four topics as tiles (the same numbers as the overview page), what changed since the last scan and a scan button.
-  - Everyone sees the numbers; the link to the panel and the scan button are for administrators.
-  - Options in the card editor: title, tiles, changes, scan button, what to do when everything is quiet, compact. The texts are in all languages of the panel.
-  - New sensor “House health” (OK, needs attention, urgent) with the objects per topic as attributes.
-- **Dashboard card “Batteries”:** The weakest batteries with a forecast, the next round of changes by area and a shopping list.
-  - The forecast is read once a day from the statistics and says how far to trust it (estimate, stable, too little data); until it is there the card sorts by level.
-  - The shopping list counts the cells by type (“2× AA” are two cells) and names the batteries whose type is not set yet.
-  - New sensors “Weakest battery” and “Next battery change” (a time, for your own automations).
-- **Dashboard card “Home functions”:** One row per function (heating, alarm, photovoltaics …) with its state, the reason in words and how many of its objects are fine.
-  - A strip of the last 7, 14 or 30 days from Housekeeper's own record and the availability of the last 30 days.
-  - Troubled functions come first; a click opens the function in the panel (administrators). The card can show a chosen set of functions.
-  - The sensor of each function gains the attributes the card reads (name, objects, reason, days).
-- **Dashboard card “Paused integrations”:** The integrations that auto-pause holds back, with the reason, the time to the next attempt and how far the retries are.
-  - Administrators get a menu per row: try now, end the pause, never pause it. Everybody else sees the list.
-  - Says when auto-pause is off and links to the panel to switch it on; it can hide while nothing is paused.
-  - New sensor “Paused integrations” that follows every change at once.
-- **Dashboard card “After the update”:** Shows for a few hours after an update of Home Assistant, the operating system or the Supervisor what has stopped working since, in the words of the watch (“since”, never “because”).
-  - The objects that are worse than before with their names, the new findings and repair hints, and how long the start took against the usual.
-  - Nothing unusual: it says so briefly, or hides if you prefer; it never shows without an update that was watched.
-  - New sensor “After the update” with the verdict of the watch.
-- **Dashboard card “Overview”:** The cards of Housekeeper as the sections of one card, in tabs or one below the other, for a wall tablet or a small dashboard.
-  - A tab shows how many things in its section call for a look; the first section with something to look at opens, and a section that hides itself has no tab.
-  - On a narrow screen the tabs give way and the sections stand one below the other, so that nothing is hidden behind a tab.
-  - Choose and order the sections in the editor; the options of a single card go in YAML.
-- **Dashboard cards “Start time”, “Database”, “Backup” and “Vacation mode”:** Four more cards for your own dashboards.
-  - Start time: how long the last start took against the usual, the last starts as bars and the integrations that took longest; a one-line summary when the start was as usual.
-  - Database: how big the database is, whether it grows fast, the line of the daily sizes and what the recorder keeps; the same rules as the database page of the panel, read from what each scan knows, without a query of the recorder tables.
-  - Backup: how old the newest backup is against the limit of the backup protection, whether a copy lies off the device, the size and the last seven days as a strip; red only when the protection is missing.
-  - Vacation mode: only while the mode is on or its grace period runs; where the absence comes from, since and until when (for a calendar), how many failures are held back and the grace period. Display only, no switch.
-  - The overview card can show all four as sections too (the vacation section only while the mode is on).
-  - New sensors “Start time”, “Database size”, “Backup protection” and “Vacation mode”.
+- **Dashboard cards:** Ten Lovelace cards show how the house is doing without opening the panel.
+  - Everyone sees the numbers; links to the panel, scan button and menus are for administrators. The card editor offers the options, the texts are in all languages of the panel.
+  - House health: a status line, the four topics as tiles, what changed since the last scan and a scan button.
+  - Batteries: the weakest batteries with a forecast, the next round of changes by area and a shopping list that counts the cells by type.
+  - Home functions: one row per function (heating, alarm, photovoltaics …) with its state, the reason in words, the last 7, 14 or 30 days as a strip and the availability.
+  - Paused integrations: what auto-pause holds back, with the reason and the time to the next attempt; administrators try now, end the pause or never pause it from a menu.
+  - After the update: for a few hours after an update of Home Assistant, the operating system or the Supervisor, what has stopped working since, with the start time against the usual.
+  - Start time, Database, Backup and Vacation mode: the last start against the usual, the size and growth of the database, the age of the backup and the copy off the device, and where an absence comes from and what it holds back. The database and backup cards use the rules of the panel pages; the vacation card is display only.
+  - Overview: all of them as sections of one card, in tabs or one below the other, with a count per section.
+  - New sensors for the cards: “House health”, “Weakest battery”, “Next battery change”, “Paused integrations”, “After the update”, “Start time”, “Database size”, “Backup protection” and “Vacation mode”; the sensor of each home function gains the attributes the card reads.
 - **AI access: replacing many entities:** After a change of integration an agent can prepare the change, you confirm it.
   - `replacement_candidates` lists the entities that are gone and the ones that are there with name, device class, unit, area and how much uses them; sensitive objects stay out.
   - `replacement_plan` (needs “Fix findings”) creates one plan from up to 50 pairs old → new. It is a preview like any other: the plan page says it was made through AI access, and an administrator reads every pair, confirms and runs it in the panel. The old entities can be switched off afterwards, never deleted.
+- **Template rule “reads an attribute that does not exist”:** A template helper that reads an attribute its entity does not have is reported as a hint (off by default). Entities that are off, unavailable or unknown, media players and templates with a default or an `is defined` test are left alone.
 
 ### Fixed
 
@@ -54,9 +33,11 @@
   - The freshness rule of a home function is measured against the last scan, not against now, so it no longer fires every hour until the next scan.
   - Fewer false findings: an on and an off automation on one sensor are no conflict; entities that did not change count as up in the availability; a HomeKit bridge counts only what HomeKit reaches; the database growth hint no longer fires after the database shrank; a recorder that wrote nothing for a week is shown as a gap.
   - The quality view rates all automations, not only the first 300; custom card resources are found in rows, layouts and badges; a statistic without an entity is offered for clearing up only after two days.
+  - An answer that comes from the cache says how old its rows are, so the load view and the battery forecast no longer show them as fresh; the update watch starts at the last restart only for updates that restart Core (Core, OS); the coverage goes round instead of always counting the same automations.
 - **Stability:**
   - A reload for new options no longer loses notes, criteria or the AI access switch that were saved with a delay; a scan cut off by a timeout no longer leaves “scanning” on; many commands at the start share one scan; a decision made during a scan reaches the new result.
   - Auto-pause no longer fires its timer over and over for an entry that is being tried or was removed; the fourteen sensors work out their numbers once per change, not each on its own.
+  - Ignored entities and new entities without a value no longer plan a scan after an outage; reminders and criteria count the day of the person, not of UTC; a range takes no nan or inf; a database copy set aside as damaged is listed under the large entries.
 - **AI access:**
   - The limit on changes cannot be reset by a flood of refused calls, the log keeps only a few short keys per call, “hold back sensitive objects” also covers the devices of locks and cameras, and plans an agent made are marked in the journal.
 - **Panel:**
