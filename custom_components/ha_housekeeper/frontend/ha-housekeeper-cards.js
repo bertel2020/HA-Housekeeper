@@ -768,8 +768,16 @@ class HKCard extends HTMLElement {
     this.refresh = () => this.update(true);
   }
 
-  connectedCallback() { CardTexts.listeners.add(this.refresh); this.update(true); }
-  disconnectedCallback() { CardTexts.listeners.delete(this.refresh); }
+  connectedCallback() {
+    CardTexts.listeners.add(this.refresh);
+    this.update(true);
+    // "12 minutes ago" and "in 54 minutes" go stale while nothing changes, so the card looks again every minute.
+    if (typeof globalThis.setInterval === "function" && !this._clock) this._clock = globalThis.setInterval(() => this.update(), 60000);
+  }
+  disconnectedCallback() {
+    CardTexts.listeners.delete(this.refresh);
+    if (this._clock) { globalThis.clearInterval(this._clock); this._clock = null; }
+  }
 
   setConfig(config) {
     if (!config || typeof config !== "object") throw new Error("Invalid configuration");
@@ -850,7 +858,7 @@ class HKCard extends HTMLElement {
   // Draw again when the language, the shown states or the visibility changed (or when forced).
   update(force = false) {
     if (!this._config || !this._hass) return;
-    const sig = [this.lang, this.mode(), Boolean(this._hass.user?.is_admin), watchSignature(this._hass, this.watchedIds()), JSON.stringify(this._config)].join("#");
+    const sig = [Math.floor(Date.now() / 60000), this.lang, this.mode(), Boolean(this._hass.user?.is_admin), watchSignature(this._hass, this.watchedIds()), JSON.stringify(this._config)].join("#");
     if (!force && sig === this._sig) return;
     this._sig = sig;
     this.render();
@@ -1165,8 +1173,11 @@ class HKFunctionsCard extends HKCard {
       .filter(id => id.startsWith("sensor.") && (!chosen.size || chosen.has(id)))
       .map(id => ({ id, state: this._hass?.states?.[id] }))
       .filter(f => f.state)
-      .sort((a, b) => (rank[a.state.state] ?? 4) - (rank[b.state.state] ?? 4) || String(a.state.attributes?.function_name).localeCompare(String(b.state.attributes?.function_name)));
+      .sort((a, b) => (rank[a.state.state] ?? 4) - (rank[b.state.state] ?? 4) || this.fname(a).localeCompare(this.fname(b)));
   }
+
+  // The name of a function; before its first result the sensor has none of its own, so the name of the entity stands in.
+  fname(item) { return String(item.state?.attributes?.function_name || item.state?.attributes?.friendly_name || item.id); }
 
   watchedIds() { return this.functions().map(f => f.id); }
   hasData() { return true; }
@@ -1201,7 +1212,7 @@ class HKFunctionsCard extends HKCard {
     const go = this._config.tap !== "none" && this._hass?.user?.is_admin && attrs.function_id;
     const link = go ? ` data-hk-panel="view=monitor&amp;function=${this.esc(attrs.function_id)}"` : "";
     const available = attrs.availability_30d == null ? "—" : `${String(attrs.availability_30d).replace(".", this.decimal())} %`;
-    return `<div class="hk-row fn${go ? " go" : ""}"${link}><span class="hk-st ${tone}"></span><div class="hk-name"><b>${this.esc(attrs.function_name)}</b><small class="${state === "problem" ? "bad" : state === "unverified" ? "warn" : ""}">${this.esc(sub)}</small></div>${this.strip(attrs.history_30d)}<div class="hk-right"><b>${this.esc(available)}</b><small>${this.esc(this.t("cardFnWindow", { n: 30 }))}</small></div></div>`;
+    return `<div class="hk-row fn${go ? " go" : ""}"${link}><span class="hk-st ${tone}"></span><div class="hk-name"><b>${this.esc(this.fname(item))}</b><small class="${state === "problem" ? "bad" : state === "unverified" ? "warn" : ""}">${this.esc(sub)}</small></div>${this.strip(attrs.history_30d)}<div class="hk-right"><b>${this.esc(available)}</b><small>${this.esc(this.t("cardFnWindow", { n: 30 }))}</small></div></div>`;
   }
 
   decimal() { try { return (1.5).toLocaleString(this.lang).replace(/\d/g, ""); } catch (_) { return "."; } }
@@ -1788,7 +1799,7 @@ class HKBackupCard extends HKCard {
   strip(days) {
     if (this._config.history === "0" || !Array.isArray(days) || !days.length) return "";
     const cls = { ok: "", failed: "flapping", none: "none" };
-    return `<div class="hk-stripbox"><div class="hk-strip">${days.map(day => `<i class="${cls[day] ?? "none"}"></i>`).join("")}</div><div class="hk-striplab"><span>${this.esc(this.t("cardBkDaysAgo", { n: days.length, count: days.length }))}</span><span>${this.esc(this.t("cardBkToday"))}</span></div></div>`;
+    return `<div class="hk-stripbox"><div class="hk-strip">${days.map(day => `<i class="${cls[day] ?? "none"}"></i>`).join("")}</div><div class="hk-striplab"><span>${this.esc(this.t("cardBkDaysAgo", { n: days.length - 1, count: days.length - 1 }))}</span><span>${this.esc(this.t("cardBkToday"))}</span></div></div>`;
   }
 
   renderBody() {

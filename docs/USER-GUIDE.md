@@ -435,7 +435,7 @@ The panel, the configuration flow and the messages come in German and English, a
 
 ## Dashboard cards
 
-Housekeeper brings six cards for your own dashboards. They show the most important things at a glance, without opening the panel. They are loaded together with the integration: there is nothing to add under dashboard resources.
+Housekeeper brings ten cards for your own dashboards. They show the most important things at a glance, without opening the panel. They are loaded together with the integration: there is nothing to add under dashboard resources.
 
 ### Adding a card
 
@@ -461,7 +461,7 @@ Every card has these options, set in the editor or in YAML:
 | Option | Values | Meaning |
 | --- | --- | --- |
 | `title` | text | Replaces the default heading. |
-| `quiet` | `summary` (default), `hide` | What the card does when there is nothing to do: show its summary, or disappear from the dashboard until something is due. In the editor it always stays visible and says why it would be hidden. |
+| `quiet` | `summary` (default; `hide` for the vacation card), `hide` | What the card does when there is nothing to do: show its summary, or disappear from the dashboard until something is due. In the editor it always stays visible and says why it would be hidden. |
 | `tap` | `panel` (default), `none` | Whether a tap on a tile, a row or the footer opens the Housekeeper panel. Only administrators get there. |
 | `compact` | `true`, `false` (default) | Smaller spacing. |
 

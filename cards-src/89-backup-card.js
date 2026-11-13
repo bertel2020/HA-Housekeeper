@@ -69,7 +69,7 @@ class HKBackupCard extends HKCard {
   strip(days) {
     if (this._config.history === "0" || !Array.isArray(days) || !days.length) return "";
     const cls = { ok: "", failed: "flapping", none: "none" };
-    return `<div class="hk-stripbox"><div class="hk-strip">${days.map(day => `<i class="${cls[day] ?? "none"}"></i>`).join("")}</div><div class="hk-striplab"><span>${this.esc(this.t("cardBkDaysAgo", { n: days.length, count: days.length }))}</span><span>${this.esc(this.t("cardBkToday"))}</span></div></div>`;
+    return `<div class="hk-stripbox"><div class="hk-strip">${days.map(day => `<i class="${cls[day] ?? "none"}"></i>`).join("")}</div><div class="hk-striplab"><span>${this.esc(this.t("cardBkDaysAgo", { n: days.length - 1, count: days.length - 1 }))}</span><span>${this.esc(this.t("cardBkToday"))}</span></div></div>`;
   }
 
   renderBody() {

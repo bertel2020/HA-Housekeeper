@@ -103,8 +103,18 @@ def test_the_round_and_the_shopping_list_follow_the_forecast_and_the_types() -> 
         {"type": "CR2032", "count": 1, "names": ["Türsensor Keller"]},
     ]
     assert overview["unknown_type"] == ["Bewegungsmelder Garage"]
-    assert overview["first_change"] == datetime(2026, 11, 10, tzinfo=UTC), (
-        "the first one is low already"
+    assert overview["first_change"] == datetime(2026, 11, 12, tzinfo=UTC), (
+        "the first one is low already: today"
+    )
+    later = battery_overview(
+        _snapshot(),
+        TYPES,
+        {**forecast, "rows": [{"entity_id": "sensor.door", "state": "falling", "days_left": 14}]},
+        read,
+        NOW,
+    )
+    assert later["first_change"] == datetime(2026, 11, 24, tzinfo=UTC), (
+        "14 days left when read, two days ago: 12 days from today, not from the day it was read"
     )
 
     kinds = {**TYPES, "sensor.bath": "2× AA", "sensor.door": "Rechargeable"}

@@ -436,7 +436,7 @@ Panel, Einrichtungsdialog und Meldungen gibt es auf Deutsch und Englisch sowie a
 
 ## Dashboard-Karten
 
-Housekeeper bringt sechs Karten für deine eigenen Dashboards mit. Sie zeigen das Wichtigste auf einen Blick, ohne dass du das Panel öffnen musst. Sie werden zusammen mit der Integration geladen: unter den Dashboard-Ressourcen musst du nichts eintragen.
+Housekeeper bringt zehn Karten für deine eigenen Dashboards mit. Sie zeigen das Wichtigste auf einen Blick, ohne dass du das Panel öffnen musst. Sie werden zusammen mit der Integration geladen: unter den Dashboard-Ressourcen musst du nichts eintragen.
 
 ### Eine Karte hinzufügen
 
@@ -462,7 +462,7 @@ Jede Karte hat diese Optionen, im Editor oder im YAML:
 | Option | Werte | Bedeutung |
 | --- | --- | --- |
 | `title` | Text | Ersetzt die Standardüberschrift. |
-| `quiet` | `summary` (Standard), `hide` | Was die Karte tut, wenn nichts zu tun ist: die Zusammenfassung zeigen oder vom Dashboard verschwinden, bis wieder etwas anliegt. Im Editor bleibt sie immer sichtbar und sagt, warum sie sonst verschwände. |
+| `quiet` | `summary` (Standard; beim Urlaubsmodus `hide`), `hide` | Was die Karte tut, wenn nichts zu tun ist: die Zusammenfassung zeigen oder vom Dashboard verschwinden, bis wieder etwas anliegt. Im Editor bleibt sie immer sichtbar und sagt, warum sie sonst verschwände. |
 | `tap` | `panel` (Standard), `none` | Ob ein Tipp auf eine Kachel, eine Zeile oder die Fußzeile das Housekeeper-Panel öffnet. Nur Administratoren kommen hinein. |
 | `compact` | `true`, `false` (Standard) | Kleinere Abstände. |
 

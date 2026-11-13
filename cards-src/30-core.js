@@ -48,8 +48,16 @@ class HKCard extends HTMLElement {
     this.refresh = () => this.update(true);
   }
 
-  connectedCallback() { CardTexts.listeners.add(this.refresh); this.update(true); }
-  disconnectedCallback() { CardTexts.listeners.delete(this.refresh); }
+  connectedCallback() {
+    CardTexts.listeners.add(this.refresh);
+    this.update(true);
+    // "12 minutes ago" and "in 54 minutes" go stale while nothing changes, so the card looks again every minute.
+    if (typeof globalThis.setInterval === "function" && !this._clock) this._clock = globalThis.setInterval(() => this.update(), 60000);
+  }
+  disconnectedCallback() {
+    CardTexts.listeners.delete(this.refresh);
+    if (this._clock) { globalThis.clearInterval(this._clock); this._clock = null; }
+  }
 
   setConfig(config) {
     if (!config || typeof config !== "object") throw new Error("Invalid configuration");
@@ -130,7 +138,7 @@ class HKCard extends HTMLElement {
   // Draw again when the language, the shown states or the visibility changed (or when forced).
   update(force = false) {
     if (!this._config || !this._hass) return;
-    const sig = [this.lang, this.mode(), Boolean(this._hass.user?.is_admin), watchSignature(this._hass, this.watchedIds()), JSON.stringify(this._config)].join("#");
+    const sig = [Math.floor(Date.now() / 60000), this.lang, this.mode(), Boolean(this._hass.user?.is_admin), watchSignature(this._hass, this.watchedIds()), JSON.stringify(this._config)].join("#");
     if (!force && sig === this._sig) return;
     this._sig = sig;
     this.render();

@@ -163,7 +163,8 @@ def battery_overview(
     ]
     shopping, unknown = shopping_list(due)
     soonest = [i["days_left"] for i in items if i["days_left"] is not None]
-    base: date = (forecast_at or now).date()
+    # ``days_left`` is already shortened by the days since the forecast, so it counts from today.
+    base: date = now.date()
     first = (
         datetime.combine(base + timedelta(days=min(soonest)), datetime.min.time(), UTC)
         if soonest

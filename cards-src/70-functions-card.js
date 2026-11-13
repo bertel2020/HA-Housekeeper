@@ -24,8 +24,11 @@ class HKFunctionsCard extends HKCard {
       .filter(id => id.startsWith("sensor.") && (!chosen.size || chosen.has(id)))
       .map(id => ({ id, state: this._hass?.states?.[id] }))
       .filter(f => f.state)
-      .sort((a, b) => (rank[a.state.state] ?? 4) - (rank[b.state.state] ?? 4) || String(a.state.attributes?.function_name).localeCompare(String(b.state.attributes?.function_name)));
+      .sort((a, b) => (rank[a.state.state] ?? 4) - (rank[b.state.state] ?? 4) || this.fname(a).localeCompare(this.fname(b)));
   }
+
+  // The name of a function; before its first result the sensor has none of its own, so the name of the entity stands in.
+  fname(item) { return String(item.state?.attributes?.function_name || item.state?.attributes?.friendly_name || item.id); }
 
   watchedIds() { return this.functions().map(f => f.id); }
   hasData() { return true; }
@@ -60,7 +63,7 @@ class HKFunctionsCard extends HKCard {
     const go = this._config.tap !== "none" && this._hass?.user?.is_admin && attrs.function_id;
     const link = go ? ` data-hk-panel="view=monitor&amp;function=${this.esc(attrs.function_id)}"` : "";
     const available = attrs.availability_30d == null ? "—" : `${String(attrs.availability_30d).replace(".", this.decimal())} %`;
-    return `<div class="hk-row fn${go ? " go" : ""}"${link}><span class="hk-st ${tone}"></span><div class="hk-name"><b>${this.esc(attrs.function_name)}</b><small class="${state === "problem" ? "bad" : state === "unverified" ? "warn" : ""}">${this.esc(sub)}</small></div>${this.strip(attrs.history_30d)}<div class="hk-right"><b>${this.esc(available)}</b><small>${this.esc(this.t("cardFnWindow", { n: 30 }))}</small></div></div>`;
+    return `<div class="hk-row fn${go ? " go" : ""}"${link}><span class="hk-st ${tone}"></span><div class="hk-name"><b>${this.esc(this.fname(item))}</b><small class="${state === "problem" ? "bad" : state === "unverified" ? "warn" : ""}">${this.esc(sub)}</small></div>${this.strip(attrs.history_30d)}<div class="hk-right"><b>${this.esc(available)}</b><small>${this.esc(this.t("cardFnWindow", { n: 30 }))}</small></div></div>`;
   }
 
   decimal() { try { return (1.5).toLocaleString(this.lang).replace(/\d/g, ""); } catch (_) { return "."; } }

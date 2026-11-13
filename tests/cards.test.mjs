@@ -440,6 +440,7 @@ test("the backup card names what is missing, shows the week and keeps to a summa
   assert.match(html(), /Das Backup ist alt: 3 Tage/);
   assert.match(html(), /Alter[\s\S]*3 Tage[\s\S]*Grenze 36 Std\.[\s\S]*Kopie extern[\s\S]*Ja[\s\S]*2 Orte[\s\S]*Fehlgeschlagen[\s\S]*2[\s\S]*in 7 Tagen/);
   assert.equal((html().match(/<i class="flapping">/g) || []).length, 2);
+  assert.match(html(), /vor 6 Tagen[\s\S]*heute/, "seven cells run from six days ago to today");
   assert.match(html(), /data-hk-panel="view=maintenance&amp;tab=backup"/);
   assert.equal(card.attention(), 1);
   card.hass = hass("bad", { ...base, external_copy: false, external_count: null });
@@ -493,4 +494,26 @@ test("the vacation card shows only while the mode is on, reads the period from a
   assert.match(html(), /Kein Urlaubsmodus/);
   card.hass = hass("unset", {});
   assert.match(html(), /Kein Schalter/);
+});
+
+test("a card looks again when a minute has passed, and a function without a result yet is named by its entity", () => {
+  const { HKFunctionsCard, HKStartCard } = loadCards();
+  const real = Date.now;
+  try {
+    let now = Date.parse("2026-11-12T10:00:00Z");
+    Date.now = () => now;
+    const entities = { s: ENTITY("sensor.start", "start_time") };
+    const states = { "sensor.start": { state: "100", last_updated: "1", attributes: { started_at: "2026-11-12T09:48:00Z", history: [100, 100], slower: true, change_percent: 30, usual_seconds: 80 } } };
+    const card = new HKStartCard();
+    card.setConfig({});
+    card.hass = { language: "de", user: { is_admin: true }, entities, states };
+    assert.match(card.shadowRoot.innerHTML, /vor 12 Minuten/);
+    now += 5 * 60000;
+    card.update();
+    assert.match(card.shadowRoot.innerHTML, /vor 17 Minuten/, "nothing changed but the time");
+  } finally { Date.now = real; }
+  const functions = new HKFunctionsCard();
+  functions.setConfig({});
+  functions.hass = { language: "de", user: { is_admin: true }, entities: { m: ENTITY("sensor.heating", "monitor") }, states: { "sensor.heating": { state: "unverified", last_updated: "1", attributes: { friendly_name: "Heizung" } } } };
+  assert.match(functions.shadowRoot.innerHTML, /<b>Heizung<\/b>/);
 });
