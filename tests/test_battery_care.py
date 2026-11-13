@@ -216,3 +216,18 @@ def test_a_named_coin_cell_gets_percent_from_its_curve_and_a_limit_at_the_percen
     series = {"sensor.a": [(t, 3.0 - 0.01 * i) for i, t in enumerate(days)]}
     row = bv.build(series, {"sensor.a": "A"}, {"sensor.a": 1.0}, {"sensor.a": "CR2450"})["rows"][0]
     assert row["cell"] == "CR2450" and row["limit"] == 2.75 and row["percent"] == 52
+
+
+def test_a_volt_sensor_whose_kind_was_taken_back_loses_it() -> None:
+    from custom_components.ha_housekeeper.battery_kind import apply_battery_kinds
+
+    sensor = {
+        "object_type": "entity",
+        "object_id": "sensor.cell_voltage",
+        "device_class": "voltage",
+        "battery_kind": "other",
+    }
+    apply_battery_kinds([sensor], {"sensor.cell_voltage": "other"})
+    assert sensor.get("battery_kind") == "other"
+    apply_battery_kinds([sensor], {})  # the choice was taken back
+    assert "battery_kind" not in sensor

@@ -624,6 +624,9 @@ class AutoPause:
         self._save()
 
     def never(self, entry_id: str, on: bool) -> None:
+        # Only an entry that exists can be left out; anything else would sit in the list for ever.
+        if on and self.hass.config_entries.async_get_entry(entry_id) is None:
+            raise AutoPauseError("invalid")
         (self.exclude.add if on else self.exclude.discard)(entry_id)
         self._save()
 

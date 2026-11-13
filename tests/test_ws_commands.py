@@ -135,3 +135,14 @@ async def test_the_commands_answer(hass: HomeAssistant, hass_ws_client) -> None:
                 (message["type"], reply["error"]["code"], reply["error"]["message"][:100])
             )
     assert not rejected, rejected
+
+
+async def test_a_range_takes_no_nan_or_inf() -> None:
+    import voluptuous as vol
+
+    from custom_components.ha_housekeeper.ws_common import finite_float
+
+    assert finite_float("1.5") == 1.5 and finite_float(3) == 3.0
+    for bad in ("nan", "inf", "-inf", float("nan"), "x", None):
+        with pytest.raises(vol.Invalid):
+            finite_float(bad)

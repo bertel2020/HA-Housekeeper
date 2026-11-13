@@ -506,7 +506,7 @@ def object_card(
                 "note": clean_text(n.get("note"), 300),
             }
             for n in scanner.notes.view()
-            if n.get("target") == ident
+            if n.get("target") in (ident, me)  # the panel writes "kind:id", an agent a bare id
         ][:NOTES_SHOWN],
         "findings": [
             {

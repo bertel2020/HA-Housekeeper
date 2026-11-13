@@ -1292,7 +1292,7 @@ class InventoryScanner:
                     snapshot["regressions"] = followup.regressions(
                         self.journal.plans, datetime.now(UTC)
                     )
-                    snapshot["criteria_alerts"] = self.criteria.alerts(datetime.now(UTC).date())
+                    snapshot["criteria_alerts"] = self.criteria.alerts(dt_util.now().date())
                     self.hass.async_create_background_task(
                         self._announce(snapshot), "HA Housekeeper events"
                     )
@@ -2103,7 +2103,9 @@ class InventoryScanner:
             "edges": edges,
             "findings": findings,
             "causes": causes,
-            "reminders": self.reminders.view(datetime.now(UTC).date()),
+            "reminders": self.reminders.view(
+                dt_util.now().date()
+            ),  # the day of the person, not UTC
             "notes": self.notes.view(),
             "regressions": [],
             "criteria_alerts": [],

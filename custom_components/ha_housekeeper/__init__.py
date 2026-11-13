@@ -163,6 +163,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         hass.data[DOMAIN]["static_path_registered"] = True
     # The Lovelace cards load on every dashboard of every user, not only in the panel for administrators.
     cards_url = f"{CARDS_URL}?v={cards_digest}"
+    if (earlier := hass.data[DOMAIN].get("cards_url")) and earlier != cards_url:
+        frontend.remove_extra_js_url(hass, earlier)  # a reload after an update: not two bundles
     frontend.add_extra_js_url(hass, cards_url)
     hass.data[DOMAIN]["cards_url"] = cards_url
     # A reload for new options keeps the panel: removing it makes Home Assistant leave the open page.

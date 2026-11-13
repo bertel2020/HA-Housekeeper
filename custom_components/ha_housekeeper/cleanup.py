@@ -2017,7 +2017,15 @@ class JournalStore:
         """Load the journal."""
         data = await self._store.async_load()
         if isinstance(data, dict) and isinstance(data.get("plans"), list):
-            self._plans = data["plans"]
+            # A line without an id or without a list of actions (a damaged or hand-edited file)
+            # would make every plan command fail with a KeyError: it is left out.
+            self._plans = [
+                plan
+                for plan in data["plans"]
+                if isinstance(plan, dict)
+                and isinstance(plan.get("plan_id"), str)
+                and isinstance(plan.get("actions", []), list)
+            ]
         if isinstance(data, dict) and isinstance(data.get("purges"), list):
             self.purges = [p for p in data["purges"] if isinstance(p, dict)][:MAX_PURGES]
         # Nothing runs right after loading: a plan still marked as running was cut off.

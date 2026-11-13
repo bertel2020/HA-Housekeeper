@@ -1670,3 +1670,25 @@ async def test_the_yaml_filter_of_the_cloud_is_read_from_its_configuration_and_u
     }
     action = judge_exposure_action("light.a", "remove", "A", info)
     assert (action["verdict"], action["reasons"]) == ("review", ["filter_unknown"])
+
+
+async def test_the_journal_leaves_out_lines_that_are_not_plans_when_it_loads(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    from custom_components.ha_housekeeper.cleanup import JournalStore
+    from custom_components.ha_housekeeper.const import JOURNAL_STORAGE_KEY
+
+    hass_storage[JOURNAL_STORAGE_KEY] = {
+        "version": 1,
+        "data": {
+            "plans": [
+                {"plan_id": "ok", "actions": []},
+                {"actions": []},
+                "text",
+                {"plan_id": "bad", "actions": "no list"},
+            ]
+        },
+    }
+    journal = JournalStore(hass)
+    await journal.async_load()
+    assert [plan["plan_id"] for plan in journal.plans] == ["ok"]

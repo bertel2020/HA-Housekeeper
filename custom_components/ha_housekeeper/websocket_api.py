@@ -94,6 +94,7 @@ from .writelock import write_holder
 from .ws_common import (
     _scanner,
     _versioned,
+    finite_float,
     panel_session_only,
     scanner_plans,
     send_sendable,
@@ -1089,9 +1090,9 @@ async def websocket_helper_export(
                     vol.Optional("delete_old"): bool,
                     vol.Optional("helper"): dict,
                     vol.Optional("range"): {
-                        vol.Required("from"): vol.Coerce(float),
-                        vol.Required("to"): vol.Coerce(float),
-                        vol.Optional("fixed"): vol.Coerce(float),
+                        vol.Required("from"): finite_float,
+                        vol.Required("to"): finite_float,
+                        vol.Optional("fixed"): finite_float,
                     },
                     vol.Optional("states"): bool,
                     vol.Optional("keep_days"): vol.All(int, vol.Range(min=1, max=TRIM_MAX_DAYS)),
