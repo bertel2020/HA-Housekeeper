@@ -116,6 +116,12 @@ const CARD_CSS = `
   .hk-fact .l { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--secondary-text-color); font-weight: 600; }
   .hk-fact .v { font-size: 17px; font-weight: 700; margin-top: 2px; color: var(--primary-text-color); }
   .hk-fact .v.warnt { color: var(--warning-color); }
+  .hk-fact .v.good { color: var(--success-color); }
+  .hk-fact .v.badt { color: var(--error-color); }
+  .hk-facts.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hk-stripbox { padding: 12px 16px 4px; }
+  .hk-stripbox .hk-strip { height: 22px; gap: 3px; }
+  .hk-striplab { display: flex; justify-content: space-between; padding: 4px 0 8px; font-size: 11px; color: var(--secondary-text-color); }
   .hk-fact .s { font-size: 12px; color: var(--secondary-text-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;

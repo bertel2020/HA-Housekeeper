@@ -261,5 +261,46 @@
     "other": "{n} jours"
   },
   "edit_history_90": "90 jours",
-  "edit_facts": "Afficher le journal et la conservation"
+  "edit_facts": "Afficher le journal et la conservation",
+  "cardBkTitle": "Sauvegarde",
+  "cardBkLast": "Dernière sauvegarde {ago}",
+  "cardBkNone": "Aucune sauvegarde trouvée",
+  "cardBkOk": "en ordre",
+  "cardBkWarn": "à vérifier",
+  "cardBkBad": "protection absente",
+  "cardBkUnclearChip": "inconnu",
+  "cardBkUnclear": "Home Assistant ne signale pas l'état des sauvegardes.",
+  "cardBkOutside": "Les sauvegardes sont faites en dehors de Home Assistant.",
+  "cardBkNoCopy": "Aucune sauvegarde hors de l'appareil",
+  "cardBkNoCopyNote": "Si le disque tombe en panne, les sauvegardes disparaissent avec lui.",
+  "cardBkOld": "La sauvegarde est ancienne : {age}",
+  "cardBkRunFailed": "La dernière exécution automatique a échoué.",
+  "cardBkCopyFailed": "Une sauvegarde n'a pas atteint toutes les destinations.",
+  "cardBkSizeOdd": "La dernière sauvegarde a une taille inhabituelle.",
+  "cardBkCheck": "Regarde dans le panneau ce qui se remarque.",
+  "cardBkAge": "Âge",
+  "cardBkHours": "{n} h",
+  "cardBkDays": {
+    "one": "{n} jour",
+    "other": "{n} jours"
+  },
+  "cardBkLimit": "limite {age}",
+  "cardBkExternal": "Copie externe",
+  "cardBkYes": "Oui",
+  "cardBkNo": "Non",
+  "cardBkPlaces": {
+    "one": "{n} lieu",
+    "other": "{n} lieux"
+  },
+  "cardBkSize": "Taille",
+  "cardBkSizeUsual": "comme d'habitude",
+  "cardBkSizeUnusual": "inhabituelle",
+  "cardBkFailed": "Échecs",
+  "cardBkInWeek": "en 7 jours",
+  "cardBkDaysAgo": {
+    "one": "il y a {n} jour",
+    "other": "il y a {n} jours"
+  },
+  "cardBkToday": "aujourd'hui",
+  "cardBkEncrypted": "Chiffrée"
 }

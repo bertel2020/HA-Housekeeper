@@ -19,7 +19,10 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util import dt as dt_util
 
+from .backup_card import STATES as BACKUP_STATES
+from .backup_card import backup_view
 from .battery_card import battery_overview
 from .battery_care import noted_types
 from .const import (
@@ -162,6 +165,14 @@ DATABASE_SIZE_DESCRIPTION = SensorEntityDescription(
 )
 
 
+BACKUP_DESCRIPTION = SensorEntityDescription(
+    key="backup",
+    translation_key="backup",
+    device_class=SensorDeviceClass.ENUM,
+    options=list(BACKUP_STATES),
+)
+
+
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
@@ -203,6 +214,7 @@ async def async_setup_entry(
             UpdateWatchSensor(entry, UPDATE_WATCH_DESCRIPTION),
             StartTimeSensor(entry, START_TIME_DESCRIPTION),
             DatabaseSizeSensor(entry, DATABASE_SIZE_DESCRIPTION),
+            BackupSensor(entry, BACKUP_DESCRIPTION),
         ]
     )
     scanner = entry.runtime_data
@@ -395,6 +407,37 @@ class DatabaseSizeSensor(HousekeeperSensor):
             view = database_view(
                 snapshot["meta"].get("database"), scanner.events.sizes, datetime.now(UTC).date()
             )
+        self._attr_native_value = view.pop("state", None)
+        self._attr_extra_state_attributes = view
+
+
+class BackupSensor(HousekeeperSensor):
+    """Whether the backups protect the house, for the card; age, copy off the device and the week as attributes.
+
+    Read from the backup report each scan keeps anyway, never from a query of its own. The attributes stay out of the
+    recorder.
+    """
+
+    _unrecorded_attributes = frozenset(
+        {
+            "outside",
+            "newest_at",
+            "age_hours",
+            "limit_hours",
+            "external_copy",
+            "external_count",
+            "size",
+            "size_unusual",
+            "failed_days",
+            "last_run_failed",
+            "encrypted",
+            "history",
+        }
+    )
+
+    def _update(self) -> None:
+        scanner = self.scanner
+        view = backup_view(scanner.backup_report if scanner else None, dt_util.now())
         self._attr_native_value = view.pop("state", None)
         self._attr_extra_state_attributes = view
 

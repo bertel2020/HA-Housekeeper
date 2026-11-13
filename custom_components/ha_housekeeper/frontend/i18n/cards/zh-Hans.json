@@ -240,5 +240,43 @@
     "other": "{n} 天"
   },
   "edit_history_90": "90 天",
-  "edit_facts": "显示日志和保留期"
+  "edit_facts": "显示日志和保留期",
+  "cardBkTitle": "备份",
+  "cardBkLast": "最近备份 {ago}",
+  "cardBkNone": "未找到备份",
+  "cardBkOk": "正常",
+  "cardBkWarn": "需要留意",
+  "cardBkBad": "缺少保护",
+  "cardBkUnclearChip": "未知",
+  "cardBkUnclear": "Home Assistant 没有报告备份状态。",
+  "cardBkOutside": "备份在 Home Assistant 之外创建。",
+  "cardBkNoCopy": "设备之外没有备份",
+  "cardBkNoCopyNote": "如果磁盘损坏,备份也会一起丢失。",
+  "cardBkOld": "备份已过时:{age}",
+  "cardBkRunFailed": "上一次自动备份失败。",
+  "cardBkCopyFailed": "有备份没有到达所有目标。",
+  "cardBkSizeOdd": "最近一次备份的大小不寻常。",
+  "cardBkCheck": "到面板里看看哪里异常。",
+  "cardBkAge": "时间",
+  "cardBkHours": "{n} 小时",
+  "cardBkDays": {
+    "other": "{n} 天"
+  },
+  "cardBkLimit": "上限 {age}",
+  "cardBkExternal": "异地副本",
+  "cardBkYes": "有",
+  "cardBkNo": "无",
+  "cardBkPlaces": {
+    "other": "{n} 处"
+  },
+  "cardBkSize": "大小",
+  "cardBkSizeUsual": "与平时相同",
+  "cardBkSizeUnusual": "不寻常",
+  "cardBkFailed": "失败",
+  "cardBkInWeek": "7 天内",
+  "cardBkDaysAgo": {
+    "other": "{n} 天前"
+  },
+  "cardBkToday": "今天",
+  "cardBkEncrypted": "已加密"
 }

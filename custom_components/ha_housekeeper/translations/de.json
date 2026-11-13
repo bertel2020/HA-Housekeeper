@@ -142,6 +142,15 @@
       "database_size": {
         "name": "Größe der Datenbank"
       },
+      "backup": {
+        "name": "Backup-Schutz",
+        "state": {
+          "ok": "In Ordnung",
+          "warn": "Hinweis",
+          "bad": "Schutz fehlt",
+          "unclear": "Unbekannt"
+        }
+      },
       "new_findings": {
         "name": "Neue Befunde"
       },

@@ -303,5 +303,52 @@
     "other": "{n} дня"
   },
   "edit_history_90": "90 дней",
-  "edit_facts": "Показывать журнал и хранение"
+  "edit_facts": "Показывать журнал и хранение",
+  "cardBkTitle": "Резервная копия",
+  "cardBkLast": "Последняя копия {ago}",
+  "cardBkNone": "Резервных копий не найдено",
+  "cardBkOk": "в порядке",
+  "cardBkWarn": "стоит проверить",
+  "cardBkBad": "защиты нет",
+  "cardBkUnclearChip": "неизвестно",
+  "cardBkUnclear": "Home Assistant не сообщает состояние резервных копий.",
+  "cardBkOutside": "Резервные копии делаются вне Home Assistant.",
+  "cardBkNoCopy": "Нет копии вне устройства",
+  "cardBkNoCopyNote": "Если диск выйдет из строя, пропадут и копии.",
+  "cardBkOld": "Копия устарела: {age}",
+  "cardBkRunFailed": "Последний автоматический запуск не удался.",
+  "cardBkCopyFailed": "Копия дошла не до всех хранилищ.",
+  "cardBkSizeOdd": "У последней копии необычный размер.",
+  "cardBkCheck": "Посмотри на панели, что бросается в глаза.",
+  "cardBkAge": "Возраст",
+  "cardBkHours": "{n} ч",
+  "cardBkDays": {
+    "one": "{n} день",
+    "few": "{n} дня",
+    "many": "{n} дней",
+    "other": "{n} дня"
+  },
+  "cardBkLimit": "предел {age}",
+  "cardBkExternal": "Внешняя копия",
+  "cardBkYes": "Да",
+  "cardBkNo": "Нет",
+  "cardBkPlaces": {
+    "one": "{n} место",
+    "few": "{n} места",
+    "many": "{n} мест",
+    "other": "{n} места"
+  },
+  "cardBkSize": "Размер",
+  "cardBkSizeUsual": "как обычно",
+  "cardBkSizeUnusual": "необычный",
+  "cardBkFailed": "Неудачных",
+  "cardBkInWeek": "за 7 дней",
+  "cardBkDaysAgo": {
+    "one": "{n} день назад",
+    "few": "{n} дня назад",
+    "many": "{n} дней назад",
+    "other": "{n} дня назад"
+  },
+  "cardBkToday": "сегодня",
+  "cardBkEncrypted": "Зашифрована"
 }

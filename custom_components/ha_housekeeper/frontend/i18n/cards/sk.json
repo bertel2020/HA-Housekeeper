@@ -282,5 +282,49 @@
     "other": "{n} dní"
   },
   "edit_history_90": "90 dní",
-  "edit_facts": "Zobraziť žurnál a uchovávanie"
+  "edit_facts": "Zobraziť žurnál a uchovávanie",
+  "cardBkTitle": "Záloha",
+  "cardBkLast": "Posledná záloha {ago}",
+  "cardBkNone": "Nenašla sa žiadna záloha",
+  "cardBkOk": "v poriadku",
+  "cardBkWarn": "treba skontrolovať",
+  "cardBkBad": "ochrana chýba",
+  "cardBkUnclearChip": "neznáme",
+  "cardBkUnclear": "Home Assistant nehlási stav záloh.",
+  "cardBkOutside": "Zálohy vznikajú mimo Home Assistant.",
+  "cardBkNoCopy": "Žiadna záloha mimo zariadenia",
+  "cardBkNoCopyNote": "Ak disk vypadne, zmiznú aj zálohy.",
+  "cardBkOld": "Záloha je stará: {age}",
+  "cardBkRunFailed": "Posledné automatické spustenie zlyhalo.",
+  "cardBkCopyFailed": "Záloha sa nedostala na každý cieľ.",
+  "cardBkSizeOdd": "Posledná záloha má nezvyčajnú veľkosť.",
+  "cardBkCheck": "Pozri v paneli, čo vyčnieva.",
+  "cardBkAge": "Vek",
+  "cardBkHours": "{n} h",
+  "cardBkDays": {
+    "one": "{n} deň",
+    "few": "{n} dni",
+    "other": "{n} dní"
+  },
+  "cardBkLimit": "hranica {age}",
+  "cardBkExternal": "Externá kópia",
+  "cardBkYes": "Áno",
+  "cardBkNo": "Nie",
+  "cardBkPlaces": {
+    "one": "{n} miesto",
+    "few": "{n} miesta",
+    "other": "{n} miest"
+  },
+  "cardBkSize": "Veľkosť",
+  "cardBkSizeUsual": "ako zvyčajne",
+  "cardBkSizeUnusual": "nezvyčajná",
+  "cardBkFailed": "Zlyhané",
+  "cardBkInWeek": "za 7 dní",
+  "cardBkDaysAgo": {
+    "one": "pred {n} dňom",
+    "few": "pred {n} dňami",
+    "other": "pred {n} dňami"
+  },
+  "cardBkToday": "dnes",
+  "cardBkEncrypted": "Šifrovaná"
 }

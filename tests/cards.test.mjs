@@ -25,7 +25,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, HKStartCard, HKDatabaseCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, HKStartCard, HKDatabaseCard, HKBackupCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -414,6 +414,43 @@ test("the database card shows the size, the change and the line, names what grow
   assert.match(html(), /2,1\sGB · unauffällig[\s\S]*in Ordnung/);
   assert.ok(!html().includes("hk-line") || !html().includes("<svg"), "a quiet database is a summary only");
   assert.equal(card.attention(), 0);
+  card.setConfig({ quiet: "hide" });
+  assert.equal(card.style.display, "none");
+  card.setConfig({});
+  card.hass = hass("unknown", {});
+  assert.match(html(), /Noch keine Daten/);
+});
+
+test("the backup card names what is missing, shows the week and keeps to a summary when the backups are in order", () => {
+  const { HKBackupCard, registered } = loadCards();
+  assert.ok(registered["ha-housekeeper-backup-card"], "the card is registered");
+  const entities = { b: ENTITY("sensor.bk", "backup") };
+  let stamp = 0;
+  const hass = (state, attrs) => ({ language: "de", user: { is_admin: true }, entities, states: { "sensor.bk": { state, last_updated: String(++stamp), attributes: attrs } } });
+  const base = { newest_at: new Date(Date.now() - 9 * 3600e3).toISOString(), age_hours: 9, limit_hours: 36, external_copy: true, external_count: 2, size: 412 * 1024 ** 2, size_unusual: false, failed_days: 0, last_run_failed: false, encrypted: true, history: ["ok", "ok", "ok", "ok", "ok", "ok", "ok"] };
+  const card = new HKBackupCard();
+  card.setConfig({});
+  const html = () => card.shadowRoot.innerHTML;
+  card.hass = hass("ok", base);
+  assert.match(html(), /Letztes Backup[^<]*9 Stunden[\s\S]*in Ordnung/);
+  assert.ok(!html().includes('class="hk-strip"'), "backups in order are a summary only");
+  assert.equal(card.attention(), 0);
+  card.hass = hass("warn", { ...base, age_hours: 72, failed_days: 2, history: ["ok", "ok", "ok", "ok", "none", "failed", "failed"] });
+  assert.match(html(), /Das Backup ist alt: 3 Tage/);
+  assert.match(html(), /Alter[\s\S]*3 Tage[\s\S]*Grenze 36 Std\.[\s\S]*Kopie extern[\s\S]*Ja[\s\S]*2 Orte[\s\S]*Fehlgeschlagen[\s\S]*2[\s\S]*in 7 Tagen/);
+  assert.equal((html().match(/<i class="flapping">/g) || []).length, 2);
+  assert.match(html(), /data-hk-panel="view=maintenance&amp;tab=backup"/);
+  assert.equal(card.attention(), 1);
+  card.hass = hass("bad", { ...base, external_copy: false, external_count: null });
+  assert.match(html(), /Kein Backup außer Haus[\s\S]*Schutz fehlt/);
+  assert.match(html(), /Fällt der Datenträger aus/);
+  card.setConfig({ facts: false, history: "0" });
+  assert.ok(!html().includes("Kopie extern") && !html().includes('class="hk-strip"'), "facts and strip can be left out");
+  card.setConfig({});
+  card.hass = hass("unclear", { outside: true });
+  assert.match(html(), /außerhalb von Home Assistant[\s\S]*unbekannt/);
+  assert.equal(card.attention(), 0);
+  card.hass = hass("ok", base);
   card.setConfig({ quiet: "hide" });
   assert.equal(card.style.display, "none");
   card.setConfig({});

@@ -142,6 +142,15 @@
       "database_size": {
         "name": "Dimensione del database"
       },
+      "backup": {
+        "name": "Protezione dei backup",
+        "state": {
+          "ok": "In ordine",
+          "warn": "Da controllare",
+          "bad": "Protezione assente",
+          "unclear": "Sconosciuto"
+        }
+      },
       "new_findings": {
         "name": "Nuovi rilevamenti"
       },

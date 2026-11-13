@@ -142,6 +142,15 @@
       "database_size": {
         "name": "数据库大小"
       },
+      "backup": {
+        "name": "备份保护",
+        "state": {
+          "ok": "正常",
+          "warn": "需要留意",
+          "bad": "缺少保护",
+          "unclear": "未知"
+        }
+      },
       "new_findings": {
         "name": "新发现项"
       },

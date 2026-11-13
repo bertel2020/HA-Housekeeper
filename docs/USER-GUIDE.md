@@ -448,6 +448,9 @@ Edit a dashboard, **Add card**, search for **HA Housekeeper**. Each card has an 
 | **Home functions** | `custom:ha-housekeeper-functions-card` | One row per home function: its state, the reason in words, how many of its objects are fine, a strip of the last days and the availability of the last 30 days. Troubled functions come first. |
 | **Paused integrations** | `custom:ha-housekeeper-auto-pause-card` | What auto-pause holds back, with the reason, the time to the next attempt and how far the retries are. Administrators get a menu per row: try now, end the pause, never pause it. |
 | **After the update** | `custom:ha-housekeeper-update-card` | For a few hours after an update of Home Assistant, the operating system or the Supervisor: what has stopped working since, and how long the start took against the usual. |
+| **Start time** | `custom:ha-housekeeper-start-card` | How long the last start of Home Assistant took against the usual, the last starts as bars and the integrations that took longest. It is a summary line while the start was as usual. |
+| **Database** | `custom:ha-housekeeper-database-card` | How big the database is (files and journal), how much it changed in the last month, the line of the daily sizes and what the recorder keeps. It names “growing fast” and “journal large” by the rules of the database page; it reads what each scan knows and queries no recorder table. |
+| **Backup** | `custom:ha-housekeeper-backup-card` | How old the newest backup is against the limit of the backup protection, whether a copy lies off the device, the size against the usual and a strip of the last seven days. Red only when the protection is missing (no backup, or every copy on this device); an old backup or a failed run is a hint. It says “unknown” while the backups are made outside Home Assistant. |
 | **Overview** | `custom:ha-housekeeper-overview-card` | The cards above as the sections of one card, in tabs or one below the other. |
 
 ### Options
@@ -478,6 +481,12 @@ Each card adds its own options:
 | | `progress` | `true` (default) shows how far the retries are |
 | After the update | `show_hours` | `1`, `3`, `6` (default) or `24`: how long after the update the card shows |
 | | `start` | `true` (default) shows how long the start took |
+| Start time | `history` | `14` (default), `30`, `7` or `0` (no bars) starts |
+| | `slowest` | 0 to 10 (default 3) integrations named; 0 hides the list |
+| Database | `history` | `30` (default), `90`, `14`, `7` or `0` (no line) days |
+| | `facts` | `true` (default) shows the journal and the retention |
+| Backup | `history` | `7` (default) or `0` (no strip) |
+| | `facts` | `true` (default) shows age, copy off the device and size |
 | Overview | `sections` | see below |
 | | `layout` | `tabs` (default) or `stacked` |
 
@@ -485,7 +494,7 @@ Each card adds its own options:
 
 Everybody who sees the dashboard sees the numbers, including the names of batteries, home functions and integrations. What changes something is for administrators: the link into the panel, the scan button, the menu of the paused integrations. The menu of the paused integrations is checked again by the server: it calls the same command as the panel, which only administrators may use. The scan button is the ordinary button entity of the integration; the card only hides it from people who are not administrators, and anybody who may press that entity elsewhere in Home Assistant still can.
 
-The cards read these sensors of the Housekeeper device: **House health**, **Weakest battery**, **Next battery change**, **Paused integrations**, **After the update**, the sensor of each home function, **Scan health**, **Activity** and **Last scan**. Their lists are attributes that stay out of the recorder, so they do not fill the database. You can use the sensors in your own automations too; **Next battery change** is a time, for example for a reminder.
+The cards read these sensors of the Housekeeper device: **House health**, **Weakest battery**, **Next battery change**, **Paused integrations**, **After the update**, **Start time**, **Database size**, **Backup protection**, the sensor of each home function, **Scan health**, **Activity** and **Last scan**. Their lists are attributes that stay out of the recorder, so they do not fill the database. You can use the sensors in your own automations too; **Next battery change** is a time, for example for a reminder.
 
 ### The overview card
 

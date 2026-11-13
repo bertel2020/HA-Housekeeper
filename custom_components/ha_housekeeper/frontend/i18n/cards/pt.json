@@ -261,5 +261,46 @@
     "other": "{n} dias"
   },
   "edit_history_90": "90 dias",
-  "edit_facts": "Mostrar o diário e a retenção"
+  "edit_facts": "Mostrar o diário e a retenção",
+  "cardBkTitle": "Cópia de segurança",
+  "cardBkLast": "Última cópia {ago}",
+  "cardBkNone": "Nenhuma cópia encontrada",
+  "cardBkOk": "em ordem",
+  "cardBkWarn": "convém verificar",
+  "cardBkBad": "falta proteção",
+  "cardBkUnclearChip": "desconhecido",
+  "cardBkUnclear": "O Home Assistant não informa o estado das cópias.",
+  "cardBkOutside": "As cópias são feitas fora do Home Assistant.",
+  "cardBkNoCopy": "Nenhuma cópia fora do dispositivo",
+  "cardBkNoCopyNote": "Se o disco falhar, as cópias perdem-se com ele.",
+  "cardBkOld": "A cópia é antiga: {age}",
+  "cardBkRunFailed": "A última execução automática falhou.",
+  "cardBkCopyFailed": "Uma cópia não chegou a todos os destinos.",
+  "cardBkSizeOdd": "A última cópia tem um tamanho invulgar.",
+  "cardBkCheck": "Vê no painel o que se destaca.",
+  "cardBkAge": "Idade",
+  "cardBkHours": "{n} h",
+  "cardBkDays": {
+    "one": "{n} dia",
+    "other": "{n} dias"
+  },
+  "cardBkLimit": "limite {age}",
+  "cardBkExternal": "Cópia externa",
+  "cardBkYes": "Sim",
+  "cardBkNo": "Não",
+  "cardBkPlaces": {
+    "one": "{n} local",
+    "other": "{n} locais"
+  },
+  "cardBkSize": "Tamanho",
+  "cardBkSizeUsual": "como de costume",
+  "cardBkSizeUnusual": "invulgar",
+  "cardBkFailed": "Falhadas",
+  "cardBkInWeek": "em 7 dias",
+  "cardBkDaysAgo": {
+    "one": "há {n} dia",
+    "other": "há {n} dias"
+  },
+  "cardBkToday": "hoje",
+  "cardBkEncrypted": "Cifrada"
 }

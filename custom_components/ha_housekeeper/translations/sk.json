@@ -142,6 +142,15 @@
       "database_size": {
         "name": "Veľkosť databázy"
       },
+      "backup": {
+        "name": "Ochrana záloh",
+        "state": {
+          "ok": "V poriadku",
+          "warn": "Treba skontrolovať",
+          "bad": "Ochrana chýba",
+          "unclear": "Neznáme"
+        }
+      },
       "new_findings": {
         "name": "Nové nálezy"
       },
