@@ -25,6 +25,10 @@ class HKHealthCard extends HKCard {
   scanning() { return this.stateOf("activity")?.state === "scanning"; }
 
   hasData() { return Boolean(this.health()) && !["unknown", "unavailable"].includes(this.health().state); }
+  attention() {
+    if (this.scanBroken()) return 1;
+    return this.hasData() && this.health().state !== "ok" ? this.health().attributes?.objects || 0 : 0;
+  }
   // Quiet is: nothing is due and the scans run. A card that cannot trust its numbers never hides.
   isQuiet() { return this.hasData() && this.health().state === "ok" && !this.scanBroken(); }
 

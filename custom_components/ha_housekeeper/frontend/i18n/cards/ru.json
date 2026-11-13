@@ -251,5 +251,22 @@
   "edit_show_hours_3": "3 часа",
   "edit_show_hours_6": "6 часов",
   "edit_show_hours_24": "24 часа",
-  "edit_start": "Показывать длительность запуска"
+  "edit_start": "Показывать длительность запуска",
+  "cardOvHealth": "Состояние",
+  "cardOvBatteries": "Батареи",
+  "cardOvFunctions": "Функции",
+  "cardOvAutoPause": "Автопауза",
+  "cardOvUpdate": "Обновление",
+  "cardOvTabs": "Разделы",
+  "cardOvNone": "Разделы не выбраны.",
+  "edit_sections": "Разделы",
+  "edit_sections_help": "Параметры отдельной карточки задаются в YAML: запись вида { type: batteries, rows: 3 }.",
+  "edit_sections_health": "Состояние дома",
+  "edit_sections_batteries": "Батареи",
+  "edit_sections_functions": "Функции дома",
+  "edit_sections_auto_pause": "Приостановленные интеграции",
+  "edit_sections_update": "После обновления",
+  "edit_layout": "Расположение",
+  "edit_layout_tabs": "Вкладки",
+  "edit_layout_stacked": "Друг под другом"
 }

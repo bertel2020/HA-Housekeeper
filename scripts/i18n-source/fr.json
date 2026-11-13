@@ -7023,6 +7023,23 @@
 "edit_show_hours_3": "508fe497",
 "edit_show_hours_6": "4105ae3b",
 "edit_show_hours_24": "f0514e8d",
-"edit_start": "287e1876"
+"edit_start": "287e1876",
+"cardOvHealth": "55898449",
+"cardOvBatteries": "bc3cf30c",
+"cardOvFunctions": "75e942e5",
+"cardOvAutoPause": "4c554039",
+"cardOvUpdate": "c1c1009d",
+"cardOvTabs": "9bae918a",
+"cardOvNone": "868958dc",
+"edit_sections": "9bae918a",
+"edit_sections_help": "6b7b997f",
+"edit_sections_health": "41abe0d3",
+"edit_sections_batteries": "bc3cf30c",
+"edit_sections_functions": "f980a6d9",
+"edit_sections_auto_pause": "65feaab7",
+"edit_sections_update": "1e354c3c",
+"edit_layout": "a5119091",
+"edit_layout_tabs": "8e5ea509",
+"edit_layout_stacked": "db803576"
 }
 }

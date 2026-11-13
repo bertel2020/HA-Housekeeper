@@ -18,6 +18,7 @@ class HKAutoPauseCard extends HKCard {
   watchedIds() { return [this.idOf("auto_pause")].filter(Boolean); }
   data() { return this.stateOf("auto_pause")?.attributes || {}; }
   hasData() { return Array.isArray(this.data().paused); }
+  attention() { return this.hasData() ? this.data().paused.length : 0; }
   // Quiet is: auto-pause is on and nothing is paused. A card that says "off" is no news to hide.
   isQuiet() { return this.hasData() && this.data().enabled === true && !this.data().paused.length; }
   canAct() { return Boolean(this._config.actions && this._hass?.user?.is_admin); }

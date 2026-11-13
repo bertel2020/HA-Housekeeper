@@ -25,7 +25,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -321,4 +321,28 @@ test("the card after the update appears for a while, names what is worse since t
   assert.match(html(), /Housekeeper prüft nach dem Update[\s\S]*Die erste Prüfung kommt in 20 Minuten/);
   card.hass = hass("unknown", {});
   assert.equal(card.style.display, "none", "unknown without attributes is Home Assistant's own, not a verdict: nothing to show");
+});
+
+test("the overview card reads its sections from names or entries and opens the one that calls for a look", () => {
+  const { sectionSpecs, overviewPlan, registered, HKBatteryCard, HKHealthCard } = loadCards();
+  assert.ok(registered["ha-housekeeper-overview-card"], "the card is registered");
+  const specs = sectionSpecs(["health", { type: "batteries", rows: 3 }, "nonsense", "health", { type: "update", tap: "panel" }], { tap: "none" });
+  assert.equal(JSON.stringify(specs), JSON.stringify([{ key: "health", config: { tap: "none" } }, { key: "batteries", config: { tap: "none", rows: 3 } }, { key: "update", config: { tap: "panel" } }]), "unknown and repeated names are left out, an entry overrides what all sections get");
+  assert.equal(JSON.stringify(sectionSpecs(undefined, {})), "[]");
+  const plan = (hidden, attention, picked) => JSON.parse(JSON.stringify(overviewPlan(["a", "b", "c"], new Set(hidden), attention, picked)));
+  assert.deepEqual(plan(["b"], { a: 0, c: 2 }), { shown: ["a", "c"], open: "c" }, "the first section with something to look at opens");
+  assert.deepEqual(plan([], { a: 0, b: 0, c: 0 }), { shown: ["a", "b", "c"], open: "a" }, "nothing to look at: the first");
+  assert.equal(plan([], { c: 2 }, "a").open, "a", "what the person picked stays open");
+  assert.equal(plan(["b"], { c: 2 }, "b").open, "c", "a section that went away cannot stay open");
+  assert.deepEqual(plan(["a", "b", "c"], {}), { shown: [], open: null });
+
+  const entities = { w: ENTITY("sensor.weak", "battery_weakest"), h: ENTITY("sensor.house", "house_health"), s: ENTITY("sensor.scan", "scan_health") };
+  const states = { "sensor.weak": { state: "8", last_updated: "1", attributes: { weakest: [], round: [], low: 2 } }, "sensor.house": { state: "attention", last_updated: "1", attributes: { objects: 3, topics: {} } }, "sensor.scan": { state: "ok", last_updated: "1" } };
+  const hass = { language: "de", user: { is_admin: true }, entities, states };
+  const battery = new HKBatteryCard(); battery.setConfig({}); battery.hass = hass;
+  const health = new HKHealthCard(); health.setConfig({}); health.hass = hass;
+  assert.equal(battery.attention(), 2, "the tab of the batteries counts the low ones");
+  assert.equal(health.attention(), 3, "and the tab of the house the objects that need attention");
+  battery.hass = { ...hass, states: { ...states, "sensor.weak": { ...states["sensor.weak"], last_updated: "2", attributes: { weakest: [], round: [], low: 0 } } } };
+  assert.equal(battery.attention(), 0);
 });

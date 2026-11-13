@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"56580212fc"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"bcd37dfb2b"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f4fdeab346"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7f6003f002"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"39151e31b9"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"4d80e67506"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"5287b0accf"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"27b183fbc9"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"d73228eb8c"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"cc8afc584e"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"81c149bb49"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"c9c3945549"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"2b267d1c11"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"fb669638a2"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -185,6 +185,23 @@ const CARD_TEXT = {
     edit_show_hours_6: "6 Stunden",
     edit_show_hours_24: "24 Stunden",
     edit_start: "Startdauer zeigen",
+    cardOvHealth: "Zustand",
+    cardOvBatteries: "Batterien",
+    cardOvFunctions: "Funktionen",
+    cardOvAutoPause: "Auto-Pause",
+    cardOvUpdate: "Update",
+    cardOvTabs: "Abschnitte",
+    cardOvNone: "Keine Abschnitte gewählt.",
+    edit_sections: "Abschnitte",
+    edit_sections_help: "Die Optionen einer einzelnen Karte setzt du im YAML: ein Eintrag wie { type: batteries, rows: 3 }.",
+    edit_sections_health: "Zustand des Hauses",
+    edit_sections_batteries: "Batterien",
+    edit_sections_functions: "Hausfunktionen",
+    edit_sections_auto_pause: "Pausierte Integrationen",
+    edit_sections_update: "Nach dem Update",
+    edit_layout: "Darstellung",
+    edit_layout_tabs: "Reiter",
+    edit_layout_stacked: "Untereinander",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -341,6 +358,23 @@ const CARD_TEXT = {
     edit_show_hours_6: "6 hours",
     edit_show_hours_24: "24 hours",
     edit_start: "Show the start time",
+    cardOvHealth: "Health",
+    cardOvBatteries: "Batteries",
+    cardOvFunctions: "Functions",
+    cardOvAutoPause: "Auto-pause",
+    cardOvUpdate: "Update",
+    cardOvTabs: "Sections",
+    cardOvNone: "No sections chosen.",
+    edit_sections: "Sections",
+    edit_sections_help: "Set the options of a single card in YAML: an entry like { type: batteries, rows: 3 }.",
+    edit_sections_health: "House health",
+    edit_sections_batteries: "Batteries",
+    edit_sections_functions: "Home functions",
+    edit_sections_auto_pause: "Paused integrations",
+    edit_sections_update: "After the update",
+    edit_layout: "Layout",
+    edit_layout_tabs: "Tabs",
+    edit_layout_stacked: "One below the other",
   },
 };
 
@@ -432,6 +466,18 @@ const CARD_CSS = `
   ha-card.hk-alert { border-top: 3px solid var(--warning-color); }
   .hk-tag { font-size: 12px; font-weight: 600; white-space: nowrap; }
   .hk-tag.bad { color: var(--error-color); }
+  .hk-ovtitle { padding: 14px 16px 0; font-size: 16px; font-weight: 600; color: var(--primary-text-color); }
+  .hk-ovtabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 12px 0; border-bottom: 1px solid var(--divider-color); }
+  .hk-tab { display: inline-flex; gap: 6px; align-items: center; padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--secondary-text-color); font: inherit; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .hk-tab.on { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+  .hk-badge { min-width: 18px; padding: 0 6px; border-radius: 99px; background: var(--warning-color); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+  .hk-pane { display: none; }
+  .hk-pane.in.open { display: block; }
+  .hk-ov.stacked .hk-ovtabs { display: none; }
+  .hk-ov.stacked .hk-pane.in { display: block; }
+  .hk-pane.in + .hk-pane.in { border-top: 1px solid var(--divider-color); }
+  .hk-ov.stacked .hk-pane.in:first-child { border-top: 0; }
+  @media (max-width: 520px) { .hk-ovtabs { display: none; } .hk-pane.in { display: block; } }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
 
@@ -588,6 +634,8 @@ class HKCard extends HTMLElement {
   get titleKey() { return "cardTitle"; }
   // A card overrides: the HTML of the card without the frame.
   renderBody() { return ""; }
+  // A card overrides: how many things in it call for a look (the overview card shows it on the tab).
+  attention() { return 0; }
   // A card overrides: the text that says in the editor why the card would be hidden, and a class for its frame.
   hiddenKey() { return "cardQuietHidden"; }
   frameClass() { return ""; }
@@ -727,6 +775,10 @@ class HKHealthCard extends HKCard {
   scanning() { return this.stateOf("activity")?.state === "scanning"; }
 
   hasData() { return Boolean(this.health()) && !["unknown", "unavailable"].includes(this.health().state); }
+  attention() {
+    if (this.scanBroken()) return 1;
+    return this.hasData() && this.health().state !== "ok" ? this.health().attributes?.objects || 0 : 0;
+  }
   // Quiet is: nothing is due and the scans run. A card that cannot trust its numbers never hides.
   isQuiet() { return this.hasData() && this.health().state === "ok" && !this.scanBroken(); }
 
@@ -799,6 +851,7 @@ class HKBatteryCard extends HKCard {
 
   data() { return this.stateOf("battery_weakest")?.attributes || {}; }
   hasData() { return Array.isArray(this.data().weakest); }
+  attention() { return this.hasData() ? this.data().low || 0 : 0; }
   // Quiet is: no battery is low and none is due within the round.
   isQuiet() { return this.hasData() && !this.data().low && !(this.data().round || []).length; }
 
@@ -914,6 +967,7 @@ class HKFunctionsCard extends HKCard {
 
   watchedIds() { return this.functions().map(f => f.id); }
   hasData() { return true; }
+  attention() { return this.functions().filter(f => ["problem", "unverified"].includes(f.state.state)).length; }
   // Quiet is: every function is fine.
   isQuiet() { return this.functions().length > 0 && this.functions().every(f => f.state.state === "ok"); }
 
@@ -979,6 +1033,7 @@ class HKAutoPauseCard extends HKCard {
   watchedIds() { return [this.idOf("auto_pause")].filter(Boolean); }
   data() { return this.stateOf("auto_pause")?.attributes || {}; }
   hasData() { return Array.isArray(this.data().paused); }
+  attention() { return this.hasData() ? this.data().paused.length : 0; }
   // Quiet is: auto-pause is on and nothing is paused. A card that says "off" is no news to hide.
   isQuiet() { return this.hasData() && this.data().enabled === true && !this.data().paused.length; }
   canAct() { return Boolean(this._config.actions && this._hass?.user?.is_admin); }
@@ -1067,6 +1122,11 @@ class HKUpdateCard extends HKCard {
     const state = this.verdict();
     return state === "unknown" ? Boolean(this.data().started_at) : Boolean(state) && state !== "unavailable";
   }
+  attention() {
+    if (this.verdict() !== "worse" || !this.inWindow()) return 0;
+    const data = this.data();
+    return (data.problems_total || 0) + (data.new_findings || 0) + (data.new_repairs || 0);
+  }
   // Quiet is: the update changed nothing for the worse.
   isQuiet() { return ["stable", "transient"].includes(this.verdict()); }
   hiddenKey() { return this.inWindow() ? "cardQuietHidden" : "cardUpHidden"; }
@@ -1133,6 +1193,113 @@ class HKUpdateCard extends HKCard {
   }
 }
 
+// The overview card: the cards of this integration as the sections of one card, in tabs or one below the other.
+// It has no logic of its own: each section is the card itself, kept alive and given the same hass, so a section looks
+// and acts exactly like the single card. A tab shows how many things in its section call for a look.
+const HK_SECTION_KEYS = ["health", "batteries", "functions", "auto_pause", "update"];
+const HK_SECTION_LABELS = { health: "cardOvHealth", batteries: "cardOvBatteries", functions: "cardOvFunctions", auto_pause: "cardOvAutoPause", update: "cardOvUpdate" };
+const hkSectionClass = key => ({ health: HKHealthCard, batteries: HKBatteryCard, functions: HKFunctionsCard, auto_pause: HKAutoPauseCard, update: HKUpdateCard })[key];
+
+// The sections of the configuration: a name ("batteries") or an entry with the options of that card
+// ({ type: "batteries", rows: 3 }). An unknown name and a repeated one are left out. `common` is what every
+// section gets unless its entry says otherwise.
+function sectionSpecs(sections, common) {
+  const seen = new Set(), out = [];
+  for (const item of Array.isArray(sections) ? sections : []) {
+    const spec = typeof item === "string" ? { type: item } : item;
+    const key = spec?.type;
+    if (!HK_SECTION_KEYS.includes(key) || seen.has(key)) continue;
+    seen.add(key);
+    const { type, ...options } = spec;
+    out.push({ key, config: { ...common, ...options } });
+  }
+  return out;
+}
+
+// Which sections show and which one is open: the one the person picked, else the first with something to look at.
+function overviewPlan(keys, hidden, attention, picked) {
+  const shown = keys.filter(key => !hidden.has(key));
+  const open = shown.includes(picked) ? picked : shown.find(key => (attention[key] || 0) > 0) || shown[0] || null;
+  return { shown, open };
+}
+
+class HKOverviewCard extends HKCard {
+  static tag = "ha-housekeeper-overview-card";
+  static pickerName = "HA Housekeeper: Overview";
+  static pickerDescription = "The health of the house, batteries, home functions, auto-pause and what changed after an update in one card, in tabs.";
+  static get defaults() { return { sections: [...HK_SECTION_KEYS], layout: "tabs" }; }
+
+  static editorSchema(t) {
+    return [
+      { name: "sections", selector: { select: { multiple: true, mode: "list", options: HK_SECTION_KEYS.map(value => ({ value, label: t(`edit_sections_${value}`) })) } } },
+      { name: "layout", selector: { select: { mode: "dropdown", options: ["tabs", "stacked"].map(value => ({ value, label: t(`edit_layout_${value}`) })) } } },
+    ];
+  }
+
+  getCardSize() { return 6; }
+  watchedIds() { return []; }
+
+  // The sections live on between updates: only a new configuration builds them again.
+  update(force = false) {
+    if (!this._config || !this._hass) return;
+    if (force || !this._sections) this.build();
+    for (const el of this._sections.values()) { el.preview = this.preview === true; el.hass = this._hass; }
+    this.arrange();
+  }
+
+  build() {
+    const { tap, compact, quiet } = this._config, common = { tap, compact, quiet };
+    const doc = globalThis.document, root = this.shadowRoot;
+    const title = this._config.title ? `<div class="hk-ovtitle">${this.esc(this._config.title)}</div>` : "";
+    root.innerHTML = `<style>${CARD_CSS}</style><ha-card><div class="hk-ov ${this._config.layout === "stacked" ? "stacked" : ""}">${title}<div class="hk-ovtabs" role="tablist"></div><div class="hk-ovpanes"></div></div></ha-card>`;
+    const panes = root.querySelector(".hk-ovpanes");
+    this._sections = new Map();
+    this._panes = new Map();
+    this._tabsHtml = null; // the tab bar is new, so it is drawn again
+    for (const { key, config } of sectionSpecs(this._config.sections, common)) {
+      const el = doc.createElement(hkSectionClass(key).tag);
+      // The section is no card of its own here: the frame is the one of the overview.
+      el.style.cssText = "--ha-card-border-width: 0; --ha-card-box-shadow: none; --ha-card-border-radius: 0; --ha-card-background: transparent;";
+      el.setConfig(config);
+      const pane = doc.createElement("div");
+      pane.setAttribute("role", "tabpanel");
+      pane.appendChild(el);
+      panes.appendChild(pane);
+      this._sections.set(key, el);
+      this._panes.set(key, pane);
+    }
+    const tabs = root.querySelector(".hk-ovtabs");
+    tabs.setAttribute("aria-label", this.t("cardOvTabs"));
+    tabs.addEventListener("click", event => { const key = event.target.closest?.("[data-hk-tab]")?.getAttribute("data-hk-tab"); if (key) this.pick(key); });
+    tabs.addEventListener("keydown", event => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+      if (!step || !this._shown?.length) return;
+      event.preventDefault();
+      this.pick(this._shown[(this._shown.indexOf(this._open) + step + this._shown.length) % this._shown.length], true);
+    });
+  }
+
+  pick(key, focus = false) {
+    this._picked = key;
+    this.arrange();
+    if (focus) this.shadowRoot.querySelector(`[data-hk-tab="${key}"]`)?.focus?.();
+  }
+
+  // Which sections show, which one is open, and the tab bar to match.
+  arrange() {
+    const keys = [...this._sections.keys()];
+    const hidden = new Set(keys.filter(key => this._sections.get(key).style.display === "none"));
+    const attention = Object.fromEntries(keys.map(key => [key, this._sections.get(key).attention()]));
+    const { shown, open } = overviewPlan(keys, hidden, attention, this._picked);
+    this._shown = shown; this._open = open;
+    this.style.display = !shown.length && this.preview !== true ? "none" : "";
+    for (const [key, pane] of this._panes) pane.className = `hk-pane${shown.includes(key) ? " in" : ""}${key === open ? " open" : ""}`;
+    const html = shown.map(key => `<button type="button" role="tab" class="hk-tab${key === open ? " on" : ""}" aria-selected="${key === open}" tabindex="${key === open ? 0 : -1}" data-hk-tab="${key}">${this.esc(this.t(HK_SECTION_LABELS[key]))}${attention[key] ? `<span class="hk-badge">${this.esc(attention[key])}</span>` : ""}</button>`).join("");
+    const tabs = this.shadowRoot.querySelector(".hk-ovtabs");
+    if (tabs && this._tabsHtml !== html) { tabs.innerHTML = html || `<span class="hk-note">${this.esc(this.t("cardOvNone"))}</span>`; this._tabsHtml = html; }
+  }
+}
+
 // Every card is registered here: its element, its editor and its entry in the card picker.
 // The picker shows English only, it has no way to translate a name.
 function registerCard(CardClass) {
@@ -1150,3 +1317,4 @@ registerCard(HKBatteryCard);
 registerCard(HKFunctionsCard);
 registerCard(HKAutoPauseCard);
 registerCard(HKUpdateCard);
+registerCard(HKOverviewCard);

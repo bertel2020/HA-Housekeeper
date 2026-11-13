@@ -194,5 +194,22 @@
   "edit_show_hours_3": "3 小时",
   "edit_show_hours_6": "6 小时",
   "edit_show_hours_24": "24 小时",
-  "edit_start": "显示启动用时"
+  "edit_start": "显示启动用时",
+  "cardOvHealth": "状态",
+  "cardOvBatteries": "电池",
+  "cardOvFunctions": "功能",
+  "cardOvAutoPause": "自动暂停",
+  "cardOvUpdate": "更新",
+  "cardOvTabs": "分区",
+  "cardOvNone": "未选择任何分区。",
+  "edit_sections": "分区",
+  "edit_sections_help": "单张卡片的选项请在 YAML 中设置：条目如 { type: batteries, rows: 3 }。",
+  "edit_sections_health": "住宅状况",
+  "edit_sections_batteries": "电池",
+  "edit_sections_functions": "家庭功能",
+  "edit_sections_auto_pause": "已暂停的集成",
+  "edit_sections_update": "更新之后",
+  "edit_layout": "布局",
+  "edit_layout_tabs": "标签页",
+  "edit_layout_stacked": "上下排列"
 }

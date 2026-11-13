@@ -29,6 +29,7 @@ class HKFunctionsCard extends HKCard {
 
   watchedIds() { return this.functions().map(f => f.id); }
   hasData() { return true; }
+  attention() { return this.functions().filter(f => ["problem", "unverified"].includes(f.state.state)).length; }
   // Quiet is: every function is fine.
   isQuiet() { return this.functions().length > 0 && this.functions().every(f => f.state.state === "ok"); }
 

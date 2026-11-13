@@ -86,5 +86,17 @@ const CARD_CSS = `
   ha-card.hk-alert { border-top: 3px solid var(--warning-color); }
   .hk-tag { font-size: 12px; font-weight: 600; white-space: nowrap; }
   .hk-tag.bad { color: var(--error-color); }
+  .hk-ovtitle { padding: 14px 16px 0; font-size: 16px; font-weight: 600; color: var(--primary-text-color); }
+  .hk-ovtabs { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 12px 0; border-bottom: 1px solid var(--divider-color); }
+  .hk-tab { display: inline-flex; gap: 6px; align-items: center; padding: 8px 12px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--secondary-text-color); font: inherit; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .hk-tab.on { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+  .hk-badge { min-width: 18px; padding: 0 6px; border-radius: 99px; background: var(--warning-color); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+  .hk-pane { display: none; }
+  .hk-pane.in.open { display: block; }
+  .hk-ov.stacked .hk-ovtabs { display: none; }
+  .hk-ov.stacked .hk-pane.in { display: block; }
+  .hk-pane.in + .hk-pane.in { border-top: 1px solid var(--divider-color); }
+  .hk-ov.stacked .hk-pane.in:first-child { border-top: 0; }
+  @media (max-width: 520px) { .hk-ovtabs { display: none; } .hk-pane.in { display: block; } }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;

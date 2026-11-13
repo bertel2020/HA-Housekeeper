@@ -232,5 +232,22 @@
   "edit_show_hours_3": "3 hodiny",
   "edit_show_hours_6": "6 hodín",
   "edit_show_hours_24": "24 hodín",
-  "edit_start": "Zobraziť dĺžku štartu"
+  "edit_start": "Zobraziť dĺžku štartu",
+  "cardOvHealth": "Stav",
+  "cardOvBatteries": "Batérie",
+  "cardOvFunctions": "Funkcie",
+  "cardOvAutoPause": "Pozastavené",
+  "cardOvUpdate": "Aktualizácia",
+  "cardOvTabs": "Sekcie",
+  "cardOvNone": "Nie sú vybrané žiadne sekcie.",
+  "edit_sections": "Sekcie",
+  "edit_sections_help": "Možnosti jednej karty nastavíš v YAML: záznam ako { type: batteries, rows: 3 }.",
+  "edit_sections_health": "Stav domu",
+  "edit_sections_batteries": "Batérie",
+  "edit_sections_functions": "Funkcie domu",
+  "edit_sections_auto_pause": "Pozastavené integrácie",
+  "edit_sections_update": "Po aktualizácii",
+  "edit_layout": "Rozloženie",
+  "edit_layout_tabs": "Karty",
+  "edit_layout_stacked": "Pod sebou"
 }

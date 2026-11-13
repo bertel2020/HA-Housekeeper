@@ -21,6 +21,7 @@ class HKBatteryCard extends HKCard {
 
   data() { return this.stateOf("battery_weakest")?.attributes || {}; }
   hasData() { return Array.isArray(this.data().weakest); }
+  attention() { return this.hasData() ? this.data().low || 0 : 0; }
   // Quiet is: no battery is low and none is due within the round.
   isQuiet() { return this.hasData() && !this.data().low && !(this.data().round || []).length; }
 

@@ -117,6 +117,8 @@ class HKCard extends HTMLElement {
   get titleKey() { return "cardTitle"; }
   // A card overrides: the HTML of the card without the frame.
   renderBody() { return ""; }
+  // A card overrides: how many things in it call for a look (the overview card shows it on the tab).
+  attention() { return 0; }
   // A card overrides: the text that says in the editor why the card would be hidden, and a class for its frame.
   hiddenKey() { return "cardQuietHidden"; }
   frameClass() { return ""; }

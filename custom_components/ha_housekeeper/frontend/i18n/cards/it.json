@@ -213,5 +213,22 @@
   "edit_show_hours_3": "3 ore",
   "edit_show_hours_6": "6 ore",
   "edit_show_hours_24": "24 ore",
-  "edit_start": "Mostra la durata dell’avvio"
+  "edit_start": "Mostra la durata dell’avvio",
+  "cardOvHealth": "Stato",
+  "cardOvBatteries": "Batterie",
+  "cardOvFunctions": "Funzioni",
+  "cardOvAutoPause": "Pausa auto",
+  "cardOvUpdate": "Aggiornamento",
+  "cardOvTabs": "Sezioni",
+  "cardOvNone": "Nessuna sezione scelta.",
+  "edit_sections": "Sezioni",
+  "edit_sections_help": "Le opzioni di una singola scheda si impostano in YAML: una voce come { type: batteries, rows: 3 }.",
+  "edit_sections_health": "Stato della casa",
+  "edit_sections_batteries": "Batterie",
+  "edit_sections_functions": "Funzioni della casa",
+  "edit_sections_auto_pause": "Integrazioni in pausa",
+  "edit_sections_update": "Dopo l’aggiornamento",
+  "edit_layout": "Disposizione",
+  "edit_layout_tabs": "Schede",
+  "edit_layout_stacked": "Una sotto l’altra"
 }

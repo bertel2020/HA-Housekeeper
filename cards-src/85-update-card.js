@@ -23,6 +23,11 @@ class HKUpdateCard extends HKCard {
     const state = this.verdict();
     return state === "unknown" ? Boolean(this.data().started_at) : Boolean(state) && state !== "unavailable";
   }
+  attention() {
+    if (this.verdict() !== "worse" || !this.inWindow()) return 0;
+    const data = this.data();
+    return (data.problems_total || 0) + (data.new_findings || 0) + (data.new_repairs || 0);
+  }
   // Quiet is: the update changed nothing for the worse.
   isQuiet() { return ["stable", "transient"].includes(this.verdict()); }
   hiddenKey() { return this.inWindow() ? "cardQuietHidden" : "cardUpHidden"; }
