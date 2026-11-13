@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
 from homeassistant.components.sensor import (
@@ -13,7 +13,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTime
+from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfInformation, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
@@ -31,6 +31,7 @@ from .const import (
     SIGNAL_SCAN_COMPLETE,
     SIGNAL_SCAN_STARTED,
 )
+from .database_card import database_view
 from .house_health import STATES as HOUSE_STATES
 from .house_health import house_health
 from .outage_levels import is_quiet
@@ -153,6 +154,14 @@ START_TIME_DESCRIPTION = SensorEntityDescription(
 )
 
 
+DATABASE_SIZE_DESCRIPTION = SensorEntityDescription(
+    key="database_size",
+    translation_key="database_size",
+    device_class=SensorDeviceClass.DATA_SIZE,
+    native_unit_of_measurement=UnitOfInformation.BYTES,
+)
+
+
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
@@ -193,6 +202,7 @@ async def async_setup_entry(
             AutoPauseSensor(entry, AUTO_PAUSE_DESCRIPTION),
             UpdateWatchSensor(entry, UPDATE_WATCH_DESCRIPTION),
             StartTimeSensor(entry, START_TIME_DESCRIPTION),
+            DatabaseSizeSensor(entry, DATABASE_SIZE_DESCRIPTION),
         ]
     )
     scanner = entry.runtime_data
@@ -351,6 +361,40 @@ class StartTimeSensor(HousekeeperSensor):
     def _update(self) -> None:
         scanner = self.scanner
         view = start_view(scanner.starts.starts) if scanner else {}
+        self._attr_native_value = view.pop("state", None)
+        self._attr_extra_state_attributes = view
+
+
+class DatabaseSizeSensor(HousekeeperSensor):
+    """How big the database is (files and journal), for the card; change, daily sizes and hints as attributes.
+
+    Read from what each scan keeps anyway, never from a query of the recorder tables. The attributes stay out of the
+    recorder.
+    """
+
+    _unrecorded_attributes = frozenset(
+        {
+            "wal_bytes",
+            "wal_large",
+            "growing_fast",
+            "per_day",
+            "change_bytes",
+            "change_days",
+            "history",
+            "keep_days",
+            "dialect",
+            "estimated",
+        }
+    )
+
+    def _update(self) -> None:
+        scanner = self.scanner
+        snapshot = scanner.snapshot if scanner else None
+        view: dict[str, Any] = {}
+        if scanner is not None and snapshot is not None and not snapshot["meta"].get("preliminary"):
+            view = database_view(
+                snapshot["meta"].get("database"), scanner.events.sizes, datetime.now(UTC).date()
+            )
         self._attr_native_value = view.pop("state", None)
         self._attr_extra_state_attributes = view
 

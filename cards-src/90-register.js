@@ -16,4 +16,5 @@ registerCard(HKFunctionsCard);
 registerCard(HKAutoPauseCard);
 registerCard(HKUpdateCard);
 registerCard(HKStartCard);
+registerCard(HKDatabaseCard);
 registerCard(HKOverviewCard);

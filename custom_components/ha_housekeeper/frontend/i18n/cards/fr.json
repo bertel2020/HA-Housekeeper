@@ -240,5 +240,26 @@
   "cardStSlowest": "Les plus lentes à démarrer",
   "cardStNotLoaded": "non chargée",
   "edit_slowest": "Intégrations les plus lentes",
-  "edit_slowest_help": "0 masque la liste."
+  "edit_slowest_help": "0 masque la liste.",
+  "cardDbTitle": "Base de données",
+  "cardDbEstimated": "estimée",
+  "cardDbGrowing": "croît vite",
+  "cardDbWalLarge": "journal volumineux",
+  "cardDbOk": "en ordre",
+  "cardDbQuietSub": "{size} · rien d’anormal",
+  "cardDbGrowth": {
+    "one": "{change} en {days} jour",
+    "other": "{change} en {days} jours"
+  },
+  "cardDbPerDay": "env. {size} par jour",
+  "cardDbWal": "Journal (WAL)",
+  "cardDbWalNormal": "normal",
+  "cardDbWalBig": "volumineux",
+  "cardDbKeep": "Conservation",
+  "cardDbKeepDays": {
+    "one": "{n} jour",
+    "other": "{n} jours"
+  },
+  "edit_history_90": "90 jours",
+  "edit_facts": "Afficher le journal et la conservation"
 }

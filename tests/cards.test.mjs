@@ -25,7 +25,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, HKStartCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, HKStartCard, HKDatabaseCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -377,6 +377,45 @@ test("the start time card shows the last start against the usual, the bars and t
   assert.equal(card.attention(), 0);
   card.setConfig({ quiet: "hide" });
   assert.equal(card.style.display, "none", "as usual and asked to hide");
+  card.setConfig({});
+  card.hass = hass("unknown", {});
+  assert.match(html(), /Noch keine Daten/);
+});
+
+test("the database card shows the size, the change and the line, names what grows fast and keeps to a summary when it does not", () => {
+  const { HKDatabaseCard, registered } = loadCards();
+  assert.ok(registered["ha-housekeeper-database-card"], "the card is registered");
+  const entities = { d: ENTITY("sensor.db", "database_size") };
+  let stamp = 0;
+  const MB = 1024 ** 2, GB = 1024 ** 3;
+  const hass = (state, attrs, unit) => ({ language: "de", user: { is_admin: true }, entities, states: { "sensor.db": { state, last_updated: String(++stamp), attributes: { ...(unit ? { unit_of_measurement: unit } : {}), ...attrs } } } });
+  const grow = { growing_fast: true, wal_large: false, wal_bytes: 48 * MB, keep_days: 10, dialect: "sqlite", estimated: false, change_bytes: 180 * MB, change_days: 30, per_day: 6 * MB, history: Array.from({ length: 30 }, (_, i) => 3.2 * GB + i * 6 * MB) };
+  const card = new HKDatabaseCard();
+  card.setConfig({});
+  card.hass = hass(String(3.4 * GB), grow);
+  const html = () => card.shadowRoot.innerHTML;
+  assert.match(html(), /3,4\sGB/);
+  assert.match(html(), /SQLite/);
+  assert.match(html(), /wächst schnell/);
+  assert.match(html(), /\+180\sMB in 30 Tagen · ca\. 6\sMB pro Tag/);
+  assert.match(html(), /<svg class="hk-line"/);
+  assert.match(html(), /Journal \(WAL\)[\s\S]*48\sMB[\s\S]*normal[\s\S]*Aufbewahrung[\s\S]*10 Tage/);
+  assert.match(html(), /data-hk-panel="view=recorder"/);
+  assert.equal(card.attention(), 1);
+  card.setConfig({ facts: false, history: "0" });
+  assert.ok(!html().includes("Journal (WAL)") && !html().includes('class="hk-line"'), "facts and line can be left out");
+  card.setConfig({});
+  card.hass = hass(String(3.4 * GB), { ...grow, growing_fast: false, wal_large: true, wal_bytes: GB });
+  assert.match(html(), /Journal groß/);
+  assert.match(html(), /Journal \(WAL\)[\s\S]*groß/);
+  card.hass = hass("3.4", { ...grow, growing_fast: false }, "GiB");
+  assert.match(html(), /3,4\sGB/, "a size shown in another unit is read in that unit");
+  card.hass = hass(String(2.1 * GB), { ...grow, growing_fast: false, change_bytes: 0 });
+  assert.match(html(), /2,1\sGB · unauffällig[\s\S]*in Ordnung/);
+  assert.ok(!html().includes("hk-line") || !html().includes("<svg"), "a quiet database is a summary only");
+  assert.equal(card.attention(), 0);
+  card.setConfig({ quiet: "hide" });
+  assert.equal(card.style.display, "none");
   card.setConfig({});
   card.hass = hass("unknown", {});
   assert.match(html(), /Noch keine Daten/);

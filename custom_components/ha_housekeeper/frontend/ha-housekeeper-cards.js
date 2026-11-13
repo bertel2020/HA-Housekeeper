@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"54b8dc028a"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"aa2deb01b3"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9205fdeab9"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"cd70478a43"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"0654845e10"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"9967f932fc"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"ac5c9c6076"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"f7ba3ac5cc"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fdcc0ec1ed"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6be706907d"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b7c469a6c4"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"200b1ce8b1"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"593b1938b8"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"bc4ecf0c16"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -212,6 +212,21 @@ const CARD_TEXT = {
     cardStNotLoaded: "nicht geladen",
     edit_slowest: "Langsamste Integrationen",
     edit_slowest_help: "0 blendet die Liste aus.",
+    cardDbTitle: "Datenbank",
+    cardDbEstimated: "geschätzt",
+    cardDbGrowing: "wächst schnell",
+    cardDbWalLarge: "Journal groß",
+    cardDbOk: "in Ordnung",
+    cardDbQuietSub: "{size} · unauffällig",
+    cardDbGrowth: {"one": "{change} in {days} Tag", "other": "{change} in {days} Tagen"},
+    cardDbPerDay: "ca. {size} pro Tag",
+    cardDbWal: "Journal (WAL)",
+    cardDbWalNormal: "normal",
+    cardDbWalBig: "groß",
+    cardDbKeep: "Aufbewahrung",
+    cardDbKeepDays: {"one": "{n} Tag", "other": "{n} Tage"},
+    edit_history_90: "90 Tage",
+    edit_facts: "Journal und Aufbewahrung zeigen",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -395,6 +410,21 @@ const CARD_TEXT = {
     cardStNotLoaded: "not loaded",
     edit_slowest: "Slowest integrations",
     edit_slowest_help: "0 hides the list.",
+    cardDbTitle: "Database",
+    cardDbEstimated: "estimated",
+    cardDbGrowing: "growing fast",
+    cardDbWalLarge: "journal large",
+    cardDbOk: "in order",
+    cardDbQuietSub: "{size} · nothing unusual",
+    cardDbGrowth: {"one": "{change} in {days} day", "other": "{change} in {days} days"},
+    cardDbPerDay: "about {size} a day",
+    cardDbWal: "Journal (WAL)",
+    cardDbWalNormal: "normal",
+    cardDbWalBig: "large",
+    cardDbKeep: "Retention",
+    cardDbKeepDays: {"one": "{n} day", "other": "{n} days"},
+    edit_history_90: "90 days",
+    edit_facts: "Show the journal and the retention",
   },
 };
 
@@ -506,6 +536,17 @@ const CARD_CSS = `
   .hk-bars i.now { opacity: 1; }
   .hk-bars i.hi { background: var(--warning-color); opacity: 1; }
   .hk-right b.warnt { color: var(--warning-color); }
+  .hk-line { display: block; margin: 0 16px 6px; width: calc(100% - 32px); height: 44px; }
+  .hk-line path { fill: none; stroke: var(--primary-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .hk-line .a { fill: color-mix(in srgb, var(--primary-color) 14%, transparent); stroke: none; }
+  .hk-facts { display: grid; gap: 1px; background: var(--divider-color); border-top: 1px solid var(--divider-color); }
+  .hk-facts.n1 { grid-template-columns: 1fr; }
+  .hk-facts.n2 { grid-template-columns: 1fr 1fr; }
+  .hk-fact { background: var(--card-background-color); padding: 12px 14px; min-width: 0; }
+  .hk-fact .l { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--secondary-text-color); font-weight: 600; }
+  .hk-fact .v { font-size: 17px; font-weight: 700; margin-top: 2px; color: var(--primary-text-color); }
+  .hk-fact .v.warnt { color: var(--warning-color); }
+  .hk-fact .s { font-size: 12px; color: var(--secondary-text-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
 
@@ -1277,6 +1318,83 @@ class HKStartCard extends HKCard {
   }
 }
 
+// The database card, the simple variant: how big the database is, whether it grows fast, the line of the daily sizes
+// and what the recorder keeps. Everything comes from the sensor "database size" and its attributes, which a scan reads
+// from the files and from the daily sizes Housekeeper has noted; which entities write the most is on the database
+// page of the panel.
+// Home Assistant shows a size in the unit of the person's choice and says which one in the attribute.
+const HK_BYTE_UNITS = { B: 1, kB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12, KiB: 1024, MiB: 1024 ** 2, GiB: 1024 ** 3, TiB: 1024 ** 4 };
+
+class HKDatabaseCard extends HKCard {
+  static tag = "ha-housekeeper-database-card";
+  static pickerName = "HA Housekeeper: Database";
+  static pickerDescription = "How big the database is, whether it grows fast and what the recorder keeps.";
+  static get defaults() { return { history: "30", facts: true }; }
+
+  static editorSchema(t) {
+    return [
+      { name: "history", selector: { select: { mode: "dropdown", options: ["30", "90", "14", "7", "0"].map(value => ({ value, label: t(`edit_history_${value}`) })) } } },
+      { name: "facts", selector: { boolean: {} } },
+    ];
+  }
+
+  get titleKey() { return "cardDbTitle"; }
+  watchedIds() { return [this.idOf("database_size")].filter(Boolean); }
+  data() { return this.stateOf("database_size")?.attributes || {}; }
+  bytes() {
+    const state = this.stateOf("database_size"), value = Number(state?.state);
+    return state && Number.isFinite(value) ? value * (HK_BYTE_UNITS[state.attributes?.unit_of_measurement] ?? 1) : null;
+  }
+  hasData() { return this.bytes() !== null; }
+  attention() { return this.hasData() && !this.isQuiet() ? 1 : 0; }
+  // Quiet is: it does not grow fast and the journal is not large.
+  isQuiet() { return this.hasData() && !this.data().growing_fast && !this.data().wal_large; }
+
+  // "3,4 GB" or "180 MB": gigabytes from one gigabyte on, in the number format of the language; `sign` adds + and −.
+  size(bytes, sign = false) {
+    const big = Math.abs(bytes) >= 1024 ** 3;
+    try {
+      return new Intl.NumberFormat(this.lang, { style: "unit", unit: big ? "gigabyte" : "megabyte", unitDisplay: "short", maximumFractionDigits: big ? 1 : 0, signDisplay: sign ? "exceptZero" : "auto" }).format(bytes / (big ? 1024 ** 3 : 1024 ** 2));
+    } catch (_) { return `${Math.round(bytes / 1024 ** 2)} MB`; }
+  }
+
+  engine(data) {
+    const name = { sqlite: "SQLite", mysql: "MariaDB/MySQL", postgresql: "PostgreSQL" }[data.dialect] || data.dialect || "";
+    return [name, data.estimated ? this.t("cardDbEstimated") : ""].filter(Boolean).join(" · ");
+  }
+
+  // The daily sizes as a line with the area under it, as wide as the card.
+  line(history) {
+    const count = Number(this._config.history);
+    const rows = count && Array.isArray(history) ? history.slice(-count) : [];
+    if (rows.length < 2) return "";
+    const w = 300, h = 44, lo = Math.min(...rows), hi = Math.max(...rows), span = Math.max(hi - lo, 1);
+    const points = rows.map((value, i) => `${((i / (rows.length - 1)) * w).toFixed(1)} ${(h - 4 - ((value - lo) / span) * (h - 8)).toFixed(1)}`);
+    return `<svg class="hk-line" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img"><path class="a" d="M${points.join(" L")} L${w} ${h} L0 ${h}Z"/><path d="M${points.join(" L")}"/></svg>`;
+  }
+
+  facts(data) {
+    if (!this._config.facts) return "";
+    const cells = [];
+    if (data.wal_bytes != null) cells.push(`<div class="hk-fact"><div class="l">${this.esc(this.t("cardDbWal"))}</div><div class="v ${data.wal_large ? "warnt" : ""}">${this.esc(this.size(data.wal_bytes))}</div><div class="s">${this.esc(this.t(data.wal_large ? "cardDbWalBig" : "cardDbWalNormal"))}</div></div>`);
+    if (data.keep_days != null) cells.push(`<div class="hk-fact"><div class="l">${this.esc(this.t("cardDbKeep"))}</div><div class="v">${this.esc(this.t("cardDbKeepDays", { n: data.keep_days, count: data.keep_days }))}</div><div class="s">Recorder</div></div>`);
+    return cells.length ? `<div class="hk-facts n${cells.length}">${cells.join("")}</div>` : "";
+  }
+
+  renderBody() {
+    const data = this.data(), bytes = this.bytes();
+    if (this.isQuiet()) {
+      return this.head(this.t("cardDbQuietSub", { size: this.size(bytes) }), `<span class="hk-chip">${this.esc(this.t("cardDbOk"))}</span>`) + this.foot("", "view=recorder");
+    }
+    const chip = `<span class="hk-chip warn">${this.esc(this.t(data.growing_fast ? "cardDbGrowing" : "cardDbWalLarge"))}</span>`;
+    const parts = [];
+    if (data.change_bytes != null && data.change_days) parts.push(this.t("cardDbGrowth", { change: this.size(data.change_bytes, true), days: data.change_days, count: data.change_days }));
+    if (data.per_day > 0) parts.push(this.t("cardDbPerDay", { size: this.size(data.per_day) }));
+    const big = `<div class="hk-big"><b>${this.esc(this.size(bytes))}</b>${parts.length ? `<span>${this.esc(parts.join(" · "))}</span>` : ""}</div>`;
+    return this.head(this.engine(data), chip, true) + big + this.line(data.history) + this.facts(data) + this.foot("", "view=recorder");
+  }
+}
+
 // The overview card: the cards of this integration as the sections of one card, in tabs or one below the other.
 // It has no logic of its own: each section is the card itself, kept alive and given the same hass, so a section looks
 // and acts exactly like the single card. A tab shows how many things in its section call for a look.
@@ -1402,4 +1520,5 @@ registerCard(HKFunctionsCard);
 registerCard(HKAutoPauseCard);
 registerCard(HKUpdateCard);
 registerCard(HKStartCard);
+registerCard(HKDatabaseCard);
 registerCard(HKOverviewCard);

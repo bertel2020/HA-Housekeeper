@@ -139,6 +139,9 @@
       "start_time": {
         "name": "Dĺžka štartu"
       },
+      "database_size": {
+        "name": "Veľkosť databázy"
+      },
       "new_findings": {
         "name": "Nové nálezy"
       },

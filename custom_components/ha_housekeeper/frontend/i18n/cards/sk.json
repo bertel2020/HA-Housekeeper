@@ -259,5 +259,28 @@
   "cardStSlowest": "Najdlhšie sa spúšťajú",
   "cardStNotLoaded": "nenačítaná",
   "edit_slowest": "Najpomalšie integrácie",
-  "edit_slowest_help": "0 skryje zoznam."
+  "edit_slowest_help": "0 skryje zoznam.",
+  "cardDbTitle": "Databáza",
+  "cardDbEstimated": "odhad",
+  "cardDbGrowing": "rýchlo rastie",
+  "cardDbWalLarge": "žurnál je veľký",
+  "cardDbOk": "v poriadku",
+  "cardDbQuietSub": "{size} · bez nápadností",
+  "cardDbGrowth": {
+    "one": "{change} za {days} deň",
+    "few": "{change} za {days} dni",
+    "other": "{change} za {days} dní"
+  },
+  "cardDbPerDay": "asi {size} denne",
+  "cardDbWal": "Žurnál (WAL)",
+  "cardDbWalNormal": "normálny",
+  "cardDbWalBig": "veľký",
+  "cardDbKeep": "Uchovávanie",
+  "cardDbKeepDays": {
+    "one": "{n} deň",
+    "few": "{n} dni",
+    "other": "{n} dní"
+  },
+  "edit_history_90": "90 dní",
+  "edit_facts": "Zobraziť žurnál a uchovávanie"
 }

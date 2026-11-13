@@ -221,5 +221,24 @@
   "cardStSlowest": "启动最慢",
   "cardStNotLoaded": "未加载",
   "edit_slowest": "最慢的集成",
-  "edit_slowest_help": "0 表示隐藏列表。"
+  "edit_slowest_help": "0 表示隐藏列表。",
+  "cardDbTitle": "数据库",
+  "cardDbEstimated": "估算",
+  "cardDbGrowing": "增长很快",
+  "cardDbWalLarge": "日志很大",
+  "cardDbOk": "正常",
+  "cardDbQuietSub": "{size} · 无异常",
+  "cardDbGrowth": {
+    "other": "{days} 天内 {change}"
+  },
+  "cardDbPerDay": "约每天 {size}",
+  "cardDbWal": "日志 (WAL)",
+  "cardDbWalNormal": "正常",
+  "cardDbWalBig": "很大",
+  "cardDbKeep": "保留",
+  "cardDbKeepDays": {
+    "other": "{n} 天"
+  },
+  "edit_history_90": "90 天",
+  "edit_facts": "显示日志和保留期"
 }

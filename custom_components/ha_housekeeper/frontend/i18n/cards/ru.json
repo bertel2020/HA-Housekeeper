@@ -278,5 +278,30 @@
   "cardStSlowest": "Дольше всего запускаются",
   "cardStNotLoaded": "не загружена",
   "edit_slowest": "Самые медленные интеграции",
-  "edit_slowest_help": "0 скрывает список."
+  "edit_slowest_help": "0 скрывает список.",
+  "cardDbTitle": "База данных",
+  "cardDbEstimated": "оценка",
+  "cardDbGrowing": "быстро растёт",
+  "cardDbWalLarge": "журнал большой",
+  "cardDbOk": "в порядке",
+  "cardDbQuietSub": "{size} · без замечаний",
+  "cardDbGrowth": {
+    "one": "{change} за {days} день",
+    "few": "{change} за {days} дня",
+    "many": "{change} за {days} дней",
+    "other": "{change} за {days} дня"
+  },
+  "cardDbPerDay": "около {size} в день",
+  "cardDbWal": "Журнал (WAL)",
+  "cardDbWalNormal": "в норме",
+  "cardDbWalBig": "большой",
+  "cardDbKeep": "Хранение",
+  "cardDbKeepDays": {
+    "one": "{n} день",
+    "few": "{n} дня",
+    "many": "{n} дней",
+    "other": "{n} дня"
+  },
+  "edit_history_90": "90 дней",
+  "edit_facts": "Показывать журнал и хранение"
 }

@@ -139,6 +139,9 @@
       "start_time": {
         "name": "Durata dell’avvio"
       },
+      "database_size": {
+        "name": "Dimensione del database"
+      },
       "new_findings": {
         "name": "Nuovi rilevamenti"
       },

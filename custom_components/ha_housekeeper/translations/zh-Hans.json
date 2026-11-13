@@ -139,6 +139,9 @@
       "start_time": {
         "name": "启动用时"
       },
+      "database_size": {
+        "name": "数据库大小"
+      },
       "new_findings": {
         "name": "新发现项"
       },

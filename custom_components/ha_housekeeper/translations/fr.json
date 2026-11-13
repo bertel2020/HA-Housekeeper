@@ -139,6 +139,9 @@
       "start_time": {
         "name": "Durée du démarrage"
       },
+      "database_size": {
+        "name": "Taille de la base de données"
+      },
       "new_findings": {
         "name": "Nouveaux constats"
       },

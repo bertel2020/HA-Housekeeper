@@ -106,5 +106,16 @@ const CARD_CSS = `
   .hk-bars i.now { opacity: 1; }
   .hk-bars i.hi { background: var(--warning-color); opacity: 1; }
   .hk-right b.warnt { color: var(--warning-color); }
+  .hk-line { display: block; margin: 0 16px 6px; width: calc(100% - 32px); height: 44px; }
+  .hk-line path { fill: none; stroke: var(--primary-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .hk-line .a { fill: color-mix(in srgb, var(--primary-color) 14%, transparent); stroke: none; }
+  .hk-facts { display: grid; gap: 1px; background: var(--divider-color); border-top: 1px solid var(--divider-color); }
+  .hk-facts.n1 { grid-template-columns: 1fr; }
+  .hk-facts.n2 { grid-template-columns: 1fr 1fr; }
+  .hk-fact { background: var(--card-background-color); padding: 12px 14px; min-width: 0; }
+  .hk-fact .l { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--secondary-text-color); font-weight: 600; }
+  .hk-fact .v { font-size: 17px; font-weight: 700; margin-top: 2px; color: var(--primary-text-color); }
+  .hk-fact .v.warnt { color: var(--warning-color); }
+  .hk-fact .s { font-size: 12px; color: var(--secondary-text-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
