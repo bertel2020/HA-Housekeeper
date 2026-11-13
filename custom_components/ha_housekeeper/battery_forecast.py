@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -71,7 +72,11 @@ async def battery_forecast(
         )
     if found.busy:
         return {"available": True, "busy": True, "rows": [], "groups": []}
-    result = battery_trend.build({k: v for k, v in found.raw.items() if k in names}, names, limit)
+    # What was read while another query held the lock may be a day old: it is dated as it is.
+    read_at = datetime.now(UTC) - timedelta(seconds=found.age)
+    result = battery_trend.build(
+        {k: v for k, v in found.raw.items() if k in names}, names, limit, read_at
+    )
     types = {**noted_types(snapshot["objects"], wanted), **scanner.batteries.types}
     voltage = battery_voltage.build(
         {k: v for k, v in found.raw.items() if k in volts},

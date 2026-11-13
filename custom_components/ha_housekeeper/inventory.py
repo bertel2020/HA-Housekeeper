@@ -1515,7 +1515,11 @@ class InventoryScanner:
         ]  # integrations run on the usual findings
         if found and self.watch_hours > 0:
             # The restart is the moment of the update; the scan that notices it comes minutes later.
-            started = self.events.last_start(now, timedelta(hours=24)) or now
+            # A Supervisor update does not restart Core: the last start says nothing about it.
+            restarts = any(e["kind"] in ("ha_version", "os_version") for e in found)
+            started = (
+                self.events.last_start(now, timedelta(hours=24)) if restarts else None
+            ) or now
             triggers = [{k: v for k, v in e.items() if k != "at"} for e in found]
             self.watch.start(
                 started, now, self.watch_hours, triggers, make_before(self.history.previous)

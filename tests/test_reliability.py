@@ -618,3 +618,24 @@ def test_the_outage_periods_and_the_seconds_per_local_day_of_an_entry() -> None:
     gone = compute(runs({"a": START}, {"a": [(START, END)]}), entities("a"), ENTRIES)
     period = gone["entries"][0]["periods"][0]
     assert period["kind"] == "down" and period["seconds"] == 100 * HOUR
+
+
+async def test_a_result_handed_out_while_the_lock_is_taken_says_how_old_it_is(
+    hass: HomeAssistant,
+) -> None:
+    import asyncio
+    import time
+
+    from custom_components.ha_housekeeper.const import DOMAIN
+    from custom_components.ha_housekeeper.queries import cached_query
+
+    store = hass.data.setdefault(DOMAIN, {})
+    store["query_cache"] = {"slow": (time.monotonic() - 90_000, {"rows": 1})}
+    lock = store.setdefault("reliability_lock", asyncio.Lock())
+    await lock.acquire()
+    try:
+        found = await cached_query(hass, "slow", 3600, lambda: None)
+    finally:
+        lock.release()
+    assert found.cached and not found.busy and found.raw == {"rows": 1}
+    assert found.age >= 90_000  # older than the ttl: the caller must not date it as now
