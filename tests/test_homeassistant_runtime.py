@@ -2318,3 +2318,22 @@ async def test_a_decision_that_is_away_right_now_still_needs_a_time_when_its_obj
     assert scanner.decision_problem("k1", "keep", False) == "days_required_critical"
     assert scanner.decision_problem("k1", "keep", True) is None
     assert scanner.decision_problem("other", "keep", False) is None
+
+
+async def test_unloading_writes_what_the_stores_still_hold_back(
+    hass: HomeAssistant, hass_storage
+) -> None:
+    """A reload must not start from the older file: the delayed saves are written on unload."""
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    await hass.config_entries.flow.async_configure(result["flow_id"], {})
+    await hass.async_block_till_done(wait_background_tasks=True)
+    entry = hass.config_entries.async_entries(DOMAIN)[0]
+    store = loaded_scanner(hass).goals._store
+    store.async_delay_save(lambda: {"items": [{"id": "held-back"}]}, 300)
+    assert hass_storage.get(store.key, {}).get("data") != {"items": [{"id": "held-back"}]}
+
+    assert await hass.config_entries.async_unload(entry.entry_id)
+
+    assert hass_storage[store.key]["data"] == {"items": [{"id": "held-back"}]}

@@ -141,7 +141,10 @@ async def test_trimming_waits_for_every_batch_and_stops_when_nothing_moves(
 
     recorder.get_instance(hass).async_block_till_done = done
 
-    async def call(*args, **kwargs):
+    async def call(*args, **kwargs):  # the service would delete the members of a group
+        raise AssertionError("recorder.purge_entities must not be used for a trim")
+
+    async def delete(*args, **kwargs):
         return None
 
     async def counted(hass_, ids, keep_days, at=None, locked=False):
@@ -149,6 +152,7 @@ async def test_trimming_waits_for_every_batch_and_stops_when_nothing_moves(
         return {i: {"rows": rows["n"], "oldest": None} for i in ids}
 
     hass.services = type("S", (), {"async_call": staticmethod(call)})()
+    monkeypatch.setattr(recorder_purge, "_delete_old_states", delete)
     monkeypatch.setattr(recorder_purge, "count_older", counted)
     assert await recorder_purge.trim_states(hass, "sensor.power", 14) == (0, None)
 

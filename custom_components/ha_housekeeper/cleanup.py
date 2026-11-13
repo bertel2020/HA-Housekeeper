@@ -1941,15 +1941,20 @@ RUN_STATES = ("backup", "running")  # a plan in one of these has a run going rig
 def end_interrupted(plan: dict[str, Any], at: str) -> None:
     """End a run that was stopped from outside (restart, crash): partial or aborted, never running.
 
-    Steps without a result did not run; the done ones keep their restore data for an undo.
+    Steps without a result did not run, except the one the run was in: it may have changed
+    something and has no restore data, so it says so. The done ones keep their restore data.
     """
     plan["status"] = "partial" if plan.get("executed") else "aborted"
     run = plan.get("run")
-    if isinstance(run, dict) and not run.get("finished_at"):
-        run["finished_at"] = at
+    in_step = None
+    if isinstance(run, dict):
+        in_step = run.pop("in_step", None)
+        if not run.get("finished_at"):
+            run["finished_at"] = at
     plan.setdefault("events", []).append({"at": at, "type": "interrupted"})
     for action in plan.get("actions", []):
-        action.setdefault("result", {"state": "not_run", "at": at, "reason": "interrupted"})
+        reason = "interrupted_mid" if action.get("object_id") == in_step else "interrupted"
+        action.setdefault("result", {"state": "not_run", "at": at, "reason": reason})
 
 
 class JournalStore:

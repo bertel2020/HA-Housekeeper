@@ -752,6 +752,7 @@ class CleanupRunner:
                     )
             plan["status"] = "partial" if plan["executed"] else "aborted"
         finally:
+            plan["run"].pop("in_step", None)
             plan["run"]["finished_at"] = _now().isoformat()
             self.scanner.paused = False
             self.status = {
@@ -963,6 +964,9 @@ class CleanupRunner:
                     continue
                 self._abort(plan, reason, object_ids[index:], object_id)
                 return
+            # If the run is cut off in the step, the journal says so instead of "did not run".
+            plan["run"]["in_step"] = object_id
+            self.scanner.journal.save()
             try:
                 result, event = await self._perform(plan, action)
             except StepAbort as stop:
@@ -989,9 +993,13 @@ class CleanupRunner:
                 self._abort(plan, stop.reason, object_ids[index + 1 :], object_id)
                 return
             action["result"] = {"state": "done", "at": _now().isoformat(), **result}
+            plan["executed"] = True
             _event(plan, event, object_id=object_id)
             if action["kind"] in LOGBOOK_KINDS:
                 self._write_logbook(plan, action)
+            if action.get("recorder"):
+                # The purge after it can take minutes: what an undo needs must be on disk before.
+                await self._keep_undo_data(action["result"])
             if action.get("recorder") and (
                 action["kind"] not in METER_KINDS | REFERENCE_KINDS
                 or action["result"].get("deleted_old")

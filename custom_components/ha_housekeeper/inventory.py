@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 import time
 from collections import Counter
@@ -1322,6 +1323,30 @@ class InventoryScanner:
                 )
                 self.async_check_health()
                 raise
+
+    async def async_shutdown(self) -> None:
+        """End a scan the service started and write what the stores still hold back.
+
+        A reload makes a new scanner that reads the files again. The stores save with a delay of up
+        to minutes, so without this the new one starts from the older file, and the old one's
+        late write or the new one's next save puts the old state back (the AI access switched
+        off a moment ago is on again).
+        """
+        task = self._scan_task
+        if task is not None and not task.done():
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await task
+        for name in STORE_NAMES:
+            owner = getattr(self, name, None)
+            store = getattr(owner, "_store", None) or getattr(owner, "store", None)
+            write = getattr(store, "_async_handle_write_data", None)  # writes only what is pending
+            if write is None:
+                continue
+            try:
+                await write()
+            except Exception:
+                _LOGGER.exception("The saved data of %s could not be written on unload", name)
 
     async def async_request_scan(self, wait: bool = False, record: bool = True) -> dict[str, Any]:
         """Start a scan for the service or the button; many requests make one scan.

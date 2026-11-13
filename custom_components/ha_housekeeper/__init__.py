@@ -553,5 +553,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry)
             if cards_url := hass.data[DOMAIN].pop("cards_url", None):
                 frontend.remove_extra_js_url(hass, cards_url)
         await scanner.cleanup.flush_journal()
+        await scanner.async_shutdown()
         async_clear_issues(hass)
     return unloaded

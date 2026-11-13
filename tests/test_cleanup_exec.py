@@ -1244,8 +1244,29 @@ async def test_a_stop_of_home_assistant_ends_the_run_as_interrupted(hass: HomeAs
     with pytest.raises(asyncio.CancelledError):
         await run(scanner, plan)
     assert plan["status"] == "aborted" and plan["run"]["finished_at"]
-    assert plan["actions"][0]["result"]["reason"] == "interrupted"
+    # The step the run was in may have changed something: it must not read "did not run".
+    assert plan["actions"][0]["result"]["reason"] == "interrupted_mid"
+    assert "in_step" not in plan["run"]
     assert not scanner.cleanup.running
+
+
+def test_only_the_step_the_run_was_in_is_marked_as_cut_off() -> None:
+    from custom_components.ha_housekeeper.cleanup import end_interrupted
+
+    plan = {
+        "executed": True,
+        "run": {"finished_at": None, "in_step": "b"},
+        "actions": [
+            {"object_id": "a", "result": {"state": "done"}},
+            {"object_id": "b"},
+            {"object_id": "c"},
+        ],
+    }
+    end_interrupted(plan, "2026-11-13T10:00:00+00:00")
+    assert plan["status"] == "partial"
+    assert plan["actions"][0]["result"] == {"state": "done"}
+    assert plan["actions"][1]["result"]["reason"] == "interrupted_mid"
+    assert plan["actions"][2]["result"]["reason"] == "interrupted"
 
 
 async def test_a_check_after_the_run_that_cannot_scan_says_so(hass: HomeAssistant) -> None:
