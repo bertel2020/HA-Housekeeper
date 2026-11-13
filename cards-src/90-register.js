@@ -14,3 +14,4 @@ registerCard(HKHealthCard);
 registerCard(HKBatteryCard);
 registerCard(HKFunctionsCard);
 registerCard(HKAutoPauseCard);
+registerCard(HKUpdateCard);

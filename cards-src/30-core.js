@@ -117,6 +117,9 @@ class HKCard extends HTMLElement {
   get titleKey() { return "cardTitle"; }
   // A card overrides: the HTML of the card without the frame.
   renderBody() { return ""; }
+  // A card overrides: the text that says in the editor why the card would be hidden, and a class for its frame.
+  hiddenKey() { return "cardQuietHidden"; }
+  frameClass() { return ""; }
 
   titleText() { return this._config?.title || this.t(this.titleKey); }
   editing() { return this.preview === true || this.editMode === true || this._hass?.editMode === true; }
@@ -139,8 +142,9 @@ class HKCard extends HTMLElement {
     if (!Object.keys(this.found().byKey).length) body = `<div class="hk-note">${this.esc(this.t("cardNotFound"))}</div>`;
     else if (!this.hasData()) body = `<div class="hk-note">${this.esc(this.t("cardNoData"))}</div>`;
     else body = this.renderBody();
-    const banner = mode === "placeholder" ? `<div class="hk-banner">${this.esc(this.t("cardQuietHidden"))}</div>` : "";
-    this.shadowRoot.innerHTML = `<style>${CARD_CSS}</style><ha-card class="${this._config.compact ? "hk-compact" : ""}">${banner}${body}</ha-card>`;
+    const banner = mode === "placeholder" ? `<div class="hk-banner">${this.esc(this.t(this.hiddenKey()))}</div>` : "";
+    const frame = [this._config.compact ? "hk-compact" : "", this.frameClass()].filter(Boolean).join(" ");
+    this.shadowRoot.innerHTML = `<style>${CARD_CSS}</style><ha-card class="${frame}">${banner}${body}</ha-card>`;
     this.shadowRoot.querySelectorAll("[data-hk-panel]").forEach(el => el.addEventListener("click", () => this.openPanel(el.getAttribute("data-hk-panel"))));
     this.shadowRoot.querySelectorAll("[data-hk-act]").forEach(el => el.addEventListener("click", event => this.act(el.getAttribute("data-hk-act"), event)));
   }

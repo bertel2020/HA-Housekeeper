@@ -1523,6 +1523,10 @@ class InventoryScanner:
         ended = self.watch.end(datetime.now(UTC))
         if ended and self._snapshot is not None:
             self._snapshot["meta"]["watch"] = None
+        if ended:
+            async_dispatcher_send(
+                self.hass, SIGNAL_SCAN_COMPLETE
+            )  # the card after the update follows
         return ended
 
     async def async_update_changed(self, old: Any, new: Any) -> None:

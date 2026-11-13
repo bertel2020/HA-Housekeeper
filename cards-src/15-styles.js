@@ -15,6 +15,7 @@ const CARD_CSS = `
   .hk-foot .hk-sp { flex: 1; }
   .hk-link { color: var(--primary-color); font-weight: 600; cursor: pointer; }
   .hk-note { padding: 14px 16px; color: var(--secondary-text-color); font-size: 13px; }
+  .hk-note + .hk-note { padding-top: 0; }
   .hk-dot { width: 38px; height: 38px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff; }
   .hk-dot.ok { background: var(--success-color); }
   .hk-dot.warn { background: var(--warning-color); }
@@ -82,5 +83,8 @@ const CARD_CSS = `
   .hk-menu button { text-align: left; padding: 8px 10px; border: 0; border-radius: 8px; background: none; color: var(--primary-text-color); font: inherit; font-size: 13px; cursor: pointer; }
   .hk-menu button:first-child { font-weight: 600; background: var(--secondary-background-color); }
   .hk-menu button:hover { background: var(--secondary-background-color); }
+  ha-card.hk-alert { border-top: 3px solid var(--warning-color); }
+  .hk-tag { font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .hk-tag.bad { color: var(--error-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;

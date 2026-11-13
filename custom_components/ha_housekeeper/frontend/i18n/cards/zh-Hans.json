@@ -145,5 +145,54 @@
   "cardApFailed": "操作失败：{detail}",
   "edit_actions": "菜单中的操作",
   "edit_actions_help": "只有管理员能看到该菜单。",
-  "edit_progress": "显示尝试进度"
+  "edit_progress": "显示尝试进度",
+  "cardUpTitle": "更新之后",
+  "cardUpNone": "尚未观察到任何更新。",
+  "cardUpHidden": "这张卡片只在更新后的一段时间内显示。在编辑器里你仍然能看到它。",
+  "cardUpWorse": "更新后有东西不再正常工作",
+  "cardUpPending": "Housekeeper 正在检查更新后的情况",
+  "cardUpFine": "更新后一切正常",
+  "cardUpUnknown": "更新后无法确定",
+  "cardUpChip": {
+    "other": "{n} 项"
+  },
+  "cardUpAllFine": "一切运行正常",
+  "cardUpFirstCheck": "首次检查将在 {when} 进行。",
+  "cardUpFineNote": "没有任何东西比更新前更差。",
+  "cardUpTransientNote": {
+    "other": "{n} 个对象曾短暂消失，现已恢复。"
+  },
+  "cardUpUnknownNote": "Housekeeper 无法读取全部内容，结论尚未确定。",
+  "cardUpHa": "Home Assistant {to}",
+  "cardUpOs": "操作系统 {to}",
+  "cardUpSupervisor": "Supervisor {to}",
+  "cardUpType_config_entry": "集成",
+  "cardUpType_device": "设备",
+  "cardUpType_automation": "自动化",
+  "cardUpType_script": "脚本",
+  "cardUpType_scene": "场景",
+  "cardUpType_entity": "实体",
+  "cardUpType_other": "对象",
+  "cardUpStatus_unavailable": "无法连接",
+  "cardUpStatus_problem": "问题",
+  "cardUpStatus_stopped": "已停止",
+  "cardUpMore": {
+    "other": "另有 {n} 项"
+  },
+  "cardUpFindings": {
+    "other": "{n} 个新发现项"
+  },
+  "cardUpRepairs": {
+    "other": "{n} 条新的修复提示"
+  },
+  "cardUpStart": "启动用时 {took}（通常 {usual}）",
+  "cardUpStartOnly": "启动用时 {took}",
+  "cardDurMin": "{m} 分 {s} 秒",
+  "cardDurSec": "{s} 秒",
+  "edit_show_hours": "更新后的显示时长",
+  "edit_show_hours_1": "1 小时",
+  "edit_show_hours_3": "3 小时",
+  "edit_show_hours_6": "6 小时",
+  "edit_show_hours_24": "24 小时",
+  "edit_start": "显示启动用时"
 }

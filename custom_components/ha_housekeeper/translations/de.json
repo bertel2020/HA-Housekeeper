@@ -125,6 +125,17 @@
       "auto_pause": {
         "name": "Pausierte Integrationen"
       },
+      "update_watch": {
+        "name": "Nach dem Update",
+        "state": {
+          "none": "Kein Update",
+          "pending": "Wird geprüft",
+          "stable": "Unauffällig",
+          "transient": "Kurz gestört",
+          "worse": "Schlechter als vorher",
+          "unknown": "Nicht sicher"
+        }
+      },
       "new_findings": {
         "name": "Neue Befunde"
       },

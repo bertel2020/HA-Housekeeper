@@ -125,6 +125,17 @@
       "auto_pause": {
         "name": "Intégrations en pause"
       },
+      "update_watch": {
+        "name": "Après la mise à jour",
+        "state": {
+          "none": "Aucune mise à jour",
+          "pending": "En cours de vérification",
+          "stable": "Rien à signaler",
+          "transient": "Brièvement perturbé",
+          "worse": "Pire qu’avant",
+          "unknown": "Incertain"
+        }
+      },
       "new_findings": {
         "name": "Nouveaux constats"
       },

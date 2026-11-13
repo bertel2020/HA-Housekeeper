@@ -187,5 +187,69 @@
   "cardApFailed": "Не получилось: {detail}",
   "edit_actions": "Действия в меню",
   "edit_actions_help": "Меню видят только администраторы.",
-  "edit_progress": "Показывать ход попыток"
+  "edit_progress": "Показывать ход попыток",
+  "cardUpTitle": "После обновления",
+  "cardUpNone": "Пока не наблюдалось ни одного обновления.",
+  "cardUpHidden": "Эта карточка появляется только на время после обновления. В редакторе ты всё равно её видишь.",
+  "cardUpWorse": "После обновления что-то перестало работать",
+  "cardUpPending": "Housekeeper проверяет после обновления",
+  "cardUpFine": "Обновление без замечаний",
+  "cardUpUnknown": "После обновления нельзя сказать наверняка",
+  "cardUpChip": {
+    "one": "{n} вещь",
+    "few": "{n} вещи",
+    "many": "{n} вещей",
+    "other": "{n} вещи"
+  },
+  "cardUpAllFine": "Всё работает",
+  "cardUpFirstCheck": "Первая проверка будет {when}.",
+  "cardUpFineNote": "Ничего не работает хуже, чем до обновления.",
+  "cardUpTransientNote": {
+    "one": "{n} объект ненадолго пропал и вернулся.",
+    "few": "{n} объекта ненадолго пропали и вернулись.",
+    "many": "{n} объектов ненадолго пропали и вернулись.",
+    "other": "{n} объекта ненадолго пропали и вернулись."
+  },
+  "cardUpUnknownNote": "Housekeeper не смог прочитать всё. Вывод пока открыт.",
+  "cardUpHa": "Home Assistant {to}",
+  "cardUpOs": "Операционная система {to}",
+  "cardUpSupervisor": "Supervisor {to}",
+  "cardUpType_config_entry": "Интеграция",
+  "cardUpType_device": "Устройство",
+  "cardUpType_automation": "Автоматизация",
+  "cardUpType_script": "Скрипт",
+  "cardUpType_scene": "Сцена",
+  "cardUpType_entity": "Сущность",
+  "cardUpType_other": "Объект",
+  "cardUpStatus_unavailable": "Недоступно",
+  "cardUpStatus_problem": "Проблема",
+  "cardUpStatus_stopped": "Остановлено",
+  "cardUpMore": {
+    "one": "и ещё {n}",
+    "few": "и ещё {n}",
+    "many": "и ещё {n}",
+    "other": "и ещё {n}"
+  },
+  "cardUpFindings": {
+    "one": "{n} новая находка",
+    "few": "{n} новые находки",
+    "many": "{n} новых находок",
+    "other": "{n} новой находки"
+  },
+  "cardUpRepairs": {
+    "one": "{n} новое уведомление о ремонте",
+    "few": "{n} новых уведомления о ремонте",
+    "many": "{n} новых уведомлений о ремонте",
+    "other": "{n} нового уведомления о ремонте"
+  },
+  "cardUpStart": "Запуск занял {took} (обычно {usual})",
+  "cardUpStartOnly": "Запуск занял {took}",
+  "cardDurMin": "{m} мин {s} с",
+  "cardDurSec": "{s} с",
+  "edit_show_hours": "Видна после обновления",
+  "edit_show_hours_1": "1 час",
+  "edit_show_hours_3": "3 часа",
+  "edit_show_hours_6": "6 часов",
+  "edit_show_hours_24": "24 часа",
+  "edit_start": "Показывать длительность запуска"
 }

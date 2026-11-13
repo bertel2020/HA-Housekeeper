@@ -125,6 +125,17 @@
       "auto_pause": {
         "name": "Pozastavené integrácie"
       },
+      "update_watch": {
+        "name": "Po aktualizácii",
+        "state": {
+          "none": "Žiadna aktualizácia",
+          "pending": "Kontroluje sa",
+          "stable": "Bez nápadností",
+          "transient": "Krátko rušené",
+          "worse": "Horšie ako predtým",
+          "unknown": "Neisté"
+        }
+      },
       "new_findings": {
         "name": "Nové nálezy"
       },

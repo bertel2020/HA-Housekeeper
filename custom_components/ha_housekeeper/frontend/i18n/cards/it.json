@@ -159,5 +159,59 @@
   "cardApFailed": "Non ha funzionato: {detail}",
   "edit_actions": "Azioni nel menu",
   "edit_actions_help": "Solo gli amministratori vedono il menu.",
-  "edit_progress": "Mostra l’avanzamento dei tentativi"
+  "edit_progress": "Mostra l’avanzamento dei tentativi",
+  "cardUpTitle": "Dopo l’aggiornamento",
+  "cardUpNone": "Non è ancora stato osservato nessun aggiornamento.",
+  "cardUpHidden": "Questa scheda compare solo per un po’ dopo un aggiornamento. Nell’editor la vedi comunque.",
+  "cardUpWorse": "Qualcosa ha smesso di funzionare dopo l’aggiornamento",
+  "cardUpPending": "Housekeeper sta verificando dopo l’aggiornamento",
+  "cardUpFine": "Aggiornamento senza anomalie",
+  "cardUpUnknown": "Dopo l’aggiornamento non è possibile dirlo con certezza",
+  "cardUpChip": {
+    "one": "{n} cosa",
+    "other": "{n} cose"
+  },
+  "cardUpAllFine": "Tutto funziona",
+  "cardUpFirstCheck": "La prima verifica arriva {when}.",
+  "cardUpFineNote": "Niente funziona peggio di prima dell’aggiornamento.",
+  "cardUpTransientNote": {
+    "one": "{n} oggetto è sparito per poco ed è tornato.",
+    "other": "{n} oggetti sono spariti per poco e sono tornati."
+  },
+  "cardUpUnknownNote": "Housekeeper non è riuscito a leggere tutto. Il verdetto è ancora aperto.",
+  "cardUpHa": "Home Assistant {to}",
+  "cardUpOs": "Sistema operativo {to}",
+  "cardUpSupervisor": "Supervisor {to}",
+  "cardUpType_config_entry": "Integrazione",
+  "cardUpType_device": "Dispositivo",
+  "cardUpType_automation": "Automazione",
+  "cardUpType_script": "Script",
+  "cardUpType_scene": "Scena",
+  "cardUpType_entity": "Entità",
+  "cardUpType_other": "Oggetto",
+  "cardUpStatus_unavailable": "Non raggiungibile",
+  "cardUpStatus_problem": "Problema",
+  "cardUpStatus_stopped": "Fermato",
+  "cardUpMore": {
+    "one": "e {n} altro",
+    "other": "e altri {n}"
+  },
+  "cardUpFindings": {
+    "one": "{n} nuovo rilevamento",
+    "other": "{n} nuovi rilevamenti"
+  },
+  "cardUpRepairs": {
+    "one": "{n} nuovo avviso di riparazione",
+    "other": "{n} nuovi avvisi di riparazione"
+  },
+  "cardUpStart": "L’avvio ha richiesto {took} (di solito {usual})",
+  "cardUpStartOnly": "L’avvio ha richiesto {took}",
+  "cardDurMin": "{m} min {s} s",
+  "cardDurSec": "{s} s",
+  "edit_show_hours": "Visibile dopo l’aggiornamento",
+  "edit_show_hours_1": "1 ora",
+  "edit_show_hours_3": "3 ore",
+  "edit_show_hours_6": "6 ore",
+  "edit_show_hours_24": "24 ore",
+  "edit_start": "Mostra la durata dell’avvio"
 }

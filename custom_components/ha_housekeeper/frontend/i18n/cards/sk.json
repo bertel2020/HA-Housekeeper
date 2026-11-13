@@ -173,5 +173,64 @@
   "cardApFailed": "Nepodarilo sa: {detail}",
   "edit_actions": "Akcie v ponuke",
   "edit_actions_help": "Ponuku vidia len správcovia.",
-  "edit_progress": "Zobraziť priebeh pokusov"
+  "edit_progress": "Zobraziť priebeh pokusov",
+  "cardUpTitle": "Po aktualizácii",
+  "cardUpNone": "Zatiaľ sa nesledovala žiadna aktualizácia.",
+  "cardUpHidden": "Táto karta sa zobrazí len na krátky čas po aktualizácii. V editore ju aj tak vidíš.",
+  "cardUpWorse": "Od aktualizácie niečo prestalo fungovať",
+  "cardUpPending": "Housekeeper kontroluje po aktualizácii",
+  "cardUpFine": "Aktualizácia bez nápadností",
+  "cardUpUnknown": "Po aktualizácii sa to nedá s istotou povedať",
+  "cardUpChip": {
+    "one": "{n} vec",
+    "few": "{n} veci",
+    "other": "{n} vecí"
+  },
+  "cardUpAllFine": "Všetko beží",
+  "cardUpFirstCheck": "Prvá kontrola príde {when}.",
+  "cardUpFineNote": "Nič nefunguje horšie ako pred aktualizáciou.",
+  "cardUpTransientNote": {
+    "one": "{n} objekt bol krátko preč a je späť.",
+    "few": "{n} objekty boli krátko preč a sú späť.",
+    "other": "{n} objektov bolo krátko preč a sú späť."
+  },
+  "cardUpUnknownNote": "Housekeeper nedokázal prečítať všetko. Úsudok je stále otvorený.",
+  "cardUpHa": "Home Assistant {to}",
+  "cardUpOs": "Operačný systém {to}",
+  "cardUpSupervisor": "Supervisor {to}",
+  "cardUpType_config_entry": "Integrácia",
+  "cardUpType_device": "Zariadenie",
+  "cardUpType_automation": "Automatizácia",
+  "cardUpType_script": "Skript",
+  "cardUpType_scene": "Scéna",
+  "cardUpType_entity": "Entita",
+  "cardUpType_other": "Objekt",
+  "cardUpStatus_unavailable": "Nedostupné",
+  "cardUpStatus_problem": "Problém",
+  "cardUpStatus_stopped": "Zastavené",
+  "cardUpMore": {
+    "one": "a ešte {n}",
+    "few": "a ešte {n}",
+    "other": "a ešte {n}"
+  },
+  "cardUpFindings": {
+    "one": "{n} nový nález",
+    "few": "{n} nové nálezy",
+    "other": "{n} nových nálezov"
+  },
+  "cardUpRepairs": {
+    "one": "{n} nové upozornenie na opravu",
+    "few": "{n} nové upozornenia na opravu",
+    "other": "{n} nových upozornení na opravu"
+  },
+  "cardUpStart": "Štart trval {took} (zvyčajne {usual})",
+  "cardUpStartOnly": "Štart trval {took}",
+  "cardDurMin": "{m} min {s} s",
+  "cardDurSec": "{s} s",
+  "edit_show_hours": "Viditeľná po aktualizácii",
+  "edit_show_hours_1": "1 hodinu",
+  "edit_show_hours_3": "3 hodiny",
+  "edit_show_hours_6": "6 hodín",
+  "edit_show_hours_24": "24 hodín",
+  "edit_start": "Zobraziť dĺžku štartu"
 }

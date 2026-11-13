@@ -605,6 +605,7 @@ async def test_sensors_expose_counts_and_follow_scans(hass: HomeAssistant) -> No
     assert hass.states.get("sensor.ha_housekeeper_weakest_battery") is not None
     assert hass.states.get("sensor.ha_housekeeper_next_battery_change") is not None
     assert hass.states.get("sensor.ha_housekeeper_paused_integrations").state == "0"
+    assert hass.states.get("sensor.ha_housekeeper_after_the_update").state == "none"
 
     finding = scanner.snapshot["findings"][0]
     scanner.set_finding_ignored(finding["key"], True)

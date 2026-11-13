@@ -159,5 +159,59 @@
   "cardApFailed": "Ça n’a pas marché : {detail}",
   "edit_actions": "Actions dans le menu",
   "edit_actions_help": "Seuls les administrateurs voient le menu.",
-  "edit_progress": "Afficher la progression des essais"
+  "edit_progress": "Afficher la progression des essais",
+  "cardUpTitle": "Après la mise à jour",
+  "cardUpNone": "Aucune mise à jour n’a encore été observée.",
+  "cardUpHidden": "Cette carte n’apparaît que peu de temps après une mise à jour. Dans l’éditeur, tu la vois quand même.",
+  "cardUpWorse": "Quelque chose ne fonctionne plus depuis la mise à jour",
+  "cardUpPending": "Housekeeper vérifie après la mise à jour",
+  "cardUpFine": "Mise à jour sans rien d’anormal",
+  "cardUpUnknown": "Impossible de conclure après la mise à jour",
+  "cardUpChip": {
+    "one": "{n} chose",
+    "other": "{n} choses"
+  },
+  "cardUpAllFine": "Tout fonctionne",
+  "cardUpFirstCheck": "La première vérification a lieu {when}.",
+  "cardUpFineNote": "Rien ne fonctionne moins bien qu’avant la mise à jour.",
+  "cardUpTransientNote": {
+    "one": "{n} objet a disparu un instant et est revenu.",
+    "other": "{n} objets ont disparu un instant et sont revenus."
+  },
+  "cardUpUnknownNote": "Housekeeper n’a pas pu tout lire. Le verdict reste ouvert.",
+  "cardUpHa": "Home Assistant {to}",
+  "cardUpOs": "Système d’exploitation {to}",
+  "cardUpSupervisor": "Supervisor {to}",
+  "cardUpType_config_entry": "Intégration",
+  "cardUpType_device": "Appareil",
+  "cardUpType_automation": "Automatisation",
+  "cardUpType_script": "Script",
+  "cardUpType_scene": "Scène",
+  "cardUpType_entity": "Entité",
+  "cardUpType_other": "Objet",
+  "cardUpStatus_unavailable": "Injoignable",
+  "cardUpStatus_problem": "Problème",
+  "cardUpStatus_stopped": "Arrêté",
+  "cardUpMore": {
+    "one": "et {n} autre",
+    "other": "et {n} autres"
+  },
+  "cardUpFindings": {
+    "one": "{n} nouveau constat",
+    "other": "{n} nouveaux constats"
+  },
+  "cardUpRepairs": {
+    "one": "{n} nouvelle alerte de réparation",
+    "other": "{n} nouvelles alertes de réparation"
+  },
+  "cardUpStart": "Le démarrage a pris {took} (d’habitude {usual})",
+  "cardUpStartOnly": "Le démarrage a pris {took}",
+  "cardDurMin": "{m} min {s} s",
+  "cardDurSec": "{s} s",
+  "edit_show_hours": "Visible après la mise à jour",
+  "edit_show_hours_1": "1 heure",
+  "edit_show_hours_3": "3 heures",
+  "edit_show_hours_6": "6 heures",
+  "edit_show_hours_24": "24 heures",
+  "edit_start": "Afficher la durée du démarrage"
 }

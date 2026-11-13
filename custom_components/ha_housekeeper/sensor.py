@@ -37,6 +37,8 @@ from .outage_levels import is_quiet
 from .runtime import HousekeeperConfigEntry
 from .scan_coverage import gaps
 from .scan_health import STATES
+from .update_card import STATES as UPDATE_STATES
+from .update_card import update_view
 
 NEW_HOURS = 24  # how long a finding counts as new for the sensor
 
@@ -133,6 +135,14 @@ AUTO_PAUSE_DESCRIPTION = SensorEntityDescription(
 )
 
 
+UPDATE_WATCH_DESCRIPTION = SensorEntityDescription(
+    key="update_watch",
+    translation_key="update_watch",
+    device_class=SensorDeviceClass.ENUM,
+    options=list(UPDATE_STATES),
+)
+
+
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
@@ -171,6 +181,7 @@ async def async_setup_entry(
             BatteryWeakestSensor(entry, BATTERY_WEAKEST_DESCRIPTION),
             BatteryNextChangeSensor(entry, BATTERY_NEXT_DESCRIPTION),
             AutoPauseSensor(entry, AUTO_PAUSE_DESCRIPTION),
+            UpdateWatchSensor(entry, UPDATE_WATCH_DESCRIPTION),
         ]
     )
     scanner = entry.runtime_data
@@ -313,6 +324,50 @@ class AutoPauseSensor(HousekeeperSensor):
             return
         view = scanner.auto_pause.card_view()
         self._attr_native_value = len(view["paused"])
+        self._attr_extra_state_attributes = view
+
+
+class UpdateWatchSensor(HousekeeperSensor):
+    """What stopped working since the last update, for the card: the verdict of the watch and the worst objects.
+
+    "none" while no update was watched. Wording stays "since", never "because"; the lists stay out of the recorder.
+    """
+
+    _unrecorded_attributes = frozenset(
+        {
+            "started_at",
+            "until",
+            "open",
+            "samples",
+            "triggers",
+            "next_check",
+            "problems",
+            "problems_total",
+            "silent",
+            "fixed",
+            "transient",
+            "new_findings",
+            "new_repairs",
+            "start_seconds",
+            "start_usual_seconds",
+        }
+    )
+
+    def _update(self) -> None:
+        scanner = self.scanner
+        snapshot = scanner.snapshot if scanner else None
+        if scanner is None or snapshot is None or snapshot["meta"].get("preliminary"):
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
+        watches = scanner.watch.watches
+        view = update_view(
+            watches[-1] if watches else None,
+            scanner.watch_marked(snapshot),
+            snapshot["objects"],
+            scanner.starts.starts,
+        )
+        self._attr_native_value = view.pop("state")
         self._attr_extra_state_attributes = view
 
 

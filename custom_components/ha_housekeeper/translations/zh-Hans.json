@@ -125,6 +125,17 @@
       "auto_pause": {
         "name": "已暂停的集成"
       },
+      "update_watch": {
+        "name": "更新之后",
+        "state": {
+          "none": "无更新",
+          "pending": "检查中",
+          "stable": "无异常",
+          "transient": "曾短暂异常",
+          "worse": "比之前更差",
+          "unknown": "不确定"
+        }
+      },
       "new_findings": {
         "name": "新发现项"
       },

@@ -25,7 +25,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -273,4 +273,52 @@ test("the auto-pause card names who is paused and when the next try is, and its 
   card.setConfig({});
   card.hass = hass({ enabled: false, max_days: 7, paused: [] });
   assert.match(html(), /Auto-Pause ist aus[\s\S]*Im Panel einschalten/);
+});
+
+test("the card after the update appears for a while, names what is worse since the update and keeps quiet when nothing is", () => {
+  const { HKUpdateCard, registered } = loadCards();
+  assert.ok(registered["ha-housekeeper-update-card"], "the card is registered");
+  const entities = { u: ENTITY("sensor.update", "update_watch") };
+  const at = minutes => new Date(Date.now() + minutes * 60000).toISOString();
+  let stamp = 0;
+  const hass = (state, attrs, admin = true) => ({ language: "de", user: { is_admin: admin }, entities, states: { "sensor.update": { state, last_updated: String(++stamp), attributes: attrs } } });
+  const base = { started_at: at(-25), until: at(600), open: true, samples: 1, triggers: [{ kind: "ha_version", to: "2026.11.1" }], problems: [], problems_total: 0, new_findings: 0, new_repairs: 0, transient: 0, start_seconds: 192, start_usual_seconds: 160 };
+  const worse = { ...base, problems: [{ name: "Hue", type: "config_entry", status: "problem" }, { name: "Licht Flur Abend", type: "automation", status: "unavailable" }], problems_total: 3, new_findings: 1 };
+  const card = new HKUpdateCard();
+  card.setConfig({});
+  card.hass = hass("worse", worse);
+  const html = () => card.shadowRoot.innerHTML;
+  assert.match(html(), /Seit dem Update läuft etwas nicht mehr/);
+  assert.match(html(), /Home Assistant 2026\.11\.1 · vor 25 Minuten/);
+  assert.match(html(), /4 Dinge/, "the objects and the new findings together");
+  assert.match(html(), /Hue[\s\S]*Integration[\s\S]*Problem[\s\S]*Licht Flur Abend[\s\S]*Automation[\s\S]*Nicht erreichbar/);
+  assert.match(html(), /und 1 weitere[\s\S]*1 neuer Befund/);
+  assert.match(html(), /Start dauerte 3 min 12 s \(sonst 2 min 40 s\)/);
+  assert.match(html(), /class="hk-alert"/);
+  assert.match(html(), /data-hk-panel="view=findingsNav"/);
+  card.setConfig({ start: false });
+  assert.ok(!html().includes("Start dauerte"), "the start time can be left out");
+
+  card.setConfig({ show_hours: "6" });
+  card.hass = hass("worse", { ...worse, started_at: at(-7 * 60) });
+  assert.equal(card.style.display, "none", "seven hours after the update the card has gone");
+  card.setConfig({ show_hours: "24" });
+  assert.notEqual(card.style.display, "none");
+  card.hass = hass("none", {});
+  assert.equal(card.style.display, "none", "without a watched update it does not show");
+  card.preview = true;
+  card.update(true);
+  assert.match(html(), /erscheint nur kurz nach einem Update[\s\S]*Es wurde noch kein Update beobachtet/, "the editor still shows it");
+  card.preview = false;
+
+  card.setConfig({});
+  card.hass = hass("stable", base);
+  assert.match(html(), /Update ohne Auffälligkeiten[\s\S]*Alles läuft[\s\S]*Nichts läuft schlechter/);
+  card.setConfig({ quiet: "hide" });
+  assert.equal(card.style.display, "none", "nothing is worse and the card was asked to hide");
+  card.setConfig({});
+  card.hass = hass("pending", { ...base, samples: 0, next_check: at(20) });
+  assert.match(html(), /Housekeeper prüft nach dem Update[\s\S]*Die erste Prüfung kommt in 20 Minuten/);
+  card.hass = hass("unknown", {});
+  assert.equal(card.style.display, "none", "unknown without attributes is Home Assistant's own, not a verdict: nothing to show");
 });

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"14f155fa23"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"3efbfa03a0"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"2d088fbf5c"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"87c71c1607"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"8d4c85e7f7"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"c83f9f325e"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"453b442711"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"56580212fc"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"bcd37dfb2b"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f4fdeab346"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7f6003f002"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"39151e31b9"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"4d80e67506"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"5287b0accf"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -146,6 +146,45 @@ const CARD_TEXT = {
     edit_actions: "Aktionen im Menü",
     edit_actions_help: "Nur Administratoren sehen das Menü.",
     edit_progress: "Fortschritt der Versuche zeigen",
+    cardUpTitle: "Nach dem Update",
+    cardUpNone: "Es wurde noch kein Update beobachtet.",
+    cardUpHidden: "Diese Karte erscheint nur kurz nach einem Update. Im Editor siehst du sie trotzdem.",
+    cardUpWorse: "Seit dem Update läuft etwas nicht mehr",
+    cardUpPending: "Housekeeper prüft nach dem Update",
+    cardUpFine: "Update ohne Auffälligkeiten",
+    cardUpUnknown: "Nach dem Update nicht sicher zu sagen",
+    cardUpChip: {"one": "{n} Ding", "other": "{n} Dinge"},
+    cardUpAllFine: "Alles läuft",
+    cardUpFirstCheck: "Die erste Prüfung kommt {when}.",
+    cardUpFineNote: "Nichts läuft schlechter als vor dem Update.",
+    cardUpTransientNote: {"one": "{n} Objekt war kurz weg und ist wieder da.", "other": "{n} Objekte waren kurz weg und sind wieder da."},
+    cardUpUnknownNote: "Housekeeper konnte nicht alles lesen. Das Urteil steht noch aus.",
+    cardUpHa: "Home Assistant {to}",
+    cardUpOs: "Betriebssystem {to}",
+    cardUpSupervisor: "Supervisor {to}",
+    cardUpType_config_entry: "Integration",
+    cardUpType_device: "Gerät",
+    cardUpType_automation: "Automation",
+    cardUpType_script: "Skript",
+    cardUpType_scene: "Szene",
+    cardUpType_entity: "Entität",
+    cardUpType_other: "Objekt",
+    cardUpStatus_unavailable: "Nicht erreichbar",
+    cardUpStatus_problem: "Problem",
+    cardUpStatus_stopped: "Gestoppt",
+    cardUpMore: {"one": "und {n} weiteres", "other": "und {n} weitere"},
+    cardUpFindings: {"one": "{n} neuer Befund", "other": "{n} neue Befunde"},
+    cardUpRepairs: {"one": "{n} neuer Reparaturhinweis", "other": "{n} neue Reparaturhinweise"},
+    cardUpStart: "Start dauerte {took} (sonst {usual})",
+    cardUpStartOnly: "Start dauerte {took}",
+    cardDurMin: "{m} min {s} s",
+    cardDurSec: "{s} s",
+    edit_show_hours: "Sichtbar nach dem Update",
+    edit_show_hours_1: "1 Stunde",
+    edit_show_hours_3: "3 Stunden",
+    edit_show_hours_6: "6 Stunden",
+    edit_show_hours_24: "24 Stunden",
+    edit_start: "Startdauer zeigen",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -263,6 +302,45 @@ const CARD_TEXT = {
     edit_actions: "Actions in the menu",
     edit_actions_help: "Only administrators see the menu.",
     edit_progress: "Show the progress of the attempts",
+    cardUpTitle: "After the update",
+    cardUpNone: "No update has been watched yet.",
+    cardUpHidden: "This card appears only for a while after an update. You still see it here in the editor.",
+    cardUpWorse: "Something has stopped working since the update",
+    cardUpPending: "Housekeeper is checking after the update",
+    cardUpFine: "Update without anything unusual",
+    cardUpUnknown: "Not sure after the update",
+    cardUpChip: {"one": "{n} thing", "other": "{n} things"},
+    cardUpAllFine: "All running",
+    cardUpFirstCheck: "The first check comes {when}.",
+    cardUpFineNote: "Nothing runs worse than before the update.",
+    cardUpTransientNote: {"one": "{n} object was briefly gone and is back.", "other": "{n} objects were briefly gone and are back."},
+    cardUpUnknownNote: "Housekeeper could not read everything. The verdict is still open.",
+    cardUpHa: "Home Assistant {to}",
+    cardUpOs: "Operating system {to}",
+    cardUpSupervisor: "Supervisor {to}",
+    cardUpType_config_entry: "Integration",
+    cardUpType_device: "Device",
+    cardUpType_automation: "Automation",
+    cardUpType_script: "Script",
+    cardUpType_scene: "Scene",
+    cardUpType_entity: "Entity",
+    cardUpType_other: "Object",
+    cardUpStatus_unavailable: "Unreachable",
+    cardUpStatus_problem: "Problem",
+    cardUpStatus_stopped: "Stopped",
+    cardUpMore: {"one": "and {n} more", "other": "and {n} more"},
+    cardUpFindings: {"one": "{n} new finding", "other": "{n} new findings"},
+    cardUpRepairs: {"one": "{n} new repair hint", "other": "{n} new repair hints"},
+    cardUpStart: "The start took {took} (usually {usual})",
+    cardUpStartOnly: "The start took {took}",
+    cardDurMin: "{m} min {s} s",
+    cardDurSec: "{s} s",
+    edit_show_hours: "Visible after the update",
+    edit_show_hours_1: "1 hour",
+    edit_show_hours_3: "3 hours",
+    edit_show_hours_6: "6 hours",
+    edit_show_hours_24: "24 hours",
+    edit_start: "Show the start time",
   },
 };
 
@@ -283,6 +361,7 @@ const CARD_CSS = `
   .hk-foot .hk-sp { flex: 1; }
   .hk-link { color: var(--primary-color); font-weight: 600; cursor: pointer; }
   .hk-note { padding: 14px 16px; color: var(--secondary-text-color); font-size: 13px; }
+  .hk-note + .hk-note { padding-top: 0; }
   .hk-dot { width: 38px; height: 38px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff; }
   .hk-dot.ok { background: var(--success-color); }
   .hk-dot.warn { background: var(--warning-color); }
@@ -350,6 +429,9 @@ const CARD_CSS = `
   .hk-menu button { text-align: left; padding: 8px 10px; border: 0; border-radius: 8px; background: none; color: var(--primary-text-color); font: inherit; font-size: 13px; cursor: pointer; }
   .hk-menu button:first-child { font-weight: 600; background: var(--secondary-background-color); }
   .hk-menu button:hover { background: var(--secondary-background-color); }
+  ha-card.hk-alert { border-top: 3px solid var(--warning-color); }
+  .hk-tag { font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .hk-tag.bad { color: var(--error-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
 
@@ -506,6 +588,9 @@ class HKCard extends HTMLElement {
   get titleKey() { return "cardTitle"; }
   // A card overrides: the HTML of the card without the frame.
   renderBody() { return ""; }
+  // A card overrides: the text that says in the editor why the card would be hidden, and a class for its frame.
+  hiddenKey() { return "cardQuietHidden"; }
+  frameClass() { return ""; }
 
   titleText() { return this._config?.title || this.t(this.titleKey); }
   editing() { return this.preview === true || this.editMode === true || this._hass?.editMode === true; }
@@ -528,8 +613,9 @@ class HKCard extends HTMLElement {
     if (!Object.keys(this.found().byKey).length) body = `<div class="hk-note">${this.esc(this.t("cardNotFound"))}</div>`;
     else if (!this.hasData()) body = `<div class="hk-note">${this.esc(this.t("cardNoData"))}</div>`;
     else body = this.renderBody();
-    const banner = mode === "placeholder" ? `<div class="hk-banner">${this.esc(this.t("cardQuietHidden"))}</div>` : "";
-    this.shadowRoot.innerHTML = `<style>${CARD_CSS}</style><ha-card class="${this._config.compact ? "hk-compact" : ""}">${banner}${body}</ha-card>`;
+    const banner = mode === "placeholder" ? `<div class="hk-banner">${this.esc(this.t(this.hiddenKey()))}</div>` : "";
+    const frame = [this._config.compact ? "hk-compact" : "", this.frameClass()].filter(Boolean).join(" ");
+    this.shadowRoot.innerHTML = `<style>${CARD_CSS}</style><ha-card class="${frame}">${banner}${body}</ha-card>`;
     this.shadowRoot.querySelectorAll("[data-hk-panel]").forEach(el => el.addEventListener("click", () => this.openPanel(el.getAttribute("data-hk-panel"))));
     this.shadowRoot.querySelectorAll("[data-hk-act]").forEach(el => el.addEventListener("click", event => this.act(el.getAttribute("data-hk-act"), event)));
   }
@@ -956,6 +1042,97 @@ class HKAutoPauseCard extends HKCard {
   }
 }
 
+// The card after the update: it appears when an update was watched and says what has stopped working since, in the
+// words of the watch ("since", never "because"). It shows for a few hours after the update and is hidden otherwise.
+// The numbers come from the sensor "after the update" and its attributes.
+class HKUpdateCard extends HKCard {
+  static tag = "ha-housekeeper-update-card";
+  static pickerName = "HA Housekeeper: After the update";
+  static pickerDescription = "Appears after an update and shows what has stopped working since, and how long the start took.";
+  static get defaults() { return { show_hours: "6", start: true }; }
+
+  static editorSchema(t) {
+    return [
+      { name: "show_hours", selector: { select: { mode: "dropdown", options: ["1", "3", "6", "24"].map(value => ({ value, label: t(`edit_show_hours_${value}`) })) } } },
+      { name: "start", selector: { boolean: {} } },
+    ];
+  }
+
+  get titleKey() { return "cardUpTitle"; }
+  watchedIds() { return [this.idOf("update_watch")].filter(Boolean); }
+  verdict() { return this.stateOf("update_watch")?.state; }
+  data() { return this.stateOf("update_watch")?.attributes || {}; }
+  // "unknown" is also what Home Assistant says for a sensor without a value; only a watch that was judged "unknown" has data.
+  hasData() {
+    const state = this.verdict();
+    return state === "unknown" ? Boolean(this.data().started_at) : Boolean(state) && state !== "unavailable";
+  }
+  // Quiet is: the update changed nothing for the worse.
+  isQuiet() { return ["stable", "transient"].includes(this.verdict()); }
+  hiddenKey() { return this.inWindow() ? "cardQuietHidden" : "cardUpHidden"; }
+  frameClass() { return this.verdict() === "worse" ? "hk-alert" : ""; }
+
+  // The card shows only for a while after the update that was watched.
+  inWindow() {
+    const started = Date.parse(this.data().started_at || "");
+    return Number.isFinite(started) && this.verdict() !== "none" && Date.now() - started <= Number(this._config.show_hours) * 3600000;
+  }
+
+  mode() {
+    if (!this.inWindow()) return this.editing() ? "placeholder" : "hide";
+    return super.mode();
+  }
+
+  // "Home Assistant 2026.11.1, Operating system 14.0": what was updated.
+  what() {
+    const keys = { ha_version: "cardUpHa", os_version: "cardUpOs", supervisor_version: "cardUpSupervisor" };
+    return (this.data().triggers || []).map(t => this.t(keys[t.kind] || "cardUpHa", { to: t.to ?? "" })).join(", ");
+  }
+
+  duration(seconds) {
+    const total = Math.round(seconds), m = Math.floor(total / 60), s = total % 60;
+    return m ? this.t("cardDurMin", { m, s }) : this.t("cardDurSec", { s });
+  }
+
+  startLine(data) {
+    if (!this._config.start || !Number.isFinite(data.start_seconds)) return "";
+    const took = this.duration(data.start_seconds);
+    return Number.isFinite(data.start_usual_seconds) ? this.t("cardUpStart", { took, usual: this.duration(data.start_usual_seconds) }) : this.t("cardUpStartOnly", { took });
+  }
+
+  problemRow(item) {
+    const type = this.t(`cardUpType_${["config_entry", "device", "automation", "script", "scene", "entity"].includes(item.type) ? item.type : "other"}`);
+    const status = this.t(`cardUpStatus_${["unavailable", "problem", "stopped"].includes(item.status) ? item.status : "unavailable"}`);
+    return `<div class="hk-row r2"><div class="hk-name"><b>${this.esc(item.name)}</b><small>${this.esc(type)}</small></div><span class="hk-tag bad">${this.esc(status)}</span></div>`;
+  }
+
+  renderBody() {
+    const data = this.data(), state = this.verdict(), title = this._config.title, ago = this.ago(data.started_at);
+    const sub = [this.what(), ago].filter(Boolean).join(" · ");
+    const head = (text, right = "", line = false, tone = "") => this.head(title ? [text, sub].filter(Boolean).join(" · ") : sub, right, line, tone ? `<span class="hk-dot ${tone}">${tone === "ok" ? "✓" : "!"}</span>` : "", title || text);
+    const foot = this.footHtml(this.esc(this.startLine(data)), "view=findingsNav");
+    if (state === "none") return head(this.t("cardUpTitle")) + `<div class="hk-note">${this.esc(this.t("cardUpNone"))}</div>`;
+    if (state === "pending") {
+      const when = this.until(data.next_check);
+      return head(this.t("cardUpPending"), "", false, "warn") + (when ? `<div class="hk-note">${this.esc(this.t("cardUpFirstCheck", { when }))}</div>` : "") + foot;
+    }
+    if (state === "worse") {
+      const things = (data.problems_total || 0) + (data.new_findings || 0) + (data.new_repairs || 0);
+      const chip = `<span class="hk-chip warn">${this.esc(this.t("cardUpChip", { n: things, count: things }))}</span>`;
+      const more = (data.problems_total || 0) - (data.problems || []).length;
+      const notes = [
+        more > 0 ? this.t("cardUpMore", { n: more, count: more }) : "",
+        data.new_findings ? this.t("cardUpFindings", { n: data.new_findings, count: data.new_findings }) : "",
+        data.new_repairs ? this.t("cardUpRepairs", { n: data.new_repairs, count: data.new_repairs }) : "",
+      ].filter(Boolean).map(text => `<div class="hk-note">${this.esc(text)}</div>`).join("");
+      return head(this.t("cardUpWorse"), chip, true, "warn") + (data.problems || []).map(item => this.problemRow(item)).join("") + notes + foot;
+    }
+    if (state === "unknown") return head(this.t("cardUpUnknown"), "", false, "warn") + `<div class="hk-note">${this.esc(this.t("cardUpUnknownNote"))}</div>` + foot;
+    const note = state === "transient" && data.transient ? this.t("cardUpTransientNote", { n: data.transient, count: data.transient }) : this.t("cardUpFineNote");
+    return head(this.t("cardUpFine"), `<span class="hk-chip">${this.esc(this.t("cardUpAllFine"))}</span>`, false, "ok") + `<div class="hk-note">${this.esc(note)}</div>` + foot;
+  }
+}
+
 // Every card is registered here: its element, its editor and its entry in the card picker.
 // The picker shows English only, it has no way to translate a name.
 function registerCard(CardClass) {
@@ -972,3 +1149,4 @@ registerCard(HKHealthCard);
 registerCard(HKBatteryCard);
 registerCard(HKFunctionsCard);
 registerCard(HKAutoPauseCard);
+registerCard(HKUpdateCard);

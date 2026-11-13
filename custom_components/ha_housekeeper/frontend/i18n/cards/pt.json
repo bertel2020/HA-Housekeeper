@@ -159,5 +159,59 @@
   "cardApFailed": "Não funcionou: {detail}",
   "edit_actions": "Ações no menu",
   "edit_actions_help": "Só os administradores veem o menu.",
-  "edit_progress": "Mostrar o progresso das tentativas"
+  "edit_progress": "Mostrar o progresso das tentativas",
+  "cardUpTitle": "Depois da atualização",
+  "cardUpNone": "Ainda não foi observada nenhuma atualização.",
+  "cardUpHidden": "Este cartão só aparece durante algum tempo depois de uma atualização. No editor, vês na mesma o cartão.",
+  "cardUpWorse": "Algo deixou de funcionar desde a atualização",
+  "cardUpPending": "O Housekeeper está a verificar depois da atualização",
+  "cardUpFine": "Atualização sem nada de anormal",
+  "cardUpUnknown": "Não é possível ter a certeza depois da atualização",
+  "cardUpChip": {
+    "one": "{n} coisa",
+    "other": "{n} coisas"
+  },
+  "cardUpAllFine": "Tudo a funcionar",
+  "cardUpFirstCheck": "A primeira verificação chega {when}.",
+  "cardUpFineNote": "Nada funciona pior do que antes da atualização.",
+  "cardUpTransientNote": {
+    "one": "{n} objeto esteve ausente por momentos e voltou.",
+    "other": "{n} objetos estiveram ausentes por momentos e voltaram."
+  },
+  "cardUpUnknownNote": "O Housekeeper não conseguiu ler tudo. O veredicto continua em aberto.",
+  "cardUpHa": "Home Assistant {to}",
+  "cardUpOs": "Sistema operativo {to}",
+  "cardUpSupervisor": "Supervisor {to}",
+  "cardUpType_config_entry": "Integração",
+  "cardUpType_device": "Dispositivo",
+  "cardUpType_automation": "Automatização",
+  "cardUpType_script": "Script",
+  "cardUpType_scene": "Cena",
+  "cardUpType_entity": "Entidade",
+  "cardUpType_other": "Objeto",
+  "cardUpStatus_unavailable": "Inacessível",
+  "cardUpStatus_problem": "Problema",
+  "cardUpStatus_stopped": "Parado",
+  "cardUpMore": {
+    "one": "e mais {n}",
+    "other": "e mais {n}"
+  },
+  "cardUpFindings": {
+    "one": "{n} nova ocorrência",
+    "other": "{n} novas ocorrências"
+  },
+  "cardUpRepairs": {
+    "one": "{n} novo aviso de reparação",
+    "other": "{n} novos avisos de reparação"
+  },
+  "cardUpStart": "O arranque demorou {took} (normalmente {usual})",
+  "cardUpStartOnly": "O arranque demorou {took}",
+  "cardDurMin": "{m} min {s} s",
+  "cardDurSec": "{s} s",
+  "edit_show_hours": "Visível depois da atualização",
+  "edit_show_hours_1": "1 hora",
+  "edit_show_hours_3": "3 horas",
+  "edit_show_hours_6": "6 horas",
+  "edit_show_hours_24": "24 horas",
+  "edit_start": "Mostrar a duração do arranque"
 }
