@@ -612,7 +612,8 @@ async def reliability(
         before = await cached_query(
             hass,
             f"reliability:{window_days}:before",
-            DAY,
+            # The window moves on: a day-old answer is good for a week, not for a day.
+            min(DAY, window_days * DAY / 24),
             lambda: query_runs(hass, now - 2 * window_days * DAY, now - window_days * DAY, days),
         )
         if not before.busy:

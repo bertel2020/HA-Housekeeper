@@ -167,6 +167,33 @@ async def test_no_attempt_starts_while_home_assistant_is_starting(hass) -> None:
     pause._unsub()
 
 
+async def test_an_entry_in_an_attempt_does_not_make_the_timer_fire_again_at_once(hass) -> None:
+    entry, _scanner, pause = _setup(hass)
+    pause.paused[entry.entry_id] = {
+        "since": (NOW - timedelta(days=1)).isoformat(),
+        "reason": "auto",
+        "failures": 20,
+        "done": 0,
+        "trying": True,
+        "exhausted": False,
+        "title": entry.title,
+        "domain": entry.domain,
+    }
+    pause._busy.add(entry.entry_id)
+    pause._schedule()
+    assert pause._unsub is None, "its due time is past: the end of the attempt schedules again"
+    pause._busy.discard(entry.entry_id)
+    pause._schedule()
+    assert pause._unsub is not None
+    pause._unsub()
+    # An entry removed while it was paused is dropped on the next tick, not tried for ever.
+    await hass.config_entries.async_remove(entry.entry_id)
+    pause._tick(NOW)
+    assert entry.entry_id not in pause.paused
+    if pause._unsub:
+        pause._unsub()
+
+
 async def test_the_central_log_shows_what_is_paused_now_and_not_the_last_step(hass) -> None:
     from custom_components.ha_housekeeper.events import EventLog
 

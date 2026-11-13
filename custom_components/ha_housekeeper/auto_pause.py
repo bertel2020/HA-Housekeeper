@@ -336,7 +336,13 @@ class AutoPause:
         if self._unsub:
             self._unsub()
             self._unsub = None
-        times = [t for r in self.paused.values() if (t := self._due(r)) is not None]
+        # An entry in an attempt is left out: its due time is past, and the end of the attempt
+        # schedules again. With it the timer would fire at once, over and over, for a minute.
+        times = [
+            t
+            for entry_id, r in self.paused.items()
+            if entry_id not in self._busy and (t := self._due(r)) is not None
+        ]
         if times:
             self._unsub = async_track_point_in_utc_time(self.hass, self._tick, min(times))
 
@@ -353,6 +359,11 @@ class AutoPause:
         for entry_id, rec in list(self.paused.items()):
             due = self._due(rec)
             if due is None or due > now or entry_id in self._busy:
+                continue
+            if self.hass.config_entries.async_get_entry(entry_id) is None:
+                del self.paused[
+                    entry_id
+                ]  # removed while paused: nothing to try, and no timer for it
                 continue
             if rec["done"] < len(OFFSETS):
                 self.hass.async_create_background_task(

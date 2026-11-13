@@ -344,3 +344,16 @@ def test_a_card_script_is_judged_by_the_element_names_it_defines(tmp_path) -> No
     assert card_status(sizes["/hacsfiles/c/c.js"], {"bar-card"}) == "unused"
     assert card_status(sizes["/hacsfiles/c/c.js"], None) == "unknown"
     assert card_status({"local": False}, set()) == "external"
+
+
+def test_a_database_copy_set_aside_as_damaged_is_listed_not_hidden(tmp_path) -> None:
+    from custom_components.ha_housekeeper.system_usage import other_entries
+
+    for name, size in (
+        ("home-assistant_v2.db", 10),
+        ("home-assistant_v2.db-wal", 10),
+        ("home-assistant_v2.db.corrupt.2026-10-01", 5000),
+    ):
+        (tmp_path / name).write_bytes(b"x" * size)
+    found, _rest = other_entries(str(tmp_path))
+    assert [entry["name"] for entry in found] == ["home-assistant_v2.db.corrupt.2026-10-01"]

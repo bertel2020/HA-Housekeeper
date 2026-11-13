@@ -412,3 +412,17 @@ def test_the_diagnostic_meta_keeps_no_path_or_agent_account() -> None:
     shown = diagnostic_meta(meta)["coverage"]
     assert shown[0]["items"] == 1 and "kinderzimmer-anna" not in str(shown)
     assert _agent_kinds(["onedrive.account-123", "backup.local"]) == ["onedrive", "backup"]
+
+
+async def test_a_planned_write_of_the_criteria_is_not_pushed_out_by_every_run(hass) -> None:
+    from unittest.mock import patch
+
+    from custom_components.ha_housekeeper.criteria import SAVE_DELAY, CriteriaStore
+
+    store = CriteriaStore(hass)
+    with patch.object(store._store, "async_delay_save") as save:
+        store._record("automation.a", "c1", ok=True)
+        store._record("automation.a", "c1", ok=False)
+        assert save.call_count == 1 and save.call_args.args[1] == SAVE_DELAY
+        store.set("automation.a", [])  # the person's own change is written soon
+        assert save.call_count == 2 and save.call_args.args[1] == 10
