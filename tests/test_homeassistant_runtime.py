@@ -856,12 +856,36 @@ async def test_orphaned_statistics_are_listed_without_becoming_findings(
         {"statistic_id": "sensor.gone", "source": "recorder", "has_sum": True},
     ]
     scanner = InventoryScanner(hass)
+    scanner.orphan_grace = timedelta(0)  # the waiting time has its own test
     with patch.object(InventoryScanner, "_statistics", AsyncMock(return_value=statistics)):
         snapshot = await scanner.async_scan()
 
     assert [o["statistic_id"] for o in snapshot["orphaned_statistics"]] == ["sensor.gone"]
     assert snapshot["meta"]["orphaned_statistics"] == 1
     assert snapshot["findings"] == []
+
+
+async def test_a_statistic_without_an_entity_is_offered_only_after_it_stood_so_for_days(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    statistics = [{"statistic_id": "sensor.gone", "source": "recorder", "has_sum": True}]
+    scanner = InventoryScanner(hass)
+    with patch.object(InventoryScanner, "_statistics", AsyncMock(return_value=statistics)):
+        first = await scanner.async_scan()
+        assert first["orphaned_statistics"] == [], (
+            "a platform that did not load yet looks like this"
+        )
+        key = "orphan_stat:sensor.gone"
+        scanner.observations._items[key]["since"] = (
+            datetime.now(UTC) - timedelta(days=3)
+        ).isoformat()
+        later = await scanner.async_scan()
+        assert [o["statistic_id"] for o in later["orphaned_statistics"]] == ["sensor.gone"]
+        hass.states.async_set("sensor.gone", "1")  # the entity is back: the wait starts again
+        await scanner.async_scan()
+        assert key not in scanner.observations._items
 
 
 async def test_the_cards_bundle_loads_on_every_dashboard_while_the_entry_is_loaded(

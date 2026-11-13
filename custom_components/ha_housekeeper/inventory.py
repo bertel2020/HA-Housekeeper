@@ -188,6 +188,8 @@ SUGGEST_LIMIT = 200
 # An entity not provided for this long may be removed without quarantine: one that stays so for a
 # day of scans, restarts included, is no integration still waiting for its first data.
 NOT_PROVIDED_SETTLED = timedelta(hours=24)
+ORPHAN_STAT_GRACE = timedelta(days=2)  # a statistic without an entity is offered after this long
+ORPHAN_STAT_KEY = "orphan_stat:"
 NOT_PROVIDED_KEY = "not_provided:"  # observation key of that period, next to "entity:<id>"
 
 # Keys of the Energy dashboard preferences that name statistics, which are entity IDs.
@@ -1060,6 +1062,7 @@ class InventoryScanner:
         self.scan_coverage = ScanCoverage()
         self._lock = asyncio.Lock()
         self._marks_generation = 0  # counts the changes of decisions and notes
+        self.orphan_grace = ORPHAN_STAT_GRACE
         self._values_generation = 0  # counts what the sensors have to read again
         self._first_scan_lock = asyncio.Lock()  # one first scan for all that wait for a snapshot
         self._scan_task: asyncio.Task[None] | None = None  # a scan the service or button started
@@ -1942,6 +1945,9 @@ class InventoryScanner:
             existing_objects["entity"],
             {edge["target"][7:] for edge in energy_edges},
         )
+        orphaned_statistics = await self._settled_orphan_statistics(
+            orphaned_statistics, preliminary, observed_at
+        )
 
         entity_registry_entries = er.async_get(self.hass)
         for finding in findings:
@@ -2719,6 +2725,29 @@ class InventoryScanner:
         )
         self._refresh_marks()
         return closed
+
+    async def _settled_orphan_statistics(
+        self, orphans: list[dict[str, Any]], preliminary: bool, observed_at: datetime
+    ) -> list[dict[str, Any]]:
+        """Only statistics that stood without an entity for days are offered for clearing up.
+
+        A platform that cannot load for a while (the device is off, the service is down) leaves its
+        entities out of the registry and the states, and its history looks abandoned for that time.
+        """
+        if preliminary:
+            return []  # the states are not all there yet
+        await self.observations.async_track_group(
+            ORPHAN_STAT_KEY, {orphan["statistic_id"] for orphan in orphans}, observed_at
+        )
+        settled = []
+        for orphan in orphans:
+            since = self.observations.since(f"{ORPHAN_STAT_KEY}{orphan['statistic_id']}", "seen")
+            if (
+                since is not None
+                and observed_at - datetime.fromisoformat(since) >= self.orphan_grace
+            ):
+                settled.append({**orphan, "since": since})
+        return settled
 
     def announce_changes(self) -> None:
         """Tell the sensors that what they read has changed: they work it out again, once for all."""
