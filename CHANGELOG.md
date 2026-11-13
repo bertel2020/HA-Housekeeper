@@ -38,6 +38,9 @@
   - Vacation mode: only while the mode is on or its grace period runs; where the absence comes from, since and until when (for a calendar), how many failures are held back and the grace period. Display only, no switch.
   - The overview card can show all four as sections too (the vacation section only while the mode is on).
   - New sensors “Start time”, “Database size”, “Backup protection” and “Vacation mode”.
+- **AI access: replacing many entities:** After a change of integration an agent can prepare the change, you confirm it.
+  - `replacement_candidates` lists the entities that are gone and the ones that are there with name, device class, unit, area and how much uses them; sensitive objects stay out.
+  - `replacement_plan` (needs “Fix findings”) creates one plan from up to 50 pairs old → new. It is a preview like any other: the plan page says it was made through AI access, and an administrator reads every pair, confirms and runs it in the panel. The old entities can be switched off afterwards, never deleted.
 
 ### Fixed
 

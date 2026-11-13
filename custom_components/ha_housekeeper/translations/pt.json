@@ -479,6 +479,42 @@
           "description": "Para replace_target: a entidade, área, piso ou etiqueta que ocupa o lugar da que está em falta."
         }
       }
+    },
+    "replacement_candidates": {
+      "name": "Acesso IA: listar entidades a emparelhar após uma mudança",
+      "description": "Lista as entidades que desapareceram (órfãs ou indisponíveis) e as que existem, com nome, classe de dispositivo, unidade, área e quanto são usadas, para as emparelhar após uma mudança de integração. Só leitura. Precisa de «Acesso IA» ligado.",
+      "fields": {
+        "old_platform": {
+          "name": "Integração antiga",
+          "description": "A plataforma das entidades que desapareceram, por exemplo hue."
+        },
+        "new_platform": {
+          "name": "Integração nova",
+          "description": "A plataforma das entidades que existem."
+        },
+        "search": {
+          "name": "Pesquisa",
+          "description": "Parte do ID ou do nome."
+        },
+        "limit": {
+          "name": "Limite",
+          "description": "Quantas entidades por lista, no máximo 150."
+        }
+      }
+    },
+    "replacement_plan": {
+      "name": "Acesso IA: criar um plano para substituir várias entidades",
+      "description": "Cria um plano que passa os usos de várias entidades antigas para novas (automações, scripts, painéis). O plano é só uma pré-visualização: não é executado. Um administrador revê cada par e confirma-o no painel do Housekeeper. Precisa de «Acesso IA» e «Corrigir achados» ligados. Os pares vêm de «replacement_candidates».",
+      "fields": {
+        "pairs": {
+          "name": "Pares",
+          "description": "Uma lista de antigas e novas, no máximo 50, por exemplo [{old: sensor.a, new: sensor.b}]. Cada entidade pode aparecer uma vez."
+        },
+        "disable_old": {
+          "name": "Desligar as entidades antigas",
+          "description": "Desliga as entidades antigas depois da substituição. Nunca são apagadas."
+        }
+      }
     }
   },
   "exceptions": {

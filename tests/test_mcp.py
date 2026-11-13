@@ -629,3 +629,110 @@ async def test_a_plan_for_a_fix_needs_its_own_switch_and_is_never_run(hass: Home
     assert scanner.mcp.fix is True and not scanner.mcp.can_fix, (
         "AI access off means no plans either"
     )
+
+
+def _entity(object_id: str, status: str, **fields) -> dict:
+    return {
+        "object_type": "entity",
+        "object_id": object_id,
+        "name": object_id,
+        "status": status,
+        **fields,
+    }
+
+
+async def test_the_candidates_for_a_change_list_what_is_gone_and_what_is_there(
+    hass: HomeAssistant,
+) -> None:
+    scanner = scanner_with(hass, 0)
+    scanner.mcp.enabled = True
+    scanner.snapshot["objects"] += [
+        _entity(
+            "sensor.old_temp", "orphaned", platform="hue", device_class="temperature", unit="°C"
+        ),
+        _entity("sensor.old_hum", "unavailable", platform="hue", device_class="humidity", unit="%"),
+        _entity("lock.old_door", "orphaned", platform="hue"),
+        _entity("sensor.new_temp", "active", platform="zha", device_class="temperature", unit="°C"),
+        _entity("sensor.other", "active", platform="mqtt"),
+    ]
+    scanner.snapshot["edges"] = [
+        {"source": "automation:a", "target": "entity:sensor.old_temp", "relation": "TRIGGERS_ON"}
+    ]
+    answer = await mcp_api.run(
+        hass,
+        scanner,
+        "replacement_candidates",
+        {"old_platform": "hue", "new_platform": "zha"},
+        None,
+    )
+    old = {row["id"]: row for row in answer["old"]["items"]}
+    assert set(old) == {"sensor.old_temp", "sensor.old_hum"}, "the lock stays out"
+    assert old["sensor.old_temp"]["used_by"] == 1 and old["sensor.old_temp"]["unit"] == "°C"
+    assert [row["id"] for row in answer["new"]["items"]] == ["sensor.new_temp"]
+    assert "lock.old_door" not in json.dumps(answer)
+    assert "replacement_plan" in answer["next"]
+
+
+async def test_a_plan_for_a_change_pairs_entities_and_stays_a_preview(hass: HomeAssistant) -> None:
+    from types import SimpleNamespace as NS
+    from unittest.mock import patch
+
+    scanner = scanner_with(hass, 0)
+    scanner.hass = hass
+    scanner.refactor = NS(enabled=False)
+    scanner.journal = NS(added=[], add=lambda plan: scanner.journal.added.append(plan))
+    scanner.mcp.enabled = scanner.mcp.fix = True
+    scanner.snapshot["objects"] += [
+        _entity("sensor.a_old", "orphaned"),
+        _entity("sensor.a_new", "active"),
+        _entity("sensor.b_old", "orphaned"),
+        _entity("sensor.b_new", "active"),
+        _entity("lock.door", "active"),
+    ]
+    plan = {
+        "plan_id": "p2",
+        "actions": [
+            {
+                "kind": "replace_references",
+                "object_id": old,
+                "target": new,
+                "verdict": "review",
+                "executable": True,
+                "reasons": [],
+            }
+            for old, new in (("sensor.a_old", "sensor.a_new"), ("sensor.b_old", "sensor.b_new"))
+        ],
+    }
+    seen = {}
+
+    async def fake_plan(hass, snapshot, requests, refactor_enabled=False):
+        seen["requests"] = requests
+        return plan
+
+    pairs = [
+        {"old": "sensor.a_old", "new": "sensor.a_new"},
+        {"old": "sensor.b_old", "new": "sensor.b_new"},
+    ]
+    with patch("custom_components.ha_housekeeper.websocket_api._plan_from_requests", fake_plan):
+        answer = await mcp_api.run(
+            hass, scanner, "replacement_plan", {"pairs": pairs, "disable_old": True}, None
+        )
+    assert [r["target"] for r in seen["requests"]] == ["sensor.a_new", "sensor.b_new"]
+    assert all(r["disable_old"] and r["kind"] == "replace_references" for r in seen["requests"])
+    assert answer["plan_id"] == "p2" and answer["total"] == 2 and "Not run" in answer["next"]
+    assert scanner.journal.added == [plan] and plan["via"] == "mcp"
+
+    for bad, reason in (
+        ([{"old": "sensor.a_old", "new": "sensor.a_old"}], "same_entity"),
+        ([pairs[0], {"old": "sensor.a_old", "new": "sensor.b_new"}], "duplicate_pair"),
+        ([{"old": "sensor.a_old", "new": "sensor.nowhere"}], "unknown_entity"),
+        ([{"old": "sensor.a_old", "new": "lock.door"}], "withheld"),
+        ([pairs[0], {"old": "sensor.a_new", "new": "sensor.b_new"}], "chain"),
+    ):
+        with pytest.raises(mcp_api.McpError) as refused:
+            await mcp_api.run(hass, scanner, "replacement_plan", {"pairs": bad}, None)
+        assert refused.value.reason == reason, bad
+    scanner.mcp.fix = False
+    with pytest.raises(mcp_api.McpError) as off:
+        await mcp_api.run(hass, scanner, "replacement_plan", {"pairs": pairs}, None)
+    assert off.value.reason == "fix_disabled"

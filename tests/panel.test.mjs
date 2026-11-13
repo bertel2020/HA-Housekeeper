@@ -377,6 +377,9 @@ test("a plan an agent made says so in the journal list and on its page", () => {
   assert.ok(el.journalView().includes("via AI access"), "the journal list");
   el.journal = [{ ...plan, via: null }];
   assert.ok(!el.planCard({ ...plan, via: null }).includes("via AI access"), "a plan of the panel has no badge");
+  const open = { ...plan, actions: [{ kind: "replace_references", object_type: "entity", object_id: "sensor.old", target: "sensor.new", name: "sensor.old", verdict: "review", executable: true, reasons: [], used_by: [] }], summary: { total: 1, ok: 0, review: 1, blocked: 0 } };
+  assert.ok(el.planCard(open).includes("Check every row before you confirm it"), "an executable plan of an agent asks to read every row");
+  assert.ok(!el.planCard({ ...open, via: null }).includes("Check every row"), "none for a plan of the panel");
   assert.ok(!el.journalView().includes("via AI access"));
 });
 

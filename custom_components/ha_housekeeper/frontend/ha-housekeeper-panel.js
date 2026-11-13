@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"f75e9d332a"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"72a723afd4"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"c1800e6982"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"81cb5c6f52"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"be7e067d92"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"aea0aba274"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"42e54d3be1"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"ef13194251"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"f3da6b1b89"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"43e01f7ddd"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"8650ca3e42"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"3d62a1916a"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"66c316c68f"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"551269ff1f"}];
 
 const TEXT = {
   de: {
@@ -4992,7 +4992,7 @@ class CleanupMixin {
       : stage === 2 ? `${this.planOutcome(plan)}${control}`
       : `${this.planOutcome(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
     return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}${plan.via === "mcp" ? ` <span class="pill mute">${this.t("viaMcp")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div>${footClose ? "" : `<button class="btn" data-plan-close>${this.t("planClose")}</button>`}</div>
-      ${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
+      ${plan.via === "mcp" && plan.status === "dry_run" ? `<div class="outcome warn" role="note"><ha-icon icon="mdi:robot-outline"></ha-icon><span><strong>${this.t("viaMcpHint")}</strong></span></div>` : ""}${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
   }
 
   kindSelect() {
@@ -16734,7 +16734,7 @@ Object.assign(TEXT.de, {
   mcpHide: "Sensible Objekte zurückhalten", mcpHideDetail: "Schlösser, Alarmanlagen, Kameras, Sirenen, Ventile, Personen, Standort-Tracker sowie Garagen- und Tortore kommen in keiner Antwort vor. Empfohlen, vor allem bei einem Modell in der Cloud.",
   mcpTimes: "{n} Aufrufe bis {date}", mcpCount: "{n} Treffer", mcpUndo: "Rückgängig", mcpUndone: "zurückgenommen", mcpUndoFailed: "Nicht zurückgenommen: {reason}",
   mcpUserSystem: "Automation oder System", mcpUserYou: "du", mcpUserOther: "anderer Benutzer",
-  mcpFn_status: "Status", mcpFn_summary: "Zusammenfassung", mcpFn_findings: "Befunde", mcpFn_object: "Objekt", mcpFn_finding_fix_options: "Wege zum Beheben", mcpFn_finding_fix_plan: "Plan zum Beheben anlegen", mcpFn_finding_decide: "Befund entscheiden", mcpFn_mark: "Objekt mit Notiz versehen", mcpFn_note_set: "Logbuch-Eintrag", mcpFn_undo: "Zurücknehmen",
+  mcpFn_status: "Status", mcpFn_summary: "Zusammenfassung", mcpFn_findings: "Befunde", mcpFn_object: "Objekt", mcpFn_finding_fix_options: "Wege zum Beheben", mcpFn_finding_fix_plan: "Plan zum Beheben anlegen", mcpFn_replacement_candidates: "Entitäten für einen Wechsel", mcpFn_replacement_plan: "Plan zum Ersetzen mehrerer Entitäten", viaMcpHint: "Dieser Plan wurde über den KI-Zugriff angelegt. Prüfe jede Zeile, bevor du ihn bestätigst.", mcpFn_finding_decide: "Befund entscheiden", mcpFn_mark: "Objekt mit Notiz versehen", mcpFn_note_set: "Logbuch-Eintrag", mcpFn_undo: "Zurücknehmen",
   viaMcp: "über KI-Zugriff", noteSrcAgent: "Von KI-Zugriff geschrieben",
 });
 Object.assign(TEXT.en, {
@@ -16763,7 +16763,7 @@ Object.assign(TEXT.en, {
   mcpHide: "Keep sensitive objects back", mcpHideDetail: "Locks, alarm panels, cameras, sirens, valves, people, location trackers and garage doors and gates appear in no answer. Recommended, above all with a model in the cloud.",
   mcpTimes: "{n} calls until {date}", mcpCount: "{n} results", mcpUndo: "Undo", mcpUndone: "taken back", mcpUndoFailed: "Not taken back: {reason}",
   mcpUserSystem: "Automation or system", mcpUserYou: "you", mcpUserOther: "another user",
-  mcpFn_status: "Status", mcpFn_summary: "Summary", mcpFn_findings: "Findings", mcpFn_object: "Object", mcpFn_finding_fix_options: "Ways to fix a finding", mcpFn_finding_fix_plan: "Create a plan to fix", mcpFn_finding_decide: "Decide about a finding", mcpFn_mark: "Add a note to an object", mcpFn_note_set: "Logbook entry", mcpFn_undo: "Undo",
+  mcpFn_status: "Status", mcpFn_summary: "Summary", mcpFn_findings: "Findings", mcpFn_object: "Object", mcpFn_finding_fix_options: "Ways to fix a finding", mcpFn_finding_fix_plan: "Create a plan to fix", mcpFn_replacement_candidates: "Entities for a change", mcpFn_replacement_plan: "Plan to replace several entities", viaMcpHint: "This plan was made through AI access. Check every row before you confirm it.", mcpFn_finding_decide: "Decide about a finding", mcpFn_mark: "Add a note to an object", mcpFn_note_set: "Logbook entry", mcpFn_undo: "Undo",
   viaMcp: "via AI access", noteSrcAgent: "Written by AI access",
 });
 

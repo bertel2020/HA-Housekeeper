@@ -481,6 +481,42 @@
           "description": "Per replace_target: l'entità, area, piano o etichetta che prende il posto di quella mancante."
         }
       }
+    },
+    "replacement_candidates": {
+      "name": "Accesso IA: elencare le entità da abbinare dopo un cambio",
+      "description": "Elenca le entità sparite (orfane o non disponibili) e quelle presenti, con nome, classe del dispositivo, unità, area e quanto vengono usate, per abbinarle dopo un cambio di integrazione. Sola lettura. Richiede «Accesso IA» attivo.",
+      "fields": {
+        "old_platform": {
+          "name": "Integrazione vecchia",
+          "description": "La piattaforma delle entità sparite, per esempio hue."
+        },
+        "new_platform": {
+          "name": "Integrazione nuova",
+          "description": "La piattaforma delle entità presenti."
+        },
+        "search": {
+          "name": "Ricerca",
+          "description": "Parte dell’ID o del nome."
+        },
+        "limit": {
+          "name": "Limite",
+          "description": "Quante entità per elenco, al massimo 150."
+        }
+      }
+    },
+    "replacement_plan": {
+      "name": "Accesso IA: creare un piano per sostituire più entità",
+      "description": "Crea un piano che sposta gli usi di più entità vecchie su nuove (automazioni, script, dashboard). Il piano è solo un’anteprima: non viene eseguito. Un amministratore controlla ogni coppia e lo conferma nel pannello Housekeeper. Richiede «Accesso IA» e «Correggi i risultati» attivi. Le coppie vengono da «replacement_candidates».",
+      "fields": {
+        "pairs": {
+          "name": "Coppie",
+          "description": "Un elenco di vecchie e nuove, al massimo 50, per esempio [{old: sensor.a, new: sensor.b}]. Ogni entità può comparire una volta."
+        },
+        "disable_old": {
+          "name": "Disattiva le entità vecchie",
+          "description": "Disattiva le entità vecchie dopo la sostituzione. Non vengono mai eliminate."
+        }
+      }
     }
   },
   "exceptions": {

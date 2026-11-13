@@ -479,6 +479,42 @@
           "description": "Pour replace_target : l’entité, la zone, l’étage ou l’étiquette qui prend la place de celle qui manque."
         }
       }
+    },
+    "replacement_candidates": {
+      "name": "Accès IA : lister les entités à associer après un changement",
+      "description": "Liste les entités qui ont disparu (orphelines ou indisponibles) et celles qui sont là, avec le nom, la classe d’appareil, l’unité, la zone et leur utilisation, pour les associer après un changement d’intégration. Lecture seule. Nécessite « Accès IA » activé.",
+      "fields": {
+        "old_platform": {
+          "name": "Ancienne intégration",
+          "description": "La plateforme des entités qui ont disparu, par exemple hue."
+        },
+        "new_platform": {
+          "name": "Nouvelle intégration",
+          "description": "La plateforme des entités qui sont là."
+        },
+        "search": {
+          "name": "Recherche",
+          "description": "Une partie de l’ID ou du nom."
+        },
+        "limit": {
+          "name": "Limite",
+          "description": "Combien d’entités par liste, au plus 150."
+        }
+      }
+    },
+    "replacement_plan": {
+      "name": "Accès IA : créer un plan pour remplacer plusieurs entités",
+      "description": "Crée un plan qui reporte les usages de plusieurs anciennes entités sur de nouvelles (automatisations, scripts, tableaux de bord). Le plan n’est qu’un aperçu : il n’est pas exécuté. Un administrateur lit chaque paire et le confirme dans le panneau Housekeeper. Nécessite « Accès IA » et « Corriger les constats » activés. Les paires viennent de « replacement_candidates ».",
+      "fields": {
+        "pairs": {
+          "name": "Paires",
+          "description": "Une liste d’anciennes et de nouvelles, au plus 50, par exemple [{old: sensor.a, new: sensor.b}]. Chaque entité ne peut apparaître qu’une fois."
+        },
+        "disable_old": {
+          "name": "Désactiver les anciennes entités",
+          "description": "Désactive les anciennes entités après le remplacement. Elles ne sont jamais supprimées."
+        }
+      }
     }
   },
   "exceptions": {

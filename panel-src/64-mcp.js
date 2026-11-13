@@ -25,7 +25,7 @@ Object.assign(TEXT.de, {
   mcpHide: "Sensible Objekte zurückhalten", mcpHideDetail: "Schlösser, Alarmanlagen, Kameras, Sirenen, Ventile, Personen, Standort-Tracker sowie Garagen- und Tortore kommen in keiner Antwort vor. Empfohlen, vor allem bei einem Modell in der Cloud.",
   mcpTimes: "{n} Aufrufe bis {date}", mcpCount: "{n} Treffer", mcpUndo: "Rückgängig", mcpUndone: "zurückgenommen", mcpUndoFailed: "Nicht zurückgenommen: {reason}",
   mcpUserSystem: "Automation oder System", mcpUserYou: "du", mcpUserOther: "anderer Benutzer",
-  mcpFn_status: "Status", mcpFn_summary: "Zusammenfassung", mcpFn_findings: "Befunde", mcpFn_object: "Objekt", mcpFn_finding_fix_options: "Wege zum Beheben", mcpFn_finding_fix_plan: "Plan zum Beheben anlegen", mcpFn_finding_decide: "Befund entscheiden", mcpFn_mark: "Objekt mit Notiz versehen", mcpFn_note_set: "Logbuch-Eintrag", mcpFn_undo: "Zurücknehmen",
+  mcpFn_status: "Status", mcpFn_summary: "Zusammenfassung", mcpFn_findings: "Befunde", mcpFn_object: "Objekt", mcpFn_finding_fix_options: "Wege zum Beheben", mcpFn_finding_fix_plan: "Plan zum Beheben anlegen", mcpFn_replacement_candidates: "Entitäten für einen Wechsel", mcpFn_replacement_plan: "Plan zum Ersetzen mehrerer Entitäten", viaMcpHint: "Dieser Plan wurde über den KI-Zugriff angelegt. Prüfe jede Zeile, bevor du ihn bestätigst.", mcpFn_finding_decide: "Befund entscheiden", mcpFn_mark: "Objekt mit Notiz versehen", mcpFn_note_set: "Logbuch-Eintrag", mcpFn_undo: "Zurücknehmen",
   viaMcp: "über KI-Zugriff", noteSrcAgent: "Von KI-Zugriff geschrieben",
 });
 Object.assign(TEXT.en, {
@@ -54,7 +54,7 @@ Object.assign(TEXT.en, {
   mcpHide: "Keep sensitive objects back", mcpHideDetail: "Locks, alarm panels, cameras, sirens, valves, people, location trackers and garage doors and gates appear in no answer. Recommended, above all with a model in the cloud.",
   mcpTimes: "{n} calls until {date}", mcpCount: "{n} results", mcpUndo: "Undo", mcpUndone: "taken back", mcpUndoFailed: "Not taken back: {reason}",
   mcpUserSystem: "Automation or system", mcpUserYou: "you", mcpUserOther: "another user",
-  mcpFn_status: "Status", mcpFn_summary: "Summary", mcpFn_findings: "Findings", mcpFn_object: "Object", mcpFn_finding_fix_options: "Ways to fix a finding", mcpFn_finding_fix_plan: "Create a plan to fix", mcpFn_finding_decide: "Decide about a finding", mcpFn_mark: "Add a note to an object", mcpFn_note_set: "Logbook entry", mcpFn_undo: "Undo",
+  mcpFn_status: "Status", mcpFn_summary: "Summary", mcpFn_findings: "Findings", mcpFn_object: "Object", mcpFn_finding_fix_options: "Ways to fix a finding", mcpFn_finding_fix_plan: "Create a plan to fix", mcpFn_replacement_candidates: "Entities for a change", mcpFn_replacement_plan: "Plan to replace several entities", viaMcpHint: "This plan was made through AI access. Check every row before you confirm it.", mcpFn_finding_decide: "Decide about a finding", mcpFn_mark: "Add a note to an object", mcpFn_note_set: "Logbook entry", mcpFn_undo: "Undo",
   viaMcp: "via AI access", noteSrcAgent: "Written by AI access",
 });
 

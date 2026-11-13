@@ -38,6 +38,9 @@
   - Urlaubsmodus: nur solange der Modus an ist oder seine Nachfrist läuft; woher die Abwesenheit kommt, seit wann und bis wann (bei einem Kalender), wie viele Ausfälle stumm gehalten werden und die Nachfrist. Nur Anzeige, kein Schalter.
   - Die Überblick-Karte kann alle vier auch als Abschnitte zeigen (den Urlaub nur, solange der Modus an ist).
   - Neue Sensoren „Startdauer“, „Größe der Datenbank“, „Backup-Schutz“ und „Urlaubsmodus“.
+- **KI-Zugriff: viele Entitäten ersetzen:** Nach einem Wechsel der Integration kann ein Agent die Umstellung vorbereiten, du bestätigst sie.
+  - `replacement_candidates` listet die Entitäten, die weg sind, und die, die da sind, mit Name, Geräteklasse, Einheit, Bereich und wie viel sie benutzt; sensible Objekte bleiben draußen.
+  - `replacement_plan` (braucht „Befunde beheben“) legt aus bis zu 50 Paaren alt → neu einen Plan an. Er ist eine Vorschau wie jeder andere: Die Planseite sagt, dass er über den KI-Zugriff angelegt wurde, und ein Administrator liest jedes Paar, bestätigt und führt ihn im Panel aus. Die alten Entitäten können danach abgeschaltet, nie gelöscht werden.
 
 ### Behoben
 

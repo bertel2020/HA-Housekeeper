@@ -479,6 +479,42 @@
           "description": "Pre replace_target: entita, oblasť, poschodie alebo štítok, ktorý nahradí chýbajúci."
         }
       }
+    },
+    "replacement_candidates": {
+      "name": "Prístup AI: vypísať entity na priradenie po zmene",
+      "description": "Vypíše entity, ktoré zmizli (osirelé alebo nedostupné), a tie, ktoré sú, s názvom, triedou zariadenia, jednotkou, oblasťou a tým, koľko sa používajú, aby sa dali po zmene integrácie priradiť. Iba čítanie. Vyžaduje zapnutý „Prístup AI“.",
+      "fields": {
+        "old_platform": {
+          "name": "Stará integrácia",
+          "description": "Platforma entít, ktoré zmizli, napríklad hue."
+        },
+        "new_platform": {
+          "name": "Nová integrácia",
+          "description": "Platforma entít, ktoré sú."
+        },
+        "search": {
+          "name": "Hľadanie",
+          "description": "Časť ID alebo názvu."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Koľko entít v zozname, najviac 150."
+        }
+      }
+    },
+    "replacement_plan": {
+      "name": "Prístup AI: vytvoriť plán na nahradenie viacerých entít",
+      "description": "Vytvorí plán, ktorý presunie použitia viacerých starých entít na nové (automatizácie, skripty, dashboardy). Plán je iba náhľad: nespustí sa. Správca skontroluje každú dvojicu a potvrdí ho v paneli Housekeeper. Vyžaduje zapnutý „Prístup AI“ a „Opraviť nálezy“. Dvojice dodá „replacement_candidates“.",
+      "fields": {
+        "pairs": {
+          "name": "Dvojice",
+          "description": "Zoznam starých a nových, najviac 50, napríklad [{old: sensor.a, new: sensor.b}]. Každá entita sa môže objaviť raz."
+        },
+        "disable_old": {
+          "name": "Vypnúť staré entity",
+          "description": "Vypne staré entity po nahradení. Nikdy sa nemažú."
+        }
+      }
     }
   },
   "exceptions": {

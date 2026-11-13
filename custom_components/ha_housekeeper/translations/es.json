@@ -479,6 +479,42 @@
           "description": "Para replace_target: la entidad, área, planta o etiqueta que ocupa el lugar de la que falta."
         }
       }
+    },
+    "replacement_candidates": {
+      "name": "Acceso IA: listar entidades para emparejar tras un cambio",
+      "description": "Lista las entidades que han desaparecido (huérfanas o no disponibles) y las que están, con nombre, clase de dispositivo, unidad, área y cuánto se usan, para emparejarlas tras un cambio de integración. Solo lectura. Necesita «Acceso IA» activado.",
+      "fields": {
+        "old_platform": {
+          "name": "Integración antigua",
+          "description": "La plataforma de las entidades que han desaparecido, por ejemplo hue."
+        },
+        "new_platform": {
+          "name": "Integración nueva",
+          "description": "La plataforma de las entidades que están."
+        },
+        "search": {
+          "name": "Búsqueda",
+          "description": "Parte del ID o del nombre."
+        },
+        "limit": {
+          "name": "Límite",
+          "description": "Cuántas entidades por lista, como máximo 150."
+        }
+      }
+    },
+    "replacement_plan": {
+      "name": "Acceso IA: crear un plan para reemplazar varias entidades",
+      "description": "Crea un plan que traslada los usos de varias entidades antiguas a otras nuevas (automatizaciones, scripts, paneles). El plan es solo una vista previa: no se ejecuta. Un administrador revisa cada pareja y lo confirma en el panel de Housekeeper. Necesita «Acceso IA» y «Corregir hallazgos» activados. Las parejas vienen de «replacement_candidates».",
+      "fields": {
+        "pairs": {
+          "name": "Parejas",
+          "description": "Una lista de antiguas y nuevas, como máximo 50, por ejemplo [{old: sensor.a, new: sensor.b}]. Cada entidad puede aparecer una vez."
+        },
+        "disable_old": {
+          "name": "Desactivar las entidades antiguas",
+          "description": "Desactiva las entidades antiguas tras el reemplazo. Nunca se eliminan."
+        }
+      }
     }
   },
   "exceptions": {
