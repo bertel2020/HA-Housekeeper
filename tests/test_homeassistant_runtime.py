@@ -2479,3 +2479,13 @@ async def test_a_forecast_that_could_not_be_read_is_not_kept_for_a_day(hass: Hom
     ):
         await scanner.async_refresh_battery_forecast(snapshot)
     assert scanner.battery_forecast is not None and scanner.battery_forecast_at is not None
+    # What the panel read is dated as it was read, not as it arrived.
+    read = (datetime.now(UTC) - timedelta(hours=20)).isoformat()
+    scanner.adopt_battery_forecast(
+        {"available": True, "busy": False, "rows": [], "computed_at": read}
+    )
+    assert scanner.battery_forecast_at == datetime.fromisoformat(read)
+    scanner.adopt_battery_forecast({"available": False})
+    assert scanner.battery_forecast_at == datetime.fromisoformat(read), (
+        "one not read changes nothing"
+    )

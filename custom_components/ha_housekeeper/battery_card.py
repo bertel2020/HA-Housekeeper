@@ -10,6 +10,8 @@ import re
 from datetime import UTC, date, datetime, timedelta
 from typing import Any, Final
 
+from homeassistant.util import dt as dt_util
+
 from .battery_kind import excluded
 from .hygiene import battery_level
 
@@ -17,7 +19,8 @@ ROUND_DAYS: Final = 14  # what runs low within this many days belongs to the nex
 WEAKEST_MAX: Final = 10
 ROUND_MAX: Final = 30
 SHOP_MAX: Final = 20
-_NO_PURCHASE: Final = {"rechargeable"}  # a rechargeable battery is charged, not bought
+# A rechargeable battery is charged, not bought; the words are compared in lower case.
+_NO_PURCHASE: Final = {"rechargeable", "akku", "accu", "wiederaufladbar", "rechargeable battery"}
 
 # What the forecast of a row says about itself.
 ESTIMATE: Final = "estimate"  # a line through the days since the last change
@@ -35,7 +38,8 @@ def parse_type(value: str | None) -> tuple[str, int] | None:
     if not text:
         return None
     found = _COUNT.match(text)
-    return (found.group(2), int(found.group(1))) if found else (text, 1)
+    # "0× AA" is still a battery to buy: at least one cell.
+    return (found.group(2), max(1, int(found.group(1)))) if found else (text, 1)
 
 
 def _names(snapshot: dict[str, Any]) -> tuple[dict[str, str], dict[str, dict[str, Any]]]:
@@ -70,7 +74,10 @@ def battery_items(
     limit = snapshot["meta"].get("low_battery_percent") or 20
     items: list[dict[str, Any]] = []
     for o in snapshot["objects"]:
-        if o["object_type"] != "entity" or o.get("device_class") != "battery" or excluded(o):
+        if o["object_type"] != "entity" or excluded(o):
+            continue
+        # A volt sensor named like a battery has the class voltage; the forecast lists it, so the card does.
+        if o.get("device_class") != "battery" and o["object_id"] not in rows:
             continue
         level, flagged = battery_level(o)
         found = rows.get(o["object_id"])
@@ -180,9 +187,11 @@ def shopping_list(items: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], li
             unknown.append(item["name"])
             continue
         cell, count = parsed
-        if cell.casefold() in _NO_PURCHASE:
+        if " ".join(cell.split()).casefold() in _NO_PURCHASE:
             continue
-        entry = wanted.setdefault(cell, {"type": cell, "count": 0, "names": []})
+        # "CR2032", "cr2032" and "CR 2032" are the same cell: the first spelling names it.
+        key = re.sub(r"[\s\-]+", "", cell).casefold()
+        entry = wanted.setdefault(key, {"type": cell, "count": 0, "names": []})
         entry["count"] += count
         entry["names"].append(item["name"])
     return sorted(wanted.values(), key=lambda e: (-e["count"], e["type"]))[:SHOP_MAX], unknown
@@ -197,7 +206,9 @@ def battery_overview(
 ) -> dict[str, Any]:
     """The numbers of the card: the weakest, the round of the next days, the shopping list and the first change."""
     now = now or datetime.now(UTC)
-    elapsed = (now.date() - forecast_at.date()).days if forecast_at else 0
+    # The days of the person, not of UTC: in other zones a day would start at 01:00 or the day before.
+    today = dt_util.as_local(now).date()
+    elapsed = (today - dt_util.as_local(forecast_at).date()).days if forecast_at else 0
     items = battery_items(snapshot, types, forecast, elapsed)
     items.sort(key=_order)
     due = [
@@ -208,12 +219,8 @@ def battery_overview(
     shopping, unknown = shopping_list(due)
     soonest = [i["days_left"] for i in items if i["days_left"] is not None]
     # ``days_left`` is already shortened by the days since the forecast, so it counts from today.
-    base: date = now.date()
-    first = (
-        datetime.combine(base + timedelta(days=min(soonest)), datetime.min.time(), UTC)
-        if soonest
-        else None
-    )
+    base: date = today
+    first = dt_util.start_of_local_day(base + timedelta(days=min(soonest))) if soonest else None
     levels = [i["percent"] for i in items if i["percent"] is not None]
     return {
         "lowest": min(levels) if levels else None,

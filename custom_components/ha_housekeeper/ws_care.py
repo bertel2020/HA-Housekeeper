@@ -303,6 +303,7 @@ async def websocket_battery_trend(
     except Exception as err:
         connection.send_error(msg["id"], "battery_trend_failed", f"{type(err).__name__}: {err}")
         return
+    scanner.adopt_battery_forecast(result)  # the card shows what the panel shows
     connection.send_result(msg["id"], _versioned(result))
 
 
@@ -360,6 +361,7 @@ def websocket_battery_custom_type(
     except BatteryError as err:
         connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
         return
+    scanner.announce_changes()  # a renamed type changes the types of the batteries that use it
     connection.send_result(
         msg["id"],
         _versioned(

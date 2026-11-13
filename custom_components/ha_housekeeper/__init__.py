@@ -513,6 +513,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
     @callback
     def _check_scan_health(_: Any) -> None:
         scanner.async_check_health()
+        scanner.check_battery_forecast()
 
     entry.async_on_unload(async_track_time_interval(hass, _check_scan_health, timedelta(hours=1)))
 

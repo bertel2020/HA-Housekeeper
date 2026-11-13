@@ -1471,11 +1471,37 @@ class InventoryScanner:
             return
         finally:
             self._battery_forecast_running = False
+        self.adopt_battery_forecast(result)
+
+    def adopt_battery_forecast(self, result: dict[str, Any]) -> None:
+        """Take a forecast that was read, by the daily run or by the panel, as the one the card shows.
+
+        One that could not be read (busy, no recorder) is not taken: the stamp would hold the card
+        back for a day. It is dated as it was read, which can be earlier than now.
+        """
         if result.get("busy") or not result.get("available"):
-            return  # not read: the stamp would hold the card back for a day (the next scan tries again)
+            return
+        read = result.get("computed_at")
+        try:
+            at = datetime.fromisoformat(read) if isinstance(read, str) else None
+        except ValueError:
+            at = None
         self.battery_forecast = result
-        self.battery_forecast_at = datetime.now(UTC)
+        self.battery_forecast_at = at if at is not None and at.tzinfo else datetime.now(UTC)
         self.announce_changes()
+
+    def check_battery_forecast(self) -> None:
+        """Read the forecast when it is a day old, whether or not a scan comes: scans can be far apart or off."""
+        snapshot = self._snapshot
+        if (
+            snapshot is None
+            or snapshot["meta"].get("preliminary")
+            or not self._battery_forecast_due()
+        ):
+            return
+        self.hass.async_create_background_task(
+            self.async_refresh_battery_forecast(snapshot), "HA Housekeeper battery forecast"
+        )
 
     async def _announce(self, snapshot: dict[str, Any]) -> None:
         """Fire the events for situations that are new since the last scan."""

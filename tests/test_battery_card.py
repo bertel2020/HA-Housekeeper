@@ -168,3 +168,99 @@ def test_a_device_with_a_level_and_a_low_flag_is_one_battery_and_a_low_one_is_du
         snapshot, {"binary_sensor.door_battery_low": "CR2032"}, None, None, NOW
     )
     assert "Türsensor Keller" not in only_flag["unknown_type"]
+
+
+def test_a_level_that_is_nan_or_inf_is_no_level_and_does_not_break_the_card() -> None:
+    snapshot = _snapshot()
+    for item in snapshot["objects"]:
+        if item.get("object_id") == "sensor.door":
+            item["state"] = "nan"
+        if item.get("object_id") == "sensor.bath":
+            item["state"] = "inf"
+    overview = battery_overview(snapshot, TYPES, None, None, NOW)
+    assert overview["lowest"] == 8
+    assert {i["name"] for i in overview["weakest"]} == {
+        "Rauchmelder Flur",
+        "Bewegungsmelder Garage",
+    }
+
+
+def test_a_volt_sensor_the_forecast_lists_is_on_the_card_too() -> None:
+    snapshot = _snapshot()
+    snapshot["objects"].append(
+        {
+            "object_type": "entity",
+            "object_id": "sensor.cell_voltage",
+            "name": "Cell voltage",
+            "device_class": "voltage",
+            "status": "active",
+            "state": "2.7",
+            "unit": "V",
+            "device_id": "d5",
+        }
+    )
+    forecast = {
+        "available": True,
+        "busy": False,
+        "rows": [],
+        "voltage": {
+            "rows": [
+                {
+                    "entity_id": "sensor.cell_voltage",
+                    "state": "falling",
+                    "days_left": 20,
+                    "percent": 31,
+                }
+            ]
+        },
+    }
+    overview = battery_overview(snapshot, TYPES, forecast, NOW, NOW)
+    assert "sensor.cell_voltage" in {i["entity_id"] for i in overview["weakest"]}
+    without = battery_overview(snapshot, TYPES, None, None, NOW)
+    assert all(i["entity_id"] != "sensor.cell_voltage" for i in without["weakest"])
+
+
+def test_the_same_cell_in_other_spelling_is_one_entry_and_a_rechargeable_is_not_bought() -> None:
+    from custom_components.ha_housekeeper.battery_card import shopping_list
+
+    def item(name: str, kind: str) -> dict:
+        return {"name": name, "type": kind}
+
+    wanted, unknown = shopping_list(
+        [
+            item("A", "CR2032"),
+            item("B", "cr2032"),
+            item("C", "CR 2032"),
+            item("D", "0× AA"),
+            item("E", "Akku"),
+            item("F", ""),
+        ]
+    )
+    assert wanted == [
+        {"type": "CR2032", "count": 3, "names": ["A", "B", "C"]},
+        {"type": "AA", "count": 1, "names": ["D"]},
+    ]
+    assert unknown == ["F"]
+
+
+def test_the_next_change_starts_at_midnight_of_the_persons_day() -> None:
+    from zoneinfo import ZoneInfo
+
+    from homeassistant.util import dt as dt_util
+
+    snapshot = _snapshot()
+    snapshot["objects"] = [o for o in snapshot["objects"] if o.get("state") not in ("8", "12")]
+    forecast = {
+        "available": True,
+        "busy": False,
+        "rows": [{"entity_id": "sensor.door", "state": "falling", "days_left": 3}],
+    }
+    zone = dt_util.DEFAULT_TIME_ZONE
+    dt_util.set_default_time_zone(ZoneInfo("Europe/Berlin"))
+    try:
+        overview = battery_overview(snapshot, TYPES, forecast, NOW, NOW)
+    finally:
+        dt_util.set_default_time_zone(zone)
+    assert overview["first_change"] == datetime(2026, 11, 14, 23, 0, tzinfo=UTC), (
+        "the 15th starts at 00:00 in Berlin, which is 23:00 on the 14th in UTC"
+    )
