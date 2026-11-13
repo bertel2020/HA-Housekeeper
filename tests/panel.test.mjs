@@ -8571,6 +8571,13 @@ test("a language file holds no stray key, keeps the placeholders of English and 
         assert.ok([...holders(form)].every(name => holders(TEXT.en[key]).has(name)), `${code}: ${key} names a placeholder English does not have`);
       }
       if (typeof value === "object") assert.ok(typeof value.other === "string", `${code}: ${key} has no other form`);
+      // The texts go into the page as they are: a translation may carry the markup of English, no other.
+      const tags = text => new Set((String(text).match(/<\/?[a-zA-Z][\w-]*/g) || []).map(t => t.replace(/<\/?/, "").toLowerCase()));
+      const allowed = tags(JSON.stringify(TEXT.en[key]));
+      for (const form of typeof value === "string" ? [value] : Object.values(value)) {
+        assert.ok([...tags(form)].every(name => allowed.has(name)), `${code}: ${key} holds markup English does not have`);
+        assert.ok(!/\son\w+\s*=/i.test(form), `${code}: ${key} holds an event attribute`);
+      }
     }
   }
 });

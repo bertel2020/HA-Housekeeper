@@ -1443,10 +1443,12 @@ async def test_a_reload_that_takes_too_long_is_not_cancelled_and_is_checked_afte
     plan = build_plan(snapshot, requests, datetime.now(UTC), reload_data=data)
     scanner.journal.add(plan)
     finished = []
+    release, done = asyncio.Event(), asyncio.Event()
 
     async def slow(_entry_id: str) -> None:
-        await asyncio.sleep(0.05)
+        await release.wait()
         finished.append(True)  # reached only when nobody cancels it
+        done.set()
 
     with (
         patch.object(cleanup_exec, "RELOAD_TIMEOUT", 0.01),
@@ -1456,7 +1458,8 @@ async def test_a_reload_that_takes_too_long_is_not_cancelled_and_is_checked_afte
     result = plan["actions"][0]["result"]
     assert result["state"] == "done" and result["stopped"] == "integration_reload_timeout"
     assert plan["verification"]["checks"][0]["check"] == "entry_loaded"
-    await asyncio.sleep(0.1)
+    release.set()  # the reload goes on after the run gave up waiting for it
+    await asyncio.wait_for(done.wait(), 5)
     assert finished == [True]
 
 

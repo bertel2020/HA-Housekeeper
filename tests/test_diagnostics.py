@@ -426,3 +426,36 @@ async def test_a_planned_write_of_the_criteria_is_not_pushed_out_by_every_run(ha
         assert save.call_count == 1 and save.call_args.args[1] == SAVE_DELAY
         store.set("automation.a", [])  # the person's own change is written soon
         assert save.call_count == 2 and save.call_args.args[1] == 10
+
+
+async def test_coverage_does_not_always_count_the_automations_at_the_head_of_the_list(
+    hass: HomeAssistant, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from custom_components.ha_housekeeper.coverage import MAX_PER_COLLECTION, CoverageStore
+
+    start = dt_util.utcnow() - timedelta(days=10)
+    round_no = {"n": 0}
+
+    async def listed(hass_, domain, item):
+        # Every automation has a new run in every round, so the cap per round always bites.
+        return [
+            {
+                "item_id": f"a{n}",
+                "run_id": f"r{round_no['n']}-{n}",
+                "state": "stopped",
+                "timestamp": {"start": start, "finish": start + timedelta(seconds=1)},
+            }
+            for n in range(MAX_PER_COLLECTION * 2)
+        ]
+
+    async def traced(hass_, key, run_id):
+        return {"trace": {"trigger/0": []}}
+
+    monkeypatch.setattr("homeassistant.components.trace.util.async_list_traces", listed)
+    monkeypatch.setattr("homeassistant.components.trace.util.async_get_trace", traced)
+    store = CoverageStore(hass)
+    store.set_enabled(True)
+    for round_no["n"] in range(3):
+        await store.async_collect()
+    # With the first MAX_PER_COLLECTION always taken, a40 and later would never be counted.
+    assert all(f"automation.a{n}" in store.items for n in range(MAX_PER_COLLECTION * 2))

@@ -1668,9 +1668,11 @@ async def test_only_one_write_runs_at_a_time_across_purge_and_plans(
     scanner.snapshot["meta"]["recorder_available"] = True
     scanner.snapshot["orphaned_statistics"] = [{"statistic_id": "sensor.gone", "in_energy": False}]
     gate = asyncio.Event()
+    in_backup = asyncio.Event()
 
     async def slow_backup(plan, with_database=True):
         plan["status"] = "backup"
+        in_backup.set()
         await gate.wait()
         plan["backup"] = {"job_id": "j1", "at": "2026-10-09T10:00:00+00:00"}
         plan["status"] = "running"
@@ -1714,7 +1716,7 @@ async def test_only_one_write_runs_at_a_time_across_purge_and_plans(
         second = await make("purge_statistics", "sensor.gone")
         disable = await make("disable_entity", orphan.entity_id)
         assert (await execute(*first))["success"]
-        await asyncio.sleep(0.1)
+        await asyncio.wait_for(in_backup.wait(), 5)  # the run is in its backup, held by the gate
         assert (await execute(*second))["error"]["code"] == "busy"
         await client.send_json_auto_id({"type": "ha_housekeeper/status"})
         assert (await client.receive_json())["result"]["writing"] == "plan"
@@ -2377,3 +2379,26 @@ async def test_a_scan_that_is_cut_off_does_not_stay_running(hass: HomeAssistant)
     with pytest.raises(asyncio.CancelledError):
         await task
     assert scanner.status["running"] is False and scanner.status["phase"] == "failed"
+
+
+async def test_a_decision_made_while_a_scan_builds_is_applied_to_the_new_snapshot(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import patch
+
+    scanner = InventoryScanner(hass)
+    build = scanner._async_build_snapshot
+
+    async def deciding(preliminary: bool = False) -> dict:
+        scanner._marks_generation += 1  # someone hides a finding while the snapshot is built
+        return await build(preliminary)
+
+    with (
+        patch.object(scanner, "_async_build_snapshot", deciding),
+        patch.object(scanner, "_refresh_marks") as refresh,
+    ):
+        await scanner.async_scan()
+    assert refresh.called
+    with patch.object(scanner, "_refresh_marks") as again:
+        await scanner.async_scan()  # nothing decided meanwhile: nothing to apply again
+    assert not again.called

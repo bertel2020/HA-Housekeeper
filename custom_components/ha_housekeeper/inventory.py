@@ -1059,6 +1059,7 @@ class InventoryScanner:
         self._unchecked: set[str] = set()
         self.scan_coverage = ScanCoverage()
         self._lock = asyncio.Lock()
+        self._marks_generation = 0  # counts the changes of decisions and notes
         self._first_scan_lock = asyncio.Lock()  # one first scan for all that wait for a snapshot
         self._scan_task: asyncio.Task[None] | None = None  # a scan the service or button started
         self._last_scan_end: float | None = None
@@ -1245,9 +1246,14 @@ class InventoryScanner:
                 # Decided before the states are read: a scan that began during the warm-up stays
                 # preliminary even if the warm-up ends while it runs.
                 preliminary = self.warming_up
+                decided = self._marks_generation
                 snapshot = await self._async_build_snapshot(preliminary)
                 self._details = _split_details(snapshot["objects"])
                 self._snapshot = snapshot
+                if self._marks_generation != decided:
+                    # A decision or a note came in while the snapshot was built: the old snapshot
+                    # took it, the new one was built from the lists as they were before.
+                    self._refresh_marks()
                 if not preliminary:
                     self._sync_issues(snapshot)
                     async_announce(self.hass, self.notify.new(snapshot["findings"]))
@@ -2717,6 +2723,7 @@ class InventoryScanner:
 
     def _refresh_marks(self) -> None:
         """Bring the objects and findings of the cached snapshot up to date with the marks."""
+        self._marks_generation += 1
         snapshot = self._snapshot
         if not snapshot:
             return

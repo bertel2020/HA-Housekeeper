@@ -503,3 +503,27 @@ def test_helper_duplicate_and_group_members() -> None:
     ]
     lights = [obj("entity", "light.a"), obj("entity", "light.b")]
     assert ids(run(lights, "group_members", helper_entries=groups)) == ["g1", "g2"]
+
+
+def test_custom_types_are_found_wherever_a_dashboard_names_them() -> None:
+    from custom_components.ha_housekeeper.dashboard_analysis import dashboard_health
+
+    config = {
+        "views": [
+            {
+                "type": "custom:grid-layout",
+                "badges": [{"type": "custom:mushroom-badge"}],
+                "cards": [
+                    {"type": "entities", "entities": [{"type": "custom:fold-entity-row"}]},
+                    {"type": "custom:button-card"},
+                ],
+            }
+        ]
+    }
+    health = dashboard_health(config, {}, 4)
+    assert health["custom_types"] == [
+        "button-card",
+        "fold-entity-row",
+        "grid-layout",
+        "mushroom-badge",
+    ]
