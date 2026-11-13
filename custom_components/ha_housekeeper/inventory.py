@@ -1471,8 +1471,8 @@ class InventoryScanner:
             return
         finally:
             self._battery_forecast_running = False
-        if result.get("busy"):
-            return
+        if result.get("busy") or not result.get("available"):
+            return  # not read: the stamp would hold the card back for a day (the next scan tries again)
         self.battery_forecast = result
         self.battery_forecast_at = datetime.now(UTC)
         self.announce_changes()

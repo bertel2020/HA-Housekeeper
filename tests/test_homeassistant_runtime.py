@@ -2460,3 +2460,22 @@ async def test_the_sensors_of_one_signal_share_one_calculation(hass: HomeAssista
             lambda: sensor_module.compute_values(scanner.snapshot),
         )
         assert len(calls) == 2
+
+
+async def test_a_forecast_that_could_not_be_read_is_not_kept_for_a_day(hass: HomeAssistant) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    scanner = InventoryScanner(hass)
+    snapshot = await scanner.async_scan()
+    with patch(
+        "custom_components.ha_housekeeper.inventory.battery_forecast",
+        AsyncMock(return_value={"available": False}),
+    ):
+        await scanner.async_refresh_battery_forecast(snapshot)
+    assert scanner.battery_forecast is None and scanner.battery_forecast_at is None
+    with patch(
+        "custom_components.ha_housekeeper.inventory.battery_forecast",
+        AsyncMock(return_value={"available": True, "busy": False, "rows": []}),
+    ):
+        await scanner.async_refresh_battery_forecast(snapshot)
+    assert scanner.battery_forecast is not None and scanner.battery_forecast_at is not None

@@ -73,7 +73,10 @@ def test_without_a_forecast_the_card_lists_by_level_and_says_it_follows() -> Non
         "Rauchmelder Flur",
         "Bewegungsmelder Garage",
     ], "only what is low"
-    assert overview["first_change"] is None and overview["lowest"] == 8
+    assert overview["first_change"] == datetime(2026, 11, 12, tzinfo=UTC), (
+        "two are low already, so the change is due today, not unknown"
+    )
+    assert overview["lowest"] == 8
 
 
 def test_the_round_and_the_shopping_list_follow_the_forecast_and_the_types() -> None:
@@ -106,8 +109,12 @@ def test_the_round_and_the_shopping_list_follow_the_forecast_and_the_types() -> 
     assert overview["first_change"] == datetime(2026, 11, 12, tzinfo=UTC), (
         "the first one is low already: today"
     )
+    healthy = _snapshot()
+    for item in healthy["objects"]:
+        if item.get("state") in ("8", "12"):
+            item["state"] = "80"  # nothing is low now: only the forecast of the door counts
     later = battery_overview(
-        _snapshot(),
+        healthy,
         TYPES,
         {**forecast, "rows": [{"entity_id": "sensor.door", "state": "falling", "days_left": 14}]},
         read,
@@ -131,3 +138,33 @@ def test_the_round_and_the_shopping_list_follow_the_forecast_and_the_types() -> 
     assert all(entry["type"] != "Rechargeable" for entry in due["shopping"]), (
         "a rechargeable battery is not bought"
     )
+
+
+def test_a_device_with_a_level_and_a_low_flag_is_one_battery_and_a_low_one_is_due_now() -> None:
+    snapshot = _snapshot()
+    snapshot["objects"].append(
+        {
+            "object_type": "entity",
+            "object_id": "binary_sensor.door_battery_low",
+            "name": "Door battery low",
+            "device_class": "battery",
+            "status": "active",
+            "state": "on",
+            "device_id": "d1",
+        }
+    )
+    types = {"sensor.door": "CR2032", "binary_sensor.door_battery_low": "CR2032"}
+    overview = battery_overview(snapshot, types, None, None, NOW)
+    doors = [i for i in overview["weakest"] if i["name"] == "Türsensor Keller"]
+    assert len(doors) == 1 and doors[0]["entity_id"] == "sensor.door" and doors[0]["percent"] == 44
+    assert doors[0]["low"] is True, "the flag makes the device low"
+    assert doors[0]["days_left"] == 0 and overview["total"] == 4 and overview["low"] == 3
+    assert {"type": "CR2032", "count": 1, "names": ["Türsensor Keller"]} in overview["shopping"]
+    assert overview["first_change"] == datetime(2026, 11, 12, tzinfo=UTC), (
+        "low now: today, not unknown"
+    )
+    # The type set on the flag alone is the device's type, and it is not listed as unknown.
+    only_flag = battery_overview(
+        snapshot, {"binary_sensor.door_battery_low": "CR2032"}, None, None, NOW
+    )
+    assert "Türsensor Keller" not in only_flag["unknown_type"]

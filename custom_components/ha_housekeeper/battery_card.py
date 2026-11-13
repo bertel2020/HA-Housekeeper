@@ -85,7 +85,9 @@ def battery_items(
             or (found or {}).get("state") == "low"
         )
         days = found.get("days_left") if found else None
-        if days is not None and not low:
+        if low:
+            days = 0  # due now, whatever an older forecast said
+        elif days is not None:
             days = max(0, days - elapsed_days)
         if low:
             quality = LOW
@@ -107,9 +109,51 @@ def battery_items(
                 "low": bool(low),
                 "days_left": days,
                 "quality": quality,
+                "_device": o.get("device_id") or None,
             }
         )
-    return items
+    return _one_per_device(items)
+
+
+def _one_per_device(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """A device with a percent sensor and a "battery low" flag is one battery, not two.
+
+    Zigbee devices often have both. The row of the percent sensor stands for the device; the flag
+    makes it low, the soonest forecast counts, and the first battery type that is set is the type.
+    """
+    merged: list[dict[str, Any]] = []
+    by_device: dict[str, dict[str, Any]] = {}
+    for item in items:
+        device = item.pop("_device", None)
+        if device is None:
+            merged.append(item)
+            continue
+        first = by_device.get(device)
+        if first is None:
+            by_device[device] = item
+            merged.append(item)
+            continue
+        if first["percent"] is None and item["percent"] is not None:
+            # The one with a level stands for the device; the other's facts move into it.
+            item["low"] = item["low"] or first["low"]
+            item["type"] = item["type"] or first["type"]
+            item["days_left"] = _soonest(item["days_left"], first["days_left"])
+            if first["low"]:
+                item["quality"] = LOW
+            merged[merged.index(first)] = item
+            by_device[device] = item
+            continue
+        first["low"] = first["low"] or item["low"]
+        first["type"] = first["type"] or item["type"]
+        first["days_left"] = _soonest(first["days_left"], item["days_left"])
+        if first["low"]:
+            first["quality"] = LOW
+    return merged
+
+
+def _soonest(first: int | None, second: int | None) -> int | None:
+    found = [d for d in (first, second) if d is not None]
+    return min(found) if found else None
 
 
 def _order(item: dict[str, Any]) -> tuple[Any, ...]:
