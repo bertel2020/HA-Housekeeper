@@ -2570,6 +2570,7 @@
 "optWatchTitle": "Vigilância após uma atualização do sistema",
 "optWatchHint": "Durante quantas horas após uma atualização do Home Assistant, do sistema operativo ou do Supervisor o Housekeeper analisa extra e compara com o estado anterior. 0 desliga a vigilância.",
 "confirmMarksRemove": "{count} notas de objeto serão removidas. As ocorrências que ocultam voltam a aparecer.",
+"confirmDecisionsRemove": "{count} decisões serão removidas. Os achados voltam a ficar abertos.",
 "decideTabStatus": "Estado",
 "decideTabMark": "Nota do objeto",
 "markTitle": "Nota do objeto",

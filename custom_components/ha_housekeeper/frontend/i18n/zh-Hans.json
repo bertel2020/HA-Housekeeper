@@ -2570,6 +2570,7 @@
 "optWatchTitle": "系统更新后的监视",
 "optWatchHint": "在 Home Assistant、操作系统或 Supervisor 更新后的多少小时内，Housekeeper 会进行额外扫描并与之前的状态比较。设为 0 可关闭监视。",
 "confirmMarksRemove": "将移除 {count} 个对象备注。它们隐藏的发现项会重新出现。",
+"confirmDecisionsRemove": "将撤销 {count} 项决定。相关发现之后会重新变为未处理。",
 "decideTabStatus": "状态",
 "decideTabMark": "对象备注",
 "markTitle": "对象备注",

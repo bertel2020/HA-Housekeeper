@@ -2570,6 +2570,7 @@
 "optWatchTitle": "Surveillance après une mise à jour système",
 "optWatchHint": "Pendant combien d’heures après une mise à jour de Home Assistant, du système d’exploitation ou du Supervisor Housekeeper effectue des analyses supplémentaires et compare avec l’état précédent. 0 désactive la surveillance.",
 "confirmMarksRemove": "{count} notes d’objet seront supprimées. Les constats qu’elles masquent réapparaissent.",
+"confirmDecisionsRemove": "{count} décisions seront supprimées. Les constats redeviennent ouverts ensuite.",
 "decideTabStatus": "Statut",
 "decideTabMark": "Note d’objet",
 "markTitle": "Note d’objet",

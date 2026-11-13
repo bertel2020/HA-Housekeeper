@@ -2612,6 +2612,7 @@
 "optWatchTitle": "Monitoraggio dopo un aggiornamento di sistema",
 "optWatchHint": "Per quante ore dopo un aggiornamento di Home Assistant, del sistema operativo o del Supervisor Housekeeper esegue scansioni extra e le confronta con lo stato precedente. 0 disattiva il monitoraggio.",
 "confirmMarksRemove": "Verranno rimosse {count} note oggetto. Le segnalazioni che nascondono riappaiono.",
+"confirmDecisionsRemove": "{count} decisioni verranno rimosse. I risultati tornano aperti.",
 "decideTabStatus": "Stato",
 "decideTabMark": "Nota oggetto",
 "markTitle": "Nota oggetto",

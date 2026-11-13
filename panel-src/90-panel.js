@@ -312,7 +312,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.selected = obj;
     const key = this.objectKey(obj);
     if (obj.object_type === "integration" && !this.details.has(key)) this.details.set(key, {}); // made in the panel, nothing to ask the backend
-    if (this.details.has(key)) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
+    // A failed read is kept as a gap, not as an object without relations: opening the page again asks again.
+    if (this.details.has(key) && !this.details.get(key)?._failed) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
     this.detailLoading = true;
     this.render();
     this.scrollIntoView?.({ block: "start" });
@@ -320,7 +321,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.details.set(key, await this._hass.callWS({
         type: "ha_housekeeper/detail", object_type: obj.object_type, object_id: obj.object_id,
       }));
-    } catch (_) { this.details.set(key, {}); }
+    } catch (_) { this.details.set(key, { _failed: true }); }
     this.detailLoading = false;
     if (this.selected === obj) this.render();
   }
@@ -1368,11 +1369,11 @@ class HAHousekeeperPanel extends HTMLElement {
     const decPage = root.querySelector("[data-dec-page]");
     if (decPage) { decPage.indeterminate = decPage.hasAttribute("data-partial"); decPage.onchange = ev => { root.querySelectorAll("[data-dec-sel]").forEach(x => (ev.target.checked ? decSel().add(x.dataset.decSel) : decSel().delete(x.dataset.decSel))); this.render(); }; }
     root.querySelector("[data-dec-clear]")?.addEventListener("click", () => { decSel().clear(); this.render(); });
-    root.querySelector("[data-dec-remove]")?.addEventListener("click", async () => {
+    root.querySelector("[data-dec-remove]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmDecisionsRemove", { count: decSel().size }), () => this.onlyOnce("decRemove", async () => {
       await this.runBulk([...decSel()], async key => { await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false }); decSel().delete(key); });
       this.render();
       await this.reloadAfterDecision();
-    });
+    })));
     // An incident row opens its details below it; a click on its menu or a link inside does not.
     root.querySelectorAll("[data-inc-more], [data-inc-row]").forEach(el => el.addEventListener("click", ev => {
       const inner = ev.target?.closest?.("button, select, input, a, label, summary, .menupop");

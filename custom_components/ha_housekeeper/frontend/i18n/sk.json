@@ -2809,6 +2809,7 @@
 "optWatchTitle": "Sledovať po aktualizácii",
 "optWatchHint": "Koľko hodín po aktualizácii má Housekeeper vykonávať kontroly navyše a porovnávať ich so stavom pred reštartom. Hodnota 0 sledovanie vypne.",
 "confirmMarksRemove": "Poznámky k objektom ({count}) sa odstránia. Nálezy, ktoré skrývajú, sa opäť zobrazia.",
+"confirmDecisionsRemove": "Zruší sa {count} rozhodnutí. Nálezy budú potom opäť otvorené.",
 "decideTabStatus": "Stav",
 "decideTabMark": "Poznámka k objektu",
 "markTitle": "Poznámka k objektu",

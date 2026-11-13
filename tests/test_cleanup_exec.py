@@ -1692,3 +1692,30 @@ async def test_the_journal_leaves_out_lines_that_are_not_plans_when_it_loads(
     journal = JournalStore(hass)
     await journal.async_load()
     assert [plan["plan_id"] for plan in journal.plans] == ["ok"]
+
+
+async def test_a_restored_helper_pairs_its_entities_by_the_tariff_not_by_the_alphabet(
+    hass: HomeAssistant,
+) -> None:
+    from homeassistant.helpers import entity_registry as er
+
+    from custom_components.ha_housekeeper.cleanup_exec import _put_helper_entities_back
+
+    registry = er.async_get(hass)
+    peak = registry.async_get_or_create(
+        "sensor", "utility_meter", "NEW_peak", suggested_object_id="energy_peak"
+    )
+    offpeak = registry.async_get_or_create(
+        "sensor", "utility_meter", "NEW_offpeak", suggested_object_id="energy_offpeak"
+    )
+    # The old entities were renamed by hand; sorted by ID they would pair the wrong way round.
+    note = {
+        "entities": [
+            {"entity_id": "sensor.strom_ht", "unique_id": "OLD_peak", "aliases": []},
+            {"entity_id": "sensor.strom_nt", "unique_id": "OLD_offpeak", "aliases": []},
+        ]
+    }
+    differ = _put_helper_entities_back(hass, [peak, offpeak], note)
+    assert differ == []
+    assert registry.async_get("sensor.strom_ht").unique_id == "NEW_peak"
+    assert registry.async_get("sensor.strom_nt").unique_id == "NEW_offpeak"

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"c6a292eba3"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"899c236a23"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5ebe127554"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b782134b2b"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"917d270951"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"add40ab6e9"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"c6dcc98ab7"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"f75e9d332a"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"72a723afd4"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"c1800e6982"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"81cb5c6f52"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"be7e067d92"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"aea0aba274"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"42e54d3be1"}];
 
 const TEXT = {
   de: {
@@ -4739,7 +4739,7 @@ class CleanupMixin {
     this._polling = planId;
     this.rememberPlan(planId);
     let tries = 0, failed = 0;
-    while (this._polling === planId) {
+    while (this._polling === planId && !this._gone) {
       try {
         const res = await this._hass.callWS({ type: "ha_housekeeper/plan_status", plan_id: planId });
         failed = 0;
@@ -10397,7 +10397,7 @@ class BlueprintsMixin {
 
 // Marks: what to expect of an entity or device (offline on purpose, seasonal, a spare, keep, replaced); mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  confirmMarksRemove: "{count} Objekt-Notizen werden entfernt. Befunde, die sie ausblenden, erscheinen wieder.",
+  confirmMarksRemove: "{count} Objekt-Notizen werden entfernt. Befunde, die sie ausblenden, erscheinen wieder.", confirmDecisionsRemove: "{count} Entscheidungen werden aufgehoben. Die Befunde sind danach wieder offen.",
   decideTabStatus: "Status", decideTabMark: "Objekt-Notiz",
   markTitle: "Objekt-Notiz", markHint: "Halte fest, warum das Objekt so ist, wie es ist, zum Beispiel absichtlich offline. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“, eine kaputte Referenz bleibt sichtbar. Nur in Housekeeper, Home Assistant bleibt unverändert.",
   markNone: "Keine Objekt-Notiz.", markSet: "Objekt-Notiz setzen", markChange: "Ändern", markClear: "Objekt-Notiz entfernen", markKind: "Art der Objekt-Notiz", markReason: "Begründung (optional)", markReview: "Erinnern in", markNever: "Nie", marksSetN: "Objekt-Notiz setzen ({n})", marksSetTitle: "Objekt-Notiz für {n} Entitäten", markShowHidden: "Die ausgeblendeten Befunde zeigen", markColKind: "Art", markColReason: "Begründung", markColReview: "Prüfen am", marksSet: "Objekt-Notiz setzen …", marksReviewN: "Prüfdatum ändern ({n})", marksKindN: "Art ändern ({n})", marksRemoveN: "Objekt-Notiz entfernen ({n})", marksReviewTitle: "Neues Prüfdatum für {n} Objekt-Notizen", marksKindTitle: "Neue Art für {n} Objekt-Notizen", markTarget: "Ersetzt durch (Objekt-ID)", markDue: "Prüfdatum erreicht: die Befunde sind wieder sichtbar.", markReviewOn: "erinnern {date}", markBy: "Objekt-Notiz: {kind}", markFailed: "Die Objekt-Notiz konnte nicht gespeichert werden: {reason}",
@@ -10409,7 +10409,7 @@ Object.assign(TEXT.de, {
   markAutoClear: "Automatisch aufheben, sobald sich das Objekt wieder meldet", markGraceBack: "Wartezeit", markAutoClearHint: "Die Objekt-Notiz verschwindet von selbst, wenn das Objekt nach einem Ausfall wieder meldet und die Wartezeit lang durchgehend in Ordnung bleibt. Eine Objekt-Notiz, die vorab bei einem laufenden Objekt gesetzt wird, bleibt bis zum ersten Ausfall.", markAutoClearLine: "wird bei Rückmeldung aufgehoben",
 });
 Object.assign(TEXT.en, {
-  confirmMarksRemove: "{count} object notes will be removed. Findings they hide appear again.",
+  confirmMarksRemove: "{count} object notes will be removed. Findings they hide appear again.", confirmDecisionsRemove: "{count} decisions will be removed. The findings are open again afterwards.",
   decideTabStatus: "Status", decideTabMark: "Object note",
   markTitle: "Object note", markHint: "Note why the object is the way it is, for example offline on purpose. Housekeeper then stops reporting it as “not available”; a broken reference stays visible. Only in Housekeeper, Home Assistant stays unchanged.",
   markNone: "No object note.", markSet: "Set an object note", markChange: "Change", markClear: "Remove object note", markKind: "Kind of object note", markReason: "Reason (optional)", markReview: "Remind in", markNever: "Never", marksSetN: "Set object note ({n})", marksSetTitle: "Object note for {n} entities", markShowHidden: "Show the hidden findings", markColKind: "Kind", markColReason: "Reason", markColReview: "Review on", marksSet: "Set an object note …", marksReviewN: "Change review date ({n})", marksKindN: "Change kind ({n})", marksRemoveN: "Remove object note ({n})", marksReviewTitle: "New review date for {n} object notes", marksKindTitle: "New kind for {n} object notes", markTarget: "Replaced by (object ID)", markDue: "Review date reached: the findings are visible again.", markReviewOn: "remind {date}", markBy: "Object note: {kind}", markFailed: "The object note could not be saved: {reason}",
@@ -23402,7 +23402,8 @@ class HAHousekeeperPanel extends HTMLElement {
     this.selected = obj;
     const key = this.objectKey(obj);
     if (obj.object_type === "integration" && !this.details.has(key)) this.details.set(key, {}); // made in the panel, nothing to ask the backend
-    if (this.details.has(key)) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
+    // A failed read is kept as a gap, not as an object without relations: opening the page again asks again.
+    if (this.details.has(key) && !this.details.get(key)?._failed) { this.render(); this.scrollIntoView?.({ block: "start" }); return; }
     this.detailLoading = true;
     this.render();
     this.scrollIntoView?.({ block: "start" });
@@ -23410,7 +23411,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.details.set(key, await this._hass.callWS({
         type: "ha_housekeeper/detail", object_type: obj.object_type, object_id: obj.object_id,
       }));
-    } catch (_) { this.details.set(key, {}); }
+    } catch (_) { this.details.set(key, { _failed: true }); }
     this.detailLoading = false;
     if (this.selected === obj) this.render();
   }
@@ -24458,11 +24459,11 @@ class HAHousekeeperPanel extends HTMLElement {
     const decPage = root.querySelector("[data-dec-page]");
     if (decPage) { decPage.indeterminate = decPage.hasAttribute("data-partial"); decPage.onchange = ev => { root.querySelectorAll("[data-dec-sel]").forEach(x => (ev.target.checked ? decSel().add(x.dataset.decSel) : decSel().delete(x.dataset.decSel))); this.render(); }; }
     root.querySelector("[data-dec-clear]")?.addEventListener("click", () => { decSel().clear(); this.render(); });
-    root.querySelector("[data-dec-remove]")?.addEventListener("click", async () => {
+    root.querySelector("[data-dec-remove]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmDecisionsRemove", { count: decSel().size }), () => this.onlyOnce("decRemove", async () => {
       await this.runBulk([...decSel()], async key => { await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored: false }); decSel().delete(key); });
       this.render();
       await this.reloadAfterDecision();
-    });
+    })));
     // An incident row opens its details below it; a click on its menu or a link inside does not.
     root.querySelectorAll("[data-inc-more], [data-inc-row]").forEach(el => el.addEventListener("click", ev => {
       const inner = ev.target?.closest?.("button, select, input, a, label, summary, .menupop");

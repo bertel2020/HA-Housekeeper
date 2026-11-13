@@ -415,7 +415,7 @@ class CleanupMixin {
     this._polling = planId;
     this.rememberPlan(planId);
     let tries = 0, failed = 0;
-    while (this._polling === planId) {
+    while (this._polling === planId && !this._gone) {
       try {
         const res = await this._hass.callWS({ type: "ha_housekeeper/plan_status", plan_id: planId });
         failed = 0;

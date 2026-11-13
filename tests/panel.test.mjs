@@ -8661,3 +8661,26 @@ test("a possible duplicate keeps its step as a button and gathers the rest in on
   assert.ok(dup.includes("actmenu") && dup.includes("data-notdup=") && dup.includes("data-decide-open="), "three actions: one menu");
   assert.ok(!plain.includes("actmenu") && plain.includes("data-decide-open="), "one action: a button");
 });
+
+test("a failed read of the details is asked for again, and removing decisions asks first", async () => {
+  const { el } = panel("en");
+  el.data = DATA;
+  const asked = [];
+  let fail = true;
+  el._hass.callWS = async msg => {
+    if (msg.type === "ha_housekeeper/detail") {
+      asked.push(msg.object_id);
+      if (fail) throw new Error("busy");
+      return { relations: [] };
+    }
+    return {};
+  };
+  const obj = el.findObject("entity:sensor.b");
+  await el.openObject(obj);
+  assert.ok(el.details.get("entity:sensor.b")._failed);
+  fail = false;
+  await el.openObject(obj);
+  assert.deepEqual(asked, ["sensor.b", "sensor.b"], "the second visit reads again");
+  assert.ok(!el.details.get("entity:sensor.b")._failed);
+  assert.ok(el.t("confirmDecisionsRemove", { count: 3 }).includes("3"));
+});

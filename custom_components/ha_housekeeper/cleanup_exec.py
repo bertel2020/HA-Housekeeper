@@ -343,8 +343,22 @@ def _put_helper_entities_back(
     differ: list[str] = []
     for twin in old:
         domain = twin["entity_id"].partition(".")[0]
-        match = next((e for e in new if e.entity_id == twin["entity_id"]), None) or next(
-            (e for e in new if e.entity_id.partition(".")[0] == domain), None
+        # By ID first; then by what follows the entry id in the unique id (the tariff of a meter),
+        # which the new entry keeps; only then by domain, which can swap twins that differ.
+        suffix = str(twin.get("unique_id") or "").partition("_")[2]
+        match = (
+            next((e for e in new if e.entity_id == twin["entity_id"]), None)
+            or next(
+                (
+                    e
+                    for e in new
+                    if suffix
+                    and e.entity_id.partition(".")[0] == domain
+                    and str(e.unique_id or "").partition("_")[2] == suffix
+                ),
+                None,
+            )
+            or next((e for e in new if e.entity_id.partition(".")[0] == domain), None)
         )
         if match is None:
             continue
