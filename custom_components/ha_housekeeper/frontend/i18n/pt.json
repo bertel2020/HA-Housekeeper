@@ -583,6 +583,7 @@
 "repeatFullHint": "Uma cópia de segurança completa conforme as tuas definições de cópias (com aplicações e pastas) demora mais mas não conta como cópia automática. Ou repete o plano com a cópia pequena.",
 "backupFullPlanned": "Cópia de segurança completa conforme as tuas definições de cópias",
 "abort_interrupted": "A execução foi interrompida (o Home Assistant reiniciou); este passo não foi executado.",
+"abort_interrupted_mid": "A execução foi interrompida (o Home Assistant reiniciou) durante este passo. Verifica se alterou alguma coisa; não pode ser desfeito a partir daqui.",
 "abort_database_corrupt": "A base de dados do Recorder está danificada (“database disk image is malformed”) – nada foi alterado. Verifica-a com PRAGMA integrity_check (por exemplo no SQLite Web), repara os índices afetados com REINDEX ou restaura uma cópia de segurança.",
 "abort_backup_unverified": "A cópia de segurança foi comunicada mas não está na lista de cópias como esperado (em falta, vazia ou sem a base de dados) – nada foi alterado. Verifica Definições → Sistema → Cópias de segurança.",
 "abort_backup_running": "O Home Assistant está a fazer uma cópia de segurança – nada foi alterado. Tenta novamente depois.",

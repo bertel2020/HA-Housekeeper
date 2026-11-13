@@ -229,12 +229,20 @@ class HAHousekeeperPanel extends HTMLElement {
     if (fresh) progressTimer = window.setInterval(() => this.updateScanStatus(), 250);
     try {
       const scannedBefore = this.data?.meta?.scanned_at;
+      const openKey = this.selected ? this.objectKey(this.selected) : null;
+      const trailKeys = this.trail.map(item => this.objectKey(item));
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
       this.firstContact();
       if (this.data?.meta?.scanned_at !== scannedBefore) this.forgetScanViews();
       this.details = new Map();
       this.compare = null;
+      // The page that is open belongs to the old data: take the new object and ask for its details again.
+      if (openKey) {
+        this.selected = this.findObject(openKey) || null;
+        this.trail = this.selected ? trailKeys.map(key => this.findObject(key)).filter(Boolean) : [];
+      }
       this.applyUrl();
+      if (openKey && this.selected) this.openObject(this.selected);
     } catch (err) {
       this.error = this.errText(err);
       // The counts on screen stay from the last good scan: say that this scan failed.

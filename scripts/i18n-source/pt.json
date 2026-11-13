@@ -6633,7 +6633,8 @@
 "relIn_INCLUDES": "64aa04ec",
 "relOut_INCLUDES": "b3f8cc19",
 "relGroupPlace": "26dc5e52",
-"relPlace": "15b61974"
+"relPlace": "15b61974",
+"abort_interrupted_mid": "ee51edf4"
 },
 "setup": {
 "title": "644c2647",
@@ -6864,7 +6865,8 @@
 "entity.sensor.update_watch.state.transient": "9fd9dc0d",
 "entity.sensor.update_watch.state.worse": "255e0ffe",
 "entity.sensor.update_watch.state.unknown": "dca5fa43",
-"entity.sensor.start_time.name": "babe9dda"
+"entity.sensor.start_time.name": "babe9dda",
+"entity.sensor.database_size.name": "9632a712"
 },
 "cards": {
 "cardNotFound": "dee6374c",
@@ -7051,6 +7053,21 @@
 "cardStSlowest": "c04fead0",
 "cardStNotLoaded": "df5c0f50",
 "edit_slowest": "74d13500",
-"edit_slowest_help": "ca4504a4"
+"edit_slowest_help": "ca4504a4",
+"cardDbTitle": "fa7fe671",
+"cardDbEstimated": "d342ed82",
+"cardDbGrowing": "71df13b3",
+"cardDbWalLarge": "63b86f82",
+"cardDbOk": "63be856a",
+"cardDbQuietSub": "4a71a508",
+"cardDbGrowth": "d08c2c5e",
+"cardDbPerDay": "e1ae91d0",
+"cardDbWal": "8b1ddb99",
+"cardDbWalNormal": "317b32c1",
+"cardDbWalBig": "d35c416a",
+"cardDbKeep": "3b1f58d9",
+"cardDbKeepDays": "7b2a4bdc",
+"edit_history_90": "38825b0f",
+"edit_facts": "6cd0ded0"
 }
 }

@@ -583,6 +583,7 @@
 "repeatFullHint": "Une sauvegarde complète selon tes paramètres de sauvegarde (avec apps et dossiers) prend plus de temps mais ne compte pas comme sauvegarde automatique. Ou répète le plan avec la petite sauvegarde.",
 "backupFullPlanned": "Sauvegarde complète selon tes paramètres de sauvegarde",
 "abort_interrupted": "L’exécution a été interrompue (Home Assistant a redémarré) ; cette étape ne s’est pas exécutée.",
+"abort_interrupted_mid": "L’exécution a été interrompue (Home Assistant a redémarré) pendant cette étape. Vérifie si elle a modifié quelque chose ; elle ne peut pas être annulée d’ici.",
 "abort_database_corrupt": "La base de données du Recorder est endommagée (« database disk image is malformed ») – rien n’a été modifié. Vérifie-la avec PRAGMA integrity_check (par exemple dans SQLite Web), répare les index concernés avec REINDEX ou restaure une sauvegarde.",
 "abort_backup_unverified": "La sauvegarde a été signalée mais ne figure pas dans la liste des sauvegardes comme prévu (manquante, vide ou sans la base de données) – rien n’a été modifié. Vérifie Paramètres → Système → Sauvegardes.",
 "abort_backup_running": "Home Assistant effectue lui-même une sauvegarde – rien n’a été modifié. Réessaie ensuite.",

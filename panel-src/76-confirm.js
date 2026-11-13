@@ -7,7 +7,7 @@ class ConfirmMixin {
   // `run` is called only after "Delete"; `text` is the sentence of the dialog.
   confirmAsk(text, run, opts = {}) { this.confirmState = { text, run, ...opts }; this._confirmFocus = true; this.render(); }
 
-  confirmClose() { this.confirmState = null; this.render(); }
+  confirmClose() { const cancel = this.confirmState?.cancel; this.confirmState = null; this.render(); cancel?.(); }
 
   confirmDialog() {
     const c = this.confirmState;

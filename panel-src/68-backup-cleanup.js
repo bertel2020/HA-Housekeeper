@@ -135,6 +135,17 @@ class BackupCleanupMixin {
     this.bkcBusy = false; this.render();
   }
 
+  // A new number in the rule. While Housekeeper tidies up by itself it deletes by this rule, so the
+  // new rule is saved only after the same question as when switching on, with the new numbers.
+  changeBackupRule(key, raw, max) {
+    if (String(raw).trim() === "") { this.render(); return; } // an emptied field is not a rule of 0
+    const value = Math.max(0, Math.min(max, Number(raw) || 0));
+    if (value === (this[key] ?? (key === "bkcLast" ? 3 : 14))) { this.render(); return; }
+    if (!this.bkc?.auto?.enabled) { this[key] = value; this.loadBackupCleanup(true); return; }
+    const next = { last: this.bkcLast ?? 3, days: this.bkcDaysValue ?? 14, [key === "bkcLast" ? "last" : "days"]: value };
+    this.confirmAsk(this.t("bkcAutoAskText", next), async () => { this[key] = value; await this.setBackupAuto(true); this.loadBackupCleanup(true); }, { title: this.t("bkcAutoAskTitle"), yes: this.t("bkcAutoYes"), danger: true, cancel: () => this.render() });
+  }
+
   // The box in the table head: every backup of the page that can be ticked.
   bkcHeadBox(rows) {
     const ids = (rows || []).filter(r => !r.protected).map(r => r.backup_id);
@@ -174,8 +185,8 @@ class BackupCleanupMixin {
   bindBackupCleanup(root) {
     root.querySelectorAll("[data-bkc-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { el.dataset.bkcPage.split(",").forEach(id => (el.checked ? this.bkcSel.add(id) : this.bkcSel.delete(id))); this.render(); }; });
     root.querySelectorAll("[data-bkc-sel]").forEach(el => el.onchange = () => { el.checked ? this.bkcSel.add(el.dataset.bkcSel) : this.bkcSel.delete(el.dataset.bkcSel); this.render(); });
-    root.querySelector("[data-bkc-last]")?.addEventListener("change", e => { this.bkcLast = Math.max(0, Math.min(100, Number(e.target.value) || 0)); if (this.bkc?.auto?.enabled) this.setBackupAuto(true); this.loadBackupCleanup(true); });
-    root.querySelector("[data-bkc-days]")?.addEventListener("change", e => { this.bkcDaysValue = Math.max(0, Math.min(3650, Number(e.target.value) || 0)); if (this.bkc?.auto?.enabled) this.setBackupAuto(true); this.loadBackupCleanup(true); });
+    root.querySelector("[data-bkc-last]")?.addEventListener("change", e => this.changeBackupRule("bkcLast", e.target.value, 100));
+    root.querySelector("[data-bkc-days]")?.addEventListener("change", e => this.changeBackupRule("bkcDaysValue", e.target.value, 3650));
     root.querySelector("[data-bkc-auto]")?.addEventListener("change", ev => {
       if (!ev.currentTarget.checked) { this.setBackupAuto(false); return; }
       ev.currentTarget.checked = false; // only the answer of the dialog switches it on

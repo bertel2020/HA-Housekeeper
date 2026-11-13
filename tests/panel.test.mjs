@@ -314,6 +314,60 @@ test("closing a confirmation dialog restores focus to its opener", () => {
   assert.equal(el._modalReturnFocus.size, 0);
 });
 
+test("a new number in the backup rule is saved only after the question while the automatic cleanup is on", async () => {
+  const { el } = panel("en");
+  const saved = [];
+  el.setBackupAuto = async on => { saved.push(on); };
+  el.loadBackupCleanup = () => {};
+  el.bkc = { auto: { enabled: true } };
+  el.bkcLast = 3; el.bkcDaysValue = 14;
+  el.changeBackupRule("bkcLast", "", 100);
+  assert.ok(!el.confirmState, "an emptied field is not a rule of 0");
+  el.changeBackupRule("bkcLast", "0", 100);
+  assert.ok(el.confirmState.text.includes("0") && el.bkcLast === 3 && saved.length === 0, "asks first, nothing saved");
+  el.confirmClose();
+  assert.ok(el.bkcLast === 3 && saved.length === 0, "cancel keeps the rule");
+  el.changeBackupRule("bkcLast", "5", 100);
+  await el.confirmState.run();
+  assert.deepEqual(saved, [true]);
+  assert.equal(el.bkcLast, 5);
+});
+
+test("a reload gives the open object page the new data and asks for its details again", async () => {
+  const { el } = panel("en");
+  const fresh = { ...DATA, objects: DATA.objects.map(o => o.object_id === "sensor.b" ? { ...o, status: "orphaned" } : o) };
+  const asked = [];
+  el.data = DATA;
+  el._hass.callWS = async msg => { if (msg.type === "ha_housekeeper/detail") { asked.push(msg.object_id); return { relations: [] }; } return fresh; };
+  await el.openObject(el.findObject("entity:sensor.b"));
+  assert.deepEqual(asked, ["sensor.b"]);
+  await el.load();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(el.selected.status, "orphaned", "the page shows the new status");
+  assert.deepEqual(asked, ["sensor.b", "sensor.b"], "the details are asked for again");
+  assert.ok(el.details.has("entity:sensor.b"));
+});
+
+test("the plan runs that the person confirmed, not the one the page shows when the check is back", async () => {
+  const { el } = panel("en");
+  const planA = { plan_id: "a", status: "dry_run", actions: [] }, planB = { plan_id: "b", status: "dry_run", actions: [] };
+  const calls = [];
+  el.plan = planA;
+  el.planNeedsCheck = () => true;
+  el.executePlan = async () => calls.push("execute");
+  el._hass.callWS = async msg => {
+    if (msg.type.includes("plan_")) calls.push(msg.type.split("/")[1] + ":" + msg.plan_id);
+    if (msg.type.endsWith("plan_check")) el.plan = planB; // another plan is opened meanwhile
+    return { current: true, token: "t", plan_id: msg.plan_id };
+  };
+  await el.confirmAndRun();
+  assert.deepEqual(calls, ["plan_check:a"], "nothing is confirmed or run for the plan on screen");
+  el.plan = planA; calls.length = 0;
+  el.plan = null;
+  await el.confirmAndRun();
+  assert.deepEqual(calls, [], "a dropped plan does nothing and throws nothing");
+});
+
 test("every view renders without throwing and escapes object names", () => {
   const { el, shadow } = panel("de");
   for (const view of ["overview", "inventory", "findingsNav", "graph"]) {

@@ -583,6 +583,7 @@
 "repeatFullHint": "按你的备份设置进行的完整备份（包含应用和文件夹）需要更长时间，但不计入自动备份。或者使用小备份重试该计划。",
 "backupFullPlanned": "按你的备份设置进行完整备份",
 "abort_interrupted": "运行被中断（Home Assistant 重启）；此步骤未执行。",
+"abort_interrupted_mid": "运行在此步骤中被中断（Home Assistant 已重启）。请检查它是否更改了内容；无法从这里撤销。",
 "abort_database_corrupt": "记录器数据库已损坏（「database disk image is malformed」），未做任何更改。请使用 PRAGMA integrity_check 检查（例如在 SQLite Web 中），使用 REINDEX 修复受影响的索引，或恢复备份。",
 "abort_backup_unverified": "备份已报告，但未按预期出现在备份列表中（缺失、为空或不含数据库），未做任何更改。请检查设置 → 系统 → 备份。",
 "abort_backup_running": "Home Assistant 正在自行创建备份，未做任何更改。请稍后重试。",

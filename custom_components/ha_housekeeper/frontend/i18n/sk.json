@@ -667,6 +667,7 @@
 "repeatFullHint": "Úplná záloha podľa tvojich nastavení (vrátane aplikácií a priečinkov) trvá dlhšie a nepočíta sa ako automatická záloha. Alebo zopakuj plán s malou zálohou.",
 "backupFullPlanned": "Úplná záloha podľa nastavení zálohovania",
 "abort_interrupted": "Vykonávanie sa prerušilo (Home Assistant sa reštartoval); tento krok neprebehol.",
+"abort_interrupted_mid": "Spustenie bolo prerušené (Home Assistant sa reštartoval) počas tohto kroku. Skontroluj, či niečo zmenil; odtiaľto sa nedá vrátiť späť.",
 "abort_database_corrupt": "Databáza Recordera je poškodená („database disk image is malformed“) – nič sa nezmenilo. Skontroluj ju príkazom PRAGMA integrity_check (napríklad v SQLite Web), poškodené indexy oprav pomocou REINDEX alebo obnov zálohu.",
 "abort_backup_unverified": "Záloha bola nahlásená, ale v zozname záloh nie je v očakávanom stave (chýba, je prázdna alebo neobsahuje databázu) – nič sa nezmenilo. Skontroluj Nastavenia → Systém → Zálohy.",
 "abort_backup_running": "Home Assistant práve vytvára vlastnú zálohu – nič sa nezmenilo. Skús to po dokončení.",

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"806229ee65"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"2f15a53161"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"604d734098"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d8e3370906"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"7fe630f34c"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"f0ff5d4e7a"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"ac98212d7c"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"b8e807a742"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"899c236a23"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5ebe127554"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b782134b2b"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"917d270951"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7a2ba69a87"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"c6dcc98ab7"}];
 
 const TEXT = {
   de: {
@@ -146,7 +146,7 @@ const TEXT = {
     largeShareEntity: "Ungewöhnlich viel: {count} von {total} Entitäten ({percent} %)", largeShareDevice: "Ungewöhnlich viel: {count} von {total} Geräten ({percent} %)", largeShareHint: "Dieser Plan entfernt mehr als die Hälfte. Prüfe die Auswahl, bevor du fortfährst.",
     confirmWordRemove: "ENTFERNEN", confirmedSummaryRemove: "{count} Entitäten werden entfernt. Wiederherstellen geht, solange die Entitäts-ID frei ist und die Integration noch existiert.",
     reason_not_quarantined: "Nicht in Quarantäne: erst deaktivieren, nach der Quarantänezeit entfernen.", reason_not_provided_recent: "Wird erst seit weniger als einem Tag nicht mehr bereitgestellt. Bestätige, dass die Entität wirklich weg ist: manche Integrationen legen ihre Entitäten erst nach dem Start an.", reason_quarantine_too_short: "Die Quarantäne ist noch zu kurz.", reason_not_restorable: "Nicht wiederherstellbar: Die Integration existiert nicht mehr, das Entfernen wäre endgültig.",
-    abort_backup_failed: "Das Backup ist fehlgeschlagen – es wurde nichts geändert.", abort_backup_small_failed: "Das Backup nur von Home Assistant ist fehlgeschlagen – es wurde nichts geändert.", repeatFull: "Mit vollem Backup wiederholen", repeatFullHint: "Ein volles Backup nach deinen Backup-Einstellungen (mit Apps und Ordnern) dauert länger, zählt aber nicht als automatisches Backup. Oder wiederhole den Plan mit dem kleinen Backup.", backupFullPlanned: "Volles Backup nach deinen Backup-Einstellungen", abort_interrupted: "Der Lauf wurde unterbrochen (Neustart von Home Assistant); dieser Schritt lief nicht.", abort_database_corrupt: "Die Recorder-Datenbank ist beschädigt („database disk image is malformed“) – es wurde nichts geändert. Prüfe sie mit PRAGMA integrity_check (zum Beispiel in SQLite Web), repariere betroffene Indizes mit REINDEX oder spiele ein Backup ein.", abort_backup_unverified: "Das Backup wurde gemeldet, ist aber nicht wie erwartet in der Backup-Liste (fehlt, ist leer oder ohne Datenbank) – es wurde nichts geändert. Prüfe Einstellungen → System → Backups.", abort_backup_running: "Home Assistant erstellt gerade selbst ein Backup – es wurde nichts geändert. Versuche es danach noch einmal.", abort_recorder_migrating: "Der Recorder baut gerade die Datenbank um (Migration) – es wurde nichts geändert. Warte, bis er fertig ist.", abort_recorder_backlog: "Der Recorder kommt mit dem Schreiben nicht nach (große Warteschlange) – es wurde nichts geändert. Versuche es später noch einmal.", abort_disk_low: "Auf dem Datenträger der Recorder-Datenbank ist zu wenig Platz frei für das Backup und die Änderung (mindestens 512 MB und etwa die halbe Datenbankgröße) – es wurde nichts geändert. Schaffe zuerst Platz.", abort_backup_unavailable: "Die Backup-Komponente ist nicht verfügbar – es wurde nichts geändert.", abort_no_backup_agent: "Es ist kein Backup-Ziel eingerichtet (Einstellungen → System → Backups) – es wurde nichts geändert.",
+    abort_backup_failed: "Das Backup ist fehlgeschlagen – es wurde nichts geändert.", abort_backup_small_failed: "Das Backup nur von Home Assistant ist fehlgeschlagen – es wurde nichts geändert.", repeatFull: "Mit vollem Backup wiederholen", repeatFullHint: "Ein volles Backup nach deinen Backup-Einstellungen (mit Apps und Ordnern) dauert länger, zählt aber nicht als automatisches Backup. Oder wiederhole den Plan mit dem kleinen Backup.", backupFullPlanned: "Volles Backup nach deinen Backup-Einstellungen", abort_interrupted: "Der Lauf wurde unterbrochen (Neustart von Home Assistant); dieser Schritt lief nicht.", abort_interrupted_mid: "Der Lauf wurde unterbrochen (Neustart von Home Assistant), während dieser Schritt lief. Prüfe, ob er etwas geändert hat; von hier aus lässt es sich nicht rückgängig machen.", abort_database_corrupt: "Die Recorder-Datenbank ist beschädigt („database disk image is malformed“) – es wurde nichts geändert. Prüfe sie mit PRAGMA integrity_check (zum Beispiel in SQLite Web), repariere betroffene Indizes mit REINDEX oder spiele ein Backup ein.", abort_backup_unverified: "Das Backup wurde gemeldet, ist aber nicht wie erwartet in der Backup-Liste (fehlt, ist leer oder ohne Datenbank) – es wurde nichts geändert. Prüfe Einstellungen → System → Backups.", abort_backup_running: "Home Assistant erstellt gerade selbst ein Backup – es wurde nichts geändert. Versuche es danach noch einmal.", abort_recorder_migrating: "Der Recorder baut gerade die Datenbank um (Migration) – es wurde nichts geändert. Warte, bis er fertig ist.", abort_recorder_backlog: "Der Recorder kommt mit dem Schreiben nicht nach (große Warteschlange) – es wurde nichts geändert. Versuche es später noch einmal.", abort_disk_low: "Auf dem Datenträger der Recorder-Datenbank ist zu wenig Platz frei für das Backup und die Änderung (mindestens 512 MB und etwa die halbe Datenbankgröße) – es wurde nichts geändert. Schaffe zuerst Platz.", abort_backup_unavailable: "Die Backup-Komponente ist nicht verfügbar – es wurde nichts geändert.", abort_no_backup_agent: "Es ist kein Backup-Ziel eingerichtet (Einstellungen → System → Backups) – es wurde nichts geändert.",
     result_removed: "Entfernt", undo_restored: "wiederhergestellt (wieder in Quarantäne)", undo_conflict_taken: "nicht wiederhergestellt: Entitäts-ID inzwischen belegt", undo_conflict_unrestorable: "nicht wiederhergestellt: Integration existiert nicht mehr",
     check_removed: "Entität ist entfernt", plan_status_backup: "Backup läuft", backupRunning: "Backup läuft … das kann etwas dauern.", daysLeftShort: "noch {days} Tage", removalCandidatesHint: "Entitäten in Quarantäne. Entfernen ist erst nach {days} Tagen möglich.", removalReady: "Bereit", waitingShort: "Wartet",
     perPage: "Pro Seite", cleanup: "Bereinigen", cleanupHint: "Hinweise, die einen Blick wert sind",
@@ -331,7 +331,7 @@ const TEXT = {
     largeShareEntity: "Unusually many: {count} of {total} entities ({percent} %)", largeShareDevice: "Unusually many: {count} of {total} devices ({percent} %)", largeShareHint: "This plan removes more than half. Check the selection before you continue.",
     confirmWordRemove: "REMOVE", confirmedSummaryRemove: "{count} entities will be removed. Restoring works while the entity ID is free and the integration still exists.",
     reason_not_quarantined: "Not in quarantine: disable first, remove after the quarantine period.", reason_not_provided_recent: "Not provided for less than a day. Confirm the entity is really gone: some integrations add their entities only after start-up.", reason_quarantine_too_short: "The quarantine is still too short.", reason_not_restorable: "Not restorable: the integration no longer exists, so the removal would be final.",
-    abort_backup_failed: "The backup failed – nothing was changed.", abort_backup_small_failed: "The backup of Home Assistant only failed – nothing was changed.", repeatFull: "Repeat with a full backup", repeatFullHint: "A full backup as your backup settings say (with apps and folders) takes longer but does not count as an automatic backup. Or repeat the plan with the small backup.", backupFullPlanned: "Full backup as your backup settings say", abort_interrupted: "The run was cut off (Home Assistant restarted); this step did not run.", abort_database_corrupt: "The recorder database is damaged (“database disk image is malformed”) – nothing was changed. Check it with PRAGMA integrity_check (for example in SQLite Web), repair the affected indexes with REINDEX or restore a backup.", abort_backup_unverified: "The backup was reported but is not in the backup list as expected (missing, empty or without the database) – nothing was changed. Check Settings → System → Backups.", abort_backup_running: "Home Assistant is making a backup itself – nothing was changed. Try again afterwards.", abort_recorder_migrating: "The recorder is migrating the database – nothing was changed. Wait until it is done.", abort_recorder_backlog: "The recorder cannot keep up with writing (a long queue) – nothing was changed. Try again later.", abort_disk_low: "The disk of the recorder database has too little free space for the backup and the change (at least 512 MB and about half the database size) – nothing was changed. Free some space first.", abort_backup_unavailable: "The backup component is not available – nothing was changed.", abort_no_backup_agent: "No backup location is set up (Settings → System → Backups) – nothing was changed.",
+    abort_backup_failed: "The backup failed – nothing was changed.", abort_backup_small_failed: "The backup of Home Assistant only failed – nothing was changed.", repeatFull: "Repeat with a full backup", repeatFullHint: "A full backup as your backup settings say (with apps and folders) takes longer but does not count as an automatic backup. Or repeat the plan with the small backup.", backupFullPlanned: "Full backup as your backup settings say", abort_interrupted: "The run was cut off (Home Assistant restarted); this step did not run.", abort_interrupted_mid: "The run was cut off (Home Assistant restarted) while this step was running. Check whether it changed anything; it cannot be undone from here.", abort_database_corrupt: "The recorder database is damaged (“database disk image is malformed”) – nothing was changed. Check it with PRAGMA integrity_check (for example in SQLite Web), repair the affected indexes with REINDEX or restore a backup.", abort_backup_unverified: "The backup was reported but is not in the backup list as expected (missing, empty or without the database) – nothing was changed. Check Settings → System → Backups.", abort_backup_running: "Home Assistant is making a backup itself – nothing was changed. Try again afterwards.", abort_recorder_migrating: "The recorder is migrating the database – nothing was changed. Wait until it is done.", abort_recorder_backlog: "The recorder cannot keep up with writing (a long queue) – nothing was changed. Try again later.", abort_disk_low: "The disk of the recorder database has too little free space for the backup and the change (at least 512 MB and about half the database size) – nothing was changed. Free some space first.", abort_backup_unavailable: "The backup component is not available – nothing was changed.", abort_no_backup_agent: "No backup location is set up (Settings → System → Backups) – nothing was changed.",
     result_removed: "Removed", undo_restored: "restored (back in quarantine)", undo_conflict_taken: "not restored: entity ID is taken now", undo_conflict_unrestorable: "not restored: the integration no longer exists",
     check_removed: "Entity is removed", plan_status_backup: "Backup running", backupRunning: "Backup running … this can take a while.", daysLeftShort: "{days} days to go", removalCandidatesHint: "Entities in quarantine. Removal is possible only after {days} days.", removalReady: "Ready", waitingShort: "Waiting",
     perPage: "Per page", cleanup: "Clean up", cleanupHint: "Hints worth a look",
@@ -4676,24 +4676,29 @@ class CleanupMixin {
   // Which step failed is said in the error line; the mark only counts while that error is still the one shown.
   failPlan(err, from) { this.cleanupError = this.errText(err); this.cleanupErrorFrom = from; this.cleanupErrorStamp = this.cleanupError; this.cleanupErrorCode = err?.code; }
 
-  async confirmPlan() {
+  async confirmPlan(plan = this.plan) {
     try {
-      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: this.plan.actions.filter(a => a.verdict === "review" && a.executable).map(a => a.object_id), ...(this.skipBackupOn(this.plan) ? { skip_backup: true } : {}) });
+      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: plan.plan_id, acknowledged: plan.actions.filter(a => a.verdict === "review" && a.executable).map(a => a.object_id), ...(this.skipBackupOn(plan) ? { skip_backup: true } : {}) });
       this.confirmWord = ""; this.cleanupError = "";
     } catch (err) { this.failPlan(err, "confirm"); }
     this.render();
   }
 
+  // The plan the person confirmed in the dialog is the one that runs: the page may show another by the time the checks are back.
   async confirmAndRun() {
-    if (this.planNeedsCheck(this.plan)) {
+    const plan = this.plan;
+    if (!plan) return;
+    if (this.planNeedsCheck(plan)) {
       this.cleanupBusy = true; this.render();
       let check = null;
-      try { check = await this._hass.callWS({ type: "ha_housekeeper/plan_check", plan_id: this.plan.plan_id }); } catch (err) { this.failPlan(err, "check"); }
+      try { check = await this._hass.callWS({ type: "ha_housekeeper/plan_check", plan_id: plan.plan_id }); } catch (err) { if (this.plan?.plan_id === plan.plan_id) this.failPlan(err, "check"); }
       this.cleanupBusy = false;
+      if (this.plan?.plan_id !== plan.plan_id) { this.render(); return; }
       if (!check || !check.current) { this.planChanges = check ? check.changed : null; this.render(); return; }
       this.planChanges = null;
     }
-    await this.confirmPlan();
+    await this.confirmPlan(plan);
+    if (this.plan?.plan_id !== plan.plan_id) { this.confirmation = null; this.render(); return; }
     if (this.confirmation) await this.executePlan();
   }
 
@@ -17329,6 +17334,17 @@ class BackupCleanupMixin {
     this.bkcBusy = false; this.render();
   }
 
+  // A new number in the rule. While Housekeeper tidies up by itself it deletes by this rule, so the
+  // new rule is saved only after the same question as when switching on, with the new numbers.
+  changeBackupRule(key, raw, max) {
+    if (String(raw).trim() === "") { this.render(); return; } // an emptied field is not a rule of 0
+    const value = Math.max(0, Math.min(max, Number(raw) || 0));
+    if (value === (this[key] ?? (key === "bkcLast" ? 3 : 14))) { this.render(); return; }
+    if (!this.bkc?.auto?.enabled) { this[key] = value; this.loadBackupCleanup(true); return; }
+    const next = { last: this.bkcLast ?? 3, days: this.bkcDaysValue ?? 14, [key === "bkcLast" ? "last" : "days"]: value };
+    this.confirmAsk(this.t("bkcAutoAskText", next), async () => { this[key] = value; await this.setBackupAuto(true); this.loadBackupCleanup(true); }, { title: this.t("bkcAutoAskTitle"), yes: this.t("bkcAutoYes"), danger: true, cancel: () => this.render() });
+  }
+
   // The box in the table head: every backup of the page that can be ticked.
   bkcHeadBox(rows) {
     const ids = (rows || []).filter(r => !r.protected).map(r => r.backup_id);
@@ -17368,8 +17384,8 @@ class BackupCleanupMixin {
   bindBackupCleanup(root) {
     root.querySelectorAll("[data-bkc-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { el.dataset.bkcPage.split(",").forEach(id => (el.checked ? this.bkcSel.add(id) : this.bkcSel.delete(id))); this.render(); }; });
     root.querySelectorAll("[data-bkc-sel]").forEach(el => el.onchange = () => { el.checked ? this.bkcSel.add(el.dataset.bkcSel) : this.bkcSel.delete(el.dataset.bkcSel); this.render(); });
-    root.querySelector("[data-bkc-last]")?.addEventListener("change", e => { this.bkcLast = Math.max(0, Math.min(100, Number(e.target.value) || 0)); if (this.bkc?.auto?.enabled) this.setBackupAuto(true); this.loadBackupCleanup(true); });
-    root.querySelector("[data-bkc-days]")?.addEventListener("change", e => { this.bkcDaysValue = Math.max(0, Math.min(3650, Number(e.target.value) || 0)); if (this.bkc?.auto?.enabled) this.setBackupAuto(true); this.loadBackupCleanup(true); });
+    root.querySelector("[data-bkc-last]")?.addEventListener("change", e => this.changeBackupRule("bkcLast", e.target.value, 100));
+    root.querySelector("[data-bkc-days]")?.addEventListener("change", e => this.changeBackupRule("bkcDaysValue", e.target.value, 3650));
     root.querySelector("[data-bkc-auto]")?.addEventListener("change", ev => {
       if (!ev.currentTarget.checked) { this.setBackupAuto(false); return; }
       ev.currentTarget.checked = false; // only the answer of the dialog switches it on
@@ -19313,7 +19329,7 @@ class ConfirmMixin {
   // `run` is called only after "Delete"; `text` is the sentence of the dialog.
   confirmAsk(text, run, opts = {}) { this.confirmState = { text, run, ...opts }; this._confirmFocus = true; this.render(); }
 
-  confirmClose() { this.confirmState = null; this.render(); }
+  confirmClose() { const cancel = this.confirmState?.cancel; this.confirmState = null; this.render(); cancel?.(); }
 
   confirmDialog() {
     const c = this.confirmState;
@@ -23301,12 +23317,20 @@ class HAHousekeeperPanel extends HTMLElement {
     if (fresh) progressTimer = window.setInterval(() => this.updateScanStatus(), 250);
     try {
       const scannedBefore = this.data?.meta?.scanned_at;
+      const openKey = this.selected ? this.objectKey(this.selected) : null;
+      const trailKeys = this.trail.map(item => this.objectKey(item));
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
       this.firstContact();
       if (this.data?.meta?.scanned_at !== scannedBefore) this.forgetScanViews();
       this.details = new Map();
       this.compare = null;
+      // The page that is open belongs to the old data: take the new object and ask for its details again.
+      if (openKey) {
+        this.selected = this.findObject(openKey) || null;
+        this.trail = this.selected ? trailKeys.map(key => this.findObject(key)).filter(Boolean) : [];
+      }
       this.applyUrl();
+      if (openKey && this.selected) this.openObject(this.selected);
     } catch (err) {
       this.error = this.errText(err);
       // The counts on screen stay from the last good scan: say that this scan failed.

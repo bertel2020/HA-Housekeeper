@@ -583,6 +583,7 @@
 "repeatFullHint": "Un backup completo secondo le tue impostazioni di backup (con app e cartelle) richiede più tempo ma non conta come backup automatico. Oppure ripeti il piano con il backup ridotto.",
 "backupFullPlanned": "Backup completo secondo le tue impostazioni di backup",
 "abort_interrupted": "L'esecuzione è stata interrotta (Home Assistant si è riavviato); questo passaggio non è stato eseguito.",
+"abort_interrupted_mid": "L’esecuzione è stata interrotta (Home Assistant si è riavviato) durante questo passaggio. Controlla se ha modificato qualcosa; da qui non si può annullare.",
 "abort_database_corrupt": "Il database del Recorder è danneggiato (“database disk image is malformed”) – nulla è stato modificato. Controllalo con PRAGMA integrity_check (per esempio in SQLite Web), ripara gli indici interessati con REINDEX o ripristina un backup.",
 "abort_backup_unverified": "Il backup è stato segnalato ma non è nell'elenco dei backup come previsto (mancante, vuoto o senza database) – nulla è stato modificato. Controlla Impostazioni → Sistema → Backup.",
 "abort_backup_running": "Home Assistant sta già facendo un backup – nulla è stato modificato. Riprova dopo.",

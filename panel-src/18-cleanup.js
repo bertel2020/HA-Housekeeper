@@ -354,24 +354,29 @@ class CleanupMixin {
   // Which step failed is said in the error line; the mark only counts while that error is still the one shown.
   failPlan(err, from) { this.cleanupError = this.errText(err); this.cleanupErrorFrom = from; this.cleanupErrorStamp = this.cleanupError; this.cleanupErrorCode = err?.code; }
 
-  async confirmPlan() {
+  async confirmPlan(plan = this.plan) {
     try {
-      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: this.plan.plan_id, acknowledged: this.plan.actions.filter(a => a.verdict === "review" && a.executable).map(a => a.object_id), ...(this.skipBackupOn(this.plan) ? { skip_backup: true } : {}) });
+      this.confirmation = await this._hass.callWS({ type: "ha_housekeeper/plan_confirm", plan_id: plan.plan_id, acknowledged: plan.actions.filter(a => a.verdict === "review" && a.executable).map(a => a.object_id), ...(this.skipBackupOn(plan) ? { skip_backup: true } : {}) });
       this.confirmWord = ""; this.cleanupError = "";
     } catch (err) { this.failPlan(err, "confirm"); }
     this.render();
   }
 
+  // The plan the person confirmed in the dialog is the one that runs: the page may show another by the time the checks are back.
   async confirmAndRun() {
-    if (this.planNeedsCheck(this.plan)) {
+    const plan = this.plan;
+    if (!plan) return;
+    if (this.planNeedsCheck(plan)) {
       this.cleanupBusy = true; this.render();
       let check = null;
-      try { check = await this._hass.callWS({ type: "ha_housekeeper/plan_check", plan_id: this.plan.plan_id }); } catch (err) { this.failPlan(err, "check"); }
+      try { check = await this._hass.callWS({ type: "ha_housekeeper/plan_check", plan_id: plan.plan_id }); } catch (err) { if (this.plan?.plan_id === plan.plan_id) this.failPlan(err, "check"); }
       this.cleanupBusy = false;
+      if (this.plan?.plan_id !== plan.plan_id) { this.render(); return; }
       if (!check || !check.current) { this.planChanges = check ? check.changed : null; this.render(); return; }
       this.planChanges = null;
     }
-    await this.confirmPlan();
+    await this.confirmPlan(plan);
+    if (this.plan?.plan_id !== plan.plan_id) { this.confirmation = null; this.render(); return; }
     if (this.confirmation) await this.executePlan();
   }
 
