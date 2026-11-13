@@ -17,6 +17,7 @@ Die ausführliche Dokumentation von HA Housekeeper. Einen kurzen Überblick und 
   - [Betrieb](#betrieb)
   - [Sicherheit und Zugriffe](#sicherheit-und-zugriffe)
   - [Bedienung und Einstellungen](#bedienung-und-einstellungen)
+- [Dashboard-Karten](#dashboard-karten)
 - [Sicherheitsmodell](#sicherheitsmodell)
 - [Verwendung](#verwendung)
 - [Beispiele](#beispiele)
@@ -34,6 +35,7 @@ Die ausführliche Dokumentation von HA Housekeeper. Einen kurzen Überblick und 
 | **Scanvergleich** | Neue und behobene Befunde, Statuswechsel, neue und entfernte Objekte seit dem letzten Scan |
 | **Aufräumhinweise** | Mögliche Duplikate, ungenutzte Automationen, schwache Batterien |
 | **Sensoren und Hinweise** | Zähler als Sensoren, zusammengefasste Reparaturhinweise, Befundexport als CSV/JSON und Inventarexport als CSV/Markdown/JSON |
+| **Dashboard-Karten** | Sechs Karten für deine eigenen Dashboards: Zustand des Hauses, Batterien mit Einkaufsliste, Hausfunktionen, pausierte Integrationen, nach dem Update und ein Überblick in Reitern |
 | **Abhängigkeiten** | Beziehungen zwischen Integration, Gerät, Entität, Bereich und Automation mit Vertrauensstufe |
 | **Sicherheit** | Nur für Administratoren; serverseitige Schutzmodi, Vorschau und ausdrückliche Bestätigung; je nach Aktion Backup, Prüfung und Rückgängig |
 
@@ -429,8 +431,127 @@ Panel, Einrichtungsdialog und Meldungen gibt es auf Deutsch und Englisch sowie a
   - **Hinweis zu `ws_command`:** Die Befehle des Panels gehen bei ha-mcp auch über `ws_command`, sind aber nicht dokumentiert, und die Gesamtliste (`inventory`) kann über 10 MB groß sein. Für Agenten sind die Dienste gedacht. Die Schalter und das Bestätigen, Ausführen und Zurücknehmen von Wartungsplänen lehnen Verbindungen ab, die nicht aus einer angemeldeten Panel-Sitzung kommen (langlebige Zugriffstokens und die Verbindung des Supervisors, über die ha-mcp als App läuft); das ist ein Schutz für den üblichen Aufbau, kein Siegel.
 - **Diagnose-Datei** (Einstellungen → Info): nur Zahlen und Versionen, ohne Namen, IDs oder Attribute, passend für eine Fehlermeldung.
 - **Update-Status** (Einstellungen → Info): Housekeeper vergleicht seine tatsächlich geladene Version mit dem Stand von HACS. Die Karte erkennt ein verfügbares Update, abweichende oder fehlende HACS-Daten und besonders eine frühere Commit-Installation, bei der HACS den Wechsel auf Releases übersehen kann; sie erklärt den nächsten Schritt und öffnet das Housekeeper-Repository direkt in HACS. GitHub wird dafür nicht zusätzlich abgefragt. Ab Home Assistant 2026.11 ist HACS als „Marketplace“ eingebaut; Housekeeper liest installierte Integrationen, Updates, archivierte und entfernte Repositories aus beiden.
-- **Sensoren**: Housekeeper legt ein Dienstgerät mit Zählern an (Befunde, verwaiste und nicht verfügbare Entitäten, defekte Referenzen, mögliche Duplikate, ungenutzte Automationen, schwache Batterien, letzter Scan) und die Entität **Aktivität** (Bereit, Scan läuft, Plan läuft, Wartet auf Start), nutzbar in Dashboards und Automationen.
+- **Sensoren**: Housekeeper legt ein Dienstgerät mit Zählern an (Befunde, verwaiste und nicht verfügbare Entitäten, defekte Referenzen, mögliche Duplikate, ungenutzte Automationen, schwache Batterien, letzter Scan) und die Entität **Aktivität** (Bereit, Scan läuft, Plan läuft, Wartet auf Start), nutzbar in Dashboards und Automationen. Weitere Sensoren speisen die [Dashboard-Karten](#dashboard-karten): **Zustand des Hauses**, **Schwächste Batterie**, **Nächster Batteriewechsel** (eine Zeit), **Pausierte Integrationen** und **Nach dem Update**.
 - **Ereignisse für eigene Automationen**: Nach einem Scan löst Housekeeper für jede neue Lage ein Ereignis auf dem Home-Assistant-Bus aus: `ha_housekeeper_critical_finding`, `ha_housekeeper_backup_overdue`, `ha_housekeeper_quarantine_expired`, `ha_housekeeper_followup_regression` und `ha_housekeeper_integration_down` und `ha_housekeeper_reminder_due`. Jede Lage wird einmal gemeldet (beim ersten Mal still, damit der Bestand nicht auf einmal feuert), die Daten enthalten nur IDs und Zahlen. Housekeeper schickt selbst nichts; die Benachrichtigung baust du in einer Automation.
+
+## Dashboard-Karten
+
+Housekeeper bringt sechs Karten für deine eigenen Dashboards mit. Sie zeigen das Wichtigste auf einen Blick, ohne dass du das Panel öffnen musst. Sie werden zusammen mit der Integration geladen: unter den Dashboard-Ressourcen musst du nichts eintragen.
+
+### Eine Karte hinzufügen
+
+Dashboard bearbeiten, **Karte hinzufügen**, nach **HA Housekeeper** suchen. Jede Karte hat einen Editor im Aussehen von Home Assistant. Eine Entität musst du nicht wählen: die Karte findet die Housekeeper-Sensoren selbst. Der Kartenwähler zeigt die Namen auf Englisch; die Karte selbst und ihr Editor sprechen die Sprache dessen, der das Dashboard ansieht (alle Sprachen des Panels).
+
+| Karte | `type` | Was sie zeigt |
+| --- | --- | --- |
+| **Zustand des Hauses** | `custom:ha-housekeeper-health-card` | Eine Statuszeile, die vier Themen (Ausgefallen, Kaputte Verweise, Fehlerhafte Automationen, Überflüssig) als Kacheln mit denselben Zahlen wie die Übersicht im Panel, was seit dem letzten Scan neu ist und was behoben wurde, und ein Scan-Knopf. Sie wird rot, wenn die Scans nicht durchlaufen. |
+| **Batterien** | `custom:ha-housekeeper-battery-card` | Die schwächsten Batterien mit Prognose und wie weit man ihr trauen kann („Schätzung“, „stabil“, „zu wenig Daten“), die nächste Wechselrunde nach Bereich (die nächsten 14 Tage) und eine **Einkaufsliste**, die die Zellen nach Batterietyp zählt. |
+| **Hausfunktionen** | `custom:ha-housekeeper-functions-card` | Eine Zeile je Hausfunktion: Zustand, Grund in Worten, wie viele ihrer Objekte in Ordnung sind, ein Streifen der letzten Tage und die Verfügbarkeit der letzten 30 Tage. Gestörte Funktionen stehen zuerst. |
+| **Pausierte Integrationen** | `custom:ha-housekeeper-auto-pause-card` | Was die Auto-Pause zurückhält, mit Grund, der Zeit bis zum nächsten Versuch und dem Stand der Versuche. Administratoren haben pro Zeile ein Menü: jetzt versuchen, Pause beenden, nie pausieren. |
+| **Nach dem Update** | `custom:ha-housekeeper-update-card` | Einige Stunden nach einem Update von Home Assistant, Betriebssystem oder Supervisor: was seither nicht mehr läuft und wie lange der Start gedauert hat gegen das Übliche. |
+| **Überblick** | `custom:ha-housekeeper-overview-card` | Die Karten oben als Abschnitte einer Karte, in Reitern oder untereinander. |
+
+### Optionen
+
+Jede Karte hat diese Optionen, im Editor oder im YAML:
+
+| Option | Werte | Bedeutung |
+| --- | --- | --- |
+| `title` | Text | Ersetzt die Standardüberschrift. |
+| `quiet` | `summary` (Standard), `hide` | Was die Karte tut, wenn nichts zu tun ist: die Zusammenfassung zeigen oder vom Dashboard verschwinden, bis wieder etwas anliegt. Im Editor bleibt sie immer sichtbar und sagt, warum sie sonst verschwände. |
+| `tap` | `panel` (Standard), `none` | Ob ein Tipp auf eine Kachel, eine Zeile oder die Fußzeile das Housekeeper-Panel öffnet. Nur Administratoren kommen hinein. |
+| `compact` | `true`, `false` (Standard) | Kleinere Abstände. |
+
+Jede Karte hat dazu eigene Optionen:
+
+| Karte | Option | Werte |
+| --- | --- | --- |
+| Zustand des Hauses | `tiles` | `findings` (Standard: nur bei Befunden), `always`, `never` |
+| | `changes` | `true` (Standard) zeigt, was sich seit dem letzten Scan geändert hat |
+| | `scan_button` | `true` (Standard); den Knopf sehen nur Administratoren |
+| Batterien | `view` | `weakest` (Standard), `round`, `both` |
+| | `rows` | 3 bis 10 (Standard 5), für „weakest“ |
+| | `shopping` | `true` (Standard) zeigt die Einkaufsliste bei der Wechselrunde |
+| | `forecast` | `true` (Standard) zeigt Prognose und Güte |
+| Hausfunktionen | `entities` | eine Liste von Funktions-Sensoren; leer zeigt alle |
+| | `history` | `30` (Standard), `14`, `7` oder `0` (kein Streifen) Tage |
+| Pausierte Integrationen | `actions` | `true` (Standard) zeigt Administratoren das Menü |
+| | `progress` | `true` (Standard) zeigt den Stand der Versuche |
+| Nach dem Update | `show_hours` | `1`, `3`, `6` (Standard) oder `24`: wie lange nach dem Update die Karte erscheint |
+| | `start` | `true` (Standard) zeigt, wie lange der Start gedauert hat |
+| Überblick | `sections` | siehe unten |
+| | `layout` | `tabs` (Standard) oder `stacked` |
+
+### Wer was sieht
+
+Alle, die das Dashboard sehen, sehen die Zahlen, auch die Namen von Batterien, Hausfunktionen und Integrationen. Was etwas verändert, ist Administratoren vorbehalten: der Link ins Panel, der Scan-Knopf und das Menü der pausierten Integrationen. Das Menü der pausierten Integrationen prüft der Server noch einmal: es ruft denselben Befehl wie das Panel, und den dürfen nur Administratoren nutzen. Der Scan-Knopf ist die gewöhnliche Knopf-Entität der Integration; die Karte blendet ihn für alle aus, die keine Administratoren sind, und wer diese Entität anderswo in Home Assistant drücken darf, kann das weiterhin.
+
+Die Karten lesen diese Sensoren des Housekeeper-Geräts: **Zustand des Hauses**, **Schwächste Batterie**, **Nächster Batteriewechsel**, **Pausierte Integrationen**, **Nach dem Update**, den Sensor jeder Hausfunktion, **Scan-Zustand**, **Aktivität** und **Letzter Scan**. Ihre Listen sind Attribute, die nicht im Recorder landen und die Datenbank deshalb nicht füllen. Die Sensoren kannst du auch in eigenen Automationen nutzen; **Nächster Batteriewechsel** ist eine Zeit, zum Beispiel für eine Erinnerung.
+
+### Die Überblick-Karte
+
+`sections` nennt die Karten, die zu Abschnitten werden, in der Reihenfolge, die du angibst: `health`, `batteries`, `functions`, `auto_pause`, `update`. Ein Eintrag ist ein Name oder, um Optionen dieser Karte zu setzen, ein Eintrag mit ihren Optionen:
+
+```yaml
+type: custom:ha-housekeeper-overview-card
+layout: tabs
+sections:
+  - health
+  - type: batteries
+    view: both
+    rows: 3
+  - type: functions
+    history: 7
+  - auto_pause
+  - update
+```
+
+Jeder Abschnitt ist die Karte selbst und sieht deshalb aus und verhält sich wie die einzelne Karte. Optionen der Überblick-Karte selbst (`tap`, `compact`, `quiet`) gelten für jeden Abschnitt, solange sein Eintrag nichts anderes sagt. Ein Reiter zeigt, wie viele Dinge in seinem Abschnitt einen Blick brauchen; der erste Abschnitt mit etwas Auffälligem öffnet sich, und ein Abschnitt, der sich ausblendet, hat keinen Reiter. Auf einem schmalen Bildschirm weichen die Reiter, und die Abschnitte stehen untereinander, damit nichts hinter einem Reiter verschwindet. Der Editor wählt die Abschnitte und die Darstellung; die Optionen einer einzelnen Karte stehen im YAML.
+
+### Eine fertige Ansicht
+
+Kopiere das in den Rohkonfigurations-Editor eines Dashboards (drei Punkte → **Rohkonfigurations-Editor**) und setze es unter `views:`. Das ist eine Ansicht mit der Überblick-Karte:
+
+```yaml
+- title: Housekeeper
+  path: housekeeper
+  icon: mdi:broom
+  cards:
+    - type: custom:ha-housekeeper-overview-card
+```
+
+Oder mit den einzelnen Karten nebeneinander; die Karte „Nach dem Update“ erscheint von selbst, wenn es etwas zu sagen gibt:
+
+```yaml
+- title: Housekeeper
+  path: housekeeper
+  icon: mdi:broom
+  cards:
+    - type: custom:ha-housekeeper-health-card
+    - type: custom:ha-housekeeper-battery-card
+      view: both
+    - type: custom:ha-housekeeper-functions-card
+    - type: custom:ha-housekeeper-auto-pause-card
+      quiet: hide
+    - type: custom:ha-housekeeper-update-card
+```
+
+Willst du eine Karte nur zeigen, wenn es Befunde gibt, kannst du statt `quiet` die Sichtbarkeitsbedingungen von Home Assistant selbst nehmen:
+
+```yaml
+- type: custom:ha-housekeeper-health-card
+  visibility:
+    - condition: numeric_state
+      entity: sensor.ha_housekeeper_findings
+      above: 0
+```
+
+### Grenzen
+
+- Die Karte „Nach dem Update“ gilt für Updates von Home Assistant, Betriebssystem und Supervisor, die Housekeeper beobachtet. Ein Neustart ohne Update öffnet keine Beobachtung und zeigt nichts.
+- Die Batterie-Prognose wird einmal am Tag aus der Statistik gelesen; bis dahin (und nach einem Neustart, bis der erste Scan sie gelesen hat) sortiert die Karte nach Stand und sagt „Prognose folgt“. Die Einkaufsliste kennt die Typen, die du im Panel gesetzt hast; „2× AA“ zählt als zwei Zellen, Akkus bleiben draußen, und Batterien ohne Typ werden genannt.
+- Welche Karten du hinzufügen kannst, bestimmt die Integration: sie erscheinen, wenn Housekeeper eingerichtet ist, und verschwinden mit ihm.
+- Eine Karte, die sich ausblendet, überlässt es Home Assistant, wie das Dashboard die Lücke schließt; die Überblick-Karte blendet stattdessen den Reiter aus.
 
 ## Sicherheitsmodell
 

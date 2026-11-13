@@ -73,6 +73,7 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 - **Home functions**: put together important functions of your home (heating, alarm, photovoltaics) from your own objects and keep an eye on them, with history, availability and sensors. An object note such as “Offline on purpose” can apply only at night or at fixed times.
 - **Exception rules and vacation mode**: leave out objects by area, label, integration or type, or only while a vacation entity or calendar says you are away, so that expected outages stay quiet.
 - **AI access**: programs and AI agents that can call Home Assistant services (for example ha-mcp) read the findings and, if you allow it, mark them in Housekeeper's own list, never in Home Assistant. Off by default, with limits, an automatic switch-off, a log of every call and an undo.
+- **Dashboard cards**: six cards for your own dashboards: house health, batteries with a forecast and a shopping list, home functions, paused integrations, what changed after an update, and an overview in tabs. Everybody sees the numbers; the actions are for administrators. A ready-made view is in the [User Guide](docs/USER-GUIDE.md#dashboard-cards).
 - **Changes since the last scan**, sensors, repair hints, a scan button and the service `ha_housekeeper.scan` for your own dashboards and automations and a watch after updates: what stopped working after an update or restart.
 
 ## Quick start

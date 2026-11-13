@@ -17,6 +17,7 @@ The detailed documentation of HA Housekeeper. For a short overview and the quick
   - [Operation](#operation)
   - [Security and access](#security-and-access)
   - [Using the interface and settings](#using-the-interface-and-settings)
+- [Dashboard cards](#dashboard-cards)
 - [Safety model](#safety-model)
 - [Usage](#usage)
 - [Examples](#examples)
@@ -34,6 +35,7 @@ The detailed documentation of HA Housekeeper. For a short overview and the quick
 | **Scan comparison** | New and resolved findings, status changes, new and removed objects since the last scan |
 | **Cleanup hints** | Possible duplicates, unused automations, low batteries |
 | **Sensors and hints** | Counters as sensors, aggregated repair hints, findings export as CSV/JSON and inventory export as CSV/Markdown/JSON |
+| **Dashboard cards** | Six cards for your own dashboards: house health, batteries with a shopping list, home functions, paused integrations, after the update and an overview in tabs |
 | **Dependencies** | Relationships between integration, device, entity, area, and automation with a confidence level |
 | **Safety** | Administrators only; server-side protection modes, previews and explicit confirmation; backup, verification and undo where the action supports them |
 
@@ -428,8 +430,127 @@ The panel, the configuration flow and the messages come in German and English, a
   - **Note on `ws_command`:** The commands the panel uses also work through the `ws_command` of ha-mcp, but they are not documented, and the full list (`inventory`) can be over 10 MB. The services are meant for agents. The switches and the confirming, running and undoing of maintenance plans refuse connections that do not come from a signed-in panel session (long-lived access tokens and the Supervisor connection through which ha-mcp runs as an app); that protects the usual setup, it is not a seal.
 - **Diagnostics file** (Settings → Info): numbers and versions only, no names, ids or attributes, fit for an issue.
 - **Update status** (Settings → Info): Housekeeper compares the version actually loaded with the state stored by HACS. The card detects an available update, mismatching or missing HACS data and, in particular, an earlier commit installation for which HACS can miss the move to releases; it explains the next step and opens the Housekeeper repository directly in HACS. No additional GitHub request is made. From Home Assistant 2026.11 HACS is built in as “Marketplace”; Housekeeper reads installed integrations, updates, archived and removed repositories from both.
-- **Sensors**: Housekeeper creates a service device with counters (findings, orphaned and unavailable entities, broken references, possible duplicates, unused automations, low batteries, last scan) and the entity **Activity** (Idle, Scanning, Plan running, Waiting for startup) for use in dashboards and automations.
+- **Sensors**: Housekeeper creates a service device with counters (findings, orphaned and unavailable entities, broken references, possible duplicates, unused automations, low batteries, last scan) and the entity **Activity** (Idle, Scanning, Plan running, Waiting for startup) for use in dashboards and automations. More sensors feed the [dashboard cards](#dashboard-cards): **House health**, **Weakest battery**, **Next battery change** (a time), **Paused integrations** and **After the update**.
 - **Events for your own automations**: After a scan Housekeeper fires an event on the Home Assistant bus for each new situation: `ha_housekeeper_critical_finding`, `ha_housekeeper_backup_overdue`, `ha_housekeeper_quarantine_expired`, `ha_housekeeper_followup_regression` and `ha_housekeeper_integration_down` and `ha_housekeeper_reminder_due`. Each situation is announced once (silent the first time so the existing state does not fire at once); the data holds ids and numbers only. Housekeeper sends nothing itself; you build the notification in an automation.
+
+## Dashboard cards
+
+Housekeeper brings six cards for your own dashboards. They show the most important things at a glance, without opening the panel. They are loaded together with the integration: there is nothing to add under dashboard resources.
+
+### Adding a card
+
+Edit a dashboard, **Add card**, search for **HA Housekeeper**. Each card has an editor with the same look as the rest of Home Assistant. Nobody has to pick an entity: the card finds the Housekeeper sensors itself. The card picker shows the names in English; the card itself and its editor speak the language of the person looking at the dashboard (all languages of the panel).
+
+| Card | `type` | What it shows |
+| --- | --- | --- |
+| **House health** | `custom:ha-housekeeper-health-card` | A status line, the four topics (Down, Broken references, Failing automations, Unneeded) as tiles with the same numbers as the overview page of the panel, what is new and what was fixed since the last scan, and a scan button. It turns red when the scans fail. |
+| **Batteries** | `custom:ha-housekeeper-battery-card` | The weakest batteries with a forecast and how far to trust it (“estimate”, “stable”, “too little data”), the next round of changes by area (the next 14 days) and a **shopping list** that counts the cells by battery type. |
+| **Home functions** | `custom:ha-housekeeper-functions-card` | One row per home function: its state, the reason in words, how many of its objects are fine, a strip of the last days and the availability of the last 30 days. Troubled functions come first. |
+| **Paused integrations** | `custom:ha-housekeeper-auto-pause-card` | What auto-pause holds back, with the reason, the time to the next attempt and how far the retries are. Administrators get a menu per row: try now, end the pause, never pause it. |
+| **After the update** | `custom:ha-housekeeper-update-card` | For a few hours after an update of Home Assistant, the operating system or the Supervisor: what has stopped working since, and how long the start took against the usual. |
+| **Overview** | `custom:ha-housekeeper-overview-card` | The cards above as the sections of one card, in tabs or one below the other. |
+
+### Options
+
+Every card has these options, set in the editor or in YAML:
+
+| Option | Values | Meaning |
+| --- | --- | --- |
+| `title` | text | Replaces the default heading. |
+| `quiet` | `summary` (default), `hide` | What the card does when there is nothing to do: show its summary, or disappear from the dashboard until something is due. In the editor it always stays visible and says why it would be hidden. |
+| `tap` | `panel` (default), `none` | Whether a tap on a tile, a row or the footer opens the Housekeeper panel. Only administrators get there. |
+| `compact` | `true`, `false` (default) | Smaller spacing. |
+
+Each card adds its own options:
+
+| Card | Option | Values |
+| --- | --- | --- |
+| House health | `tiles` | `findings` (default: only when there are findings), `always`, `never` |
+| | `changes` | `true` (default) shows what changed since the last scan |
+| | `scan_button` | `true` (default); only administrators see the button |
+| Batteries | `view` | `weakest` (default), `round`, `both` |
+| | `rows` | 3 to 10 (default 5), for “weakest” |
+| | `shopping` | `true` (default) shows the shopping list with the round |
+| | `forecast` | `true` (default) shows the forecast and its quality |
+| Home functions | `entities` | a list of function sensors; empty shows all |
+| | `history` | `30` (default), `14`, `7` or `0` (no strip) days |
+| Paused integrations | `actions` | `true` (default) shows the menu to administrators |
+| | `progress` | `true` (default) shows how far the retries are |
+| After the update | `show_hours` | `1`, `3`, `6` (default) or `24`: how long after the update the card shows |
+| | `start` | `true` (default) shows how long the start took |
+| Overview | `sections` | see below |
+| | `layout` | `tabs` (default) or `stacked` |
+
+### Who sees what
+
+Everybody who sees the dashboard sees the numbers, including the names of batteries, home functions and integrations. What changes something is for administrators: the link into the panel, the scan button, the menu of the paused integrations. The menu of the paused integrations is checked again by the server: it calls the same command as the panel, which only administrators may use. The scan button is the ordinary button entity of the integration; the card only hides it from people who are not administrators, and anybody who may press that entity elsewhere in Home Assistant still can.
+
+The cards read these sensors of the Housekeeper device: **House health**, **Weakest battery**, **Next battery change**, **Paused integrations**, **After the update**, the sensor of each home function, **Scan health**, **Activity** and **Last scan**. Their lists are attributes that stay out of the recorder, so they do not fill the database. You can use the sensors in your own automations too; **Next battery change** is a time, for example for a reminder.
+
+### The overview card
+
+`sections` names the cards that become sections, in the order you give: `health`, `batteries`, `functions`, `auto_pause`, `update`. An entry is a name or, to set options for that card, an entry with its options:
+
+```yaml
+type: custom:ha-housekeeper-overview-card
+layout: tabs
+sections:
+  - health
+  - type: batteries
+    view: both
+    rows: 3
+  - type: functions
+    history: 7
+  - auto_pause
+  - update
+```
+
+Each section is the card itself, so it looks and acts like the single card. Options set on the overview itself (`tap`, `compact`, `quiet`) apply to every section unless its entry says otherwise. A tab shows how many things in its section call for a look; the first section with something to look at opens, and a section that hides itself has no tab. On a narrow screen the tabs give way and the sections stand one below the other, so that nothing is hidden behind a tab. The editor chooses the sections and the layout; the options of a single card go in YAML.
+
+### A ready-made view
+
+Copy this into the raw configuration editor of a dashboard (three dots → **Raw configuration editor**) and put it under `views:`. It is a view with the overview card:
+
+```yaml
+- title: Housekeeper
+  path: housekeeper
+  icon: mdi:broom
+  cards:
+    - type: custom:ha-housekeeper-overview-card
+```
+
+Or with the single cards next to each other, where the card after the update appears by itself when there is something to say:
+
+```yaml
+- title: Housekeeper
+  path: housekeeper
+  icon: mdi:broom
+  cards:
+    - type: custom:ha-housekeeper-health-card
+    - type: custom:ha-housekeeper-battery-card
+      view: both
+    - type: custom:ha-housekeeper-functions-card
+    - type: custom:ha-housekeeper-auto-pause-card
+      quiet: hide
+    - type: custom:ha-housekeeper-update-card
+```
+
+To show a card only when there are findings, you can use the visibility conditions of Home Assistant itself instead of `quiet`:
+
+```yaml
+- type: custom:ha-housekeeper-health-card
+  visibility:
+    - condition: numeric_state
+      entity: sensor.ha_housekeeper_findings
+      above: 0
+```
+
+### Limits
+
+- The card after the update covers updates of Home Assistant, the operating system and the Supervisor, the ones Housekeeper watches. A restart without an update opens no watch and shows nothing.
+- The battery forecast is read once a day from the statistics; until then (and after a restart, until the first scan has read it) the card sorts by level and says “forecast follows”. The shopping list knows the types you set in the panel; “2× AA” counts as two cells, rechargeable batteries are left out, and batteries without a type are named.
+- Which cards you can add is decided by the integration: they appear when Housekeeper is set up and go when it is removed.
+- A card that hides itself leaves it to Home Assistant how the dashboard closes the gap; the overview card hides the tab instead.
 
 ## Safety model
 

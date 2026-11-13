@@ -74,6 +74,7 @@ Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz un
 - **Hausfunktionen**: wichtige Funktionen des Hauses (Heizung, Alarm, Photovoltaik) aus eigenen Objekten zusammenstellen und im Blick behalten, mit Verlauf, Verfügbarkeit und Sensoren. Eine Objekt-Notiz wie „Absichtlich offline“ gilt auf Wunsch nur nachts oder zu festen Zeiten.
 - **Ausnahmeregeln und Urlaubsmodus**: nimm Objekte nach Bereich, Label, Integration oder Typ aus, oder nur solange eine Urlaubs-Entität oder ein Kalender Abwesenheit meldet, damit erwartete Ausfälle ruhig bleiben.
 - **KI-Zugriff**: Programme und KI-Agenten, die Home-Assistant-Dienste aufrufen können (zum Beispiel ha-mcp), lesen die Befunde und markieren sie auf Wunsch in Housekeepers eigener Merkliste, nie in Home Assistant. Standardmäßig aus, mit Grenzen, automatischem Ausschalten, einem Protokoll jedes Aufrufs und Zurücknehmen.
+- **Dashboard-Karten**: sechs Karten für deine eigenen Dashboards: Zustand des Hauses, Batterien mit Prognose und Einkaufsliste, Hausfunktionen, pausierte Integrationen, was sich nach einem Update geändert hat, und ein Überblick in Reitern. Alle sehen die Zahlen; die Aktionen sind für Administratoren. Eine fertige Ansicht steht im [Benutzerhandbuch](docs/USER-GUIDE.de.md#dashboard-karten).
 - **Änderungen seit dem letzten Scan**, Sensoren, Reparaturhinweise, ein Scan-Knopf und der Dienst `ha_housekeeper.scan` für eigene Dashboards und Automationen sowie die Beobachtung nach Updates: was nach einem Update oder Neustart nicht mehr läuft.
 
 ## Schnellstart
