@@ -969,3 +969,13 @@ keine Gewährleistung (siehe Haftungsausschluss in der README).
   austauschen.
 - Wartung, Sicherheitsmodus, Befund-Status, eine Suche überall, Farbschemata und
   Deutsch und Englisch.
+
+---
+
+### 🧹 Dein Haus ist aufgeräumt. Und der Hausmeister?
+
+HA Housekeeper ist ein Hobbyprojekt und bleibt kostenlos. Du kannst auf drei Wegen helfen:
+
+- ⭐ **Auf GitHub einen Stern geben**: so wird das Projekt leichter gefunden
+- 🐞 **Einen Befund melden**: Fehler und Ideen als [Issue](https://github.com/bertel2020/HA-Housekeeper/issues/new/choose)
+- ☕ **Dem Hausmeister ein Trinkgeld geben**: [Buy Me a Coffee](https://buymeacoffee.com/bertel2020) · [Ko-fi](https://ko-fi.com/bertel2020) · [PayPal](https://paypal.me/RobertoMartins)
