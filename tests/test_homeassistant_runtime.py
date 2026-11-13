@@ -2402,3 +2402,37 @@ async def test_a_decision_made_while_a_scan_builds_is_applied_to_the_new_snapsho
     with patch.object(scanner, "_refresh_marks") as again:
         await scanner.async_scan()  # nothing decided meanwhile: nothing to apply again
     assert not again.called
+
+
+async def test_the_sensors_of_one_signal_share_one_calculation(hass: HomeAssistant) -> None:
+    """Fourteen sensors read the same numbers: a note or decision is worked out once, not fourteen times."""
+    from unittest.mock import patch
+
+    from custom_components.ha_housekeeper import sensor as sensor_module
+
+    scanner = InventoryScanner(hass)
+    await scanner.async_scan()
+    calls = []
+    real = sensor_module.compute_values
+
+    def counting(snapshot):
+        calls.append(1)
+        return real(snapshot)
+
+    with patch.object(sensor_module, "compute_values", counting):
+        for _ in range(14):
+            values = sensor_module._shared(
+                scanner,
+                "values",
+                sensor_module._snapshot_key(scanner),
+                lambda: sensor_module.compute_values(scanner.snapshot),
+            )
+        assert len(calls) == 1 and values is not None
+        scanner.announce_changes()  # a decision was made: the next read works it out again
+        sensor_module._shared(
+            scanner,
+            "values",
+            sensor_module._snapshot_key(scanner),
+            lambda: sensor_module.compute_values(scanner.snapshot),
+        )
+        assert len(calls) == 2

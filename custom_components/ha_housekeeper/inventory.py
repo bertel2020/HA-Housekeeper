@@ -1060,6 +1060,7 @@ class InventoryScanner:
         self.scan_coverage = ScanCoverage()
         self._lock = asyncio.Lock()
         self._marks_generation = 0  # counts the changes of decisions and notes
+        self._values_generation = 0  # counts what the sensors have to read again
         self._first_scan_lock = asyncio.Lock()  # one first scan for all that wait for a snapshot
         self._scan_task: asyncio.Task[None] | None = None  # a scan the service or button started
         self._last_scan_end: float | None = None
@@ -1448,7 +1449,7 @@ class InventoryScanner:
         async_sync_scan_issue(self.hass, self.health_report())
         async_sync_database_issue(self.hass, self.events.integrity)
         self.monitor.refresh(self._snapshot, self.health_report(), new_scan=False)
-        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+        self.announce_changes()
 
     def _battery_forecast_due(self) -> bool:
         """Whether the forecast is to be read again: never read yet, or the last reading is a day old."""
@@ -1471,7 +1472,7 @@ class InventoryScanner:
             return
         self.battery_forecast = result
         self.battery_forecast_at = datetime.now(UTC)
-        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+        self.announce_changes()
 
     async def _announce(self, snapshot: dict[str, Any]) -> None:
         """Fire the events for situations that are new since the last scan."""
@@ -1562,9 +1563,7 @@ class InventoryScanner:
         if ended and self._snapshot is not None:
             self._snapshot["meta"]["watch"] = None
         if ended:
-            async_dispatcher_send(
-                self.hass, SIGNAL_SCAN_COMPLETE
-            )  # the card after the update follows
+            self.announce_changes()  # the card after the update follows
         return ended
 
     async def async_update_changed(self, old: Any, new: Any) -> None:
@@ -2466,7 +2465,7 @@ class InventoryScanner:
             self._snapshot["objects"], self._snapshot["edges"], self._snapshot["findings"]
         )
         self._sync_issues(self._snapshot)
-        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+        self.announce_changes()
 
     def snooze_many(
         self, keys: list[str], days: int, reason: str, by: str | None, source: str | None = None
@@ -2665,7 +2664,7 @@ class InventoryScanner:
         self.hass.data.get(DOMAIN, {}).get("query_cache", {}).pop("battery_trend", None)
         entities = [o for o in snapshot["objects"] if o["object_type"] == "entity"]
         snapshot["meta"]["low_batteries"] = len(low_battery_ids(entities, self.low_battery_percent))
-        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+        self.announce_changes()
 
     def _sun(self) -> tuple[bool, datetime] | None:
         """``(below the horizon, since)`` from ``sun.sun``; None when it is missing or unknown."""
@@ -2721,6 +2720,11 @@ class InventoryScanner:
         self._refresh_marks()
         return closed
 
+    def announce_changes(self) -> None:
+        """Tell the sensors that what they read has changed: they work it out again, once for all."""
+        self._values_generation += 1
+        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+
     def _refresh_marks(self) -> None:
         """Bring the objects and findings of the cached snapshot up to date with the marks."""
         self._marks_generation += 1
@@ -2737,7 +2741,7 @@ class InventoryScanner:
             snapshot["objects"], snapshot["edges"], snapshot["findings"]
         )
         self._sync_issues(snapshot)
-        async_dispatcher_send(self.hass, SIGNAL_SCAN_COMPLETE)
+        self.announce_changes()
 
     def _existing_objects(self) -> dict[str, set[str]]:
         """Collect the IDs a reference may legitimately point to."""

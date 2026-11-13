@@ -9,13 +9,12 @@ from typing import Any, cast
 import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .auto_pause import AutoPauseError
 from .backup_health import ATTEST_KINDS, backup_health
 from .battery_care import BatteryError
 from .battery_forecast import battery_forecast
-from .const import DOMAIN, SIGNAL_SCAN_COMPLETE
+from .const import DOMAIN
 from .db_health import growth
 from .events import DISMISS_REASONS
 from .exceptions import ACTIONS as EXCEPTION_ACTIONS
@@ -329,7 +328,7 @@ def websocket_battery_type_set(
     except BatteryError as err:
         connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
         return
-    async_dispatcher_send(hass, SIGNAL_SCAN_COMPLETE)  # the card's shopping list follows the type
+    scanner.announce_changes()  # the card's shopping list follows the type
     connection.send_result(
         msg["id"],
         _versioned(

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 
@@ -244,6 +245,28 @@ async def async_setup_entry(
     )
 
 
+def _shared(scanner: Any, name: str, key: tuple[Any, ...], make: Callable[[], Any]) -> Any:
+    """What the sensors of one signal share: worked out once for the same snapshot and decisions.
+
+    Every sensor reads the same numbers when the signal comes; without this each of the fourteen
+    would go through all findings and objects again, once per note or decision the person makes.
+    """
+    cache = getattr(scanner, "__dict__", None)
+    if cache is None:
+        return make()
+    store = cache.setdefault("_sensor_values", {})
+    held = store.get(name)
+    if held is not None and held[0] == key:
+        return held[1]
+    value = make()
+    store[name] = (key, value)
+    return value
+
+
+def _snapshot_key(scanner: Any) -> tuple[Any, ...]:
+    return (id(scanner.snapshot), getattr(scanner, "_values_generation", 0))
+
+
 class HousekeeperSensor(SensorEntity):
     """One count or timestamp of the latest scan."""
 
@@ -272,7 +295,12 @@ class HousekeeperSensor(SensorEntity):
 
     def _update(self) -> None:
         scanner = self.scanner
-        values = compute_values(scanner.snapshot if scanner else None)
+        snapshot = scanner.snapshot if scanner else None
+        values = (
+            _shared(scanner, "values", _snapshot_key(scanner), lambda: compute_values(snapshot))
+            if scanner
+            else compute_values(snapshot)
+        )
         self._attr_native_value = values.get(self.entity_description.key)
         if self.entity_description.key == "findings":
             vacation = (
@@ -535,8 +563,20 @@ class _BatterySensor(HousekeeperSensor):
             if o["object_type"] == "entity" and o.get("device_class") == "battery"
         ]
         types = {**noted_types(snapshot["objects"], ids), **scanner.batteries.types}
-        return battery_overview(
-            snapshot, types, scanner.battery_forecast, scanner.battery_forecast_at
+        key = (
+            *_snapshot_key(scanner),
+            id(scanner.battery_forecast),
+            scanner.battery_forecast_at,
+            tuple(sorted(types.items())),
+            datetime.now(UTC).date(),
+        )
+        return _shared(
+            scanner,
+            "battery",
+            key,
+            lambda: battery_overview(
+                snapshot, types, scanner.battery_forecast, scanner.battery_forecast_at
+            ),
         )
 
 
