@@ -2,6 +2,12 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
+## 2.1.1 - 2026-11-13
+
+### Fixed
+
+- **Start on weak hardware:** No scan runs while Home Assistant is still starting; the first one follows once the start has settled. A scan now lets Home Assistant work in between, so other integrations no longer run into timeouts at the start (issue 52).
+
 ## 2.1.0 - 2026-11-13
 
 ### New

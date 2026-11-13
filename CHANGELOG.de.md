@@ -2,6 +2,12 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
+## 2.1.1 - 2026-11-13
+
+### Behoben
+
+- **Start auf schwacher Hardware:** Solange Home Assistant startet, läuft kein Scan; der erste folgt, wenn der Start zur Ruhe gekommen ist. Ein Scan lässt Home Assistant zwischendurch arbeiten, so laufen andere Integrationen beim Start nicht mehr in Zeitüberschreitungen (Issue 52).
+
 ## 2.1.0 - 2026-11-13
 
 ### Neu
