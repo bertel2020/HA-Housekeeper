@@ -202,6 +202,26 @@ def test_bridge_filter() -> None:
     assert result["bridges"] == [{"kind": "homekit", "title": "Bridge", "exposed": 1}]
 
 
+def test_a_homekit_bridge_skips_diagnostic_hidden_and_stateless_entities_unless_named() -> None:
+    bridge = {
+        "kind": "homekit",
+        "title": "Bridge",
+        "filter": {"include_domains": ["sensor"], "include_entities": ["sensor.named"]},
+    }
+    entities = {
+        "sensor.plain": entity(domain="sensor"),
+        "sensor.diag": entity(domain="sensor", entity_category="diagnostic"),
+        "sensor.hidden": entity(domain="sensor", hidden_by="user"),
+        "sensor.named": entity(domain="sensor", entity_category="diagnostic"),
+        "sensor.off": entity(domain="sensor", status="disabled"),
+    }
+    result = evaluate(raw(exposed=[], bridges=[bridge]), entities, set())
+    assert result["bridges"] == [{"kind": "homekit", "title": "Bridge", "exposed": 2}]
+    diagnostic = next(f for f in result["findings"] if f["kind"] == "diagnostic_exposed")
+    assert [item["entity_id"] for item in diagnostic["items"]] == ["sensor.named"]
+    assert not any(f["kind"] == "stale_exposed" for f in result["findings"])
+
+
 def test_bridge_exposure_feeds_the_findings() -> None:
     bridge = {"kind": "homekit", "title": "Bridge", "filter": {"include_domains": ["lock"]}}
     entities = {"lock.door": entity(domain="lock")}

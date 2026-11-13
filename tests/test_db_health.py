@@ -38,7 +38,7 @@ def raw(**fields) -> dict:
         "duplicates": [],
         "series": [],
         "issues": {},
-        "state_minutes": [],
+        "state_minutes": list(range(int(NOW // 60) - 60, int(NOW // 60))),  # rows every minute
         **fields,
     }
 
@@ -82,6 +82,22 @@ def test_growth_needs_double_the_earlier_pace_and_100_megabytes() -> None:
     assert kinds(run(raw(), sizes=sizes(199 * MB, 100 * MB))) == []  # just under double
     assert kinds(run(raw(), sizes=sizes(99 * MB, 10 * MB))) == []  # fast but small
     assert kinds(run(raw(), sizes=sizes(100 * MB, 50 * MB))) == ["growth"]
+
+
+def test_a_database_that_shrank_before_has_no_earlier_pace_to_beat() -> None:
+    # 6 GB four weeks ago, 4 GB a week ago (a repack), then 200 MB in the last week.
+    sizes = {day(0): 4 * GB + 200 * MB, day(7): 4 * GB, day(35): 6 * GB}
+    result = run(raw(), sizes=sizes)
+    assert result["growth"]["base_bytes"] < 0 and "growth" not in kinds(result)
+
+
+def test_the_earlier_pace_counts_the_days_that_really_lie_between_the_samples() -> None:
+    # The sample of the week ago day is three days older: 10 days between it and today.
+    result = growth(
+        {day(0): 10 * GB, day(10): 10 * GB - 100 * MB, day(38): 10 * GB - 380 * MB}, TODAY
+    )
+    assert result["per_day"] == round(100 * MB / 10)
+    assert result["base_bytes"] == round(280 * MB / (28 / 10))
 
 
 def test_a_sample_within_three_days_of_the_wanted_day_is_used() -> None:
@@ -141,6 +157,15 @@ def test_a_gap_is_ten_minutes_without_any_row() -> None:
     # nine minutes apart is no gap, ten is one
     assert state_gaps([0, 9], 9 * 60, []) == []
     assert len(state_gaps([0, 10], 10 * 60, [])) == 1
+
+
+def test_a_recorder_that_wrote_nothing_for_the_whole_window_is_one_long_gap() -> None:
+    gaps = state_gaps([], NOW, [], NOW - 7 * 86400)
+    assert len(gaps) == 1 and gaps[0]["cause"] == "recorder"
+    assert gaps[0]["seconds"] >= 6 * 86400
+    assert state_gaps([], NOW, []) == []  # without the window nothing is known
+    finding = run(raw(state_minutes=[]))["findings"][0]
+    assert finding["kind"] == "recorder_gap"
 
 
 def test_a_gap_that_ends_just_after_a_start_entry_is_a_restart() -> None:

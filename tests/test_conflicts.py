@@ -87,6 +87,25 @@ def test_opposing_commands_need_a_shared_trigger_or_window_and_gain_evidence_fro
     assert len(find([mixed, split_off], [], {}, TODAY)["items"]) == 1
 
 
+def test_an_on_and_an_off_automation_on_one_sensor_are_a_pair_even_with_the_same_time_window() -> (
+    None
+):
+    night = [{"condition": "time", "after": "22:00", "before": "06:00"}]
+    motion_on = auto(
+        "motion_on",
+        [state("binary_sensor.motion", "on")],
+        [call("light.turn_on", "light.hall")],
+        night,
+    )
+    motion_off = auto(
+        "motion_off",
+        [state("binary_sensor.motion", "off")],
+        [call("light.turn_off", "light.hall")],
+        night,
+    )
+    assert find([motion_on, motion_off], [], {}, TODAY)["items"] == []
+
+
 def test_loops_follow_groups_and_other_automations_but_not_filtered_self_triggers() -> None:
     a = auto(
         "a", [state("input_number.x")], [call("input_number.set_value", "input_number.y", value=1)]

@@ -84,8 +84,22 @@ def test_entities_down_the_whole_window_are_counted_apart() -> None:
         ENTRIES,
     )
     row = result["entries"][0]
-    assert row["permanent"] == 1 and row["entities"] == 1
-    assert row["availability"] == 99.0
+    # c stayed as it was (active, no row): it counts as up the whole window.
+    assert row["permanent"] == 1 and row["entities"] == 2
+    assert row["availability"] == 99.5
+
+
+def test_entities_that_did_not_change_count_as_up_and_keep_one_device_from_looking_like_the_integration() -> (
+    None
+):
+    names = [f"e{i}" for i in range(20)]
+    changing = names[:3]
+    outage = {name: [(40 * HOUR, 40.55 * HOUR)] for name in changing}
+    result = compute(runs(dict.fromkeys(changing, START), outage), entities(*names), ENTRIES)
+    row = result["entries"][0]
+    assert row["entities"] == 20
+    assert row["shared_outages"] == 0 and row["layer"] is None
+    assert row["availability"] == round(100 * (1 - 3 * 0.55 * HOUR / (20 * END)), 2)
 
 
 def test_an_entity_without_rows_that_is_down_now_is_permanent() -> None:

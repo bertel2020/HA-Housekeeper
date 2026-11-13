@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from custom_components.ha_housekeeper.run_health import evaluate, static_traits
+from custom_components.ha_housekeeper.run_health import LIMIT, evaluate, static_traits
 from custom_components.ha_housekeeper.runs import (
     ALREADY,
     CONDITION,
@@ -274,6 +274,20 @@ def test_the_result_counts_the_automations_it_left_out() -> None:
     result = evaluate({}, [OBJ, other], {}, {"automation.other"}, [], NOW, None)
     assert result["excluded"] == {"ignored": 1}
     assert evaluate({}, [OBJ], {}, set(), [], NOW, None)["excluded"] == {"ignored": 0}
+
+
+def test_the_rows_are_cut_for_the_panel_but_not_for_the_one_who_rates_all_of_them() -> None:
+    days: dict = {}
+    put(days, 0, runs=10, ok=2, err=8)  # failing: a row with a finding
+    count = LIMIT + 5
+    objects = [
+        {**OBJ, "object_id": f"automation.a{i}", "automation_id": str(i), "name": f"A{i}"}
+        for i in range(count)
+    ]
+    items = {f"automation.{i}": {"days": days} for i in range(count)}  # by the unique id
+    args = (items, objects, {}, set(), [], NOW, None)
+    assert len(evaluate(*args)["items"]) == LIMIT
+    assert len(evaluate(*args, None, None)["items"]) == count
 
 
 def test_a_run_that_stopped_at_a_condition_of_the_actions_is_not_a_failure() -> None:

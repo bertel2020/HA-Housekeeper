@@ -285,9 +285,14 @@ def compute(
             entity_id = item["entity_id"]
             first = runs["seen"].get(entity_id)
             if first is None:
-                # No state change in the window: down the whole time if it is down now.
+                # No state change in the window: down the whole time if it is down now. An active
+                # one stayed as it was: it was there the whole window and counts as up, or the
+                # share of a shared outage and the availability would rest on the changing ones only.
                 if item.get("status") == "unavailable":
                     permanent += 1
+                elif item.get("status") == "active":
+                    counted.append([])
+                    observed_total += window
                 continue
             merged = _merge(
                 [
