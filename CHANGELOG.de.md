@@ -2,6 +2,47 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
+## Unreleased
+
+### Neu
+
+- **Dashboard-Karte „Zustand des Hauses“:** Eine Lovelace-Karte zeigt, wie es dem Haus geht, ohne das Panel zu öffnen.
+  - Eine Statuszeile, die vier Themen als Kacheln (dieselben Zahlen wie auf der Übersicht), was sich seit dem letzten Scan geändert hat und ein Scan-Knopf.
+  - Alle sehen die Zahlen; der Link ins Panel und der Scan-Knopf sind für Administratoren.
+  - Optionen im Karten-Editor: Titel, Kacheln, Änderungen, Scan-Knopf, was im Ruhezustand geschieht, kompakt. Die Texte gibt es in allen Sprachen des Panels.
+  - Neuer Sensor „Zustand des Hauses“ (In Ordnung, Braucht Aufmerksamkeit, Dringend) mit den Objekten je Thema als Attribute.
+- **Dashboard-Karte „Batterien“:** Die schwächsten Batterien mit Prognose, die nächste Wechselrunde nach Bereich und eine Einkaufsliste.
+  - Die Prognose wird einmal am Tag aus der Statistik gelesen und sagt, wie weit man ihr trauen kann (Schätzung, stabil, zu wenig Daten); bis sie da ist, sortiert die Karte nach Stand.
+  - Die Einkaufsliste zählt die Zellen nach Typ („2× AA“ sind zwei Zellen) und nennt die Batterien, deren Typ noch nicht gesetzt ist.
+  - Neue Sensoren „Schwächste Batterie“ und „Nächster Batteriewechsel“ (eine Zeit, für eigene Automationen).
+- **Dashboard-Karte „Hausfunktionen“:** Eine Zeile je Funktion (Heizung, Alarm, Photovoltaik …) mit Zustand, Grund in Worten und wie viele ihrer Objekte in Ordnung sind.
+  - Ein Streifen der letzten 7, 14 oder 30 Tage aus Housekeepers eigener Aufzeichnung und die Verfügbarkeit der letzten 30 Tage.
+  - Gestörte Funktionen stehen zuerst; ein Klick öffnet die Funktion im Panel (Administratoren). Die Karte kann eine gewählte Auswahl an Funktionen zeigen.
+  - Der Sensor jeder Funktion bekommt die Attribute, die die Karte liest (Name, Objekte, Grund, Tage).
+- **Dashboard-Karte „Pausierte Integrationen“:** Die Integrationen, die die Auto-Pause zurückhält, mit Grund, der Zeit bis zum nächsten Versuch und dem Stand der Versuche.
+  - Administratoren haben pro Zeile ein Menü: jetzt versuchen, Pause beenden, nie pausieren. Alle anderen sehen die Liste.
+  - Sagt, wenn die Auto-Pause aus ist, und führt ins Panel zum Einschalten; sie kann sich ausblenden, solange nichts pausiert ist.
+  - Neuer Sensor „Pausierte Integrationen“, der jede Änderung sofort zeigt.
+- **Dashboard-Karte „Nach dem Update“:** Zeigt einige Stunden nach einem Update von Home Assistant, Betriebssystem oder Supervisor, was seither nicht mehr läuft, in den Worten der Nachbeobachtung („seit“, nie „weil“).
+  - Die Objekte, die schlechter sind als vorher, mit Namen, die neuen Befunde und Reparaturhinweise und wie lange der Start gedauert hat gegen das Übliche.
+  - Ist nichts auffällig, sagt sie das kurz oder blendet sich aus; ohne ein beobachtetes Update zeigt sie sich nie.
+  - Neuer Sensor „Nach dem Update“ mit dem Urteil der Nachbeobachtung.
+- **Dashboard-Karte „Überblick“:** Die Karten von Housekeeper als Abschnitte einer Karte, in Reitern oder untereinander, für ein Wandtablet oder ein kleines Dashboard.
+  - Ein Reiter zeigt, wie viele Dinge in seinem Abschnitt einen Blick brauchen; der erste Abschnitt mit etwas Auffälligem öffnet sich, ein Abschnitt, der sich ausblendet, hat keinen Reiter.
+  - Auf einem schmalen Bildschirm weichen die Reiter, und die Abschnitte stehen untereinander, damit nichts hinter einem Reiter verschwindet.
+  - Abschnitte wählt und ordnet man im Editor; die Optionen einer einzelnen Karte stehen im YAML.
+- **Dashboard-Karten „Startzeit“, „Datenbank“, „Backup“ und „Urlaubsmodus“:** Vier weitere Karten für deine eigenen Dashboards.
+  - Startzeit: wie lange der letzte Start gedauert hat gegen das Übliche, die letzten Starts als Balken und die Integrationen, die am längsten brauchten; eine Zeile, wenn der Start wie sonst war.
+  - Datenbank: wie groß die Datenbank ist, ob sie schnell wächst, die Linie der Tagesgrößen und was der Recorder aufbewahrt; dieselben Regeln wie die Datenbankseite im Panel, gelesen aus dem, was jeder Scan ohnehin weiß, ohne Abfrage der Recorder-Tabellen.
+  - Backup: wie alt das neueste Backup ist gegen die Grenze des Backup-Schutzes, ob eine Kopie außer Haus liegt, die Größe und die letzten sieben Tage als Streifen; rot nur, wenn der Schutz fehlt.
+  - Urlaubsmodus: nur solange der Modus an ist oder seine Nachfrist läuft; woher die Abwesenheit kommt, seit wann und bis wann (bei einem Kalender), wie viele Ausfälle stumm gehalten werden und die Nachfrist. Nur Anzeige, kein Schalter.
+  - Die Überblick-Karte kann alle vier auch als Abschnitte zeigen (den Urlaub nur, solange der Modus an ist).
+  - Neue Sensoren „Startdauer“, „Größe der Datenbank“, „Backup-Schutz“ und „Urlaubsmodus“.
+
+### Behoben
+
+- **Markierungen:** Eine Integration mit einer versteckenden Markierung (erwartet offline, saisonal, Reserve, ersetzt) zeigt in den ersten Minuten nach einem Neustart nicht mehr „Integration … ist nicht geladen“ als Ursache (Issue #50).
+
 ## 2.0.1 - 2026-11-12
 
 ### Geändert

@@ -2,6 +2,47 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
+## Unreleased
+
+### New
+
+- **Dashboard card “House health”:** A Lovelace card shows how the house is doing without opening the panel.
+  - A status line, the four topics as tiles (the same numbers as the overview page), what changed since the last scan and a scan button.
+  - Everyone sees the numbers; the link to the panel and the scan button are for administrators.
+  - Options in the card editor: title, tiles, changes, scan button, what to do when everything is quiet, compact. The texts are in all languages of the panel.
+  - New sensor “House health” (OK, needs attention, urgent) with the objects per topic as attributes.
+- **Dashboard card “Batteries”:** The weakest batteries with a forecast, the next round of changes by area and a shopping list.
+  - The forecast is read once a day from the statistics and says how far to trust it (estimate, stable, too little data); until it is there the card sorts by level.
+  - The shopping list counts the cells by type (“2× AA” are two cells) and names the batteries whose type is not set yet.
+  - New sensors “Weakest battery” and “Next battery change” (a time, for your own automations).
+- **Dashboard card “Home functions”:** One row per function (heating, alarm, photovoltaics …) with its state, the reason in words and how many of its objects are fine.
+  - A strip of the last 7, 14 or 30 days from Housekeeper's own record and the availability of the last 30 days.
+  - Troubled functions come first; a click opens the function in the panel (administrators). The card can show a chosen set of functions.
+  - The sensor of each function gains the attributes the card reads (name, objects, reason, days).
+- **Dashboard card “Paused integrations”:** The integrations that auto-pause holds back, with the reason, the time to the next attempt and how far the retries are.
+  - Administrators get a menu per row: try now, end the pause, never pause it. Everybody else sees the list.
+  - Says when auto-pause is off and links to the panel to switch it on; it can hide while nothing is paused.
+  - New sensor “Paused integrations” that follows every change at once.
+- **Dashboard card “After the update”:** Shows for a few hours after an update of Home Assistant, the operating system or the Supervisor what has stopped working since, in the words of the watch (“since”, never “because”).
+  - The objects that are worse than before with their names, the new findings and repair hints, and how long the start took against the usual.
+  - Nothing unusual: it says so briefly, or hides if you prefer; it never shows without an update that was watched.
+  - New sensor “After the update” with the verdict of the watch.
+- **Dashboard card “Overview”:** The cards of Housekeeper as the sections of one card, in tabs or one below the other, for a wall tablet or a small dashboard.
+  - A tab shows how many things in its section call for a look; the first section with something to look at opens, and a section that hides itself has no tab.
+  - On a narrow screen the tabs give way and the sections stand one below the other, so that nothing is hidden behind a tab.
+  - Choose and order the sections in the editor; the options of a single card go in YAML.
+- **Dashboard cards “Start time”, “Database”, “Backup” and “Vacation mode”:** Four more cards for your own dashboards.
+  - Start time: how long the last start took against the usual, the last starts as bars and the integrations that took longest; a one-line summary when the start was as usual.
+  - Database: how big the database is, whether it grows fast, the line of the daily sizes and what the recorder keeps; the same rules as the database page of the panel, read from what each scan knows, without a query of the recorder tables.
+  - Backup: how old the newest backup is against the limit of the backup protection, whether a copy lies off the device, the size and the last seven days as a strip; red only when the protection is missing.
+  - Vacation mode: only while the mode is on or its grace period runs; where the absence comes from, since and until when (for a calendar), how many failures are held back and the grace period. Display only, no switch.
+  - The overview card can show all four as sections too (the vacation section only while the mode is on).
+  - New sensors “Start time”, “Database size”, “Backup protection” and “Vacation mode”.
+
+### Fixed
+
+- **Marks:** An integration with a mark that hides (expected offline, seasonal, spare, replaced) no longer shows “Integration … is not loaded” as a cause in the first minutes after a restart (issue #50).
+
 ## 2.0.1 - 2026-11-12
 
 ### Changed
