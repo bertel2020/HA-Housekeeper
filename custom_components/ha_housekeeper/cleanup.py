@@ -1438,12 +1438,51 @@ def judge_entity_action(
     return action
 
 
+def _judge_helper_siblings(
+    action: dict[str, Any],
+    item: dict[str, Any],
+    objects: dict[str, dict[str, Any]],
+    edges: list[dict[str, Any]],
+) -> None:
+    """Deleting a helper takes all its entities with it: look at the others as well as the old one.
+
+    A meter with tariffs has one entity per tariff. What certainly uses one of them blocks the plan,
+    what probably does needs a look, and a marked or critical one is not deleted on the side.
+    """
+    entry_id = item.get("config_entry_id")
+    old_id = action["object_id"]
+    siblings = [
+        other
+        for other in objects.values()
+        if other.get("config_entry_id") == entry_id
+        and other.get("object_id") != old_id
+        and other.get("object_type", "entity") == "entity"
+    ]
+    used_by = [
+        use
+        for other in siblings
+        for use in _used_by(edges, f"entity:{other['object_id']}")
+        if not str(use["source"]).startswith(f"config_entry:{entry_id}")
+    ]
+    reasons = action["reasons"]
+    found = ["used_certain"] if any(u["confidence"] == "certain" for u in used_by) else []
+    found += ["used_probable"] if used_by and not found else []
+    found += ["marked_keep"] if any(o.get("marked_keep") for o in siblings) else []
+    found += ["critical_object"] if any(o.get("critical") for o in siblings) else []
+    reasons.extend(reason for reason in found if reason not in reasons)
+    if siblings:
+        action["siblings"] = [o["object_id"] for o in siblings][:20]
+    if used_by:
+        action["used_by"] = used_by
+
+
 def _judge_delete_old(
     action: dict[str, Any],
     request: dict[str, Any],
     objects: dict[str, dict[str, Any]],
     possible: bool,
     recorder: bool | None = None,
+    edges: list[dict[str, Any]] | None = None,
 ) -> None:
     """Deleting the old entity after a replacement: only where it does not come back.
 
@@ -1455,9 +1494,14 @@ def _judge_delete_old(
         return
     item = objects.get(action["object_id"]) or {}
     helper = bool(item.get("config_entry_id")) and item.get("platform") in HELPER_DOMAINS
+    # What the person marked as to keep, or as critical, is not removed or switched off on the side.
+    for reason, field in (("marked_keep", "marked_keep"), ("critical_object", "critical")):
+        if item.get(field) and reason not in action["reasons"]:
+            action["reasons"].append(reason)
     if helper:
         action["delete_old"] = "helper"
         action["reasons"].append("delete_old_helper")
+        _judge_helper_siblings(action, item, objects, edges or [])
     elif item.get("reason") == NOT_PROVIDED:
         action["delete_old"] = "entity"
         action["reasons"].append("delete_old")
@@ -1693,7 +1737,9 @@ def build_plan(
             )
             action["fingerprint"] = meter.get("fingerprint")
             action["disable_old"] = bool(request.get("disable_old")) and mode not in {"both", "id"}
-            _judge_delete_old(action, request, objects, mode not in {"both", "id"})
+            _judge_delete_old(
+                action, request, objects, mode not in {"both", "id"}, edges=snapshot["edges"]
+            )
             if mode == METER_REFERENCE_MODE:
                 action["reference_fingerprint"] = reference_print
         elif kind in RENAME_KINDS:
@@ -1735,6 +1781,7 @@ def build_plan(
                 objects,
                 target_kind == "entity",
                 bool(snapshot["meta"].get("recorder_available")),
+                snapshot["edges"],
             )
         else:
             action = judge_action(
@@ -1895,6 +1942,7 @@ def plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
         "status": plan.get("status"),
         "executed": bool(plan.get("executed")),
         "run": bool(plan.get("run")),
+        "via": "mcp" if plan.get("via") == "mcp" else None,
         "finished_at": (plan.get("run") or {}).get("finished_at"),
         "undoable": not plan.get("file_snapshot_dropped")
         and any((a.get("result") or {}).get("state") == "done" for a in plan.get("actions", [])),

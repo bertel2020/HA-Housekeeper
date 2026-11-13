@@ -349,6 +349,33 @@ async def test_the_repair_writes_all_three_tables_verifies_and_can_be_undone(
     assert undo["results"] == [{"object_id": SENSOR, "outcome": "undone"}]
     assert await instance.async_add_executor_job(_dump, hass) == before
 
+    # The five-minute rows are purged after ten days: undoing a repair then still puts the hourly
+    # rows back, and the rows that are gone are no conflict.
+    purge_plan = build_plan(
+        snapshot,
+        [{"kind": "repair_counter", "object_id": SENSOR, "mode": "hold"}],
+        datetime.now(UTC),
+        counter_data={
+            (SENSOR, "hold", None, None, None): await counter_repair.prepare(hass, SENSOR, "hold")
+        },
+    )
+    scanner.journal.add(purge_plan)
+    with patch("homeassistant.components.backup.async_get_manager", return_value=manager):
+        await run(scanner, purge_plan, [SENSOR])
+
+    def purge_short_term(hass) -> None:
+        from homeassistant.components.recorder.db_schema import StatisticsShortTerm
+        from homeassistant.components.recorder.util import session_scope
+        from sqlalchemy import delete
+
+        with session_scope(hass=hass) as session:
+            session.execute(delete(StatisticsShortTerm))
+
+    await instance.async_add_executor_job(purge_short_term, hass)
+    undo = await scanner.cleanup.undo(purge_plan["plan_id"], None)
+    assert undo["results"] == [{"object_id": SENSOR, "outcome": "undone"}]
+    assert (await instance.async_add_executor_job(_dump, hass))["long"] == before["long"]
+
     # Once someone else changed a row, undoing it would overwrite their change: it is refused.
     again = build_plan(
         snapshot,

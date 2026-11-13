@@ -345,12 +345,39 @@ async def test_the_old_entity_is_deleted_only_where_it_does_not_come_back_and_un
         # An entity its integration no longer provides is deleted; the journal can bring it back.
         action.update(delete_old="entity", reasons=["delete_old"], verdict="review")
         action["executable"] = True
+        # What an integration no longer provides has only the placeholder state of the registry.
+        hass.states.async_set(OLD, "unavailable", {"restored": True})
         await run(scanner, plan, [OLD])
         assert registry.async_get(OLD) is None
         hass.states.async_remove(OLD)  # the test's own state; a removed entity has none
         outcome = await scanner.cleanup.undo(plan["plan_id"], None)
         assert outcome["results"] == [{"object_id": OLD, "outcome": "undone"}]
         assert registry.async_get(OLD) is not None
+
+
+async def test_an_old_entity_that_is_provided_again_by_the_run_is_switched_off_not_deleted(
+    hass: HomeAssistant,
+) -> None:
+    make_entities(hass)
+    write_config(hass, "automations.yaml", AUTOMATIONS)
+    reload_services(hass)
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    registry = er.async_get(hass)
+    with (
+        automation_scanner_state(hass, scanner),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        plan = await make_reference_plan(scanner, hass, delete_old=True)
+        action = plan["actions"][0]
+        action.update(delete_old="entity", reasons=["delete_old"], verdict="review")
+        action["executable"] = True
+        # Judged as gone, but by the time of the run it has a live state again.
+        hass.states.async_set(OLD, "21.5")
+        await run(scanner, plan, [OLD])
+    entry = registry.async_get(OLD)
+    assert entry is not None and entry.disabled_by is not None
+    assert plan["actions"][0]["result"]["delete_old_skipped"] == "provided"
 
 
 async def test_a_helper_entry_that_reads_the_old_entity_is_rewritten_and_undone(
@@ -1015,6 +1042,7 @@ async def test_the_panel_never_receives_the_restore_data_of_a_plan(
             "status",
             "executed",
             "run",
+            "via",
             "finished_at",
             "undoable",
             "summary",
@@ -1726,3 +1754,39 @@ def test_an_added_description_is_confirmed_even_with_blanks_at_the_edge() -> Non
     assert refactor.applied(
         {"description": "Heats the house"}, "add_description", {"description": " Heats the house\n"}
     )
+
+
+def test_deleting_a_helper_looks_at_its_other_entities_and_at_marks() -> None:
+    from custom_components.ha_housekeeper.cleanup import BLOCKING_REASONS, _judge_delete_old
+
+    def entity(object_id: str, **fields) -> dict:
+        return {
+            "object_type": "entity",
+            "object_id": object_id,
+            "config_entry_id": "meter",
+            "platform": "utility_meter",
+            **fields,
+        }
+
+    objects = {
+        "sensor.energy_peak": entity("sensor.energy_peak"),
+        "sensor.energy_offpeak": entity("sensor.energy_offpeak"),
+    }
+    edges = [
+        {
+            "source": "dashboard:energy",
+            "target": "entity:sensor.energy_offpeak",
+            "relation": "USES_AS_CONDITION",
+            "confidence": "certain",
+        }
+    ]
+    action = {"object_id": "sensor.energy_peak", "reasons": [], "verdict": "ok"}
+    _judge_delete_old(action, {"delete_old": True}, objects, True, edges=edges)
+    assert action["delete_old"] == "helper" and "used_certain" in action["reasons"]
+    assert action["verdict"] == "blocked" and BLOCKING_REASONS & set(action["reasons"])
+    assert action["siblings"] == ["sensor.energy_offpeak"]
+
+    marked = {"sensor.energy_peak": entity("sensor.energy_peak", marked_keep=True)}
+    action = {"object_id": "sensor.energy_peak", "reasons": [], "verdict": "ok"}
+    _judge_delete_old(action, {"delete_old": True}, marked, True, edges=[])
+    assert "marked_keep" in action["reasons"] and action["verdict"] == "blocked"

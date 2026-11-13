@@ -1259,17 +1259,32 @@ def undo_blocking(instance: Any, written: dict[str, Any]) -> str:
                         )
                     ).all()
                 }
+            # The five-minute rows are purged after about ten days: a row of the repair that is gone
+            # from that table was purged, it is not a change somebody made. Nothing is left to put back.
+            purged = table == "short_term"
             fine = [
                 row
                 for row in rows
                 if (now := current.get(row["id"])) is not None
                 and all(_same(a, b) for a, b in zip(now, row["new"], strict=True))
             ]
-            kept = [row for row in rows if row not in fine]
+            kept = [
+                row for row in rows if row not in fine and not (purged and row["id"] not in current)
+            ]
             tails_fine: list[dict[str, Any]] = []
             tails_kept: list[dict[str, Any]] = []
             for tail in block.get("tails", []):
                 probe = session.execute(select(model.sum).where(model.id == tail["probe"])).scalar()
+                if probe is None and purged:
+                    # Its probe row is gone: if every older row is gone too, it was purged, and the
+                    # rows after it still carry the offset and must lose it with the hourly ones.
+                    older = session.execute(
+                        select(model.id)
+                        .where(model.metadata_id == meta[0], model.start_ts <= tail["from"])
+                        .limit(1)
+                    ).scalar()
+                    (tails_fine if older is None else tails_kept).append(tail)
+                    continue
                 (
                     tails_fine if probe is not None and _same(probe, tail["after"]) else tails_kept
                 ).append(tail)

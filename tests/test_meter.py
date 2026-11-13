@@ -360,6 +360,18 @@ async def test_a_taken_alt_id_blocks_the_takeover(recorder_mock, hass: HomeAssis
     assert again["actions"][0]["verdict"] == "review"
 
 
+async def test_a_statistics_series_left_behind_on_the_alt_id_takes_that_id_too(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    """Home Assistant drops the error when a statistic ID is renamed onto a series that exists."""
+    two_meters(hass)
+    seed(hass, "sensor.meter_old_alt", rows(START, 5))  # an earlier takeover left it, no entity
+    await async_wait_recording_done(hass)
+    scanner = await make_scanner(hass)
+    plan = await make_meter_plan(scanner, hass, "id")
+    assert plan["actions"][0]["alt_id"] == "sensor.meter_old_alt_2"
+
+
 async def test_the_panel_commands_plan_a_meter_change_and_report_maintenance(
     recorder_mock, hass: HomeAssistant, hass_ws_client
 ) -> None:

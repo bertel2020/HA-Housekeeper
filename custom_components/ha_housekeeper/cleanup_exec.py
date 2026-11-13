@@ -125,7 +125,7 @@ from .db_health import (
 )
 from .helper_backup import HelperError, create_helper, export_helper, taken_ids
 from .issues import async_sync_database_issue
-from .meter import analyse, prepare_meter, read_series, recorder_ready
+from .meter import analyse, existing_statistics, prepare_meter, read_series, recorder_ready
 from .notes import NoteError
 from .protection import allows, allows_undo
 from .recorder_purge import (
@@ -1127,8 +1127,19 @@ class CleanupRunner:
     async def _old_after(self, action: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
         """What happens to the old entity once its replacement went through: deleted or disabled."""
         if action.get("delete_old") and not result.get("stopped"):
+            if action["delete_old"] == "entity" and self._comes_back(action["object_id"]):
+                # Its integration provides it again since the preview: a deletion would not last,
+                # so it is switched off instead, as for any entity that is still provided.
+                result["delete_old_skipped"] = "provided"
+                action = {**action, "disable_old": True, "delete_old": None}
+                return self._disable_old(action, result)
             return await self._delete_old(action, result)
         return self._disable_old(action, result)
+
+    def _comes_back(self, entity_id: str) -> bool:
+        """Whether the entity has a live state: one that is provided is created again at a reload."""
+        state = self.hass.states.get(entity_id)
+        return state is not None and not state.attributes.get("restored")
 
     async def _delete_old(self, action: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
         """Delete the old entity (or its helper); the journal keeps what is needed to restore it."""
@@ -1652,7 +1663,11 @@ class CleanupRunner:
         old_entry, new_entry = registry.async_get(old), registry.async_get(new)
         if old_entry is None or new_entry is None:
             raise StepAbort("entity_gone")
-        if registry.async_get(alt) is not None or self.hass.states.get(alt) is not None:
+        if (
+            registry.async_get(alt) is not None
+            or self.hass.states.get(alt) is not None
+            or alt in await existing_statistics(self.hass, [alt])
+        ):
             raise StepAbort("alt_id_taken")
         try:
             registry.async_update_entity(old, new_entity_id=alt)
