@@ -151,6 +151,15 @@
           "unclear": "Unknown"
         }
       },
+      "vacation": {
+        "name": "Vacation mode",
+        "state": {
+          "off": "Off",
+          "on": "On",
+          "after": "Grace period",
+          "unset": "Not set up"
+        }
+      },
       "new_findings": {
         "name": "New findings"
       },

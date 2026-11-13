@@ -302,5 +302,31 @@
     "other": "hace {n} días"
   },
   "cardBkToday": "hoy",
-  "cardBkEncrypted": "Cifrada"
+  "cardBkEncrypted": "Cifrada",
+  "cardVaTitle": "Modo vacaciones",
+  "cardVaChipOn": "activo",
+  "cardVaChipOff": "inactivo",
+  "cardVaChipAfter": "periodo de gracia",
+  "cardVaChipUntil": "hasta {date}",
+  "cardVaSourceCal": "Ausencia según «{name}» (calendario)",
+  "cardVaSource": "Ausencia según «{name}»",
+  "cardVaAfterSub": "Las vacaciones han terminado; el periodo de gracia dura hasta {until}.",
+  "cardVaOff": "Sin modo vacaciones",
+  "cardVaUnset": "No se ha elegido ningún interruptor para el modo vacaciones.",
+  "cardVaSince": "Desde",
+  "cardVaLeft": {
+    "one": "queda {n} día",
+    "other": "quedan {n} días"
+  },
+  "cardVaHeld": "Silenciados",
+  "cardVaHeldSub": "fallos esperados",
+  "cardVaGrace": "Periodo de gracia",
+  "cardVaGraceHours": "{n} h",
+  "cardVaGraceSub": "tras las vacaciones",
+  "cardVaRules": "Hay reglas de excepción por ausencia activas ({n}).",
+  "cardVaRestore": "No se borra nada; los avisos vuelven.",
+  "cardVaHidden": "Esta tarjeta está oculta mientras no haya modo vacaciones. Aquí, en el editor, la sigues viendo.",
+  "edit_numbers": "Mostrar las cifras",
+  "edit_numbers_help": "Silenciados, periodo de gracia y reglas de excepción.",
+  "edit_source": "Indicar el origen"
 }

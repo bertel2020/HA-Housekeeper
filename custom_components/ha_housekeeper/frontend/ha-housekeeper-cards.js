@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"f7ba3ac5cc"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fdcc0ec1ed"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6be706907d"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b7c469a6c4"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"200b1ce8b1"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"593b1938b8"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"bc4ecf0c16"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"0feec746c8"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fadbc5eaf3"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d3e1992d2f"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7d6883ac05"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"e98b4eb01d"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"83c91ef60a"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"0ccb63669b"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -259,6 +259,29 @@ const CARD_TEXT = {
     cardBkDaysAgo: {"one": "vor {n} Tag", "other": "vor {n} Tagen"},
     cardBkToday: "heute",
     cardBkEncrypted: "Verschlüsselt",
+    cardVaTitle: "Urlaubsmodus",
+    cardVaChipOn: "an",
+    cardVaChipOff: "aus",
+    cardVaChipAfter: "Nachfrist",
+    cardVaChipUntil: "bis {date}",
+    cardVaSourceCal: "Abwesenheit laut „{name}“ (Kalender)",
+    cardVaSource: "Abwesenheit laut „{name}“",
+    cardVaAfterSub: "Der Urlaub ist vorbei, die Nachfrist läuft bis {until}.",
+    cardVaOff: "Kein Urlaubsmodus",
+    cardVaUnset: "Kein Schalter für den Urlaubsmodus gewählt.",
+    cardVaSince: "Seit",
+    cardVaLeft: {"one": "noch {n} Tag", "other": "noch {n} Tage"},
+    cardVaHeld: "Stumm gehalten",
+    cardVaHeldSub: "erwartete Ausfälle",
+    cardVaGrace: "Nachfrist",
+    cardVaGraceHours: "{n} Std.",
+    cardVaGraceSub: "nach dem Urlaub",
+    cardVaRules: "Ausnahmeregeln zur Abwesenheit sind aktiv ({n}).",
+    cardVaRestore: "Nichts davon wird gelöscht, die Meldungen kommen zurück.",
+    cardVaHidden: "Diese Karte ist ohne Urlaubsmodus ausgeblendet. Hier im Editor siehst du sie trotzdem.",
+    edit_numbers: "Zahlen zeigen",
+    edit_numbers_help: "Stumm gehalten, Nachfrist und Ausnahmeregeln.",
+    edit_source: "Quelle nennen",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -489,6 +512,29 @@ const CARD_TEXT = {
     cardBkDaysAgo: {"one": "{n} day ago", "other": "{n} days ago"},
     cardBkToday: "today",
     cardBkEncrypted: "Encrypted",
+    cardVaTitle: "Vacation mode",
+    cardVaChipOn: "on",
+    cardVaChipOff: "off",
+    cardVaChipAfter: "grace period",
+    cardVaChipUntil: "until {date}",
+    cardVaSourceCal: "Away according to “{name}” (calendar)",
+    cardVaSource: "Away according to “{name}”",
+    cardVaAfterSub: "The vacation is over; the grace period runs until {until}.",
+    cardVaOff: "No vacation mode",
+    cardVaUnset: "No switch has been chosen for the vacation mode.",
+    cardVaSince: "Since",
+    cardVaLeft: {"one": "{n} day left", "other": "{n} days left"},
+    cardVaHeld: "Held back",
+    cardVaHeldSub: "expected failures",
+    cardVaGrace: "Grace period",
+    cardVaGraceHours: "{n} h",
+    cardVaGraceSub: "after the vacation",
+    cardVaRules: "Exception rules for absence are active ({n}).",
+    cardVaRestore: "Nothing is deleted; the reports come back.",
+    cardVaHidden: "This card is hidden while there is no vacation mode. You still see it here in the editor.",
+    edit_numbers: "Show the numbers",
+    edit_numbers_help: "Held back, grace period and exception rules.",
+    edit_source: "Name the source",
   },
 };
 
@@ -1236,6 +1282,84 @@ class HKAutoPauseCard extends HKCard {
   }
 }
 
+// The vacation mode card: whether the mode is on, where it comes from, how many failures it holds back and how long the
+// grace period after it is. Pure display: the switch belongs to the helper or the calendar the person chose, so the card
+// has none. Without a vacation mode it is hidden (in the editor only a placeholder). When the switch is a calendar, the
+// card reads "since" and "until" from that calendar's own attributes; a helper has no end.
+class HKVacationCard extends HKCard {
+  static tag = "ha-housekeeper-vacation-card";
+  static pickerName = "HA Housekeeper: Vacation mode";
+  static pickerDescription = "Shows while the vacation mode is on: the source, the period and how many failures are held back.";
+  static get defaults() { return { quiet: "hide", numbers: true, source: true }; }
+
+  static editorSchema() {
+    return [
+      { name: "numbers", selector: { boolean: {} } },
+      { name: "source", selector: { boolean: {} } },
+    ];
+  }
+
+  get titleKey() { return "cardVaTitle"; }
+  data() { return this.stateOf("vacation")?.attributes || {}; }
+  verdict() { return this.stateOf("vacation")?.state; }
+  watchedIds() { return [this.idOf("vacation"), this.data().entity].filter(Boolean); }
+  hasData() { return ["off", "on", "after", "unset"].includes(this.verdict()); }
+  attention() { return 0; }
+  // Quiet is: there is no vacation mode to show.
+  isQuiet() { return this.verdict() !== "on" && this.verdict() !== "after"; }
+  hiddenKey() { return "cardVaHidden"; }
+
+  source() {
+    const entity = this.data().entity, state = entity && this._hass?.states?.[entity];
+    return { id: entity, state, name: state?.attributes?.friendly_name || entity || "", calendar: Boolean(entity?.startsWith("calendar.")) };
+  }
+
+  // A time of a calendar ("2026-11-17 00:00:00", local) as a Date, or null.
+  when(value) {
+    const date = new Date(String(value || "").replace(" ", "T"));
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  day(date) {
+    try { return new Intl.DateTimeFormat(this.lang, { day: "numeric", month: "short" }).format(date); } catch (_) { return date.toDateString(); }
+  }
+
+  fact(label, value, sub) {
+    return `<div class="hk-fact"><div class="l">${this.esc(label)}</div><div class="v">${this.esc(value)}</div>${sub ? `<div class="s">${this.esc(sub)}</div>` : ""}</div>`;
+  }
+
+  facts(data, since, until) {
+    if (!this._config.numbers) return "";
+    const cells = [];
+    if (since) {
+      const left = until ? Math.max(0, Math.ceil((until - Date.now()) / 86400000)) : null;
+      cells.push(this.fact(this.t("cardVaSince"), this.day(since), left == null ? "" : this.t("cardVaLeft", { n: left, count: left })));
+    }
+    cells.push(this.fact(this.t("cardVaHeld"), String(data.held ?? 0), this.t("cardVaHeldSub")));
+    if (data.grace_hours != null) cells.push(this.fact(this.t("cardVaGrace"), this.t("cardVaGraceHours", { n: data.grace_hours }), this.t("cardVaGraceSub")));
+    return `<div class="hk-facts n${cells.length}">${cells.join("")}</div>`;
+  }
+
+  renderBody() {
+    const data = this.data(), verdict = this.verdict(), src = this.source(), link = "view=exceptions";
+    if (verdict === "unset") return this.head(this.t("cardVaUnset"), `<span class="hk-chip">${this.esc(this.t("cardVaChipOff"))}</span>`) + this.foot("", link);
+    if (verdict === "off") return this.head(this.t("cardVaOff"), `<span class="hk-chip">${this.esc(this.t("cardVaChipOff"))}</span>`) + this.foot("", link);
+    const attrs = src.calendar && src.state?.attributes || {}, since = this.when(attrs.start_time), until = this.when(attrs.end_time);
+    let sub = "", chip;
+    if (verdict === "after") {
+      const end = new Date(data.after_until);
+      sub = this.t("cardVaAfterSub", { until: Number.isNaN(end.getTime()) ? "" : this.day(end) }).replace(/\.\.$/, "."); // a short month already ends in a full stop
+      chip = this.t("cardVaChipAfter");
+    } else {
+      if (this._config.source && src.name) sub = this.t(src.calendar ? "cardVaSourceCal" : "cardVaSource", { name: src.name });
+      chip = until ? this.t("cardVaChipUntil", { date: this.day(until) }) : this.t("cardVaChipOn");
+    }
+    const rules = data.rules && this._config.numbers
+      ? `<div class="hk-note">${this.esc(this.t("cardVaRules", { n: data.rules }))} <small>${this.esc(this.t("cardVaRestore"))}</small></div>` : "";
+    return this.head(sub, `<span class="hk-chip warn">${this.esc(chip)}</span>`, true) + this.facts(data, verdict === "on" ? since : null, until) + rules + this.foot("", link);
+  }
+}
+
 // The card after the update: it appears when an update was watched and says what has stopped working since, in the
 // words of the watch ("since", never "because"). It shows for a few hours after the update and is hidden otherwise.
 // The numbers come from the sensor "after the update" and its attributes.
@@ -1678,6 +1802,7 @@ registerCard(HKBatteryCard);
 registerCard(HKFunctionsCard);
 registerCard(HKAutoPauseCard);
 registerCard(HKUpdateCard);
+registerCard(HKVacationCard);
 registerCard(HKStartCard);
 registerCard(HKDatabaseCard);
 registerCard(HKBackupCard);

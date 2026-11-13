@@ -350,5 +350,33 @@
     "other": "{n} дня назад"
   },
   "cardBkToday": "сегодня",
-  "cardBkEncrypted": "Зашифрована"
+  "cardBkEncrypted": "Зашифрована",
+  "cardVaTitle": "Режим отпуска",
+  "cardVaChipOn": "включён",
+  "cardVaChipOff": "выключен",
+  "cardVaChipAfter": "отсрочка",
+  "cardVaChipUntil": "до {date}",
+  "cardVaSourceCal": "Отсутствие по «{name}» (календарь)",
+  "cardVaSource": "Отсутствие по «{name}»",
+  "cardVaAfterSub": "Отпуск закончился; отсрочка действует до {until}.",
+  "cardVaOff": "Режима отпуска нет",
+  "cardVaUnset": "Переключатель для режима отпуска не выбран.",
+  "cardVaSince": "С",
+  "cardVaLeft": {
+    "one": "остался {n} день",
+    "few": "осталось {n} дня",
+    "many": "осталось {n} дней",
+    "other": "осталось {n} дня"
+  },
+  "cardVaHeld": "Приглушено",
+  "cardVaHeldSub": "ожидаемые сбои",
+  "cardVaGrace": "Отсрочка",
+  "cardVaGraceHours": "{n} ч",
+  "cardVaGraceSub": "после отпуска",
+  "cardVaRules": "Действуют правила-исключения на время отсутствия ({n}).",
+  "cardVaRestore": "Ничего не удаляется; сообщения вернутся.",
+  "cardVaHidden": "Эта карточка скрыта, пока нет режима отпуска. Здесь, в редакторе, ты её всё равно видишь.",
+  "edit_numbers": "Показывать числа",
+  "edit_numbers_help": "Приглушено, отсрочка и правила-исключения.",
+  "edit_source": "Называть источник"
 }

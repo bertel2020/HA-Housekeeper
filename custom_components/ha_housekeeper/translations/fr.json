@@ -151,6 +151,15 @@
           "unclear": "Inconnu"
         }
       },
+      "vacation": {
+        "name": "Mode vacances",
+        "state": {
+          "off": "Inactif",
+          "on": "Actif",
+          "after": "Délai de grâce",
+          "unset": "Non configuré"
+        }
+      },
       "new_findings": {
         "name": "Nouveaux constats"
       },

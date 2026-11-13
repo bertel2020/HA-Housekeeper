@@ -452,6 +452,7 @@ Dashboard bearbeiten, **Karte hinzufügen**, nach **HA Housekeeper** suchen. Jed
 | **Startzeit** | `custom:ha-housekeeper-start-card` | Wie lange der letzte Start von Home Assistant dauerte, gegen das Übliche, die letzten Starts als Balken und die Integrationen, die am längsten brauchten. War der Start wie sonst, bleibt eine Zeile. |
 | **Datenbank** | `custom:ha-housekeeper-database-card` | Wie groß die Datenbank ist (Dateien und Journal), wie stark sie im letzten Monat gewachsen ist, die Linie der Tagesgrößen und was der Recorder aufbewahrt. „Wächst schnell“ und „Journal groß“ gelten nach den Regeln der Datenbankseite; die Karte liest, was jeder Scan ohnehin weiß, und fragt keine Recorder-Tabelle ab. |
 | **Backup** | `custom:ha-housekeeper-backup-card` | Wie alt das neueste Backup ist gegen die Grenze des Backup-Schutzes, ob eine Kopie außer Haus liegt, die Größe gegen das Übliche und ein Streifen der letzten sieben Tage. Rot nur, wenn der Schutz fehlt (kein Backup oder alle Kopien auf diesem Gerät); ein altes Backup oder ein fehlgeschlagener Lauf ist ein Hinweis. „Unbekannt“, solange die Backups außerhalb von Home Assistant entstehen. |
+| **Urlaubsmodus** | `custom:ha-housekeeper-vacation-card` | Nur solange der Urlaubsmodus an ist (oder seine Nachfrist läuft): woher die Abwesenheit kommt, seit wann und bis wann (wenn der Schalter ein Kalender ist), wie viele Ausfälle stumm gehalten werden, die Nachfrist und wie viele Ausnahmeregeln zur Abwesenheit aktiv sind. Nur Anzeige, die Karte hat keinen Schalter; ohne Urlaubsmodus ist sie ausgeblendet. |
 | **Überblick** | `custom:ha-housekeeper-overview-card` | Die Karten oben als Abschnitte einer Karte, in Reitern oder untereinander. |
 
 ### Optionen
@@ -488,6 +489,8 @@ Jede Karte hat dazu eigene Optionen:
 | | `facts` | `true` (Standard) zeigt Journal und Aufbewahrung |
 | Backup | `history` | `7` (Standard) oder `0` (kein Streifen) |
 | | `facts` | `true` (Standard) zeigt Alter, Kopie außer Haus und Größe |
+| Urlaubsmodus | `numbers` | `true` (Standard) zeigt Stumm gehalten, Nachfrist und Ausnahmeregeln |
+| | `source` | `true` (Standard) nennt Kalender oder Helfer |
 | Überblick | `sections` | siehe unten |
 | | `layout` | `tabs` (Standard) oder `stacked` |
 
@@ -495,7 +498,7 @@ Jede Karte hat dazu eigene Optionen:
 
 Alle, die das Dashboard sehen, sehen die Zahlen, auch die Namen von Batterien, Hausfunktionen und Integrationen. Was etwas verändert, ist Administratoren vorbehalten: der Link ins Panel, der Scan-Knopf und das Menü der pausierten Integrationen. Das Menü der pausierten Integrationen prüft der Server noch einmal: es ruft denselben Befehl wie das Panel, und den dürfen nur Administratoren nutzen. Der Scan-Knopf ist die gewöhnliche Knopf-Entität der Integration; die Karte blendet ihn für alle aus, die keine Administratoren sind, und wer diese Entität anderswo in Home Assistant drücken darf, kann das weiterhin.
 
-Die Karten lesen diese Sensoren des Housekeeper-Geräts: **Zustand des Hauses**, **Schwächste Batterie**, **Nächster Batteriewechsel**, **Pausierte Integrationen**, **Nach dem Update**, **Startdauer**, **Größe der Datenbank**, **Backup-Schutz**, den Sensor jeder Hausfunktion, **Scan-Zustand**, **Aktivität** und **Letzter Scan**. Ihre Listen sind Attribute, die nicht im Recorder landen und die Datenbank deshalb nicht füllen. Die Sensoren kannst du auch in eigenen Automationen nutzen; **Nächster Batteriewechsel** ist eine Zeit, zum Beispiel für eine Erinnerung.
+Die Karten lesen diese Sensoren des Housekeeper-Geräts: **Zustand des Hauses**, **Schwächste Batterie**, **Nächster Batteriewechsel**, **Pausierte Integrationen**, **Nach dem Update**, **Startdauer**, **Größe der Datenbank**, **Backup-Schutz**, **Urlaubsmodus**, den Sensor jeder Hausfunktion, **Scan-Zustand**, **Aktivität** und **Letzter Scan**. Ihre Listen sind Attribute, die nicht im Recorder landen und die Datenbank deshalb nicht füllen. Die Sensoren kannst du auch in eigenen Automationen nutzen; **Nächster Batteriewechsel** ist eine Zeit, zum Beispiel für eine Erinnerung.
 
 ### Die Überblick-Karte
 

@@ -278,5 +278,30 @@
     "other": "{n} 天前"
   },
   "cardBkToday": "今天",
-  "cardBkEncrypted": "已加密"
+  "cardBkEncrypted": "已加密",
+  "cardVaTitle": "度假模式",
+  "cardVaChipOn": "已开启",
+  "cardVaChipOff": "已关闭",
+  "cardVaChipAfter": "宽限期",
+  "cardVaChipUntil": "至 {date}",
+  "cardVaSourceCal": "依据“{name}”(日历)判断不在家",
+  "cardVaSource": "依据“{name}”判断不在家",
+  "cardVaAfterSub": "假期已结束,宽限期持续到 {until}。",
+  "cardVaOff": "没有度假模式",
+  "cardVaUnset": "尚未为度假模式选择开关。",
+  "cardVaSince": "自",
+  "cardVaLeft": {
+    "other": "还剩 {n} 天"
+  },
+  "cardVaHeld": "已静默",
+  "cardVaHeldSub": "预期的故障",
+  "cardVaGrace": "宽限期",
+  "cardVaGraceHours": "{n} 小时",
+  "cardVaGraceSub": "假期之后",
+  "cardVaRules": "不在家的例外规则已生效({n} 条)。",
+  "cardVaRestore": "不会删除任何内容,提醒会恢复。",
+  "cardVaHidden": "没有度假模式时这张卡片会隐藏。在编辑器里你仍能看到它。",
+  "edit_numbers": "显示数字",
+  "edit_numbers_help": "已静默、宽限期和例外规则。",
+  "edit_source": "说明来源"
 }

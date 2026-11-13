@@ -44,6 +44,8 @@ from .scan_health import STATES
 from .start_card import start_view
 from .update_card import STATES as UPDATE_STATES
 from .update_card import update_view
+from .vacation_card import STATES as VACATION_STATES
+from .vacation_card import vacation_view
 
 NEW_HOURS = 24  # how long a finding counts as new for the sensor
 
@@ -173,6 +175,14 @@ BACKUP_DESCRIPTION = SensorEntityDescription(
 )
 
 
+VACATION_DESCRIPTION = SensorEntityDescription(
+    key="vacation",
+    translation_key="vacation",
+    device_class=SensorDeviceClass.ENUM,
+    options=list(VACATION_STATES),
+)
+
+
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
@@ -215,6 +225,7 @@ async def async_setup_entry(
             StartTimeSensor(entry, START_TIME_DESCRIPTION),
             DatabaseSizeSensor(entry, DATABASE_SIZE_DESCRIPTION),
             BackupSensor(entry, BACKUP_DESCRIPTION),
+            VacationSensor(entry, VACATION_DESCRIPTION),
         ]
     )
     scanner = entry.runtime_data
@@ -439,6 +450,29 @@ class BackupSensor(HousekeeperSensor):
         scanner = self.scanner
         view = backup_view(scanner.backup_report if scanner else None, dt_util.now())
         self._attr_native_value = view.pop("state", None)
+        self._attr_extra_state_attributes = view
+
+
+class VacationSensor(HousekeeperSensor):
+    """Whether the vacation mode is on, for the card; the failures held back, the rules and the grace period as attributes.
+
+    Follows the switch as well as the scans (a change of the switch looks at every finding again and tells the sensors).
+    The attributes stay out of the recorder.
+    """
+
+    _unrecorded_attributes = frozenset(
+        {"entity", "held", "rules", "grace_hours", "after_until", "ended_at", "missing"}
+    )
+
+    def _update(self) -> None:
+        scanner = self.scanner
+        snapshot = scanner.snapshot if scanner else None
+        if snapshot is None or snapshot["meta"].get("preliminary"):
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
+        view = vacation_view(snapshot["meta"].get("vacation"), dt_util.utcnow())
+        self._attr_native_value = view.pop("state")
         self._attr_extra_state_attributes = view
 
 

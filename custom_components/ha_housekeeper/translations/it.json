@@ -151,6 +151,15 @@
           "unclear": "Sconosciuto"
         }
       },
+      "vacation": {
+        "name": "Modalità vacanza",
+        "state": {
+          "off": "Spenta",
+          "on": "Attiva",
+          "after": "Periodo di tolleranza",
+          "unset": "Non impostata"
+        }
+      },
       "new_findings": {
         "name": "Nuovi rilevamenti"
       },

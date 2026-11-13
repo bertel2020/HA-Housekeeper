@@ -151,6 +151,15 @@
           "unclear": "未知"
         }
       },
+      "vacation": {
+        "name": "度假模式",
+        "state": {
+          "off": "关闭",
+          "on": "开启",
+          "after": "宽限期",
+          "unset": "未设置"
+        }
+      },
       "new_findings": {
         "name": "新发现项"
       },

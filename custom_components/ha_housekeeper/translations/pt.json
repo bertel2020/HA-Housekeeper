@@ -151,6 +151,15 @@
           "unclear": "Desconhecido"
         }
       },
+      "vacation": {
+        "name": "Modo de férias",
+        "state": {
+          "off": "Desativado",
+          "on": "Ativo",
+          "after": "Período de tolerância",
+          "unset": "Não configurado"
+        }
+      },
       "new_findings": {
         "name": "Novas ocorrências"
       },

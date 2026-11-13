@@ -302,5 +302,31 @@
     "other": "il y a {n} jours"
   },
   "cardBkToday": "aujourd'hui",
-  "cardBkEncrypted": "Chiffrée"
+  "cardBkEncrypted": "Chiffrée",
+  "cardVaTitle": "Mode vacances",
+  "cardVaChipOn": "actif",
+  "cardVaChipOff": "inactif",
+  "cardVaChipAfter": "délai de grâce",
+  "cardVaChipUntil": "jusqu'au {date}",
+  "cardVaSourceCal": "Absence selon « {name} » (calendrier)",
+  "cardVaSource": "Absence selon « {name} »",
+  "cardVaAfterSub": "Les vacances sont finies ; le délai de grâce dure jusqu'au {until}.",
+  "cardVaOff": "Pas de mode vacances",
+  "cardVaUnset": "Aucun interrupteur n'a été choisi pour le mode vacances.",
+  "cardVaSince": "Depuis",
+  "cardVaLeft": {
+    "one": "encore {n} jour",
+    "other": "encore {n} jours"
+  },
+  "cardVaHeld": "Mis en sourdine",
+  "cardVaHeldSub": "pannes attendues",
+  "cardVaGrace": "Délai de grâce",
+  "cardVaGraceHours": "{n} h",
+  "cardVaGraceSub": "après les vacances",
+  "cardVaRules": "Des règles d'exception pour l'absence sont actives ({n}).",
+  "cardVaRestore": "Rien n'est supprimé ; les signalements reviennent.",
+  "cardVaHidden": "Cette carte est masquée tant qu'il n'y a pas de mode vacances. Ici, dans l'éditeur, tu la vois quand même.",
+  "edit_numbers": "Afficher les chiffres",
+  "edit_numbers_help": "Mis en sourdine, délai de grâce et règles d'exception.",
+  "edit_source": "Indiquer la source"
 }

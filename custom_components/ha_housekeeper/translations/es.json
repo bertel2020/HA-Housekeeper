@@ -151,6 +151,15 @@
           "unclear": "Desconocido"
         }
       },
+      "vacation": {
+        "name": "Modo vacaciones",
+        "state": {
+          "off": "Apagado",
+          "on": "Activo",
+          "after": "Periodo de gracia",
+          "unset": "Sin configurar"
+        }
+      },
       "new_findings": {
         "name": "Hallazgos nuevos"
       },

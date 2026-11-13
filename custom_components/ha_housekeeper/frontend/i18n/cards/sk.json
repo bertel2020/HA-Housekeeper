@@ -326,5 +326,32 @@
     "other": "pred {n} dňami"
   },
   "cardBkToday": "dnes",
-  "cardBkEncrypted": "Šifrovaná"
+  "cardBkEncrypted": "Šifrovaná",
+  "cardVaTitle": "Režim dovolenky",
+  "cardVaChipOn": "zapnutý",
+  "cardVaChipOff": "vypnutý",
+  "cardVaChipAfter": "odklad",
+  "cardVaChipUntil": "do {date}",
+  "cardVaSourceCal": "Neprítomnosť podľa „{name}“ (kalendár)",
+  "cardVaSource": "Neprítomnosť podľa „{name}“",
+  "cardVaAfterSub": "Dovolenka sa skončila; odklad trvá do {until}.",
+  "cardVaOff": "Bez režimu dovolenky",
+  "cardVaUnset": "Pre režim dovolenky nie je vybraný žiadny vypínač.",
+  "cardVaSince": "Od",
+  "cardVaLeft": {
+    "one": "ostáva {n} deň",
+    "few": "ostávajú {n} dni",
+    "other": "ostáva {n} dní"
+  },
+  "cardVaHeld": "Stlmené",
+  "cardVaHeldSub": "očakávané výpadky",
+  "cardVaGrace": "Odklad",
+  "cardVaGraceHours": "{n} h",
+  "cardVaGraceSub": "po dovolenke",
+  "cardVaRules": "Pravidlá výnimiek pre neprítomnosť sú aktívne ({n}).",
+  "cardVaRestore": "Nič sa nemaže; hlásenia sa vrátia.",
+  "cardVaHidden": "Táto karta je skrytá, kým nie je režim dovolenky. Tu v editore ju aj tak vidíš.",
+  "edit_numbers": "Zobraziť čísla",
+  "edit_numbers_help": "Stlmené, odklad a pravidlá výnimiek.",
+  "edit_source": "Uviesť zdroj"
 }

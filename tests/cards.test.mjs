@@ -25,7 +25,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, HKStartCard, HKDatabaseCard, HKBackupCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, HKStartCard, HKDatabaseCard, HKBackupCard, HKVacationCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -456,4 +456,40 @@ test("the backup card names what is missing, shows the week and keeps to a summa
   card.setConfig({});
   card.hass = hass("unknown", {});
   assert.match(html(), /Noch keine Daten/);
+});
+
+test("the vacation card shows only while the mode is on, reads the period from a calendar and has no switch", () => {
+  const { HKVacationCard, registered } = loadCards();
+  assert.ok(registered["ha-housekeeper-vacation-card"], "the card is registered");
+  const entities = { v: ENTITY("sensor.va", "vacation") };
+  let stamp = 0;
+  const day = n => new Date(Date.now() + n * 86400e3).toISOString().slice(0, 10) + " 00:00:00";
+  const hass = (state, attrs, calendar) => ({ language: "de", user: { is_admin: true }, entities, states: { "sensor.va": { state, last_updated: String(++stamp), attributes: attrs }, ...(calendar ? { "calendar.urlaub": { state: "on", last_updated: "1", attributes: { friendly_name: "Urlaub Familie", ...calendar } } } : {}) } });
+  const base = { entity: "calendar.urlaub", held: 9, rules: 3, grace_hours: 24, after_until: null };
+  const card = new HKVacationCard();
+  card.setConfig({});
+  const html = () => card.shadowRoot.innerHTML;
+  card.hass = hass("off", base);
+  assert.equal(card.style.display, "none", "hidden without a vacation mode");
+  card.hass = hass("on", base, { start_time: day(-3), end_time: day(12) });
+  assert.equal(card.style.display, "");
+  assert.match(html(), /Abwesenheit laut „Urlaub Familie“ \(Kalender\)/);
+  assert.match(html(), /Seit[\s\S]*noch 12 Tage[\s\S]*Stumm gehalten[\s\S]*9[\s\S]*Nachfrist[\s\S]*24 Std\./);
+  assert.match(html(), /bis /);
+  assert.match(html(), /Ausnahmeregeln zur Abwesenheit sind aktiv \(3\)/);
+  assert.match(html(), /data-hk-panel="view=exceptions"/);
+  assert.ok(!html().includes("data-hk-act"), "no switch on the card");
+  card.hass = hass("on", { ...base, entity: "input_boolean.urlaub" });
+  assert.ok(!html().includes("Seit"), "a helper has no period");
+  assert.match(html(), /Stumm gehalten/);
+  card.hass = hass("after", { ...base, after_until: new Date(Date.now() + 3600e3).toISOString() });
+  assert.match(html(), /Der Urlaub ist vorbei, die Nachfrist läuft bis/);
+  card.setConfig({ numbers: false, source: false });
+  card.hass = hass("on", base, { start_time: day(-3), end_time: day(12) });
+  assert.ok(!html().includes("Stumm gehalten") && !html().includes("Abwesenheit laut"), "numbers and source can be left out");
+  card.setConfig({ quiet: "summary" });
+  card.hass = hass("off", base);
+  assert.match(html(), /Kein Urlaubsmodus/);
+  card.hass = hass("unset", {});
+  assert.match(html(), /Kein Schalter/);
 });

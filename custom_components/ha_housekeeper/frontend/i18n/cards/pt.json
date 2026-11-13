@@ -302,5 +302,31 @@
     "other": "há {n} dias"
   },
   "cardBkToday": "hoje",
-  "cardBkEncrypted": "Cifrada"
+  "cardBkEncrypted": "Cifrada",
+  "cardVaTitle": "Modo de férias",
+  "cardVaChipOn": "ativo",
+  "cardVaChipOff": "desativado",
+  "cardVaChipAfter": "período de tolerância",
+  "cardVaChipUntil": "até {date}",
+  "cardVaSourceCal": "Ausência segundo «{name}» (calendário)",
+  "cardVaSource": "Ausência segundo «{name}»",
+  "cardVaAfterSub": "As férias acabaram; o período de tolerância dura até {until}.",
+  "cardVaOff": "Sem modo de férias",
+  "cardVaUnset": "Não foi escolhido nenhum interruptor para o modo de férias.",
+  "cardVaSince": "Desde",
+  "cardVaLeft": {
+    "one": "falta {n} dia",
+    "other": "faltam {n} dias"
+  },
+  "cardVaHeld": "Silenciadas",
+  "cardVaHeldSub": "falhas esperadas",
+  "cardVaGrace": "Período de tolerância",
+  "cardVaGraceHours": "{n} h",
+  "cardVaGraceSub": "depois das férias",
+  "cardVaRules": "Há regras de exceção por ausência ativas ({n}).",
+  "cardVaRestore": "Nada é apagado; os avisos voltam.",
+  "cardVaHidden": "Este cartão fica oculto enquanto não houver modo de férias. Aqui no editor continuas a vê-lo.",
+  "edit_numbers": "Mostrar os números",
+  "edit_numbers_help": "Silenciadas, período de tolerância e regras de exceção.",
+  "edit_source": "Indicar a origem"
 }

@@ -6873,7 +6873,12 @@
 "entity.sensor.backup.state.ok": "fa67303a",
 "entity.sensor.backup.state.warn": "5ce96f12",
 "entity.sensor.backup.state.bad": "cff8b40f",
-"entity.sensor.backup.state.unclear": "b764cdc0"
+"entity.sensor.backup.state.unclear": "b764cdc0",
+"entity.sensor.vacation.name": "c2924b06",
+"entity.sensor.vacation.state.off": "ca7981b4",
+"entity.sensor.vacation.state.on": "13001175",
+"entity.sensor.vacation.state.after": "75e7a6fa",
+"entity.sensor.vacation.state.unset": "94b768af"
 },
 "cards": {
 "cardNotFound": "dee6374c",
@@ -7107,6 +7112,29 @@
 "cardBkUnclear": "5f3ea4e5",
 "cardBkUnclearChip": "b23a6a84",
 "cardBkWarn": "2c1ed696",
-"cardBkYes": "85a39ab3"
+"cardBkYes": "85a39ab3",
+"cardVaAfterSub": "e2d191d2",
+"cardVaChipAfter": "918a801a",
+"cardVaChipOff": "b4dc66dd",
+"cardVaChipOn": "b8d31e85",
+"cardVaChipUntil": "30d81602",
+"cardVaGrace": "75e7a6fa",
+"cardVaGraceHours": "068deca4",
+"cardVaGraceSub": "1dc7193a",
+"cardVaHeld": "d5a6dc64",
+"cardVaHeldSub": "f39f41ef",
+"cardVaHidden": "4d5d3328",
+"cardVaLeft": "a3c46a75",
+"cardVaOff": "0ff21dd2",
+"cardVaRestore": "13611b79",
+"cardVaRules": "9f91efe0",
+"cardVaSince": "98af1ed6",
+"cardVaSource": "96f36040",
+"cardVaSourceCal": "cc5b3ff9",
+"cardVaTitle": "c2924b06",
+"cardVaUnset": "ac4f4812",
+"edit_numbers": "7f2c3c01",
+"edit_numbers_help": "4f727f5f",
+"edit_source": "7d8294be"
 }
 }

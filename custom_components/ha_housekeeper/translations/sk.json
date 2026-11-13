@@ -151,6 +151,15 @@
           "unclear": "Neznáme"
         }
       },
+      "vacation": {
+        "name": "Režim dovolenky",
+        "state": {
+          "off": "Vypnutý",
+          "on": "Zapnutý",
+          "after": "Odklad",
+          "unset": "Nenastavené"
+        }
+      },
       "new_findings": {
         "name": "Nové nálezy"
       },

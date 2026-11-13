@@ -151,6 +151,15 @@
           "unclear": "Unbekannt"
         }
       },
+      "vacation": {
+        "name": "Urlaubsmodus",
+        "state": {
+          "off": "Aus",
+          "on": "An",
+          "after": "Nachfrist",
+          "unset": "Nicht eingerichtet"
+        }
+      },
       "new_findings": {
         "name": "Neue Befunde"
       },
