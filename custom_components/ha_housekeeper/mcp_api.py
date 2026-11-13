@@ -809,7 +809,7 @@ async def replacement_plan(
     plan = await _plan_from_requests(scanner.hass, snapshot, requests, enabled)
     actions = plan["actions"]
     if not any(a.get("executable") for a in actions):
-        reasons = next((a.get("reasons") for a in actions if a.get("reasons")), [])
+        reasons: list[str] = next((a.get("reasons") for a in actions if a.get("reasons")), [])
         raise McpError("plan_blocked", ", ".join(reasons[:4]))
     plan["via"] = VIA
     scanner.journal.add(plan)
