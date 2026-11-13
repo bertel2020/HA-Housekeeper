@@ -2337,3 +2337,43 @@ async def test_unloading_writes_what_the_stores_still_hold_back(
     assert await hass.config_entries.async_unload(entry.entry_id)
 
     assert hass_storage[store.key]["data"] == {"items": [{"id": "held-back"}]}
+
+
+async def test_callers_that_wait_for_the_first_snapshot_share_one_scan(hass: HomeAssistant) -> None:
+    """Many commands ask at once when the panel opens during the start: one scan, not one each."""
+    import asyncio
+
+    scanner = InventoryScanner(hass)
+    scans = []
+
+    async def scan(record: bool = True) -> dict:
+        scans.append(1)
+        await asyncio.sleep(0.01)
+        scanner._snapshot = {"objects": [], "findings": []}
+        return scanner._snapshot
+
+    scanner.async_scan = scan  # type: ignore[method-assign]
+    results = await asyncio.gather(*(scanner.async_get_snapshot() for _ in range(5)))
+    assert len(scans) == 1
+    assert all(result is results[0] for result in results)
+
+
+async def test_a_scan_that_is_cut_off_does_not_stay_running(hass: HomeAssistant) -> None:
+    """A command that times out cancels its scan: the status must not keep saying "scanning"."""
+    import asyncio
+
+    scanner = InventoryScanner(hass)
+
+    async def never(preliminary: bool = False) -> dict:
+        await asyncio.sleep(3600)
+        return {}
+
+    scanner._async_build_snapshot = never  # type: ignore[method-assign]
+    task = hass.async_create_task(scanner.async_scan())
+    await asyncio.sleep(0)
+    await asyncio.sleep(0)
+    assert scanner.status["running"] is True
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+    assert scanner.status["running"] is False and scanner.status["phase"] == "failed"

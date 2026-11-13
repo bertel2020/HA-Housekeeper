@@ -36,6 +36,32 @@ def test_only_a_change_into_or_out_of_a_bad_state_is_looked_at() -> None:
     assert not state_filter(_change("21.5", None))
 
 
+def test_a_new_entity_without_a_value_is_no_outage_but_a_new_unavailable_one_is() -> None:
+    assert not state_filter({"old_state": None, "new_state": NS(state="unknown")})
+    assert state_filter({"old_state": None, "new_state": NS(state="unavailable")})
+
+
+def test_entities_the_findings_are_turned_off_for_plan_no_scan() -> None:
+    from types import SimpleNamespace
+
+    from custom_components.ha_housekeeper.outage_scan import OutageScans
+
+    snapshot = {
+        "findings": [{"object_id": "media_player.tv", "ignored": True}],
+        "objects": [
+            {
+                "object_type": "entity",
+                "object_id": "sensor.phone",
+                "labels": ["housekeeper_ignore"],
+            },
+            {"object_type": "entity", "object_id": "sensor.power", "labels": []},
+        ],
+    }
+    scans = OutageScans(None, SimpleNamespace(snapshot=snapshot))  # type: ignore[arg-type]
+    assert scans._is_muted("media_player.tv") and scans._is_muted("sensor.phone")
+    assert not scans._is_muted("sensor.power") and not scans._is_muted("sensor.unseen")
+
+
 def test_the_outage_starts_at_the_earlier_of_what_was_seen_and_what_home_assistant_kept() -> None:
     seen, kept = "2026-10-15T09:00:00+00:00", "2026-10-15T08:00:00+00:00"
     assert outage_start(seen, kept) == (kept, "home_assistant")

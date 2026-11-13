@@ -1059,6 +1059,7 @@ class InventoryScanner:
         self._unchecked: set[str] = set()
         self.scan_coverage = ScanCoverage()
         self._lock = asyncio.Lock()
+        self._first_scan_lock = asyncio.Lock()  # one first scan for all that wait for a snapshot
         self._scan_task: asyncio.Task[None] | None = None  # a scan the service or button started
         self._last_scan_end: float | None = None
         self._snapshot: dict[str, Any] | None = None
@@ -1310,7 +1311,9 @@ class InventoryScanner:
                 self.async_check_health()
                 self._last_scan_end = time.monotonic()
                 return snapshot
-            except Exception as err:
+            except (Exception, asyncio.CancelledError) as err:
+                # A scan cut off from outside (a command that timed out, an unload) ends like a failed
+                # one, or "running" stays set and every later request is turned away as "join".
                 # The traceback only at debug level: it names the line, which the error text lacks.
                 _LOGGER.debug(
                     "The scan failed in phase %s", self.status.get("phase"), exc_info=True
@@ -1617,10 +1620,16 @@ class InventoryScanner:
             self._snapshot["meta"].update(fields)
 
     async def async_get_snapshot(self) -> dict[str, Any]:
-        """Return the latest snapshot, scanning on first access."""
+        """Return the latest snapshot, scanning on first access.
+
+        Callers that come while the first scan runs wait for it and take its snapshot, each one
+        does not scan again (many panel commands ask at once when it opens during the start).
+        """
         if self._snapshot is None:
-            return await self.async_scan()
-        return self._snapshot
+            async with self._first_scan_lock:
+                if self._snapshot is None:
+                    return await self.async_scan()
+        return cast(dict[str, Any], self._snapshot)
 
     def get_details(self, object_type: str, object_id: str) -> dict[str, Any] | None:
         """Return bulky fields of one object from the latest snapshot."""
