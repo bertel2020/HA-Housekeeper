@@ -42,6 +42,23 @@
 ### Fixed
 
 - **Marks:** An integration with a mark that hides (expected offline, seasonal, spare, replaced) no longer shows “Integration … is not loaded” as a cause in the first minutes after a restart (issue #50).
+- **Clean-up and undo:**
+  - Repairing a counter glitch older than the five-minute statistics now moves those sums too, so the offset does not come back in the hour of the repair; undoing such a repair works after the five-minute rows were purged.
+  - “Trim history” on a group deleted the history of its members; it now deletes the rows of the entity you chose.
+  - A run cut off inside a step (for example by a restart) says so instead of “did not run”, and the data for an undo is saved before a long purge starts.
+  - “Delete the old entity” after a replacement looks at the other entities of a helper and at your marks, and switches the entity off instead when its integration provides it again. A meter takeover no longer reuses an ID whose statistics still exist, and a restored helper gives its entities back by tariff.
+- **Home functions and checks:**
+  - The freshness rule of a home function is measured against the last scan, not against now, so it no longer fires every hour until the next scan.
+  - Fewer false findings: an on and an off automation on one sensor are no conflict; entities that did not change count as up in the availability; a HomeKit bridge counts only what HomeKit reaches; the database growth hint no longer fires after the database shrank; a recorder that wrote nothing for a week is shown as a gap.
+  - The quality view rates all automations, not only the first 300; custom card resources are found in rows, layouts and badges; a statistic without an entity is offered for clearing up only after two days.
+- **Stability:**
+  - A reload for new options no longer loses notes, criteria or the AI access switch that were saved with a delay; a scan cut off by a timeout no longer leaves “scanning” on; many commands at the start share one scan; a decision made during a scan reaches the new result.
+  - Auto-pause no longer fires its timer over and over for an entry that is being tried or was removed; the fourteen sensors work out their numbers once per change, not each on its own.
+- **AI access:**
+  - The limit on changes cannot be reset by a flood of refused calls, the log keeps only a few short keys per call, “hold back sensitive objects” also covers the devices of locks and cameras, and plans an agent made are marked in the journal.
+- **Panel:**
+  - An open object page shows the new data after a reload; “Run now” runs the plan you confirmed; a new number in the automatic backup rule asks first, and an emptied field is no longer a rule of 0; removing many decisions asks first.
+  - Russian plural forms for texts such as “{days} days”; French and Russian texts use the informal address.
 
 ## 2.0.1 - 2026-11-12
 

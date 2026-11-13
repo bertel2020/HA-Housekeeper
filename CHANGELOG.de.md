@@ -42,6 +42,23 @@
 ### Behoben
 
 - **Markierungen:** Eine Integration mit einer versteckenden Markierung (erwartet offline, saisonal, Reserve, ersetzt) zeigt in den ersten Minuten nach einem Neustart nicht mehr „Integration … ist nicht geladen“ als Ursache (Issue #50).
+- **Aufräumen und Rückgängig:**
+  - Die Reparatur eines Zähler-Ausreißers, der älter ist als die 5-Minuten-Statistik, verschiebt jetzt auch deren Summen, damit der Versatz nicht in der Stunde der Reparatur zurückkommt; das Rückgängigmachen funktioniert auch, nachdem die 5-Minuten-Zeilen gelöscht wurden.
+  - „Verlauf kürzen“ löschte bei einer Gruppe die Historie ihrer Mitglieder; jetzt werden die Zeilen der gewählten Entität gelöscht.
+  - Ein Lauf, der mitten in einem Schritt abbricht (zum Beispiel durch einen Neustart), sagt das, statt „lief nicht“ zu zeigen, und die Daten für ein Rückgängig werden vor einem langen Löschen gespeichert.
+  - „Alte Entität löschen“ nach einem Ersetzen sieht sich die anderen Entitäten eines Helfers und deine Markierungen an und schaltet die Entität stattdessen ab, wenn ihre Integration sie wieder bereitstellt. Ein Zählerwechsel nimmt keine ID mehr, zu der noch eine Statistik existiert, und ein wiederhergestellter Helfer gibt seine Entitäten nach Tarif zurück.
+- **Hausfunktionen und Prüfungen:**
+  - Die Frische-Regel einer Hausfunktion wird am letzten Scan gemessen, nicht an der Uhrzeit von jetzt, und schlägt nicht mehr jede Stunde an, bis der nächste Scan kommt.
+  - Weniger falsche Befunde: Eine An- und eine Aus-Automation am selben Sensor sind kein Konflikt; Entitäten ohne Änderung zählen in der Verfügbarkeit als erreichbar; eine HomeKit-Bridge zählt nur, was HomeKit erreicht; der Wachstumshinweis der Datenbank schlägt nicht an, nachdem sie geschrumpft ist; ein Recorder, der eine Woche nichts schrieb, erscheint als Lücke.
+  - Die Qualitätsansicht bewertet alle Automationen, nicht nur die ersten 300; Custom-Karten-Ressourcen werden in Zeilen, Layouts und Badges gefunden; eine Statistik ohne Entität wird erst nach zwei Tagen zum Aufräumen angeboten.
+- **Stabilität:**
+  - Ein Neuladen nach geänderten Optionen verliert keine verzögert gespeicherten Notizen, Kriterien oder den Schalter für den KI-Zugriff mehr; ein per Timeout abgebrochener Scan lässt nicht mehr „scannt“ stehen; viele Befehle beim Start teilen sich einen Scan; eine Entscheidung während eines Scans erreicht das neue Ergebnis.
+  - Auto-Pause löst seinen Timer nicht mehr immer wieder für einen Eintrag aus, der gerade versucht wird oder entfernt wurde; die vierzehn Sensoren rechnen ihre Zahlen einmal pro Änderung statt jeder für sich.
+- **KI-Zugriff:**
+  - Das Limit für Änderungen lässt sich nicht durch eine Flut abgelehnter Aufrufe zurücksetzen, das Protokoll behält nur wenige kurze Schlüssel pro Aufruf, „Sensible Objekte zurückhalten“ deckt auch die Geräte von Schlössern und Kameras ab, und Pläne, die eine KI angelegt hat, sind im Journal markiert.
+- **Panel:**
+  - Eine offene Objektseite zeigt nach einem Neuladen die neuen Daten; „Jetzt ausführen“ führt den Plan aus, den du bestätigt hast; eine neue Zahl in der automatischen Backup-Regel fragt vorher nach, und ein leeres Feld ist keine Regel mehr mit 0; viele Entscheidungen aufzuheben fragt vorher nach.
+  - Russische Pluralformen bei Texten wie „{days} Tage“; französische und russische Texte nutzen die vertraute Anrede.
 
 ## 2.0.1 - 2026-11-12
 
