@@ -305,3 +305,14 @@ def test_a_mark_is_not_over_while_the_object_is_down_without_a_finding_and_an_ed
         store.items["entity:sensor.b"]["armed"]
         and store.items["entity:sensor.b"]["back_since"] == "x"
     )
+
+
+def test_a_hiding_mark_on_an_object_sets_mark_hides_unless_due() -> None:
+    entry = {"object_type": "config_entry", "object_id": "e1", "status": "problem"}
+    keep = {"object_type": "config_entry", "object_id": "e2", "status": "problem"}
+    marks = {
+        "config_entry:e1": _mark("expected_offline"),
+        "config_entry:e2": _mark("keep"),
+    }
+    apply_marks([entry, keep], [], marks, NOW)
+    assert entry.get("mark_hides") and not keep.get("mark_hides")

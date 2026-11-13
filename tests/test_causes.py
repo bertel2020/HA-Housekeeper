@@ -311,3 +311,8 @@ def test_log_facts_count_per_integration_and_never_carry_a_message():
     assert facts["hue"]["level"] == "error" and facts["hue"]["count"] == 5
     assert "SECRET" not in repr(facts)
     assert log_facts(NS(data={})) == {}
+
+
+def test_a_hiding_mark_on_the_integration_hides_its_cause_before_any_outage_finding() -> None:
+    assert apply_causes([{**ENTRY, "mark_hides": True}], [], []) == []
+    assert len(apply_causes([ENTRY], [], [])) == 1
