@@ -10,14 +10,16 @@ function matchLanguage(list, code) {
 
 const languageInfo = code => LANGUAGES.find(l => l.code === code) || LANGUAGES.find(l => l.code === "en");
 
-// A text with its own plural forms: the form of the number (`count`, else `n`), else `other`.
+// A text with its own plural forms: the form of the number (`count`, else `n`, else the first number
+// the text names, like {days}), else `other`.
 // The number may already be formatted ("1.234", "1 234"): only its digits count. Plural texts are for whole numbers.
 function pluralText(forms, lang, vars) {
   let form = "other";
   try {
-    const raw = vars?.count ?? vars?.n;
-    const number = typeof raw === "number" ? raw : Number(String(raw).replace(/[^\d]/g, "") || NaN);
-    form = new Intl.PluralRules(lang).select(number);
+    const toNumber = raw => (typeof raw === "number" ? raw : Number(String(raw).replace(/[^\d]/g, "") || NaN));
+    const named = [...String(forms.other ?? "").matchAll(/\{(\w+)\}/g)].map(m => m[1]);
+    const key = ["count", "n", ...named].find(k => vars && k in vars && !Number.isNaN(toNumber(vars[k])));
+    form = new Intl.PluralRules(lang).select(toNumber(vars?.[key]));
   } catch (_) { /* no number: the general form */ }
   return forms[form] ?? forms.other ?? "";
 }

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"b8e807a742"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"899c236a23"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5ebe127554"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b782134b2b"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"917d270951"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7a2ba69a87"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"c6dcc98ab7"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"c6a292eba3"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"899c236a23"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5ebe127554"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b782134b2b"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"917d270951"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"add40ab6e9"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"c6dcc98ab7"}];
 
 const TEXT = {
   de: {
@@ -639,14 +639,16 @@ function matchLanguage(list, code) {
 
 const languageInfo = code => LANGUAGES.find(l => l.code === code) || LANGUAGES.find(l => l.code === "en");
 
-// A text with its own plural forms: the form of the number (`count`, else `n`), else `other`.
+// A text with its own plural forms: the form of the number (`count`, else `n`, else the first number
+// the text names, like {days}), else `other`.
 // The number may already be formatted ("1.234", "1 234"): only its digits count. Plural texts are for whole numbers.
 function pluralText(forms, lang, vars) {
   let form = "other";
   try {
-    const raw = vars?.count ?? vars?.n;
-    const number = typeof raw === "number" ? raw : Number(String(raw).replace(/[^\d]/g, "") || NaN);
-    form = new Intl.PluralRules(lang).select(number);
+    const toNumber = raw => (typeof raw === "number" ? raw : Number(String(raw).replace(/[^\d]/g, "") || NaN));
+    const named = [...String(forms.other ?? "").matchAll(/\{(\w+)\}/g)].map(m => m[1]);
+    const key = ["count", "n", ...named].find(k => vars && k in vars && !Number.isNaN(toNumber(vars[k])));
+    form = new Intl.PluralRules(lang).select(toNumber(vars?.[key]));
   } catch (_) { /* no number: the general form */ }
   return forms[form] ?? forms.other ?? "";
 }
@@ -4969,7 +4971,7 @@ class CleanupMixin {
       const blocked = plan.actions.filter(a => a.verdict === "blocked").length;
       const nothing = plan.actions.length > 0 && plan.actions.every(a => a.verdict === "blocked" && (a.reasons || []).length > 0 && a.reasons.every(r => NOTHING_REASONS.includes(r)));
       const why = nothing ? this.t("wzIdleNothing") : blocked && blocked === plan.actions.length ? this.t(blocked === 1 ? "wzIdleBlockedOne" : "wzIdleBlocked", { n: blocked }) : this.t("wzIdleNone");
-      return `<section class="panel" data-plan-card data-plan-idle><div class="panelhead"><div><h2>${this.t("plan_status_dry_run")}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div></div>
+      return `<section class="panel" data-plan-card data-plan-idle><div class="panelhead"><div><h2>${this.t("plan_status_dry_run")}${plan.via === "mcp" ? ` <span class="pill mute">${this.t("viaMcp")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div></div>
         <div class="outcome ${nothing ? "ok" : "warn"}" role="status"><ha-icon icon="${nothing ? "mdi:check-circle-outline" : "mdi:information-outline"}"></ha-icon><span><strong>${this.t(nothing ? "wzIdleNothingTitle" : "wzIdleTitle")}</strong><small>${this.esc(why)}</small></span></div>${rowList.join("")}${this.reportBlock(plan, `<button class="btn primary" data-plan-close>${this.t("planClose")}</button>`)}</section>`;
     }
     // The preview lists what needs a look first; the chips cut the list by verdict and say how many there are of each.
@@ -4989,7 +4991,7 @@ class CleanupMixin {
       : stage === 1 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
       : stage === 2 ? `${this.planOutcome(plan)}${control}`
       : `${this.planOutcome(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
-    return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div>${footClose ? "" : `<button class="btn" data-plan-close>${this.t("planClose")}</button>`}</div>
+    return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}${plan.via === "mcp" ? ` <span class="pill mute">${this.t("viaMcp")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div>${footClose ? "" : `<button class="btn" data-plan-close>${this.t("planClose")}</button>`}</div>
       ${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
   }
 
@@ -5291,7 +5293,7 @@ class CleanupMixin {
     const columns = [
       { key: "sel", label: "mergeSelect", narrow: true, sortable: false, allBox: rows => this.journalHeadBox(rows), cell: plan => (this.mergeable(plan) ? `<input type="checkbox" class="selbox" data-merge-sel="${this.esc(plan.plan_id)}" ${this.mergeSel?.has(plan.plan_id) ? "checked" : ""} aria-label="${this.esc(this.t("mergeSelect"))}">` : "") },
       { key: "date", label: "journalColDate", dir: "desc", cell: plan => `<span class="statcell"><span class="tile mute"><ha-icon icon="mdi:clipboard-text-clock-outline"></ha-icon></span><strong>${this.esc(this.formatDate(plan.created_at))}</strong></span>` },
-      { key: "status", label: "sortStatus", dir: "asc", cell: plan => `<span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${statusOf(plan)}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}` },
+      { key: "status", label: "sortStatus", dir: "asc", cell: plan => `<span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${statusOf(plan)}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}${plan.via === "mcp" ? ` <span class="pill mute">${this.t("viaMcp")}</span>` : ""}` },
       ...(this.isDenseList("journal") ? [] : [{ key: "total", label: "journalColActions", dir: "desc", cell: plan => `<span class="jsum">${this.esc(summary(plan))}</span>` }]),
       { key: "follow", label: "journalColFollow", sortable: false, cell: plan => (fuState(plan) ? `<span class="pill ${this.followupTone(fuState(plan))}">${this.t(`fu_${fuState(plan)}`)}</span>` : "–") },
       { key: "act", label: "journalColAct", sortable: false, cell: plan => `<span class="jbtns">${this.planStale(plan) ? `<button type="button" class="btn small" data-plan-renew="${this.esc(plan.plan_id)}" ${this.cleanupBusy ? "disabled" : ""}><ha-icon icon="mdi:refresh"></ha-icon>${this.t("renewPlan")}</button>` : ""}${plan.executed || plan.run ? "" : this.rowMenuHtml([["mdi:delete-outline", "deletePlan", `data-plan-delete="${this.esc(plan.plan_id)}"`]])}</span>` },

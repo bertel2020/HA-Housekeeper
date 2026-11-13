@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"5bb74c0535"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"f343052fbc"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9ab45d75be"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"fcf311f67d"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"a989e15c18"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"0752e4dabc"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"98692cccb1"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"ccf6e77282"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"5d0a1bfdd5"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"cb8c9a1377"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5ee44fcbef"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"6b5aac0cb8"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"42be12290e"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"8c906e80f1"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -14,14 +14,16 @@ function matchLanguage(list, code) {
 
 const languageInfo = code => LANGUAGES.find(l => l.code === code) || LANGUAGES.find(l => l.code === "en");
 
-// A text with its own plural forms: the form of the number (`count`, else `n`), else `other`.
+// A text with its own plural forms: the form of the number (`count`, else `n`, else the first number
+// the text names, like {days}), else `other`.
 // The number may already be formatted ("1.234", "1 234"): only its digits count. Plural texts are for whole numbers.
 function pluralText(forms, lang, vars) {
   let form = "other";
   try {
-    const raw = vars?.count ?? vars?.n;
-    const number = typeof raw === "number" ? raw : Number(String(raw).replace(/[^\d]/g, "") || NaN);
-    form = new Intl.PluralRules(lang).select(number);
+    const toNumber = raw => (typeof raw === "number" ? raw : Number(String(raw).replace(/[^\d]/g, "") || NaN));
+    const named = [...String(forms.other ?? "").matchAll(/\{(\w+)\}/g)].map(m => m[1]);
+    const key = ["count", "n", ...named].find(k => vars && k in vars && !Number.isNaN(toNumber(vars[k])));
+    form = new Intl.PluralRules(lang).select(toNumber(vars?.[key]));
   } catch (_) { /* no number: the general form */ }
   return forms[form] ?? forms.other ?? "";
 }

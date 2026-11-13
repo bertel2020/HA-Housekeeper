@@ -368,6 +368,18 @@ test("the plan runs that the person confirmed, not the one the page shows when t
   assert.deepEqual(calls, [], "a dropped plan does nothing and throws nothing");
 });
 
+test("a plan an agent made says so in the journal list and on its page", () => {
+  const { el } = panel("en");
+  const plan = { plan_id: "a", status: "dry_run", created_at: "2026-10-08T10:00:00+00:00", actions: [], summary: {}, via: "mcp" };
+  el.ensureJournal = () => {};
+  el.journal = [plan];
+  assert.ok(el.planCard(plan).includes("via AI access"), "the page of the plan");
+  assert.ok(el.journalView().includes("via AI access"), "the journal list");
+  el.journal = [{ ...plan, via: null }];
+  assert.ok(!el.planCard({ ...plan, via: null }).includes("via AI access"), "a plan of the panel has no badge");
+  assert.ok(!el.journalView().includes("via AI access"));
+});
+
 test("every view renders without throwing and escapes object names", () => {
   const { el, shadow } = panel("de");
   for (const view of ["overview", "inventory", "findingsNav", "graph"]) {
@@ -8539,6 +8551,9 @@ test("a language is chosen by pattern, plural forms pick by number, and a missin
   assert.deepEqual([1, 3, 5, 21, 1.5].map(count => pluralText(ru, "ru", { count })), ["файл", "файла", "файлов", "файл", "файла (дробное)"]);
   assert.equal(pluralText({ other: "x" }, "en", {}), "x");
   assert.deepEqual(["1 234", "1.021", "2", "5"].map(n => pluralText(ru, "ru", { n })), ["файла", "файл", "файла", "файлов"]); // a formatted number counts by its digits
+  const days = { one: "{days} день", few: "{days} дня", many: "{days} дней", other: "{days} дня" };
+  assert.deepEqual([1, 3, 30].map(n => pluralText(days, "ru", { days: n })), ["{days} день", "{days} дня", "{days} дней"], "the number a text names picks the form when it is not called count or n");
+  assert.equal(pluralText({ one: "{name}: {days} d", other: "{name}: {days} ds" }, "en", { name: "Filter", days: 1 }), "{name}: {days} d", "a placeholder that is no number is skipped");
   const { el } = panel("de");
   el.prefs = { ...el.prefs, language: "nl" };
   assert.equal(el.lang, "de", "a language that is not listed is not used, Home Assistant decides");
