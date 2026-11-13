@@ -25,7 +25,7 @@ function loadCards() {
     fetch: () => new Promise(() => {}),
     Intl, Map, Set, JSON, String, Number, Array, Object, Math, Date, Promise,
   };
-  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
+  vm.runInNewContext(fs.readFileSync(new URL("ha-housekeeper-cards.js", FRONTEND), "utf8") + "\nthis.X = { findEntities, cardVisibility, commonSchema, makeEditor, registerCard, HKCard, HKHealthCard, HKBatteryCard, HKFunctionsCard, HKAutoPauseCard, HKUpdateCard, HKStartCard, sectionSpecs, overviewPlan, CARD_TEXT };", context);
   return { ...context.X, registered, pushed, events, context };
 }
 
@@ -345,4 +345,39 @@ test("the overview card reads its sections from names or entries and opens the o
   assert.equal(health.attention(), 3, "and the tab of the house the objects that need attention");
   battery.hass = { ...hass, states: { ...states, "sensor.weak": { ...states["sensor.weak"], last_updated: "2", attributes: { weakest: [], round: [], low: 0 } } } };
   assert.equal(battery.attention(), 0);
+});
+
+test("the start time card shows the last start against the usual, the bars and the slowest, and keeps to a summary when the start was as usual", () => {
+  const { HKStartCard, registered } = loadCards();
+  assert.ok(registered["ha-housekeeper-start-card"], "the card is registered");
+  const entities = { s: ENTITY("sensor.start", "start_time") };
+  let stamp = 0;
+  const at = minutes => new Date(Date.now() + minutes * 60000).toISOString();
+  const hass = (state, attrs) => ({ language: "de", user: { is_admin: true }, entities, states: { "sensor.start": { state, last_updated: String(++stamp), attributes: attrs } } });
+  const slow = { started_at: at(-25), usual_seconds: 145, change_percent: 33, slower: true, update: true, history: [140, 150, 192.4], slowest: [{ name: "Wetterdienst Alpen", seconds: 48.2, state: "loaded" }, { name: "Hue", seconds: 21, state: "loaded" }, { name: "Heizung", seconds: 0, state: "setup_error" }, { name: "Vierte", seconds: 5, state: "loaded" }] };
+  const card = new HKStartCard();
+  card.setConfig({});
+  card.hass = hass("192.4", slow);
+  const html = () => card.shadowRoot.innerHTML;
+  assert.match(html(), /Letzter Start vor 25 Minuten/);
+  assert.match(html(), /33 % langsamer als sonst/);
+  assert.match(html(), /3 min 12 s[\s\S]*sonst 2 min 25 s/);
+  assert.equal((html().match(/<i class="[a-z]*" style="height/g) || []).length, 3, "a bar for each start");
+  assert.match(html(), /<i class="hi" style="height:100%/, "the last bar is in colour and the longest");
+  assert.match(html(), /Starten am längsten[\s\S]*Wetterdienst Alpen[\s\S]*48 s[\s\S]*Hue[\s\S]*Heizung[\s\S]*nicht geladen/);
+  assert.ok(!html().includes("Vierte"), "three integrations by default");
+  assert.match(html(), /data-hk-panel="view=storage"/);
+  assert.equal(card.attention(), 1);
+  card.setConfig({ slowest: 0, history: "0" });
+  assert.ok(!html().includes("Starten am längsten") && !html().includes('class="hk-bars"'), "the list and the bars can be left out");
+  card.setConfig({});
+  card.hass = hass("138.0", { ...slow, change_percent: -5, slower: false, update: false });
+  assert.match(html(), /2 min 18 s · wie sonst/);
+  assert.ok(!html().includes("Wetterdienst Alpen") && !html().includes('class="hk-bars"'), "as usual: only the summary");
+  assert.equal(card.attention(), 0);
+  card.setConfig({ quiet: "hide" });
+  assert.equal(card.style.display, "none", "as usual and asked to hide");
+  card.setConfig({});
+  card.hass = hass("unknown", {});
+  assert.match(html(), /Noch keine Daten/);
 });

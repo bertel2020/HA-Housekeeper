@@ -249,5 +249,15 @@
   "edit_sections_update": "Po aktualizácii",
   "edit_layout": "Rozloženie",
   "edit_layout_tabs": "Karty",
-  "edit_layout_stacked": "Pod sebou"
+  "edit_layout_stacked": "Pod sebou",
+  "cardStTitle": "Dĺžka štartu",
+  "cardStLast": "Posledný štart {ago}",
+  "cardStUsual": "zvyčajne {usual}",
+  "cardStSlower": "o {n} % pomalší ako zvyčajne",
+  "cardStNormal": "ako zvyčajne",
+  "cardStQuietSub": "{took} · ako zvyčajne",
+  "cardStSlowest": "Najdlhšie sa spúšťajú",
+  "cardStNotLoaded": "nenačítaná",
+  "edit_slowest": "Najpomalšie integrácie",
+  "edit_slowest_help": "0 skryje zoznam."
 }

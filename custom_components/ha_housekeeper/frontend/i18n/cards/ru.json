@@ -268,5 +268,15 @@
   "edit_sections_update": "После обновления",
   "edit_layout": "Расположение",
   "edit_layout_tabs": "Вкладки",
-  "edit_layout_stacked": "Друг под другом"
+  "edit_layout_stacked": "Друг под другом",
+  "cardStTitle": "Длительность запуска",
+  "cardStLast": "Последний запуск {ago}",
+  "cardStUsual": "обычно {usual}",
+  "cardStSlower": "на {n} % медленнее обычного",
+  "cardStNormal": "как обычно",
+  "cardStQuietSub": "{took} · как обычно",
+  "cardStSlowest": "Дольше всего запускаются",
+  "cardStNotLoaded": "не загружена",
+  "edit_slowest": "Самые медленные интеграции",
+  "edit_slowest_help": "0 скрывает список."
 }

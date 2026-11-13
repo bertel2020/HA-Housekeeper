@@ -136,6 +136,9 @@
           "unknown": "Incierto"
         }
       },
+      "start_time": {
+        "name": "Duración del inicio"
+      },
       "new_findings": {
         "name": "Hallazgos nuevos"
       },

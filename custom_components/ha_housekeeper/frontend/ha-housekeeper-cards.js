@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"27b183fbc9"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"d73228eb8c"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"cc8afc584e"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"81c149bb49"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"c9c3945549"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"2b267d1c11"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"fb669638a2"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"54b8dc028a"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"aa2deb01b3"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9205fdeab9"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"cd70478a43"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"0654845e10"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"9967f932fc"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"ac5c9c6076"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -202,6 +202,16 @@ const CARD_TEXT = {
     edit_layout: "Darstellung",
     edit_layout_tabs: "Reiter",
     edit_layout_stacked: "Untereinander",
+    cardStTitle: "Startzeit",
+    cardStLast: "Letzter Start {ago}",
+    cardStUsual: "sonst {usual}",
+    cardStSlower: "{n} % langsamer als sonst",
+    cardStNormal: "wie sonst",
+    cardStQuietSub: "{took} · wie sonst",
+    cardStSlowest: "Starten am längsten",
+    cardStNotLoaded: "nicht geladen",
+    edit_slowest: "Langsamste Integrationen",
+    edit_slowest_help: "0 blendet die Liste aus.",
   },
   en: {
     cardNotFound: "HA Housekeeper was not found. Is the integration set up?",
@@ -375,6 +385,16 @@ const CARD_TEXT = {
     edit_layout: "Layout",
     edit_layout_tabs: "Tabs",
     edit_layout_stacked: "One below the other",
+    cardStTitle: "Start time",
+    cardStLast: "Last start {ago}",
+    cardStUsual: "usually {usual}",
+    cardStSlower: "{n} % slower than usual",
+    cardStNormal: "as usual",
+    cardStQuietSub: "{took} · as usual",
+    cardStSlowest: "Slowest to start",
+    cardStNotLoaded: "not loaded",
+    edit_slowest: "Slowest integrations",
+    edit_slowest_help: "0 hides the list.",
   },
 };
 
@@ -478,6 +498,14 @@ const CARD_CSS = `
   .hk-pane.in + .hk-pane.in { border-top: 1px solid var(--divider-color); }
   .hk-ov.stacked .hk-pane.in:first-child { border-top: 0; }
   @media (max-width: 520px) { .hk-ovtabs { display: none; } .hk-pane.in { display: block; } }
+  .hk-big { padding: 14px 16px 4px; display: flex; align-items: baseline; gap: 10px; }
+  .hk-big b { font-size: 28px; color: var(--primary-text-color); }
+  .hk-big span { color: var(--secondary-text-color); font-size: 13px; }
+  .hk-bars { display: flex; align-items: flex-end; gap: 6px; height: 76px; padding: 6px 16px 12px; }
+  .hk-bars i { flex: 1; background: var(--primary-color); opacity: .6; border-radius: 4px 4px 0 0; }
+  .hk-bars i.now { opacity: 1; }
+  .hk-bars i.hi { background: var(--warning-color); opacity: 1; }
+  .hk-right b.warnt { color: var(--warning-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;
 
@@ -1193,6 +1221,62 @@ class HKUpdateCard extends HKCard {
   }
 }
 
+// The start time card: how long the last start of Home Assistant took against the usual, the last starts as bars and
+// the integrations that took longest. The figures are those of the start page of the panel; they come from the
+// sensor "start time" and its attributes.
+class HKStartCard extends HKCard {
+  static tag = "ha-housekeeper-start-card";
+  static pickerName = "HA Housekeeper: Start time";
+  static pickerDescription = "How long the last start took against the usual, the last starts and the integrations that took longest.";
+  static get defaults() { return { history: "14", slowest: 3 }; }
+
+  static editorSchema(t) {
+    return [
+      { name: "history", selector: { select: { mode: "dropdown", options: ["14", "30", "7", "0"].map(value => ({ value, label: t(`edit_history_${value}`) })) } } },
+      { name: "slowest", selector: { number: { min: 0, max: 10, mode: "box" } } },
+    ];
+  }
+
+  get titleKey() { return "cardStTitle"; }
+  watchedIds() { return [this.idOf("start_time")].filter(Boolean); }
+  data() { return this.stateOf("start_time")?.attributes || {}; }
+  seconds() { const value = Number(this.stateOf("start_time")?.state); return Number.isFinite(value) ? value : null; }
+  hasData() { return this.seconds() !== null; }
+  attention() { return this.hasData() && this.data().slower ? 1 : 0; }
+  // Quiet is: the start took about as long as usual.
+  isQuiet() { return this.hasData() && !this.data().slower; }
+
+  duration(seconds) {
+    const total = Math.round(seconds), m = Math.floor(total / 60), s = total % 60;
+    return m ? this.t("cardDurMin", { m, s }) : this.t("cardDurSec", { s });
+  }
+
+  // The last starts as bars, the last one in colour; the height is the share of the longest start shown.
+  bars(history, slower) {
+    const count = Number(this._config.history);
+    if (!count || !Array.isArray(history) || history.length < 2) return "";
+    const rows = history.slice(-count), top = Math.max(...rows, 1);
+    return `<div class="hk-bars">${rows.map((value, i) => `<i class="${i === rows.length - 1 ? (slower ? "hi" : "now") : ""}" style="height:${Math.max(6, Math.round((value / top) * 100))}%"></i>`).join("")}</div>`;
+  }
+
+  slowestHtml(list) {
+    const rows = (list || []).slice(0, Number(this._config.slowest) || 0);
+    if (!rows.length) return "";
+    return `<div class="hk-sec top">${this.esc(this.t("cardStSlowest"))}</div>${rows.map(item => `<div class="hk-row r2"><div class="hk-name"><b>${this.esc(item.name)}</b>${item.state && item.state !== "loaded" ? `<small>${this.esc(this.t("cardStNotLoaded"))}</small>` : ""}</div><div class="hk-right"><b class="${item === rows[0] && this.data().slower ? "warnt" : ""}">${this.esc(this.duration(item.seconds))}</b></div></div>`).join("")}`;
+  }
+
+  renderBody() {
+    const data = this.data(), seconds = this.seconds(), ago = this.ago(data.started_at);
+    const sub = ago ? this.t("cardStLast", { ago }) : "";
+    if (this.isQuiet()) {
+      return this.head(this.t("cardStQuietSub", { took: this.duration(seconds) }), `<span class="hk-chip">${this.esc(this.t("cardStNormal"))}</span>`) + this.foot("", "view=storage");
+    }
+    const chip = data.change_percent != null ? `<span class="hk-chip warn">${this.esc(this.t("cardStSlower", { n: data.change_percent }))}</span>` : "";
+    const usual = data.usual_seconds != null ? `<span>${this.esc(this.t("cardStUsual", { usual: this.duration(data.usual_seconds) }))}</span>` : "";
+    return this.head(sub, chip, true) + `<div class="hk-big"><b>${this.esc(this.duration(seconds))}</b>${usual}</div>` + this.bars(data.history, data.slower) + this.slowestHtml(data.slowest) + this.foot("", "view=storage");
+  }
+}
+
 // The overview card: the cards of this integration as the sections of one card, in tabs or one below the other.
 // It has no logic of its own: each section is the card itself, kept alive and given the same hass, so a section looks
 // and acts exactly like the single card. A tab shows how many things in its section call for a look.
@@ -1317,4 +1401,5 @@ registerCard(HKBatteryCard);
 registerCard(HKFunctionsCard);
 registerCard(HKAutoPauseCard);
 registerCard(HKUpdateCard);
+registerCard(HKStartCard);
 registerCard(HKOverviewCard);

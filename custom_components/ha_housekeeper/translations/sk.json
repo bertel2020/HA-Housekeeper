@@ -136,6 +136,9 @@
           "unknown": "Neisté"
         }
       },
+      "start_time": {
+        "name": "Dĺžka štartu"
+      },
       "new_findings": {
         "name": "Nové nálezy"
       },

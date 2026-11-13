@@ -230,5 +230,15 @@
   "edit_sections_update": "Depois da atualização",
   "edit_layout": "Disposição",
   "edit_layout_tabs": "Separadores",
-  "edit_layout_stacked": "Uma por baixo da outra"
+  "edit_layout_stacked": "Uma por baixo da outra",
+  "cardStTitle": "Duração do arranque",
+  "cardStLast": "Último arranque {ago}",
+  "cardStUsual": "normalmente {usual}",
+  "cardStSlower": "{n} % mais lento do que o habitual",
+  "cardStNormal": "como de costume",
+  "cardStQuietSub": "{took} · como de costume",
+  "cardStSlowest": "As mais lentas a arrancar",
+  "cardStNotLoaded": "não carregada",
+  "edit_slowest": "Integrações mais lentas",
+  "edit_slowest_help": "0 oculta a lista."
 }

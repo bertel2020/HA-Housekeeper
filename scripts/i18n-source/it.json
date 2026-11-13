@@ -6865,7 +6865,8 @@
 "entity.sensor.update_watch.state.stable": "fa67303a",
 "entity.sensor.update_watch.state.transient": "9fd9dc0d",
 "entity.sensor.update_watch.state.worse": "255e0ffe",
-"entity.sensor.update_watch.state.unknown": "dca5fa43"
+"entity.sensor.update_watch.state.unknown": "dca5fa43",
+"entity.sensor.start_time.name": "babe9dda"
 },
 "cards": {
 "cardNotFound": "dee6374c",
@@ -7042,6 +7043,16 @@
 "edit_sections_update": "1e354c3c",
 "edit_layout": "a5119091",
 "edit_layout_tabs": "8e5ea509",
-"edit_layout_stacked": "db803576"
+"edit_layout_stacked": "db803576",
+"cardStTitle": "babe9dda",
+"cardStLast": "41bd6dc6",
+"cardStUsual": "0edc6a58",
+"cardStSlower": "344cdb0b",
+"cardStNormal": "1043c0bd",
+"cardStQuietSub": "f7d4bdf5",
+"cardStSlowest": "c04fead0",
+"cardStNotLoaded": "df5c0f50",
+"edit_slowest": "74d13500",
+"edit_slowest_help": "ca4504a4"
 }
 }

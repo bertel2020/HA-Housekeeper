@@ -98,5 +98,13 @@ const CARD_CSS = `
   .hk-pane.in + .hk-pane.in { border-top: 1px solid var(--divider-color); }
   .hk-ov.stacked .hk-pane.in:first-child { border-top: 0; }
   @media (max-width: 520px) { .hk-ovtabs { display: none; } .hk-pane.in { display: block; } }
+  .hk-big { padding: 14px 16px 4px; display: flex; align-items: baseline; gap: 10px; }
+  .hk-big b { font-size: 28px; color: var(--primary-text-color); }
+  .hk-big span { color: var(--secondary-text-color); font-size: 13px; }
+  .hk-bars { display: flex; align-items: flex-end; gap: 6px; height: 76px; padding: 6px 16px 12px; }
+  .hk-bars i { flex: 1; background: var(--primary-color); opacity: .6; border-radius: 4px 4px 0 0; }
+  .hk-bars i.now { opacity: 1; }
+  .hk-bars i.hi { background: var(--warning-color); opacity: 1; }
+  .hk-right b.warnt { color: var(--warning-color); }
   .hk-banner { padding: 8px 16px; font-size: 12.5px; color: var(--secondary-text-color); background: var(--secondary-background-color); border-bottom: 1px dashed var(--divider-color); }
 `;

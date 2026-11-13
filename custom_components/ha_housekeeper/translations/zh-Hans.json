@@ -136,6 +136,9 @@
           "unknown": "不确定"
         }
       },
+      "start_time": {
+        "name": "启动用时"
+      },
       "new_findings": {
         "name": "新发现项"
       },

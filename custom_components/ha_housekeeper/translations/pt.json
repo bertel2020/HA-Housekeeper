@@ -136,6 +136,9 @@
           "unknown": "Incerto"
         }
       },
+      "start_time": {
+        "name": "Duração do arranque"
+      },
       "new_findings": {
         "name": "Novas ocorrências"
       },

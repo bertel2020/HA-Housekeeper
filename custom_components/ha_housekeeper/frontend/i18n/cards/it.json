@@ -230,5 +230,15 @@
   "edit_sections_update": "Dopo l’aggiornamento",
   "edit_layout": "Disposizione",
   "edit_layout_tabs": "Schede",
-  "edit_layout_stacked": "Una sotto l’altra"
+  "edit_layout_stacked": "Una sotto l’altra",
+  "cardStTitle": "Durata dell’avvio",
+  "cardStLast": "Ultimo avvio {ago}",
+  "cardStUsual": "di solito {usual}",
+  "cardStSlower": "{n} % più lento del solito",
+  "cardStNormal": "come al solito",
+  "cardStQuietSub": "{took} · come al solito",
+  "cardStSlowest": "Le più lente ad avviarsi",
+  "cardStNotLoaded": "non caricata",
+  "edit_slowest": "Integrazioni più lente",
+  "edit_slowest_help": "0 nasconde l’elenco."
 }

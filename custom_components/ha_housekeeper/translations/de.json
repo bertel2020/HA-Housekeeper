@@ -136,6 +136,9 @@
           "unknown": "Nicht sicher"
         }
       },
+      "start_time": {
+        "name": "Startdauer"
+      },
       "new_findings": {
         "name": "Neue Befunde"
       },

@@ -136,6 +136,9 @@
           "unknown": "Incerto"
         }
       },
+      "start_time": {
+        "name": "Durata dell’avvio"
+      },
       "new_findings": {
         "name": "Nuovi rilevamenti"
       },

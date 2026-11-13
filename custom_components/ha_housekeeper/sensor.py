@@ -13,7 +13,7 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, EntityCategory
+from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
@@ -37,6 +37,7 @@ from .outage_levels import is_quiet
 from .runtime import HousekeeperConfigEntry
 from .scan_coverage import gaps
 from .scan_health import STATES
+from .start_card import start_view
 from .update_card import STATES as UPDATE_STATES
 from .update_card import update_view
 
@@ -143,6 +144,15 @@ UPDATE_WATCH_DESCRIPTION = SensorEntityDescription(
 )
 
 
+START_TIME_DESCRIPTION = SensorEntityDescription(
+    key="start_time",
+    translation_key="start_time",
+    device_class=SensorDeviceClass.DURATION,
+    native_unit_of_measurement=UnitOfTime.SECONDS,
+    suggested_display_precision=0,
+)
+
+
 ACTIVITY_DESCRIPTION = SensorEntityDescription(
     key="activity",
     translation_key="activity",
@@ -182,6 +192,7 @@ async def async_setup_entry(
             BatteryNextChangeSensor(entry, BATTERY_NEXT_DESCRIPTION),
             AutoPauseSensor(entry, AUTO_PAUSE_DESCRIPTION),
             UpdateWatchSensor(entry, UPDATE_WATCH_DESCRIPTION),
+            StartTimeSensor(entry, START_TIME_DESCRIPTION),
         ]
     )
     scanner = entry.runtime_data
@@ -324,6 +335,23 @@ class AutoPauseSensor(HousekeeperSensor):
             return
         view = scanner.auto_pause.card_view()
         self._attr_native_value = len(view["paused"])
+        self._attr_extra_state_attributes = view
+
+
+class StartTimeSensor(HousekeeperSensor):
+    """How long the last start of Home Assistant took, for the card; usual time, strip and slowest integrations as attributes.
+
+    Changes once per start. The attributes stay out of the recorder.
+    """
+
+    _unrecorded_attributes = frozenset(
+        {"started_at", "update", "usual_seconds", "change_percent", "slower", "history", "slowest"}
+    )
+
+    def _update(self) -> None:
+        scanner = self.scanner
+        view = start_view(scanner.starts.starts) if scanner else {}
+        self._attr_native_value = view.pop("state", None)
         self._attr_extra_state_attributes = view
 
 

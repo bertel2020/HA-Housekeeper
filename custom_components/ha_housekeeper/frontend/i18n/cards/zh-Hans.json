@@ -211,5 +211,15 @@
   "edit_sections_update": "更新之后",
   "edit_layout": "布局",
   "edit_layout_tabs": "标签页",
-  "edit_layout_stacked": "上下排列"
+  "edit_layout_stacked": "上下排列",
+  "cardStTitle": "启动用时",
+  "cardStLast": "上次启动 {ago}",
+  "cardStUsual": "通常 {usual}",
+  "cardStSlower": "比平时慢 {n} %",
+  "cardStNormal": "一如既往",
+  "cardStQuietSub": "{took} · 一如既往",
+  "cardStSlowest": "启动最慢",
+  "cardStNotLoaded": "未加载",
+  "edit_slowest": "最慢的集成",
+  "edit_slowest_help": "0 表示隐藏列表。"
 }
