@@ -51,6 +51,15 @@ def test_the_mode_is_on_in_its_grace_period_off_or_without_a_switch() -> None:
     assert vacation_view({**META, "active": False}, NOW)["state"] == "off"
     assert vacation_view(None, NOW) == {"state": "unset"}
 
+    ended = (NOW - timedelta(hours=5)).isoformat()
+    quiet_after = vacation_view({**META, "active": False, "held": 0, "ended_at": ended}, NOW)
+    assert quiet_after["state"] == "after", (
+        "the grace period runs from the end, with nothing held back"
+    )
+    assert quiet_after["after_until"] == (NOW + timedelta(hours=19)).isoformat()
+    long_ago = (NOW - timedelta(days=3)).isoformat()
+    assert vacation_view({**META, "active": False, "ended_at": long_ago}, NOW)["state"] == "off"
+
 
 @pytest.fixture(autouse=True)
 def _enable_custom_integrations(enable_custom_integrations: None) -> None:

@@ -15,11 +15,12 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfInformation, UnitOfTime
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_point_in_utc_time
 from homeassistant.util import dt as dt_util
 
 from .backup_card import STATES as BACKUP_STATES
@@ -492,9 +493,20 @@ class VacationSensor(HousekeeperSensor):
         {"entity", "held", "rules", "grace_hours", "after_until", "ended_at", "missing"}
     )
 
+    _grace_timer: CALLBACK_TYPE | None = None
+
+    async def async_will_remove_from_hass(self) -> None:
+        self._stop_timer()
+
+    def _stop_timer(self) -> None:
+        if self._grace_timer is not None:
+            self._grace_timer()
+            self._grace_timer = None
+
     def _update(self) -> None:
         scanner = self.scanner
         snapshot = scanner.snapshot if scanner else None
+        self._stop_timer()
         if snapshot is None or snapshot["meta"].get("preliminary"):
             self._attr_native_value = None
             self._attr_extra_state_attributes = {}
@@ -502,6 +514,13 @@ class VacationSensor(HousekeeperSensor):
         view = vacation_view(snapshot["meta"].get("vacation"), dt_util.utcnow())
         self._attr_native_value = view.pop("state")
         self._attr_extra_state_attributes = view
+        # The grace period ends by itself, without a scan: the sensor looks again when it is over.
+        if self._attr_native_value == "after" and view.get("after_until") and self.hass:
+            self._grace_timer = async_track_point_in_utc_time(
+                self.hass,
+                lambda _now: self._handle_update(),
+                datetime.fromisoformat(view["after_until"]),
+            )
 
 
 class UpdateWatchSensor(HousekeeperSensor):
