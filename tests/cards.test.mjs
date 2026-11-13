@@ -481,6 +481,11 @@ test("the vacation card shows only while the mode is on, reads the period from a
   assert.match(html(), /Ausnahmeregeln zur Abwesenheit sind aktiv \(3\)/);
   assert.match(html(), /data-hk-panel="view=exceptions"/);
   assert.ok(!html().includes("data-hk-act"), "no switch on the card");
+  card.hass = hass("on", base, { start_time: day(-3), end_time: day(12), all_day: true });
+  const lastDay = new Date(Date.now() + 11 * 86400e3);
+  const fmt = date => new Intl.DateTimeFormat("de", { day: "numeric", month: "short" }).format(date);
+  assert.ok(html().includes(`bis ${fmt(lastDay)}`), "an all-day event ends the day before its exclusive end");
+  assert.match(html(), /noch 12 Tage/, "the days left still run to the end of that last day");
   card.hass = hass("on", { ...base, entity: "input_boolean.urlaub" });
   assert.ok(!html().includes("Seit"), "a helper has no period");
   assert.match(html(), /Stumm gehalten/);

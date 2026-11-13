@@ -1353,6 +1353,14 @@ class HKVacationCard extends HKCard {
     try { return new Intl.DateTimeFormat(this.lang, { day: "numeric", month: "short" }).format(date); } catch (_) { return date.toDateString(); }
   }
 
+  // The end of a calendar event as the last day of the absence: an all-day event ends at midnight of the day after it.
+  lastDay(end, allDay) {
+    if (!end || !allDay || end.getHours() || end.getMinutes() || end.getSeconds()) return end;
+    const day = new Date(end);
+    day.setDate(day.getDate() - 1);
+    return day;
+  }
+
   fact(label, value, sub) {
     return `<div class="hk-fact"><div class="l">${this.esc(label)}</div><div class="v">${this.esc(value)}</div>${sub ? `<div class="s">${this.esc(sub)}</div>` : ""}</div>`;
   }
@@ -1381,7 +1389,8 @@ class HKVacationCard extends HKCard {
       chip = this.t("cardVaChipAfter");
     } else {
       if (this._config.source && src.name) sub = this.t(src.calendar ? "cardVaSourceCal" : "cardVaSource", { name: src.name });
-      chip = until ? this.t("cardVaChipUntil", { date: this.day(until) }) : this.t("cardVaChipOn");
+      const last = this.lastDay(until, attrs.all_day);
+      chip = last ? this.t("cardVaChipUntil", { date: this.day(last) }) : this.t("cardVaChipOn");
     }
     const rules = data.rules && this._config.numbers
       ? `<div class="hk-note">${this.esc(this.t("cardVaRules", { n: data.rules }))} <small>${this.esc(this.t("cardVaRestore"))}</small></div>` : "";
