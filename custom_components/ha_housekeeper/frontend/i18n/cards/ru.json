@@ -378,5 +378,13 @@
   "cardVaHidden": "Эта карточка скрыта, пока нет режима отпуска. Здесь, в редакторе, ты её всё равно видишь.",
   "edit_numbers": "Показывать числа",
   "edit_numbers_help": "Приглушено, отсрочка и правила-исключения.",
-  "edit_source": "Называть источник"
+  "edit_source": "Называть источник",
+  "cardOvStart": "Длительность запуска",
+  "edit_sections_start": "Длительность запуска",
+  "cardOvDatabase": "База данных",
+  "edit_sections_database": "База данных",
+  "cardOvBackup": "Резервная копия",
+  "edit_sections_backup": "Резервная копия",
+  "cardOvVacation": "Режим отпуска",
+  "edit_sections_vacation": "Режим отпуска"
 }

@@ -329,6 +329,7 @@ test("the overview card reads its sections from names or entries and opens the o
   const specs = sectionSpecs(["health", { type: "batteries", rows: 3 }, "nonsense", "health", { type: "update", tap: "panel" }], { tap: "none" });
   assert.equal(JSON.stringify(specs), JSON.stringify([{ key: "health", config: { tap: "none" } }, { key: "batteries", config: { tap: "none", rows: 3 } }, { key: "update", config: { tap: "panel" } }]), "unknown and repeated names are left out, an entry overrides what all sections get");
   assert.equal(JSON.stringify(sectionSpecs(undefined, {})), "[]");
+  assert.equal(JSON.stringify(sectionSpecs(["backup", "start", "database", "vacation"], { quiet: "summary" }).map(x => [x.key, x.config.quiet])), JSON.stringify([["backup", "summary"], ["start", "summary"], ["database", "summary"], ["vacation", "hide"]]), "the new sections are known; the vacation card stays hidden while there is no vacation mode");
   const plan = (hidden, attention, picked) => JSON.parse(JSON.stringify(overviewPlan(["a", "b", "c"], new Set(hidden), attention, picked)));
   assert.deepEqual(plan(["b"], { a: 0, c: 2 }), { shown: ["a", "c"], open: "c" }, "the first section with something to look at opens");
   assert.deepEqual(plan([], { a: 0, b: 0, c: 0 }), { shown: ["a", "b", "c"], open: "a" }, "nothing to look at: the first");

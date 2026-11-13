@@ -502,7 +502,7 @@ Die Karten lesen diese Sensoren des Housekeeper-Geräts: **Zustand des Hauses**,
 
 ### Die Überblick-Karte
 
-`sections` nennt die Karten, die zu Abschnitten werden, in der Reihenfolge, die du angibst: `health`, `batteries`, `functions`, `auto_pause`, `update`. Ein Eintrag ist ein Name oder, um Optionen dieser Karte zu setzen, ein Eintrag mit ihren Optionen:
+`sections` nennt die Karten, die zu Abschnitten werden, in der Reihenfolge, die du angibst: `health`, `batteries`, `functions`, `auto_pause`, `update` (diese fünf sind der Standard), `backup`, `start`, `database`, `vacation`. Der Abschnitt „vacation“ erscheint nur, solange der Urlaubsmodus an ist. Ein Eintrag ist ein Name oder, um Optionen dieser Karte zu setzen, ein Eintrag mit ihren Optionen:
 
 ```yaml
 type: custom:ha-housekeeper-overview-card

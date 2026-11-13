@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit cards-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"0feec746c8"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fadbc5eaf3"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d3e1992d2f"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7d6883ac05"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"e98b4eb01d"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"83c91ef60a"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"0ccb63669b"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"5bb74c0535"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"f343052fbc"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9ab45d75be"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"fcf311f67d"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"a989e15c18"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"0752e4dabc"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"98692cccb1"}];
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -190,6 +190,10 @@ const CARD_TEXT = {
     cardOvFunctions: "Funktionen",
     cardOvAutoPause: "Auto-Pause",
     cardOvUpdate: "Update",
+    cardOvStart: "Startzeit",
+    cardOvDatabase: "Datenbank",
+    cardOvBackup: "Backup",
+    cardOvVacation: "Urlaubsmodus",
     cardOvTabs: "Abschnitte",
     cardOvNone: "Keine Abschnitte gewählt.",
     edit_sections: "Abschnitte",
@@ -199,6 +203,10 @@ const CARD_TEXT = {
     edit_sections_functions: "Hausfunktionen",
     edit_sections_auto_pause: "Pausierte Integrationen",
     edit_sections_update: "Nach dem Update",
+    edit_sections_start: "Startzeit",
+    edit_sections_database: "Datenbank",
+    edit_sections_backup: "Backup",
+    edit_sections_vacation: "Urlaubsmodus",
     edit_layout: "Darstellung",
     edit_layout_tabs: "Reiter",
     edit_layout_stacked: "Untereinander",
@@ -443,6 +451,10 @@ const CARD_TEXT = {
     cardOvFunctions: "Functions",
     cardOvAutoPause: "Auto-pause",
     cardOvUpdate: "Update",
+    cardOvStart: "Start time",
+    cardOvDatabase: "Database",
+    cardOvBackup: "Backup",
+    cardOvVacation: "Vacation mode",
     cardOvTabs: "Sections",
     cardOvNone: "No sections chosen.",
     edit_sections: "Sections",
@@ -452,6 +464,10 @@ const CARD_TEXT = {
     edit_sections_functions: "Home functions",
     edit_sections_auto_pause: "Paused integrations",
     edit_sections_update: "After the update",
+    edit_sections_start: "Start time",
+    edit_sections_database: "Database",
+    edit_sections_backup: "Backup",
+    edit_sections_vacation: "Vacation mode",
     edit_layout: "Layout",
     edit_layout_tabs: "Tabs",
     edit_layout_stacked: "One below the other",
@@ -1592,9 +1608,11 @@ class HKDatabaseCard extends HKCard {
 // The overview card: the cards of this integration as the sections of one card, in tabs or one below the other.
 // It has no logic of its own: each section is the card itself, kept alive and given the same hass, so a section looks
 // and acts exactly like the single card. A tab shows how many things in its section call for a look.
-const HK_SECTION_KEYS = ["health", "batteries", "functions", "auto_pause", "update"];
-const HK_SECTION_LABELS = { health: "cardOvHealth", batteries: "cardOvBatteries", functions: "cardOvFunctions", auto_pause: "cardOvAutoPause", update: "cardOvUpdate" };
-const hkSectionClass = key => ({ health: HKHealthCard, batteries: HKBatteryCard, functions: HKFunctionsCard, auto_pause: HKAutoPauseCard, update: HKUpdateCard })[key];
+// The first five are the default; the others are chosen in the editor or in YAML.
+const HK_SECTION_KEYS = ["health", "batteries", "functions", "auto_pause", "update", "backup", "start", "database", "vacation"];
+const HK_SECTION_DEFAULT = ["health", "batteries", "functions", "auto_pause", "update"];
+const HK_SECTION_LABELS = { health: "cardOvHealth", batteries: "cardOvBatteries", functions: "cardOvFunctions", auto_pause: "cardOvAutoPause", update: "cardOvUpdate", backup: "cardOvBackup", start: "cardOvStart", database: "cardOvDatabase", vacation: "cardOvVacation" };
+const hkSectionClass = key => ({ health: HKHealthCard, batteries: HKBatteryCard, functions: HKFunctionsCard, auto_pause: HKAutoPauseCard, update: HKUpdateCard, backup: HKBackupCard, start: HKStartCard, database: HKDatabaseCard, vacation: HKVacationCard })[key];
 
 // The sections of the configuration: a name ("batteries") or an entry with the options of that card
 // ({ type: "batteries", rows: 3 }). An unknown name and a repeated one are left out. `common` is what every
@@ -1607,7 +1625,8 @@ function sectionSpecs(sections, common) {
     if (!HK_SECTION_KEYS.includes(key) || seen.has(key)) continue;
     seen.add(key);
     const { type, ...options } = spec;
-    out.push({ key, config: { ...common, ...options } });
+    // The vacation card is there only while the mode is on, whatever the rest of the sections do when quiet.
+    out.push({ key, config: { ...common, ...(key === "vacation" ? { quiet: "hide" } : {}), ...options } });
   }
   return out;
 }
@@ -1622,8 +1641,8 @@ function overviewPlan(keys, hidden, attention, picked) {
 class HKOverviewCard extends HKCard {
   static tag = "ha-housekeeper-overview-card";
   static pickerName = "HA Housekeeper: Overview";
-  static pickerDescription = "The health of the house, batteries, home functions, auto-pause and what changed after an update in one card, in tabs.";
-  static get defaults() { return { sections: [...HK_SECTION_KEYS], layout: "tabs" }; }
+  static pickerDescription = "The health of the house, batteries, home functions, auto-pause, the update, backup, start time, database and vacation mode in one card, in tabs.";
+  static get defaults() { return { sections: [...HK_SECTION_DEFAULT], layout: "tabs" }; }
 
   static editorSchema(t) {
     return [

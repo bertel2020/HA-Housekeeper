@@ -353,5 +353,13 @@
   "cardVaHidden": "Táto karta je skrytá, kým nie je režim dovolenky. Tu v editore ju aj tak vidíš.",
   "edit_numbers": "Zobraziť čísla",
   "edit_numbers_help": "Stlmené, odklad a pravidlá výnimiek.",
-  "edit_source": "Uviesť zdroj"
+  "edit_source": "Uviesť zdroj",
+  "cardOvStart": "Dĺžka štartu",
+  "edit_sections_start": "Dĺžka štartu",
+  "cardOvDatabase": "Databáza",
+  "edit_sections_database": "Databáza",
+  "cardOvBackup": "Záloha",
+  "edit_sections_backup": "Záloha",
+  "cardOvVacation": "Režim dovolenky",
+  "edit_sections_vacation": "Režim dovolenky"
 }

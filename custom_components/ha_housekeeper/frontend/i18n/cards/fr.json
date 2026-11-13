@@ -328,5 +328,13 @@
   "cardVaHidden": "Cette carte est masquée tant qu'il n'y a pas de mode vacances. Ici, dans l'éditeur, tu la vois quand même.",
   "edit_numbers": "Afficher les chiffres",
   "edit_numbers_help": "Mis en sourdine, délai de grâce et règles d'exception.",
-  "edit_source": "Indiquer la source"
+  "edit_source": "Indiquer la source",
+  "cardOvStart": "Durée du démarrage",
+  "edit_sections_start": "Durée du démarrage",
+  "cardOvDatabase": "Base de données",
+  "edit_sections_database": "Base de données",
+  "cardOvBackup": "Sauvegarde",
+  "edit_sections_backup": "Sauvegarde",
+  "cardOvVacation": "Mode vacances",
+  "edit_sections_vacation": "Mode vacances"
 }

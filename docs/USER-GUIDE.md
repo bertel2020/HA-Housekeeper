@@ -501,7 +501,7 @@ The cards read these sensors of the Housekeeper device: **House health**, **Weak
 
 ### The overview card
 
-`sections` names the cards that become sections, in the order you give: `health`, `batteries`, `functions`, `auto_pause`, `update`. An entry is a name or, to set options for that card, an entry with its options:
+`sections` names the cards that become sections, in the order you give: `health`, `batteries`, `functions`, `auto_pause`, `update` (these five are the default), `backup`, `start`, `database`, `vacation`. The vacation section shows only while the vacation mode is on. An entry is a name or, to set options for that card, an entry with its options:
 
 ```yaml
 type: custom:ha-housekeeper-overview-card

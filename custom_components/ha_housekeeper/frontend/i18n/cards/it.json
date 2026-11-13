@@ -328,5 +328,13 @@
   "cardVaHidden": "Questa scheda è nascosta finché non c'è la modalità vacanza. Qui nell'editor la vedi comunque.",
   "edit_numbers": "Mostra i numeri",
   "edit_numbers_help": "Messi in silenzio, periodo di tolleranza e regole di eccezione.",
-  "edit_source": "Indica la fonte"
+  "edit_source": "Indica la fonte",
+  "cardOvStart": "Durata dell’avvio",
+  "edit_sections_start": "Durata dell’avvio",
+  "cardOvDatabase": "Database",
+  "edit_sections_database": "Database",
+  "cardOvBackup": "Backup",
+  "edit_sections_backup": "Backup",
+  "cardOvVacation": "Modalità vacanza",
+  "edit_sections_vacation": "Modalità vacanza"
 }

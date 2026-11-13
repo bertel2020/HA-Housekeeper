@@ -328,5 +328,13 @@
   "cardVaHidden": "Este cartão fica oculto enquanto não houver modo de férias. Aqui no editor continuas a vê-lo.",
   "edit_numbers": "Mostrar os números",
   "edit_numbers_help": "Silenciadas, período de tolerância e regras de exceção.",
-  "edit_source": "Indicar a origem"
+  "edit_source": "Indicar a origem",
+  "cardOvStart": "Duração do arranque",
+  "edit_sections_start": "Duração do arranque",
+  "cardOvDatabase": "Base de dados",
+  "edit_sections_database": "Base de dados",
+  "cardOvBackup": "Cópia de segurança",
+  "edit_sections_backup": "Cópia de segurança",
+  "cardOvVacation": "Modo de férias",
+  "edit_sections_vacation": "Modo de férias"
 }

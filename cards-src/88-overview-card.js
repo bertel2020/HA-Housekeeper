@@ -1,9 +1,11 @@
 // The overview card: the cards of this integration as the sections of one card, in tabs or one below the other.
 // It has no logic of its own: each section is the card itself, kept alive and given the same hass, so a section looks
 // and acts exactly like the single card. A tab shows how many things in its section call for a look.
-const HK_SECTION_KEYS = ["health", "batteries", "functions", "auto_pause", "update"];
-const HK_SECTION_LABELS = { health: "cardOvHealth", batteries: "cardOvBatteries", functions: "cardOvFunctions", auto_pause: "cardOvAutoPause", update: "cardOvUpdate" };
-const hkSectionClass = key => ({ health: HKHealthCard, batteries: HKBatteryCard, functions: HKFunctionsCard, auto_pause: HKAutoPauseCard, update: HKUpdateCard })[key];
+// The first five are the default; the others are chosen in the editor or in YAML.
+const HK_SECTION_KEYS = ["health", "batteries", "functions", "auto_pause", "update", "backup", "start", "database", "vacation"];
+const HK_SECTION_DEFAULT = ["health", "batteries", "functions", "auto_pause", "update"];
+const HK_SECTION_LABELS = { health: "cardOvHealth", batteries: "cardOvBatteries", functions: "cardOvFunctions", auto_pause: "cardOvAutoPause", update: "cardOvUpdate", backup: "cardOvBackup", start: "cardOvStart", database: "cardOvDatabase", vacation: "cardOvVacation" };
+const hkSectionClass = key => ({ health: HKHealthCard, batteries: HKBatteryCard, functions: HKFunctionsCard, auto_pause: HKAutoPauseCard, update: HKUpdateCard, backup: HKBackupCard, start: HKStartCard, database: HKDatabaseCard, vacation: HKVacationCard })[key];
 
 // The sections of the configuration: a name ("batteries") or an entry with the options of that card
 // ({ type: "batteries", rows: 3 }). An unknown name and a repeated one are left out. `common` is what every
@@ -16,7 +18,8 @@ function sectionSpecs(sections, common) {
     if (!HK_SECTION_KEYS.includes(key) || seen.has(key)) continue;
     seen.add(key);
     const { type, ...options } = spec;
-    out.push({ key, config: { ...common, ...options } });
+    // The vacation card is there only while the mode is on, whatever the rest of the sections do when quiet.
+    out.push({ key, config: { ...common, ...(key === "vacation" ? { quiet: "hide" } : {}), ...options } });
   }
   return out;
 }
@@ -31,8 +34,8 @@ function overviewPlan(keys, hidden, attention, picked) {
 class HKOverviewCard extends HKCard {
   static tag = "ha-housekeeper-overview-card";
   static pickerName = "HA Housekeeper: Overview";
-  static pickerDescription = "The health of the house, batteries, home functions, auto-pause and what changed after an update in one card, in tabs.";
-  static get defaults() { return { sections: [...HK_SECTION_KEYS], layout: "tabs" }; }
+  static pickerDescription = "The health of the house, batteries, home functions, auto-pause, the update, backup, start time, database and vacation mode in one card, in tabs.";
+  static get defaults() { return { sections: [...HK_SECTION_DEFAULT], layout: "tabs" }; }
 
   static editorSchema(t) {
     return [
