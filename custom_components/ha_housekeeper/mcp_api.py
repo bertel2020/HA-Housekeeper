@@ -175,15 +175,16 @@ AUDIT_SCHEMA = vol.Schema(
 
 
 def withheld(scanner: InventoryScanner) -> set[str]:
-    """Ids of the entities that are not given out: locks, alarms, cameras, people and the like.
+    """Ids of what is not given out: locks, alarms, cameras, people and the like, and their devices.
 
     A model in the cloud would read their names and states; the setting keeps them out of every answer.
+    A device that holds such an entity goes too: its name, make and model say as much.
     """
     snapshot = scanner.snapshot
     if snapshot is None or not scanner.mcp.hide_sensitive:
         return set()
-    return {
-        item["object_id"]
+    entities = [
+        item
         for item in snapshot["objects"]
         if item["object_type"] == "entity"
         and (
@@ -193,7 +194,20 @@ def withheld(scanner: InventoryScanner) -> set[str]:
                 and item.get("device_class") in SENSITIVE_COVERS
             )
         )
+    ]
+    return {item["object_id"] for item in entities} | {
+        item["device_id"] for item in entities if item.get("device_id")
     }
+
+
+def is_withheld_ref(scanner: InventoryScanner, ref: Any, skip: set[str]) -> bool:
+    """Whether an id a caller names is kept back: a withheld object, or any id of a sensitive domain.
+
+    An entity that no longer exists has no object, but a lock that is gone still must not be named.
+    """
+    if not scanner.mcp.hide_sensitive or not isinstance(ref, str):
+        return False
+    return ref in skip or ref.partition(".")[0] in SENSITIVE_DOMAINS
 
 
 def finding_filter(scanner: InventoryScanner, skip: set[str]) -> Callable[[dict[str, Any]], bool]:
@@ -406,14 +420,24 @@ def _related(
     relations: tuple[str, ...],
     outgoing: bool,
     skip: set[str],
+    hide: bool = False,
 ) -> dict[str, Any]:
     """The objects at the other end of the edges of one kind, a page of them and the total."""
     own, other = ("source", "target") if outgoing else ("target", "source")
-    kept_back = {f"entity:{ident}" for ident in skip}
+    kept_back = {f"{kind}:{ident}" for ident in skip for kind in ("entity", "device")}
+
+    def named(ref: str) -> bool:
+        # An entity of a sensitive domain stays out even where it is gone and has no object.
+        kind, _, ident = ref.partition(":")
+        return hide and kind == "entity" and ident.partition(".")[0] in SENSITIVE_DOMAINS
+
     rows = [
         (e[other], e["relation"])
         for e in edges
-        if e[own] == me and e["relation"] in relations and e[other] not in kept_back
+        if e[own] == me
+        and e["relation"] in relations
+        and e[other] not in kept_back
+        and not named(e[other])
     ]
     items = []
     for ref, relation in rows[:RELATION_LIMIT]:
@@ -437,7 +461,7 @@ def object_card(
     kind, ident = data["object_type"], data["object_id"]
     skip = withheld(scanner)
     kept_back = finding_filter(scanner, skip)
-    if kind == "entity" and ident in skip:
+    if kind in ("entity", "device") and ident in skip:
         raise McpError("withheld")
     me = f"{kind}:{ident}"
     objects = {f"{o['object_type']}:{o['object_id']}": o for o in snapshot["objects"]}
@@ -453,7 +477,15 @@ def object_card(
         (RANK.get(f.get("impact") or "none", 0) for f in found if not f.get("ignored")), default=0
     )
     mark = scanner.marks.items.get(mark_key(kind, ident))
-    used_by = _related(snapshot["edges"], objects, me, USED, outgoing=False, skip=skip)
+    used_by = _related(
+        snapshot["edges"],
+        objects,
+        me,
+        USED,
+        outgoing=False,
+        skip=skip,
+        hide=scanner.mcp.hide_sensitive,
+    )
     return {
         "schema": API_SCHEMA,
         "object": card,
@@ -494,9 +526,33 @@ def object_card(
             "critical": bool(item.get("critical")),
         },
         "used_by": used_by,
-        "uses": _related(snapshot["edges"], objects, me, USED, outgoing=True, skip=skip),
-        "belongs_to": _related(snapshot["edges"], objects, me, BELONGS, outgoing=False, skip=skip),
-        "contains": _related(snapshot["edges"], objects, me, BELONGS, outgoing=True, skip=skip),
+        "uses": _related(
+            snapshot["edges"],
+            objects,
+            me,
+            USED,
+            outgoing=True,
+            skip=skip,
+            hide=scanner.mcp.hide_sensitive,
+        ),
+        "belongs_to": _related(
+            snapshot["edges"],
+            objects,
+            me,
+            BELONGS,
+            outgoing=False,
+            skip=skip,
+            hide=scanner.mcp.hide_sensitive,
+        ),
+        "contains": _related(
+            snapshot["edges"],
+            objects,
+            me,
+            BELONGS,
+            outgoing=True,
+            skip=skip,
+            hide=scanner.mcp.hide_sensitive,
+        ),
     }
 
 
@@ -541,6 +597,8 @@ async def finding_fix_plan(
     """Create the plan for one way to fix a finding. Only a preview: an administrator confirms it in the panel."""
     from .websocket_api import _plan_from_requests  # noqa: PLC0415 - the panel's module imports this one
 
+    if scanner.warming_up:
+        raise McpError("warming_up")  # the panel refuses a plan then, too
     snapshot = _snapshot(scanner)
     skip = withheld(scanner)
     kept_back = finding_filter(scanner, skip)
@@ -563,6 +621,8 @@ async def finding_fix_plan(
     if data["way"] == "replace_target":
         if "target" not in data:
             raise McpError("target_required")
+        if is_withheld_ref(scanner, data["target"], skip):
+            raise McpError("withheld")
         request = {
             "kind": "replace_references",
             "object_id": way["target"],
@@ -654,8 +714,11 @@ def finding_decide(
 def mark(scanner: InventoryScanner, data: dict[str, Any], user: str | None) -> dict[str, Any]:
     """Tell Housekeeper what to expect of an object, or take that back. Only its own list changes."""
     kind, ident = data["object_type"], data["object_id"]
-    if kind == "entity" and ident in withheld(scanner):
+    skip = withheld(scanner)
+    if kind in ("entity", "device") and ident in skip:
         raise McpError("withheld")
+    if is_withheld_ref(scanner, data.get("target"), skip):
+        raise McpError("withheld")  # a note that points at it would name it
     previous = deepcopy(scanner.marks.items.get(mark_key(kind, ident)))
     if data["action"] == "set":
         if "kind" not in data:
@@ -843,7 +906,7 @@ async def run(
             raise McpError("fix_disabled")
         if (
             function.kind in ("write", "fix")
-            and scanner.mcp.writes_since(WRITE_WINDOW_MINUTES) >= scanner.mcp.write_limit
+            and scanner.mcp.recent_writes(WRITE_WINDOW_MINUTES) >= scanner.mcp.write_limit
         ):
             raise McpError("rate_limited", str(scanner.mcp.write_limit))
         if (

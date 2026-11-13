@@ -1199,6 +1199,8 @@ async def websocket_plan_merge(
     ):
         connection.send_error(msg["id"], "plan_not_open", "A preview changed while merging")
         return
+    if any(p.get("via") == "mcp" for p in plans):
+        plan["via"] = "mcp"  # one request of an agent makes the whole plan one
     plan["events"].append({"at": datetime.now(UTC).isoformat(), "type": "merged", "plans": ids})
     scanner.journal.add(plan)
     for plan_id in ids:
@@ -1269,6 +1271,8 @@ async def websocket_plan_renew(
         return
     if old.get("full_backup"):
         plan["full_backup"] = True
+    if old.get("via") == "mcp":
+        plan["via"] = "mcp"
     if backup_is_local_only(hass):
         plan["backup_local"] = True
     plan["events"].append(

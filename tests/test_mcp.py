@@ -250,6 +250,39 @@ async def test_changes_are_limited_and_a_refusal_is_logged_as_denied(hass: HomeA
     assert scanner.mcp.entries[-1]["kind"] == "denied"
 
 
+async def test_a_flood_of_refused_calls_does_not_push_the_changes_out_of_the_limit(
+    hass: HomeAssistant,
+) -> None:
+    scanner = scanner_with(hass, 3)
+    scanner.mcp.enabled = scanner.mcp.write = True
+    scanner.notes = SimpleNamespace(items=[])
+    for _ in range(scanner.mcp.write_limit):
+        scanner.mcp.log(None, "note_set", "write", {}, "ok", 1)
+    from custom_components.ha_housekeeper.mcp_access import ENTRY_LIMIT
+
+    for index in range(ENTRY_LIMIT + 100):  # the lines differ, so the log does not merge them
+        scanner.mcp.log(None, f"fn_{index % 2}", "denied", {}, "rate_limited")
+    assert not any(e["kind"] == "write" for e in scanner.mcp.entries)  # the log lost them
+    assert scanner.mcp.recent_writes(5) == scanner.mcp.write_limit  # the limit did not
+    with pytest.raises(mcp_api.McpError) as limited:
+        await mcp_api.run(hass, scanner, "note_set", {"action": "save", "title": "t"}, None)
+    assert limited.value.reason == "rate_limited"
+
+
+def test_the_log_keeps_a_few_short_keys_of_a_call_however_many_were_sent() -> None:
+    from custom_components.ha_housekeeper.mcp_access import PARAM_KEY_TEXT, PARAM_KEYS, short_params
+
+    sent = {f"key_{i}" + "x" * 500: i for i in range(5000)}
+    kept = short_params(sent)
+    assert len(kept) == PARAM_KEYS + 1 and kept["…"] == 5000 - PARAM_KEYS
+    assert all(len(key) <= PARAM_KEY_TEXT for key in kept)
+    assert short_params({"entity_id": "sensor.a", "limit": 5, "ids": [1, 2]}) == {
+        "entity_id": "sensor.a",
+        "limit": 5,
+        "ids": "[2]",
+    }
+
+
 async def test_no_secret_reaches_an_answer(hass: HomeAssistant) -> None:
     """Answers are built field by field: a secret kept on an object or a finding is not copied."""
     scanner = scanner_with(hass, 3)
@@ -365,6 +398,63 @@ async def test_a_finding_that_points_at_a_sensitive_entity_stays_out(hass: HomeA
     scanner.mcp.hide_sensitive = False
     assert "lock.gone" in json.dumps(
         await mcp_api.run(hass, scanner, "findings", {"limit": 50}, None)
+    )
+
+
+async def test_the_device_of_a_sensitive_entity_and_ids_that_point_at_one_stay_out_too(
+    hass: HomeAssistant,
+) -> None:
+    scanner = scanner_with(hass, 3)
+    scanner.mcp.enabled = scanner.mcp.write = True
+    scanner.snapshot["objects"] += [
+        {
+            "object_type": "entity",
+            "object_id": "lock.front",
+            "name": "Front door",
+            "device_id": "dev_lock",
+        },
+        {"object_type": "device", "object_id": "dev_lock", "name": "Door lock Acme X1"},
+        {"object_type": "area", "object_id": "hall", "name": "Hall"},
+    ]
+    scanner.snapshot["edges"] = [
+        {"source": "area:hall", "target": "device:dev_lock", "relation": "CONTAINS"},
+        {"source": "area:hall", "target": "entity:lock.gone", "relation": "CONTAINS"},
+        {"source": "area:hall", "target": "entity:sensor.s1", "relation": "CONTAINS"},
+    ]
+    scanner.marks = SimpleNamespace(items={})
+    scanner.notes = SimpleNamespace(view=lambda: [])
+    with pytest.raises(mcp_api.McpError) as card:
+        await mcp_api.run(
+            hass, scanner, "object", {"object_type": "device", "object_id": "dev_lock"}, None
+        )
+    assert card.value.reason == "withheld"
+    area = await mcp_api.run(
+        hass, scanner, "object", {"object_type": "area", "object_id": "hall"}, None
+    )
+    shown = json.dumps(area)
+    assert "dev_lock" not in shown and "Acme" not in shown and "lock.gone" not in shown
+    assert "sensor.s1" in shown  # what is not sensitive stays
+    with pytest.raises(mcp_api.McpError) as marked:
+        await mcp_api.run(
+            hass,
+            scanner,
+            "mark",
+            {
+                "object_type": "entity",
+                "object_id": "sensor.s1",
+                "action": "set",
+                "kind": "replaced",
+                "reason": "x",
+                "target": "lock.front",
+            },
+            None,
+        )
+    assert marked.value.reason == "withheld"
+    scanner.mcp.hide_sensitive = False
+    assert "dev_lock" in json.dumps(
+        await mcp_api.run(
+            hass, scanner, "object", {"object_type": "area", "object_id": "hall"}, None
+        )
     )
 
 
@@ -507,6 +597,20 @@ async def test_a_plan_for_a_fix_needs_its_own_switch_and_is_never_run(hass: Home
     assert scanner.mcp.recent()[0]["kind"] == "write", (
         "it counts as a change in the log and the limit"
     )
+    from custom_components.ha_housekeeper.cleanup import plan_summary
+
+    assert plan_summary(plan)["via"] == "mcp" and plan_summary({**plan, "via": None})["via"] is None
+    scanner.warming_up = True
+    with pytest.raises(mcp_api.McpError) as starting:
+        await mcp_api.run(
+            hass,
+            scanner,
+            "finding_fix_plan",
+            {"key": "k1", "way": "replace_target", "target": "sensor.new"},
+            None,
+        )
+    assert starting.value.reason == "warming_up", "the panel refuses a plan then, too"
+    scanner.warming_up = False
     plan["actions"][0]["executable"] = False
     with (
         patch("custom_components.ha_housekeeper.websocket_api._plan_from_requests", fake_plan),
