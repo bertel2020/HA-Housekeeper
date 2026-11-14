@@ -2,6 +2,14 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
+## 2.1.2 - 2026-11-14
+
+### Behoben
+
+- **Verwaiste Statistiken:** Ein Scan, der die Statistik-Liste nicht lesen kann, startet die zweitägige Wartezeit nicht mehr für jede Statistik von vorn.
+- **Batterien:** Der Sensor „Schwächste Batterie“ wird nicht mehr selbst als Batterie aufgeführt.
+- **Stündliche Prüfung:** Sie meldet nur echte Änderungen und teilt ihren Index mit dem Monitor; das entlastet schwache Hardware.
+
 ## 2.1.1 - 2026-11-13
 
 ### Behoben

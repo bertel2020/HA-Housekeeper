@@ -2,6 +2,14 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
+## 2.1.2 - 2026-11-14
+
+### Fixed
+
+- **Orphaned statistics:** A scan that cannot read the statistics list no longer starts the two-day wait for every statistic over again.
+- **Batteries:** The “Weakest battery” sensor is no longer listed as a battery itself.
+- **Hourly check:** It announces only real changes and shares its index with the monitor, which eases the load on weak hardware.
+
 ## 2.1.1 - 2026-11-13
 
 ### Fixed
