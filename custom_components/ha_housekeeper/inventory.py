@@ -1062,6 +1062,7 @@ class InventoryScanner:
         )
         self.integrations_total = 0
         self._recorder_available = False
+        self._statistics_readable = True  # false when a scan could not read the list
         # What the scan in progress could not read: "dashboard", "dashboard:<id>" or "app".
         self._unchecked: set[str] = set()
         self.scan_coverage = ScanCoverage()
@@ -2783,6 +2784,9 @@ class InventoryScanner:
         """
         if preliminary:
             return []  # the states are not all there yet
+        if not self._statistics_readable:
+            # No list read is no list of orphans: the waiting times must not read it as "all back".
+            return []
         await self.observations.async_track_group(
             ORPHAN_STAT_KEY, {orphan["statistic_id"] for orphan in orphans}, observed_at
         )
@@ -3114,6 +3118,7 @@ class InventoryScanner:
     async def _statistics(self) -> list[dict[str, Any]]:
         """Long-term statistics known to the recorder; empty without a recorder."""
         self._recorder_available = False
+        self._statistics_readable = False
         if "recorder" not in self.hass.config.components:
             self.scan_coverage.absent("statistics", "no_recorder")
             return []
@@ -3125,6 +3130,7 @@ class InventoryScanner:
             self.scan_coverage.skipped("statistics", "not_ready")
             return []
         self._recorder_available = True
+        self._statistics_readable = True
         self.scan_coverage.checked("statistics")
         return list(statistics)
 

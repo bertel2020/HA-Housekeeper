@@ -888,6 +888,21 @@ async def test_a_statistic_without_an_entity_is_offered_only_after_it_stood_so_f
         assert key not in scanner.observations._items
 
 
+async def test_a_statistics_list_that_could_not_be_read_keeps_the_waiting_times(
+    hass: HomeAssistant,
+) -> None:
+    from unittest.mock import AsyncMock, patch
+
+    statistics = [{"statistic_id": "sensor.gone", "source": "recorder", "has_sum": True}]
+    scanner = InventoryScanner(hass)
+    with patch.object(InventoryScanner, "_statistics", AsyncMock(return_value=statistics)):
+        await scanner.async_scan()
+    key = "orphan_stat:sensor.gone"
+    assert key in scanner.observations._items
+    await scanner.async_scan()  # no recorder here: the list is not read
+    assert key in scanner.observations._items
+
+
 async def test_the_cards_bundle_loads_on_every_dashboard_while_the_entry_is_loaded(
     hass: HomeAssistant,
 ) -> None:
