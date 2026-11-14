@@ -519,7 +519,7 @@ class VacationSensor(HousekeeperSensor):
         if self._attr_native_value == "after" and view.get("after_until") and self.hass:
             self._grace_timer = async_track_point_in_utc_time(
                 self.hass,
-                lambda _now: self._handle_update(),
+                callback(lambda _now: self._handle_update()),
                 datetime.fromisoformat(view["after_until"]),
             )
 

@@ -1037,6 +1037,7 @@ class InventoryScanner:
         self.battery_forecast: dict[str, Any] | None = None
         self.battery_forecast_at: datetime | None = None
         self._battery_forecast_running = False
+        self._health_seen: tuple[Any, ...] | None = None  # what the last hourly check announced
         self.mcp = McpStore(hass)
         self.monitor = MonitorStore(hass)
         self.runs = RunStore(hass)
@@ -1453,10 +1454,21 @@ class InventoryScanner:
 
     def async_check_health(self) -> None:
         """Raise or clear the repair hint for a scan that keeps failing, and tell the sensor."""
-        async_sync_scan_issue(self.hass, self.health_report())
+        report = self.health_report()
+        async_sync_scan_issue(self.hass, report)
         async_sync_database_issue(self.hass, self.events.integrity)
-        self.monitor.refresh(self._snapshot, self.health_report(), new_scan=False)
-        self.announce_changes()
+        self.monitor.refresh(self._snapshot, report, new_scan=False)
+        # The sensors read everything again on an announcement: only when this hour changed something.
+        seen = (
+            report["state"],
+            report["last_success_at"],
+            report["consecutive_failures"],
+            repr(self.events.integrity),
+            tuple((r["id"], r["state"]) for r in self.monitor.results),
+        )
+        if seen != self._health_seen:
+            self._health_seen = seen
+            self.announce_changes()
 
     def _battery_forecast_due(self) -> bool:
         """Whether the forecast is to be read again: never read yet, or the last reading is a day old."""
