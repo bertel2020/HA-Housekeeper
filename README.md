@@ -26,6 +26,8 @@
 
 HA Housekeeper is a maintenance and analysis integration for Home Assistant. It creates a clear inventory of your installation, explains suspicious or orphaned objects, and shows how entities, devices, integrations, areas, and automations depend on each other.
 
+Typical problems it helps with: unavailable or unknown entities, orphaned entities and devices, entity registry cleanup, broken references in automations, scripts and dashboards, unused automations, replaced or renamed entities, low batteries, a growing recorder database, and failing integrations after an update.
+
 The goal is not aggressive automatic cleanup. Housekeeper helps you understand what exists, why something is considered problematic, and what a cleanup or repair would affect before you confirm it.
 
 > Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan. Plans cover quarantine and removal, loading an integration anew, repairs, replacing references, renaming entities, assigning areas, deleting unused automations, trimming recorder history and other maintenance tasks. Depending on the action, Housekeeper requires a quarantine period, an additional confirmation and a successful backup. Reversible changes can be undone while their targets remain unchanged; irreversible recorder and backup deletions are clearly marked. Integrations and hubs are never reconfigured (loading an integration anew is a confirmed plan like any other), and Housekeeper changes only what a confirmed plan names.
