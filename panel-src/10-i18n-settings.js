@@ -60,6 +60,7 @@ Object.assign(TEXT.en, {
   hkUpdateBlocked: "Update cannot currently be installed", hkUpdateBlockedHint: "HACS knows an update but cannot install it with this Home Assistant version.",
 });
 Object.assign(TEXT.de, {
+  outageScanShort: "Wie oft ein Ausfall einen zusätzlichen Scan auslöst.", refreshViewsShort: "Hält langsame Datenbank-Ansichten im Hintergrund aktuell.",
   loadGroupTitle: "Belastung kleiner Geräte",
   outageScanTitle: "Scan nach Ausfällen",
   outageScanHint: "Wie oft ein Ausfall einen zusätzlichen Scan auslösen darf. Automatisch: bald nach Erreichen der ersten Stufe, bei langsamen Scans mit größerem Abstand. Höchstens einmal je Scan-Intervall: für langsame Geräte; Ausfälle erscheinen erst mit dem nächsten Scan als Befund. Aus: Ausfälle lösen keinen eigenen Scan aus.",
@@ -70,6 +71,7 @@ Object.assign(TEXT.de, {
   refreshViewsHint: "Hält Zuverlässigkeit, Störungen, Datenbank-Gesundheit und Kosten aktuell, indem die Datenbank im Hintergrund abgefragt wird (alle 30 Minuten bis einmal am Tag), sobald die Ansicht einmal geöffnet wurde. Aus: Sie werden beim Öffnen erneuert, was auf einem kleinen Gerät einige Sekunden dauern kann.",
 });
 Object.assign(TEXT.en, {
+  outageScanShort: "How often an outage starts an extra scan.", refreshViewsShort: "Keeps the slow database views current in the background.",
   loadGroupTitle: "Load on small devices",
   outageScanTitle: "Scan after outages",
   outageScanHint: "How often an outage may start an extra scan. Automatic: soon after the first level is reached, spaced further apart where a scan is slow. At most once per scan interval: for slow devices; outages show up as findings with the next scan. Off: outages start no scan of their own.",

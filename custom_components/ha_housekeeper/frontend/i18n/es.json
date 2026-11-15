@@ -6650,5 +6650,7 @@
 "outageScan_interval": "Como máximo una vez por intervalo de análisis",
 "outageScan_off": "Desactivado",
 "refreshViewsTitle": "Actualizar las vistas lentas en segundo plano",
-"refreshViewsHint": "Mantiene al día fiabilidad, tormentas, estado de la base de datos y costes consultando la base de datos en segundo plano (cada 30 minutos hasta una vez al día), una vez abierta la vista. Desactivado: se actualizan al abrirlas, lo que en un dispositivo pequeño puede tardar unos segundos."
+"refreshViewsHint": "Mantiene al día fiabilidad, tormentas, estado de la base de datos y costes consultando la base de datos en segundo plano (cada 30 minutos hasta una vez al día), una vez abierta la vista. Desactivado: se actualizan al abrirlas, lo que en un dispositivo pequeño puede tardar unos segundos.",
+"outageScanShort": "Con qué frecuencia un fallo inicia un análisis adicional.",
+"refreshViewsShort": "Mantiene al día en segundo plano las vistas lentas de la base de datos."
 }

@@ -6649,7 +6649,9 @@
 "outageScan_interval": "bb03eede",
 "outageScan_off": "ca7981b4",
 "refreshViewsTitle": "a9f40d87",
-"refreshViewsHint": "b763a736"
+"refreshViewsHint": "b763a736",
+"outageScanShort": "3819a2d7",
+"refreshViewsShort": "50104270"
 },
 "setup": {
 "title": "644c2647",

@@ -6650,5 +6650,7 @@
 "outageScan_interval": "Al massimo una volta per intervallo di scansione",
 "outageScan_off": "Disattivato",
 "refreshViewsTitle": "Aggiorna le viste lente in background",
-"refreshViewsHint": "Mantiene aggiornati affidabilità, tempeste, salute del database e costi interrogando il database in background (da ogni 30 minuti a una volta al giorno), dopo che la vista è stata aperta. Disattivato: si aggiornano all’apertura, il che su un dispositivo piccolo può richiedere alcuni secondi."
+"refreshViewsHint": "Mantiene aggiornati affidabilità, tempeste, salute del database e costi interrogando il database in background (da ogni 30 minuti a una volta al giorno), dopo che la vista è stata aperta. Disattivato: si aggiornano all’apertura, il che su un dispositivo piccolo può richiedere alcuni secondi.",
+"outageScanShort": "Con quale frequenza un guasto avvia una scansione aggiuntiva.",
+"refreshViewsShort": "Mantiene aggiornate in background le viste lente del database."
 }

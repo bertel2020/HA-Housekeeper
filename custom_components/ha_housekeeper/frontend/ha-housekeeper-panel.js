@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"ada54b932c"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fe866c53a9"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"645cf7fc03"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"848a43e880"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"acf7f62269"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7ac1f9658d"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"86a37de02c"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"ea89c3b2b9"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fe2e4135ac"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"425aeb56b0"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9cc8173f95"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"945bd536ab"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"12634ddf0a"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"8690c3fde5"}];
 
 const TEXT = {
   de: {
@@ -1170,6 +1170,7 @@ Object.assign(TEXT.en, {
   hkUpdateBlocked: "Update cannot currently be installed", hkUpdateBlockedHint: "HACS knows an update but cannot install it with this Home Assistant version.",
 });
 Object.assign(TEXT.de, {
+  outageScanShort: "Wie oft ein Ausfall einen zusätzlichen Scan auslöst.", refreshViewsShort: "Hält langsame Datenbank-Ansichten im Hintergrund aktuell.",
   loadGroupTitle: "Belastung kleiner Geräte",
   outageScanTitle: "Scan nach Ausfällen",
   outageScanHint: "Wie oft ein Ausfall einen zusätzlichen Scan auslösen darf. Automatisch: bald nach Erreichen der ersten Stufe, bei langsamen Scans mit größerem Abstand. Höchstens einmal je Scan-Intervall: für langsame Geräte; Ausfälle erscheinen erst mit dem nächsten Scan als Befund. Aus: Ausfälle lösen keinen eigenen Scan aus.",
@@ -1180,6 +1181,7 @@ Object.assign(TEXT.de, {
   refreshViewsHint: "Hält Zuverlässigkeit, Störungen, Datenbank-Gesundheit und Kosten aktuell, indem die Datenbank im Hintergrund abgefragt wird (alle 30 Minuten bis einmal am Tag), sobald die Ansicht einmal geöffnet wurde. Aus: Sie werden beim Öffnen erneuert, was auf einem kleinen Gerät einige Sekunden dauern kann.",
 });
 Object.assign(TEXT.en, {
+  outageScanShort: "How often an outage starts an extra scan.", refreshViewsShort: "Keeps the slow database views current in the background.",
   loadGroupTitle: "Load on small devices",
   outageScanTitle: "Scan after outages",
   outageScanHint: "How often an outage may start an extra scan. Automatic: soon after the first level is reached, spaced further apart where a scan is slow. At most once per scan interval: for slow devices; outages show up as findings with the next scan. Off: outages start no scan of their own.",
@@ -4071,8 +4073,9 @@ class SettingsMixin {
     const dirty = mode !== savedMode || views !== savedViews;
     const modes = ["auto", "interval", "off"].map(k => `<option value="${k}" ${mode === k ? "selected" : ""}>${this.t(`outageScan_${k}`)}</option>`).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("loadGroupTitle")}</h2></div>
-      <div class="row"><span class="tile ${mode === "auto" ? "mute" : "ok"}"><ha-icon icon="mdi:radar"></ha-icon></span><span class="row-text"><strong><label for="hk-outage-scan">${this.t("outageScanTitle")}</label></strong><small>${this.t("outageScanHint")}</small></span><select id="hk-outage-scan" data-outage-scan>${modes}</select></div>
-      <div class="row"><span class="tile ${views ? "mute" : "ok"}"><ha-icon icon="mdi:database-refresh-outline"></ha-icon></span><span class="row-text"><strong>${this.t("refreshViewsTitle")}</strong><small>${this.t("refreshViewsHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("refreshViewsTitle"))}" data-refresh-views ${views ? "checked" : ""}></div>
+      <div class="row"><span class="tile ${mode === "auto" ? "mute" : "ok"}"><ha-icon icon="mdi:radar"></ha-icon></span><span class="row-text"><strong><label for="hk-outage-scan">${this.t("outageScanTitle")}</label></strong><small>${this.t("outageScanShort")}</small></span><select id="hk-outage-scan" data-outage-scan>${modes}</select></div>
+      <div class="row"><span class="tile ${views ? "mute" : "ok"}"><ha-icon icon="mdi:database-refresh-outline"></ha-icon></span><span class="row-text"><strong>${this.t("refreshViewsTitle")}</strong><small>${this.t("refreshViewsShort")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("refreshViewsTitle"))}" data-refresh-views ${views ? "checked" : ""}></div>
+      <p class="factnote">${this.t("outageScanHint")}</p><p class="factnote">${this.t("refreshViewsHint")}</p>
       ${dirty ? `<div class="setrow"><small>${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-load-save>${this.t("saveOptions")}</button></div>` : ""}</section>`;
   }
 

@@ -53,6 +53,7 @@ const VIEWS = {
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
   attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", autopause: "view=autopause", checklog: "view=checklog", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
   settings_look: "view=settings&settings=look",
+  settings_scan: "view=settings&settings=scan",
   bulk_bat: "view=batteries&bulk=bat", bulk_unref: "view=unreferenced&bulk=unref", bulk_marks_review: "view=exceptions&bulk=marks-review", bulk_marks_kind: "view=exceptions&bulk=marks-kind",
 };
 const SCHEMES = ["light", "dark"];

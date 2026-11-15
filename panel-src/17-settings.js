@@ -185,8 +185,9 @@ class SettingsMixin {
     const dirty = mode !== savedMode || views !== savedViews;
     const modes = ["auto", "interval", "off"].map(k => `<option value="${k}" ${mode === k ? "selected" : ""}>${this.t(`outageScan_${k}`)}</option>`).join("");
     return `<section class="panel"><div class="panelhead"><h2>${this.t("loadGroupTitle")}</h2></div>
-      <div class="row"><span class="tile ${mode === "auto" ? "mute" : "ok"}"><ha-icon icon="mdi:radar"></ha-icon></span><span class="row-text"><strong><label for="hk-outage-scan">${this.t("outageScanTitle")}</label></strong><small>${this.t("outageScanHint")}</small></span><select id="hk-outage-scan" data-outage-scan>${modes}</select></div>
-      <div class="row"><span class="tile ${views ? "mute" : "ok"}"><ha-icon icon="mdi:database-refresh-outline"></ha-icon></span><span class="row-text"><strong>${this.t("refreshViewsTitle")}</strong><small>${this.t("refreshViewsHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("refreshViewsTitle"))}" data-refresh-views ${views ? "checked" : ""}></div>
+      <div class="row"><span class="tile ${mode === "auto" ? "mute" : "ok"}"><ha-icon icon="mdi:radar"></ha-icon></span><span class="row-text"><strong><label for="hk-outage-scan">${this.t("outageScanTitle")}</label></strong><small>${this.t("outageScanShort")}</small></span><select id="hk-outage-scan" data-outage-scan>${modes}</select></div>
+      <div class="row"><span class="tile ${views ? "mute" : "ok"}"><ha-icon icon="mdi:database-refresh-outline"></ha-icon></span><span class="row-text"><strong>${this.t("refreshViewsTitle")}</strong><small>${this.t("refreshViewsShort")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("refreshViewsTitle"))}" data-refresh-views ${views ? "checked" : ""}></div>
+      <p class="factnote">${this.t("outageScanHint")}</p><p class="factnote">${this.t("refreshViewsHint")}</p>
       ${dirty ? `<div class="setrow"><small>${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-load-save>${this.t("saveOptions")}</button></div>` : ""}</section>`;
   }
 
