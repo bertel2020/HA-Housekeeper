@@ -2,6 +2,12 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
+## 2.1.4 - 2026-11-15
+
+### Behoben
+
+- **Befunde-Ansicht:** Die Befundliste und die Kacheln, die dorthin führen, melden nicht mehr „Diese Ansicht konnte nicht angezeigt werden“, wenn eine unstete Entität kein Gerät hat (Issue 53).
+
 ## 2.1.3 - 2026-11-15
 
 ### Neu

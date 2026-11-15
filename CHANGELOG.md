@@ -2,6 +2,12 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
+## 2.1.4 - 2026-11-15
+
+### Fixed
+
+- **Findings view:** The findings list and the tiles that lead to it no longer fail with “This view could not be shown” when an unstable entity has no device (issue 53).
+
 ## 2.1.3 - 2026-11-15
 
 ### New
