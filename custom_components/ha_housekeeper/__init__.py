@@ -38,6 +38,7 @@ from .const import (
     CONF_OUTAGE_INFO_MINUTES,
     CONF_OUTAGE_LOW_HOURS,
     CONF_OUTAGE_MEDIUM_HOURS,
+    CONF_REFRESH_VIEWS,
     CONF_SCAN_INTERVAL_HOURS,
     CONF_SHOW_IN_SIDEBAR,
     CONF_STALE_HOURS,
@@ -45,6 +46,7 @@ from .const import (
     CONF_WATCH_HOURS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
+    DEFAULT_REFRESH_VIEWS,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_SHOW_IN_SIDEBAR,
     DEFAULT_STALE_HOURS,
@@ -459,6 +461,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
         # busy recorder leaves the view due for the next tick; a failing one waits for its age.
         if scanner.paused or not scanner.replies.replies:
             return
+        if not entry.options.get(CONF_REFRESH_VIEWS, DEFAULT_REFRESH_VIEWS):
+            return  # the option: the views renew when they are opened
         now = time.time()
         key = next_reply(
             {

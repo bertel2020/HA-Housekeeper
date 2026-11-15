@@ -15,6 +15,7 @@ from .const import (
     CONF_OUTAGE_INFO_MINUTES,
     CONF_OUTAGE_LOW_HOURS,
     CONF_OUTAGE_MEDIUM_HOURS,
+    CONF_REFRESH_VIEWS,
     CONF_SCAN_INTERVAL_HOURS,
     CONF_SHOW_IN_SIDEBAR,
     CONF_STALE_HOURS,
@@ -22,6 +23,7 @@ from .const import (
     CONF_WATCH_HOURS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
+    DEFAULT_REFRESH_VIEWS,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_SHOW_IN_SIDEBAR,
     DEFAULT_STALE_HOURS,
@@ -84,6 +86,13 @@ class HAHousekeeperOptionsFlow(OptionsFlow):
                     field(CONF_STALE_HOURS, DEFAULT_STALE_HOURS),
                     field(CONF_HISTORY_DAYS, DEFAULT_HISTORY_DAYS),
                     field(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS),
+                    (
+                        vol.Required(
+                            CONF_REFRESH_VIEWS,
+                            default=options.get(CONF_REFRESH_VIEWS, DEFAULT_REFRESH_VIEWS),
+                        ),
+                        bool,
+                    ),
                 ]
             )
         )
