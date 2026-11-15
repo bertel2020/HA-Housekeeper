@@ -145,7 +145,7 @@ def device_entry_ids(device: Any) -> tuple[str, ...]:
     the old ``config_entries`` as a deprecated use, which costs milliseconds each time (the stack is
     searched). Only a version without ``config_entry_id`` is asked for ``config_entries``.
     """
-    entry_id = getattr(device, "config_entry_id", _MISSING)
+    entry_id: Any = getattr(device, "config_entry_id", _MISSING)
     if entry_id is _MISSING:
         return tuple(getattr(device, "config_entries", None) or ())
     return (entry_id,) if entry_id else ()
