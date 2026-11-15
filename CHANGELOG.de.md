@@ -2,6 +2,21 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
+## 2.1.3 - 2026-11-15
+
+### Neu
+
+- **Einstellungen für kleine Geräte:** Unter Einstellungen → Scan und Meldungen gibt es eine neue Karte „Belastung kleiner Geräte“ mit zwei Auswahlen (dieselben stehen in den Optionen der Integration).
+  - Scan nach Ausfällen: automatisch, höchstens einmal je Scan-Intervall oder aus.
+  - Langsame Ansichten im Hintergrund erneuern: Aus stoppt die Hintergrundabfragen von Zuverlässigkeit, Störungen, Datenbank-Gesundheit und Kosten; sie werden beim Öffnen erneuert.
+
+### Behoben
+
+- **Langsame Scans unter Home Assistant 2026.11:** Die Ausnahme-Regeln und die Auto-Pause lasen für jedes Gerät ein dort veraltetes Feld, und Home Assistant durchsuchte dabei jedes Mal den Aufrufstapel. Ein Scan mit etwa 900 Geräten brauchte 7 bis 10 s und braucht jetzt unter 1 s (Issue 52).
+- **Home Assistant 2026.11:** Das Geräteregister wird so gelesen, wie diese Version es verlangt; eine Ansicht, die fehlschlägt, nennt die Stelle ihres Fehlers (Issue 53).
+- **Batterien:** Das Sammelformular für den Batterietyp bietet den Akku wie die Einzelauswahl an (Issue 54); ein Gerät mit Stand, Spannung und Warnung ist eine Zeile in der Tabelle.
+- **Debug-Log:** Ein Scan nennt, was ihn angefordert hat, und die Schritte, die er brauchte.
+
 ## 2.1.2 - 2026-11-14
 
 ### Behoben

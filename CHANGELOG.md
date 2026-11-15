@@ -2,6 +2,21 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
+## 2.1.3 - 2026-11-15
+
+### New
+
+- **Settings for small devices:** Under Settings → Scan and notifications, a new card “Load on small devices” has two choices (the same ones are in the options of the integration).
+  - Scan after outages: automatic, at most once per scan interval, or off.
+  - Refresh slow views in the background: off stops the background queries of reliability, storms, database health and costs; they are renewed when you open them.
+
+### Fixed
+
+- **Slow scans on Home Assistant 2026.11:** The exception rules and auto-pause read a device field that is deprecated there for every device, and Home Assistant searched the call stack each time. A scan with about 900 devices took 7 to 10 s and now takes under 1 s (issue 52).
+- **Home Assistant 2026.11:** The device registry is read the way this version wants; a view that fails names the place of its error (issue 53).
+- **Batteries:** The bulk form for the battery type offers the rechargeable battery like the single choice (issue 54); a device with a level, a voltage and a low flag is one row in the table.
+- **Debug log:** A scan names what asked for it and the steps it took.
+
 ## 2.1.2 - 2026-11-14
 
 ### Fixed
