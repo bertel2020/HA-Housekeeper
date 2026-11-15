@@ -208,3 +208,20 @@ def test_only_rules_that_are_on_and_past_their_review_date_are_to_review() -> No
     assert store.due_rules(NOW) == 0 and store.due_rules(later) == 2, "no date: never due"
     store.rules[1]["enabled"] = False
     assert store.due_rules(later) == 1, "a rule that is off is not to review"
+
+
+def test_a_device_names_its_entries_by_the_new_field_and_only_old_versions_use_the_deprecated_one() -> (
+    None
+):
+    from types import SimpleNamespace as NS
+
+    from custom_components.ha_housekeeper.exceptions import device_entry_ids
+
+    class Deprecated(NS):
+        @property
+        def config_entries(self):  # reading it must not happen where config_entry_id exists
+            raise AssertionError("deprecated read")
+
+    assert device_entry_ids(Deprecated(config_entry_id="a")) == ("a",)
+    assert device_entry_ids(Deprecated(config_entry_id=None)) == ()
+    assert device_entry_ids(NS(config_entries={"b"})) == ("b",)
