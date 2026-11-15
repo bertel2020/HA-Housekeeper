@@ -42,9 +42,32 @@ class BatteryTableMixin {
 
   // Rows with the forecast joined on, for the table, the filters and the sorting.
   batteryTableRows() {
-    return [...this.batteryRows(), ...this.batteryVoltRows()].map(row => {
+    const rows = [...this.batteryRows(), ...this.batteryVoltRows()].map(row => {
       const fc = this.batteryForecast(row);
       return { ...row, fc, type: this.batteryTypeOf(row), days: row.low ? 0 : fc?.state === "falling" ? fc.days : null };
+    });
+    return this.batteryOnePerDevice(rows);
+  }
+
+  // A device with a level, a volt and a "battery low" sensor is one battery, not three: the row with a percent stands for it
+  // (then volts, then the flag), it is low when one is, the soonest forecast counts and the first type that is set is the type.
+  batteryOnePerDevice(rows) {
+    const rank = r => (r.volt ? 1 : r.level !== null && r.level !== undefined ? 0 : 2);
+    const groups = new Map(), out = [];
+    for (const row of rows) {
+      const key = row.item.device_id;
+      if (!key) { out.push(row); continue; }
+      if (!groups.has(key)) { groups.set(key, []); out.push(key); }
+      groups.get(key).push(row);
+    }
+    return out.map(x => {
+      if (typeof x !== "string") return x;
+      const [base, ...rest] = groups.get(x).sort((a, b) => rank(a) - rank(b));
+      if (!rest.length) return base;
+      const all = [base, ...rest], low = all.some(r => r.low);
+      const soon = all.filter(r => !r.low && r.fc?.state === "falling").sort((a, b) => a.fc.days - b.fc.days)[0];
+      const fc = base.fc?.state === "falling" ? (soon && soon.fc.days < base.fc.days ? soon.fc : base.fc) : base.fc || soon?.fc || rest.find(r => r.fc)?.fc || null;
+      return { ...base, low, fc, type: all.find(r => r.type)?.type || "", days: low ? 0 : fc?.state === "falling" ? fc.days : null };
     });
   }
 

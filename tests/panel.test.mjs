@@ -5121,6 +5121,20 @@ test("batteries are named by their device: the tile, the rows and the search", (
   assert.equal(el.batteryName({ ...battery, device_id: "" }).title, "Battery");
 });
 
+test("a device with a flag, a level and a volt sensor is one row in the battery table", () => {
+  const { el } = panel("en");
+  const ent = (id, extra) => ({ object_type: "entity", object_id: id, name: id, status: "active", device_class: "battery", device_id: "d1", ...extra });
+  const flag = ent("binary_sensor.b_low", { state: "off" }), pct = ent("sensor.b_battery", { unit: "%", state: "41" });
+  const volt = ent("sensor.b_volt", { unit: "V", state: "2.56" });
+  el.data = { ...DATA, objects: [...DATA.objects, flag, pct, volt] };
+  el._rev = (el._rev || 0) + 1;
+  el.batteryTrend = { types: { "sensor.b_volt": "CR2032" } };
+  el.batteryVoltRows = () => [{ item: volt, level: 2.56, low: true, volt: { state: "low", percent: 5 } }];
+  const rows = el.batteryTableRows().filter(r => r.item.device_id === "d1");
+  assert.equal(rows.length, 1); assert.equal(rows[0].item.object_id, "sensor.b_battery");
+  assert.ok(rows[0].low && rows[0].days === 0 && rows[0].type === "CR2032", "low and the type of the others count for the device");
+});
+
 test("the journal names the end of a follow-up and the safety line counts the watched plans", () => {
   const { el, shadow } = panel("en");
   const plan = (id, followup) => ({ plan_id: id, created_at: "2026-10-10T10:00:00+00:00", status: "verified", executed: true, summary: { total: 1, ok: 1, review: 0, blocked: 0 }, followup, followup_until: followup === "watching" ? "2026-10-11T10:00:00+00:00" : null });
