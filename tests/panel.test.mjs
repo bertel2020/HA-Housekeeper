@@ -6689,6 +6689,13 @@ test("an entity that fails regularly gets a hint with a mark prepared for the ti
   assert.equal(el.oftenRows(object).length, 0);
 });
 
+test("the suggestions do not fail for an unstable entity that has no device", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.solo", name: "solo", status: "unknown" }], edges: [], findings: [{ rule_id: "entity.state_unknown", classification: "unknown", key: "u|solo", object_id: "sensor.solo", confidence: 0.75, impact: "low", ignored: false }] };
+  el.reliability = { available: true, window_days: 7, unstable: { entities: { "sensor.solo": { level: "unstable", episodes: 7, per_day: 1, total_seconds: 9000, mean_seconds: 1200, pattern_hour: 23 } } } };
+  assert.equal(el.oftenSuggestions().map(s => s.key).join(), "entity:sensor.solo");
+});
+
 test("the suggestions gather the entities of a device that fail together; the mark goes on each of them, the rest stays watched", async () => {
   const { el } = panel("en");
   const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unknown", device_id: "tv" });

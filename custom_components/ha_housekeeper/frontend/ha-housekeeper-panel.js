@@ -10829,7 +10829,7 @@ class OftenMixin {
       let key = f.rule_id === "device.down" ? `device:${f.object_id}` : `entity:${f.object_id}`;
       const device = key.startsWith("entity:") && this.findObject(key)?.device_id;
       const together = device && this.findObject(`device:${device}`) && this.oftenOut("device", device);
-      if (together?.members.includes(f.object_id) && this.oftenMembers(`group:${device}`).length > 1) { key = `group:${device}`; often = together; }
+      if (together?.members?.includes(f.object_id) && this.oftenMembers(`group:${device}`).length > 1) { key = `group:${device}`; often = together; }
       if (out.has(key) || this.findObject(key)?.mark) continue;
       out.set(key, { key, often, hides: this.oftenHidden(key) });
     }
