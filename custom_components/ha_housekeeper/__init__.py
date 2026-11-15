@@ -38,6 +38,7 @@ from .const import (
     CONF_OUTAGE_INFO_MINUTES,
     CONF_OUTAGE_LOW_HOURS,
     CONF_OUTAGE_MEDIUM_HOURS,
+    CONF_OUTAGE_SCANS,
     CONF_REFRESH_VIEWS,
     CONF_SCAN_INTERVAL_HOURS,
     CONF_SHOW_IN_SIDEBAR,
@@ -46,6 +47,7 @@ from .const import (
     CONF_WATCH_HOURS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
+    DEFAULT_OUTAGE_SCANS,
     DEFAULT_REFRESH_VIEWS,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_SHOW_IN_SIDEBAR,
@@ -137,6 +139,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
     scanner.history.retention_days = entry.options.get(CONF_HISTORY_DAYS, DEFAULT_HISTORY_DAYS)
     scanner.watch_hours = entry.options.get(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS)
     scanner.show_in_sidebar = entry.options.get(CONF_SHOW_IN_SIDEBAR, DEFAULT_SHOW_IN_SIDEBAR)
+    scanner.outage_scan_mode = entry.options.get(CONF_OUTAGE_SCANS, DEFAULT_OUTAGE_SCANS)
     scanner.monitor.retention_days = scanner.history.retention_days
     await scanner.async_initialize()
     entry.runtime_data = scanner

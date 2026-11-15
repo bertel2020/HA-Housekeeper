@@ -199,3 +199,24 @@ def test_the_pause_between_outage_scans_grows_with_a_slow_scan() -> None:
     assert scan_gap(0.5, info) == info
     assert scan_gap(5.0, info) == timedelta(minutes=37, seconds=30)
     assert scan_gap(30.0, info) == timedelta(hours=1)
+
+
+def test_the_option_for_scans_after_outages_stretches_the_pause_or_plans_none() -> None:
+    from custom_components.ha_housekeeper.outage_scan import OutageScans
+
+    def scans(mode: str) -> OutageScans:
+        scanner = NS(
+            outage_scan_mode=mode,
+            scan_interval_hours=6,
+            last_scan_seconds=1.0,
+            outage_info_minutes=5,
+        )
+        found = OutageScans(None, scanner)  # type: ignore[arg-type]
+        found._started = True
+        return found
+
+    assert scans("auto")._gap() < timedelta(hours=1)
+    assert scans("interval")._gap() == timedelta(hours=6)
+    off = scans("off")
+    off._plan(NOW)
+    assert off.due is None

@@ -63,6 +63,7 @@ from .const import (
     DEFAULT_OUTAGE_INFO_MINUTES,
     DEFAULT_OUTAGE_LOW_HOURS,
     DEFAULT_OUTAGE_MEDIUM_HOURS,
+    DEFAULT_OUTAGE_SCANS,
     DEFAULT_SCAN_INTERVAL_HOURS,
     DEFAULT_STALE_HOURS,
     DEFAULT_UNUSED_AUTOMATION_DAYS,
@@ -1088,6 +1089,7 @@ class InventoryScanner:
         self.scan_interval_hours = DEFAULT_SCAN_INTERVAL_HOURS
         self.watch_hours = DEFAULT_WATCH_HOURS
         self.show_in_sidebar = True
+        self.outage_scan_mode = DEFAULT_OUTAGE_SCANS  # auto, interval or off: scans after outages
         self.version: str | None = None
         self.load_failures: list[str] = []  # stores whose saved data could not be read
         self.status: dict[str, Any] = {
