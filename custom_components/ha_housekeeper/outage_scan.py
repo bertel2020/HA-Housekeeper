@@ -232,7 +232,7 @@ class OutageScans:
     async def _fire(self, _: datetime) -> None:
         self._cancel, self._due = None, None
         try:
-            await self._scanner.async_request_scan(record=False)
+            await self._scanner.async_request_scan(record=False, reason="outage")
         except ScanRefused:  # a plan or the start is in the way: try again soon
             self._plan(dt_util.utcnow() + RETRY_DELAY)
             return

@@ -120,7 +120,9 @@ async def _send_inventory_result(
         connection.send_error(msg["id"], "cleanup_busy", "A cleanup plan is running")
         return
     try:
-        result = await (scanner.async_scan() if refresh else scanner.async_get_snapshot())
+        result = await (
+            scanner.async_scan(reason="panel") if refresh else scanner.async_get_snapshot()
+        )
     except Exception as err:
         connection.send_error(msg["id"], "scan_failed", f"{type(err).__name__}: {err}")
         return
