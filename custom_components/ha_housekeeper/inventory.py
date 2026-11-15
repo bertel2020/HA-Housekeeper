@@ -2991,8 +2991,11 @@ class InventoryScanner:
     def _subentry_devices(self) -> dict[tuple[str, str], list[str]]:
         """Map (config entry, sub-entry) to the IDs of the devices that belong to the sub-entry."""
         found: dict[tuple[str, str], list[str]] = {}
-        for device in dr.async_get(self.hass).devices.values():
-            pairs = getattr(device, "config_entries_subentries", None) or {}
+        for device in _registry_entries(dr.async_get(self.hass).devices):
+            if getattr(device, "config_entry_id", None):
+                pairs = {device.config_entry_id: [getattr(device, "config_subentry_id", None)]}
+            else:  # older Home Assistant: one device may belong to several entries
+                pairs = getattr(device, "config_entries_subentries", None) or {}
             for entry_id, subentry_ids in pairs.items():
                 for subentry_id in subentry_ids:
                     if subentry_id:

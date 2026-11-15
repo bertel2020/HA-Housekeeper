@@ -687,7 +687,7 @@ class HAHousekeeperPanel extends HTMLElement {
 
   renderFailed(err) {
     this.logRenderError(err);
-    return `<div class="error" role="alert"><strong>${this.t("renderError")}</strong><br>${this.esc(err?.message || String(err))}<br><button class="btn" data-view="overview">${this.t("overview")}</button></div>`;
+    return `<div class="error" role="alert"><strong>${this.t("renderError")}</strong><br>${this.esc(err?.message || String(err))}${err?.stack ? `<br><small class="tech">${this.esc(String(err.stack).split("\n").find(l => /^\s*at /.test(l))?.trim() || "")}</small>` : ""}<br><button class="btn" data-view="overview">${this.t("overview")}</button></div>`;
   }
 
   // Once per message, so a view that fails on every render does not flood the log.
