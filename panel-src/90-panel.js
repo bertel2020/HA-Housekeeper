@@ -1416,6 +1416,9 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelector("[data-sidebar-switch]")?.addEventListener("change", ev => { this.sidebarDraft = ev.target.checked; this.optionsMessage = ""; this.render(); });
     root.querySelector("[data-sidebar-save]")?.addEventListener("click", () => this.saveSidebar());
+    root.querySelector("[data-outage-scan]")?.addEventListener("change", ev => { this.outageModeDraft = ev.target.value; this.optionsMessage = ""; this.render(); });
+    root.querySelector("[data-refresh-views]")?.addEventListener("change", ev => { this.refreshViewsDraft = ev.target.checked; this.optionsMessage = ""; this.render(); });
+    root.querySelector("[data-load-save]")?.addEventListener("click", () => this.saveLoad());
     root.querySelectorAll("[data-opt-reset]").forEach(el => el.onclick = () => {
       const input = root.querySelector(`[data-opt="${el.dataset.optReset}"]`), field = OPTION_FIELDS.find(f => f[0] === el.dataset.optReset);
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }

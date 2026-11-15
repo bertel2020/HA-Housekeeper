@@ -44,3 +44,26 @@ async def test_the_panel_command_sets_the_sidebar_option(
     await hass.async_block_till_done()
     assert entry.options["show_in_sidebar"] is False
     assert hass.data[frontend.DATA_PANELS]["ha-housekeeper"].sidebar_title is None
+
+
+async def test_the_panel_command_sets_the_options_for_small_devices(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    entry = MockConfigEntry(domain=DOMAIN)
+    entry.add_to_hass(hass)
+    assert await async_setup_component(hass, DOMAIN, {})
+    await hass.async_block_till_done()
+    client = await hass_ws_client(hass)
+    await client.send_json_auto_id(
+        {
+            "type": f"{DOMAIN}/set_options",
+            "outage_scan_mode": "interval",
+            "refresh_recorder_views": False,
+        }
+    )
+    assert (await client.receive_json())["success"]
+    await hass.async_block_till_done()
+    assert entry.options["outage_scan_mode"] == "interval"
+    assert entry.options["refresh_recorder_views"] is False
+    await client.send_json_auto_id({"type": f"{DOMAIN}/set_options", "outage_scan_mode": "x"})
+    assert not (await client.receive_json())["success"]

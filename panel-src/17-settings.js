@@ -175,6 +175,34 @@ class SettingsMixin {
       <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save ${Object.keys(draft).length ? "" : "disabled"}>${this.t("saveOptions")}</button></div></section>`;
   }
 
+  // Two settings that spare a small device: scans after outages and the background refresh of the slow recorder views.
+  // They save together with their own button; saving reloads the integration, like the sidebar entry.
+  loadCard() {
+    if (!this.data) return "";
+    const m = this.data.meta || {};
+    const savedMode = m.outage_scan_mode || "auto", mode = this.outageModeDraft ?? savedMode;
+    const savedViews = m.refresh_recorder_views !== false, views = this.refreshViewsDraft ?? savedViews;
+    const dirty = mode !== savedMode || views !== savedViews;
+    const modes = ["auto", "interval", "off"].map(k => `<option value="${k}" ${mode === k ? "selected" : ""}>${this.t(`outageScan_${k}`)}</option>`).join("");
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("loadGroupTitle")}</h2></div>
+      <div class="row"><span class="tile ${mode === "auto" ? "mute" : "ok"}"><ha-icon icon="mdi:radar"></ha-icon></span><span class="row-text"><strong><label for="hk-outage-scan">${this.t("outageScanTitle")}</label></strong><small>${this.t("outageScanHint")}</small></span><select id="hk-outage-scan" data-outage-scan>${modes}</select></div>
+      <div class="row"><span class="tile ${views ? "mute" : "ok"}"><ha-icon icon="mdi:database-refresh-outline"></ha-icon></span><span class="row-text"><strong>${this.t("refreshViewsTitle")}</strong><small>${this.t("refreshViewsHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("refreshViewsTitle"))}" data-refresh-views ${views ? "checked" : ""}></div>
+      ${dirty ? `<div class="setrow"><small>${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-load-save>${this.t("saveOptions")}</button></div>` : ""}</section>`;
+  }
+
+  async saveLoad() {
+    const changes = {};
+    if (this.outageModeDraft !== undefined) changes.outage_scan_mode = this.outageModeDraft;
+    if (this.refreshViewsDraft !== undefined) changes.refresh_recorder_views = this.refreshViewsDraft;
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/set_options", ...changes });
+      this.outageModeDraft = this.refreshViewsDraft = undefined; this.optionsMessage = this.t("optionsSaved");
+      this.data = null; // the integration reloads; fetch again once it is back
+      this.render();
+      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+    } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : this.errText(err); this.render(); }
+  }
+
   // The decisions about findings that are away right now: they rest and hold again when the finding comes back. Each one
   // in the shape of a finding, from its key (rule|object|affected), with what was decided and when it was last seen.
   restingDecisions() {
@@ -422,7 +450,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}${this.sidebarCard()}</div></div>`, protection: () => this.protectionCard(), view: () => this.viewCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}${this.sidebarCard()}</div></div>`, protection: () => this.protectionCard(), view: () => this.viewCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.loadCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 

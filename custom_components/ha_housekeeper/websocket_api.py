@@ -72,7 +72,14 @@ from .cleanup_exec import (
     reload_info,
 )
 from .cleanup_round import ROUND_LIMIT, duplicate_rows, needs_first_step, removal_requests, sort_row
-from .const import CONF_SHOW_IN_SIDEBAR, DOMAIN, OPTION_LIMITS
+from .const import (
+    CONF_OUTAGE_SCANS,
+    CONF_REFRESH_VIEWS,
+    CONF_SHOW_IN_SIDEBAR,
+    DOMAIN,
+    OPTION_LIMITS,
+    OUTAGE_SCAN_MODES,
+)
 from .device_pairs import pair_devices, suggest_entities
 from .failure_info import error_hint, item_id_of, last_failure
 from .first_cleanup import BULK_LIMIT, LATER_DAYS, STAGES, stage_keys
@@ -811,6 +818,8 @@ def websocket_ignore(
             for key, (low, high) in OPTION_LIMITS.items()
         },
         vol.Optional(CONF_SHOW_IN_SIDEBAR): bool,
+        vol.Optional(CONF_OUTAGE_SCANS): vol.In(OUTAGE_SCAN_MODES),
+        vol.Optional(CONF_REFRESH_VIEWS): bool,
     }
 )
 @callback
@@ -826,7 +835,11 @@ def websocket_set_options(
         connection.send_error(msg["id"], "busy", "A plan, undo or purge is running")
         return
     entries = hass.config_entries.async_entries(DOMAIN)
-    changes = {key: msg[key] for key in (*OPTION_LIMITS, CONF_SHOW_IN_SIDEBAR) if key in msg}
+    changes = {
+        key: msg[key]
+        for key in (*OPTION_LIMITS, CONF_SHOW_IN_SIDEBAR, CONF_OUTAGE_SCANS, CONF_REFRESH_VIEWS)
+        if key in msg
+    }
     if not entries or not changes:
         connection.send_error(msg["id"], "invalid_format", "Nothing to change")
         return

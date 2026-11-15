@@ -140,6 +140,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
     scanner.watch_hours = entry.options.get(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS)
     scanner.show_in_sidebar = entry.options.get(CONF_SHOW_IN_SIDEBAR, DEFAULT_SHOW_IN_SIDEBAR)
     scanner.outage_scan_mode = entry.options.get(CONF_OUTAGE_SCANS, DEFAULT_OUTAGE_SCANS)
+    scanner.refresh_recorder_views = entry.options.get(CONF_REFRESH_VIEWS, DEFAULT_REFRESH_VIEWS)
     scanner.monitor.retention_days = scanner.history.retention_days
     await scanner.async_initialize()
     entry.runtime_data = scanner

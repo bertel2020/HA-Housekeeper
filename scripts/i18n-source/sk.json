@@ -6641,7 +6641,15 @@
 "viaMcpHint": "61370c2c",
 "polRule_template_attribute": "7e2f73c1",
 "polDesc_template_attribute": "bc8bb6f5",
-"polAlso_template_attribute": "c1ed446a"
+"polAlso_template_attribute": "c1ed446a",
+"loadGroupTitle": "d9732433",
+"outageScanTitle": "8a5a5730",
+"outageScanHint": "bdeffc0a",
+"outageScan_auto": "d461a493",
+"outageScan_interval": "bb03eede",
+"outageScan_off": "ca7981b4",
+"refreshViewsTitle": "a9f40d87",
+"refreshViewsHint": "b763a736"
 },
 "setup": {
 "title": "644c2647",

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"c87fe59c91"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"9310fb017f"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"8dd6725aff"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f300178ba2"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"687d767ce9"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"694d828092"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"f10d30ffdf"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"ada54b932c"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fe866c53a9"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"645cf7fc03"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"848a43e880"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"acf7f62269"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7ac1f9658d"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"86a37de02c"}];
 
 const TEXT = {
   de: {
@@ -1168,6 +1168,26 @@ Object.assign(TEXT.en, {
   hkUpdateNoHacs: "HACS not available", hkUpdateNoHacsHint: "Housekeeper can show the update status only when the installation is managed by HACS.",
   hkUpdateUnknown: "Update status unknown", hkUpdateUnknownHint: "HACS has not stored an available version yet. “Update information” in HACS starts the check immediately.",
   hkUpdateBlocked: "Update cannot currently be installed", hkUpdateBlockedHint: "HACS knows an update but cannot install it with this Home Assistant version.",
+});
+Object.assign(TEXT.de, {
+  loadGroupTitle: "Belastung kleiner Geräte",
+  outageScanTitle: "Scan nach Ausfällen",
+  outageScanHint: "Wie oft ein Ausfall einen zusätzlichen Scan auslösen darf. Automatisch: bald nach Erreichen der ersten Stufe, bei langsamen Scans mit größerem Abstand. Höchstens einmal je Scan-Intervall: für langsame Geräte; Ausfälle erscheinen erst mit dem nächsten Scan als Befund. Aus: Ausfälle lösen keinen eigenen Scan aus.",
+  outageScan_auto: "Automatisch",
+  outageScan_interval: "Höchstens einmal je Scan-Intervall",
+  outageScan_off: "Aus",
+  refreshViewsTitle: "Langsame Ansichten im Hintergrund erneuern",
+  refreshViewsHint: "Hält Zuverlässigkeit, Störungen, Datenbank-Gesundheit und Kosten aktuell, indem die Datenbank im Hintergrund abgefragt wird (alle 30 Minuten bis einmal am Tag), sobald die Ansicht einmal geöffnet wurde. Aus: Sie werden beim Öffnen erneuert, was auf einem kleinen Gerät einige Sekunden dauern kann.",
+});
+Object.assign(TEXT.en, {
+  loadGroupTitle: "Load on small devices",
+  outageScanTitle: "Scan after outages",
+  outageScanHint: "How often an outage may start an extra scan. Automatic: soon after the first level is reached, spaced further apart where a scan is slow. At most once per scan interval: for slow devices; outages show up as findings with the next scan. Off: outages start no scan of their own.",
+  outageScan_auto: "Automatic",
+  outageScan_interval: "At most once per scan interval",
+  outageScan_off: "Off",
+  refreshViewsTitle: "Refresh slow views in the background",
+  refreshViewsHint: "Keeps reliability, storms, database health and costs current by querying the database in the background (every 30 minutes to once a day), once the view has been opened. Off: they refresh when you open them, which can take a few seconds on a small device.",
 });
 
 // Texts for the list of Housekeeper's own files (Settings, Info); merged into TEXT.
@@ -4041,6 +4061,34 @@ class SettingsMixin {
       <div class="toolbar savebar"><span class="date" role="status">${this.esc(this.optionsMessage || "")}</span><span class="toolgap"></span><button class="btn quiet" data-ha-path="/config/integrations/integration/ha_housekeeper"><ha-icon icon="mdi:cog-outline"></ha-icon>${this.t("openOptions")}</button><button class="btn primary" data-opts-save ${Object.keys(draft).length ? "" : "disabled"}>${this.t("saveOptions")}</button></div></section>`;
   }
 
+  // Two settings that spare a small device: scans after outages and the background refresh of the slow recorder views.
+  // They save together with their own button; saving reloads the integration, like the sidebar entry.
+  loadCard() {
+    if (!this.data) return "";
+    const m = this.data.meta || {};
+    const savedMode = m.outage_scan_mode || "auto", mode = this.outageModeDraft ?? savedMode;
+    const savedViews = m.refresh_recorder_views !== false, views = this.refreshViewsDraft ?? savedViews;
+    const dirty = mode !== savedMode || views !== savedViews;
+    const modes = ["auto", "interval", "off"].map(k => `<option value="${k}" ${mode === k ? "selected" : ""}>${this.t(`outageScan_${k}`)}</option>`).join("");
+    return `<section class="panel"><div class="panelhead"><h2>${this.t("loadGroupTitle")}</h2></div>
+      <div class="row"><span class="tile ${mode === "auto" ? "mute" : "ok"}"><ha-icon icon="mdi:radar"></ha-icon></span><span class="row-text"><strong><label for="hk-outage-scan">${this.t("outageScanTitle")}</label></strong><small>${this.t("outageScanHint")}</small></span><select id="hk-outage-scan" data-outage-scan>${modes}</select></div>
+      <div class="row"><span class="tile ${views ? "mute" : "ok"}"><ha-icon icon="mdi:database-refresh-outline"></ha-icon></span><span class="row-text"><strong>${this.t("refreshViewsTitle")}</strong><small>${this.t("refreshViewsHint")}</small></span><input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t("refreshViewsTitle"))}" data-refresh-views ${views ? "checked" : ""}></div>
+      ${dirty ? `<div class="setrow"><small>${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-load-save>${this.t("saveOptions")}</button></div>` : ""}</section>`;
+  }
+
+  async saveLoad() {
+    const changes = {};
+    if (this.outageModeDraft !== undefined) changes.outage_scan_mode = this.outageModeDraft;
+    if (this.refreshViewsDraft !== undefined) changes.refresh_recorder_views = this.refreshViewsDraft;
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/set_options", ...changes });
+      this.outageModeDraft = this.refreshViewsDraft = undefined; this.optionsMessage = this.t("optionsSaved");
+      this.data = null; // the integration reloads; fetch again once it is back
+      this.render();
+      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+    } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : this.errText(err); this.render(); }
+  }
+
   // The decisions about findings that are away right now: they rest and hold again when the finding comes back. Each one
   // in the shape of a finding, from its key (rule|object|affected), with what was decided and when it was last seen.
   restingDecisions() {
@@ -4288,7 +4336,7 @@ class SettingsMixin {
     const tabs = this.settingsTabs();
     const tab = tabs.some(([id]) => id === this.settingsTab) ? this.settingsTab : "protection";
     const tiles = tabs.map(([id, icon, label, hint, pill, tone]) => `<button class="taskcard t-${[].concat(pill || []).length ? tone || "mute" : "ac"}${id === tab ? " on" : ""}" id="hk-set-${id}" aria-pressed="${id === tab}" aria-controls="hk-setpanel" data-set-tab="${id}"><ha-icon icon="${icon}"></ha-icon><strong>${this.t(label)}</strong><span class="setpill">${[].concat(pill || []).map(p => `<span class="pill ${p.tone || tone || "mute"}">${this.esc(p.text ?? p)}</span>`).join("")}</span><small>${this.t(hint)}</small></button>`).join("");
-    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}${this.sidebarCard()}</div></div>`, protection: () => this.protectionCard(), view: () => this.viewCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
+    const body = { look: () => `<div class="grid2">${this.lookCard()}<div class="stack">${this.readabilityCard()}${this.behaviorCard()}${this.sidebarCard()}</div></div>`, protection: () => this.protectionCard(), view: () => this.viewCard(), exceptions: () => "", scan: () => `${this.scanCard()}${this.loadCard()}${this.notifyCard()}${this.eventsCard()}`, mcp: () => this.mcpCard(), info: () => this.infoCard() }[tab]();
     return `${this.settingsBand()}<div class="taskgrid compactgrid setgrid setgrid3" role="group" aria-label="${this.esc(this.t("settings"))}">${tiles}</div><div id="hk-setpanel">${body}</div>`;
   }
 
@@ -24508,6 +24556,9 @@ class HAHousekeeperPanel extends HTMLElement {
     });
     root.querySelector("[data-sidebar-switch]")?.addEventListener("change", ev => { this.sidebarDraft = ev.target.checked; this.optionsMessage = ""; this.render(); });
     root.querySelector("[data-sidebar-save]")?.addEventListener("click", () => this.saveSidebar());
+    root.querySelector("[data-outage-scan]")?.addEventListener("change", ev => { this.outageModeDraft = ev.target.value; this.optionsMessage = ""; this.render(); });
+    root.querySelector("[data-refresh-views]")?.addEventListener("change", ev => { this.refreshViewsDraft = ev.target.checked; this.optionsMessage = ""; this.render(); });
+    root.querySelector("[data-load-save]")?.addEventListener("click", () => this.saveLoad());
     root.querySelectorAll("[data-opt-reset]").forEach(el => el.onclick = () => {
       const input = root.querySelector(`[data-opt="${el.dataset.optReset}"]`), field = OPTION_FIELDS.find(f => f[0] === el.dataset.optReset);
       if (input && field) { input.value = field[4]; input.dispatchEvent(new Event("input")); }

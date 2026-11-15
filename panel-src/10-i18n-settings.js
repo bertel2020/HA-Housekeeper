@@ -59,3 +59,23 @@ Object.assign(TEXT.en, {
   hkUpdateUnknown: "Update status unknown", hkUpdateUnknownHint: "HACS has not stored an available version yet. “Update information” in HACS starts the check immediately.",
   hkUpdateBlocked: "Update cannot currently be installed", hkUpdateBlockedHint: "HACS knows an update but cannot install it with this Home Assistant version.",
 });
+Object.assign(TEXT.de, {
+  loadGroupTitle: "Belastung kleiner Geräte",
+  outageScanTitle: "Scan nach Ausfällen",
+  outageScanHint: "Wie oft ein Ausfall einen zusätzlichen Scan auslösen darf. Automatisch: bald nach Erreichen der ersten Stufe, bei langsamen Scans mit größerem Abstand. Höchstens einmal je Scan-Intervall: für langsame Geräte; Ausfälle erscheinen erst mit dem nächsten Scan als Befund. Aus: Ausfälle lösen keinen eigenen Scan aus.",
+  outageScan_auto: "Automatisch",
+  outageScan_interval: "Höchstens einmal je Scan-Intervall",
+  outageScan_off: "Aus",
+  refreshViewsTitle: "Langsame Ansichten im Hintergrund erneuern",
+  refreshViewsHint: "Hält Zuverlässigkeit, Störungen, Datenbank-Gesundheit und Kosten aktuell, indem die Datenbank im Hintergrund abgefragt wird (alle 30 Minuten bis einmal am Tag), sobald die Ansicht einmal geöffnet wurde. Aus: Sie werden beim Öffnen erneuert, was auf einem kleinen Gerät einige Sekunden dauern kann.",
+});
+Object.assign(TEXT.en, {
+  loadGroupTitle: "Load on small devices",
+  outageScanTitle: "Scan after outages",
+  outageScanHint: "How often an outage may start an extra scan. Automatic: soon after the first level is reached, spaced further apart where a scan is slow. At most once per scan interval: for slow devices; outages show up as findings with the next scan. Off: outages start no scan of their own.",
+  outageScan_auto: "Automatic",
+  outageScan_interval: "At most once per scan interval",
+  outageScan_off: "Off",
+  refreshViewsTitle: "Refresh slow views in the background",
+  refreshViewsHint: "Keeps reliability, storms, database health and costs current by querying the database in the background (every 30 minutes to once a day), once the view has been opened. Off: they refresh when you open them, which can take a few seconds on a small device.",
+});
