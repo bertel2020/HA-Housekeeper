@@ -2027,18 +2027,23 @@ class InventoryScanner:
         for finding in findings:
             finding["key"] = finding_key(finding)
             self._mark_ignored(finding, entity_registry_entries)
+        step("mark_ignored")
         covered = self._apply_marks(objects, findings)
+        step("apply_marks")
         # A preliminary scan misses findings: a mark must not read that as "back".
         if "app" in self._unchecked:  # no answer from Supervisor is no sign of a running app
             covered |= {key for key in self.marks.items if key.startswith("app:")}
         if not preliminary and self.marks.settle(covered, datetime.now(UTC)):
             self._apply_marks(objects, findings)
+        step("marks_settle")
         blocked = blocked_automation_findings(automations, findings)
         blocked += dead_effect_findings(automations, findings)
+        step("blocked_dead_effect")
         for finding in blocked:
             finding["key"] = finding_key(finding)
             self._mark_ignored(finding, entity_registry_entries)
         findings.extend(blocked)
+        step("mark_ignored_blocked")
         # A preliminary scan misses findings: it says nothing about what is away.
         if not preliminary:
             self.ignored.note_seen({f["key"] for f in findings}, datetime.now(UTC))
@@ -2051,7 +2056,7 @@ class InventoryScanner:
         for item in entities:
             if item["object_id"] in stuck:
                 item["blocked_automation"] = True
-        step("marks_blocked")
+        step("note_seen_stuck")
         apply_battery_kinds(objects, self.batteries.kinds)
         apply_topics(findings)
         apply_impact(objects, edges, findings)
@@ -2788,10 +2793,19 @@ class InventoryScanner:
     def _apply_marks(
         self, objects: list[dict[str, Any]], findings: list[dict[str, Any]]
     ) -> set[str]:
+        began = time.monotonic()
         sun = self._sun()
         covered = apply_marks(objects, findings, self.marks.items, sun=sun)
+        applied = time.monotonic()
         self._mark_excepted(objects)
+        excepted = time.monotonic()
         self._window_seen = self._window_states(sun)
+        _LOGGER.debug(
+            "Marks: apply %.3f s, excepted %.3f s, windows %.3f s",
+            applied - began,
+            excepted - applied,
+            time.monotonic() - excepted,
+        )
         return covered
 
     @callback
