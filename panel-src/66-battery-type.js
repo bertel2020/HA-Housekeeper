@@ -48,6 +48,12 @@ class BatteryTypeMixin {
     return [...BATTERY_TYPES, ...(this.batteryTrend?.custom_types || []).filter(x => !isRecharge(x))];
   }
 
+  // The options of a type select, in the groups "change" and "charge": one list for the row and the bulk form.
+  batteryTypeOptions(type) {
+    const opt = (o, label = o) => `<option value="${this.esc(o)}" ${o === type || (isRecharge(o) && isRecharge(type)) ? "selected" : ""}>${this.esc(label)}</option>`;
+    return `<optgroup label="${this.esc(this.t("btGroupChange"))}">${this.batteryTypeChoices().map(o => opt(o)).join("")}</optgroup><optgroup label="${this.esc(this.t("btGroupCharge"))}">${opt(BATTERY_RECHARGE, this.t("btRecharge"))}</optgroup>`;
+  }
+
   batteryTypeLabel(type) { return isRecharge(type) ? this.t("btRecharge") : type; }
 
   batteryTypeControls(entityId) {
@@ -55,8 +61,7 @@ class BatteryTypeMixin {
     if (this.btEdit === entityId) {
       const choices = this.batteryTypeChoices();
       const known = !type || choices.includes(type) || isRecharge(type);
-      const opt = (o, label = o) => `<option value="${this.esc(o)}" ${o === type || (isRecharge(o) && isRecharge(type)) ? "selected" : ""}>${this.esc(label)}</option>`;
-      const options = `<optgroup label="${this.esc(this.t("btGroupChange"))}">${choices.map(o => opt(o)).join("")}</optgroup><optgroup label="${this.esc(this.t("btGroupCharge"))}">${opt(BATTERY_RECHARGE, this.t("btRecharge"))}</optgroup>`;
+      const options = this.batteryTypeOptions(type);
       return `<span class="btedit"><label class="factnote" for="hk-bt-type">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select id="hk-bt-type" data-bt-type-select><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn accent" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
     }
     return `<span class="btctl">${type ? `<span class="pill">${this.esc(this.batteryTypeLabel(type))}</span>` : `<span class="pill mute">${this.t("btTypeNone")}</span>`}<button class="btn quiet" data-bt-type="${this.esc(entityId)}">${this.t("btTypeSet")}</button></span>`;

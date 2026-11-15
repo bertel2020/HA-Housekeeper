@@ -130,7 +130,7 @@ class BatteryTableMixin {
 
   // The form under the toolbar of the batteries: one type for all picked ones.
   batteryBulkForm(b, n) {
-    const options = this.batteryTypeChoices().map(o => `<option value="${this.esc(o)}" ${b.type === o ? "selected" : ""}>${this.esc(o)}</option>`).join("");
+    const options = this.batteryTypeOptions(b.type);
     const cancel = "data-bat-cancel";
     return `<form class="actionarea" data-bat-form>${this.actionHead(this.t("btTypeSetTitle", { n: this.formatNumber(n) }), cancel)}
       <div class="statusrow"><select data-bat-type aria-label="${this.esc(this.t("btTypeSet"))}"><option value="">–</option>${options}</select></div>
