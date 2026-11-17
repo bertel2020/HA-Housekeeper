@@ -4531,6 +4531,7 @@ test("orphaned statistics can be moved to proposed entities in one preview", asy
   assert.equal(JSON.stringify(el.xfer.choices), JSON.stringify({ "sensor.old": "sensor.new", "sensor.grid": "sensor.new_grid" }));
   assert.ok(el.orphanStatsView().includes("data-xfer-create") && el.orphanStatsView().includes("data-xfer-energy"));
   const notes = el.orphanStatsView();
+  assert.ok(notes.includes("panel ovvis"), "the list of the target field must not be cut off by the panel");
   assert.ok(notes.includes("Gap of 8 h") && notes.includes("Nothing to copy"), "the join is described before the preview: a gap for one row, nothing to copy for the other");
   await el.xferCreate();
   const made = sent.find(m => m.type === "ha_housekeeper/plan_create");

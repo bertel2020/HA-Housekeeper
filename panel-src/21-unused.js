@@ -326,7 +326,7 @@ class UnusedMixin {
     const body = x.loading ? `<div class="emptymsg">${this.t("xferLoading")}</div>` : x.pairs.length ? this.listTable("xfer", columns, x.pairs, { cls: "pairs", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.t("noOrphanStats")}</div>`;
     const energyRows = x.pairs.filter(p => this.xferInEnergy(p.object_id)).length;
     const follow = energyRows ? `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-xfer-energy ${x.followEnergy ? "checked" : ""}><span><strong>${this.t("xferEnergy")}</strong><small>${this.t(x.followEnergy ? "xferEnergyOn" : "xferEnergyOff", { n: energyRows })}</small></span></label>` : "";
-    return `<div class="stack">${this.unrefTabs()}<div class="panel"><div class="panelhead"><div><h2>${this.t("xferTitle")}</h2><p>${this.t("xferHint")}</p></div></div>
+    return `<div class="stack">${this.unrefTabs()}<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("xferTitle")}</h2><p>${this.t("xferHint")}</p></div></div>
       ${follow}${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
       <div class="toolbar"><button class="btn quiet" data-xfer-cancel>${this.t("xferBack")}</button><button class="btn quiet" data-xfer-take ${x.loading ? "disabled" : ""}>${this.t("xferTake")}</button><span class="toolgap"></span>
       <button class="btn primary" data-xfer-create ${n && !blocked && !this.cleanupBusy ? "" : "disabled"}>${this.t("xferCreate", { count: n })}</button></div>${body}</div></div>`;
