@@ -2891,6 +2891,8 @@
 "xferBack": "返回",
 "xferCreate": "创建预览（{count}）",
 "xferLoading": "正在查找后继实体……",
+"allReadiness": "状态：任意",
+"statCounted": "孤立，已计入",
 "statWaiting": "仍在等待",
 "statWaitingTitle": "{since}首次发现没有实体。2 天后才算孤立；在此之前，集成可能只是离线。",
 "reason_recent_orphan": "仅在短时间内没有实体：集成可能只是离线。",

@@ -3179,6 +3179,8 @@
 "xferBack": "Späť",
 "xferCreate": "Vytvoriť náhľad ({count})",
 "xferLoading": "Hľadajú sa nástupcovia …",
+"allReadiness": "Stav: ľubovoľný",
+"statCounted": "Osirelá, započítaná",
 "statWaiting": "Ešte čaká",
 "statWaitingTitle": "Prvýkrát videná bez entity {since}. Po 2 dňoch sa počíta ako osirelá; dovtedy môže byť integrácia len offline.",
 "reason_recent_orphan": "Bez entity len krátko: integrácia môže byť len offline.",

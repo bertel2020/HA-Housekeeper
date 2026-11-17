@@ -174,9 +174,11 @@ class UnusedMixin {
       { name: "kind", all: this.t("allKinds"), options: kinds.map(k => [k, this.t(k)]) },
       { name: "unit", all: this.t("allUnits"), options: units.map(u => [u, u]) },
       { name: "age", all: this.t("allAges"), options: AGES.map(d => [String(d), this.t(`statAge${d}`)]) },
+      ...(all.some(o => o.settled === false) ? [{ name: "ready", all: this.t("allReadiness"), options: [["counted", this.t("statCounted")], ["waiting", this.t("statWaiting")]] }] : []),
     ] });
     const refined = this.refine("orphanstats", all, { text: o => [o.statistic_id, o.unit].join(" "), filters: {
       kind: (o, v) => kind(o) === v, unit: (o, v) => o.unit === v,
+      ready: (o, v) => (v === "waiting") === (o.settled === false),
       age: (o, v) => { const ts = lastOf(o); return typeof ts === "number" && Date.now() - ts * 1000 > Number(v) * 864e5; },
     }, sorts, tie: o => o.statistic_id });
     const rows = this.selOnlyOn("orphanstats", this.purgeSel.size) ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;

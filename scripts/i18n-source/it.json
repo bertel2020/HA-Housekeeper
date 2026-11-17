@@ -6671,7 +6671,9 @@
 "xferGap": "ed1ebd97",
 "xferNewEmpty": "1fb72fcd",
 "purgeOldHint": "66dc2bcf",
-"purgeOldGo": "a62a69b5"
+"purgeOldGo": "a62a69b5",
+"allReadiness": "23a83f24",
+"statCounted": "3456957a"
 },
 "setup": {
 "title": "644c2647",

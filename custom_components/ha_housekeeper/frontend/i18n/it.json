@@ -2936,6 +2936,8 @@
 "xferBack": "Indietro",
 "xferCreate": "Crea anteprima ({count})",
 "xferLoading": "Ricerca dei successori …",
+"allReadiness": "Stato: qualsiasi",
+"statCounted": "Orfana, conteggiata",
 "statWaiting": "Ancora in attesa",
 "statWaitingTitle": "Vista per la prima volta senza entità {since}. Dopo 2 giorni conta come orfana; fino ad allora l’integrazione potrebbe essere solo offline.",
 "reason_recent_orphan": "Senza entità da poco: l’integrazione potrebbe essere solo offline.",

@@ -4551,6 +4551,18 @@ test("after a verified move the old orphaned statistics are offered for deletion
   assert.equal(el.purgeOldCard(el.plan), "");
 });
 
+test("orphaned statistics can be filtered by whether they already count", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [], edges: [], findings: [], orphaned_statistics: [{ statistic_id: "sensor.counted", settled: true }, { statistic_id: "sensor.young", settled: false }] };
+  el.view = "unreferenced"; el.unrefTab = "statistics"; el._orphanLastRequested = true;
+  el.render();
+  assert.ok(shadow.innerHTML.includes("State: any") && shadow.innerHTML.includes("Still waiting"));
+  el.lv.orphanstats.f.ready = "waiting"; el.render();
+  assert.ok(shadow.innerHTML.includes("sensor.young") && !shadow.innerHTML.includes("sensor.counted"));
+  el.lv.orphanstats.f.ready = "counted"; el.render();
+  assert.ok(shadow.innerHTML.includes("sensor.counted") && !shadow.innerHTML.includes("sensor.young"));
+});
+
 test("the overview of an object offers its actions: decide a finding, replace a missing entity, disable, label", () => {
   const { el } = panel("en");
   el.lv = {}; el.render = () => {};

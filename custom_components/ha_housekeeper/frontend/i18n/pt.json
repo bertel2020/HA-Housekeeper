@@ -2891,6 +2891,8 @@
 "xferBack": "Voltar",
 "xferCreate": "Criar pré-visualização ({count})",
 "xferLoading": "A procurar sucessores …",
+"allReadiness": "Estado: qualquer",
+"statCounted": "Órfã, contada",
 "statWaiting": "Ainda em espera",
 "statWaitingTitle": "Vista pela primeira vez sem entidade {since}. Após 2 dias conta como órfã; até lá, a integração pode estar apenas offline.",
 "reason_recent_orphan": "Sem entidade há pouco tempo: a integração pode estar apenas offline.",

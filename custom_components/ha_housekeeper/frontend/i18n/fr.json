@@ -2891,6 +2891,8 @@
 "xferBack": "Retour",
 "xferCreate": "Créer l’aperçu ({count})",
 "xferLoading": "Recherche des successeurs …",
+"allReadiness": "État : tous",
+"statCounted": "Orpheline, comptée",
 "statWaiting": "Encore en attente",
 "statWaitingTitle": "Vue pour la première fois sans entité {since}. Après 2 jours, elle compte comme orpheline ; d’ici là, l’intégration est peut-être simplement hors ligne.",
 "reason_recent_orphan": "Sans entité depuis peu : l’intégration est peut-être simplement hors ligne.",

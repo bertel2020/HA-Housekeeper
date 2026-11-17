@@ -2891,6 +2891,8 @@
 "xferBack": "Atrás",
 "xferCreate": "Crear vista previa ({count})",
 "xferLoading": "Buscando sucesores …",
+"allReadiness": "Estado: cualquiera",
+"statCounted": "Huérfana, contada",
 "statWaiting": "Aún en espera",
 "statWaitingTitle": "Vista por primera vez sin entidad {since}. Tras 2 días cuenta como huérfana; hasta entonces la integración puede estar solo sin conexión.",
 "reason_recent_orphan": "Sin entidad desde hace poco: la integración puede estar solo sin conexión.",
