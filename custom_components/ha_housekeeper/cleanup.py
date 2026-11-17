@@ -788,6 +788,8 @@ def judge_purge_action(
         reasons.append("in_energy")
     elif exists:
         reasons.append("entity_exists")
+    elif not orphans[statistic_id].get("settled", True):
+        reasons.append("recent_orphan")  # a note, not a block: the integration may only be offline
     reasons.append("irreversible")
     if states:
         reasons.append("with_states")

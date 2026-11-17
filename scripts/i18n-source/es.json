@@ -6651,7 +6651,10 @@
 "refreshViewsTitle": "a9f40d87",
 "refreshViewsHint": "b763a736",
 "outageScanShort": "3819a2d7",
-"refreshViewsShort": "50104270"
+"refreshViewsShort": "50104270",
+"statWaiting": "bc4aed18",
+"statWaitingTitle": "fb75a822",
+"reason_recent_orphan": "41ddc1c6"
 },
 "setup": {
 "title": "644c2647",

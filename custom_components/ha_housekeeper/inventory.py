@@ -190,7 +190,9 @@ SUGGEST_LIMIT = 200
 # An entity not provided for this long may be removed without quarantine: one that stays so for a
 # day of scans, restarts included, is no integration still waiting for its first data.
 NOT_PROVIDED_SETTLED = timedelta(hours=24)
-ORPHAN_STAT_GRACE = timedelta(days=2)  # a statistic without an entity is offered after this long
+ORPHAN_STAT_GRACE = timedelta(
+    days=2
+)  # a statistic without an entity counts as orphaned after this long
 ORPHAN_STAT_KEY = "orphan_stat:"
 NOT_PROVIDED_KEY = "not_provided:"  # observation key of that period, next to "entity:<id>"
 
@@ -1451,7 +1453,9 @@ class InventoryScanner:
 
     def _sync_issues(self, snapshot: dict[str, Any]) -> None:
         async_sync_issues(self.hass, snapshot["findings"])
-        async_sync_statistics_issue(self.hass, len(snapshot.get("orphaned_statistics", [])))
+        async_sync_statistics_issue(
+            self.hass, sum(1 for o in snapshot.get("orphaned_statistics", []) if o.get("settled"))
+        )
 
     @callback
     def sync_hints(self) -> None:
@@ -2172,7 +2176,7 @@ class InventoryScanner:
                 "protection_migrated": self.protection.migrated_from,
                 "protection_rules": protection_rules(),
                 "recorder_available": self._recorder_available,
-                "orphaned_statistics": len(orphaned_statistics),
+                "orphaned_statistics": sum(1 for o in orphaned_statistics if o["settled"]),
                 "quarantined": len(quarantine),
                 "recurring_devices": len(recurring),
                 "quarantine_days": QUARANTINE_DAYS,
@@ -2830,10 +2834,12 @@ class InventoryScanner:
     async def _settled_orphan_statistics(
         self, orphans: list[dict[str, Any]], preliminary: bool, observed_at: datetime
     ) -> list[dict[str, Any]]:
-        """Only statistics that stood without an entity for days are offered for clearing up.
+        """Every statistic without an entity, with since when and whether it has stood there for days.
 
         A platform that cannot load for a while (the device is off, the service is down) leaves its
         entities out of the registry and the states, and its history looks abandoned for that time.
+        Such a statistic is listed at once but is not "settled": the counts, goals and hints leave
+        it out, and deleting it carries a warning.
         """
         if preliminary:
             return []  # the states are not all there yet
@@ -2843,15 +2849,15 @@ class InventoryScanner:
         await self.observations.async_track_group(
             ORPHAN_STAT_KEY, {orphan["statistic_id"] for orphan in orphans}, observed_at
         )
-        settled = []
+        dated = []
         for orphan in orphans:
             since = self.observations.since(f"{ORPHAN_STAT_KEY}{orphan['statistic_id']}", "seen")
-            if (
+            settled = (
                 since is not None
                 and observed_at - datetime.fromisoformat(since) >= self.orphan_grace
-            ):
-                settled.append({**orphan, "since": since})
-        return settled
+            )
+            dated.append({**orphan, "since": since, "settled": settled})
+        return dated
 
     def announce_changes(self) -> None:
         """Tell the sensors that what they read has changed: they work it out again, once for all."""

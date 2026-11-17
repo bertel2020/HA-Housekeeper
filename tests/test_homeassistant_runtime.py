@@ -865,7 +865,7 @@ async def test_orphaned_statistics_are_listed_without_becoming_findings(
     assert snapshot["findings"] == []
 
 
-async def test_a_statistic_without_an_entity_is_offered_only_after_it_stood_so_for_days(
+async def test_a_statistic_without_an_entity_is_listed_at_once_but_counts_only_after_days(
     hass: HomeAssistant,
 ) -> None:
     from unittest.mock import AsyncMock, patch
@@ -874,15 +874,17 @@ async def test_a_statistic_without_an_entity_is_offered_only_after_it_stood_so_f
     scanner = InventoryScanner(hass)
     with patch.object(InventoryScanner, "_statistics", AsyncMock(return_value=statistics)):
         first = await scanner.async_scan()
-        assert first["orphaned_statistics"] == [], (
-            "a platform that did not load yet looks like this"
-        )
+        assert [(o["statistic_id"], o["settled"]) for o in first["orphaned_statistics"]] == [
+            ("sensor.gone", False)
+        ], "a platform that did not load yet looks like this: listed, not counted"
+        assert first["meta"]["orphaned_statistics"] == 0
         key = "orphan_stat:sensor.gone"
         scanner.observations._items[key]["since"] = (
             datetime.now(UTC) - timedelta(days=3)
         ).isoformat()
         later = await scanner.async_scan()
-        assert [o["statistic_id"] for o in later["orphaned_statistics"]] == ["sensor.gone"]
+        assert [o["settled"] for o in later["orphaned_statistics"]] == [True]
+        assert later["meta"]["orphaned_statistics"] == 1
         hass.states.async_set("sensor.gone", "1")  # the entity is back: the wait starts again
         await scanner.async_scan()
         assert key not in scanner.observations._items

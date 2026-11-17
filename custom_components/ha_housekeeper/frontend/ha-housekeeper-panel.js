@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"ea89c3b2b9"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fe2e4135ac"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"425aeb56b0"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9cc8173f95"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"945bd536ab"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"12634ddf0a"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"8690c3fde5"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"c0c40b751b"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"e8341cdcd6"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5ea8ba797e"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"e6aca408dd"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"35c94db564"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"15f7c3bd81"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"5e944c630a"}];
 
 const TEXT = {
   de: {
@@ -6250,7 +6250,7 @@ class UnusedMixin {
     };
     const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">${this.t("loadingShort")}</span>`; };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}${this.expandBtn("data-stat-more", this.statKey(o), (this.statOpen || []).includes(this.statKey(o)), this.t((this.statOpen || []).includes(this.statKey(o)) ? "statClose" : "statOpen"))}<div>${this.nameCell(o.statistic_id, "", "div", this.statSuccessorText(o))}${this.statSuccessorLine(o)}</div></div>` },
+      { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}${this.expandBtn("data-stat-more", this.statKey(o), (this.statOpen || []).includes(this.statKey(o)), this.t((this.statOpen || []).includes(this.statKey(o)) ? "statClose" : "statOpen"))}<div>${this.nameCell(o.statistic_id, "", "div", this.statSuccessorText(o))}${this.statSuccessorLine(o)}${this.statWaitingPill(o)}</div></div>` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
       { key: "first", label: "utFirst", dir: "asc", cell: firstCell },
@@ -6261,6 +6261,12 @@ class UnusedMixin {
     const empty = this.data.meta.recorder_available ? (all.length ? this.noMatches("orphanstats") : this.t("noOrphanStats")) : this.t("noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: o => `data-stat-row="${this.esc(this.statKey(o))}" tabindex="0" role="button" aria-expanded="${(this.statOpen || []).includes(this.statKey(o))}"`, after: o => this.statDetail(o) }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
     return `<div class="stack">${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
+  }
+
+  // Listed at once, but not yet counted: it may only be an integration that is offline for a while.
+  statWaitingPill(o) {
+    if (o.settled !== false) return "";
+    return `<span class="pill mute" title="${this.esc(this.t("statWaitingTitle", { since: this.relTime(o.since) }))}">${this.t("statWaiting")}</span>`;
   }
 
   // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
@@ -11458,12 +11464,14 @@ Object.assign(TEXT.en, {
 });
 Object.assign(TEXT.de, {
   purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Bereinigen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
+  statWaiting: "Wartet noch", statWaitingTitle: "Zuerst {since} ohne Entität gesehen. Nach 2 Tagen zählt sie als verwaist, bis dahin ist die Integration vielleicht nur offline.", reason_recent_orphan: "Erst seit Kurzem ohne Entität: die Integration ist vielleicht nur offline.",
   reason_irreversible: "Nur per Backup umkehrbar.", reason_with_states: "Löscht auch die gespeicherten Zustände.", reason_entity_exists: "Eine Entität trägt diese ID wieder.", reason_not_orphaned: "Die ID ist keine verwaiste Statistik.", reason_in_energy: "Das Energie-Dashboard nutzt diese Statistik.",
   check_statistics_gone: "Statistik ist gelöscht", result_purged: "Gelöscht", undo_irreversible: "nicht rückgängig: nur mit dem Backup", confirmedSummaryPurge: "{count} Statistiken werden gelöscht. Das lässt sich nur mit dem Backup zurücknehmen.",
   abort_recorder_busy: "Der Recorder war 30 Sekunden lang mit einer Abfrage belegt; nichts wurde gelöscht.", abort_still_there: "Die Statistik war nach dem Löschen noch da.", abort_states_left: "Nach dem Löschen gab es noch gespeicherte Zustände.",
 });
 Object.assign(TEXT.en, {
   purgePreview: "Create preview", purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
+  statWaiting: "Still waiting", statWaitingTitle: "First seen without an entity {since}. After 2 days it counts as orphaned; until then the integration may only be offline.", reason_recent_orphan: "Without an entity only for a short time: the integration may just be offline.",
   reason_irreversible: "Reversible only from the backup.", reason_with_states: "Also deletes the stored states.", reason_entity_exists: "An entity carries this ID again.", reason_not_orphaned: "The ID is not an orphaned statistic.", reason_in_energy: "The Energy dashboard uses this statistic.",
   check_statistics_gone: "Statistic is deleted", result_purged: "Deleted", undo_irreversible: "not undone: only with the backup", confirmedSummaryPurge: "{count} statistics will be deleted. It can only be taken back with that backup.",
   abort_recorder_busy: "The recorder was busy with a query for 30 seconds; nothing was deleted.", abort_still_there: "The statistic was still there after deleting.", abort_states_left: "Stored states were still there after deleting.",

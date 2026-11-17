@@ -23,6 +23,15 @@ def test_a_purge_action_needs_an_orphan_without_entity_and_is_always_a_review() 
         assert action["verdict"] == "blocked" and reason in action["reasons"]
 
 
+def test_a_purge_of_a_recent_orphan_carries_a_note_but_is_not_blocked() -> None:
+    from custom_components.ha_housekeeper.cleanup import judge_purge_action
+
+    action = judge_purge_action(
+        "sensor.new", {"sensor.new": {"settled": False}}, False, False, True
+    )
+    assert action["verdict"] == "review" and "recent_orphan" in action["reasons"]
+
+
 def test_the_recorder_choice_of_a_removal_is_a_review_and_blocked_for_energy_or_no_recorder() -> (
     None
 ):

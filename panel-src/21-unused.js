@@ -195,7 +195,7 @@ class UnusedMixin {
     };
     const rowsCell = o => { const n = rowsOf(o); return typeof n === "number" ? this.formatNumber(n) : `<span class="muted">${this.t("loadingShort")}</span>`; };
     const columns = [
-      { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}${this.expandBtn("data-stat-more", this.statKey(o), (this.statOpen || []).includes(this.statKey(o)), this.t((this.statOpen || []).includes(this.statKey(o)) ? "statClose" : "statOpen"))}<div>${this.nameCell(o.statistic_id, "", "div", this.statSuccessorText(o))}${this.statSuccessorLine(o)}</div></div>` },
+      { key: "id", label: "utStatId", dir: "asc", headPrefix: () => this.purgeHeadBox(), cell: o => `<div class="statcell">${this.purgeBox(o)}${this.expandBtn("data-stat-more", this.statKey(o), (this.statOpen || []).includes(this.statKey(o)), this.t((this.statOpen || []).includes(this.statKey(o)) ? "statClose" : "statOpen"))}<div>${this.nameCell(o.statistic_id, "", "div", this.statSuccessorText(o))}${this.statSuccessorLine(o)}${this.statWaitingPill(o)}</div></div>` },
       { key: "kind", label: "utKind", cell: o => this.esc(this.t(kind(o))) },
       { key: "unit", label: "utUnit", cell: o => this.esc(o.unit || "–") },
       { key: "first", label: "utFirst", dir: "asc", cell: firstCell },
@@ -206,6 +206,12 @@ class UnusedMixin {
     const empty = this.data.meta.recorder_available ? (all.length ? this.noMatches("orphanstats") : this.t("noOrphanStats")) : this.t("noRecorder");
     const table = rows.length ? this.listTable("orphanstats", columns, pg.rows, { cls: "stat", rowAttrs: o => `data-stat-row="${this.esc(this.statKey(o))}" tabindex="0" role="button" aria-expanded="${(this.statOpen || []).includes(this.statKey(o))}"`, after: o => this.statDetail(o) }) : `<div class="emptymsg"><ha-icon icon="mdi:chart-line-variant"></ha-icon>${empty}</div>`;
     return `<div class="stack">${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("orphanStatsHint")}</p>${this.purgeBar()}${bar}${table}${pg.footer}</div></div>`;
+  }
+
+  // Listed at once, but not yet counted: it may only be an integration that is offline for a while.
+  statWaitingPill(o) {
+    if (o.settled !== false) return "";
+    return `<span class="pill mute" title="${this.esc(this.t("statWaitingTitle", { since: this.relTime(o.since) }))}">${this.t("statWaiting")}</span>`;
   }
 
   // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
