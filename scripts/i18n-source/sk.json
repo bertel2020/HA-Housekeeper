@@ -6665,7 +6665,11 @@
 "xferLoading": "aaf5e446",
 "xferEnergy": "ce64ce58",
 "xferEnergyOn": "124901a1",
-"xferEnergyOff": "3227cc34"
+"xferEnergyOff": "3227cc34",
+"xferNothing": "dbc792c1",
+"xferOverlap": "0e8db203",
+"xferGap": "ed1ebd97",
+"xferNewEmpty": "1fb72fcd"
 },
 "setup": {
 "title": "644c2647",

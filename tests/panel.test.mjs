@@ -4523,12 +4523,15 @@ test("orphaned statistics can be moved to proposed entities in one preview", asy
   const { el } = panel("en");
   el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.new", name: "New", status: "active", unit: "kWh" }, { object_type: "entity", object_id: "sensor.new_grid", name: "NG", status: "active", unit: "kWh" }], edges: [], findings: [], orphaned_statistics: [{ statistic_id: "sensor.old", unit: "kWh", has_sum: true }, { statistic_id: "sensor.grid", unit: "kWh", has_sum: true, in_energy: true }], meta: { ...DATA.meta, recorder_available: true } };
   const sent = [];
-  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type === "ha_housekeeper/entity_pairs" ? { pairs: [{ object_id: "sensor.old", name: "old", unit: "kWh", candidates: [{ object_id: "sensor.new", score: 5, reasons: [] }] }, { object_id: "sensor.grid", name: "grid", unit: "kWh", candidates: [{ object_id: "sensor.new_grid", score: 5, reasons: [] }] }] } : { plan_id: "px", actions: [], summary: {} }; } };
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); if (msg.type === "ha_housekeeper/statistics_last") return { available: true, busy: false, first: { "sensor.old": 0, "sensor.new": 36000, "sensor.grid": 0, "sensor.new_grid": 0 }, last: { "sensor.old": 3600, "sensor.grid": 90000 }, rows: { "sensor.old": 2, "sensor.grid": 25, "sensor.new": 10, "sensor.new_grid": 24 } };
+    return msg.type === "ha_housekeeper/entity_pairs" ? { pairs: [{ object_id: "sensor.old", name: "old", unit: "kWh", candidates: [{ object_id: "sensor.new", score: 5, reasons: [] }] }, { object_id: "sensor.grid", name: "grid", unit: "kWh", candidates: [{ object_id: "sensor.new_grid", score: 5, reasons: [] }] }] } : { plan_id: "px", actions: [], summary: {} }; } };
   el.view = "cleanup"; el.cleanupTab = "stats"; el.unrefTab = "statistics"; el.purgeSel = new Set(["sensor.old", "sensor.grid"]);
   assert.ok(el.orphanStatsView().includes("data-xfer-start"));
   el.xferStart(); await new Promise(r => setTimeout(r, 0));
   assert.equal(JSON.stringify(el.xfer.choices), JSON.stringify({ "sensor.old": "sensor.new", "sensor.grid": "sensor.new_grid" }));
   assert.ok(el.orphanStatsView().includes("data-xfer-create") && el.orphanStatsView().includes("data-xfer-energy"));
+  const notes = el.orphanStatsView();
+  assert.ok(notes.includes("Gap of 8 h") && notes.includes("Nothing to copy"), "the join is described before the preview: a gap for one row, nothing to copy for the other");
   await el.xferCreate();
   const made = sent.find(m => m.type === "ha_housekeeper/plan_create");
   assert.equal(JSON.stringify(made.actions), JSON.stringify([{ kind: "migrate_meter", object_id: "sensor.old", target: "sensor.new", mode: "statistics" }, { kind: "migrate_meter", object_id: "sensor.grid", target: "sensor.new_grid", mode: "replace_statistics" }]));

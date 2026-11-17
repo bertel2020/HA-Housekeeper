@@ -220,12 +220,40 @@ class UnusedMixin {
   xferStart() {
     const ids = [...this.purgeSel].slice(0, MAX_PLAN_ACTIONS);
     if (!ids.length) return;
-    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "", followEnergy: true };
+    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "", followEnergy: true, spans: {} };
     this.render();
     this._hass.callWS({ type: "ha_housekeeper/entity_pairs", old_entity_ids: ids })
-      .then(res => { x.pairs = res.pairs || []; this.xferTakeAll(); })
+      .then(res => { x.pairs = res.pairs || []; this.xferTakeAll(); this.xferLoadSpans(); })
       .catch(err => { x.error = this.t("rwFailed", { reason: this.errText(err) }); })
       .then(() => { x.loading = false; if (this.xfer === x) this.render(); });
+  }
+
+  // Where the old series ends and the new one begins: the cheap first/last read, never the rows themselves.
+  xferLoadSpans() {
+    const x = this.xfer;
+    if (!x || !this._hass?.callWS) return;
+    const want = [...new Set([...x.pairs.map(p => p.object_id), ...Object.values(x.choices)])].filter(id => id && !(id in x.spans));
+    if (!want.length) return;
+    want.forEach(id => { x.spans[id] = null; });
+    this._hass.callWS({ type: "ha_housekeeper/statistics_last", ids: want })
+      .then(res => {
+        if (!res?.available || res.busy) { want.forEach(id => delete x.spans[id]); return; }
+        for (const id of want) x.spans[id] = { first: res.first?.[id] ?? null, last: res.last?.[id] ?? null, rows: res.rows?.[id] ?? 0 };
+      })
+      .catch(() => want.forEach(id => delete x.spans[id]))
+      .then(() => { if (this.xfer === x) this.render(); });
+  }
+
+  // What the join will do, seen before the preview: nothing to copy, an overlap, a gap, a target without statistics.
+  xferSpanNotes(pair) {
+    const x = this.xfer, target = x.choices[pair.object_id];
+    const old = x.spans[pair.object_id], neu = target ? x.spans[target] : null;
+    if (!old?.rows || !neu) return [];
+    if (!neu.rows) return [{ tone: "warn", text: this.t("xferNewEmpty") }];
+    if (old.first >= neu.first) return [{ tone: "warn", text: this.t("xferNothing") }];
+    if (old.last >= neu.first) return [{ tone: "mute", text: this.t("xferOverlap") }];
+    const gap = Math.round((neu.first - old.last) / 3600) - 1;
+    return gap > 0 ? [{ tone: "mute", text: this.t("xferGap", { hours: gap }) }] : [];
   }
 
   // The best proposal for every row that has none yet; a new entity is never proposed twice.
@@ -247,7 +275,7 @@ class UnusedMixin {
       sub: o => [o.object_id, found.get(o.object_id)?.rank === 0 && found.get(o.object_id).score > 0 ? this.t("rwSuggested") : "", (found.get(o.object_id)?.reasons || []).map(r => this.t(`exReason_${r}`)).join(", ")].filter(Boolean).join(" · "),
       filter: o => o.status !== "disabled" && this.sameDomain(o, id),
       rank: o => (found.has(o.object_id) ? found.get(o.object_id).rank : 99),
-      pick: o => { delete x.texts[id]; x.choices[id] = o.object_id; },
+      pick: o => { delete x.texts[id]; x.choices[id] = o.object_id; this.xferLoadSpans(); },
     };
   }
 
@@ -264,7 +292,7 @@ class UnusedMixin {
     if (other) out.push({ tone: "red", text: this.t("rwErrDuplicate", { name: other.name }) });
     const picked = this.findObject(`entity:${target}`);
     if (picked && (picked.unit ?? "") !== (pair.unit ?? "")) out.push({ tone: "warn", text: this.t("rwWarnUnit", { old: pair.unit || "–", new: picked.unit || "–" }) });
-    return out;
+    return [...out, ...this.xferSpanNotes(pair)];
   }
 
   async xferCreate() {
