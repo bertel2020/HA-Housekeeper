@@ -3,6 +3,7 @@
 class PickerMixin {
   pickerDef(name) {
     if (name.startsWith("rwt:")) return this.rwPickerDef(name.slice(4));
+    if (name.startsWith("xfer:") && this.xfer) return this.xferPickerDef(name.slice(5));
     return {
       counter: {
         get: () => this.counterId || "", set: v => { this.counterId = v; }, min: 1, types: ["entity"],

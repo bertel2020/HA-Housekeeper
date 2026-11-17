@@ -150,6 +150,7 @@ class UnusedMixin {
   }
 
   orphanStatsView() {
+    if (this.xfer) return this.xferView();
     const all = this.data.orphaned_statistics || [];
     this.lvState("orphanstats", "id", "asc");
     const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
@@ -214,6 +215,86 @@ class UnusedMixin {
     return `<span class="pill mute" title="${this.esc(this.t("statWaitingTitle", { since: this.relTime(o.since) }))}">${this.t("statWaiting")}</span>`;
   }
 
+  // -- Moving the history of orphaned statistics onto other entities: "Change meter", statistics only --
+  // The chosen statistics get a new entity each (proposed from name and unit); the result is an ordinary plan.
+  xferStart() {
+    const ids = [...this.purgeSel].slice(0, MAX_PLAN_ACTIONS);
+    if (!ids.length) return;
+    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "" };
+    this.render();
+    this._hass.callWS({ type: "ha_housekeeper/entity_pairs", old_entity_ids: ids })
+      .then(res => { x.pairs = res.pairs || []; this.xferTakeAll(); })
+      .catch(err => { x.error = this.t("rwFailed", { reason: this.errText(err) }); })
+      .then(() => { x.loading = false; if (this.xfer === x) this.render(); });
+  }
+
+  // The best proposal for every row that has none yet; a new entity is never proposed twice.
+  xferTakeAll() {
+    const x = this.xfer, taken = new Set(Object.values(x.choices));
+    for (const pair of x.pairs) {
+      const best = pair.candidates.find(c => c.score > 0 && !taken.has(c.object_id));
+      if (best && !x.choices[pair.object_id]) { x.choices[pair.object_id] = best.object_id; taken.add(best.object_id); delete x.texts[pair.object_id]; }
+    }
+  }
+
+  xferPickerDef(id) {
+    const x = this.xfer, pair = x.pairs.find(p => p.object_id === id);
+    const found = new Map((pair?.candidates || []).map((c, i) => [c.object_id, { ...c, rank: i }]));
+    return {
+      get: () => (id in x.texts ? x.texts[id] : x.choices[id] || ""),
+      set: v => { x.texts[id] = v; if (!v) delete x.choices[id]; },
+      min: 0, browse: true, types: ["entity"], limit: 30,
+      sub: o => [o.object_id, found.get(o.object_id)?.rank === 0 && found.get(o.object_id).score > 0 ? this.t("rwSuggested") : "", (found.get(o.object_id)?.reasons || []).map(r => this.t(`exReason_${r}`)).join(", ")].filter(Boolean).join(" · "),
+      filter: o => o.status !== "disabled" && this.sameDomain(o, id),
+      rank: o => (found.has(o.object_id) ? found.get(o.object_id).rank : 99),
+      pick: o => { delete x.texts[id]; x.choices[id] = o.object_id; },
+    };
+  }
+
+  // What the panel can see before a preview: one new entity for two statistics, another unit.
+  xferProblems(pair) {
+    const x = this.xfer, target = x.choices[pair.object_id];
+    if (!target) return [];
+    const out = [], other = x.pairs.find(p => p.object_id !== pair.object_id && x.choices[p.object_id] === target);
+    if (other) out.push({ tone: "red", text: this.t("rwErrDuplicate", { name: other.name }) });
+    const picked = this.findObject(`entity:${target}`);
+    if (picked && (picked.unit ?? "") !== (pair.unit ?? "")) out.push({ tone: "warn", text: this.t("rwWarnUnit", { old: pair.unit || "–", new: picked.unit || "–" }) });
+    return out;
+  }
+
+  async xferCreate() {
+    const x = this.xfer;
+    const actions = Object.entries(x.choices).filter(([, target]) => target).map(([object_id, target]) => ({ kind: "migrate_meter", object_id, target, mode: "statistics" }));
+    if (!actions.length || x.pairs.some(p => this.xferProblems(p).some(q => q.tone === "red"))) return;
+    this.cleanupBusy = true; x.error = ""; this.render();
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.openNewPlan(plan, null); this.xfer = null;
+      actions.forEach(a => this.purgeSel.delete(a.object_id));
+    } catch (err) { x.error = this.errText(err); }
+    this.cleanupBusy = false; this.render();
+  }
+
+  xferView() {
+    const x = this.xfer;
+    this.lvState("xfer", "id", "asc");
+    const n = Object.values(x.choices).filter(Boolean).length;
+    const blocked = x.pairs.some(p => this.xferProblems(p).some(q => q.tone === "red"));
+    const columns = [
+      { key: "id", label: "utStatId", sortable: false, cell: p => this.nameCell(p.object_id, "", "div") },
+      { key: "unit", label: "utUnit", sortable: false, cell: p => this.esc(p.unit || "–") },
+      { key: "target", label: "xferTarget", sortable: false, cell: p => {
+        const tags = this.xferProblems(p).map(q => `<span class="pill ${q.tone}">${this.esc(q.text)}</span>`);
+        return `${this.pickerBox(`xfer:${p.object_id}`, this.t("rwNoTarget"))}${tags.length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
+      } },
+    ];
+    const body = x.loading ? `<div class="emptymsg">${this.t("xferLoading")}</div>` : x.pairs.length ? this.listTable("xfer", columns, x.pairs, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.t("noOrphanStats")}</div>`;
+    return `<div class="stack">${this.unrefTabs()}<div class="panel"><div class="panelhead"><div><h2>${this.t("xferTitle")}</h2><p>${this.t("xferHint")}</p></div></div>
+      ${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
+      <div class="toolbar"><button class="btn quiet" data-xfer-cancel>${this.t("xferBack")}</button><button class="btn quiet" data-xfer-take ${x.loading ? "disabled" : ""}>${this.t("xferTake")}</button><span class="toolgap"></span>
+      <button class="btn primary" data-xfer-create ${n && !blocked && !this.cleanupBusy ? "" : "disabled"}>${this.t("xferCreate", { count: n })}</button></div>${body}</div></div>`;
+  }
+
   // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
   // A statistic of the Energy dashboard cannot be picked: a greyed box that says why, so the rows stay in line.
   purgeBox(o) {
@@ -234,7 +315,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = n > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button><button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   async purgeRun() {

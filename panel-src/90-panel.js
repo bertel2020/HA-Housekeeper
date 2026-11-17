@@ -29,7 +29,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.findSel = new Set();
-    this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeBusy = false; this.purgeResult = null;
+    this.excludeSel = new Set(); this.purgeSel = new Set(); this.xfer = null; this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = ""; this.replHow = "";
     this.ex = null; this.report = null; this.reportClear = true; this.reportMessage = "";
@@ -1281,6 +1281,10 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
+    root.querySelector("[data-xfer-start]")?.addEventListener("click", () => this.xferStart());
+    root.querySelector("[data-xfer-cancel]")?.addEventListener("click", () => { this.xfer = null; this.render(); });
+    root.querySelector("[data-xfer-take]")?.addEventListener("click", () => { this.xferTakeAll(); this.render(); });
+    root.querySelector("[data-xfer-create]")?.addEventListener("click", () => this.xferCreate());
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
     root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));

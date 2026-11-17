@@ -6654,7 +6654,15 @@
 "refreshViewsShort": "50104270",
 "statWaiting": "bc4aed18",
 "statWaitingTitle": "fb75a822",
-"reason_recent_orphan": "41ddc1c6"
+"reason_recent_orphan": "41ddc1c6",
+"xferOpenCount": "bcaaf776",
+"xferTitle": "aaffb124",
+"xferHint": "d67e43d7",
+"xferTarget": "2584aca2",
+"xferTake": "c5257998",
+"xferBack": "76900f1b",
+"xferCreate": "0effbe2a",
+"xferLoading": "aaf5e446"
 },
 "setup": {
 "title": "644c2647",

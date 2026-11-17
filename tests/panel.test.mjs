@@ -4518,6 +4518,22 @@ test("a preview that deletes statistics offers the states switch and is cancelle
   assert.ok(sent.some(m => m.type === "ha_housekeeper/plan_delete" && m.plan_id === "p10") && !el.journal.length && !el.plan);
 });
 
+test("orphaned statistics can be moved to proposed entities in one preview", async () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.new", name: "New", status: "active", unit: "kWh" }], edges: [], findings: [], orphaned_statistics: [{ statistic_id: "sensor.old", unit: "kWh", has_sum: true }], meta: { ...DATA.meta, recorder_available: true } };
+  const sent = [];
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type === "ha_housekeeper/entity_pairs" ? { pairs: [{ object_id: "sensor.old", name: "old", unit: "kWh", candidates: [{ object_id: "sensor.new", score: 5, reasons: [] }] }] } : { plan_id: "px", actions: [], summary: {} }; } };
+  el.view = "cleanup"; el.cleanupTab = "stats"; el.unrefTab = "statistics"; el.purgeSel = new Set(["sensor.old"]);
+  assert.ok(el.orphanStatsView().includes("data-xfer-start"));
+  el.xferStart(); await new Promise(r => setTimeout(r, 0));
+  assert.equal(JSON.stringify(el.xfer.choices), JSON.stringify({ "sensor.old": "sensor.new" }));
+  assert.ok(el.orphanStatsView().includes("data-xfer-create"));
+  await el.xferCreate();
+  const made = sent.find(m => m.type === "ha_housekeeper/plan_create");
+  assert.equal(JSON.stringify(made.actions), JSON.stringify([{ kind: "migrate_meter", object_id: "sensor.old", target: "sensor.new", mode: "statistics" }]));
+  assert.equal(el.xfer, null);
+});
+
 test("the overview of an object offers its actions: decide a finding, replace a missing entity, disable, label", () => {
   const { el } = panel("en");
   el.lv = {}; el.render = () => {};

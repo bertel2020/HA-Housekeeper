@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"c0c40b751b"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"e8341cdcd6"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5ea8ba797e"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"e6aca408dd"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"35c94db564"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"15f7c3bd81"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"5e944c630a"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"692afeb3d1"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"428de894e9"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f9ad4cdfdc"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"39ad3f2d98"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"39645c33fb"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7a36acc39e"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"46b420e95f"}];
 
 const TEXT = {
   de: {
@@ -6205,6 +6205,7 @@ class UnusedMixin {
   }
 
   orphanStatsView() {
+    if (this.xfer) return this.xferView();
     const all = this.data.orphaned_statistics || [];
     this.lvState("orphanstats", "id", "asc");
     const kind = o => (o.has_sum && o.has_mean ? "kindBoth" : o.has_sum ? "kindSum" : "kindMean");
@@ -6269,6 +6270,86 @@ class UnusedMixin {
     return `<span class="pill mute" title="${this.esc(this.t("statWaitingTitle", { since: this.relTime(o.since) }))}">${this.t("statWaiting")}</span>`;
   }
 
+  // -- Moving the history of orphaned statistics onto other entities: "Change meter", statistics only --
+  // The chosen statistics get a new entity each (proposed from name and unit); the result is an ordinary plan.
+  xferStart() {
+    const ids = [...this.purgeSel].slice(0, MAX_PLAN_ACTIONS);
+    if (!ids.length) return;
+    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "" };
+    this.render();
+    this._hass.callWS({ type: "ha_housekeeper/entity_pairs", old_entity_ids: ids })
+      .then(res => { x.pairs = res.pairs || []; this.xferTakeAll(); })
+      .catch(err => { x.error = this.t("rwFailed", { reason: this.errText(err) }); })
+      .then(() => { x.loading = false; if (this.xfer === x) this.render(); });
+  }
+
+  // The best proposal for every row that has none yet; a new entity is never proposed twice.
+  xferTakeAll() {
+    const x = this.xfer, taken = new Set(Object.values(x.choices));
+    for (const pair of x.pairs) {
+      const best = pair.candidates.find(c => c.score > 0 && !taken.has(c.object_id));
+      if (best && !x.choices[pair.object_id]) { x.choices[pair.object_id] = best.object_id; taken.add(best.object_id); delete x.texts[pair.object_id]; }
+    }
+  }
+
+  xferPickerDef(id) {
+    const x = this.xfer, pair = x.pairs.find(p => p.object_id === id);
+    const found = new Map((pair?.candidates || []).map((c, i) => [c.object_id, { ...c, rank: i }]));
+    return {
+      get: () => (id in x.texts ? x.texts[id] : x.choices[id] || ""),
+      set: v => { x.texts[id] = v; if (!v) delete x.choices[id]; },
+      min: 0, browse: true, types: ["entity"], limit: 30,
+      sub: o => [o.object_id, found.get(o.object_id)?.rank === 0 && found.get(o.object_id).score > 0 ? this.t("rwSuggested") : "", (found.get(o.object_id)?.reasons || []).map(r => this.t(`exReason_${r}`)).join(", ")].filter(Boolean).join(" · "),
+      filter: o => o.status !== "disabled" && this.sameDomain(o, id),
+      rank: o => (found.has(o.object_id) ? found.get(o.object_id).rank : 99),
+      pick: o => { delete x.texts[id]; x.choices[id] = o.object_id; },
+    };
+  }
+
+  // What the panel can see before a preview: one new entity for two statistics, another unit.
+  xferProblems(pair) {
+    const x = this.xfer, target = x.choices[pair.object_id];
+    if (!target) return [];
+    const out = [], other = x.pairs.find(p => p.object_id !== pair.object_id && x.choices[p.object_id] === target);
+    if (other) out.push({ tone: "red", text: this.t("rwErrDuplicate", { name: other.name }) });
+    const picked = this.findObject(`entity:${target}`);
+    if (picked && (picked.unit ?? "") !== (pair.unit ?? "")) out.push({ tone: "warn", text: this.t("rwWarnUnit", { old: pair.unit || "–", new: picked.unit || "–" }) });
+    return out;
+  }
+
+  async xferCreate() {
+    const x = this.xfer;
+    const actions = Object.entries(x.choices).filter(([, target]) => target).map(([object_id, target]) => ({ kind: "migrate_meter", object_id, target, mode: "statistics" }));
+    if (!actions.length || x.pairs.some(p => this.xferProblems(p).some(q => q.tone === "red"))) return;
+    this.cleanupBusy = true; x.error = ""; this.render();
+    try {
+      const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.openNewPlan(plan, null); this.xfer = null;
+      actions.forEach(a => this.purgeSel.delete(a.object_id));
+    } catch (err) { x.error = this.errText(err); }
+    this.cleanupBusy = false; this.render();
+  }
+
+  xferView() {
+    const x = this.xfer;
+    this.lvState("xfer", "id", "asc");
+    const n = Object.values(x.choices).filter(Boolean).length;
+    const blocked = x.pairs.some(p => this.xferProblems(p).some(q => q.tone === "red"));
+    const columns = [
+      { key: "id", label: "utStatId", sortable: false, cell: p => this.nameCell(p.object_id, "", "div") },
+      { key: "unit", label: "utUnit", sortable: false, cell: p => this.esc(p.unit || "–") },
+      { key: "target", label: "xferTarget", sortable: false, cell: p => {
+        const tags = this.xferProblems(p).map(q => `<span class="pill ${q.tone}">${this.esc(q.text)}</span>`);
+        return `${this.pickerBox(`xfer:${p.object_id}`, this.t("rwNoTarget"))}${tags.length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
+      } },
+    ];
+    const body = x.loading ? `<div class="emptymsg">${this.t("xferLoading")}</div>` : x.pairs.length ? this.listTable("xfer", columns, x.pairs, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.t("noOrphanStats")}</div>`;
+    return `<div class="stack">${this.unrefTabs()}<div class="panel"><div class="panelhead"><div><h2>${this.t("xferTitle")}</h2><p>${this.t("xferHint")}</p></div></div>
+      ${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
+      <div class="toolbar"><button class="btn quiet" data-xfer-cancel>${this.t("xferBack")}</button><button class="btn quiet" data-xfer-take ${x.loading ? "disabled" : ""}>${this.t("xferTake")}</button><span class="toolgap"></span>
+      <button class="btn primary" data-xfer-create ${n && !blocked && !this.cleanupBusy ? "" : "disabled"}>${this.t("xferCreate", { count: n })}</button></div>${body}</div></div>`;
+  }
+
   // Deleting the recorder data of entities that are gone: pick rows, confirm with a word; a backup comes first.
   // A statistic of the Energy dashboard cannot be picked: a greyed box that says why, so the rows stay in line.
   purgeBox(o) {
@@ -6289,7 +6370,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = n > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button><button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   async purgeRun() {
@@ -11464,6 +11545,7 @@ Object.assign(TEXT.en, {
 });
 Object.assign(TEXT.de, {
   purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Bereinigen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
+  xferOpenCount: "Auf Nachfolger übertragen ({n})", xferTitle: "Historie auf andere Entitäten übertragen", xferHint: "Die Langzeitstatistik jeder gewählten Statistik wird vor die der neuen Entität kopiert; bei Zählern wird deren Summe um den alten Endstand verschoben. Überlappende Werte werden nie überschrieben, die alte Statistik bleibt und lässt sich danach löschen. Vor dem Lauf entsteht ein Backup.", xferTarget: "Neue Entität", xferTake: "Vorschläge übernehmen", xferBack: "Zurück", xferCreate: "Vorschau erstellen ({count})", xferLoading: "Nachfolger werden gesucht …",
   statWaiting: "Wartet noch", statWaitingTitle: "Zuerst {since} ohne Entität gesehen. Nach 2 Tagen zählt sie als verwaist, bis dahin ist die Integration vielleicht nur offline.", reason_recent_orphan: "Erst seit Kurzem ohne Entität: die Integration ist vielleicht nur offline.",
   reason_irreversible: "Nur per Backup umkehrbar.", reason_with_states: "Löscht auch die gespeicherten Zustände.", reason_entity_exists: "Eine Entität trägt diese ID wieder.", reason_not_orphaned: "Die ID ist keine verwaiste Statistik.", reason_in_energy: "Das Energie-Dashboard nutzt diese Statistik.",
   check_statistics_gone: "Statistik ist gelöscht", result_purged: "Gelöscht", undo_irreversible: "nicht rückgängig: nur mit dem Backup", confirmedSummaryPurge: "{count} Statistiken werden gelöscht. Das lässt sich nur mit dem Backup zurücknehmen.",
@@ -11471,6 +11553,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   purgePreview: "Create preview", purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
+  xferOpenCount: "Move to a successor ({n})", xferTitle: "Move the history to other entities", xferHint: "The long-term statistics of each chosen statistic are copied in front of those of the new entity; for counters its sum is shifted by the old final total. Overlapping values are never overwritten, the old statistic stays and can be deleted afterwards. A backup is made before the run.", xferTarget: "New entity", xferTake: "Take the proposals", xferBack: "Back", xferCreate: "Create preview ({count})", xferLoading: "Looking for successors …",
   statWaiting: "Still waiting", statWaitingTitle: "First seen without an entity {since}. After 2 days it counts as orphaned; until then the integration may only be offline.", reason_recent_orphan: "Without an entity only for a short time: the integration may just be offline.",
   reason_irreversible: "Reversible only from the backup.", reason_with_states: "Also deletes the stored states.", reason_entity_exists: "An entity carries this ID again.", reason_not_orphaned: "The ID is not an orphaned statistic.", reason_in_energy: "The Energy dashboard uses this statistic.",
   check_statistics_gone: "Statistic is deleted", result_purged: "Deleted", undo_irreversible: "not undone: only with the backup", confirmedSummaryPurge: "{count} statistics will be deleted. It can only be taken back with that backup.",
@@ -14246,6 +14329,7 @@ Object.assign(TEXT.en, {
 class PickerMixin {
   pickerDef(name) {
     if (name.startsWith("rwt:")) return this.rwPickerDef(name.slice(4));
+    if (name.startsWith("xfer:") && this.xfer) return this.xferPickerDef(name.slice(5));
     return {
       counter: {
         get: () => this.counterId || "", set: v => { this.counterId = v; }, min: 1, types: ["entity"],
@@ -23208,7 +23292,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.unrefTab = "entities";
     this.cleanupSel = new Set();
     this.findSel = new Set();
-    this.excludeSel = new Set(); this.purgeSel = new Set(); this.purgeBusy = false; this.purgeResult = null;
+    this.excludeSel = new Set(); this.purgeSel = new Set(); this.xfer = null; this.purgeBusy = false; this.purgeResult = null;
     this.cleanupKind = "disable_entity";
     this.replOld = ""; this.replNew = ""; this.replHow = "";
     this.ex = null; this.report = null; this.reportClear = true; this.reportMessage = "";
@@ -24460,6 +24544,10 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
+    root.querySelector("[data-xfer-start]")?.addEventListener("click", () => this.xferStart());
+    root.querySelector("[data-xfer-cancel]")?.addEventListener("click", () => { this.xfer = null; this.render(); });
+    root.querySelector("[data-xfer-take]")?.addEventListener("click", () => { this.xferTakeAll(); this.render(); });
+    root.querySelector("[data-xfer-create]")?.addEventListener("click", () => this.xferCreate());
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });
     root.querySelectorAll("[data-release-yes]").forEach(el => el.onclick = () => this.releaseQuarantine(el.dataset.releaseYes));

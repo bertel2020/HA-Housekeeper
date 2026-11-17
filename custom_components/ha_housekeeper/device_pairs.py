@@ -121,6 +121,7 @@ def _pair_row(old: dict[str, Any], uses: dict[str, int], candidates: list[dict[s
         "used": uses.get(old["object_id"], 0),
         "meter": _is_meter(old),
         "has_statistics": bool(old.get("has_statistics")),
+        "statistic": bool(old.get("statistic")),
         "candidates": candidates,
     }
 
@@ -155,6 +156,20 @@ def pair_devices(snapshot: dict[str, Any], old_id: str, new_id: str) -> dict[str
     }
 
 
+def _statistic_as_entity(stat: dict[str, Any]) -> dict[str, Any]:
+    """An orphaned statistic in the shape of an old entity, so that the same proposals fit it."""
+    statistic_id = stat["statistic_id"]
+    return {
+        "object_id": statistic_id,
+        "name": statistic_id.split(".", 1)[-1].replace("_", " "),
+        "status": "orphaned",
+        "unit": stat.get("unit"),
+        "state_class": "total_increasing" if stat.get("has_sum") else "measurement",
+        "has_statistics": True,
+        "statistic": True,
+    }
+
+
 def suggest_entities(
     snapshot: dict[str, Any],
     old_ids: list[str],
@@ -165,14 +180,20 @@ def suggest_entities(
 
     ``scope_devices`` or ``scope_domain`` (an integration domain) narrow the candidates, e.g. to
     the devices of the new integration. Only reads; nothing is chosen. Unknown IDs are left out
-    and listed in ``unknown``. Candidates are never the old entities themselves.
+    and listed in ``unknown``. Candidates are never the old entities themselves. An orphaned
+    statistic (no entity any more) counts as an old entity of its own; its row says ``statistic``.
     """
     entities = {o["object_id"]: o for o in snapshot["objects"] if o["object_type"] == "entity"}
     devices = {o["object_id"]: o for o in snapshot["objects"] if o["object_type"] == "device"}
     names = {key: dev.get("name") for key, dev in devices.items()}
     uses = _use_counts(snapshot)
     chosen = list(dict.fromkeys(old_ids))
-    olds = [entities[i] for i in chosen if i in entities]
+    orphans = {o["statistic_id"]: o for o in snapshot.get("orphaned_statistics", [])}
+    olds = [
+        entities[i] if i in entities else _statistic_as_entity(orphans[i])
+        for i in chosen
+        if i in entities or i in orphans
+    ]
     pool = [
         o for o in entities.values() if o["status"] != "disabled" and o["object_id"] not in chosen
     ]
@@ -185,4 +206,7 @@ def suggest_entities(
         for old in olds
     ]
     pairs.sort(key=lambda p: (-p["used"], p["object_id"]))
-    return {"pairs": pairs, "unknown": [i for i in chosen if i not in entities]}
+    return {
+        "pairs": pairs,
+        "unknown": [i for i in chosen if i not in entities and i not in orphans],
+    }

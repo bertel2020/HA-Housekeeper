@@ -767,3 +767,36 @@ async def test_a_failed_part_stops_the_run_and_keeps_what_was_written(
         assert plan["verification"]["ok"] is False
     finally:
         path.unlink(missing_ok=True)
+
+
+async def test_an_orphaned_statistic_is_proposed_a_successor_and_its_history_is_joined(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    from custom_components.ha_housekeeper.device_pairs import suggest_entities
+
+    two_meters(hass)
+    er.async_get(hass).async_remove(OLD)  # the old meter is gone, only its statistics are left
+    await async_wait_recording_done(hass)
+    scanner = await make_scanner(hass)
+    snapshot = await scanner.async_scan()
+    assert [o["statistic_id"] for o in snapshot["orphaned_statistics"]] == [OLD]
+
+    pair = suggest_entities(snapshot, [OLD])["pairs"][0]
+    assert pair["object_id"] == OLD and pair["statistic"] is True and pair["meter"] is True
+    assert pair["candidates"][0]["object_id"] == NEW
+
+    manager, _ = fake_backup()
+    key = (OLD, NEW, "statistics")
+    with patch("homeassistant.components.backup.async_get_manager", return_value=manager):
+        plan = build_plan(
+            snapshot,
+            [{"kind": "migrate_meter", "object_id": OLD, "target": NEW, "mode": "statistics"}],
+            datetime.now(UTC),
+            meter_data={key: await prepare_meter(hass, *key)},
+        )
+        scanner.journal.add(plan)
+        assert plan["actions"][0]["verdict"] == "review"
+        assert plan["actions"][0]["executable"] is True
+        await run(scanner, plan, [OLD])
+    assert len(await series(hass, NEW)) == 48 + 24
+    assert plan["status"] == "verified"
