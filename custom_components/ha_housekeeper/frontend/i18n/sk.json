@@ -807,7 +807,7 @@
 "statAge730": "Posledný záznam starší než 2 roky",
 "lastEntryBusyShort": "Recorder je zaneprázdnený",
 "statSuccessors": "Možní nástupcovia:",
-"orphanStatsHint": "Dlhodobé štatistiky v Recordere, ku ktorým už neexistuje entita, napríklad po odstránení, premenovaní alebo výmene zariadenia. Zaberajú miesto. Ak bola entita premenovaná alebo nahradená, štatistiky možno preniesť na novú cez Opravy → Nahradiť merač. Ak je naozaj preč, vyber ju a vytvor plán; pred odstránením sa vytvorí záloha. Štatistiky používané v paneli Energia sa nedajú vybrať. Možní nástupcovia sa odhadujú podľa názvu a jednotky.",
+"orphanStatsHint": "Dlhodobé štatistiky v Recorderi, ku ktorým už neexistuje entita, napríklad po vymazaní, premenovaní alebo výmene zariadenia. Zaberajú len miesto. Nové sa zobrazia hneď; kým sú bez entity len krátko, nesú označenie „Ešte čaká“ a nepočítajú sa, pretože integrácia môže byť len offline. Ak sa entita premenovala alebo vymenila, vyber štatistiku a presuň ju na novú cez „Preniesť na nástupcu“: stará história sa skopíruje pred novú. Ak naozaj zmizla, vyber ju a vytvor plán na vymazanie; najprv sa urobí záloha. Štatistiky z panela Energia sa dajú preniesť, ale nie vymazať. Nástupcovia sa odvodzujú z názvu a jednotky.",
 "noBaselinePreliminary": "Posledná kontrola bola predbežná, pretože Home Assistant sa práve spustil. Predbežné kontroly sa neukladajú. O pár minút spusti kontrolu znova, aby vznikol prvý porovnávací bod.",
 "noBaselineOneScan": "Zatiaľ je uložená iba jedna kontrola. Na porovnanie treba dve: spusti kontrolu po zmenách v inštalácii alebo počkaj na automatickú kontrolu (každých {hours} hodín). Každá kontrola sa uloží ako porovnávací bod.",
 "scanPoint": "Spustiť kontrolu a vytvoriť porovnávací bod",
