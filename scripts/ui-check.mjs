@@ -54,6 +54,7 @@ const VIEWS = {
   attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", autopause: "view=autopause", checklog: "view=checklog", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
   settings_look: "view=settings&settings=look",
   settings_scan: "view=settings&settings=scan",
+  stats: "view=unreferenced&unref=statistics", xfer: "view=unreferenced&unref=statistics&xfer=1",
   bulk_bat: "view=batteries&bulk=bat", bulk_unref: "view=unreferenced&bulk=unref", bulk_marks_review: "view=exceptions&bulk=marks-review", bulk_marks_kind: "view=exceptions&bulk=marks-kind",
 };
 const SCHEMES = ["light", "dark"];
@@ -80,7 +81,7 @@ function showcase(objects) {
   data.meta.scanned_at = new Date().toISOString();
   data.meta.scan_interval_hours = 24;
   data.orphaned_statistics = [["sensor.e2m_proxon_fwt_meter_energy", "kWh", true, false], ["sensor.fritz_box_7530_download_geschwindigkeit", "KiB/s", false, true], ["sensor.fritz_box_7530_upload_geschwindigkeit_2", "KiB/s", false, true], ["sensor.eltako_gw1_weather_station_illuminance", "lx", false, true]]
-    .map(([statistic_id, unit, has_sum, has_mean], i) => ({ statistic_id, unit, has_sum, has_mean, in_energy: i === 0 }));
+    .map(([statistic_id, unit, has_sum, has_mean], i) => ({ statistic_id, unit, has_sum, has_mean, in_energy: i === 0, settled: i !== 3, since: new Date(Date.now() - (i === 3 ? 3 : 96) * 36e5).toISOString() }));
   data.meta.recorder_available = true;
   data.meta.database = { dialect: "sqlite", db_bytes: 3 * 1024 ** 3, wal_bytes: 24 * 1024 ** 2, per_day: 18 * 1024 ** 2, samples: 30 };
   data.objects.push({ object_type: "config_entry", object_id: "ce-hue", name: "Philips Hue", domain: "hue", integration_name: "Philips Hue", status: "problem", state: "setup_error", error: "Cannot connect", source: "user", status_since: data.meta.scanned_at });
@@ -161,6 +162,8 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
         paused: [{ entry_id: "wcs", title: "Waste Collection Schedule", domain: "waste_collection_schedule", since: new Date(Date.now() - 7200000).toISOString(), next: new Date(Date.now() + 3600000).toISOString(), reason: "auto", failures: 41, done: 1, exhausted: false }],
         candidates: [{ entry_id: "tib", title: "Tibber", domain: "tibber", state: "loaded", attempts: 0, window: 0, excluded: false, house_function: false }],
         pausable: [{ entry_id: "tib", title: "Tibber", domain: "tibber", state: "loaded", warn: [] }] };
+      if (t.endsWith("/statistics_last")) { const ids = msg.ids || data.orphaned_statistics.map(o => o.statistic_id), day = 864e2;
+        return { available: true, busy: false, last: Object.fromEntries(ids.map((id, i) => [id, Date.now() / 1e3 - (20 + i * 90) * day])), first: Object.fromEntries(ids.map((id, i) => [id, Date.now() / 1e3 - (400 + i * 200) * day])), rows: Object.fromEntries(ids.map((id, i) => [id, 8000 - i * 1500])) }; }
       if (t.endsWith("/compare")) return trend;
       if (t.endsWith("/detail")) return { attributes: { friendly_name: "Beispiel", unit_of_measurement: "W" } };
       if (t.endsWith("/backup_health")) return BACKUP;
@@ -278,6 +281,15 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
       { object_key: "automation:automation.a1", state: "ok", reason: "active" },
     ] };
     el.monitorQuery = "sensor";
+  }
+  if (q.get("unref")) el.unrefTab = q.get("unref");
+  if (q.get("xfer")) {
+    const [a, b, c] = el.data.orphaned_statistics, target = n => el.data.objects.filter(o => o.object_type === "entity")[n].object_id;
+    el.purgeSel = new Set([a.statistic_id, b.statistic_id, c.statistic_id]);
+    const cand = n => [{ object_id: target(n), name: target(n), score: 5, reasons: ["same_unit"] }];
+    el.xfer = { loading: false, error: "", followEnergy: true, texts: {}, choices: { [a.statistic_id]: target(0), [b.statistic_id]: target(1) },
+      pairs: [a, b, c].map((o, i) => ({ object_id: o.statistic_id, name: o.statistic_id, unit: o.unit, candidates: cand(i) })),
+      spans: { [a.statistic_id]: { first: 0, last: 3600 * 40, rows: 40 }, [target(0)]: { first: 3600 * 100, last: 3600 * 200, rows: 100 }, [b.statistic_id]: { first: 0, last: 3600 * 40, rows: 40 }, [target(1)]: { first: 3600 * 20, last: 3600 * 200, rows: 180 } } };
   }
   if (q.get("bulk")) {
     const ids = ["sensor.beispiel_1", "sensor.beispiel_2", "sensor.beispiel_3"], kind = q.get("bulk");

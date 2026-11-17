@@ -2928,7 +2928,7 @@
 "xferGap": "Intervallo di {hours} h tra la statistica vecchia e quella nuova.",
 "xferNewEmpty": "La destinazione non ha ancora statistiche: viene copiato tutto, la somma non può proseguire.",
 "xferEnergy": "Cambia anche la dashboard Energia",
-"xferEnergyOn": "{n} statistica/statistiche sono nella dashboard Energia: dopo punterà alla nuova entità. L’anteprima mostra la modifica; si può annullare, le statistiche copiate solo dal backup.",
+"xferEnergyOn": "Nella dashboard Energia: {n}. Dopo punterà alla nuova entità. L’anteprima mostra la modifica; si può annullare, le statistiche copiate solo dal backup.",
 "xferEnergyOff": "Vengono copiate solo le statistiche. La dashboard Energia continua a puntare al vecchio ID e va cambiata a mano.",
 "xferOpenCount": "Trasferisci a un successore ({n})",
 "xferTitle": "Trasferisci la cronologia ad altre entità",

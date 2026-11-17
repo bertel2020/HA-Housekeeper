@@ -323,7 +323,7 @@ class UnusedMixin {
         return `${this.pickerBox(`xfer:${p.object_id}`, this.t("rwNoTarget"))}${tags.length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
       } },
     ];
-    const body = x.loading ? `<div class="emptymsg">${this.t("xferLoading")}</div>` : x.pairs.length ? this.listTable("xfer", columns, x.pairs, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.t("noOrphanStats")}</div>`;
+    const body = x.loading ? `<div class="emptymsg">${this.t("xferLoading")}</div>` : x.pairs.length ? this.listTable("xfer", columns, x.pairs, { cls: "pairs", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.t("noOrphanStats")}</div>`;
     const energyRows = x.pairs.filter(p => this.xferInEnergy(p.object_id)).length;
     const follow = energyRows ? `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-xfer-energy ${x.followEnergy ? "checked" : ""}><span><strong>${this.t("xferEnergy")}</strong><small>${this.t(x.followEnergy ? "xferEnergyOn" : "xferEnergyOff", { n: energyRows })}</small></span></label>` : "";
     return `<div class="stack">${this.unrefTabs()}<div class="panel"><div class="panelhead"><div><h2>${this.t("xferTitle")}</h2><p>${this.t("xferHint")}</p></div></div>

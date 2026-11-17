@@ -3171,7 +3171,7 @@
 "xferGap": "Medzera {hours} h medzi starou a novou štatistikou.",
 "xferNewEmpty": "Cieľ ešte nemá štatistiky: skopíruje sa všetko, súčet sa nedá nadviazať.",
 "xferEnergy": "Prepnúť aj panel Energia",
-"xferEnergyOn": "{n} štatistika/štatistík je v paneli Energia: potom bude ukazovať na novú entitu. Náhľad ukazuje zmenu; dá sa vrátiť späť, skopírované štatistiky len zo zálohy.",
+"xferEnergyOn": "V paneli Energia: {n}. Potom bude ukazovať na novú entitu. Náhľad ukazuje zmenu; dá sa vrátiť späť, skopírované štatistiky len zo zálohy.",
 "xferEnergyOff": "Kopírujú sa len štatistiky. Panel Energia stále ukazuje na staré ID a treba ho prepnúť ručne.",
 "xferOpenCount": "Preniesť na nástupcu ({n})",
 "xferTitle": "Preniesť históriu na iné entity",

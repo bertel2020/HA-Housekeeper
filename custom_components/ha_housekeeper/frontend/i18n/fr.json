@@ -2883,7 +2883,7 @@
 "xferGap": "Trou de {hours} h entre l’ancienne et la nouvelle statistique.",
 "xferNewEmpty": "La cible n’a pas encore de statistiques : tout est copié, la somme ne peut pas être poursuivie.",
 "xferEnergy": "Changer aussi le tableau de bord Énergie",
-"xferEnergyOn": "{n} statistique(s) figurent dans le tableau de bord Énergie : il pointera ensuite vers la nouvelle entité. L’aperçu montre la modification ; elle peut être annulée, les statistiques copiées seulement depuis la sauvegarde.",
+"xferEnergyOn": "Dans le tableau de bord Énergie : {n}. Il pointera ensuite vers la nouvelle entité. L’aperçu montre la modification ; elle peut être annulée, les statistiques copiées seulement depuis la sauvegarde.",
 "xferEnergyOff": "Seules les statistiques sont copiées. Le tableau de bord Énergie continue de pointer vers l’ancien ID et doit être changé à la main.",
 "xferOpenCount": "Transférer vers un successeur ({n})",
 "xferTitle": "Transférer l’historique vers d’autres entités",

@@ -2883,7 +2883,7 @@
 "xferGap": "Hueco de {hours} h entre la estadística antigua y la nueva.",
 "xferNewEmpty": "El destino aún no tiene estadísticas: se copia todo, la suma no puede continuarse.",
 "xferEnergy": "Cambiar también el panel de Energía",
-"xferEnergyOn": "{n} estadística(s) están en el panel de Energía: después apuntará a la nueva entidad. La vista previa muestra el cambio; se puede deshacer, las estadísticas copiadas solo desde la copia de seguridad.",
+"xferEnergyOn": "En el panel de Energía: {n}. Después apuntará a la nueva entidad. La vista previa muestra el cambio; se puede deshacer, las estadísticas copiadas solo desde la copia de seguridad.",
 "xferEnergyOff": "Solo se copian las estadísticas. El panel de Energía sigue apuntando al ID antiguo y hay que cambiarlo a mano.",
 "xferOpenCount": "Transferir a un sucesor ({n})",
 "xferTitle": "Transferir el historial a otras entidades",

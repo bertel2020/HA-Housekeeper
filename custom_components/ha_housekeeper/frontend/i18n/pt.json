@@ -2883,7 +2883,7 @@
 "xferGap": "Intervalo de {hours} h entre a estatística antiga e a nova.",
 "xferNewEmpty": "O destino ainda não tem estatísticas: copia-se tudo, a soma não pode ser continuada.",
 "xferEnergy": "Alterar também o painel de Energia",
-"xferEnergyOn": "{n} estatística(s) estão no painel de Energia: depois apontará para a nova entidade. A pré-visualização mostra a alteração; pode ser anulada, as estatísticas copiadas só a partir da cópia de segurança.",
+"xferEnergyOn": "No painel de Energia: {n}. Depois apontará para a nova entidade. A pré-visualização mostra a alteração; pode ser anulada, as estatísticas copiadas só a partir da cópia de segurança.",
 "xferEnergyOff": "Só as estatísticas são copiadas. O painel de Energia continua a apontar para o ID antigo e tem de ser alterado à mão.",
 "xferOpenCount": "Transferir para um sucessor ({n})",
 "xferTitle": "Transferir o histórico para outras entidades",
