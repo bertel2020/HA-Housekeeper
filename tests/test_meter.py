@@ -800,3 +800,44 @@ async def test_an_orphaned_statistic_is_proposed_a_successor_and_its_history_is_
         await run(scanner, plan, [OLD])
     assert len(await series(hass, NEW)) == 48 + 24
     assert plan["status"] == "verified"
+
+
+async def test_an_orphaned_statistic_of_the_energy_dashboard_is_joined_and_the_dashboard_follows(
+    recorder_mock, hass: HomeAssistant
+) -> None:
+    two_meters(hass)
+    er.async_get(hass).async_remove(OLD)
+    await async_wait_recording_done(hass)
+    hass.config.components.add("energy")
+    energy = SimpleNamespace(
+        data={"energy_sources": [{"type": "grid", "flow_from": [{"stat_energy_from": OLD}]}]},
+        async_update=AsyncMock(),
+    )
+
+    async def store(update):
+        energy.data = {**energy.data, **update}
+
+    energy.async_update.side_effect = store
+
+    async def get_manager(_hass):
+        return energy
+
+    scanner = await make_scanner(hass)
+    manager, _ = fake_backup()
+    with (
+        patch("homeassistant.components.energy.data.async_get_manager", get_manager),
+        patch("homeassistant.components.backup.async_get_manager", return_value=manager),
+    ):
+        plan = await make_replace_plan(scanner, hass)
+        action = plan["actions"][0]
+        assert [s["type"] for s in action["sources"]] == ["energy"], action["reasons"]
+        assert action["verdict"] == "review" and action["executable"] is True
+        await run(scanner, plan, [OLD])
+        assert len(await series(hass, NEW)) == 72
+        update = energy.async_update.await_args.args[0]
+        assert update["energy_sources"][0]["flow_from"][0]["stat_energy_from"] == NEW
+        assert plan["status"] == "verified"
+        undo = await scanner.cleanup.undo(plan["plan_id"], None)
+        assert undo["results"] == [{"object_id": OLD, "outcome": "undone"}]
+        restored = energy.async_update.await_args.args[0]
+        assert restored["energy_sources"][0]["flow_from"][0]["stat_energy_from"] == OLD

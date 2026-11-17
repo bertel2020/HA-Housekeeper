@@ -2409,8 +2409,9 @@ test("orphaned statistics are selected and turned into a purge plan, which asks 
     objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.new_power", name: "N", status: "active", unit: "W" }] };
   el.view = "unreferenced"; el.unrefTab = "statistics"; el._orphanLastRequested = true;
   el.render();
-  assert.ok(shadow.innerHTML.includes('data-psel="sensor.old_power"') && !shadow.innerHTML.includes('data-psel="sensor.grid"'), "an Energy series cannot be picked");
-  el.purgeSel.add("sensor.old_power"); el.purgeOpen = true;
+  assert.ok(shadow.innerHTML.includes('data-psel="sensor.old_power"') && shadow.innerHTML.includes('data-psel="sensor.grid"'), "an Energy series can be picked: it can be moved");
+  el.purgeSel.add("sensor.old_power"); el.purgeSel.add("sensor.grid"); el.purgeOpen = true;
+  assert.deepEqual([...el.purgeIds()], ["sensor.old_power"], "deleting skips what the Energy dashboard uses");
   el.render();
   assert.ok(!/data-purge-run disabled/.test(shadow.innerHTML), "making the preview needs no word: the plan asks for it");
   const asked = [];
@@ -4519,18 +4520,18 @@ test("a preview that deletes statistics offers the states switch and is cancelle
 });
 
 test("orphaned statistics can be moved to proposed entities in one preview", async () => {
-  const { el, shadow } = panel("en");
-  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.new", name: "New", status: "active", unit: "kWh" }], edges: [], findings: [], orphaned_statistics: [{ statistic_id: "sensor.old", unit: "kWh", has_sum: true }], meta: { ...DATA.meta, recorder_available: true } };
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.new", name: "New", status: "active", unit: "kWh" }, { object_type: "entity", object_id: "sensor.new_grid", name: "NG", status: "active", unit: "kWh" }], edges: [], findings: [], orphaned_statistics: [{ statistic_id: "sensor.old", unit: "kWh", has_sum: true }, { statistic_id: "sensor.grid", unit: "kWh", has_sum: true, in_energy: true }], meta: { ...DATA.meta, recorder_available: true } };
   const sent = [];
-  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type === "ha_housekeeper/entity_pairs" ? { pairs: [{ object_id: "sensor.old", name: "old", unit: "kWh", candidates: [{ object_id: "sensor.new", score: 5, reasons: [] }] }] } : { plan_id: "px", actions: [], summary: {} }; } };
-  el.view = "cleanup"; el.cleanupTab = "stats"; el.unrefTab = "statistics"; el.purgeSel = new Set(["sensor.old"]);
+  el._hass = { language: "en", callWS: async msg => { sent.push(msg); return msg.type === "ha_housekeeper/entity_pairs" ? { pairs: [{ object_id: "sensor.old", name: "old", unit: "kWh", candidates: [{ object_id: "sensor.new", score: 5, reasons: [] }] }, { object_id: "sensor.grid", name: "grid", unit: "kWh", candidates: [{ object_id: "sensor.new_grid", score: 5, reasons: [] }] }] } : { plan_id: "px", actions: [], summary: {} }; } };
+  el.view = "cleanup"; el.cleanupTab = "stats"; el.unrefTab = "statistics"; el.purgeSel = new Set(["sensor.old", "sensor.grid"]);
   assert.ok(el.orphanStatsView().includes("data-xfer-start"));
   el.xferStart(); await new Promise(r => setTimeout(r, 0));
-  assert.equal(JSON.stringify(el.xfer.choices), JSON.stringify({ "sensor.old": "sensor.new" }));
-  assert.ok(el.orphanStatsView().includes("data-xfer-create"));
+  assert.equal(JSON.stringify(el.xfer.choices), JSON.stringify({ "sensor.old": "sensor.new", "sensor.grid": "sensor.new_grid" }));
+  assert.ok(el.orphanStatsView().includes("data-xfer-create") && el.orphanStatsView().includes("data-xfer-energy"));
   await el.xferCreate();
   const made = sent.find(m => m.type === "ha_housekeeper/plan_create");
-  assert.equal(JSON.stringify(made.actions), JSON.stringify([{ kind: "migrate_meter", object_id: "sensor.old", target: "sensor.new", mode: "statistics" }]));
+  assert.equal(JSON.stringify(made.actions), JSON.stringify([{ kind: "migrate_meter", object_id: "sensor.old", target: "sensor.new", mode: "statistics" }, { kind: "migrate_meter", object_id: "sensor.grid", target: "sensor.new_grid", mode: "replace_statistics" }]));
   assert.equal(el.xfer, null);
 });
 

@@ -182,7 +182,7 @@ class UnusedMixin {
     const rows = this.selOnlyOn("orphanstats", this.purgeSel.size) ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;
     const pg = this.paginate("orphanstats", rows);
     this._purgeTotal = rows.length;
-    this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
+    this._purgePage = pg.rows.map(o => o.statistic_id);
     const lastCell = o => {
       if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">${this.t("loadingShort")}</span>`;
       if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
@@ -220,7 +220,7 @@ class UnusedMixin {
   xferStart() {
     const ids = [...this.purgeSel].slice(0, MAX_PLAN_ACTIONS);
     if (!ids.length) return;
-    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "" };
+    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "", followEnergy: true };
     this.render();
     this._hass.callWS({ type: "ha_housekeeper/entity_pairs", old_entity_ids: ids })
       .then(res => { x.pairs = res.pairs || []; this.xferTakeAll(); })
@@ -251,6 +251,11 @@ class UnusedMixin {
     };
   }
 
+  xferInEnergy(id) { return (this.data.orphaned_statistics || []).some(o => o.statistic_id === id && o.in_energy); }
+
+  // Statistics of the Energy dashboard also switch the dashboard (and every other place that names them) to the new entity, unless the person says no.
+  xferMode(id) { return this.xfer.followEnergy && this.xferInEnergy(id) ? "replace_statistics" : "statistics"; }
+
   // What the panel can see before a preview: one new entity for two statistics, another unit.
   xferProblems(pair) {
     const x = this.xfer, target = x.choices[pair.object_id];
@@ -264,7 +269,7 @@ class UnusedMixin {
 
   async xferCreate() {
     const x = this.xfer;
-    const actions = Object.entries(x.choices).filter(([, target]) => target).map(([object_id, target]) => ({ kind: "migrate_meter", object_id, target, mode: "statistics" }));
+    const actions = Object.entries(x.choices).filter(([, target]) => target).map(([object_id, target]) => ({ kind: "migrate_meter", object_id, target, mode: this.xferMode(object_id) }));
     if (!actions.length || x.pairs.some(p => this.xferProblems(p).some(q => q.tone === "red"))) return;
     this.cleanupBusy = true; x.error = ""; this.render();
     try {
@@ -289,8 +294,10 @@ class UnusedMixin {
       } },
     ];
     const body = x.loading ? `<div class="emptymsg">${this.t("xferLoading")}</div>` : x.pairs.length ? this.listTable("xfer", columns, x.pairs, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.t("noOrphanStats")}</div>`;
+    const energyRows = x.pairs.filter(p => this.xferInEnergy(p.object_id)).length;
+    const follow = energyRows ? `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-xfer-energy ${x.followEnergy ? "checked" : ""}><span><strong>${this.t("xferEnergy")}</strong><small>${this.t(x.followEnergy ? "xferEnergyOn" : "xferEnergyOff", { n: energyRows })}</small></span></label>` : "";
     return `<div class="stack">${this.unrefTabs()}<div class="panel"><div class="panelhead"><div><h2>${this.t("xferTitle")}</h2><p>${this.t("xferHint")}</p></div></div>
-      ${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
+      ${follow}${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
       <div class="toolbar"><button class="btn quiet" data-xfer-cancel>${this.t("xferBack")}</button><button class="btn quiet" data-xfer-take ${x.loading ? "disabled" : ""}>${this.t("xferTake")}</button><span class="toolgap"></span>
       <button class="btn primary" data-xfer-create ${n && !blocked && !this.cleanupBusy ? "" : "disabled"}>${this.t("xferCreate", { count: n })}</button></div>${body}</div></div>`;
   }
@@ -299,8 +306,9 @@ class UnusedMixin {
   // A statistic of the Energy dashboard cannot be picked: a greyed box that says why, so the rows stay in line.
   purgeBox(o) {
     if (!this.data.meta.recorder_available) return "";
-    if (o.in_energy) return `<input type="checkbox" class="selbox" disabled title="${this.esc(this.t("inEnergyLocked"))}" aria-label="${this.esc(`${o.statistic_id}: ${this.t("inEnergyLocked")}`)}">`;
-    return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""} aria-label="${this.esc(o.statistic_id)}">`;
+    // A statistic of the Energy dashboard can be ticked: moving it to another entity is allowed, deleting skips it.
+    const note = o.in_energy ? ` title="${this.esc(this.t("inEnergyLocked"))}"` : "";
+    return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""}${note} aria-label="${this.esc(o.in_energy ? `${o.statistic_id}: ${this.t("inEnergyLocked")}` : o.statistic_id)}">`;
   }
 
   // Header box: ticks every selectable row of the shown page; half-ticked when only some are.
@@ -312,17 +320,23 @@ class UnusedMixin {
 
   purgeBar() {
     if (!this.data.meta.recorder_available) return "";
-    const n = this.purgeSel.size, r = this.purgeResult;
+    const n = this.purgeSel.size, r = this.purgeResult, del = this.purgeIds().length;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
-    const over = n > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button><button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    const over = del > MAX_PLAN_ACTIONS;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${del ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(del) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n: del, rest: del - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+  }
+
+  // The ticked statistics that may be deleted: those of the Energy dashboard may not.
+  purgeIds() {
+    const energy = new Set((this.data.orphaned_statistics || []).filter(o => o.in_energy).map(o => o.statistic_id));
+    return [...this.purgeSel].filter(id => !energy.has(id));
   }
 
   async purgeRun() {
     // The deletion is an ordinary plan: preview, confirmation of each ID, backup, verification. It is made here and run under Cleanup.
     this.purgeBusy = true; this.purgeResult = null; this.render();
     try {
-      const chosen = [...this.purgeSel], now = chosen.slice(0, MAX_PLAN_ACTIONS);
+      const chosen = this.purgeIds(), now = chosen.slice(0, MAX_PLAN_ACTIONS);
       const actions = now.map(object_id => ({ kind: "purge_statistics", object_id, states: true }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); 

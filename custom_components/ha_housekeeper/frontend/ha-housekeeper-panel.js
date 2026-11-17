@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"692afeb3d1"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"428de894e9"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f9ad4cdfdc"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"39ad3f2d98"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"39645c33fb"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7a36acc39e"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"46b420e95f"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"26c905e562"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"7dcbe1212e"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"791615996e"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7d47b80018"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"6c889653f4"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"d0ce0758c0"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"95d72b9d18"}];
 
 const TEXT = {
   de: {
@@ -6237,7 +6237,7 @@ class UnusedMixin {
     const rows = this.selOnlyOn("orphanstats", this.purgeSel.size) ? refined.filter(o => this.purgeSel.has(o.statistic_id)) : refined;
     const pg = this.paginate("orphanstats", rows);
     this._purgeTotal = rows.length;
-    this._purgePage = pg.rows.filter(o => !o.in_energy).map(o => o.statistic_id);
+    this._purgePage = pg.rows.map(o => o.statistic_id);
     const lastCell = o => {
       if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">${this.t("loadingShort")}</span>`;
       if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
@@ -6275,7 +6275,7 @@ class UnusedMixin {
   xferStart() {
     const ids = [...this.purgeSel].slice(0, MAX_PLAN_ACTIONS);
     if (!ids.length) return;
-    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "" };
+    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "", followEnergy: true };
     this.render();
     this._hass.callWS({ type: "ha_housekeeper/entity_pairs", old_entity_ids: ids })
       .then(res => { x.pairs = res.pairs || []; this.xferTakeAll(); })
@@ -6306,6 +6306,11 @@ class UnusedMixin {
     };
   }
 
+  xferInEnergy(id) { return (this.data.orphaned_statistics || []).some(o => o.statistic_id === id && o.in_energy); }
+
+  // Statistics of the Energy dashboard also switch the dashboard (and every other place that names them) to the new entity, unless the person says no.
+  xferMode(id) { return this.xfer.followEnergy && this.xferInEnergy(id) ? "replace_statistics" : "statistics"; }
+
   // What the panel can see before a preview: one new entity for two statistics, another unit.
   xferProblems(pair) {
     const x = this.xfer, target = x.choices[pair.object_id];
@@ -6319,7 +6324,7 @@ class UnusedMixin {
 
   async xferCreate() {
     const x = this.xfer;
-    const actions = Object.entries(x.choices).filter(([, target]) => target).map(([object_id, target]) => ({ kind: "migrate_meter", object_id, target, mode: "statistics" }));
+    const actions = Object.entries(x.choices).filter(([, target]) => target).map(([object_id, target]) => ({ kind: "migrate_meter", object_id, target, mode: this.xferMode(object_id) }));
     if (!actions.length || x.pairs.some(p => this.xferProblems(p).some(q => q.tone === "red"))) return;
     this.cleanupBusy = true; x.error = ""; this.render();
     try {
@@ -6344,8 +6349,10 @@ class UnusedMixin {
       } },
     ];
     const body = x.loading ? `<div class="emptymsg">${this.t("xferLoading")}</div>` : x.pairs.length ? this.listTable("xfer", columns, x.pairs, { cls: "stat", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.t("noOrphanStats")}</div>`;
+    const energyRows = x.pairs.filter(p => this.xferInEnergy(p.object_id)).length;
+    const follow = energyRows ? `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-xfer-energy ${x.followEnergy ? "checked" : ""}><span><strong>${this.t("xferEnergy")}</strong><small>${this.t(x.followEnergy ? "xferEnergyOn" : "xferEnergyOff", { n: energyRows })}</small></span></label>` : "";
     return `<div class="stack">${this.unrefTabs()}<div class="panel"><div class="panelhead"><div><h2>${this.t("xferTitle")}</h2><p>${this.t("xferHint")}</p></div></div>
-      ${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
+      ${follow}${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
       <div class="toolbar"><button class="btn quiet" data-xfer-cancel>${this.t("xferBack")}</button><button class="btn quiet" data-xfer-take ${x.loading ? "disabled" : ""}>${this.t("xferTake")}</button><span class="toolgap"></span>
       <button class="btn primary" data-xfer-create ${n && !blocked && !this.cleanupBusy ? "" : "disabled"}>${this.t("xferCreate", { count: n })}</button></div>${body}</div></div>`;
   }
@@ -6354,8 +6361,9 @@ class UnusedMixin {
   // A statistic of the Energy dashboard cannot be picked: a greyed box that says why, so the rows stay in line.
   purgeBox(o) {
     if (!this.data.meta.recorder_available) return "";
-    if (o.in_energy) return `<input type="checkbox" class="selbox" disabled title="${this.esc(this.t("inEnergyLocked"))}" aria-label="${this.esc(`${o.statistic_id}: ${this.t("inEnergyLocked")}`)}">`;
-    return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""} aria-label="${this.esc(o.statistic_id)}">`;
+    // A statistic of the Energy dashboard can be ticked: moving it to another entity is allowed, deleting skips it.
+    const note = o.in_energy ? ` title="${this.esc(this.t("inEnergyLocked"))}"` : "";
+    return `<input type="checkbox" class="selbox" data-psel="${this.esc(o.statistic_id)}" ${this.purgeSel.has(o.statistic_id) ? "checked" : ""}${note} aria-label="${this.esc(o.in_energy ? `${o.statistic_id}: ${this.t("inEnergyLocked")}` : o.statistic_id)}">`;
   }
 
   // Header box: ticks every selectable row of the shown page; half-ticked when only some are.
@@ -6367,17 +6375,23 @@ class UnusedMixin {
 
   purgeBar() {
     if (!this.data.meta.recorder_available) return "";
-    const n = this.purgeSel.size, r = this.purgeResult;
+    const n = this.purgeSel.size, r = this.purgeResult, del = this.purgeIds().length;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
-    const over = n > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button><button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n, rest: n - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    const over = del > MAX_PLAN_ACTIONS;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${del ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(del) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n: del, rest: del - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+  }
+
+  // The ticked statistics that may be deleted: those of the Energy dashboard may not.
+  purgeIds() {
+    const energy = new Set((this.data.orphaned_statistics || []).filter(o => o.in_energy).map(o => o.statistic_id));
+    return [...this.purgeSel].filter(id => !energy.has(id));
   }
 
   async purgeRun() {
     // The deletion is an ordinary plan: preview, confirmation of each ID, backup, verification. It is made here and run under Cleanup.
     this.purgeBusy = true; this.purgeResult = null; this.render();
     try {
-      const chosen = [...this.purgeSel], now = chosen.slice(0, MAX_PLAN_ACTIONS);
+      const chosen = this.purgeIds(), now = chosen.slice(0, MAX_PLAN_ACTIONS);
       const actions = now.map(object_id => ({ kind: "purge_statistics", object_id, states: true }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
       this.purgeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS)); 
@@ -11545,6 +11559,7 @@ Object.assign(TEXT.en, {
 });
 Object.assign(TEXT.de, {
   purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Bereinigen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
+  xferEnergy: "Energie-Dashboard mit umstellen", xferEnergyOn: "{n} Statistik(en) stehen im Energie-Dashboard: es zeigt danach auf die neue Entität. Die Vorschau zeigt die Änderung; rückgängig machen lässt sie sich, die kopierte Statistik nur per Backup.", xferEnergyOff: "Nur die Statistik wird kopiert. Das Energie-Dashboard zeigt weiter auf die alte ID und muss von Hand umgestellt werden.",
   xferOpenCount: "Auf Nachfolger übertragen ({n})", xferTitle: "Historie auf andere Entitäten übertragen", xferHint: "Die Langzeitstatistik jeder gewählten Statistik wird vor die der neuen Entität kopiert; bei Zählern wird deren Summe um den alten Endstand verschoben. Überlappende Werte werden nie überschrieben, die alte Statistik bleibt und lässt sich danach löschen. Vor dem Lauf entsteht ein Backup.", xferTarget: "Neue Entität", xferTake: "Vorschläge übernehmen", xferBack: "Zurück", xferCreate: "Vorschau erstellen ({count})", xferLoading: "Nachfolger werden gesucht …",
   statWaiting: "Wartet noch", statWaitingTitle: "Zuerst {since} ohne Entität gesehen. Nach 2 Tagen zählt sie als verwaist, bis dahin ist die Integration vielleicht nur offline.", reason_recent_orphan: "Erst seit Kurzem ohne Entität: die Integration ist vielleicht nur offline.",
   reason_irreversible: "Nur per Backup umkehrbar.", reason_with_states: "Löscht auch die gespeicherten Zustände.", reason_entity_exists: "Eine Entität trägt diese ID wieder.", reason_not_orphaned: "Die ID ist keine verwaiste Statistik.", reason_in_energy: "Das Energie-Dashboard nutzt diese Statistik.",
@@ -11553,6 +11568,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   purgePreview: "Create preview", purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
+  xferEnergy: "Switch the Energy dashboard too", xferEnergyOn: "{n} statistic(s) are in the Energy dashboard: it then points to the new entity. The preview shows the change; it can be undone, the copied statistics only from the backup.", xferEnergyOff: "Only the statistics are copied. The Energy dashboard keeps pointing to the old ID and has to be switched by hand.",
   xferOpenCount: "Move to a successor ({n})", xferTitle: "Move the history to other entities", xferHint: "The long-term statistics of each chosen statistic are copied in front of those of the new entity; for counters its sum is shifted by the old final total. Overlapping values are never overwritten, the old statistic stays and can be deleted afterwards. A backup is made before the run.", xferTarget: "New entity", xferTake: "Take the proposals", xferBack: "Back", xferCreate: "Create preview ({count})", xferLoading: "Looking for successors …",
   statWaiting: "Still waiting", statWaitingTitle: "First seen without an entity {since}. After 2 days it counts as orphaned; until then the integration may only be offline.", reason_recent_orphan: "Without an entity only for a short time: the integration may just be offline.",
   reason_irreversible: "Reversible only from the backup.", reason_with_states: "Also deletes the stored states.", reason_entity_exists: "An entity carries this ID again.", reason_not_orphaned: "The ID is not an orphaned statistic.", reason_in_energy: "The Energy dashboard uses this statistic.",
@@ -24547,6 +24563,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-xfer-start]")?.addEventListener("click", () => this.xferStart());
     root.querySelector("[data-xfer-cancel]")?.addEventListener("click", () => { this.xfer = null; this.render(); });
     root.querySelector("[data-xfer-take]")?.addEventListener("click", () => { this.xferTakeAll(); this.render(); });
+    root.querySelector("[data-xfer-energy]")?.addEventListener("change", ev => { this.xfer.followEnergy = ev.currentTarget.checked; this.render(); });
     root.querySelector("[data-xfer-create]")?.addEventListener("click", () => this.xferCreate());
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));
     root.querySelectorAll("[data-release]").forEach(el => el.onclick = () => { this.releaseConfirm = el.dataset.release; this.releaseMessage = ""; this.render(); });

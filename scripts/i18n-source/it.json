@@ -6662,7 +6662,10 @@
 "xferTake": "c5257998",
 "xferBack": "76900f1b",
 "xferCreate": "0effbe2a",
-"xferLoading": "aaf5e446"
+"xferLoading": "aaf5e446",
+"xferEnergy": "ce64ce58",
+"xferEnergyOn": "124901a1",
+"xferEnergyOff": "3227cc34"
 },
 "setup": {
 "title": "644c2647",
