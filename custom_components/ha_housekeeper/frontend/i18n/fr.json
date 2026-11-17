@@ -2874,6 +2874,8 @@
 "reason_with_states": "Supprime aussi les états enregistrés.",
 "reason_entity_exists": "Une entité porte de nouveau cet ID.",
 "reason_not_orphaned": "L’ID n’est pas une statistique orpheline.",
+"purgeOldHint": "Les anciennes statistiques ({n}) existent encore. Tu peux les supprimer maintenant ; c’est un plan à part, qui redemande confirmation.",
+"purgeOldGo": "Supprimer les anciennes statistiques ({n})",
 "xferNothing": "Rien à copier : les statistiques de la cible commencent plus tôt que les anciennes.",
 "xferOverlap": "Chevauchement : seules les valeurs avant le début de la cible sont copiées.",
 "xferGap": "Trou de {hours} h entre l’ancienne et la nouvelle statistique.",

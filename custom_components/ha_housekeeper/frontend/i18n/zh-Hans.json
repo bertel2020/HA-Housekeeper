@@ -2874,6 +2874,8 @@
 "reason_with_states": "同时删除已存储的状态。",
 "reason_entity_exists": "已有实体重新使用此 ID。",
 "reason_not_orphaned": "该 ID 不是孤立统计。",
+"purgeOldHint": "旧统计（{n}）仍然存在。现在可以删除；这是一个单独的计划，会再次征求确认。",
+"purgeOldGo": "删除旧统计（{n}）",
 "xferNothing": "无需复制：目标的统计开始得比旧统计更早。",
 "xferOverlap": "重叠：只复制目标开始之前的数值。",
 "xferGap": "旧统计与新统计之间有 {hours} 小时的空档。",

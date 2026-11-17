@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"caa8b2e83f"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"3287434153"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f1450e6f53"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"50662c4d33"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"2a237ecb31"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"f52f7eff48"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"94ba7125f5"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"ec6230752c"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"584400887b"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d1f8adc472"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9f3e5e96db"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"1989e211b1"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"4dd363a86d"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"762ac4a0f8"}];
 
 const TEXT = {
   de: {
@@ -5041,7 +5041,7 @@ class CleanupMixin {
     const body = stage === 0 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
       : stage === 1 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
       : stage === 2 ? `${this.planOutcome(plan)}${control}`
-      : `${this.planOutcome(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
+      : `${this.planOutcome(plan)}${this.purgeOldCard(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
     return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}${plan.via === "mcp" ? ` <span class="pill mute">${this.t("viaMcp")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div>${footClose ? "" : `<button class="btn" data-plan-close>${this.t("planClose")}</button>`}</div>
       ${plan.via === "mcp" && plan.status === "dry_run" ? `<div class="outcome warn" role="note"><ha-icon icon="mdi:robot-outline"></ha-icon><span><strong>${this.t("viaMcpHint")}</strong></span></div>` : ""}${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
   }
@@ -5288,6 +5288,26 @@ class CleanupMixin {
     if (!purges.length) return "";
     const on = purges.every(a => a.states), n = plan.simulation?.purge_states_rows;
     return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-purge-states-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("purgeStates")}</strong><small>${this.t(on ? "purgeStatesOn" : "purgeStatesOff", { n: this.formatNumber(n || 0) })}</small></span></label>`;
+  }
+
+  // After a move of orphaned statistics: the old ones are still there and can be deleted at once, as one more plan that asks again.
+  purgeOldIds(plan) {
+    if (plan.status !== "verified" || !this.data.meta.recorder_available) return [];
+    const orphans = new Map((this.data.orphaned_statistics || []).map(o => [o.statistic_id, o]));
+    return plan.actions.filter(a => a.kind === "migrate_meter" && a.result?.state === "done" && a.result.statistics?.verified && orphans.has(a.object_id) && (a.mode === "replace_statistics" || !orphans.get(a.object_id).in_energy)).map(a => a.object_id).slice(0, MAX_PLAN_ACTIONS);
+  }
+
+  purgeOldCard(plan) {
+    const ids = this.purgeOldIds(plan);
+    if (!ids.length) return "";
+    return `<div class="hintbox"><ha-icon icon="mdi:database-remove-outline"></ha-icon><div><p>${this.t("purgeOldHint", { n: ids.length })}</p><button class="btn dangersoft" data-purge-old ${this.cleanupBusy || this.planBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOldGo", { n: ids.length })}</button></div></div>`;
+  }
+
+  async purgeOld() {
+    const ids = this.purgeOldIds(this.plan || {});
+    if (!ids.length) return;
+    try { await this.newPlan(ids.map(object_id => ({ kind: "purge_statistics", object_id, states: true }))); }
+    catch (err) { this.cleanupError = this.errText(err); this.render(); }
   }
 
   // Closing the plan page: back to the page it came from, else the journal.
@@ -11587,6 +11607,7 @@ Object.assign(TEXT.en, {
 });
 Object.assign(TEXT.de, {
   purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Bereinigen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
+  purgeOldHint: "Die alten Statistiken ({n}) sind noch da. Sie lassen sich jetzt löschen; das ist ein eigener Plan, der noch einmal fragt.", purgeOldGo: "Alte Statistiken löschen ({n})",
   xferNothing: "Nichts zu kopieren: Die Statistik des Ziels beginnt früher als die alte.", xferOverlap: "Überlappung: nur Werte vor dem Beginn des Ziels werden kopiert.", xferGap: "Lücke von {hours} Std. zwischen alter und neuer Statistik.", xferNewEmpty: "Das Ziel hat noch keine Statistik: alles wird kopiert, die Summe lässt sich nicht fortführen.",
   xferEnergy: "Energie-Dashboard mit umstellen", xferEnergyOn: "{n} Statistik(en) stehen im Energie-Dashboard: es zeigt danach auf die neue Entität. Die Vorschau zeigt die Änderung; rückgängig machen lässt sie sich, die kopierte Statistik nur per Backup.", xferEnergyOff: "Nur die Statistik wird kopiert. Das Energie-Dashboard zeigt weiter auf die alte ID und muss von Hand umgestellt werden.",
   xferOpenCount: "Auf Nachfolger übertragen ({n})", xferTitle: "Historie auf andere Entitäten übertragen", xferHint: "Die Langzeitstatistik jeder gewählten Statistik wird vor die der neuen Entität kopiert; bei Zählern wird deren Summe um den alten Endstand verschoben. Überlappende Werte werden nie überschrieben, die alte Statistik bleibt und lässt sich danach löschen. Vor dem Lauf entsteht ein Backup.", xferTarget: "Neue Entität", xferTake: "Vorschläge übernehmen", xferBack: "Zurück", xferCreate: "Vorschau erstellen ({count})", xferLoading: "Nachfolger werden gesucht …",
@@ -11597,6 +11618,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   purgePreview: "Create preview", purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
+  purgeOldHint: "The old statistics ({n}) are still there. They can be deleted now; that is a plan of its own, which asks again.", purgeOldGo: "Delete the old statistics ({n})",
   xferNothing: "Nothing to copy: the target's statistics start earlier than the old ones.", xferOverlap: "Overlap: only values before the target's start are copied.", xferGap: "Gap of {hours} h between the old and the new statistics.", xferNewEmpty: "The target has no statistics yet: everything is copied, the sum cannot be continued.",
   xferEnergy: "Switch the Energy dashboard too", xferEnergyOn: "{n} statistic(s) are in the Energy dashboard: it then points to the new entity. The preview shows the change; it can be undone, the copied statistics only from the backup.", xferEnergyOff: "Only the statistics are copied. The Energy dashboard keeps pointing to the old ID and has to be switched by hand.",
   xferOpenCount: "Move to a successor ({n})", xferTitle: "Move the history to other entities", xferHint: "The long-term statistics of each chosen statistic are copied in front of those of the new entity; for counters its sum is shifted by the old final total. Overlapping values are never overwritten, the old statistic stays and can be deleted afterwards. A backup is made before the run.", xferTarget: "New entity", xferTake: "Take the proposals", xferBack: "Back", xferCreate: "Create preview ({count})", xferLoading: "Looking for successors …",
@@ -24590,6 +24612,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
+    root.querySelector("[data-purge-old]")?.addEventListener("click", () => this.purgeOld());
     root.querySelector("[data-xfer-start]")?.addEventListener("click", () => this.xferStart());
     root.querySelector("[data-xfer-cancel]")?.addEventListener("click", () => { this.xfer = null; this.render(); });
     root.querySelector("[data-xfer-take]")?.addEventListener("click", () => { this.xferTakeAll(); this.xferLoadSpans(); this.render(); });

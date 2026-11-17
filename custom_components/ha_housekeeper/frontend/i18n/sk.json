@@ -3162,6 +3162,8 @@
 "reason_with_states": "Vymažú sa aj uložené stavy.",
 "reason_entity_exists": "Entita už toto ID znova používa.",
 "reason_not_orphaned": "ID nepatrí osirotenej štatistike.",
+"purgeOldHint": "Staré štatistiky ({n}) tu stále sú. Môžeš ich teraz vymazať; je to samostatný plán, ktorý sa opäť opýta.",
+"purgeOldGo": "Vymazať staré štatistiky ({n})",
 "xferNothing": "Nie je čo kopírovať: štatistiky cieľa začínajú skôr ako staré.",
 "xferOverlap": "Prekrytie: kopírujú sa len hodnoty pred začiatkom cieľa.",
 "xferGap": "Medzera {hours} h medzi starou a novou štatistikou.",

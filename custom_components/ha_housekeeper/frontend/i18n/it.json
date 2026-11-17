@@ -2919,6 +2919,8 @@
 "reason_with_states": "Elimina anche gli stati memorizzati.",
 "reason_entity_exists": "Un'entità porta di nuovo questo ID.",
 "reason_not_orphaned": "L'ID non è una statistica orfana.",
+"purgeOldHint": "Le vecchie statistiche ({n}) ci sono ancora. Puoi eliminarle ora; è un piano a parte, che chiede di nuovo conferma.",
+"purgeOldGo": "Elimina le vecchie statistiche ({n})",
 "xferNothing": "Niente da copiare: le statistiche della destinazione iniziano prima di quelle vecchie.",
 "xferOverlap": "Sovrapposizione: vengono copiati solo i valori precedenti all’inizio della destinazione.",
 "xferGap": "Intervallo di {hours} h tra la statistica vecchia e quella nuova.",

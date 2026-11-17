@@ -2874,6 +2874,8 @@
 "reason_with_states": "También elimina los estados almacenados.",
 "reason_entity_exists": "Una entidad vuelve a tener este ID.",
 "reason_not_orphaned": "El ID no es una estadística huérfana.",
+"purgeOldHint": "Las estadísticas antiguas ({n}) siguen ahí. Puedes borrarlas ahora; es un plan aparte, que vuelve a pedir confirmación.",
+"purgeOldGo": "Borrar las estadísticas antiguas ({n})",
 "xferNothing": "Nada que copiar: las estadísticas del destino empiezan antes que las antiguas.",
 "xferOverlap": "Solapamiento: solo se copian los valores anteriores al inicio del destino.",
 "xferGap": "Hueco de {hours} h entre la estadística antigua y la nueva.",

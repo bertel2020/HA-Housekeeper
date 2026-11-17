@@ -4538,6 +4538,19 @@ test("orphaned statistics can be moved to proposed entities in one preview", asy
   assert.equal(el.xfer, null);
 });
 
+test("after a verified move the old orphaned statistics are offered for deletion as a new plan", async () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, orphaned_statistics: [{ statistic_id: "sensor.old", in_energy: false }, { statistic_id: "sensor.grid", in_energy: true }] };
+  const done = (object_id, mode) => ({ kind: "migrate_meter", object_id, mode, result: { state: "done", statistics: { verified: true } } });
+  el.plan = { plan_id: "m1", status: "verified", actions: [done("sensor.old", "statistics"), done("sensor.grid", "statistics")] };
+  assert.equal(JSON.stringify(el.purgeOldIds(el.plan)), JSON.stringify(["sensor.old"]), "a series the Energy dashboard still names is not offered");
+  el.plan = { ...el.plan, actions: [done("sensor.old", "statistics"), done("sensor.grid", "replace_statistics")] };
+  assert.equal(JSON.stringify(el.purgeOldIds(el.plan)), JSON.stringify(["sensor.old", "sensor.grid"]));
+  assert.ok(el.purgeOldCard(el.plan).includes("data-purge-old"));
+  el.plan = { ...el.plan, status: "executed" };
+  assert.equal(el.purgeOldCard(el.plan), "");
+});
+
 test("the overview of an object offers its actions: decide a finding, replace a missing entity, disable, label", () => {
   const { el } = panel("en");
   el.lv = {}; el.render = () => {};

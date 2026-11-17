@@ -666,7 +666,7 @@ class CleanupMixin {
     const body = stage === 0 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
       : stage === 1 ? `${summary}${rows}${this.simulationBlock(plan)}${control}`
       : stage === 2 ? `${this.planOutcome(plan)}${control}`
-      : `${this.planOutcome(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
+      : `${this.planOutcome(plan)}${this.purgeOldCard(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
     return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}${plan.via === "mcp" ? ` <span class="pill mute">${this.t("viaMcp")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div>${footClose ? "" : `<button class="btn" data-plan-close>${this.t("planClose")}</button>`}</div>
       ${plan.via === "mcp" && plan.status === "dry_run" ? `<div class="outcome warn" role="note"><ha-icon icon="mdi:robot-outline"></ha-icon><span><strong>${this.t("viaMcpHint")}</strong></span></div>` : ""}${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
   }
@@ -913,6 +913,26 @@ class CleanupMixin {
     if (!purges.length) return "";
     const on = purges.every(a => a.states), n = plan.simulation?.purge_states_rows;
     return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-purge-states-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span><strong>${this.t("purgeStates")}</strong><small>${this.t(on ? "purgeStatesOn" : "purgeStatesOff", { n: this.formatNumber(n || 0) })}</small></span></label>`;
+  }
+
+  // After a move of orphaned statistics: the old ones are still there and can be deleted at once, as one more plan that asks again.
+  purgeOldIds(plan) {
+    if (plan.status !== "verified" || !this.data.meta.recorder_available) return [];
+    const orphans = new Map((this.data.orphaned_statistics || []).map(o => [o.statistic_id, o]));
+    return plan.actions.filter(a => a.kind === "migrate_meter" && a.result?.state === "done" && a.result.statistics?.verified && orphans.has(a.object_id) && (a.mode === "replace_statistics" || !orphans.get(a.object_id).in_energy)).map(a => a.object_id).slice(0, MAX_PLAN_ACTIONS);
+  }
+
+  purgeOldCard(plan) {
+    const ids = this.purgeOldIds(plan);
+    if (!ids.length) return "";
+    return `<div class="hintbox"><ha-icon icon="mdi:database-remove-outline"></ha-icon><div><p>${this.t("purgeOldHint", { n: ids.length })}</p><button class="btn dangersoft" data-purge-old ${this.cleanupBusy || this.planBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOldGo", { n: ids.length })}</button></div></div>`;
+  }
+
+  async purgeOld() {
+    const ids = this.purgeOldIds(this.plan || {});
+    if (!ids.length) return;
+    try { await this.newPlan(ids.map(object_id => ({ kind: "purge_statistics", object_id, states: true }))); }
+    catch (err) { this.cleanupError = this.errText(err); this.render(); }
   }
 
   // Closing the plan page: back to the page it came from, else the journal.
