@@ -445,6 +445,11 @@ BLOCKING_REASONS = frozenset(
 )
 
 
+def same_unit(a: str | None, b: str | None) -> bool:
+    """Units that differ only in spaces are one unit: "kWh/100km" and "kWh/100 km"."""
+    return "".join((a or "").split()) == "".join((b or "").split())
+
+
 def _verdict(action: dict[str, Any]) -> None:
     reasons = set(action["reasons"])
     if BLOCKING_REASONS & reasons:
@@ -586,7 +591,7 @@ def judge_reference_action(
     elif new["status"] != "active":
         reasons.append("target_not_working")
     if new is not None and old is not None:
-        if new.get("unit") != old.get("unit"):
+        if not same_unit(new.get("unit"), old.get("unit")):
             reasons.append("unit_differs")
         if new.get("device_class") != old.get("device_class"):
             reasons.append("class_differs")
@@ -1333,7 +1338,7 @@ def judge_meter_action(
         reasons.append("target_not_working")
     old = objects.get(object_id)
     if new is not None and old is not None:
-        if new.get("unit") != old.get("unit"):
+        if not same_unit(new.get("unit"), old.get("unit")):
             reasons.append("unit_differs")
         if new.get("device_class") != old.get("device_class"):
             reasons.append("class_differs")

@@ -100,6 +100,15 @@ def test_analyse_never_copies_overlapping_rows() -> None:
 
 def test_analyse_blocks_what_cannot_be_joined() -> None:
     old = stat_rows(START, 4)
+    spaced = analyse(
+        meta(OLD, unit="kWh/100km"),
+        old,
+        meta(NEW, unit="kWh/100 km"),
+        stat_rows(START + timedelta(hours=9), 4),
+    )
+    assert "stats_unit_differs" not in spaced["reasons"], (
+        "units that differ only in spaces are one unit"
+    )
     assert "stats_missing_old" in analyse(None, [], meta(NEW), old)["reasons"]
     assert "stats_unit_differs" in analyse(meta(OLD), old, meta(NEW, unit="Wh"), old)["reasons"]
     assert "stats_type_differs" in analyse(meta(OLD), old, meta(NEW, has_sum=False), old)["reasons"]

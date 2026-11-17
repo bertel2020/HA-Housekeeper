@@ -4529,6 +4529,7 @@ test("orphaned statistics can be moved to proposed entities in one preview", asy
   assert.ok(el.orphanStatsView().includes("data-xfer-start"));
   el.xferStart(); await new Promise(r => setTimeout(r, 0));
   assert.equal(JSON.stringify(el.xfer.choices), JSON.stringify({ "sensor.old": "sensor.new", "sensor.grid": "sensor.new_grid" }));
+  assert.ok(el.sameUnit("kWh/100km", "kWh/100 km") && !el.sameUnit("kWh", "Wh"), "spaces alone make no other unit");
   assert.ok(el.orphanStatsView().includes("data-xfer-create") && el.orphanStatsView().includes("data-xfer-energy"));
   const notes = el.orphanStatsView();
   assert.ok(notes.includes("panel ovvis"), "the list of the target field must not be cut off by the panel");

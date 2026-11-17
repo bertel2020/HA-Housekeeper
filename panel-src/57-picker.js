@@ -68,6 +68,9 @@ class PickerMixin {
     }[name];
   }
 
+  // Units that differ only in spaces are one unit ("kWh/100km", "kWh/100 km").
+  sameUnit(a, b) { return String(a ?? "").replace(/\s+/g, "") === String(b ?? "").replace(/\s+/g, ""); }
+
   // The new entity must come from the same domain as the old one.
   sameDomain(o, oldId) {
     const domain = String(oldId || "").split(".")[0];

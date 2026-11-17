@@ -63,8 +63,10 @@ def _flag(meta: dict[str, Any], key: str) -> Any:
 
 
 def _compatibility(old: dict[str, Any], new: dict[str, Any]) -> list[str]:
+    from .cleanup import same_unit
+
     reasons = []
-    if (old.get("unit_of_measurement") or None) != (new.get("unit_of_measurement") or None):
+    if not same_unit(old.get("unit_of_measurement"), new.get("unit_of_measurement")):
         reasons.append("stats_unit_differs")
     if bool(old.get("has_sum")) != bool(new.get("has_sum")) or _flag(old, "mean_type") != _flag(
         new, "mean_type"
