@@ -27,6 +27,7 @@
           "scan_interval_hours": "Scansiona automaticamente ogni (ore, 0 = off)",
           "stale_hours": "Segnala i sensori senza nuovi valori dopo (ore, 0 = off)",
           "history_days": "Conserva le cronologie per (giorni)",
+          "orphan_stat_days": "Statistiche orfane dopo (giorni, 0 = subito)",
           "watch_hours": "Sorveglia dopo gli aggiornamenti (ore, 0 = off)",
           "refresh_recorder_views": "Aggiorna le viste lente in background",
           "outage_scan_mode": "Scansione dopo i guasti"
@@ -42,6 +43,7 @@
           "scan_interval_hours": "Housekeeper esegue la scansione da solo a questo intervallo; interruzioni e aggiornamenti aggiungono scansioni extra.",
           "stale_hours": "Un sensore che non ha inviato nuovi valori per così tanto tempo viene segnalato come non più attivo.",
           "history_days": "Per quanto tempo viene conservata la cronologia delle scansioni e delle funzioni della casa.",
+          "orphan_stat_days": "Una statistica senza entità conta come orfana dopo questo numero di giorni. Compare nell’elenco fin dall’inizio, contrassegnata «Ancora in attesa».",
           "watch_hours": "Per quanto tempo vengono eseguite scansioni extra dopo un aggiornamento, per mostrare cosa ha smesso di funzionare.",
           "refresh_recorder_views": "Mantiene aggiornate le viste di affidabilità, tempeste, salute del database e costi interrogando il database in background (da ogni 30 minuti a una volta al giorno), dopo che sono state aperte una volta. Disattivato: si aggiornano all'apertura, il che su un dispositivo piccolo può richiedere alcuni secondi.",
           "outage_scan_mode": "Con quale frequenza un guasto può avviare una scansione aggiuntiva. Automatico: poco dopo aver raggiunto il primo livello, con maggiore distanza dove una scansione è lenta. Al massimo una volta per intervallo di scansione: per dispositivi lenti; i guasti compaiono come rilevamenti con la scansione successiva. Disattivato: i guasti non avviano una scansione propria."

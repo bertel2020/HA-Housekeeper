@@ -27,6 +27,7 @@
           "scan_interval_hours": "Scan automatically every (hours, 0 = off)",
           "stale_hours": "Report sensors without new values after (hours, 0 = off)",
           "history_days": "Keep histories for (days)",
+          "orphan_stat_days": "Count orphaned statistics after (days, 0 = at once)",
           "watch_hours": "Watch after updates (hours, 0 = off)",
           "refresh_recorder_views": "Refresh slow views in the background",
           "outage_scan_mode": "Scan after outages"
@@ -42,6 +43,7 @@
           "scan_interval_hours": "Housekeeper scans by itself at this interval; outages and updates add extra scans.",
           "stale_hours": "A sensor that has sent no new value for this long is reported as no longer reporting.",
           "history_days": "How long the history of the scans and of the home functions is kept.",
+          "orphan_stat_days": "A statistic without an entity counts as orphaned after this many days. It is in the list from the start, marked “Still waiting”.",
           "watch_hours": "How long extra scans run after an update, to show what stopped working with it.",
           "refresh_recorder_views": "Keeps the views of reliability, storms, database health and costs current by querying the database in the background (every 30 minutes to once a day), once they have been opened. Off: they refresh when you open them, which can take a few seconds on a small device.",
           "outage_scan_mode": "How often an outage may start an extra scan. Automatic: soon after the first level is reached, spaced further apart where a scan is slow. At most once per scan interval: for slow devices; outages show up as findings with the next scan. Off: outages start no scan of their own."

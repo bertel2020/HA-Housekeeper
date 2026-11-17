@@ -23,7 +23,7 @@ _META_KEEP = (
     "warmup_done", "warmup_total", "warmup_settling", "outage_info_minutes", "outage_low_hours",
     "outage_medium_hours", "outage_high_hours", "unused_automation_days", "version", "notify",
     "mcp", "protection", "protection_migrated", "protection_rules", "recorder_available",
-    "orphaned_statistics", "quarantined", "recurring_devices", "quarantine_days", "ha_version",
+    "orphaned_statistics", "orphan_stat_days", "quarantined", "recurring_devices", "quarantine_days", "ha_version",
     "hacs_available", "hacs_store", "scan_interval_hours", "low_battery_percent", "stale_hours",
     "history_days", "watch_hours", "low_batteries", "object_count", "status_counts",
     "marked_status_counts", "type_counts", "exception_rules", "exception_rules_due",

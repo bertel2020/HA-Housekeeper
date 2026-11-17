@@ -80,6 +80,10 @@ DEFAULT_LOW_BATTERY_PERCENT: Final = 20
 CONF_STALE_HOURS: Final = "stale_hours"
 DEFAULT_STALE_HOURS: Final = 48
 CONF_HISTORY_DAYS: Final = "history_days"
+CONF_ORPHAN_STAT_DAYS: Final = "orphan_stat_days"
+DEFAULT_ORPHAN_STAT_DAYS: Final = (
+    2  # a statistic without an entity counts as orphaned after this long
+)
 DEFAULT_HISTORY_DAYS: Final = 30
 CONF_WATCH_HOURS: Final = "watch_hours"
 DEFAULT_WATCH_HOURS: Final = 24
@@ -107,6 +111,7 @@ OPTION_LIMITS: Final = {
     CONF_LOW_BATTERY_PERCENT: (1, 100),
     CONF_STALE_HOURS: (0, 8760),
     CONF_HISTORY_DAYS: (1, 365),
+    CONF_ORPHAN_STAT_DAYS: (0, 90),
     CONF_WATCH_HOURS: (0, 168),
 }
 # While Home Assistant is still starting, entities of slow integrations have no state yet.

@@ -208,6 +208,7 @@ async def test_options_flow_stores_threshold(hass: HomeAssistant) -> None:
     assert entry.options["unused_automation_days"] == 90
     assert entry.options["low_battery_percent"] == 20
     assert entry.options["history_days"] == 30
+    assert entry.options["orphan_stat_days"] == 2
 
 
 async def test_options_flow_refuses_falling_thresholds_and_a_running_write(
@@ -884,7 +885,11 @@ async def test_a_statistic_without_an_entity_is_listed_at_once_but_counts_only_a
         ).isoformat()
         later = await scanner.async_scan()
         assert [o["settled"] for o in later["orphaned_statistics"]] == [True]
-        assert later["meta"]["orphaned_statistics"] == 1
+        assert later["meta"]["orphaned_statistics"] == 1 and later["meta"]["orphan_stat_days"] == 2
+        scanner.orphan_grace = timedelta(
+            days=7
+        )  # the option: a longer wait takes it out of the count again
+        assert (await scanner.async_scan())["meta"]["orphaned_statistics"] == 0
         hass.states.async_set("sensor.gone", "1")  # the entity is back: the wait starts again
         await scanner.async_scan()
         assert key not in scanner.observations._items

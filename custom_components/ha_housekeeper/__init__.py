@@ -34,6 +34,7 @@ from .const import (
     CARDS_URL,
     CONF_HISTORY_DAYS,
     CONF_LOW_BATTERY_PERCENT,
+    CONF_ORPHAN_STAT_DAYS,
     CONF_OUTAGE_HIGH_HOURS,
     CONF_OUTAGE_INFO_MINUTES,
     CONF_OUTAGE_LOW_HOURS,
@@ -47,6 +48,7 @@ from .const import (
     CONF_WATCH_HOURS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
+    DEFAULT_ORPHAN_STAT_DAYS,
     DEFAULT_OUTAGE_SCANS,
     DEFAULT_REFRESH_VIEWS,
     DEFAULT_SCAN_INTERVAL_HOURS,
@@ -138,6 +140,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
     )
     scanner.history.retention_days = entry.options.get(CONF_HISTORY_DAYS, DEFAULT_HISTORY_DAYS)
     scanner.watch_hours = entry.options.get(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS)
+    scanner.orphan_grace = timedelta(
+        days=entry.options.get(CONF_ORPHAN_STAT_DAYS, DEFAULT_ORPHAN_STAT_DAYS)
+    )
     scanner.show_in_sidebar = entry.options.get(CONF_SHOW_IN_SIDEBAR, DEFAULT_SHOW_IN_SIDEBAR)
     scanner.outage_scan_mode = entry.options.get(CONF_OUTAGE_SCANS, DEFAULT_OUTAGE_SCANS)
     scanner.refresh_recorder_views = entry.options.get(CONF_REFRESH_VIEWS, DEFAULT_REFRESH_VIEWS)

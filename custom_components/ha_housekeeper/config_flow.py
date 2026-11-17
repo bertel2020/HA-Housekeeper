@@ -16,6 +16,7 @@ from homeassistant.helpers.selector import (
 from .const import (
     CONF_HISTORY_DAYS,
     CONF_LOW_BATTERY_PERCENT,
+    CONF_ORPHAN_STAT_DAYS,
     CONF_OUTAGE_HIGH_HOURS,
     CONF_OUTAGE_INFO_MINUTES,
     CONF_OUTAGE_LOW_HOURS,
@@ -29,6 +30,7 @@ from .const import (
     CONF_WATCH_HOURS,
     DEFAULT_HISTORY_DAYS,
     DEFAULT_LOW_BATTERY_PERCENT,
+    DEFAULT_ORPHAN_STAT_DAYS,
     DEFAULT_OUTAGE_SCANS,
     DEFAULT_REFRESH_VIEWS,
     DEFAULT_SCAN_INTERVAL_HOURS,
@@ -106,6 +108,7 @@ class HAHousekeeperOptionsFlow(OptionsFlow):
                     field(CONF_LOW_BATTERY_PERCENT, DEFAULT_LOW_BATTERY_PERCENT),
                     field(CONF_STALE_HOURS, DEFAULT_STALE_HOURS),
                     field(CONF_HISTORY_DAYS, DEFAULT_HISTORY_DAYS),
+                    field(CONF_ORPHAN_STAT_DAYS, DEFAULT_ORPHAN_STAT_DAYS),
                     field(CONF_WATCH_HOURS, DEFAULT_WATCH_HOURS),
                     (
                         vol.Required(

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"49053646ab"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"ed52b7cb88"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"06aeeed3b6"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7c8bd950f0"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"e967cad7b3"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"39e4ba3ec3"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"e5fe6d08ad"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"25e1f137a5"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"846a048985"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6278e5307a"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"e430e1e464"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"8fee82e966"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"c95770d3c6"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"3724f8f283"}];
 
 const TEXT = {
   de: {
@@ -414,7 +414,7 @@ const MARK_QUIET_DAYS = 30;
 const PAGE_SIZES = [20, 50, 100, 250];
 const DEFAULT_PREFS = { size: "normal", mode: "auto", scheme: "standard", density: "normal", motion: "auto", pageSize: 20, startView: "overview", graphMode: "list", language: "auto", view: "full", details: true, viewAsked: true, moreUses: 0 };
 const USER_DATA_KEY = "ha_housekeeper";
-const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], watch_hours: [0, 168] };
+const OPTION_LIMITS = { outage_info_minutes: [5, 1440], outage_low_hours: [1, 720], outage_medium_hours: [2, 2160], outage_high_hours: [3, 8760], unused_automation_days: [0, 3650], scan_interval_hours: [0, 720], low_battery_percent: [1, 100], stale_hours: [0, 8760], history_days: [1, 365], orphan_stat_days: [0, 90], watch_hours: [0, 168] };
 // Text scale only; spacing and icons stay put. Normal is a bit larger than the original 1.0.
 const SIZES = { small: 1, normal: 1.1, large: 1.25 };
 // The dependency graph shows this many nodes per side at first; "more" adds another step.
@@ -431,6 +431,7 @@ const OPTION_FIELDS = [
   ["low_battery_percent", "optLowBatteryTitle", "optLowBatteryHint", "unitPercent", 20],
   ["stale_hours", "optStaleTitle", "optStaleHint", "unitHours", 48],
   ["history_days", "optHistoryDaysTitle", "optHistoryDaysHint", "unitDays", 30],
+  ["orphan_stat_days", "optOrphanStatTitle", "optOrphanStatHint", "unitDays", 2],
   ["watch_hours", "optWatchTitle", "optWatchHint", "unitHours", 24],
 ];
 const OUTAGE_OPTION_KEYS = ["outage_info_minutes", "outage_low_hours", "outage_medium_hours", "outage_high_hours"];
@@ -1121,6 +1122,7 @@ Object.assign(TEXT.de, {
   optUnusedAutomationTitle: "Ungenutzte Automationen", optUnusedAutomationHint: "Ab wie vielen Tagen ohne Auslösung eine Automation als ungenutzt gilt. 0 schaltet die Prüfung aus.",
   optScanIntervalTitle: "Automatischer Scan", optScanIntervalHint: "Wie oft Housekeeper von selbst scannt. 0 schaltet den automatischen Scan aus.",
   optLowBatteryTitle: "Schwache Batterie", optLowBatteryHint: "Unter diesem Ladestand erscheint ein Batteriegerät in der Liste der schwachen Batterien.",
+  optOrphanStatTitle: "Verwaiste Statistiken", optOrphanStatHint: "Nach wie vielen Tagen ohne Entität eine Statistik als verwaist zählt. Bis dahin steht sie schon in der Liste, mit „Wartet noch“. 0 = sofort.",
   optHistoryDaysTitle: "Verläufe", optHistoryDaysHint: "Wie viele Tage der letzte Scan jedes Tages als Vergleichspunkt und der Verlauf der Hausfunktionen erhalten bleiben.",
   quickPlaceholder: "Suchen …", quickLabel: "Alles durchsuchen", quickNone: "Keine Treffer",
   viewsLabel: "Gespeicherte Ansichten", viewsNone: "Ansichten …", viewSave: "Ansicht speichern", viewDelete: "Ansicht löschen", viewName: "Name der Ansicht", viewLocalHint: "Bleibt nur in diesem Browser gespeichert.",
@@ -1151,6 +1153,7 @@ Object.assign(TEXT.en, {
   optUnusedAutomationTitle: "Unused automations", optUnusedAutomationHint: "After how many days without a trigger an automation counts as unused. 0 turns the check off.",
   optScanIntervalTitle: "Automatic scan", optScanIntervalHint: "How often Housekeeper scans by itself. 0 turns the automatic scan off.",
   optLowBatteryTitle: "Low battery", optLowBatteryHint: "Below this level a battery device appears in the list of low batteries.",
+  optOrphanStatTitle: "Orphaned statistics", optOrphanStatHint: "After how many days without an entity a statistic counts as orphaned. Until then it is already in the list, marked “Still waiting”. 0 = at once.",
   optHistoryDaysTitle: "Histories", optHistoryDaysHint: "How many days the last scan of each day (comparison point) and the history of the home functions are kept.",
   quickPlaceholder: "Search …", quickLabel: "Search everything", quickNone: "No results",
   viewsLabel: "Saved views", viewsNone: "Views …", viewSave: "Save view", viewDelete: "Delete view", viewName: "View name", viewLocalHint: "Saved only in this browser.",
@@ -6289,7 +6292,7 @@ class UnusedMixin {
   // Listed at once, but not yet counted: it may only be an integration that is offline for a while.
   statWaitingPill(o) {
     if (o.settled !== false) return "";
-    return `<span class="pill mute" title="${this.esc(this.t("statWaitingTitle", { since: this.relTime(o.since) }))}">${this.t("statWaiting")}</span>`;
+    return `<span class="pill mute" title="${this.esc(this.t("statWaitingTitle", { since: this.relTime(o.since), days: this.data.meta.orphan_stat_days ?? 2 }))}">${this.t("statWaiting")}</span>`;
   }
 
   // -- Moving the history of orphaned statistics onto other entities: "Change meter", statistics only --
@@ -11613,7 +11616,7 @@ Object.assign(TEXT.de, {
   xferNothing: "Nichts zu kopieren: Die Statistik des Ziels beginnt früher als die alte.", xferOverlap: "Überlappung: nur Werte vor dem Beginn des Ziels werden kopiert.", xferGap: "Lücke von {hours} Std. zwischen alter und neuer Statistik.", xferNewEmpty: "Das Ziel hat noch keine Statistik: alles wird kopiert, die Summe lässt sich nicht fortführen.",
   xferEnergy: "Energie-Dashboard mit umstellen", xferEnergyOn: "{n} Statistik(en) stehen im Energie-Dashboard: es zeigt danach auf die neue Entität. Die Vorschau zeigt die Änderung; rückgängig machen lässt sie sich, die kopierte Statistik nur per Backup.", xferEnergyOff: "Nur die Statistik wird kopiert. Das Energie-Dashboard zeigt weiter auf die alte ID und muss von Hand umgestellt werden.",
   xferOpenCount: "Auf Nachfolger übertragen ({n})", xferTitle: "Historie auf andere Entitäten übertragen", xferHint: "Die Langzeitstatistik jeder gewählten Statistik wird vor die der neuen Entität kopiert; bei Zählern wird deren Summe um den alten Endstand verschoben. Überlappende Werte werden nie überschrieben, die alte Statistik bleibt und lässt sich danach löschen. Vor dem Lauf entsteht ein Backup.", xferTarget: "Neue Entität", xferTake: "Vorschläge übernehmen", xferBack: "Zurück", xferCreate: "Vorschau erstellen ({count})", xferLoading: "Nachfolger werden gesucht …",
-  allReadiness: "Zustand: jeder", statCounted: "Verwaist, zählt mit", statWaiting: "Wartet noch", statWaitingTitle: "Zuerst {since} ohne Entität gesehen. Nach 2 Tagen zählt sie als verwaist, bis dahin ist die Integration vielleicht nur offline.", reason_recent_orphan: "Erst seit Kurzem ohne Entität: die Integration ist vielleicht nur offline.",
+  allReadiness: "Zustand: jeder", statCounted: "Verwaist, zählt mit", statWaiting: "Wartet noch", statWaitingTitle: "Zuerst {since} ohne Entität gesehen. Nach {days} Tagen zählt sie als verwaist, bis dahin ist die Integration vielleicht nur offline.", reason_recent_orphan: "Erst seit Kurzem ohne Entität: die Integration ist vielleicht nur offline.",
   reason_irreversible: "Nur per Backup umkehrbar.", reason_with_states: "Löscht auch die gespeicherten Zustände.", reason_entity_exists: "Eine Entität trägt diese ID wieder.", reason_not_orphaned: "Die ID ist keine verwaiste Statistik.", reason_in_energy: "Das Energie-Dashboard nutzt diese Statistik.",
   check_statistics_gone: "Statistik ist gelöscht", result_purged: "Gelöscht", undo_irreversible: "nicht rückgängig: nur mit dem Backup", confirmedSummaryPurge: "{count} Statistiken werden gelöscht. Das lässt sich nur mit dem Backup zurücknehmen.",
   abort_recorder_busy: "Der Recorder war 30 Sekunden lang mit einer Abfrage belegt; nichts wurde gelöscht.", abort_still_there: "Die Statistik war nach dem Löschen noch da.", abort_states_left: "Nach dem Löschen gab es noch gespeicherte Zustände.",
@@ -11624,7 +11627,7 @@ Object.assign(TEXT.en, {
   xferNothing: "Nothing to copy: the target's statistics start earlier than the old ones.", xferOverlap: "Overlap: only values before the target's start are copied.", xferGap: "Gap of {hours} h between the old and the new statistics.", xferNewEmpty: "The target has no statistics yet: everything is copied, the sum cannot be continued.",
   xferEnergy: "Switch the Energy dashboard too", xferEnergyOn: "{n} statistic(s) are in the Energy dashboard: it then points to the new entity. The preview shows the change; it can be undone, the copied statistics only from the backup.", xferEnergyOff: "Only the statistics are copied. The Energy dashboard keeps pointing to the old ID and has to be switched by hand.",
   xferOpenCount: "Move to a successor ({n})", xferTitle: "Move the history to other entities", xferHint: "The long-term statistics of each chosen statistic are copied in front of those of the new entity; for counters its sum is shifted by the old final total. Overlapping values are never overwritten, the old statistic stays and can be deleted afterwards. A backup is made before the run.", xferTarget: "New entity", xferTake: "Take the proposals", xferBack: "Back", xferCreate: "Create preview ({count})", xferLoading: "Looking for successors …",
-  allReadiness: "State: any", statCounted: "Orphaned, counted", statWaiting: "Still waiting", statWaitingTitle: "First seen without an entity {since}. After 2 days it counts as orphaned; until then the integration may only be offline.", reason_recent_orphan: "Without an entity only for a short time: the integration may just be offline.",
+  allReadiness: "State: any", statCounted: "Orphaned, counted", statWaiting: "Still waiting", statWaitingTitle: "First seen without an entity {since}. After {days} days it counts as orphaned; until then the integration may only be offline.", reason_recent_orphan: "Without an entity only for a short time: the integration may just be offline.",
   reason_irreversible: "Reversible only from the backup.", reason_with_states: "Also deletes the stored states.", reason_entity_exists: "An entity carries this ID again.", reason_not_orphaned: "The ID is not an orphaned statistic.", reason_in_energy: "The Energy dashboard uses this statistic.",
   check_statistics_gone: "Statistic is deleted", result_purged: "Deleted", undo_irreversible: "not undone: only with the backup", confirmedSummaryPurge: "{count} statistics will be deleted. It can only be taken back with that backup.",
   abort_recorder_busy: "The recorder was busy with a query for 30 seconds; nothing was deleted.", abort_still_there: "The statistic was still there after deleting.", abort_states_left: "Stored states were still there after deleting.",

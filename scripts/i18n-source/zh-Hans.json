@@ -6653,7 +6653,7 @@
 "outageScanShort": "3819a2d7",
 "refreshViewsShort": "50104270",
 "statWaiting": "bc4aed18",
-"statWaitingTitle": "fb75a822",
+"statWaitingTitle": "22f3d022",
 "reason_recent_orphan": "41ddc1c6",
 "xferOpenCount": "bcaaf776",
 "xferTitle": "aaffb124",
@@ -6673,7 +6673,9 @@
 "purgeOldHint": "66dc2bcf",
 "purgeOldGo": "a62a69b5",
 "allReadiness": "23a83f24",
-"statCounted": "3456957a"
+"statCounted": "3456957a",
+"optOrphanStatTitle": "6a519fd0",
+"optOrphanStatHint": "75156f87"
 },
 "setup": {
 "title": "644c2647",
@@ -6915,7 +6917,9 @@
 "entity.sensor.vacation.state.off": "ca7981b4",
 "entity.sensor.vacation.state.on": "13001175",
 "entity.sensor.vacation.state.after": "75e7a6fa",
-"entity.sensor.vacation.state.unset": "94b768af"
+"entity.sensor.vacation.state.unset": "94b768af",
+"options.step.init.data.orphan_stat_days": "2042a18f",
+"options.step.init.data_description.orphan_stat_days": "1bbbe737"
 },
 "cards": {
 "cardNotFound": "dee6374c",

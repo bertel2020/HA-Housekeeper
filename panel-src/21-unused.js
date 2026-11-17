@@ -214,7 +214,7 @@ class UnusedMixin {
   // Listed at once, but not yet counted: it may only be an integration that is offline for a while.
   statWaitingPill(o) {
     if (o.settled !== false) return "";
-    return `<span class="pill mute" title="${this.esc(this.t("statWaitingTitle", { since: this.relTime(o.since) }))}">${this.t("statWaiting")}</span>`;
+    return `<span class="pill mute" title="${this.esc(this.t("statWaitingTitle", { since: this.relTime(o.since), days: this.data.meta.orphan_stat_days ?? 2 }))}">${this.t("statWaiting")}</span>`;
   }
 
   // -- Moving the history of orphaned statistics onto other entities: "Change meter", statistics only --

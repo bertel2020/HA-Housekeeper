@@ -2177,6 +2177,7 @@ class InventoryScanner:
                 "protection_rules": protection_rules(),
                 "recorder_available": self._recorder_available,
                 "orphaned_statistics": sum(1 for o in orphaned_statistics if o["settled"]),
+                "orphan_stat_days": self.orphan_grace.days,
                 "quarantined": len(quarantine),
                 "recurring_devices": len(recurring),
                 "quarantine_days": QUARANTINE_DAYS,
