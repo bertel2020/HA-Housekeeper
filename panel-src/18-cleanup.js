@@ -433,6 +433,9 @@ class CleanupMixin {
     this._polling = null; this.planProgress = null;
     if (this.plan?.plan_id === planId && ["verified", "executed", "partial", "aborted"].includes(this.plan.status)) this.toast(this.t(`toast_${this.plan.status}`));
     if (this.data) this.load(false);
+    // Chosen in the move view: the plan that deletes the old statistics opens by itself once the move is verified; it still asks.
+    const after = this.purgeOldAfter === planId; if (after) this.purgeOldAfter = null;
+    if (after && this.plan?.plan_id === planId && this.purgeOldIds(this.plan).length) { this.purgeOld(); return; }
     this.render();
   }
 

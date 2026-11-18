@@ -1285,6 +1285,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-xfer-start]")?.addEventListener("click", () => this.xferStart());
     root.querySelector("[data-xfer-cancel]")?.addEventListener("click", () => { this.xfer = null; this.render(); });
     root.querySelector("[data-xfer-take]")?.addEventListener("click", () => { this.xferTakeAll(); this.xferLoadSpans(); this.render(); });
+    root.querySelector("[data-xfer-purge]")?.addEventListener("change", ev => { this.xfer.purgeAfter = ev.currentTarget.checked; this.render(); });
     root.querySelector("[data-xfer-energy]")?.addEventListener("change", ev => { this.xfer.followEnergy = ev.currentTarget.checked; this.render(); });
     root.querySelector("[data-xfer-create]")?.addEventListener("click", () => this.xferCreate());
     root.querySelector("[data-costs-load]")?.addEventListener("click", ev => this.loadCosts(ev.currentTarget.hasAttribute("data-refresh")));

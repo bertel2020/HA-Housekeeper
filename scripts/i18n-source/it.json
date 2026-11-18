@@ -6675,7 +6675,10 @@
 "allReadiness": "23a83f24",
 "statCounted": "3456957a",
 "optOrphanStatTitle": "6a519fd0",
-"optOrphanStatHint": "75156f87"
+"optOrphanStatHint": "75156f87",
+"xferPurge": "d3c6d85d",
+"xferPurgeOn": "800ccdf6",
+"xferPurgeOff": "7d764894"
 },
 "setup": {
 "title": "644c2647",

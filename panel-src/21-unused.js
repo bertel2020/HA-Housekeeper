@@ -222,7 +222,7 @@ class UnusedMixin {
   xferStart() {
     const ids = [...this.purgeSel].slice(0, MAX_PLAN_ACTIONS);
     if (!ids.length) return;
-    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "", followEnergy: true, spans: {} };
+    const x = this.xfer = { pairs: [], choices: {}, texts: {}, loading: true, error: "", followEnergy: true, purgeAfter: false, spans: {} };
     this.render();
     this._hass.callWS({ type: "ha_housekeeper/entity_pairs", old_entity_ids: ids })
       .then(res => { x.pairs = res.pairs || []; this.xferTakeAll(); this.xferLoadSpans(); })
@@ -304,7 +304,7 @@ class UnusedMixin {
     this.cleanupBusy = true; x.error = ""; this.render();
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.openNewPlan(plan, null); this.xfer = null;
+      this.openNewPlan(plan, null); this.purgeOldAfter = x.purgeAfter ? plan.plan_id : null; this.xfer = null;
       actions.forEach(a => this.purgeSel.delete(a.object_id));
     } catch (err) { x.error = this.errText(err); }
     this.cleanupBusy = false; this.render();
@@ -326,8 +326,9 @@ class UnusedMixin {
     const body = x.loading ? `<div class="emptymsg">${this.t("xferLoading")}</div>` : x.pairs.length ? this.listTable("xfer", columns, x.pairs, { cls: "pairs", rowAttrs: () => 'class="static"' }) : `<div class="emptymsg">${this.t("noOrphanStats")}</div>`;
     const energyRows = x.pairs.filter(p => this.xferInEnergy(p.object_id)).length;
     const follow = energyRows ? `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-xfer-energy ${x.followEnergy ? "checked" : ""}><span><strong>${this.t("xferEnergy")}</strong><small>${this.t(x.followEnergy ? "xferEnergyOn" : "xferEnergyOff", { n: energyRows })}</small></span></label>` : "";
+    const after = n ? `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-xfer-purge ${x.purgeAfter ? "checked" : ""}><span><strong>${this.t("xferPurge")}</strong><small>${this.t(x.purgeAfter ? "xferPurgeOn" : "xferPurgeOff", { n })}</small></span></label>` : "";
     return `<div class="stack">${this.unrefTabs()}<div class="panel ovvis"><div class="panelhead"><div><h2>${this.t("xferTitle")}</h2><p>${this.t("xferHint")}</p></div></div>
-      ${follow}${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
+      ${follow}${after}${x.error ? `<p class="error">${this.esc(x.error)}</p>` : ""}
       <div class="toolbar"><button class="btn quiet" data-xfer-cancel>${this.t("xferBack")}</button><button class="btn quiet" data-xfer-take ${x.loading ? "disabled" : ""}>${this.t("xferTake")}</button><span class="toolgap"></span>
       <button class="btn primary" data-xfer-create ${n && !blocked && !this.cleanupBusy ? "" : "disabled"}>${this.t("xferCreate", { count: n })}</button></div>${body}</div></div>`;
   }
