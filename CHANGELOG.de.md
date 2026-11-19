@@ -2,6 +2,29 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
+## Unreleased
+
+### Neu
+
+- **Verwaiste Statistiken:**
+  - Sie erscheinen sofort; junge sind als „Wartet noch“ markiert, bis die Wartezeit vorbei ist, und ein neuer Filter trennt sie von denen, die schon zählen.
+  - Die Wartezeit ist eine Option (0 bis 90 Tage, Standard 2).
+  - „Auf Nachfolger übertragen“ überträgt den Verlauf mehrerer verwaister Statistiken in einem Zug auf andere Entitäten. Vor der Vorschau sagt jede Zeile, was die Verbindung bewirkt (Überlappung, Lücke, nichts zu kopieren).
+  - Auch Statistiken des Energie-Dashboards lassen sich übertragen, das Dashboard folgt.
+  - Nach einer geprüften Übertragung werden die alten Statistiken zum Löschen angeboten; ein Schalter öffnet diesen Schritt von selbst.
+- **Batterien:** Eine Batterie, die ein Wort meldet (low, medium, high), wird aufgeführt, und nur „low“ warnt.
+- **Hausfunktionen:** Die Objekte einer Funktion lassen sich im Bearbeiten-Formular mit Pfeilen sortieren. Die Reihenfolge dient nur der Anzeige.
+
+### Geändert
+
+- **Hausfunktionen:** Die Soll-Regeln passen zum Objekt: ein Mindestwert wird nur bei Zahlen angeboten, und jede Regel zeigt den aktuellen Wert.
+- **Verwaiste Statistiken:** Der Hilfetext nennt die Wartemarke und die Übertragung.
+
+### Behoben
+
+- **Übertragen und Ersetzen:** Einheiten, die sich nur durch Leerzeichen unterscheiden (kWh/100km und kWh/100 km), gelten als eine Einheit.
+- **Übertragen-Ansicht:** Sie passt auf ein Handy, und die Liste der Zielwahl wird nicht mehr abgeschnitten.
+
 ## 2.1.4 - 2026-11-15
 
 ### Behoben

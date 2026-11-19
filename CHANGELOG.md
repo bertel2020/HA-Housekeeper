@@ -2,6 +2,29 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
+## Unreleased
+
+### New
+
+- **Orphaned statistics:**
+  - They show up at once; young ones are marked “Still waiting” until the waiting time has passed, and a new filter separates them from those that already count.
+  - The waiting time is an option (0 to 90 days, default 2).
+  - “Move to successor” moves the history of several orphaned statistics to other entities in one go. Before the preview, each row says what the join will do (overlap, gap, nothing to copy).
+  - Statistics of the Energy dashboard can be moved too, and the dashboard follows.
+  - After a verified move the old statistics are offered for deletion; a switch opens that step by itself.
+- **Batteries:** A battery that reports a word (low, medium, high) is listed, and only “low” warns.
+- **House functions:** The objects of a function can be sorted with arrows in the edit form. The order is only for display.
+
+### Changed
+
+- **House functions:** The expected conditions fit the object: a minimum value is offered for numbers only, and each condition shows the current value.
+- **Orphaned statistics:** The help text names the waiting mark and the move.
+
+### Fixed
+
+- **Moving and replacing:** Units that differ only in spaces (kWh/100km and kWh/100 km) count as one unit.
+- **Move view:** It fits a phone, and the list of the target field is no longer cut off.
+
 ## 2.1.4 - 2026-11-15
 
 ### Fixed
