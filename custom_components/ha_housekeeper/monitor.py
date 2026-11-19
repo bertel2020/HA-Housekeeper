@@ -729,7 +729,10 @@ class MonitorStore:
                 "enabled": old.get("enabled", True),
             }
         )
-        changed_members = old is None or members != old["members"]
+        # Only the order of the members is not a change: it neither resets the state nor dismisses a notice.
+        changed_members = old is None or sorted(members, key=lambda m: m["object_key"]) != sorted(
+            old["members"], key=lambda m: m["object_key"]
+        )
         changed_enabled = old is not None and old.get("enabled", True) != enabled
         enabled_notification = (
             old is not None

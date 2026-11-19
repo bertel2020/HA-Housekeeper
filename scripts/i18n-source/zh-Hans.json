@@ -5764,7 +5764,7 @@
 "monitorType_app": "03bfc0a8",
 "monitorAdded": "6b02e0d3",
 "monitorRules": "3d8831d6",
-"monitorRulesHint": "04c2ee92",
+"monitorRulesHint": "0e90a60c",
 "monitorRuleFreshness": "e58d5881",
 "monitorRuleMinimum": "6b537b88",
 "monitorRuleUnavailable": "cfea52a5",
@@ -6678,7 +6678,14 @@
 "optOrphanStatHint": "75156f87",
 "xferPurge": "d3c6d85d",
 "xferPurgeOn": "800ccdf6",
-"xferPurgeOff": "7d764894"
+"xferPurgeOff": "7d764894",
+"monitorMoveUp": "c66feb5e",
+"monitorMoveDown": "40bb50da",
+"monitorRuleMinutesHint": "62fdcd49",
+"monitorRuleNow": "39177735",
+"monitorRuleNowAvailable": "ddd9818a",
+"monitorRuleNowDown": "2b0d4e18",
+"monitorRuleNowDownUnknown": "ba691ba0"
 },
 "setup": {
 "title": "644c2647",

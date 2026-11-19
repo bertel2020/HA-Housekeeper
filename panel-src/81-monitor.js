@@ -300,11 +300,22 @@ class MonitorMixin {
       const object = this.findObject(member.object_key);
       const kind = member.object_key.split(":")[0];
       const rules = member.rules || [];
-      const ruleFields = kind !== "entity" ? "" : `<details class="monitor-rules" ${rules.length ? "open" : ""}><summary>${this.t("monitorRules")} ${rules.length ? `(${rules.length})` : ""}</summary><p>${this.t("monitorRulesHint")}</p>${[["freshness", 24, 1, 720, "monitorRuleFreshness", "monitorRuleHours"], ["min_value", 20, -1000000000, 1000000000, "monitorRuleMinimum", object?.unit || ""], ["unavailable_for", 10, 1, 1440, "monitorRuleUnavailable", "monitorRuleMinutes"]].map(([ruleKind, fallback, min, max, label, unit]) => {
+      const numeric = !object || Boolean(object.unit) || Boolean(object.state_class) || (object.state != null && object.state !== "" && Number.isFinite(Number(object.state)));
+      const unavailableNow = object?.state === "unavailable";
+      const nowText = ruleKind => {
+        if (!object) return "";
+        if (ruleKind === "freshness") return object.last_updated ? this.t("monitorRuleNow", { value: this.relTime(object.last_updated) }) : "";
+        if (ruleKind === "min_value") return numeric && Number.isFinite(Number(object.state)) && object.state !== "" ? this.t("monitorRuleNow", { value: `${this.formatNumber(Number(object.state))}${object.unit ? ` ${object.unit}` : ""}` }) : "";
+        return this.t("monitorRuleNow", { value: !unavailableNow ? this.t("monitorRuleNowAvailable") : object.status_since ? this.t("monitorRuleNowDown", { when: this.relTime(object.status_since) }) : this.t("monitorRuleNowDownUnknown") });
+      };
+      // Only rules that fit the object: a minimum needs a number. A rule that is already set stays visible so it can be removed.
+      const ruleFields = kind !== "entity" ? "" : `<details class="monitor-rules" ${rules.length ? "open" : ""}><summary>${this.t("monitorRules")} ${rules.length ? `(${rules.length})` : ""}</summary><p>${this.t("monitorRulesHint")}</p>${[["freshness", 24, 1, 720, "monitorRuleFreshness", "monitorRuleHours"], ["min_value", 20, -1000000000, 1000000000, "monitorRuleMinimum", object?.unit || ""], ["unavailable_for", 10, 1, 1440, "monitorRuleUnavailable", "monitorRuleMinutes"]].filter(([ruleKind]) => ruleKind !== "min_value" || numeric || rules.some(r => r.kind === ruleKind)).map(([ruleKind, fallback, min, max, label, unit]) => {
         const rule = rules.find(r => r.kind === ruleKind), enabled = Boolean(rule);
-        return `<div class="monitor-rule"><label><input type="checkbox" data-monitor-rule-toggle="${i}:${ruleKind}" ${enabled ? "checked" : ""}>${this.t(label)}</label><input type="number" data-monitor-rule-value="${i}:${ruleKind}" aria-label="${this.t(label)}" value="${rule?.value ?? fallback}" min="${min}" max="${max}" step="${ruleKind === "min_value" ? "any" : "1"}" ${enabled ? "" : "disabled"}><span>${this.esc(this.t(unit))}</span></div>`;
+        const unitText = ruleKind === "min_value" ? (unit || "—") : this.t(unit);
+        const tip = ruleKind === "unavailable_for" ? ` title="${this.esc(this.t("monitorRuleMinutesHint"))}"` : "";
+        return `<div class="monitor-rule"><label${tip}><input type="checkbox" data-monitor-rule-toggle="${i}:${ruleKind}" ${enabled ? "checked" : ""}>${this.t(label)}</label><input type="number" data-monitor-rule-value="${i}:${ruleKind}" aria-label="${this.t(label)}" value="${rule?.value ?? fallback}" min="${min}" max="${max}" step="${ruleKind === "min_value" ? "any" : "1"}" ${enabled ? "" : "disabled"}><span class="monitor-rule-unit">${this.esc(unitText)}</span><small class="monitor-rule-now">${this.esc(nowText(ruleKind))}</small></div>`;
       }).join("")}</details>`;
-      return `<div class="monitor-member-wrap"><div class="row monitor-member"${object ? ` data-object="${this.esc(member.object_key)}"` : ""}><span class="tile mute"><ha-icon icon="${ICONS[kind] || "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || member.object_key)}</strong><small>${this.t(`monitorType_${kind}`)} · ${this.esc(member.object_key.split(":").slice(1).join(":"))}${rules.length ? ` · ${this.esc(rules.map(rule => this.monitorRuleText(rule, object)).join("; "))}` : ""}</small></span><label class="monitor-check"><input type="checkbox" data-monitor-required="${i}" ${member.required ? "checked" : ""}>${this.t("monitorRequired")}</label><button type="button" class="iconbtn" data-monitor-remove="${i}" aria-label="${this.t("monitorRemove")}" title="${this.t("monitorRemove")}"><ha-icon icon="mdi:close"></ha-icon></button></div>${ruleFields}</div>`;
+      return `<div class="monitor-member-wrap"><div class="row monitor-member"${object ? ` data-object="${this.esc(member.object_key)}"` : ""}><span class="tile mute"><ha-icon icon="${ICONS[kind] || "mdi:help-circle-outline"}"></ha-icon></span><span class="row-text"><strong>${this.esc(object?.name || member.object_key)}</strong><small>${this.t(`monitorType_${kind}`)} · ${this.esc(member.object_key.split(":").slice(1).join(":"))}${rules.length ? ` · ${this.esc(rules.map(rule => this.monitorRuleText(rule, object)).join("; "))}` : ""}</small></span><label class="monitor-check"><input type="checkbox" data-monitor-required="${i}" ${member.required ? "checked" : ""}>${this.t("monitorRequired")}</label><span class="monitor-member-actions"><button type="button" class="iconbtn" data-monitor-move="${i}:-1" aria-label="${this.t("monitorMoveUp")}" title="${this.t("monitorMoveUp")}" ${i === 0 ? "disabled" : ""}><ha-icon icon="mdi:chevron-up"></ha-icon></button><button type="button" class="iconbtn" data-monitor-move="${i}:1" aria-label="${this.t("monitorMoveDown")}" title="${this.t("monitorMoveDown")}" ${i === form.members.length - 1 ? "disabled" : ""}><ha-icon icon="mdi:chevron-down"></ha-icon></button><button type="button" class="iconbtn" data-monitor-remove="${i}" aria-label="${this.t("monitorRemove")}" title="${this.t("monitorRemove")}"><ha-icon icon="mdi:close"></ha-icon></button></span></div>${ruleFields}</div>`;
     }).join("");
     const suggestions = form.members.length ? this.monitorSuggestions() : [];
     const suggested = suggestions.length ? `<div class="monitor-suggest"><span>${this.t("monitorSuggestions")}:</span>${suggestions.map(({ key, object, reason, probable }) => `<button type="button" class="chip dashed" data-monitor-pick="${this.esc(key)}" title="${this.esc([reason, probable ? this.t("monitorSuggestionProbable") : ""].filter(Boolean).join(" · "))}">+ ${this.esc(object.name || object.object_id)}</button>`).join("")}</div>` : "";
@@ -356,6 +367,16 @@ class MonitorMixin {
     root.querySelectorAll("[data-monitor-type]").forEach(el => el.onclick = () => { this.monitorType = el.dataset.monitorType; this.render(); this.shadowRoot.querySelector(`[data-monitor-type="${this.monitorType}"]`)?.focus(); });
     root.querySelectorAll("[data-monitor-pick]").forEach(el => el.onclick = () => { if (this.monitorForm.members.some(m => m.object_key === el.dataset.monitorPick)) return; this.monitorForm.members.push({ object_key: el.dataset.monitorPick, required: true, rules: [] }); this.render(); this.queueMonitorPreview(); });
     root.querySelectorAll("[data-monitor-remove]").forEach(el => el.onclick = () => { this.monitorForm.members.splice(Number(el.dataset.monitorRemove), 1); this.render(); this.queueMonitorPreview(); });
+    // The order is only for the eye: it changes neither the evaluation nor the preview.
+    root.querySelectorAll("[data-monitor-move]").forEach(el => el.onclick = () => {
+      const [index, step] = el.dataset.monitorMove.split(":").map(Number);
+      const members = this.monitorForm.members, to = index + step;
+      if (to < 0 || to >= members.length) return;
+      [members[index], members[to]] = [members[to], members[index]];
+      this.render();
+      const next = this.shadowRoot.querySelector(`[data-monitor-move="${to}:${step}"]`);
+      (next && !next.disabled ? next : this.shadowRoot.querySelector(`[data-monitor-move="${to}:${-step}"]`))?.focus();
+    });
     root.querySelectorAll("[data-monitor-required]").forEach(el => el.onchange = () => { this.monitorForm.members[Number(el.dataset.monitorRequired)].required = el.checked; this.render(); this.queueMonitorPreview(); });
     root.querySelectorAll("[data-monitor-rule-toggle]").forEach(el => el.onchange = () => {
       const [index, kind] = el.dataset.monitorRuleToggle.split(":");
