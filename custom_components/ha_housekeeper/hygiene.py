@@ -157,6 +157,21 @@ def orphan_statistics(
     return orphans[:MAX_ORPHANED_STATISTICS]
 
 
+# A battery that reports a word instead of a percent: only "low" warns, the others are fine.
+BATTERY_WORDS_LOW = frozenset({"low", "critical", "empty"})
+BATTERY_WORDS_OK = frozenset({"medium", "middle", "mid", "high", "full", "normal", "ok", "good"})
+
+
+def battery_word(item: dict[str, Any]) -> str | None:
+    """``"low"`` or ``"ok"`` for a battery sensor that reports a word, else None."""
+    if item.get("device_class") != "battery" or item["object_id"].partition(".")[0] != "sensor":
+        return None
+    state = str(item.get("state") or "").strip().lower()
+    if state in BATTERY_WORDS_LOW:
+        return "low"
+    return "ok" if state in BATTERY_WORDS_OK else None
+
+
 def battery_level(item: dict[str, Any]) -> tuple[float | None, bool]:
     """Return (percent, is_low_flag) for a working battery entity, else (None, False).
 
@@ -174,7 +189,7 @@ def battery_level(item: dict[str, Any]) -> tuple[float | None, bool]:
         try:
             level = float(item["state"])
         except (TypeError, ValueError):
-            return None, False
+            return None, battery_word(item) == "low"
         # "nan" and "inf" are floats too, but no level: the card rounds it and would fail on it.
         return (level, False) if math.isfinite(level) else (None, False)
     return None, False

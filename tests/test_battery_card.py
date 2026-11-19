@@ -273,3 +273,15 @@ def test_the_own_weakest_battery_sensor_is_not_one_of_the_batteries() -> None:
     snapshot["objects"].append(own)
     overview = battery_overview(snapshot, {}, None, None, NOW)
     assert "sensor.ha_housekeeper_weakest" not in {i["entity_id"] for i in overview["weakest"]}
+
+
+def test_a_battery_that_reports_a_word_is_listed_and_only_low_warns() -> None:
+    snapshot = _snapshot()
+    for state, entity in (("low", "sensor.word_low"), ("medium", "sensor.word_mid")):
+        item = _battery(entity, state, "", "Word")
+        item.pop("unit")
+        item["device_id"] = ""
+        snapshot["objects"].append(item)
+    overview = battery_overview(snapshot, {}, None, None, NOW)
+    assert overview["total"] == 6 and overview["low"] == 3
+    assert {i["entity_id"] for i in overview["weakest"]} >= {"sensor.word_low"}

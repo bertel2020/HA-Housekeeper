@@ -13,7 +13,7 @@ from typing import Any, Final
 from homeassistant.util import dt as dt_util
 
 from .battery_kind import excluded
-from .hygiene import battery_level
+from .hygiene import battery_level, battery_word
 
 ROUND_DAYS: Final = 14  # what runs low within this many days belongs to the next round of changes
 WEAKEST_MAX: Final = 10
@@ -82,7 +82,7 @@ def battery_items(
         level, flagged = battery_level(o)
         found = rows.get(o["object_id"])
         percent = level if level is not None else (found or {}).get("percent")
-        if level is None and not flagged and found is None:
+        if level is None and not flagged and found is None and battery_word(o) is None:
             continue
         device = devices.get(o.get("device_id") or "") or {}
         area = areas.get(o.get("area_id") or device.get("area_id") or "", "")

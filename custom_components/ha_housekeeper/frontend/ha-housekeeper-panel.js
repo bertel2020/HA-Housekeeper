@@ -6095,6 +6095,8 @@ class UnusedMixin {
       // A battery that reports nothing is often an empty one: it stays in the list, without a level.
       if (o.status === "unavailable") { if (["sensor", "binary_sensor"].includes(domain)) rows.push({ item: o, level: null, low: false, unavailable: true }); continue; }
       if (domain === "binary_sensor") rows.push({ item: o, level: null, low: o.state === "on" });
+      else if (domain === "sensor" && (!o.unit || o.unit === "%") && ["low", "critical", "empty"].includes(String(o.state).toLowerCase())) rows.push({ item: o, level: null, low: true });
+      else if (domain === "sensor" && (!o.unit || o.unit === "%") && ["medium", "middle", "mid", "high", "full", "normal", "ok", "good"].includes(String(o.state).toLowerCase())) rows.push({ item: o, level: null, low: false });
       else if (domain === "sensor" && (!o.unit || o.unit === "%") && o.state !== null && o.state !== "" && !Number.isNaN(Number(o.state))) rows.push({ item: o, level: Number(o.state), low: false });
     }
     const limit = this.data.meta.low_battery_percent ?? 20;
