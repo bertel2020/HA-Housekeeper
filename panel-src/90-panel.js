@@ -465,6 +465,18 @@ class HAHousekeeperPanel extends HTMLElement {
   // The clipboard API needs HTTPS; over plain http or in some app web views it is missing, so fall back to a hidden textarea. Throws when neither works.
   // Runs ``run`` unless the same action is still running: a second click on a button that waits for the
   // server would do the same thing twice (two notes, two undos).
+  async setIgnored(key, ignored) {
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
+      const finding = this.data.findings.find(f => f.key === key);
+      if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
+      this.render();
+      await this.reloadAfterDecision();
+      return;
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   async onlyOnce(name, run) {
     const busy = (this._onceBusy ||= new Set());
     if (busy.has(name)) return undefined;
@@ -1120,17 +1132,10 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindDetailActions(root);
     // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter, st = this.lvState("batteries", "left", "asc"); st.q = ""; st.f = {}; this.persistLv("batteries"); this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
-    root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
-      const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
-      try {
-        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
-        const finding = this.data.findings.find(f => f.key === key);
-        if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
-        this.render();
-        await this.reloadAfterDecision();
-        return;
-      } catch (err) { this.failed(err); }
-      this.render();
+    root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = () => {
+      const run = () => this.setIgnored(el.dataset.ignore, el.dataset.ignoreValue === "1");
+      // Taking a decision back is asked once; showing a hidden finding again is only a look.
+      if (el.hasAttribute("data-ignore-ask")) this.confirmAsk(this.t("confirmDecisionRemoveOne"), run, { danger: false }); else run();
     });
     root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
@@ -1458,7 +1463,7 @@ class HAHousekeeperPanel extends HTMLElement {
         this.shadowRoot.querySelector(`[data-set-tab="${next}"]`)?.focus();
       };
     });
-    root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });
+    root.querySelector("[data-pref-reset]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmPrefsReset"), () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); }, { danger: false }));
     root.querySelectorAll("[data-copy-event]").forEach(el => el.onclick = async () => {
       try { await this.copyText(el.dataset.copyEvent); this.copiedEvent = el.dataset.copyEvent.replace("ha_housekeeper_", ""); } catch (_) { this.copiedEvent = ""; }
       this.render();

@@ -174,6 +174,15 @@ class McpMixin {
     return `${main}<section class="panel"><div class="panelhead"><div><h2>${this.t("mcpLogTitle")}</h2><p>${this.t("mcpLogHint")} ${this.t("mcpLogCalls", { n: this.formatNumber(this.mcp.calls_24h || 0) })}.</p><p class="factnote">${this.t("mcpLogHint2")}</p></div></div>${bulk}${this.mcpLogTable(this.mcp.entries, multi)}</section>`;
   }
 
+  async mcpUndoAll(hours) {
+    try {
+      const res = await this._hass.callWS({ type: "ha_housekeeper/mcp_undo_all", ...(hours ? { hours } : {}) });
+      this.mcp = null; this.data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+      this.toast(this.t("mcpUndoneCount", { n: res.undone }));
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   bindMcp(root) {
     const set = async changes => {
       try {
@@ -184,8 +193,10 @@ class McpMixin {
       this.render();
     };
     root.querySelector("[data-mcp-enabled]")?.addEventListener("change", ev => set({ enabled: ev.target.checked }));
-    root.querySelector("[data-mcp-write]")?.addEventListener("change", ev => set({ write: ev.target.checked }));
-    root.querySelector("[data-mcp-fix]")?.addEventListener("change", ev => set({ fix: ev.target.checked }));
+    // Allowing changes without a time limit is easy to forget: the first time it is switched on, the switch-off is set to 8 hours (the choice stays with the person).
+    const limited = () => (Number(this.data?.meta?.mcp?.auto_off_hours) ? {} : { auto_off_hours: 8 });
+    root.querySelector("[data-mcp-write]")?.addEventListener("change", ev => set({ write: ev.target.checked, ...(ev.target.checked ? limited() : {}) }));
+    root.querySelector("[data-mcp-fix]")?.addEventListener("change", ev => set({ fix: ev.target.checked, ...(ev.target.checked ? limited() : {}) }));
     root.querySelector("[data-mcp-prompt]")?.addEventListener("click", async () => {
       try { await this.copyText(this.t("mcpPrompt")); this.toast(this.t("mcpPromptCopied")); } catch (err) { this.failed(err); }
     });
@@ -200,14 +211,10 @@ class McpMixin {
       this.mcpOpen = open.includes(key) ? open.filter(x => x !== key) : [...open, key];
       this.render();
     }));
-    root.querySelector("[data-mcp-undoall]")?.addEventListener("click", async () => {
-      const hours = Number(root.querySelector("[data-mcp-undoall-hours]")?.value) || undefined;
-      try {
-        const res = await this._hass.callWS({ type: "ha_housekeeper/mcp_undo_all", ...(hours ? { hours } : {}) });
-        this.mcp = null; this.data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
-        this.toast(this.t("mcpUndoneCount", { n: res.undone }));
-      } catch (err) { this.failed(err); }
-      this.render();
+    root.querySelector("[data-mcp-undoall]")?.addEventListener("click", () => {
+      const select = root.querySelector("[data-mcp-undoall-hours]"), hours = Number(select?.value) || undefined;
+      const scope = select?.selectedOptions?.[0]?.textContent || "";
+      this.confirmAsk(this.t("confirmMcpUndo", { scope }), () => this.mcpUndoAll(hours), { danger: true });
     });
     root.querySelectorAll("[data-mcp-undo]").forEach(el => el.onclick = async ev => {
       ev.preventDefault();

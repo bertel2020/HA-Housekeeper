@@ -6703,7 +6703,12 @@
 "fixRowOutage": "1c1245c0",
 "ratingFollowers1": "d390f966",
 "fixKeepMoved": "52b6c4ab",
-"fixDownQuestion": "dbefb4ef"
+"fixDownQuestion": "dbefb4ef",
+"confirmMarkRemoveOne": "35d9b0b6",
+"confirmDecisionRemoveOne": "71f7e698",
+"confirmPrefsReset": "2f11b553",
+"confirmMcpUndo": "e30dee57",
+"confirmCovClear": "aab1a40d"
 },
 "setup": {
 "title": "644c2647",

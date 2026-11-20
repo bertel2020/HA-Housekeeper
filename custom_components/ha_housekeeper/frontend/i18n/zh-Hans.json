@@ -6704,5 +6704,10 @@
 "refreshViewsTitle": "在后台刷新较慢的视图",
 "refreshViewsHint": "在视图被打开过一次之后，通过在后台查询数据库（每 30 分钟到每天一次）使可靠性、风暴、数据库健康和成本保持最新。关闭：打开视图时才刷新，在小型设备上可能需要几秒钟。",
 "outageScanShort": "故障多频繁地触发额外扫描。",
-"refreshViewsShort": "在后台保持较慢的数据库视图为最新。"
+"refreshViewsShort": "在后台保持较慢的数据库视图为最新。",
+"confirmMarkRemoveOne": "将移除该对象备注。它隐藏的发现项会重新出现。",
+"confirmDecisionRemoveOne": "将撤销该决定。相关发现之后会重新变为未处理。",
+"confirmPrefsReset": "所有显示设置都将恢复为默认值，你的其他设备上也一样。",
+"confirmMcpUndo": "将撤销通过 AI 访问所做的更改（范围：{scope}）。",
+"confirmCovClear": "将删除为该覆盖范围收集的计数。"
 }

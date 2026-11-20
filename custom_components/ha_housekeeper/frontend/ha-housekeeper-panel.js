@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"170efe4385"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"74a0d80e68"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"0ab37ba636"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9bc45fde55"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"2194c5940a"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"707f6d0a0c"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"35a9069afc"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"9a3d968e87"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fe8328ab63"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f585aaff8f"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"fd938ef8f8"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"09a5ea01d8"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"d0fbab4ad1"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"fdb2d43b25"}];
 
 const TEXT = {
   de: {
@@ -627,6 +627,9 @@ const MARKETPLACE_RULES = {
   ],
 };
 const forMarketplace = (text, lang) => (MARKETPLACE_RULES[lang] || MARKETPLACE_RULES.en).reduce((out, [from, to]) => out.replace(from, to), text);
+
+// The domains an entity ID starts with: what the diagnostics keep of one in an error text.
+const ENTITY_DOMAINS = new Set(["sensor", "binary_sensor", "light", "switch", "automation", "script", "scene", "climate", "cover", "fan", "lock", "media_player", "number", "select", "button", "input_boolean", "input_number", "input_select", "input_text", "input_datetime", "input_button", "device_tracker", "person", "zone", "update", "camera", "vacuum", "water_heater", "weather", "sun", "group", "todo", "event", "text", "image", "calendar", "remote", "siren", "valve", "lawn_mower", "alarm_control_panel", "humidifier", "notify", "tag", "counter", "timer", "schedule", "date", "time", "datetime", "conversation", "stt", "tts", "wake_word", "assist_satellite", "air_quality", "notify"]);
 
 // The languages of the panel. The list itself (LANGUAGES) is languages.json, put in front of the bundle by the build.
 
@@ -2091,7 +2094,9 @@ class ListsMixin {
 
   // The last ten errors of this session, for the diagnostics: where, when and the message only.
   noteError(where, err) {
-    (this._recentErrors ||= []).push({ at: new Date().toISOString(), where, message: String(err?.message || err).slice(0, 300) });
+    // The diagnostics promise no names or IDs: entity IDs and registry IDs in an error text are cut down to their kind.
+    const message = String(err?.message || err).replace(/\b([a-z_]+)\.[a-z0-9_]+\b/gi, (m, domain) => (ENTITY_DOMAINS.has(domain.toLowerCase()) ? `${domain}.…` : m)).replace(/\b[0-9a-f]{32}\b/gi, "…").slice(0, 300);
+    (this._recentErrors ||= []).push({ at: new Date().toISOString(), where, message });
     if (this._recentErrors.length > 10) this._recentErrors.shift();
   }
 
@@ -4176,7 +4181,7 @@ class SettingsMixin {
       const key = this.findingKey(f), object = this.findObject(key);
       const open = object ? item("mdi:open-in-new", "decOpenObject", `data-object="${this.esc(key)}"`) : "";
       const change = item(FSEL_ICONS.status, f.ignored ? "fselStatusChange" : "fselStatus", `data-decide-open="${this.esc(f.key)}" data-decide-preset="${f.ignore_info?.kind || "keep"}"`);
-      const back = f.ignored && !f.resting ? item("mdi:eye-outline", "showFinding", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`) : item("mdi:delete-outline", "decRemove", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`);
+      const back = f.ignored && !f.resting ? item("mdi:eye-outline", "showFinding", `data-ignore="${this.esc(f.key)}" data-ignore-value="0"`) : item("mdi:delete-outline", "decRemove", `data-ignore="${this.esc(f.key)}" data-ignore-value="0" data-ignore-ask`);
       return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${open}${change}<hr class="menusep">${back}</div></details>`;
     };
     const visible = pg.rows.map(f => f.key);
@@ -10898,7 +10903,7 @@ class MarksMixin {
   bindMarks(root) {
     root.querySelectorAll("[data-mark-open]").forEach(el => el.onclick = () => this.openMark(el.dataset.markOpen));
     root.querySelectorAll("[data-mark-hidden]").forEach(el => el.onclick = () => this.showHiddenOf(el.dataset.markHidden));
-    root.querySelectorAll("[data-mark-clear]").forEach(el => el.onclick = () => this.clearMark(el.dataset.markClear));
+    root.querySelectorAll("[data-mark-clear]").forEach(el => el.onclick = () => this.confirmAsk(this.t("confirmMarkRemoveOne"), () => this.clearMark(el.dataset.markClear), { danger: false }));
     root.querySelectorAll("[data-mark-cancel]").forEach(el => el.onclick = () => { this.markForm = null; this.fcMarkCtx = null; this.render(); });
     root.querySelectorAll("[data-mark-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitMark(); };
@@ -12430,7 +12435,7 @@ class TraceDiagMixin {
 
   bindTraceDiag(root) {
     root.querySelectorAll("[data-cov-set]").forEach(el => el.onclick = () => this.setCoverage(el.dataset.covSet === "on"));
-    root.querySelector("[data-cov-clear]")?.addEventListener("click", () => this.setCoverage(true, true));
+    root.querySelector("[data-cov-clear]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmCovClear"), () => this.setCoverage(true, true), { danger: false }));
     root.querySelector("[data-cmp-a]")?.addEventListener("change", e => { this.diagState().compare.a = e.target.value; this.render(); });
     root.querySelector("[data-cmp-b]")?.addEventListener("change", e => { this.diagState().compare.b = e.target.value; this.render(); });
     root.querySelector("[data-cmp-run]")?.addEventListener("click", () => this.runCompare());
@@ -16374,7 +16379,9 @@ const XP_PREVIEW_CHARS = 6000;
 const XP_TEMPLATES_KEY = "ha_housekeeper.export_templates";
 const XP_TEMPLATES_MAX = 10;
 // Attribute names that are never offered: they tend to hold credentials, places or addresses.
-const XP_SENSITIVE_ATTR = /token|password|passwd|secret|key|pin\b|code|credential|auth|latitude|longitude|gps|location|address|ssid|mac\b|ip\b|url|picture|email|phone/i;
+const XP_SENSITIVE_ATTR = /token|password|passwd|secret|key|pin\b|code|credential|auth|latitude|longitude|gps|location|address|ssid|mac\b|ip\b|url|picture|email|phone|user|host|serial|owner/i;
+// With placeholders the names of things are replaced, so attributes that carry a name stay out as well.
+const XP_NAME_ATTR = /name|title|label|description/i;
 const XP_PRESETS = {
   min: { zuord: false, rel: false, state: false, attr: false },
   doc: { zuord: true, rel: true, state: false, attr: false },
@@ -16440,7 +16447,7 @@ class ExportMixin {
 
   // A name that looks sensitive or a nested value (a mapping or a list) is neither offered nor written.
   xpAttrAllowed(key, value) {
-    return !XP_SENSITIVE_ATTR.test(key) && (value === null || typeof value !== "object");
+    return !XP_SENSITIVE_ATTR.test(key) && !(this.xp?.ph && XP_NAME_ATTR.test(key)) && (value === null || typeof value !== "object");
   }
 
   // Attribute names of the chosen entities, most common first, without the ones that look sensitive.
@@ -17302,6 +17309,15 @@ class McpMixin {
     return `${main}<section class="panel"><div class="panelhead"><div><h2>${this.t("mcpLogTitle")}</h2><p>${this.t("mcpLogHint")} ${this.t("mcpLogCalls", { n: this.formatNumber(this.mcp.calls_24h || 0) })}.</p><p class="factnote">${this.t("mcpLogHint2")}</p></div></div>${bulk}${this.mcpLogTable(this.mcp.entries, multi)}</section>`;
   }
 
+  async mcpUndoAll(hours) {
+    try {
+      const res = await this._hass.callWS({ type: "ha_housekeeper/mcp_undo_all", ...(hours ? { hours } : {}) });
+      this.mcp = null; this.data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+      this.toast(this.t("mcpUndoneCount", { n: res.undone }));
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   bindMcp(root) {
     const set = async changes => {
       try {
@@ -17312,8 +17328,10 @@ class McpMixin {
       this.render();
     };
     root.querySelector("[data-mcp-enabled]")?.addEventListener("change", ev => set({ enabled: ev.target.checked }));
-    root.querySelector("[data-mcp-write]")?.addEventListener("change", ev => set({ write: ev.target.checked }));
-    root.querySelector("[data-mcp-fix]")?.addEventListener("change", ev => set({ fix: ev.target.checked }));
+    // Allowing changes without a time limit is easy to forget: the first time it is switched on, the switch-off is set to 8 hours (the choice stays with the person).
+    const limited = () => (Number(this.data?.meta?.mcp?.auto_off_hours) ? {} : { auto_off_hours: 8 });
+    root.querySelector("[data-mcp-write]")?.addEventListener("change", ev => set({ write: ev.target.checked, ...(ev.target.checked ? limited() : {}) }));
+    root.querySelector("[data-mcp-fix]")?.addEventListener("change", ev => set({ fix: ev.target.checked, ...(ev.target.checked ? limited() : {}) }));
     root.querySelector("[data-mcp-prompt]")?.addEventListener("click", async () => {
       try { await this.copyText(this.t("mcpPrompt")); this.toast(this.t("mcpPromptCopied")); } catch (err) { this.failed(err); }
     });
@@ -17328,14 +17346,10 @@ class McpMixin {
       this.mcpOpen = open.includes(key) ? open.filter(x => x !== key) : [...open, key];
       this.render();
     }));
-    root.querySelector("[data-mcp-undoall]")?.addEventListener("click", async () => {
-      const hours = Number(root.querySelector("[data-mcp-undoall-hours]")?.value) || undefined;
-      try {
-        const res = await this._hass.callWS({ type: "ha_housekeeper/mcp_undo_all", ...(hours ? { hours } : {}) });
-        this.mcp = null; this.data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
-        this.toast(this.t("mcpUndoneCount", { n: res.undone }));
-      } catch (err) { this.failed(err); }
-      this.render();
+    root.querySelector("[data-mcp-undoall]")?.addEventListener("click", () => {
+      const select = root.querySelector("[data-mcp-undoall-hours]"), hours = Number(select?.value) || undefined;
+      const scope = select?.selectedOptions?.[0]?.textContent || "";
+      this.confirmAsk(this.t("confirmMcpUndo", { scope }), () => this.mcpUndoAll(hours), { danger: true });
     });
     root.querySelectorAll("[data-mcp-undo]").forEach(el => el.onclick = async ev => {
       ev.preventDefault();
@@ -19949,6 +19963,14 @@ class BrokenCardsMixin {
     return this.check(this.t("brokenCardLabel"), "red", [...this.placeParts(p), this.t("brokenCount", { n: g.members.length })].join(" · "), this.t("missing"));
   }
 }
+
+// Texts of the questions before a note, a decision, the display settings, a take-back of AI changes or the counters go.
+Object.assign(TEXT.de, {
+  confirmMarkRemoveOne: "Die Objekt-Notiz wird entfernt. Befunde, die sie ausblendet, erscheinen wieder.", confirmDecisionRemoveOne: "Die Entscheidung wird aufgehoben. Der Befund ist danach wieder offen.", confirmPrefsReset: "Alle Anzeige-Einstellungen gehen auf die Standardwerte zurück, auch auf deinen anderen Geräten.", confirmMcpUndo: "Änderungen durch KI-Zugriff werden zurückgenommen (Zeitraum: {scope}).", confirmCovClear: "Die gesammelten Zähler dieser Abdeckung werden gelöscht.",
+});
+Object.assign(TEXT.en, {
+  confirmMarkRemoveOne: "The object note will be removed. Findings it hides appear again.", confirmDecisionRemoveOne: "The decision will be removed. The finding is open again afterwards.", confirmPrefsReset: "All display settings go back to their defaults, on your other devices too.", confirmMcpUndo: "Changes made through AI access will be taken back (period: {scope}).", confirmCovClear: "The counters collected for this coverage will be deleted.",
+});
 
 // "Apps & integrations": the installed apps and the integrations by domain in one place. It only gathers what the scan, the
 // reliability numbers and the storage page already know and links to the detail pages; it keeps no numbers of its own.
@@ -24057,6 +24079,18 @@ class HAHousekeeperPanel extends HTMLElement {
   // The clipboard API needs HTTPS; over plain http or in some app web views it is missing, so fall back to a hidden textarea. Throws when neither works.
   // Runs ``run`` unless the same action is still running: a second click on a button that waits for the
   // server would do the same thing twice (two notes, two undos).
+  async setIgnored(key, ignored) {
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
+      const finding = this.data.findings.find(f => f.key === key);
+      if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
+      this.render();
+      await this.reloadAfterDecision();
+      return;
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   async onlyOnce(name, run) {
     const busy = (this._onceBusy ||= new Set());
     if (busy.has(name)) return undefined;
@@ -24712,17 +24746,10 @@ class HAHousekeeperPanel extends HTMLElement {
     this.bindDetailActions(root);
     // The tiles count all batteries and the low ones: the list starts without the search and filters kept before.
     root.querySelectorAll("[data-battery-filter]").forEach(el => el.onclick = () => { const v = el.dataset.batteryFilter, st = this.lvState("batteries", "left", "asc"); st.q = ""; st.f = {}; this.persistLv("batteries"); this.batteryFilter = v !== "all" && this.batteryFilter === v ? "all" : v; this.pages = {}; this.render(); this.showList(); });
-    root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = async () => {
-      const key = el.dataset.ignore, ignored = el.dataset.ignoreValue === "1";
-      try {
-        await this._hass.callWS({ type: "ha_housekeeper/ignore", finding_key: key, ignored });
-        const finding = this.data.findings.find(f => f.key === key);
-        if (finding) { finding.ignored = ignored; finding.ignored_by = ignored ? "user" : null; this._rev++; }
-        this.render();
-        await this.reloadAfterDecision();
-        return;
-      } catch (err) { this.failed(err); }
-      this.render();
+    root.querySelectorAll("[data-ignore]").forEach(el => el.onclick = () => {
+      const run = () => this.setIgnored(el.dataset.ignore, el.dataset.ignoreValue === "1");
+      // Taking a decision back is asked once; showing a hidden finding again is only a look.
+      if (el.hasAttribute("data-ignore-ask")) this.confirmAsk(this.t("confirmDecisionRemoveOne"), run, { danger: false }); else run();
     });
     root.querySelectorAll("[data-toggle-followers]").forEach(el => el.onclick = () => { this.showFollowers = el.dataset.toggleFollowers === "flat"; this.pages = {}; this.render(); });
     root.querySelector("[data-done-days]")?.addEventListener("change", e => { this.doneDaysSel = Number(e.target.value); this.pages = {}; this.render(); });
@@ -25050,7 +25077,7 @@ class HAHousekeeperPanel extends HTMLElement {
         this.shadowRoot.querySelector(`[data-set-tab="${next}"]`)?.focus();
       };
     });
-    root.querySelector("[data-pref-reset]")?.addEventListener("click", () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); });
+    root.querySelector("[data-pref-reset]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmPrefsReset"), () => { this.prefs = { ...DEFAULT_PREFS }; this.pageSize = DEFAULT_PREFS.pageSize; this.pages = {}; this.savePrefs(); this.render(); }, { danger: false }));
     root.querySelectorAll("[data-copy-event]").forEach(el => el.onclick = async () => {
       try { await this.copyText(el.dataset.copyEvent); this.copiedEvent = el.dataset.copyEvent.replace("ha_housekeeper_", ""); } catch (_) { this.copiedEvent = ""; }
       this.render();

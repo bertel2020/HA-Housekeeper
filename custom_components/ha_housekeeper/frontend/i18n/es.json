@@ -6704,5 +6704,10 @@
 "refreshViewsTitle": "Actualizar las vistas lentas en segundo plano",
 "refreshViewsHint": "Mantiene al día fiabilidad, tormentas, estado de la base de datos y costes consultando la base de datos en segundo plano (cada 30 minutos hasta una vez al día), una vez abierta la vista. Desactivado: se actualizan al abrirlas, lo que en un dispositivo pequeño puede tardar unos segundos.",
 "outageScanShort": "Con qué frecuencia un fallo inicia un análisis adicional.",
-"refreshViewsShort": "Mantiene al día en segundo plano las vistas lentas de la base de datos."
+"refreshViewsShort": "Mantiene al día en segundo plano las vistas lentas de la base de datos.",
+"confirmMarkRemoveOne": "Se quitará la nota de objeto. Los hallazgos que oculta vuelven a aparecer.",
+"confirmDecisionRemoveOne": "Se quitará la decisión. El hallazgo vuelve a estar abierto.",
+"confirmPrefsReset": "Todos los ajustes de visualización vuelven a sus valores predeterminados, también en tus otros dispositivos.",
+"confirmMcpUndo": "Se revertirán los cambios hechos mediante el acceso de IA (periodo: {scope}).",
+"confirmCovClear": "Se borrarán los recuentos recopilados para esta cobertura."
 }

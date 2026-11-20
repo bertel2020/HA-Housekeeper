@@ -7880,6 +7880,13 @@ test("a failed load of the exception rules is no empty list: nothing is saved ov
   assert.ok(!calls.includes("ha_housekeeper/exceptions_set"));
 });
 
+test("the diagnostics keep no entity IDs or registry IDs from an error text", () => {
+  const { el } = panel("en");
+  el.noteError("action", new Error("sensor.kitchen_temp is gone, entry 0123456789abcdef0123456789abcdef, panel.js:12"));
+  const message = el._recentErrors[0].message;
+  assert.ok(message.includes("sensor.…") && !message.includes("kitchen_temp") && !message.includes("0123456789abcdef") && message.includes("panel.js:12"));
+});
+
 test("a decided list shows only its findings, not the outages that explain nothing there", () => {
   const { el } = panel("en");
   const cause = { id: "outage-z", kind: "integration_down", object_type: "config_entry", object_id: "z", name: "Cloud", follower_count: 1, total_followers: 1, child_ids: [], consumers: {}, impact: "high" };

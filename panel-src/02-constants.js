@@ -250,3 +250,6 @@ const MARKETPLACE_RULES = {
   ],
 };
 const forMarketplace = (text, lang) => (MARKETPLACE_RULES[lang] || MARKETPLACE_RULES.en).reduce((out, [from, to]) => out.replace(from, to), text);
+
+// The domains an entity ID starts with: what the diagnostics keep of one in an error text.
+const ENTITY_DOMAINS = new Set(["sensor", "binary_sensor", "light", "switch", "automation", "script", "scene", "climate", "cover", "fan", "lock", "media_player", "number", "select", "button", "input_boolean", "input_number", "input_select", "input_text", "input_datetime", "input_button", "device_tracker", "person", "zone", "update", "camera", "vacuum", "water_heater", "weather", "sun", "group", "todo", "event", "text", "image", "calendar", "remote", "siren", "valve", "lawn_mower", "alarm_control_panel", "humidifier", "notify", "tag", "counter", "timer", "schedule", "date", "time", "datetime", "conversation", "stt", "tts", "wake_word", "assist_satellite", "air_quality", "notify"]);

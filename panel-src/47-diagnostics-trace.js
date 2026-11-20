@@ -85,7 +85,7 @@ class TraceDiagMixin {
 
   bindTraceDiag(root) {
     root.querySelectorAll("[data-cov-set]").forEach(el => el.onclick = () => this.setCoverage(el.dataset.covSet === "on"));
-    root.querySelector("[data-cov-clear]")?.addEventListener("click", () => this.setCoverage(true, true));
+    root.querySelector("[data-cov-clear]")?.addEventListener("click", () => this.confirmAsk(this.t("confirmCovClear"), () => this.setCoverage(true, true), { danger: false }));
     root.querySelector("[data-cmp-a]")?.addEventListener("change", e => { this.diagState().compare.a = e.target.value; this.render(); });
     root.querySelector("[data-cmp-b]")?.addEventListener("change", e => { this.diagState().compare.b = e.target.value; this.render(); });
     root.querySelector("[data-cmp-run]")?.addEventListener("click", () => this.runCompare());

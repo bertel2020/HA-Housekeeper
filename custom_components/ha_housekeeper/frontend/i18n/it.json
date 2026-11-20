@@ -6704,5 +6704,10 @@
 "refreshViewsTitle": "Aggiorna le viste lente in background",
 "refreshViewsHint": "Mantiene aggiornati affidabilità, tempeste, salute del database e costi interrogando il database in background (da ogni 30 minuti a una volta al giorno), dopo che la vista è stata aperta. Disattivato: si aggiornano all’apertura, il che su un dispositivo piccolo può richiedere alcuni secondi.",
 "outageScanShort": "Con quale frequenza un guasto avvia una scansione aggiuntiva.",
-"refreshViewsShort": "Mantiene aggiornate in background le viste lente del database."
+"refreshViewsShort": "Mantiene aggiornate in background le viste lente del database.",
+"confirmMarkRemoveOne": "La nota oggetto verrà rimossa. Le segnalazioni che nasconde riappaiono.",
+"confirmDecisionRemoveOne": "La decisione verrà rimossa. Il risultato torna aperto.",
+"confirmPrefsReset": "Tutte le impostazioni di visualizzazione tornano ai valori predefiniti, anche sugli altri tuoi dispositivi.",
+"confirmMcpUndo": "Le modifiche fatte tramite accesso IA verranno annullate (periodo: {scope}).",
+"confirmCovClear": "I conteggi raccolti per questa copertura verranno eliminati."
 }

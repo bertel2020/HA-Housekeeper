@@ -101,7 +101,9 @@ class ListsMixin {
 
   // The last ten errors of this session, for the diagnostics: where, when and the message only.
   noteError(where, err) {
-    (this._recentErrors ||= []).push({ at: new Date().toISOString(), where, message: String(err?.message || err).slice(0, 300) });
+    // The diagnostics promise no names or IDs: entity IDs and registry IDs in an error text are cut down to their kind.
+    const message = String(err?.message || err).replace(/\b([a-z_]+)\.[a-z0-9_]+\b/gi, (m, domain) => (ENTITY_DOMAINS.has(domain.toLowerCase()) ? `${domain}.…` : m)).replace(/\b[0-9a-f]{32}\b/gi, "…").slice(0, 300);
+    (this._recentErrors ||= []).push({ at: new Date().toISOString(), where, message });
     if (this._recentErrors.length > 10) this._recentErrors.shift();
   }
 

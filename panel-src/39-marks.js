@@ -233,7 +233,7 @@ class MarksMixin {
   bindMarks(root) {
     root.querySelectorAll("[data-mark-open]").forEach(el => el.onclick = () => this.openMark(el.dataset.markOpen));
     root.querySelectorAll("[data-mark-hidden]").forEach(el => el.onclick = () => this.showHiddenOf(el.dataset.markHidden));
-    root.querySelectorAll("[data-mark-clear]").forEach(el => el.onclick = () => this.clearMark(el.dataset.markClear));
+    root.querySelectorAll("[data-mark-clear]").forEach(el => el.onclick = () => this.confirmAsk(this.t("confirmMarkRemoveOne"), () => this.clearMark(el.dataset.markClear), { danger: false }));
     root.querySelectorAll("[data-mark-cancel]").forEach(el => el.onclick = () => { this.markForm = null; this.fcMarkCtx = null; this.render(); });
     root.querySelectorAll("[data-mark-form]").forEach(form => {
       form.onsubmit = ev => { ev.preventDefault(); this.commitMark(); };

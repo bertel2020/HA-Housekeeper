@@ -6704,5 +6704,10 @@
 "refreshViewsTitle": "Actualiser les vues lentes en arrière-plan",
 "refreshViewsHint": "Maintient à jour fiabilité, tempêtes, santé de la base de données et coûts en interrogeant la base en arrière-plan (toutes les 30 minutes jusqu’à une fois par jour), une fois la vue ouverte. Désactivé : elles s’actualisent à l’ouverture, ce qui peut prendre quelques secondes sur un petit appareil.",
 "outageScanShort": "À quelle fréquence une panne déclenche un scan supplémentaire.",
-"refreshViewsShort": "Maintient à jour en arrière-plan les vues lentes de la base de données."
+"refreshViewsShort": "Maintient à jour en arrière-plan les vues lentes de la base de données.",
+"confirmMarkRemoveOne": "La note d’objet sera supprimée. Les constats qu’elle masque réapparaissent.",
+"confirmDecisionRemoveOne": "La décision sera supprimée. Le constat redevient ouvert ensuite.",
+"confirmPrefsReset": "Tous les réglages d’affichage reviennent aux valeurs par défaut, y compris sur tes autres appareils.",
+"confirmMcpUndo": "Les modifications faites via l’accès IA seront annulées (période : {scope}).",
+"confirmCovClear": "Les compteurs collectés pour cette couverture seront supprimés."
 }

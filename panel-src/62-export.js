@@ -47,7 +47,9 @@ const XP_PREVIEW_CHARS = 6000;
 const XP_TEMPLATES_KEY = "ha_housekeeper.export_templates";
 const XP_TEMPLATES_MAX = 10;
 // Attribute names that are never offered: they tend to hold credentials, places or addresses.
-const XP_SENSITIVE_ATTR = /token|password|passwd|secret|key|pin\b|code|credential|auth|latitude|longitude|gps|location|address|ssid|mac\b|ip\b|url|picture|email|phone/i;
+const XP_SENSITIVE_ATTR = /token|password|passwd|secret|key|pin\b|code|credential|auth|latitude|longitude|gps|location|address|ssid|mac\b|ip\b|url|picture|email|phone|user|host|serial|owner/i;
+// With placeholders the names of things are replaced, so attributes that carry a name stay out as well.
+const XP_NAME_ATTR = /name|title|label|description/i;
 const XP_PRESETS = {
   min: { zuord: false, rel: false, state: false, attr: false },
   doc: { zuord: true, rel: true, state: false, attr: false },
@@ -113,7 +115,7 @@ class ExportMixin {
 
   // A name that looks sensitive or a nested value (a mapping or a list) is neither offered nor written.
   xpAttrAllowed(key, value) {
-    return !XP_SENSITIVE_ATTR.test(key) && (value === null || typeof value !== "object");
+    return !XP_SENSITIVE_ATTR.test(key) && !(this.xp?.ph && XP_NAME_ATTR.test(key)) && (value === null || typeof value !== "object");
   }
 
   // Attribute names of the chosen entities, most common first, without the ones that look sensitive.
