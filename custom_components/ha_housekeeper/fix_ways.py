@@ -7,11 +7,14 @@ come with every finding and are not listed.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 from .finding_topics import BROKEN_REFERENCES, DOWN, FAILING_AUTOMATIONS, UNNEEDED
 
 WAIT_STATES = ("setup_retry", "setup_in_progress", "paused")
+QUIET_OUTAGE_DAYS = 7  # a device that has been down this long, with (almost) nothing on it, is most likely off on purpose
+QUIET_OUTAGE_FOLLOWERS = 2
 RESTART_STATES = ("migration_error", "failed_unload")
 
 
@@ -20,6 +23,27 @@ def _domain(snapshot: dict[str, Any], entry_id: str) -> str | None:
         if item["object_type"] == "config_entry" and item["object_id"] == entry_id:
             return item.get("domain")
     return None
+
+
+def _quiet_outage(finding: dict[str, Any], snapshot: dict[str, Any]) -> bool:
+    """Whether an outage has lasted a week or more and almost nothing depends on it."""
+    since = finding.get("first_detected_at")
+    if not since:
+        return False
+    try:
+        age = datetime.now(UTC) - datetime.fromisoformat(since)
+    except ValueError:
+        return False
+    if age.days < QUIET_OUTAGE_DAYS:
+        return False
+    cause = next(
+        (c for c in snapshot.get("causes", []) if c.get("finding_key") == finding.get("key")), None
+    )
+    if cause is None:
+        return True
+    return cause.get("total_followers", 0) <= QUIET_OUTAGE_FOLLOWERS and not any(
+        (cause.get("consumers") or {}).values()
+    )
 
 
 def _way(way: str, kind: str, recommended: bool = False, **fields: Any) -> dict[str, Any]:
@@ -130,11 +154,12 @@ def ways_for(
             {},
         )
         single = len(device.get("config_entry_ids") or []) == 1
+        quiet = _quiet_outage(finding, snapshot)
         if single:
-            ways.append(_way("reload", "panel", True))
+            ways.append(_way("reload", "panel", not quiet))
         ways.extend(
             [
-                _way("mark", "panel", not single),
+                _way("mark", "panel", quiet or not single),
                 _way("exchange", "panel"),
                 _way("object_actions", "panel"),
             ]

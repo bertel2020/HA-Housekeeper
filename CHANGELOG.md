@@ -25,6 +25,7 @@
 
 ### Changed
 
+- **Outages:** A device that is down names the duration and what is unavailable because of it in the list and the card (“Device X has been down for 44 days”). The Fix page asks “Is that intended?” and “Off on purpose, note it” is a card of its own; it is recommended when the device has been down for a week and hardly anything depends on it.
 - **House functions:** The expected conditions fit the object: a minimum value is offered for numbers only, and each condition shows the current value.
 - **Orphaned statistics:** The help text names the waiting mark and the move.
 

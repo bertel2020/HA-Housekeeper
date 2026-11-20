@@ -141,7 +141,7 @@ class ObjectGroupsMixin {
     const f = this.nodeFacts(n), parts = [];
     if (n.cause) {
       const total = this.causeTotal(n.cause);
-      if (total) parts.push(this.tCount("causeExplains", total));
+      if (total && n.cause.kind !== "device_down") parts.push(this.tCount("causeExplains", total));
       parts.push(this.causeShort(n.cause));
     }
     const own = n.findings.filter(x => x !== f.own && !(n.cause && x.cause_id === n.cause.id));
@@ -211,7 +211,7 @@ class ObjectGroupsMixin {
     const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, false), object = this.findObject(n.key);
     const keys = f.list.map(x => x.key);
     (this._findGroups ||= {})[id] = keys;
-    const title = n.cause ? this.t(`cause_${n.cause.kind}`, { name: n.cause.name }) : this.nodeName(n);
+    const title = n.cause ? this.causeTitle(n.cause) : this.nodeName(n);
     const tone = n.cause ? "red" : this.tone(f.list[0]?.classification);
     const type = n.cause ? n.cause.object_type : n.key.split(":")[0];
     // The head of an outage selects only its own finding, never the follow-ups below it. The head of an object

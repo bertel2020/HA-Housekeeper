@@ -59,7 +59,7 @@ class CausesMixin {
     if (hours !== null) reasons.push(this.t("outageFor", { span: this.spanText(hours) }));
     (finding.impact_facts || []).filter(x => x.fact !== "outage_age").forEach(x => reasons.push(this.t(`impactFact_${x.fact}`, { n: x.n ?? "", id: x.id ?? "", why: this.t(`impactWhy_${x.why}`) })));
     if (cause) {
-      if (this.causeTotal(cause)) reasons.push(this.t("ratingFollowers", { n: this.formatNumber(this.causeTotal(cause)) }));
+      if (this.causeTotal(cause)) reasons.push(this.tCount("ratingFollowers", this.causeTotal(cause)));
       ["automation", "script", "dashboard"].filter(k => cause.consumers?.[k]).forEach(k => reasons.push(this.t(`causeUses_${k}`, { n: cause.consumers[k] })));
     }
     if (!reasons.length) reasons.push(this.t("ratingNoReason"));
@@ -85,6 +85,19 @@ class CausesMixin {
       }
       next = `<i class="ratingicon"><ha-icon icon="mdi:arrow-top-right"></ha-icon></i><span>${parts.map(x => this.esc(x)).join(" ")}</span>`;
     }
+    const fixButton = labelKey => (finding && !finding.ignored && finding.key ? `<div class="mbtns"><button type="button" class="btn primary" data-fix-open="${this.esc(finding.key)}"><ha-icon icon="mdi:wrench-outline"></ha-icon>${this.t(labelKey)}</button></div>` : "");
+    // An outage reads as one answer: how long, what it leaves behind, why it matters. How sure Housekeeper is and what the next level takes sit behind "More".
+    if (hours !== null) {
+      const used = ["automation", "script", "dashboard"].some(k => cause?.consumers?.[k]);
+      const sentence = cause?.kind === "device_down" ? this.causeDeviceLine(cause) : reasons.slice(1).map(x => this.esc(x)).join(" · ");
+      const sure = Math.round((finding.confidence || 0) * 100);
+      return `<div class="rating"><h3 class="ratinghead">${this.t("ratingWhat")}</h3>
+        <p class="ratinglead"><b>${this.esc(this.t("outageHeadline", { span: this.spanText(hours) }))}</b> ${this.esc(sentence)}</p>
+        <div class="rrow"><b>${this.t("ratingUrgency")}</b><div>${this.impactChip(level)}<div class="factnote">${this.t(used ? "ratingWhyUsed" : "ratingWhyAge")}</div></div></div>
+        <details class="ratingmore"${sure < 80 ? " open" : ""}><summary>${this.t("ratingMore")}</summary>
+          <div class="rrow"><b>${this.t("sortCertainty")}</b><div>${sure} %${kind ? ` <span class="factnote">${this.esc(kind)}</span>` : ""}<div class="factnote">${this.t("ratingCertMeaning")}</div></div></div>
+          ${bar}<div class="rnext">${next}</div></details>${fixButton("fixRowOutage")}</div>`;
+    }
     return `<div class="rating"><h3 class="ratinghead">${this.t("ratingTitle")}</h3>
       <div class="rrow"><b>${this.t("sortImpact")}</b><div>${this.impactChip(level)}<div class="factnote">${reasons.map(x => this.esc(x)).join(" · ")}</div>${bar}</div></div>
       <div class="rrow"><b>${this.t("sortCertainty")}</b><div>${Math.round((finding.confidence || 0) * 100)} %${kind ? ` <span class="factnote">${this.esc(kind)}</span>` : ""}<div class="factnote">${this.t("ratingCertMeaning")}</div>${finding.confidence_level ? `<div class="factnote">${this.esc(this.certaintyText(finding))}</div>` : ""}</div></div>
@@ -92,7 +105,20 @@ class CausesMixin {
   }
 
   // The short line of a row: the counts and, for an integration, how long it has been down; reason and log are for the detail page.
-  causeShort(c) { return c.kind === "integration_down" ? [this.causeCounts(c), this.outageLine(c)].filter(Boolean).join(" · ") : [this.causeCounts(c), this.causeLine(c)].filter(Boolean).join(" · "); }
+  // The title of a cause: a device that is down says for how long, that is what a person wants to know first.
+  causeTitle(c) {
+    const f = c.finding_key && this.data.findings.find(x => x.key === c.finding_key), since = f && Date.parse(f.first_detected_at);
+    if (c.kind === "device_down" && since) return this.t("cause_device_down_for", { name: c.name, span: this.spanText(Math.max(0, (Date.now() - since) / 3600000)) });
+    return this.t(`cause_${c.kind}`, { name: c.name });
+  }
+
+  // What a device that is down leaves behind, in one line: the entities that lost their value and who uses them.
+  causeDeviceLine(c) {
+    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: c.consumers[k] }));
+    return [c.follower_count ? this.tCount("causeDeviceEntities", c.follower_count) : this.t("causeNone"), ...(used.length ? used : c.follower_count ? [this.t("causeUnused")] : [])].join(" · ");
+  }
+
+  causeShort(c) { if (c.kind === "device_down") return this.causeDeviceLine(c); return c.kind === "integration_down" ? [this.causeCounts(c), this.outageLine(c)].filter(Boolean).join(" · ") : [this.causeCounts(c), this.causeLine(c)].filter(Boolean).join(" · "); }
 
   // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
   // A count with its noun; one of a kind takes the text with the suffix 1: "1 follow-up", not "1 follow-ups".
@@ -243,8 +269,8 @@ class CausesMixin {
 
   causeEntry(c) {
     const total = this.causeTotal(c), link = `${c.object_type}:${c.object_id}`;
-    const title = this.esc(this.t(`cause_${c.kind}`, { name: c.name })), own1 = c.finding_key && this.data.findings.find(x => x.key === c.finding_key);
-    const sub = [total ? this.tCount("causeExplains", total) : "", this.causeShort(c)].filter(Boolean).join(" · ");
+    const title = this.esc(this.causeTitle(c)), own1 = c.finding_key && this.data.findings.find(x => x.key === c.finding_key);
+    const sub = [total && c.kind !== "device_down" ? this.tCount("causeExplains", total) : "", this.causeShort(c)].filter(Boolean).join(" · ");
     if (!total) return `<div class="rowwrap">${this.causeBox(c)}<button class="row rel" data-object="${this.esc(link)}">${this.tile(c.object_type, "red")}<span class="row-text"><strong>${title}</strong><small>${this.esc(sub)}</small></span>${this.kindChip(this.t("chip_outage"))}${this.impactChip(c.impact)}</button>${this.causeMenu(c, own1)}</div>${this.rowDecide(own1)}`;
     return this.fold(`cause_${c.id}`, { tone: "red", title, sub, pill: this.tCount("causeFollowers", total) }, this.causeChildren(c), false);
   }
@@ -274,7 +300,7 @@ class CausesMixin {
     const target = c.virtual ? `data-jump="findingsNav" data-jump-cause="${this.esc(c.id)}"` : `data-object="${this.esc(`${c.object_type}:${c.object_id}`)}"`;
     const down = c.kind === "integration_down" && !c.virtual && c.object_type === "config_entry";
     const hint = down && this.apWouldPause(c.object_id) ? this.t("apWouldPause") : "", act = down && this.apPausedItem(c.object_id) ? this.apRowAction(c.object_id, "not_loaded") : "", menu = down ? this.apRowMenu(c.object_id) : "";
-    const row = `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.t(`cause_${c.kind}`, { name: c.name }))}</strong><small>${this.esc(sub)}</small>${hint ? `<small class="aphint">${this.esc(hint)}</small>` : ""}</span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
+    const row = `<button class="row rel" ${target}>${this.tile(c.object_type, "red")}<span class="row-text"><strong>${this.esc(this.causeTitle(c))}</strong><small>${this.esc(sub)}</small>${hint ? `<small class="aphint">${this.esc(hint)}</small>` : ""}</span>${this.impactChip(c.impact)}${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}</button>`;
     return `<div class="rowwrap">${row}${act ? `<span class="apact">${act}</span>` : ""}${menu || '<span class="rowmenu rowslot"></span>'}</div>`;
   }
 
@@ -316,7 +342,7 @@ Object.assign(TEXT.de, {
   causesTitle: "Ausfälle",
   cause_device_novalue: "Alle {n} Entitäten des Geräts haben seit {span} keinen Wert mehr. Meist ist das Gerät im Standby oder ausgeschaltet.", hint_device_novalue: "Ist das gewollt, hält eine Objekt-Notiz „Absichtlich offline“ am Gerät es fest; dann meldet Housekeeper weder das Gerät noch seine Entitäten.", devAllNoValue: "alle {n} ohne Wert", noValue: "Ohne Wert", sumRiskOutage: "Beim Entfernen (nicht der Ausfall)", cause_device_unavailable: "Alle {n} Entitäten des Geräts sind seit {span} nicht verfügbar. Das Gerät ist registriert, liefert aber keine Werte.", hint_device_unavailable: "Prüfen, ob das Gerät erreichbar ist (Strom, Netzwerk, Cloud-Verbindung), und die Integration neu laden.", devAllDown: "alle {n} nicht verfügbar", causeNone: "keine Entität betroffen", outageIntegrations: "{n} Integrationen", outageIntegrations1: "1 Integration", outageDevices: "{n} Geräte", outageDevices1: "1 Gerät",
   logTitle: "Im HA-Log", logLine: "Im HA-Log: {what}, zuletzt {when}", logLevel_warning: "{n}× Warnung", logLevel_error: "{n}× Fehler", logLevel_critical: "{n}× kritischer Fehler",
-  cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen",
+  cause_integration_down: "Integration {name} ist nicht geladen", cause_device_down: "Gerät {name} ist ganz ausgefallen", cause_device_down_for: "Gerät {name} ist seit {span} aus", ratingWhat: "Was ist los?", outageHeadline: "Seit {span} aus.", ratingUrgency: "Dringlichkeit", ratingWhyAge: "weil es so lange aus ist, nicht weil etwas davon abhängt", ratingWhyUsed: "weil es so lange aus ist und etwas davon abhängt", ratingMore: "Mehr zur Einstufung", fixRowOutage: "Was tun?", causeDeviceEntities: "{n} Entitäten dadurch nicht verfügbar", causeDeviceEntities1: "1 Entität dadurch nicht verfügbar", causeUnused: "von nichts genutzt",
   causeFollowers: "{n} Folgen", causeFollowers1: "1 Folge", causeExplains: "erklärt {n} weitere Befunde", causeExplains1: "erklärt 1 weiteren Befund", causeFollowOf: "Folge von {name}", withFollowers: "Nur Ursachen mit Folgen", viewLabel: "Ansicht", viewGrouped: "Gruppiert", viewFlat: "Einzeln", viewLocked: "Mit einem Filter ist die Liste immer einzeln.", cause_app_down: "App {name} ist gestoppt", cause_entity_missing: "Entität {name} existiert nicht", cause_device_missing: "Gerät {name} existiert nicht", cause_area_missing: "Bereich {name} existiert nicht", causeUsers: "{n} Automationen, Skripte oder Dashboards verweisen darauf", causeBelow: "{n} Integrationen hängen vermutlich daran", outageApps: "{n} Apps", outageApps1: "1 App", outageTargets: "{n} fehlende Ziele", outageTargets1: "1 fehlendes Ziel", cause_service_missing: "Dienst {name} existiert nicht", cause_blueprint_missing: "Blueprint {name} existiert nicht", cause_floor_missing: "Etage {name} existiert nicht", cause_label_missing: "Label {name} existiert nicht", cause_tag_missing: "Tag {name} existiert nicht", causeCallers: "{n} Automationen und Skripte rufen ihn auf", outageServices: "{n} fehlende Dienste", outageServices1: "1 fehlender Dienst", causeState: "Zustand: {state}", causeUses_automation: "{n} Automationen betroffen", causeUses_script: "{n} Skripte betroffen", causeUses_dashboard: "{n} Dashboards betroffen",
   findingsOfFollow: "davon {n} Folgen von Ausfällen", ogViewCountOf: "{m} Objekte mit {n} von {total} Befunden", ogViewCountOf1: "1 Objekt mit {n} von {total} Befunden", viewCountOf: "{n} von {total} Befunden", actOutages: "Ausfälle", ovFoundAt: "erkannt {age}", actOutagesOpen: "Weitere Ausfälle", actMissingTargets: "Fehlende Ziele",
 });
@@ -324,7 +350,7 @@ Object.assign(TEXT.en, {
   causesTitle: "Outages",
   cause_device_novalue: "All {n} entities of the device have had no value for {span}. Usually the device is in standby or switched off.", hint_device_novalue: "If that is intended, an object note “Offline on purpose” on the device records it; then Housekeeper reports neither the device nor its entities.", devAllNoValue: "all {n} without a value", noValue: "No value", sumRiskOutage: "When removed (not the outage)", cause_device_unavailable: "All {n} entities of the device have been unavailable for {span}. The device is registered but delivers no values.", hint_device_unavailable: "Check that the device is reachable (power, network, cloud connection) and reload the integration.", devAllDown: "all {n} unavailable", causeNone: "no entity affected", outageIntegrations: "{n} integrations", outageIntegrations1: "1 integration", outageDevices: "{n} devices", outageDevices1: "1 device",
   logTitle: "In the HA log", logLine: "In the HA log: {what}, last {when}", logLevel_warning: "{n}× warning", logLevel_error: "{n}× error", logLevel_critical: "{n}× critical error",
-  cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely",
+  cause_integration_down: "Integration {name} is not loaded", cause_device_down: "Device {name} is down completely", cause_device_down_for: "Device {name} has been down for {span}", ratingWhat: "What is going on?", outageHeadline: "Down for {span}.", ratingUrgency: "Urgency", ratingWhyAge: "because it has been down so long, not because something depends on it", ratingWhyUsed: "because it has been down so long and something depends on it", ratingMore: "More about the rating", fixRowOutage: "What to do?", causeDeviceEntities: "{n} entities unavailable because of it", causeDeviceEntities1: "1 entity unavailable because of it", causeUnused: "used by nothing",
   causeFollowers: "{n} follow-ups", causeFollowers1: "1 follow-up", causeExplains: "explains {n} more findings", causeExplains1: "explains 1 more finding", causeFollowOf: "Follow-up of {name}", withFollowers: "Only causes with follow-ups", viewLabel: "View", viewGrouped: "Grouped", viewFlat: "One by one", viewLocked: "With a filter the list is always one by one.", cause_app_down: "App {name} is stopped", cause_entity_missing: "Entity {name} does not exist", cause_device_missing: "Device {name} does not exist", cause_area_missing: "Area {name} does not exist", causeUsers: "{n} automations, scripts or dashboards point to it", causeBelow: "{n} integrations probably depend on it", outageApps: "{n} apps", outageApps1: "1 app", outageTargets: "{n} missing targets", outageTargets1: "1 missing target", cause_service_missing: "Service {name} does not exist", cause_blueprint_missing: "Blueprint {name} does not exist", cause_floor_missing: "Floor {name} does not exist", cause_label_missing: "Label {name} does not exist", cause_tag_missing: "Tag {name} does not exist", causeCallers: "{n} automations and scripts call it", outageServices: "{n} missing services", outageServices1: "1 missing service", causeState: "State: {state}", causeUses_automation: "{n} automations affected", causeUses_script: "{n} scripts affected", causeUses_dashboard: "{n} dashboards affected",
   findingsOfFollow: "{n} of them follow-ups of outages", ogViewCountOf: "{m} objects with {n} of {total} findings", ogViewCountOf1: "1 object with {n} of {total} findings", viewCountOf: "{n} of {total} findings", actOutages: "Outages", ovFoundAt: "found {age}", actOutagesOpen: "Further outages", actMissingTargets: "Missing targets",
 });

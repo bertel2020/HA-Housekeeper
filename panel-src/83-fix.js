@@ -72,22 +72,24 @@ class FixMixin {
     const [R, A, B, G, M] = ["alert-circle-outline:red", "progress-wrench:amber", "clock-outline:blue", "eye-off-outline:green", "link-variant:blue"];
     const certainty = f.confidence_level ? this.esc(this.certaintyText(f).replace(/^[^.]*\d+\s*%\.\s*/, "")) : "";
     const object = this.findObject(this.findingKey(f));
+    const outage = OUTAGE_RULES.includes(f.rule_id) && Boolean(since);
     const rows = [
-      allCause || !object ? null : [this.t("fixObject"), `<button type="button" class="link strong" data-object="${this.esc(this.findingKey(f))}">${this.esc(object.name || object.object_id)}</button><small class="factnote">${this.esc(object.object_id)}</small>`, "puzzle-outline:blue"],
+      allCause || !object ? null : [this.t("fixObject"), `<button type="button" class="link strong" data-object="${this.esc(this.findingKey(f))}">${this.esc(object.name || object.object_id)}</button>${object.object_type === "config_entry" ? "" : `<small class="factnote">${this.esc(object.object_id)}</small>`}`, "puzzle-outline:blue"],
       allCause ? [this.t("fixWhat"), this.esc(this.t(`cause_${allCause.kind}`, { name: allCause.name })), R] : null,
       allCause ? [this.t("fixAffects"), this.esc(`${this.tCount("fixAllPlaces", all.length)}${kinds ? ` (${kinds})` : ""}`), M] : null,
       allCause ? null : [this.t("fixWhat"), this.esc(this.findingTitle(f)), R],
       f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) })), A] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) })), A] : null,
-      since ? [this.t("sortSince"), this.esc(this.formatDate(since)), B] : null,
-      f.impact ? [this.t("sortImpact"), this.esc(this.impactLine(f)), G] : null,
+      since ? [this.t("sortSince"), this.esc(outage ? `${this.formatDate(since)} · ${this.t("outageFor", { span: this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) })}` : this.formatDate(since)), B] : null,
+      f.impact ? [this.t(outage ? "ratingUrgency" : "sortImpact"), `${this.esc(this.impactLine(f))}${outage ? `<small class="factnote">${this.t("sortCertainty")}: ${Math.round((f.confidence || 0) * 100)} %</small>` : ""}`, G] : null,
       cause && !own && !allCause ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name })), M] : null,
-      cause && own && cause.total_followers ? [this.t("fixAffects"), this.esc(this.tCount("fixFollowers", cause.total_followers)), M] : null,
+      cause && own && cause.kind === "device_down" ? [this.t("fixAffects"), this.esc(this.causeDeviceLine(cause)), M] : cause && own && cause.total_followers ? [this.t("fixAffects"), this.esc(this.tCount("fixFollowers", cause.total_followers)), M] : null,
       this.fixFailure?.failure ? [this.t("fixLastFailure"), this.esc(this.fixFailureText(this.fixFailure.failure)), A] : null,
       this.fixFailure?.hint ? [this.t("fixFailureHint"), `${this.esc(this.t("fixFailureHintText", { entity: this.fixFailure.hint.entity_id }))} <button type="button" class="btn quiet" data-fix-open="${this.esc(this.fixFailure.hint.finding_key)}">${this.t("fixToFinding")}</button>`, "lightbulb-on-outline:blue"] : null,
       pattern ? [this.t("fixPattern"), this.esc(this.t("fixPatternAt", { hour: pattern.hour })), "chart-timeline-variant:amber"] : null,
-      f.confidence_level ? [this.t("sortCertainty"), `<strong>${Math.round(f.confidence * 100)} %</strong>${certainty ? `<small class="factnote">${certainty}</small>` : ""}`, "shield-check-outline:green"] : null,
+      f.confidence_level && !outage ? [this.t("sortCertainty"), `<strong>${Math.round(f.confidence * 100)} %</strong>${certainty ? `<small class="factnote">${certainty}</small>` : ""}`, "shield-check-outline:green"] : null,
     ].filter(Boolean);
-    return `<div class="fcinfo hasrec fixinfo" role="group">${rows.map(([label, value, look]) => { const [icon, tone] = look.split(":"); return `<div class="fcirow static"><span class="fcii fcii-${tone}"><ha-icon icon="mdi:${icon}"></ha-icon></span><span>${label}</span><span>${value}</span><i></i></div>`; }).join("")}</div>`;
+    const question = f.rule_id === "device.down" && object && since ? `<p class="fixquestion"><b>${this.esc(this.t("fixDownQuestion", { name: object.name || object.object_id, span: this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) }))}</b></p>` : "";
+    return `${question}<div class="fcinfo hasrec fixinfo" role="group">${rows.map(([label, value, look]) => { const [icon, tone] = look.split(":"); return `<div class="fcirow static"><span class="fcii fcii-${tone}"><ha-icon icon="mdi:${icon}"></ha-icon></span><span>${label}</span><span>${value}</span><i></i></div>`; }).join("")}</div>`;
   }
 
   fixFailureText(failure) {
@@ -142,17 +144,19 @@ class FixMixin {
       const sorted = [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended));
       const entries = [];
       for (const w of sorted) {
-        if (w.kind === "panel" && object) { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
+        if (w.kind === "panel" && object && w.way !== "mark") { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
         else entries.push({ html: this.fixWayCard(w, f) });
       }
       if (!entries.length) list = `<p class="factnote">${this.t("fixNoWays")}</p>`;
       else list = `<div class="fixrec">${entries[0].html}</div>${entries.length > 1 ? `<details class="fixmore"><summary>${this.t("fixOtherWays", { n: entries.length - 1 })}</summary>${entries.slice(1).map(e => e.html).join("")}</details>` : ""}`;
     }
+    // A device that is down is not "kept" as it is: the object note says so for the device and its entities, so that one stands in its place.
+    const outageNote = f.rule_id === "device.down" && object && MARK_TYPES.includes(object.object_type) && (shown || []).some(w => w.way === "mark");
     const exit = (kind, icon) => `<button type="button" class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="${kind}" title="${this.esc(this.t(`decideKindHint_${kind}`))}"><ha-icon icon="${icon}"></ha-icon>${this.t(`decideKind_${kind}`)}</button>`;
     // The exits decide one finding; for a missing target the selection below decides several.
     if (this.fixAll) return `${error}${list}`;
     const self = f.in_work ? `<button type="button" class="btn" data-fix-self-done><ha-icon icon="mdi:check"></ha-icon>${this.t("fixSelfDone")}</button>` : "";
-    return `${error}${list}<div class="fixexits"><small class="fceyebrow">${this.t("fixExits")}</small><div class="mbtns">${exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:bell-off-outline")}${self}</div></div>${this.rowDecide(f)}`;
+    return `${error}${list}<div class="fixexits"><small class="fceyebrow">${this.t("fixExits")}</small><div class="mbtns">${outageNote ? "" : exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:bell-off-outline")}${self}</div>${outageNote ? `<small class="factnote">${this.t("fixKeepMoved")}</small>` : ""}</div>${this.rowDecide(f)}`;
   }
 
   // For a cause with several findings below it: pick which to include, then one way for all.
@@ -266,7 +270,7 @@ Object.assign(TEXT.de, {
   fixWay_restart_or_update: "Home Assistant neu starten oder aktualisieren", fixWayHint_restart_or_update: "Eine Migration oder das Entladen ist hängen geblieben; meist hilft ein Neustart oder ein Update der Integration.",
   fixWay_open_integration: "Integration ansehen", fixWayHint_open_integration: "Die Integrationsseite zeigt den Fehler und bietet dort „Neu laden“ an.",
   fixWay_reauth: "Neu anmelden", fixWayHint_reauth: "Die Zugangsdaten gelten nicht mehr. Die Integrationsseite führt durch die Anmeldung.",
-  fixWay_mark: "Ist so gewollt (Objekt-Notiz)", fixWayHint_mark: "Sag Housekeeper, dass das Objekt absichtlich offline ist, auch mit Zeitfenster.",
+  fixWay_mark: "Absichtlich aus, notieren", fixWayHint_mark: "Housekeeper meldet es dann nicht mehr als ausgefallen und fragt später noch einmal nach. Auch mit Zeitfenster. Die Notiz gilt für das Gerät und seine Entitäten.", fixKeepMoved: "„Ist so gewollt“ steht bei einem Ausfall als Notiz oben: Sie deckt das Gerät und seine Entitäten ab.", fixDownQuestion: "{name} ist seit {span} aus. Ist das so gewollt?",
   fixWay_exchange: "Gerät austauschen", fixWayHint_exchange: "Für ein ersetztes Gerät: Automationen und Szenen auf das neue Gerät umstellen.",
   fixWay_replace_entity: "Entität ersetzen", fixWayHint_replace_entity: "Alle Stellen, die diese Entität nutzen, auf eine andere umstellen.",
   fixWay_object_actions: "Deaktivieren oder entfernen", fixWayHint_object_actions: "Die Aktionen des Objekts: deaktivieren, entfernen, austauschen, jeweils mit Vorschau.",
@@ -293,7 +297,7 @@ Object.assign(TEXT.en, {
   fixWay_restart_or_update: "Restart or update Home Assistant", fixWayHint_restart_or_update: "A migration or an unload got stuck; a restart or an update of the integration usually helps.",
   fixWay_open_integration: "Look at the integration", fixWayHint_open_integration: "The integration page shows the error and offers “Reload” there.",
   fixWay_reauth: "Log in again", fixWayHint_reauth: "The credentials no longer work. The integration page leads through the login.",
-  fixWay_mark: "Intended (object note)", fixWayHint_mark: "Tell Housekeeper the object is offline on purpose, also with a time window.",
+  fixWay_mark: "Off on purpose, note it", fixWayHint_mark: "Housekeeper then stops reporting it as down and asks again later. Also with a time window. The note covers the device and its entities.", fixKeepMoved: "“Intended” is the object note above for an outage: it covers the device and its entities.", fixDownQuestion: "{name} has been down for {span}. Is that intended?",
   fixWay_exchange: "Exchange the device", fixWayHint_exchange: "For a replaced device: move automations and scenes to the new device.",
   fixWay_replace_entity: "Replace the entity", fixWayHint_replace_entity: "Move every place that uses this entity to another one.",
   fixWay_object_actions: "Disable or remove", fixWayHint_object_actions: "The actions of the object: disable, remove, exchange, each with a preview.",

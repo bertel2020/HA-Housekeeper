@@ -25,6 +25,7 @@
 
 ### Geändert
 
+- **Ausfälle:** Ein ausgefallenes Gerät nennt in Liste und Karte die Dauer und was dadurch nicht verfügbar ist („Gerät X ist seit 44 Tagen aus“). Auf der Beheben-Seite steht die Frage „Ist das so gewollt?“, und „Absichtlich aus, notieren“ ist eine eigene Karte; sie wird empfohlen, wenn das Gerät seit einer Woche aus ist und kaum etwas daran hängt.
 - **Hausfunktionen:** Die Soll-Regeln passen zum Objekt: ein Mindestwert wird nur bei Zahlen angeboten, und jede Regel zeigt den aktuellen Wert.
 - **Verwaiste Statistiken:** Der Hilfetext nennt die Wartemarke und die Übertragung.
 

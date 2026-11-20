@@ -205,7 +205,7 @@ class FindingsMixin {
     if (this.findingFilter) notes.push(["class", this.reasonLabel(this.findingFilter)]);
     if (this.findingFollowers) notes.push(["followers", this.t("followersFilter")]);
     if (this.findingAfter) notes.push(["after", this.t("corrTile")]);
-    if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.t(`cause_${c.kind}`, { name: c.name }) : this.findingCause]); }
+    if (this.findingCause) { const c = this.causeById(this.findingCause); notes.push(["cause", c ? this.causeTitle(c) : this.findingCause]); }
     // The findings of one incident: the note names it, as its row in the card does.
     if (this.findingCorr) { const g = (this.corr?.groups || []).find(x => x.id === this.findingCorr); notes.push(["corr", this.t("corrFilterOne", { what: this.plainText(g ? this.corrText(g) : this.findingCorr), n: this.formatNumber(this.corrKeys(this.findingCorr).size) })]); }
     if (this.findingStage && !this.fcWizOn()) notes.push(["stage", this.t("fcStageFilter", { n: this.findingStage, name: this.t(`fcStage${this.findingStage}`) })]);

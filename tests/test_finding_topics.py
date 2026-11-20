@@ -387,3 +387,37 @@ def test_the_server_counts_the_tile_figures_of_the_shared_fixture() -> None:
     point = make_checkpoint(fixture["snapshot"])
     assert point["affected"] == fixture["expected"]["affected"]
     assert point["lead_object_topics"] == fixture["expected"]["lead_object_topics"]
+
+
+def test_a_device_that_is_down_for_a_week_with_nothing_on_it_recommends_the_note() -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.ha_housekeeper.fix_ways import ways_for
+
+    device = {"object_type": "device", "object_id": "d", "config_entry_ids": ["e"]}
+
+    def recommended(days: int, followers: int = 1, consumers: dict | None = None) -> str:
+        since = (datetime.now(UTC) - timedelta(days=days)).isoformat()
+        finding = {
+            "key": "k",
+            "rule_id": "device.down",
+            "object_id": "d",
+            "topic": DOWN,
+            "first_detected_at": since,
+        }
+        snapshot = {
+            "objects": [device],
+            "causes": [
+                {
+                    "finding_key": "k",
+                    "total_followers": followers,
+                    "consumers": consumers or {},
+                }
+            ],
+        }
+        return next(w["way"] for w in ways_for(finding, snapshot) if w["recommended"])
+
+    assert recommended(44) == "mark"
+    assert recommended(1) == "reload"
+    assert recommended(44, consumers={"automation": 2}) == "reload"
+    assert recommended(44, followers=5) == "reload"
