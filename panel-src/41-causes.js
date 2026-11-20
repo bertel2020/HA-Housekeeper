@@ -151,6 +151,11 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id);
   }
 
+  // An entity that reports no value (unavailable or unknown): it can be disabled by a plan or replaced by another entity.
+  downEntityFinding(f) {
+    return Boolean(f) && !f.ignored && ["entity.state_unavailable", "entity.state_unknown"].includes(f.rule_id);
+  }
+
   rowMenu(f) {
     if (!f) return "";
     const key = this.esc(f.key);
@@ -175,7 +180,7 @@ class CausesMixin {
     const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, "", " tech") : "";
     const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep tech">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"), " tech")}` : "";
     const about = mark + exc;
-    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}${this.removableFinding(f) ? item("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`) : ""}<hr class="menusep">`;
+    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}${this.removableFinding(f) ? item("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`) : ""}${this.downEntityFinding(f) ? `${item("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`)}${item("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`)}` : ""}<hr class="menusep">`;
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep tech">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
   }
 

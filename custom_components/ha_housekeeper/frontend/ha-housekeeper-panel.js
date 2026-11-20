@@ -3402,6 +3402,7 @@ class FindingsMixin {
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
     const removable = [...new Set(picked.filter(f => this.removableFinding(f)).map(f => f.object_id))];
     const deletable = [...new Set(picked.filter(f => this.deletableAutomation(f)).map(f => f.object_id))];
+    const downs = [...new Set(picked.filter(f => this.downEntityFinding(f)).map(f => f.object_id))];
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
@@ -3423,6 +3424,7 @@ class FindingsMixin {
       ],
       [
         removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", some(removable.length)) : "",
+        downs.length ? item("mdi:cancel", "actDisable", "data-fsel-disable", some(downs.length)) : "",
         deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", some(deletable.length)) : "",
       ],
       [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
@@ -11316,6 +11318,11 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id);
   }
 
+  // An entity that reports no value (unavailable or unknown): it can be disabled by a plan or replaced by another entity.
+  downEntityFinding(f) {
+    return Boolean(f) && !f.ignored && ["entity.state_unavailable", "entity.state_unknown"].includes(f.rule_id);
+  }
+
   rowMenu(f) {
     if (!f) return "";
     const key = this.esc(f.key);
@@ -11340,7 +11347,7 @@ class CausesMixin {
     const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, "", " tech") : "";
     const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep tech">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"), " tech")}` : "";
     const about = mark + exc;
-    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}${this.removableFinding(f) ? item("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`) : ""}<hr class="menusep">`;
+    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}${this.removableFinding(f) ? item("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`) : ""}${this.downEntityFinding(f) ? `${item("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`)}${item("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`)}` : ""}<hr class="menusep">`;
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep tech">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
   }
 
@@ -14138,6 +14145,16 @@ class DetailActionsMixin {
     this.render();
   }
 
+  // The disabling of several entities at once, as one plan with its preview.
+  async planDisableMany(ids) {
+    if (!ids.length) return;
+    try {
+      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "disable_entity", object_id })))) return;
+      this.selected = null;
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   // The removal of several entities at once, as one plan with its preview.
   async planRemoveMany(ids) {
     if (!ids.length) return;
@@ -14191,6 +14208,8 @@ class DetailActionsMixin {
       this.render();
     });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
+    root.querySelectorAll("[data-find-disable]").forEach(el => el.onclick = () => this.planDisable(el.dataset.findDisable));
+    root.querySelectorAll("[data-fsel-disable]").forEach(el => el.onclick = () => this.planDisableMany([...new Set(this.pickedFindings().filter(f => this.downEntityFinding(f)).map(f => f.object_id))]));
     root.querySelectorAll("[data-find-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.findRemove));
     root.querySelectorAll("[data-fsel-remove]").forEach(el => el.onclick = () => this.planRemoveMany([...new Set(this.pickedFindings().filter(f => this.removableFinding(f)).map(f => f.object_id))]));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));

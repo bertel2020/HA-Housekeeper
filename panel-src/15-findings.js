@@ -369,6 +369,7 @@ class FindingsMixin {
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
     const removable = [...new Set(picked.filter(f => this.removableFinding(f)).map(f => f.object_id))];
     const deletable = [...new Set(picked.filter(f => this.deletableAutomation(f)).map(f => f.object_id))];
+    const downs = [...new Set(picked.filter(f => this.downEntityFinding(f)).map(f => f.object_id))];
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
@@ -390,6 +391,7 @@ class FindingsMixin {
       ],
       [
         removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", some(removable.length)) : "",
+        downs.length ? item("mdi:cancel", "actDisable", "data-fsel-disable", some(downs.length)) : "",
         deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", some(deletable.length)) : "",
       ],
       [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
