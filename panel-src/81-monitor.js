@@ -157,7 +157,7 @@ class MonitorMixin {
 
   // The objects of one function as a table: a row opens the object.
   monitorMembersTable(item) {
-    const rows = item.members.map(member => ({ member, object: this.findObject(member.object_key) }));
+    const rows = item.members.map((member, i) => ({ member, i, object: this.findObject(member.object_key) }));
     const toneOf = ({ member }) => (member.state === "disabled" ? "mute" : member.state === "problem" ? "red" : member.state === "unverified" ? "warn" : "ok");
     const stateText = ({ member }) => this.t(member.state === "disabled" ? "monitorDisabled" : member.state === "problem" ? "monitorProblem" : member.state === "unverified" ? "monitorUnverified" : "monitorOk");
     const titleOf = ({ member, object }) => object?.name || member.object_key;
@@ -168,7 +168,8 @@ class MonitorMixin {
       { key: "state", label: "sysColState", dir: "asc", get: r => ({ problem: 0, unverified: 1, ok: 2, disabled: 3 }[r.member.state] ?? 9) },
     ];
     return this.sysList("monitor-members", rows, {
-      sort: "state", sorts, tie: titleOf, empty: "monitorEmpty", pageSizes: [10, 20, 50],
+      sort: "state", sorts, tie: r => String(r.i).padStart(5, "0"), // equal rows stay in the order the person gave the objects
+       empty: "monitorEmpty", pageSizes: [10, 20, 50],
       text: r => [titleOf(r), r.member.object_key, this.monitorReason(r.member.reason), rulesOf(r)].join(" "),
       rowAttrs: r => (r.object ? `data-object="${this.esc(r.member.object_key)}" tabindex="0" role="button" aria-label="${this.esc(titleOf(r))}"` : 'class="static"'),
       columns: [
