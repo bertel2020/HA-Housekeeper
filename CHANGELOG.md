@@ -14,6 +14,12 @@
   - After a verified move the old statistics are offered for deletion; a switch opens that step by itself.
 - **Batteries:** A battery that reports a word (low, medium, high) is listed, and only “low” warns.
 - **House functions:** The objects of a function can be sorted with arrows in the edit form. The order is only for display.
+- **Space per entity (database, states):**
+  - The name opens the entity. The list has a pick column, a row menu and, above the list, the exclusion bar; a cancel button clears the pick.
+  - Under the name it says whether an entity is recommended, marked or already excluded, and a filter separates them.
+- **Findings:** The row menu and the actions menu offer the next steps right away:
+  - Remove unneeded entities and delete automations, one by one or together as a plan with a preview.
+  - Disable or replace entities that are down; for broken references, replace with the suggestion filled in.
 
 ### Changed
 

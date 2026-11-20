@@ -14,6 +14,12 @@
   - Nach einer geprüften Übertragung werden die alten Statistiken zum Löschen angeboten; ein Schalter öffnet diesen Schritt von selbst.
 - **Batterien:** Eine Batterie, die ein Wort meldet (low, medium, high), wird aufgeführt, und nur „low“ warnt.
 - **Hausfunktionen:** Die Objekte einer Funktion lassen sich im Bearbeiten-Formular mit Pfeilen sortieren. Die Reihenfolge dient nur der Anzeige.
+- **Platz je Entität (Datenbank, Zustände):**
+  - Der Name öffnet die Entität. Die Liste hat eine Auswahlspalte, ein Zeilenmenü und über der Liste die Ausschluss-Leiste; ein Abbrechen leert die Auswahl.
+  - Unter dem Namen steht, ob eine Entität empfohlen, vorgemerkt oder schon ausgeschlossen ist, und ein Filter trennt sie.
+- **Befunde:** Das Zeilenmenü und das Aktionen-Menü bieten die nächsten Schritte gleich an:
+  - Überflüssige Entitäten entfernen und Automationen löschen, einzeln oder gesammelt als Plan mit Vorschau.
+  - Ausgefallene Entitäten deaktivieren oder ersetzen; bei kaputten Verweisen das Ersetzen mit dem Vorschlag.
 
 ### Geändert
 
