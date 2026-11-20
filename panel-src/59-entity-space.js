@@ -103,7 +103,7 @@ class EntitySpaceMixin {
       ],
       text: e => `${this.spaceName(e.entity_id)} ${e.entity_id}`, tie: e => e.entity_id, empty: "dbSeriesNone",
       columns: [
-        { key: "name", label: "utName", dir: "asc", cell: e => this.nameCell(this.spaceName(e.entity_id), e.entity_id) },
+        { key: "name", label: "utName", dir: "asc", cell: e => (interim ? this.nameCell(this.spaceName(e.entity_id), e.entity_id) : `<button type="button" class="link namelink" data-space-open="${this.esc(e.entity_id)}">${this.nameCell(this.spaceName(e.entity_id), e.entity_id, "span")}</button>`) },
         { key: "size", label: "spaceColSize", dir: "desc", cell: e => `<span class="dbshare">${this.sysShare(e.bytes, max)}<b>${this.esc(this.formatBytes(e.bytes))}</b></span>` },
         { key: "rows", label: "spaceColRows", dir: "desc", cell: e => num(e.rows) },
         { key: "variants", label: "spaceColVariants", dir: "desc", cell: e => num(e.variants) },
@@ -223,6 +223,13 @@ class EntitySpaceMixin {
       this.view = "recorder"; (this.viewTab ||= {}).recorder = tab; this.pages = {}; this.selected = null; this.trail = [];
       if (tab === "db") { this.spaceOpen = "states"; this.ensureSpace(); }
       this.render();
+    });
+    // The name of a row opens the entity itself: its page, or HA's own dialog when the inventory has no page for it.
+    root.querySelectorAll("[data-space-open]").forEach(el => el.onclick = ev => {
+      ev?.stopPropagation();
+      const id = el.dataset.spaceOpen, obj = this.findObject(`entity:${id}`);
+      if (obj) this.openObject(obj);
+      else if (this.canMoreInfo?.(id)) this.moreInfo(id);
     });
     root.querySelectorAll("[data-space-look]").forEach(el => el.onclick = ev => {
       ev?.stopPropagation();
