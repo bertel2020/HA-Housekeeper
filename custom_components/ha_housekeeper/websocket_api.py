@@ -236,6 +236,21 @@ def websocket_detail(
 
 
 @websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/history_counts",
+        vol.Required("ids"): vol.All([str], vol.Length(min=1, max=100)),
+    }
+)
+@websocket_api.async_response
+async def websocket_history_counts(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """The recorder rows (states and statistics) held for some entities; ``rows`` is null when they cannot be counted. Reads only."""
+    connection.send_result(msg["id"], {"rows": await count_history(hass, msg["ids"])})
+
+
+@websocket_api.require_admin
 @websocket_api.websocket_command({vol.Required("type"): f"{DOMAIN}/history_series"})
 @websocket_api.async_response
 @with_scanner
@@ -1887,6 +1902,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_often_skip)
     websocket_api.async_register_command(hass, websocket_fix_ways)
     websocket_api.async_register_command(hass, websocket_cleanup_round)
+    websocket_api.async_register_command(hass, websocket_history_counts)
     websocket_api.async_register_command(hass, websocket_fix_check)
     websocket_api.async_register_command(hass, websocket_failure_info)
     websocket_api.async_register_command(hass, websocket_set_options)

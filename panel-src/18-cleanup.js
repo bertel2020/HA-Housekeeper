@@ -26,7 +26,8 @@ class CleanupMixin {
     if (this.releaseConfirm === key) {
       return `<span class="qconfirm" role="group" aria-label="${this.esc(this.t("releaseQuestion"))}"><span>${this.t("releaseQuestion")}</span><button class="btn" data-release-yes="${this.esc(key)}">${this.t("yes")}</button><button class="btn" data-release-no>${this.t("cancelRun")}</button></span>`;
     }
-    return `<button class="btn" data-release="${this.esc(key)}" ${this.cleanupRunning() ? 'disabled aria-busy="true"' : ""}>${this.t("releaseAction")}</button>`;
+    if (this.cleanupRunning()) return "";
+    return this.rowMenuHtml([["mdi:lock-open-variant-outline", "releaseAction", `data-release="${this.esc(key)}"`], (q.object_type || "entity") === "entity" && this.canMoreInfo(q.object_id) ? ["mdi:information-outline", "openEntity", `data-more-info="${this.esc(q.object_id)}"`] : null]);
   }
 
   async releaseQuarantine(key) {
@@ -268,9 +269,23 @@ class CleanupMixin {
   recorderOwn(item) {
     if (this.cleanupKind !== "remove_entity" || item.object_type !== "entity" || !this.data?.meta?.recorder_available) return "";
     if (this.energyLocked(item.object_id)) return `<span class="recown lock">${this.t("recOwnLock")}</span>`;
-    const value = this.recorderFor(item.object_id), id = this.esc(item.object_id);
+    const value = this.recorderFor(item.object_id), id = this.esc(item.object_id), rows = this.histRows?.[item.object_id];
     const options = item.has_statistics ? [["keep", "recOwnKeep"], ["statistics", "recOwnStats"], ["states", "recOwnStates"]] : [["keep", "recOwnKeep"], ["states", "recOwnStatesOnly"]];
-    return `<span class="recown"><span class="trimseg" role="radiogroup" aria-label="${this.esc(this.t("recChoiceLabel"))}">${options.map(([v, k]) => `<button type="button" class="${value === v ? "on" : ""}" role="radio" aria-checked="${value === v}" data-rec-own="${id}|${v}">${this.t(k)}</button>`).join("")}</span><small>${item.has_statistics ? this.t("recOwnHasStats") : this.t("recOwnNoStats")}</small></span>`;
+    return `<span class="recown"><span class="trimseg" role="radiogroup" aria-label="${this.esc(this.t("recChoiceLabel"))}">${options.map(([v, k]) => `<button type="button" class="${value === v ? "on" : ""}" role="radio" aria-checked="${value === v}" data-rec-own="${id}|${v}">${this.t(k)}</button>`).join("")}</span><small>${rows ? (rows.states || rows.statistics ? this.t("recRows", { states: this.formatNumber(rows.states), stats: this.formatNumber(rows.statistics) }) : this.t("recRowsNone")) : item.has_statistics ? this.t("recOwnHasStats") : this.t("recOwnNoStats")}</small></span>`;
+  }
+
+  // The recorder rows of the entities in view (states and statistics), asked once in a while and kept for the line under the choice.
+  ensureHistRows(ids) {
+    const asked = (this._histAsked ||= new Map()), now = Date.now();
+    const fresh = ids.filter(id => !(now - (asked.get(id) || 0) < 120000)).slice(0, 100);
+    if (!fresh.length || !this.data?.meta?.recorder_available) return;
+    fresh.forEach(id => asked.set(id, now));
+    setTimeout(async () => {
+      try {
+        const reply = await this._hass.callWS({ type: "ha_housekeeper/history_counts", ids: fresh });
+        if (reply?.rows) { Object.assign(this.histRows ||= {}, reply.rows); this.render(); }
+      } catch (_) { /* the line stays as it was */ }
+    }, 0);
   }
 
   // The plan: how many removals delete what (statistics, statistics and history), keep their data, or are locked by the Energy dashboard.
@@ -799,6 +814,7 @@ class CleanupMixin {
       return r.finding ? this.pill(r.finding.classification) : r.quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${this.t(r.count ? "deviceEntities" : "deviceNoEntities", { count: r.count })}</span>`;
     };
     const recorderCol = this.cleanupKind === "remove_entity" && this.data?.meta?.recorder_available;
+    if (recorderCol) this.ensureHistRows(pg.rows.filter(r => r.item.object_type === "entity").map(r => r.item.object_id));
     const columns = [
       { key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: () => this.cleanupHeadBox(),
         cell: r => `<input type="checkbox" class="selbox" data-sel="${this.esc(r.item.object_id)}" ${this.cleanupSel.has(r.item.object_id) ? "checked" : ""} ${r.quarantine && limit - this.daysSince(r.quarantine.since) > 0 ? "disabled" : ""} aria-label="${this.esc(r.item.name)}">` },
@@ -811,7 +827,7 @@ class CleanupMixin {
       { key: "since", label: open === "quarantine" ? "cleanupColHeld" : "sortSince", dir: "desc", cell: r => { const v = r.quarantine ? r.quarantine.since : r.finding?.first_detected_at; return v ? this.ageCell(v) : "–"; } },
       ...(all.some(r => r.finding) ? [{ key: "certainty", label: "sortCertainty", dir: "desc", cell: r => (r.finding?.confidence == null ? "–" : `${Math.round(r.finding.confidence * 100)} %`) }] : []),
       ...(recorderCol ? [{ key: "recorder", label: "cleanupColRecorder", sortable: false, cell: r => this.recorderOwn(r.item) || "–" }] : []),
-      ...(open === "quarantine" ? [{ key: "release", label: "cleanupColAction", sortable: false, cell: r => (r.quarantine ? this.releaseControl(r.quarantine) : "") }] : []),
+      ...(open === "quarantine" ? [{ key: "release", label: "cleanupColAction", sortable: false, cell: r => (r.quarantine ? `<div class="relcell">${this.releaseControl(r.quarantine)}</div>` : "") }] : []),
     ];
     const table = shownList.length ? this.listTable("cleanup", columns, pg.rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(`${r.item.object_type}:${r.item.object_id}`)}" tabindex="0" role="button" aria-label="${this.esc(r.item.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("cleanup") : this.t("cleanupNone")}</div>`;
     const n = this.cleanupSel.size;

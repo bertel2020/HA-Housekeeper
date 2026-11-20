@@ -3516,6 +3516,8 @@
 "diagSecCriteria": "Kritériá úspechu",
 "diagSecMore": "Pokrytie, porovnanie a skúšobný beh",
 "recChoiceLabel": "Údaje Recordera",
+"recRows": "Stavy: {states} · Štatistika: {stats}",
+"recRowsNone": "V recorderi nie sú žiadne dáta",
 "recChoice_keep": "Ponechať",
 "recChoice_statistics": "Vymazať štatistiky",
 "recChoice_states": "Vymazať štatistiky a históriu",

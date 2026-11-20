@@ -3207,6 +3207,8 @@
 "diagSecCriteria": "成功标准",
 "diagSecMore": "覆盖率、比较与测试运行",
 "recChoiceLabel": "记录器数据",
+"recRows": "状态：{states} · 统计：{stats}",
+"recRowsNone": "记录器中没有数据",
 "recChoice_keep": "保留",
 "recChoice_statistics": "删除统计",
 "recChoice_states": "删除统计与历史",

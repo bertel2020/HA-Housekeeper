@@ -3277,6 +3277,8 @@
 "diagSecCriteria": "Criteri di successo",
 "diagSecMore": "Copertura, confronto ed esecuzione di prova",
 "recChoiceLabel": "Dati del Recorder",
+"recRows": "Stati: {states} · Statistiche: {stats}",
+"recRowsNone": "Nessun dato nel recorder",
 "recChoice_keep": "Conserva",
 "recChoice_statistics": "Elimina le statistiche",
 "recChoice_states": "Elimina statistiche e cronologia",

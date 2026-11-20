@@ -262,11 +262,11 @@ class FindingsMixin {
     const values = pick => [...new Set(all.flatMap(f => [].concat(pick(f))).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
     // Each filter asks its own question: what kind of object, where, from which integration, how much it matters.
     const filters = [
-      { name: "type", all: this.t("allObjectTypes"), options: values(f => this.findingType(f)).map(x => [x, this.t(x)]) },
-      { name: "area", all: this.t("allAreas"), options: values(f => this.findingArea(f)).map(a => [a, a]) },
-      { name: "integration", all: this.t("allIntegrations"), options: values(f => this.findingIntegrations(f)).map(d => [d, d]) },
-      { name: "reason", all: this.t("allCauseTexts"), options: values(f => this.findingObjectReason(f)).map(r => [r, this.t(r), all.filter(f => this.findingObjectReason(f) === r).length]) },
-      { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) },
+      { name: "type", label: "sortType", all: this.t("allObjectTypes"), options: values(f => this.findingType(f)).map(x => [x, this.t(x)]) },
+      { name: "area", label: "sortArea", all: this.t("allAreas"), options: values(f => this.findingArea(f)).map(a => [a, a]) },
+      { name: "integration", label: "sortIntegration", all: this.t("allIntegrations"), options: values(f => this.findingIntegrations(f)).map(d => [d, d]) },
+      { name: "reason", label: "causeLabel", all: this.t("allCauseTexts"), options: values(f => this.findingObjectReason(f)).map(r => [r, this.t(r), all.filter(f => this.findingObjectReason(f) === r).length]) },
+      { name: "impact", label: "sortImpact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) },
       ...(this.findingStatus === "hidden" ? [{ name: "by", all: this.t("hiddenByAll"), options: ["user", "mark", "rule", "label"].map(x => [x, this.t(`hiddenBy_${x}`)]) }] : []),
     ];
     // The export button of the list bar, as on every list: the rows as shown, or only the selected ones.

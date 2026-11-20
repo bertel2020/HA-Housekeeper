@@ -3207,6 +3207,8 @@
 "diagSecCriteria": "Critérios de sucesso",
 "diagSecMore": "Cobertura, comparação e execução de teste",
 "recChoiceLabel": "Dados do Recorder",
+"recRows": "Estados: {states} · Estatísticas: {stats}",
+"recRowsNone": "Sem dados no recorder",
 "recChoice_keep": "Manter",
 "recChoice_statistics": "Eliminar estatísticas",
 "recChoice_states": "Eliminar estatísticas e histórico",

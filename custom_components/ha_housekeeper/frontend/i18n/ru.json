@@ -4027,6 +4027,8 @@
 "diagSecCriteria": "Критерии успеха",
 "diagSecMore": "Покрытие, сравнение и пробный прогон",
 "recChoiceLabel": "Данные Recorder",
+"recRows": "Состояния: {states} · Статистика: {stats}",
+"recRowsNone": "В recorder нет данных",
 "recChoice_keep": "Оставить",
 "recChoice_statistics": "Удалить статистику",
 "recChoice_states": "Удалить статистику и историю",
