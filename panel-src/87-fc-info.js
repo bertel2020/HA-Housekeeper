@@ -24,7 +24,7 @@ class FcInfoMixin {
     else if (this.oftenFor(f)) { const w = this.oftenWindow(this.oftenFor(f).info); state = w ? this.t("oftenChipAt", w) : this.t("oftenChip"); }
     else if (obj?.object_type === "entity" && typeof obj.state === "string") state = obj.state;
     // What hangs on it: the follow-ups and what uses it; nothing is an answer as well.
-    const followers = cause ? this.causeTotal(cause) : 0, uses = ["automation", "script", "dashboard"].filter(k => cause?.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: cause.consumers[k] }));
+    const followers = cause ? this.causeTotal(cause) : 0, uses = ["automation", "script", "dashboard"].filter(k => cause?.consumers?.[k]).map(k => this.tCount(`causeUses_${k}`, cause.consumers[k]));
     const edges = obj ? this.edgesTo(key).length : 0;
     const links = [followers ? this.t(followers === 1 ? "causeFollowers1" : "causeFollowers", { n: this.formatNumber(followers) }) : "", ...uses, !followers && !uses.length && edges ? this.t(edges === 1 ? "fcInfoUsedBy1" : "fcInfoUsedBy", { n: this.formatNumber(edges) }) : ""].filter(Boolean).join(" · ");
     const row = (id, label, text, tabs, tone = "") => ({ id, label: this.t(label), text: text || none, empty: !text, tone: text ? tone : "", tab: obj && text ? this.fcTabFor(obj, key, tabs) : "" });

@@ -6708,7 +6708,14 @@
 "confirmDecisionRemoveOne": "71f7e698",
 "confirmPrefsReset": "2f11b553",
 "confirmMcpUndo": "e30dee57",
-"confirmCovClear": "aab1a40d"
+"confirmCovClear": "aab1a40d",
+"causeUses_automation1": "ac460e31",
+"causeUses_script1": "3eb51226",
+"causeUses_dashboard1": "fda54cea",
+"causeUsers1": "7ad6ffae",
+"causeCallers1": "450f62d7",
+"visitAdded1": "69c7f373",
+"whyLevel1": "8cc8bd2b"
 },
 "setup": {
 "title": "644c2647",

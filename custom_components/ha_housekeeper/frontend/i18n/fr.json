@@ -6709,5 +6709,12 @@
 "confirmDecisionRemoveOne": "La décision sera supprimée. Le constat redevient ouvert ensuite.",
 "confirmPrefsReset": "Tous les réglages d’affichage reviennent aux valeurs par défaut, y compris sur tes autres appareils.",
 "confirmMcpUndo": "Les modifications faites via l’accès IA seront annulées (période : {scope}).",
-"confirmCovClear": "Les compteurs collectés pour cette couverture seront supprimés."
+"confirmCovClear": "Les compteurs collectés pour cette couverture seront supprimés.",
+"causeUses_automation1": "1 automatisation touchée",
+"causeUses_script1": "1 script touché",
+"causeUses_dashboard1": "1 tableau de bord touché",
+"causeUsers1": "1 automatisation, script ou tableau de bord y renvoie",
+"causeCallers1": "1 automatisation ou script l’appelle",
+"visitAdded1": "1 nouveau constat",
+"whyLevel1": "1 objet · {level} · {weight}"
 }

@@ -40,6 +40,8 @@ class OverviewMixin {
   warmupInner() {
     const w = this._warm || {}, st = this.scanStatus;
     const left = w.until ? Math.max(0, Math.round((w.until - Date.now()) / 1000)) : 0;
+    // The wait is as long as the most that was left when the box first drew: the bar fills from there.
+    w.maxLeft = Math.max(w.maxLeft || 0, left);
     const clock = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} ${this.t("warmupMin")}`;
     const bar = (frac, tone = "") => `<span class="wbar"><i class="${tone}" style="width:${Math.round(Math.min(1, Math.max(0, frac)) * 100)}%"></i></span>`;
     const pair = (label, value, frac, tone) => `<div><div class="wcap"><span>${label}</span><span>${value}</span></div>${bar(frac, tone)}</div>`;
@@ -68,7 +70,7 @@ class OverviewMixin {
       const more = toggle + ((w.pending || 0) > all.length ? ` +${w.pending - all.length}` : "");
       // Once nothing is loading any more, what is still not set up will not be (it fails or waits for something else): the bar is full.
       const loaded = w.settling ? this.t("warmupLoadedAll", { done: this.formatNumber(done) }) : this.t("warmupLoaded", { done: this.formatNumber(done), total: this.formatNumber(total) });
-      body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.total_s || 300))}</div>`;
+      body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.maxLeft || 300))}</div>`;
       line = w.settling
         ? ((w.pending || 0) > 0 ? this.t("warmupBlip", { name: this.esc((w.names || [])[0] || "") }) : this.t("warmupLocked"))
         : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")} ${this.t("warmupEarly")}`;
@@ -253,7 +255,7 @@ class OverviewMixin {
     const row = (label, value, cls = "") => `<div class="row ${cls}"><span>${label}</span><span>${value}</span></div>`;
     const lines = [row(this.t("whyStart"), this.formatNumber(health.base))];
     for (const l of health.lines) {
-      const label = `<button type="button" class="link" data-why-level="${l.level}" title="${this.esc(this.t("whyOpenLevel"))}">${this.t("whyLevel", { n: this.formatNumber(l.n), level: this.t(`impact_${l.level}`), weight: this.t(`whyWeight_${l.level}`) })}</button>`;
+      const label = `<button type="button" class="link" data-why-level="${l.level}" title="${this.esc(this.t("whyOpenLevel"))}">${this.tCount("whyLevel", l.n, { level: this.t(`impact_${l.level}`), weight: this.t(`whyWeight_${l.level}`) })}</button>`;
       lines.push(row(label, l.points ? `− ${this.formatNumber(l.points)}` : "0", l.points ? "minus" : "minus mute"));
     }
     lines.push(row(this.t("whyTotal"), this.formatNumber(health.ok), "total"));
@@ -352,7 +354,7 @@ class OverviewMixin {
   sinceVisitLine() {
     const v = this.sinceVisit();
     if (!v || (!v.added && !v.gone)) return "";
-    const parts = [v.added ? this.t("visitAdded", { n: this.formatNumber(v.added) }) : "", v.gone ? this.t("visitGone", { n: this.formatNumber(v.gone) }) : ""].filter(Boolean).join(", ");
+    const parts = [v.added ? this.tCount("visitAdded", v.added) : "", v.gone ? this.t("visitGone", { n: this.formatNumber(v.gone) }) : ""].filter(Boolean).join(", ");
     return `<small class="visitline"><ha-icon icon="mdi:history"></ha-icon>${this.t("visitSince", { ago: this.agoText(new Date(v.at).toISOString()) })}: ${parts}</small>`;
   }
 

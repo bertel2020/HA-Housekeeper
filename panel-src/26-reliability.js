@@ -113,7 +113,7 @@ class ReliabilityMixin {
     ].filter(Boolean).join("");
     const dayClass = d => (!d.seconds ? "ok" : d.seconds < 864 ? "problem short" : "problem");
     const strip = days.length >= 7
-      ? `<div class="monitor-days" role="img" aria-label="${this.esc(this.t("relStrip"))}">${days.map(d => `<i class="${dayClass(d)}" title="${this.esc(`${d.date}: ${d.seconds ? this.relDuration(d.seconds) : this.t("monitorAvailOk")}`)}"></i>`).join("")}</div><div class="monitor-axis"><span>${this.t("monitorAvailFrom", { days: days.length - 1 })}</span><span>${this.t("monitorAvailToday")}</span></div><div class="monitor-legend"><span><i class="ok"></i>${this.t("monitorAvailOk")}</span><span><i class="problem short"></i>${this.t("monitorAvailShort")}</span><span><i class="problem"></i>${this.t("monitorAvailLong")}</span></div>`
+      ? `<div class="monitor-days" role="img" aria-label="${this.esc(this.t("relStrip"))}">${days.map(d => `<i class="${dayClass(d)}" title="${this.esc(`${this.formatDay(d.date)}: ${d.seconds ? this.relDuration(d.seconds) : this.t("monitorAvailOk")}`)}"></i>`).join("")}</div><div class="monitor-axis"><span>${this.t("monitorAvailFrom", { days: days.length - 1 })}</span><span>${this.t("monitorAvailToday")}</span></div><div class="monitor-legend"><span><i class="ok"></i>${this.t("monitorAvailOk")}</span><span><i class="problem short"></i>${this.t("monitorAvailShort")}</span><span><i class="problem"></i>${this.t("monitorAvailLong")}</span></div>`
       : "";
     const kinds = { shared: "relKindShared", single: "relKindSingle", down: "relKindDown" };
     const when = p => this.formatDate(new Date(p.start * 1000).toISOString());
@@ -205,7 +205,7 @@ class ReliabilityMixin {
     const loading = (this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "") + this.keepNote(r);
     const th = r.thresholds || {};
     const cov = r.coverage;
-    const coverage = cov && cov.observed_share !== null && cov.observed_share !== undefined ? this.coverageNote(this.t("relCoverage", { days: r.window_days, withData: this.formatNumber(cov.with_data), known: this.formatNumber(cov.known), share: cov.observed_share })) : "";
+    const coverage = cov && cov.observed_share !== null && cov.observed_share !== undefined ? this.coverageNote(this.t("relCoverage", { days: r.window_days, withData: this.formatNumber(cov.with_data), known: this.formatNumber(cov.known), share: this.formatNumber(cov.observed_share) })) : "";
     const list = this.relEntriesList(r);
     const u = r.unstable || { total: 0, entities: {} };
     const flapping = Object.values(u.entities || {}).filter(e => e.level === "flapping").length;

@@ -6709,5 +6709,12 @@
 "confirmDecisionRemoveOne": "Se quitará la decisión. El hallazgo vuelve a estar abierto.",
 "confirmPrefsReset": "Todos los ajustes de visualización vuelven a sus valores predeterminados, también en tus otros dispositivos.",
 "confirmMcpUndo": "Se revertirán los cambios hechos mediante el acceso de IA (periodo: {scope}).",
-"confirmCovClear": "Se borrarán los recuentos recopilados para esta cobertura."
+"confirmCovClear": "Se borrarán los recuentos recopilados para esta cobertura.",
+"causeUses_automation1": "1 automatización afectada",
+"causeUses_script1": "1 script afectado",
+"causeUses_dashboard1": "1 panel de control afectado",
+"causeUsers1": "1 automatización, script o panel de control apunta a ella",
+"causeCallers1": "1 automatización o script la llama",
+"visitAdded1": "1 hallazgo nuevo",
+"whyLevel1": "1 objeto · {level} · {weight}"
 }

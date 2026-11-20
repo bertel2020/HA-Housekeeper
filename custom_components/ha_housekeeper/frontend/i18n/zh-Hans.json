@@ -6709,5 +6709,12 @@
 "confirmDecisionRemoveOne": "将撤销该决定。相关发现之后会重新变为未处理。",
 "confirmPrefsReset": "所有显示设置都将恢复为默认值，你的其他设备上也一样。",
 "confirmMcpUndo": "将撤销通过 AI 访问所做的更改（范围：{scope}）。",
-"confirmCovClear": "将删除为该覆盖范围收集的计数。"
+"confirmCovClear": "将删除为该覆盖范围收集的计数。",
+"causeUses_automation1": "1 个自动化受影响",
+"causeUses_script1": "1 个脚本受影响",
+"causeUses_dashboard1": "1 个仪表板受影响",
+"causeUsers1": "1 个自动化、脚本或仪表板指向它",
+"causeCallers1": "1 个自动化或脚本调用它",
+"visitAdded1": "1 个新发现项",
+"whyLevel1": "1 个对象 · {level} · {weight}"
 }

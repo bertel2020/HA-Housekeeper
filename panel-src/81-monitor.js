@@ -265,7 +265,7 @@ class MonitorMixin {
     const labels = { ok: "monitorOk", problem: "monitorProblem", unverified: "monitorUnverified", flapping: "monitorHist_flapping" };
     // A day with less than 1 % of impaired time reads amber, not red; unknown and unstable days are amber too.
     const dayClass = day => (day.state === "problem" && (day.problem_seconds || 0) < 864 ? "problem short" : day.state || "none");
-    const dayTitle = day => `${day.date}: ${day.state ? (day.state === "problem" && day.problem_seconds ? this.t("monitorAvailDayProblem", { state: this.t(labels.problem), time: this.monitorDuration(day.problem_seconds) }) : this.t(labels[day.state])) : this.t("monitorAvailNoData")}`;
+    const dayTitle = day => `${this.formatDay(day.date)}: ${day.state ? (day.state === "problem" && day.problem_seconds ? this.t("monitorAvailDayProblem", { state: this.t(labels.problem), time: this.monitorDuration(day.problem_seconds) }) : this.t(labels[day.state])) : this.t("monitorAvailNoData")}`;
     const days = a.days.map(day => `<i class="${dayClass(day)}" title="${this.esc(dayTitle(day))}"></i>`).join("");
     const swatch = (cls, key) => `<span><i class="${cls}"></i>${this.esc(this.t(key))}</span>`;
     const legend = `<div class="monitor-legend">${swatch("ok", "monitorAvailOk")}${swatch("problem short", "monitorAvailShort")}${swatch("problem", "monitorAvailLong")}${swatch("none", "monitorAvailUnobserved")}</div>`;

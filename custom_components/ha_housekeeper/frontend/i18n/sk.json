@@ -7244,5 +7244,12 @@
 "confirmDecisionRemoveOne": "Rozhodnutie sa zruší. Nález bude potom opäť otvorený.",
 "confirmPrefsReset": "Všetky nastavenia zobrazenia sa vrátia na predvolené hodnoty, aj na tvojich ďalších zariadeniach.",
 "confirmMcpUndo": "Zmeny cez Prístup AI sa vrátia späť (obdobie: {scope}).",
-"confirmCovClear": "Počítadlá zozbierané pre toto pokrytie sa vymažú."
+"confirmCovClear": "Počítadlá zozbierané pre toto pokrytie sa vymažú.",
+"causeUses_automation1": "Dotknutá automatizácia: 1",
+"causeUses_script1": "Dotknutý skript: 1",
+"causeUses_dashboard1": "Dotknutý dashboard: 1",
+"causeUsers1": "Odkazuje naň automatizácia, skript alebo dashboard: 1",
+"causeCallers1": "Volá ju automatizácia alebo skript: 1",
+"visitAdded1": "1 nový nález",
+"whyLevel1": "1 objekt · {level} · {weight}"
 }

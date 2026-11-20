@@ -7,7 +7,7 @@ class SettingsMixin {
   }
 
   segment(pref, options) {
-    return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
+    return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}" aria-pressed="${String(this.prefs[pref]) === String(value)}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
   // The languages as a list: automatic, then each one by its own name (a language still being translated says so).

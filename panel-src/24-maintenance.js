@@ -44,7 +44,7 @@ class MaintenanceMixin {
     if (c.busy) return `<div class="stack">${head("", "data-costs-load")}<p class="factnote">${this.t("relBusy")}</p></div></div>`;
     if (!c.available) return `<div class="stack">${head()}<div class="emptymsg"><ha-icon icon="mdi:database-off-outline"></ha-icon>${this.t("recorderUnavailable")}</div></div></div>`;
     const took = c.computed_at && (c.stale || c.age_seconds >= 60) ? this.tookNote(c) : c.took_ms === null || c.took_ms === undefined ? "" : ` · ${this.t(c.cached ? "recorderCached" : "recorderTook", { ms: this.formatNumber(c.took_ms) })}`;
-    const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days ?? "—", stats: this.formatNumber(c.statistics_total) }) + took;
+    const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days === null || c.keep_days === undefined ? "—" : this.formatNumber(c.keep_days), stats: this.formatNumber(c.statistics_total) }) + took;
     const all = c.entities || [], max = Math.max(...all.map(e => e.share), 0.1); // the bars are scaled to the largest entry
     const sug = e => e.suggest_exclude && !e.excluded;
     const num = v => this.esc(this.formatNumber(v ?? 0));

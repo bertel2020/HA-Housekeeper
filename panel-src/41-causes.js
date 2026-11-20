@@ -13,7 +13,7 @@ class CausesMixin {
   }
 
   causeLine(c) {
-    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: c.consumers[k] }));
+    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.tCount(`causeUses_${k}`, c.consumers[k]));
     const why = c.kind === "integration_down" ? [c.state ? this.t("causeState", { state: c.state }) : "", c.error || "", this.logLine(c.log)].filter(Boolean) : [];
     return [...why, ...used, c.impact && c.impact !== "none" ? this.t(`impact_${c.impact}`) : ""].filter(Boolean).join(" · ");
   }
@@ -60,7 +60,7 @@ class CausesMixin {
     (finding.impact_facts || []).filter(x => x.fact !== "outage_age").forEach(x => reasons.push(this.t(`impactFact_${x.fact}`, { n: x.n ?? "", id: x.id ?? "", why: this.t(`impactWhy_${x.why}`) })));
     if (cause) {
       if (this.causeTotal(cause)) reasons.push(this.tCount("ratingFollowers", this.causeTotal(cause)));
-      ["automation", "script", "dashboard"].filter(k => cause.consumers?.[k]).forEach(k => reasons.push(this.t(`causeUses_${k}`, { n: cause.consumers[k] })));
+      ["automation", "script", "dashboard"].filter(k => cause.consumers?.[k]).forEach(k => reasons.push(this.tCount(`causeUses_${k}`, cause.consumers[k])));
     }
     if (!reasons.length) reasons.push(this.t("ratingNoReason"));
     let bar = "";
@@ -114,7 +114,7 @@ class CausesMixin {
 
   // What a device that is down leaves behind, in one line: the entities that lost their value and who uses them.
   causeDeviceLine(c) {
-    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: c.consumers[k] }));
+    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.tCount(`causeUses_${k}`, c.consumers[k]));
     return [c.follower_count ? this.tCount("causeDeviceEntities", c.follower_count) : this.t("causeNone"), ...(used.length ? used : c.follower_count ? [this.t("causeUnused")] : [])].join(" · ");
   }
 
@@ -122,11 +122,11 @@ class CausesMixin {
 
   // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
   // A count with its noun; one of a kind takes the text with the suffix 1: "1 follow-up", not "1 follow-ups".
-  tCount(key, n) { return this.t(n === 1 ? `${key}1` : key, { n: this.formatNumber(n) }); }
+  tCount(key, n, vars = {}) { return this.t(n === 1 ? `${key}1` : key, { ...vars, n: this.formatNumber(n) }); }
 
   causeCounts(c) {
-    if (c.kind === "service_missing") return this.t("causeCallers", { n: this.formatNumber(c.follower_count) });
-    if (c.virtual) return this.t("causeUsers", { n: this.formatNumber(c.follower_count) });
+    if (c.kind === "service_missing") return this.tCount("causeCallers", c.follower_count);
+    if (c.virtual) return this.tCount("causeUsers", c.follower_count);
     if (c.kind === "app_down") return this.t("causeBelow", { n: this.formatNumber(c.child_ids.length) });
     if (!c.follower_count && !Object.keys(c.consumers || {}).length) return this.t("causeNone");
     const parts = [this.tCount("causeN_entity", c.follower_count), ...["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.tCount(`causeN_${k}`, c.consumers[k]))];

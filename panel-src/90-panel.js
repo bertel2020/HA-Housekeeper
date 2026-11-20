@@ -51,9 +51,11 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   set hass(value) {
-    const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar;
+    const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar, wasLang = first ? "" : this.lang;
     this._hass = value;
     if (first) { this.load(false); this.loadUserPrefs(); this.ensureLanguage(); }
+    // The language of Home Assistant changed while this one follows it: fetch its texts and draw again.
+    else if (this.lang !== wasLang) { this.ensureLanguage(); this.render(); }
     else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar) this.render();
   }
 
@@ -209,20 +211,27 @@ class HAHousekeeperPanel extends HTMLElement {
     return String(value ?? "—").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
   }
 
+  // One formatter per language and kind: a long list would otherwise make thousands of them in one drawing.
+  formatter(kind, make) {
+    const cache = (this._formatters ||= new Map()), key = `${kind}:${this.lang}`;
+    if (!cache.has(key)) cache.set(key, make(this.lang));
+    return cache.get(key);
+  }
+
   formatDate(value) {
     if (!value) return "—";
-    try { return new Intl.DateTimeFormat(this.lang, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
+    try { return this.formatter("datetime", lang => new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" })).format(new Date(value)); }
     catch (_) { return value; }
   }
 
   // A date without the time of day: for review dates, which are a day long.
   formatDay(value) {
     if (!value) return "—";
-    try { return new Intl.DateTimeFormat(this.lang, { dateStyle: "medium" }).format(new Date(value)); }
+    try { return this.formatter("day", lang => new Intl.DateTimeFormat(lang, { dateStyle: "medium" })).format(new Date(value)); }
     catch (_) { return value; }
   }
 
-  formatNumber(value) { return new Intl.NumberFormat(this.lang).format(value ?? 0); }
+  formatNumber(value) { return this.formatter("number", lang => new Intl.NumberFormat(lang)).format(value ?? 0); }
 
   async load(fresh = false) {
     if (!this._hass || this.busy) return;
@@ -798,14 +807,14 @@ class HAHousekeeperPanel extends HTMLElement {
     const mark = view => {
       const st = status[view];
       if (st) return `<span class="pill ${st.tone} navst" title="${this.esc(st.hint)}" aria-label="${this.esc(st.hint)}">${this.esc(st.text)}</span>`;
-      return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : "";
+      return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${typeof counts[view] === "number" ? this.formatNumber(counts[view]) : this.esc(counts[view])}</em>` : "";
     };
     const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${mark(view)}</button>`;
     const [direct, ...menus] = this.navGroups();
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
       const sum = views.reduce((n, v) => n + (typeof counts[v] === "number" ? counts[v] : 0), 0);
-      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span>${sum ? `<em aria-label="${this.esc(this.t("groupOpen", { count: sum }))}">${sum}</em>` : ""}<ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
+      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span>${sum ? `<em aria-label="${this.esc(this.t("groupOpen", { count: this.formatNumber(sum) }))}">${this.formatNumber(sum)}</em>` : ""}<ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
     };
     return `<header class="top${this.navCompact ? " compact" : ""}${this.navOpen ? " open" : ""}">${this.haMenuButton()}<button class="brand${this.view === "overview" ? " active" : ""}" data-view="overview" ${this.view === "overview" ? 'aria-current="page"' : ""}><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><span class="brandtext"><strong>${this.t("title")}</strong><small>${this.t("overview")}</small></span></button>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>

@@ -6709,5 +6709,12 @@
 "confirmDecisionRemoveOne": "La decisione verrà rimossa. Il risultato torna aperto.",
 "confirmPrefsReset": "Tutte le impostazioni di visualizzazione tornano ai valori predefiniti, anche sugli altri tuoi dispositivi.",
 "confirmMcpUndo": "Le modifiche fatte tramite accesso IA verranno annullate (periodo: {scope}).",
-"confirmCovClear": "I conteggi raccolti per questa copertura verranno eliminati."
+"confirmCovClear": "I conteggi raccolti per questa copertura verranno eliminati.",
+"causeUses_automation1": "1 automazione interessata",
+"causeUses_script1": "1 script interessato",
+"causeUses_dashboard1": "1 dashboard interessata",
+"causeUsers1": "1 automazione, script o dashboard vi fa riferimento",
+"causeCallers1": "1 automazione o script lo richiama",
+"visitAdded1": "1 nuovo rilievo",
+"whyLevel1": "1 oggetto · {level} · {weight}"
 }

@@ -25,7 +25,7 @@ class StormsMixin {
     const n = v => this.formatNumber(v);
     if (f.kind === "storm") return this.t("stormStorm", { perDay: n(f.per_day), peak: n(f.peak_hour) });
     if (f.kind === "attribute_flood") return this.t("stormFlood", { perDay: n(f.per_day), kb: this.formatNumber(Math.round(f.attr_bytes / 102.4) / 10) });
-    if (f.kind === "no_new_state") return this.t("stormNoNew", { share: f.share, perDay: n(f.per_day) });
+    if (f.kind === "no_new_state") return this.t("stormNoNew", { share: this.formatNumber(f.share), perDay: n(f.per_day) });
     if (f.kind === "integration_share") return this.t("stormShare", { share: this.formatNumber(f.load_share), perDay: n(f.per_day) });
     return this.t("stormEvent", { count: n(f.count), type: f.event_type });
   }

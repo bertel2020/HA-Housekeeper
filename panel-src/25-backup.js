@@ -75,9 +75,9 @@ class BackupMixin {
         if (c.level === "unknown") return t("bhSizeUnknown");
         return t(c.level === "ok" ? "bhSizeOk" : "bhSizeNote", { size: this.formatBytes(v.size), expected: this.formatBytes(v.expected), percent: Math.round(v.ratio * 100) });
       case "retention": {
-        if (c.level === "note") return t("bhRetentionNote", { count: v.count });
+        if (c.level === "note") return t("bhRetentionNote", { count: this.formatNumber(v.count) });
         const limit = [v.copies !== null && v.copies !== undefined ? t("bhRetCopies", { n: v.copies }) : "", v.days !== null && v.days !== undefined ? t("bhRetDays", { n: v.days }) : ""].filter(Boolean).join(" · ");
-        return t("bhRetentionOk", { limit, count: v.count, oldest: v.oldest_days === null ? "—" : Math.round(v.oldest_days) });
+        return t("bhRetentionOk", { limit, count: this.formatNumber(v.count), oldest: v.oldest_days === null ? "—" : this.formatNumber(Math.round(v.oldest_days)) });
       }
       case "encryption":
         if (v.at) return t("bhEncConfirmed", { date: this.bhDay(v.at) });

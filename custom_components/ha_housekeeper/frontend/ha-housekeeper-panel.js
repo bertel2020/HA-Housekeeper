@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"9a3d968e87"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fe8328ab63"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f585aaff8f"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"fd938ef8f8"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"09a5ea01d8"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"d0fbab4ad1"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"fdb2d43b25"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"bcecbdfa4d"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"dab9f10645"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"88f647af66"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"ce212143ab"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"4e8ba7b7cf"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7377f0afa6"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"54ddc4978e"}];
 
 const TEXT = {
   de: {
@@ -1639,7 +1639,7 @@ class StylesMixin {
       .modelbl{margin-top:4px;font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase;color:var(--hk-muted);font-weight:700}.viewchips i.okchip{border-color:color-mix(in srgb,var(--hk-green) 40%,var(--hk-border));color:color-mix(in srgb,var(--hk-green) 55%,var(--hk-text))}.viewchips i.nochip{border-color:color-mix(in srgb,var(--hk-amber) 45%,var(--hk-border));color:color-mix(in srgb,var(--hk-amber) 60%,var(--hk-text));background:color-mix(in srgb,var(--hk-amber) 8%,transparent)}
       .viewcmp td.yes{color:var(--hk-green);font-weight:700}.viewcmp td.no{color:color-mix(in srgb,var(--hk-amber) 70%,var(--hk-text));font-weight:600}.modefoot{display:flex;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--hk-border);background:var(--hk-soft);color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1))}
       .stickyhead{position:sticky;top:0;z-index:30}.modeopts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;padding:12px 16px 16px}.modeopt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);cursor:pointer}.modeopt.on{border-color:var(--hk-blue);box-shadow:0 0 0 1px var(--hk-blue)}.modeopt input{position:absolute;opacity:0;pointer-events:none}.modeopt:focus-within{outline:2px solid var(--hk-blue);outline-offset:2px}.modepanel{border-left:4px solid var(--hk-blue)}.safebar{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;padding:6px clamp(16px,2.4vw,32px);border-bottom:1px solid var(--hk-border);background:var(--hk-surface);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}
-      .vacbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 16px;background:var(--hk-soft,#e6f0f8);border-bottom:1px solid var(--hk-border);border-left:4px solid #2f6fa3;font-size:14px}.vacbar b{color:#2f6fa3}.vacbar .sp{flex:1}.vacbar a{color:#2f6fa3;font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}.vacbar.warn{border-left-color:var(--hk-amber,#b57a0c)}.vacbar.warn b{color:var(--hk-amber,#b57a0c)}.vacbar.after{border-left-color:var(--hk-accent,#1d4a3f)}.vacbar.after b{color:var(--hk-accent,#1d4a3f)}
+      .vacbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 16px;background:var(--hk-soft,#e6f0f8);border-bottom:1px solid var(--hk-border);border-left:4px solid var(--hk-blue,#2f6fa3);font-size:calc(14px*var(--hk-fs,1))}.vacbar b{color:var(--hk-blue,#2f6fa3)}.vacbar .sp{flex:1}.vacbar a{color:#2f6fa3;font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}.vacbar.warn{border-left-color:var(--hk-amber,#b57a0c)}.vacbar.warn b{color:var(--hk-amber,#b57a0c)}.vacbar.after{border-left-color:var(--hk-accent,#1d4a3f)}.vacbar.after b{color:var(--hk-accent,#1d4a3f)}
       .excform{display:grid;gap:14px;padding:14px 16px;border-top:2px solid var(--hk-blue);border-bottom:1px solid var(--hk-border);background:color-mix(in srgb,var(--hk-soft) 55%,var(--hk-surface))}.excform .mfield{display:grid;gap:6px;min-width:0}.excform .mfield>span{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.excform .chip{display:inline-flex;align-items:center;gap:4px;cursor:pointer}.excform .chip ha-icon{--mdc-icon-size:14px}.excform input[data-exc-search],.excform input[data-exc-note]{width:100%;box-sizing:border-box}.excact{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.excact input{width:5em}.effect{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:0;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-border);overflow:hidden}.effect>div{padding:8px 12px;min-width:0;background:var(--hk-soft)}.effect dt{font-size:calc(11px*var(--hk-fs,1));letter-spacing:.04em;text-transform:uppercase;font-weight:600;color:var(--hk-muted)}.effect dd{margin:2px 0 0;font-size:calc(13px*var(--hk-fs,1))}.effect .yes{font-weight:600;color:color-mix(in srgb,var(--hk-amber) 70%,var(--hk-text))}.effect .no{font-weight:600;color:color-mix(in srgb,var(--hk-green) 60%,var(--hk-text))}@media(max-width:700px){.effect{grid-template-columns:1fr}}.excprev{border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);font-size:calc(13px*var(--hk-fs,1))}.excprev>summary{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;list-style:none}.excprev>summary::-webkit-details-marker{display:none}
 .excprev>summary::before{display:none}
 .excprev>summary .sub{color:var(--hk-muted);font-weight:400}
@@ -1833,7 +1833,7 @@ class StylesMixin {
       .kpis{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(120px,1fr);gap:10px;margin-left:auto}@media(max-width:640px){.kpis{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}}
       .kpi{display:block;min-width:0;text-align:left;padding:9px 14px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-soft);color:inherit;font:inherit;cursor:pointer;box-shadow:var(--hk-hi)}.kpi:hover{box-shadow:var(--hk-sh2)}
       .kpi small{display:block;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.kpi strong{font-size:calc(20px*var(--hk-fs,1));font-weight:600}.kpi.red strong{color:var(--hk-red)}.kpi.warn strong{color:var(--hk-amber)}
-      .cfgout{display:block;margin-top:4px;white-space:pre-wrap;word-break:break-word}.bhchart{display:grid;grid-template-columns:auto 1fr;grid-template-rows:96px auto;gap:2px 8px;padding:8px 16px 0}.bhaxis{grid-row:1;display:flex;flex-direction:column;justify-content:space-between;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted);text-align:right}.bhaxis b,.bhdates b{font-weight:400}.bhdates{grid-column:2;display:flex;justify-content:space-between;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.bhsizes{grid-column:2;grid-row:1;display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:96px;border-bottom:1px solid var(--hk-border);border-left:1px solid var(--hk-border);padding:0 6px}.bhsizes i{flex:1 1 0;max-width:36px;min-width:6px;background:color-mix(in srgb,var(--hk-blue) 45%,transparent);border-radius:3px 3px 0 0;cursor:default}.bhsizes i:hover{background:color-mix(in srgb,var(--hk-blue) 70%,transparent)}.bhsizes i.last{background:var(--hk-blue)}.bhsizes i.last.warn{background:var(--hk-amber)}.spark-row{display:block;margin-top:4px}.spark{display:block;width:100%;height:36px}.sysmeter+.spark,.sysmeter+.spark-hint{margin-top:14px}.sysmeter+.spark polyline{opacity:.65}.spark-end,.spark-halo{stroke-linecap:round;vector-effect:non-scaling-stroke}.spark-halo{stroke:var(--hk-soft);stroke-width:10}.spark-end{stroke:var(--hk-muted);stroke-width:7}.sys-spark-end{stroke-width:4}.spark-end.red{stroke:var(--hk-red)}.spark-end.ok{stroke:var(--hk-green)}.spark-cap,.spark-hint{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.spark-cap.red{color:var(--hk-red)}.spark-cap.ok{color:var(--hk-green)}
+      .cfgout{display:block;margin-top:4px;white-space:pre-wrap;word-break:break-word}.bhchart{display:grid;grid-template-columns:auto 1fr;grid-template-rows:96px auto;gap:2px 8px;padding:8px 16px 0}.bhaxis{grid-row:1;display:flex;flex-direction:column;justify-content:space-between;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted);text-align:right}.bhaxis b,.bhdates b{font-weight:400}.bhdates{grid-column:2;display:flex;justify-content:space-between;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.bhsizes{grid-column:2;grid-row:1;display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:96px;border-bottom:1px solid var(--hk-border);border-left:1px solid var(--hk-border);padding:0 6px}.bhsizes i{flex:1 1 0;max-width:36px;min-width:6px;background:color-mix(in srgb,var(--hk-blue) 45%,transparent);border-radius:3px 3px 0 0;cursor:default}.bhsizes i:hover{background:color-mix(in srgb,var(--hk-blue) 70%,transparent)}.bhsizes i.last{background:var(--hk-blue)}.bhsizes i.last.warn{background:var(--hk-amber)}.spark-row{display:block;margin-top:4px}.spark{display:block;width:100%;height:36px}.sysmeter+.spark,.sysmeter+.spark-hint{margin-top:14px}.sysmeter+.spark polyline{opacity:.65;vector-effect:non-scaling-stroke}.spark-end,.spark-halo{stroke-linecap:round;vector-effect:non-scaling-stroke}.spark-halo{stroke:var(--hk-soft);stroke-width:10}.spark-end{stroke:var(--hk-muted);stroke-width:7}.sys-spark-end{stroke-width:4}.spark-end.red{stroke:var(--hk-red)}.spark-end.ok{stroke:var(--hk-green)}.spark-cap,.spark-hint{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.spark-cap.red{color:var(--hk-red)}.spark-cap.ok{color:var(--hk-green)}
       .taskgrid{gap:14px}
       .taskcard{--c:var(--hk-blue);position:relative;overflow:hidden;padding-left:20px;box-shadow:var(--hk-sh1),var(--hk-hi)}
       .taskcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
@@ -2563,6 +2563,8 @@ class OverviewMixin {
   warmupInner() {
     const w = this._warm || {}, st = this.scanStatus;
     const left = w.until ? Math.max(0, Math.round((w.until - Date.now()) / 1000)) : 0;
+    // The wait is as long as the most that was left when the box first drew: the bar fills from there.
+    w.maxLeft = Math.max(w.maxLeft || 0, left);
     const clock = sec => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} ${this.t("warmupMin")}`;
     const bar = (frac, tone = "") => `<span class="wbar"><i class="${tone}" style="width:${Math.round(Math.min(1, Math.max(0, frac)) * 100)}%"></i></span>`;
     const pair = (label, value, frac, tone) => `<div><div class="wcap"><span>${label}</span><span>${value}</span></div>${bar(frac, tone)}</div>`;
@@ -2591,7 +2593,7 @@ class OverviewMixin {
       const more = toggle + ((w.pending || 0) > all.length ? ` +${w.pending - all.length}` : "");
       // Once nothing is loading any more, what is still not set up will not be (it fails or waits for something else): the bar is full.
       const loaded = w.settling ? this.t("warmupLoadedAll", { done: this.formatNumber(done) }) : this.t("warmupLoaded", { done: this.formatNumber(done), total: this.formatNumber(total) });
-      body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.total_s || 300))}</div>`;
+      body = `<div class="wduo">${pair(loaded, w.settling ? "100 %" : total ? `${Math.round((done / total) * 100)} %` : "", w.settling ? 1 : total ? done / total : 0, w.settling ? "g" : "")}${w.settling ? pair(this.t("warmupBuffer"), `<b>${clock(left)}</b>`, 1 - left / 60) : pair(this.t("warmupWait"), `<b>${clock(left)}</b>`, 1 - left / (w.maxLeft || 300))}</div>`;
       line = w.settling
         ? ((w.pending || 0) > 0 ? this.t("warmupBlip", { name: this.esc((w.names || [])[0] || "") }) : this.t("warmupLocked"))
         : `${names ? `${this.t("warmupNames")} ${names}${more} · ` : ""}${this.t("warmupLocked")} ${this.t("warmupEarly")}`;
@@ -2776,7 +2778,7 @@ class OverviewMixin {
     const row = (label, value, cls = "") => `<div class="row ${cls}"><span>${label}</span><span>${value}</span></div>`;
     const lines = [row(this.t("whyStart"), this.formatNumber(health.base))];
     for (const l of health.lines) {
-      const label = `<button type="button" class="link" data-why-level="${l.level}" title="${this.esc(this.t("whyOpenLevel"))}">${this.t("whyLevel", { n: this.formatNumber(l.n), level: this.t(`impact_${l.level}`), weight: this.t(`whyWeight_${l.level}`) })}</button>`;
+      const label = `<button type="button" class="link" data-why-level="${l.level}" title="${this.esc(this.t("whyOpenLevel"))}">${this.tCount("whyLevel", l.n, { level: this.t(`impact_${l.level}`), weight: this.t(`whyWeight_${l.level}`) })}</button>`;
       lines.push(row(label, l.points ? `− ${this.formatNumber(l.points)}` : "0", l.points ? "minus" : "minus mute"));
     }
     lines.push(row(this.t("whyTotal"), this.formatNumber(health.ok), "total"));
@@ -2875,7 +2877,7 @@ class OverviewMixin {
   sinceVisitLine() {
     const v = this.sinceVisit();
     if (!v || (!v.added && !v.gone)) return "";
-    const parts = [v.added ? this.t("visitAdded", { n: this.formatNumber(v.added) }) : "", v.gone ? this.t("visitGone", { n: this.formatNumber(v.gone) }) : ""].filter(Boolean).join(", ");
+    const parts = [v.added ? this.tCount("visitAdded", v.added) : "", v.gone ? this.t("visitGone", { n: this.formatNumber(v.gone) }) : ""].filter(Boolean).join(", ");
     return `<small class="visitline"><ha-icon icon="mdi:history"></ha-icon>${this.t("visitSince", { ago: this.agoText(new Date(v.at).toISOString()) })}: ${parts}</small>`;
   }
 
@@ -3665,7 +3667,7 @@ class FindingsMixin {
     };
     const hideButton = f => this.decide && this.decide.key === f.key ? `${this.decideTabs(f, "status")}${this.decideForm(f)}`
       : `<div class="fbtns">${steps(f)}${more(f)}</div>`;
-    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small class="fmeta">${this.pill(f.classification)}<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${f.evidence?.[0]?.location ? `<small class="fspot">${this.esc(this.sourceSpot(f.evidence[0].location))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}${f.ignore_rule ? `<small>${this.esc(this.findingRuleLine(f))}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
+    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small class="fmeta">${this.pill(f.classification)}${f.confidence === null || f.confidence === undefined ? "" : `<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>`}${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${f.evidence?.[0]?.location ? `<small class="fspot">${this.esc(this.sourceSpot(f.evidence[0].location))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}${f.ignore_rule ? `<small>${this.esc(this.findingRuleLine(f))}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return rows;
   }
 }
@@ -3925,7 +3927,7 @@ class SettingsMixin {
   }
 
   segment(pref, options) {
-    return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
+    return `<div class="seg">${options.map(([value, label, dot]) => `<button class="chip ${String(this.prefs[pref]) === String(value) ? "active" : ""}" data-pref="${pref}|${value}" aria-pressed="${String(this.prefs[pref]) === String(value)}">${dot ? `<span class="swatch" style="background:${dot}"></span>` : ""}${label}</button>`).join("")}</div>`;
   }
 
   // The languages as a list: automatic, then each one by its own name (a language still being translated says so).
@@ -7269,7 +7271,7 @@ class MaintenanceMixin {
     if (c.busy) return `<div class="stack">${head("", "data-costs-load")}<p class="factnote">${this.t("relBusy")}</p></div></div>`;
     if (!c.available) return `<div class="stack">${head()}<div class="emptymsg"><ha-icon icon="mdi:database-off-outline"></ha-icon>${this.t("recorderUnavailable")}</div></div></div>`;
     const took = c.computed_at && (c.stale || c.age_seconds >= 60) ? this.tookNote(c) : c.took_ms === null || c.took_ms === undefined ? "" : ` · ${this.t(c.cached ? "recorderCached" : "recorderTook", { ms: this.formatNumber(c.took_ms) })}`;
-    const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days ?? "—", stats: this.formatNumber(c.statistics_total) }) + took;
+    const summary = this.t("recorderSummary", { states: this.formatNumber(c.total_states), size: this.formatBytes(c.size_bytes), days: c.keep_days === null || c.keep_days === undefined ? "—" : this.formatNumber(c.keep_days), stats: this.formatNumber(c.statistics_total) }) + took;
     const all = c.entities || [], max = Math.max(...all.map(e => e.share), 0.1); // the bars are scaled to the largest entry
     const sug = e => e.suggest_exclude && !e.excluded;
     const num = v => this.esc(this.formatNumber(v ?? 0));
@@ -7558,9 +7560,9 @@ class BackupMixin {
         if (c.level === "unknown") return t("bhSizeUnknown");
         return t(c.level === "ok" ? "bhSizeOk" : "bhSizeNote", { size: this.formatBytes(v.size), expected: this.formatBytes(v.expected), percent: Math.round(v.ratio * 100) });
       case "retention": {
-        if (c.level === "note") return t("bhRetentionNote", { count: v.count });
+        if (c.level === "note") return t("bhRetentionNote", { count: this.formatNumber(v.count) });
         const limit = [v.copies !== null && v.copies !== undefined ? t("bhRetCopies", { n: v.copies }) : "", v.days !== null && v.days !== undefined ? t("bhRetDays", { n: v.days }) : ""].filter(Boolean).join(" · ");
-        return t("bhRetentionOk", { limit, count: v.count, oldest: v.oldest_days === null ? "—" : Math.round(v.oldest_days) });
+        return t("bhRetentionOk", { limit, count: this.formatNumber(v.count), oldest: v.oldest_days === null ? "—" : this.formatNumber(Math.round(v.oldest_days)) });
       }
       case "encryption":
         if (v.at) return t("bhEncConfirmed", { date: this.bhDay(v.at) });
@@ -8469,7 +8471,7 @@ class ReliabilityMixin {
     ].filter(Boolean).join("");
     const dayClass = d => (!d.seconds ? "ok" : d.seconds < 864 ? "problem short" : "problem");
     const strip = days.length >= 7
-      ? `<div class="monitor-days" role="img" aria-label="${this.esc(this.t("relStrip"))}">${days.map(d => `<i class="${dayClass(d)}" title="${this.esc(`${d.date}: ${d.seconds ? this.relDuration(d.seconds) : this.t("monitorAvailOk")}`)}"></i>`).join("")}</div><div class="monitor-axis"><span>${this.t("monitorAvailFrom", { days: days.length - 1 })}</span><span>${this.t("monitorAvailToday")}</span></div><div class="monitor-legend"><span><i class="ok"></i>${this.t("monitorAvailOk")}</span><span><i class="problem short"></i>${this.t("monitorAvailShort")}</span><span><i class="problem"></i>${this.t("monitorAvailLong")}</span></div>`
+      ? `<div class="monitor-days" role="img" aria-label="${this.esc(this.t("relStrip"))}">${days.map(d => `<i class="${dayClass(d)}" title="${this.esc(`${this.formatDay(d.date)}: ${d.seconds ? this.relDuration(d.seconds) : this.t("monitorAvailOk")}`)}"></i>`).join("")}</div><div class="monitor-axis"><span>${this.t("monitorAvailFrom", { days: days.length - 1 })}</span><span>${this.t("monitorAvailToday")}</span></div><div class="monitor-legend"><span><i class="ok"></i>${this.t("monitorAvailOk")}</span><span><i class="problem short"></i>${this.t("monitorAvailShort")}</span><span><i class="problem"></i>${this.t("monitorAvailLong")}</span></div>`
       : "";
     const kinds = { shared: "relKindShared", single: "relKindSingle", down: "relKindDown" };
     const when = p => this.formatDate(new Date(p.start * 1000).toISOString());
@@ -8561,7 +8563,7 @@ class ReliabilityMixin {
     const loading = (this.relLoading ? `<p class="factnote">${this.t("relLoading")}</p>` : "") + this.keepNote(r);
     const th = r.thresholds || {};
     const cov = r.coverage;
-    const coverage = cov && cov.observed_share !== null && cov.observed_share !== undefined ? this.coverageNote(this.t("relCoverage", { days: r.window_days, withData: this.formatNumber(cov.with_data), known: this.formatNumber(cov.known), share: cov.observed_share })) : "";
+    const coverage = cov && cov.observed_share !== null && cov.observed_share !== undefined ? this.coverageNote(this.t("relCoverage", { days: r.window_days, withData: this.formatNumber(cov.with_data), known: this.formatNumber(cov.known), share: this.formatNumber(cov.observed_share) })) : "";
     const list = this.relEntriesList(r);
     const u = r.unstable || { total: 0, entities: {} };
     const flapping = Object.values(u.entities || {}).filter(e => e.level === "flapping").length;
@@ -8897,7 +8899,7 @@ class StormsMixin {
     const n = v => this.formatNumber(v);
     if (f.kind === "storm") return this.t("stormStorm", { perDay: n(f.per_day), peak: n(f.peak_hour) });
     if (f.kind === "attribute_flood") return this.t("stormFlood", { perDay: n(f.per_day), kb: this.formatNumber(Math.round(f.attr_bytes / 102.4) / 10) });
-    if (f.kind === "no_new_state") return this.t("stormNoNew", { share: f.share, perDay: n(f.per_day) });
+    if (f.kind === "no_new_state") return this.t("stormNoNew", { share: this.formatNumber(f.share), perDay: n(f.per_day) });
     if (f.kind === "integration_share") return this.t("stormShare", { share: this.formatNumber(f.load_share), perDay: n(f.per_day) });
     return this.t("stormEvent", { count: n(f.count), type: f.event_type });
   }
@@ -11233,7 +11235,7 @@ class CausesMixin {
   }
 
   causeLine(c) {
-    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: c.consumers[k] }));
+    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.tCount(`causeUses_${k}`, c.consumers[k]));
     const why = c.kind === "integration_down" ? [c.state ? this.t("causeState", { state: c.state }) : "", c.error || "", this.logLine(c.log)].filter(Boolean) : [];
     return [...why, ...used, c.impact && c.impact !== "none" ? this.t(`impact_${c.impact}`) : ""].filter(Boolean).join(" · ");
   }
@@ -11280,7 +11282,7 @@ class CausesMixin {
     (finding.impact_facts || []).filter(x => x.fact !== "outage_age").forEach(x => reasons.push(this.t(`impactFact_${x.fact}`, { n: x.n ?? "", id: x.id ?? "", why: this.t(`impactWhy_${x.why}`) })));
     if (cause) {
       if (this.causeTotal(cause)) reasons.push(this.tCount("ratingFollowers", this.causeTotal(cause)));
-      ["automation", "script", "dashboard"].filter(k => cause.consumers?.[k]).forEach(k => reasons.push(this.t(`causeUses_${k}`, { n: cause.consumers[k] })));
+      ["automation", "script", "dashboard"].filter(k => cause.consumers?.[k]).forEach(k => reasons.push(this.tCount(`causeUses_${k}`, cause.consumers[k])));
     }
     if (!reasons.length) reasons.push(this.t("ratingNoReason"));
     let bar = "";
@@ -11334,7 +11336,7 @@ class CausesMixin {
 
   // What a device that is down leaves behind, in one line: the entities that lost their value and who uses them.
   causeDeviceLine(c) {
-    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: c.consumers[k] }));
+    const used = ["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.tCount(`causeUses_${k}`, c.consumers[k]));
     return [c.follower_count ? this.tCount("causeDeviceEntities", c.follower_count) : this.t("causeNone"), ...(used.length ? used : c.follower_count ? [this.t("causeUnused")] : [])].join(" · ");
   }
 
@@ -11342,11 +11344,11 @@ class CausesMixin {
 
   // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
   // A count with its noun; one of a kind takes the text with the suffix 1: "1 follow-up", not "1 follow-ups".
-  tCount(key, n) { return this.t(n === 1 ? `${key}1` : key, { n: this.formatNumber(n) }); }
+  tCount(key, n, vars = {}) { return this.t(n === 1 ? `${key}1` : key, { ...vars, n: this.formatNumber(n) }); }
 
   causeCounts(c) {
-    if (c.kind === "service_missing") return this.t("causeCallers", { n: this.formatNumber(c.follower_count) });
-    if (c.virtual) return this.t("causeUsers", { n: this.formatNumber(c.follower_count) });
+    if (c.kind === "service_missing") return this.tCount("causeCallers", c.follower_count);
+    if (c.virtual) return this.tCount("causeUsers", c.follower_count);
     if (c.kind === "app_down") return this.t("causeBelow", { n: this.formatNumber(c.child_ids.length) });
     if (!c.follower_count && !Object.keys(c.consumers || {}).length) return this.t("causeNone");
     const parts = [this.tCount("causeN_entity", c.follower_count), ...["automation", "script", "dashboard"].filter(k => c.consumers?.[k]).map(k => this.tCount(`causeN_${k}`, c.consumers[k]))];
@@ -13344,7 +13346,7 @@ class CounterMixin {
 }
 Object.assign(TEXT.de, {
   kindCounter: "Sensorfehler bereinigen (falsche Werte in Verlauf und Statistik, Zähler und Messwerte, mit Backup)",
-  counterTitle: "Sensorfehler bereinigen", counterHint: "A counter must never fall. If a sensor briefly reports a wrong value, Home Assistant counts the jump back as consumption (for measurements such as a temperature, spikes far outside the usual range count too). Housekeeper finds such outliers and replaces them in the history, in the 5-minute rows and in the hourly rows. A Home Assistant backup is created before every run and the old values stay in the journal. Counters that fall back on schedule (a reset, a daily meter) are never touched.",
+  counterTitle: "Sensorfehler bereinigen", counterHint: "Ein Zähler darf nie fallen. Meldet ein Sensor kurz einen falschen Wert (zum Beispiel ein Wasserzähler), zählt Home Assistant den Sprung zurück als neuen Verbrauch. Housekeeper findet solche Ausreißer (bei Messwerten wie einer Temperatur auch Spitzen weit außerhalb des Üblichen, etwa 85 °C) und ersetzt die falschen Werte im Verlauf, in den 5-Minuten-Zeilen und in den Stundenzeilen; die verdorbene Summe wird neu berechnet. Ein Wert, der dauerhaft niedrig bleibt (ein Zurücksetzen, ein getauschter Zähler), wird nie angefasst. Vor jedem Lauf entsteht ein Home-Assistant-Backup; die alten Werte bleiben im Journal und lassen sich zurückspielen, solange niemand danach die Zeilen verändert hat.",
   counterEntity: "Nur diesen Sensor prüfen", counterEntityHint: "Leer lassen, um alle Zähler und Messwerte mit Statistik zu prüfen (letztes Jahr).", counterMode: "Womit werden falsche Werte ersetzt?",
   counterMode_hold: "Letzter guter Wert (empfohlen)", counterMode_interpolate: "Gerade Linie zum nächsten guten Wert",
   counterScan: "Sensoren prüfen", counterScanning: "Wird geprüft …", counterScanNote: "Liest nur. Bei vielen Zählern kann das einen Moment dauern.", counterNoRecorder: "Ohne Recorder gibt es nichts zu prüfen.",
@@ -20230,6 +20232,14 @@ class ComponentsMixin {
   }
 }
 
+// Singular forms for texts that count findings, objects or places: "1 Automation" instead of "1 Automationen".
+Object.assign(TEXT.de, {
+  causeUses_automation1: "1 Automation betroffen", causeUses_script1: "1 Skript betroffen", causeUses_dashboard1: "1 Dashboard betroffen", causeUsers1: "1 Automation, Skript oder Dashboard verweist darauf", causeCallers1: "1 Automation oder Skript ruft ihn auf", visitAdded1: "1 neuer Befund", whyLevel1: "1 Objekt · {level} · {weight}",
+});
+Object.assign(TEXT.en, {
+  causeUses_automation1: "1 automation affected", causeUses_script1: "1 script affected", causeUses_dashboard1: "1 dashboard affected", causeUsers1: "1 automation, script or dashboard points to it", causeCallers1: "1 automation or script calls it", visitAdded1: "1 new finding", whyLevel1: "1 object · {level} · {weight}",
+});
+
 // The page of an integration as a whole (core or custom): all config entries of one domain. It is a synthetic object
 // `integration:<domain>` made in the panel from the config entries of the scan, so the page runs through the same
 // detail path (header, tabs, back trail, keys) as every other object. The page of one entry stays and holds the actions.
@@ -20873,7 +20883,7 @@ class MonitorMixin {
     const labels = { ok: "monitorOk", problem: "monitorProblem", unverified: "monitorUnverified", flapping: "monitorHist_flapping" };
     // A day with less than 1 % of impaired time reads amber, not red; unknown and unstable days are amber too.
     const dayClass = day => (day.state === "problem" && (day.problem_seconds || 0) < 864 ? "problem short" : day.state || "none");
-    const dayTitle = day => `${day.date}: ${day.state ? (day.state === "problem" && day.problem_seconds ? this.t("monitorAvailDayProblem", { state: this.t(labels.problem), time: this.monitorDuration(day.problem_seconds) }) : this.t(labels[day.state])) : this.t("monitorAvailNoData")}`;
+    const dayTitle = day => `${this.formatDay(day.date)}: ${day.state ? (day.state === "problem" && day.problem_seconds ? this.t("monitorAvailDayProblem", { state: this.t(labels.problem), time: this.monitorDuration(day.problem_seconds) }) : this.t(labels[day.state])) : this.t("monitorAvailNoData")}`;
     const days = a.days.map(day => `<i class="${dayClass(day)}" title="${this.esc(dayTitle(day))}"></i>`).join("");
     const swatch = (cls, key) => `<span><i class="${cls}"></i>${this.esc(this.t(key))}</span>`;
     const legend = `<div class="monitor-legend">${swatch("ok", "monitorAvailOk")}${swatch("problem short", "monitorAvailShort")}${swatch("problem", "monitorAvailLong")}${swatch("none", "monitorAvailUnobserved")}</div>`;
@@ -23090,7 +23100,7 @@ class FcInfoMixin {
     else if (this.oftenFor(f)) { const w = this.oftenWindow(this.oftenFor(f).info); state = w ? this.t("oftenChipAt", w) : this.t("oftenChip"); }
     else if (obj?.object_type === "entity" && typeof obj.state === "string") state = obj.state;
     // What hangs on it: the follow-ups and what uses it; nothing is an answer as well.
-    const followers = cause ? this.causeTotal(cause) : 0, uses = ["automation", "script", "dashboard"].filter(k => cause?.consumers?.[k]).map(k => this.t(`causeUses_${k}`, { n: cause.consumers[k] }));
+    const followers = cause ? this.causeTotal(cause) : 0, uses = ["automation", "script", "dashboard"].filter(k => cause?.consumers?.[k]).map(k => this.tCount(`causeUses_${k}`, cause.consumers[k]));
     const edges = obj ? this.edgesTo(key).length : 0;
     const links = [followers ? this.t(followers === 1 ? "causeFollowers1" : "causeFollowers", { n: this.formatNumber(followers) }) : "", ...uses, !followers && !uses.length && edges ? this.t(edges === 1 ? "fcInfoUsedBy1" : "fcInfoUsedBy", { n: this.formatNumber(edges) }) : ""].filter(Boolean).join(" · ");
     const row = (id, label, text, tabs, tone = "") => ({ id, label: this.t(label), text: text || none, empty: !text, tone: text ? tone : "", tab: obj && text ? this.fcTabFor(obj, key, tabs) : "" });
@@ -23665,9 +23675,11 @@ class HAHousekeeperPanel extends HTMLElement {
   }
 
   set hass(value) {
-    const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar;
+    const first = !this._hass, wasDark = this._hass?.themes?.darkMode, wasDocked = this._hass?.dockedSidebar, wasLang = first ? "" : this.lang;
     this._hass = value;
     if (first) { this.load(false); this.loadUserPrefs(); this.ensureLanguage(); }
+    // The language of Home Assistant changed while this one follows it: fetch its texts and draw again.
+    else if (this.lang !== wasLang) { this.ensureLanguage(); this.render(); }
     else if ((this.prefs.mode === "auto" && wasDark !== value?.themes?.darkMode) || wasDocked !== value?.dockedSidebar) this.render();
   }
 
@@ -23823,20 +23835,27 @@ class HAHousekeeperPanel extends HTMLElement {
     return String(value ?? "—").replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
   }
 
+  // One formatter per language and kind: a long list would otherwise make thousands of them in one drawing.
+  formatter(kind, make) {
+    const cache = (this._formatters ||= new Map()), key = `${kind}:${this.lang}`;
+    if (!cache.has(key)) cache.set(key, make(this.lang));
+    return cache.get(key);
+  }
+
   formatDate(value) {
     if (!value) return "—";
-    try { return new Intl.DateTimeFormat(this.lang, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
+    try { return this.formatter("datetime", lang => new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" })).format(new Date(value)); }
     catch (_) { return value; }
   }
 
   // A date without the time of day: for review dates, which are a day long.
   formatDay(value) {
     if (!value) return "—";
-    try { return new Intl.DateTimeFormat(this.lang, { dateStyle: "medium" }).format(new Date(value)); }
+    try { return this.formatter("day", lang => new Intl.DateTimeFormat(lang, { dateStyle: "medium" })).format(new Date(value)); }
     catch (_) { return value; }
   }
 
-  formatNumber(value) { return new Intl.NumberFormat(this.lang).format(value ?? 0); }
+  formatNumber(value) { return this.formatter("number", lang => new Intl.NumberFormat(lang)).format(value ?? 0); }
 
   async load(fresh = false) {
     if (!this._hass || this.busy) return;
@@ -24412,14 +24431,14 @@ class HAHousekeeperPanel extends HTMLElement {
     const mark = view => {
       const st = status[view];
       if (st) return `<span class="pill ${st.tone} navst" title="${this.esc(st.hint)}" aria-label="${this.esc(st.hint)}">${this.esc(st.text)}</span>`;
-      return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${counts[view]}</em>` : "";
+      return counts[view] !== undefined ? `<em title="${this.esc(this.navCountHint(view, counts[view]))}" aria-label="${this.esc(this.navCountHint(view, counts[view]))}">${typeof counts[view] === "number" ? this.formatNumber(counts[view]) : this.esc(counts[view])}</em>` : "";
     };
     const item = view => `<button class="nav${view === "settings" ? " iconly" : ""} ${this.view === view ? "active" : ""}" data-view="${view}" ${this.view === view ? 'aria-current="page"' : ""}${view === "settings" ? ` aria-label="${this.esc(this.t(view))}" title="${this.esc(this.t(view))}"` : ""}><ha-icon icon="${NAV_ICONS[view]}"></ha-icon><span>${this.t(view)}</span>${mark(view)}</button>`;
     const [direct, ...menus] = this.navGroups();
     const menu = ([label, views]) => {
       const open = this.menuOpen === label;
       const sum = views.reduce((n, v) => n + (typeof counts[v] === "number" ? counts[v] : 0), 0);
-      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span>${sum ? `<em aria-label="${this.esc(this.t("groupOpen", { count: sum }))}">${sum}</em>` : ""}<ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
+      return `<div class="navmenu${open ? " open" : ""}"><button class="nav menubtn ${views.includes(this.view) ? "group-active" : ""}" data-menu="${label}" aria-expanded="${open}" aria-controls="menu-${label}"><span>${this.t(label)}</span>${sum ? `<em aria-label="${this.esc(this.t("groupOpen", { count: this.formatNumber(sum) }))}">${this.formatNumber(sum)}</em>` : ""}<ha-icon class="caret" icon="mdi:chevron-down"></ha-icon></button><div class="navpop" id="menu-${label}" role="group" aria-label="${this.esc(this.t(label))}"><p class="navhead" aria-hidden="true">${this.t(label)}</p>${views.map(item).join("")}</div></div>`;
     };
     return `<header class="top${this.navCompact ? " compact" : ""}${this.navOpen ? " open" : ""}">${this.haMenuButton()}<button class="brand${this.view === "overview" ? " active" : ""}" data-view="overview" ${this.view === "overview" ? 'aria-current="page"' : ""}><span class="brandmark"><img src="/ha_housekeeper/logo.png" alt="" onerror="this.parentNode.classList.add('nologo');this.remove()"><ha-icon icon="mdi:broom"></ha-icon></span><span class="brandtext"><strong>${this.t("title")}</strong><small>${this.t("overview")}</small></span></button>
       <button class="navtoggle" data-navtoggle aria-expanded="${Boolean(this.navOpen)}" aria-controls="topnav"><ha-icon icon="mdi:menu"></ha-icon><span>${this.t("navMenu")}</span></button>
