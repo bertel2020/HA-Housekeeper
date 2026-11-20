@@ -24,7 +24,7 @@ class AreaAssignMixin {
   // The bar over the policy list: how many are ticked and what can be done with them, both from the first tick on.
   polSelBar(total = 0) {
     const n = this.polSel?.size || 0;
-    return `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("areaassign", n, "data-pol-sel-clear")}<span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
+    return `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("areaassign", n, "data-pol-sel-clear", { attr: "data-pol-sel-all", label: this.t("selAllOfList", { count: this.formatNumber((this._polAll || []).length) }), disabled: !(this._polAll || []).length })}<span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
   }
 
   // Only entities and devices can be ticked: the action for several at once assigns an area. A greyed box says why.
@@ -40,6 +40,7 @@ class AreaAssignMixin {
     root.querySelectorAll("[data-pol-sel]").forEach(el => el.onchange = () => { (this.polSel ||= new Set())[el.checked ? "add" : "delete"](el.dataset.polSel); this.render(); });
     root.querySelector("[data-pol-page]")?.addEventListener("change", ev => { this.polSel = new Set(this.polSel || []); (this._polPage || []).forEach(id => (ev.target.checked ? this.polSel.add(id) : this.polSel.delete(id))); this.render(); });
     const pageBox = root.querySelector("[data-pol-page]"); if (pageBox) pageBox.indeterminate = pageBox.hasAttribute("data-partial");
+    root.querySelector("[data-pol-sel-all]")?.addEventListener("click", () => { this.polSel = new Set([...(this.polSel || []), ...(this._polAll || [])]); this.render(); });
     root.querySelector("[data-pol-sel-clear]")?.addEventListener("click", () => { this.polSel = new Set(); this.bulk = null; this.render(); });
     root.querySelectorAll("[data-pol-bulk]").forEach(el => el.addEventListener("click", () => { this.bulk = { kind: el.dataset.polBulk, mode: "strip", find: "", with: "", area: "", error: "" }; this.render(); }));
   }

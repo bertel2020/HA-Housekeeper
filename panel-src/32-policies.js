@@ -130,6 +130,7 @@ class PoliciesMixin {
     const shown = this.selOnlyOn("areaassign", this.polSel?.size || 0) ? refined.filter(item => this.polSel.has(item.key)) : refined;
     const pg = this.paginate(id, shown);
     this._polPage = pg.rows.filter(i => !i.ignored && ["entity", "device"].includes(i.object_type)).map(i => i.key);
+    this._polAll = refined.filter(i => !i.ignored && ["entity", "device"].includes(i.object_type)).map(i => i.key);
     const columns = [
       { key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: () => this.polHeadBox(), cell: item => this.polSelBox(item) },
       { key: "name", label: "sortName", dir: "asc", cell: item => {

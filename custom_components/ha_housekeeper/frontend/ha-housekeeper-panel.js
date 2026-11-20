@@ -5203,6 +5203,7 @@ class CleanupMixin {
     const shownList = this.selOnlyOn("cleanup", this.cleanupSel.size) ? list.filter(r => this.cleanupSel.has(r.item.object_id)) : list;
     const pg = this.paginate("cleanup", shownList);
     this._cleanupVisible = pg.rows.filter(ready).map(r => r.item.object_id);
+    this._cleanupAll = list.filter(ready).map(r => r.item.object_id);
     const badge = r => {
       const left = r.quarantine ? limit - this.daysSince(r.quarantine.since) : 0;
       return r.finding ? this.pill(r.finding.classification) : r.quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${this.t(r.count ? "deviceEntities" : "deviceNoEntities", { count: r.count })}</span>`;
@@ -5226,7 +5227,7 @@ class CleanupMixin {
     const table = shownList.length ? this.listTable("cleanup", columns, pg.rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(`${r.item.object_type}:${r.item.object_id}`)}" tabindex="0" role="button" aria-label="${this.esc(r.item.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("cleanup") : this.t("cleanupNone")}</div>`;
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
-      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("cleanup", n, "data-sel-clear")}<span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
+      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("cleanup", n, "data-sel-clear", { attr: "data-sel-all", label: this.t("selAllOfList", { count: this.formatNumber(this._cleanupAll.length) }), disabled: !this._cleanupAll.length }, n > MAX_PLAN_ACTIONS ? { label: this.t("selOverMax", { n: this.formatNumber(n), max: MAX_PLAN_ACTIONS }), over: true } : {})}<span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
       <button class="btn ${REMOVAL_KINDS.includes(this.cleanupKind) ? "dangersoft" : "primary"}" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t(REMOVAL_KINDS.includes(this.cleanupKind) ? "prepareDelete" : "createPlan", { count: n })}</button>${this.viewCount(shownList.length)}</div>
       ${bar}${table}${pg.footer}</div>`;
     const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";
@@ -6300,6 +6301,7 @@ class UnusedMixin {
     const pg = this.paginate("orphanstats", rows);
     this._purgeTotal = rows.length;
     this._purgePage = pg.rows.map(o => o.statistic_id);
+    this._purgeAll = refined.map(o => o.statistic_id);
     const lastCell = o => {
       if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">${this.t("loadingShort")}</span>`;
       if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
@@ -6469,7 +6471,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult, del = this.purgeIds().length;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = del > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${del ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(del) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n: del, rest: del - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear", { attr: "data-purge-all", label: this.t("selAllOfList", { count: this.formatNumber((this._purgeAll || []).length) }), disabled: !(this._purgeAll || []).length })}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${del ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(del) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n: del, rest: del - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   // The ticked statistics that may be deleted: those of the Energy dashboard may not.
@@ -6528,6 +6530,8 @@ class UnusedMixin {
       filters: { domain: (o, v) => domainOf(o) === v, area: (o, v) => this.areaName(o) === v, platform: (o, v) => o.platform === v }, sorts, tie: o => o.object_id,
     });
     const pg = this.paginate("unreferenced", rows);
+    const everyUnref = rows.map(o => o.object_id);
+    this._unrefAll = everyUnref;
     const dash = `<span class="muted">–</span>`;
     const ids = pg.rows.map(o => o.object_id);
     const columns = [
@@ -6547,7 +6551,7 @@ class UnusedMixin {
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     const n = sel.size, form = this.unrefBulk;
-    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-unref-bulk><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button>` : ""}</div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
+    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear", { attr: "data-unref-all", label: this.t("selAllOfList", { count: this.formatNumber(everyUnref.length) }), disabled: !everyUnref.length })}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-unref-bulk><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button>` : ""}</div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
     return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${tools}${table}${pg.footer}</div></div>`;
   }
 
@@ -9937,6 +9941,7 @@ class PoliciesMixin {
     const shown = this.selOnlyOn("areaassign", this.polSel?.size || 0) ? refined.filter(item => this.polSel.has(item.key)) : refined;
     const pg = this.paginate(id, shown);
     this._polPage = pg.rows.filter(i => !i.ignored && ["entity", "device"].includes(i.object_type)).map(i => i.key);
+    this._polAll = refined.filter(i => !i.ignored && ["entity", "device"].includes(i.object_type)).map(i => i.key);
     const columns = [
       { key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: () => this.polHeadBox(), cell: item => this.polSelBox(item) },
       { key: "name", label: "sortName", dir: "asc", cell: item => {
@@ -17781,7 +17786,7 @@ class AreaAssignMixin {
   // The bar over the policy list: how many are ticked and what can be done with them, both from the first tick on.
   polSelBar(total = 0) {
     const n = this.polSel?.size || 0;
-    return `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("areaassign", n, "data-pol-sel-clear")}<span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
+    return `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("areaassign", n, "data-pol-sel-clear", { attr: "data-pol-sel-all", label: this.t("selAllOfList", { count: this.formatNumber((this._polAll || []).length) }), disabled: !(this._polAll || []).length })}<span class="toolgap"></span>${n ? `<div class="fbtns"><button class="btn" data-pol-bulk="area">${this.t("fselArea")}</button></div>` : ""}${this.viewCount(total)}</div>${this.bulk && this.bulk.kind === "area" ? this.bulkForm() : ""}`;
   }
 
   // Only entities and devices can be ticked: the action for several at once assigns an area. A greyed box says why.
@@ -17797,6 +17802,7 @@ class AreaAssignMixin {
     root.querySelectorAll("[data-pol-sel]").forEach(el => el.onchange = () => { (this.polSel ||= new Set())[el.checked ? "add" : "delete"](el.dataset.polSel); this.render(); });
     root.querySelector("[data-pol-page]")?.addEventListener("change", ev => { this.polSel = new Set(this.polSel || []); (this._polPage || []).forEach(id => (ev.target.checked ? this.polSel.add(id) : this.polSel.delete(id))); this.render(); });
     const pageBox = root.querySelector("[data-pol-page]"); if (pageBox) pageBox.indeterminate = pageBox.hasAttribute("data-partial");
+    root.querySelector("[data-pol-sel-all]")?.addEventListener("click", () => { this.polSel = new Set([...(this.polSel || []), ...(this._polAll || [])]); this.render(); });
     root.querySelector("[data-pol-sel-clear]")?.addEventListener("click", () => { this.polSel = new Set(); this.bulk = null; this.render(); });
     root.querySelectorAll("[data-pol-bulk]").forEach(el => el.addEventListener("click", () => { this.bulk = { kind: el.dataset.polBulk, mode: "strip", find: "", with: "", area: "", error: "" }; this.render(); }));
   }
@@ -24746,6 +24752,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-sel-page]")?.addEventListener("change", ev => { (this._cleanupVisible || []).forEach(id => (ev.target.checked ? this.cleanupSel.add(id) : this.cleanupSel.delete(id))); this.render(); });
     const pageBox = root.querySelector("[data-sel-page]"); if (pageBox) pageBox.indeterminate = pageBox.hasAttribute("data-partial");
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
+    root.querySelector("[data-sel-all]")?.addEventListener("click", () => { (this._cleanupAll || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-recorder-choice]")?.addEventListener("change", ev => { this.cleanupRecorder = ev.target.value; this.render(); });
     root.querySelectorAll("[data-rec-own]").forEach(el => el.addEventListener("click", () => { const [id, value] = el.dataset.recOwn.split("|"); this.cleanupRecorderOwn = { ...(this.cleanupRecorderOwn || {}), [id]: value }; this.render(); }));
     root.querySelectorAll("[data-qtype]").forEach(el => el.onclick = () => { this.quarantineType = el.dataset.qtype; this.cleanupKind = el.dataset.qtype === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); });
@@ -24770,6 +24777,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRows("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
+    root.querySelector("[data-purge-all]")?.addEventListener("click", () => { (this._purgeAll || []).forEach(id => this.purgeSel.add(id)); this.render(); });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
     root.querySelector("[data-purge-old]")?.addEventListener("click", () => this.purgeOld());
@@ -24841,6 +24849,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-unref-sel]").forEach(el => el.onchange = () => { this.pickRows("unreferenced", el.dataset.unrefSel, el.checked, unrefSel(), [...root.querySelectorAll("[data-unref-sel]")].map(x => x.dataset.unrefSel)); this.render(); });
     const unrefPage = root.querySelector("[data-unref-page]");
     if (unrefPage) { unrefPage.indeterminate = unrefPage.hasAttribute("data-partial"); unrefPage.onchange = ev => { root.querySelectorAll("[data-unref-sel]").forEach(x => (ev.target.checked ? unrefSel().add(x.dataset.unrefSel) : unrefSel().delete(x.dataset.unrefSel))); this.render(); }; }
+    root.querySelector("[data-unref-all]")?.addEventListener("click", () => { (this._unrefAll || []).forEach(id => unrefSel().add(id)); this.render(); });
     root.querySelector("[data-unref-clear]")?.addEventListener("click", () => { unrefSel().clear(); this.unrefBulk = null; this.render(); });
     root.querySelector("[data-unref-bulk]")?.addEventListener("click", () => { this.unrefBulk = { markKind: "", reason: "", days: MARK_DAYS }; this.render(); });
     root.querySelector("[data-unref-kind]")?.addEventListener("change", ev => { this.unrefBulk.markKind = ev.target.value; });

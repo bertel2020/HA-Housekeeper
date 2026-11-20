@@ -809,6 +809,7 @@ class CleanupMixin {
     const shownList = this.selOnlyOn("cleanup", this.cleanupSel.size) ? list.filter(r => this.cleanupSel.has(r.item.object_id)) : list;
     const pg = this.paginate("cleanup", shownList);
     this._cleanupVisible = pg.rows.filter(ready).map(r => r.item.object_id);
+    this._cleanupAll = list.filter(ready).map(r => r.item.object_id);
     const badge = r => {
       const left = r.quarantine ? limit - this.daysSince(r.quarantine.since) : 0;
       return r.finding ? this.pill(r.finding.classification) : r.quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${this.t(r.count ? "deviceEntities" : "deviceNoEntities", { count: r.count })}</span>`;
@@ -832,7 +833,7 @@ class CleanupMixin {
     const table = shownList.length ? this.listTable("cleanup", columns, pg.rows, { cls: "objs", rowAttrs: r => `data-object="${this.esc(`${r.item.object_type}:${r.item.object_id}`)}" tabindex="0" role="button" aria-label="${this.esc(r.item.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${all.length ? this.noMatches("cleanup") : this.t("cleanupNone")}</div>`;
     const n = this.cleanupSel.size;
     const candidates = `<div class="panel"><div class="panelhead"><div><h2>${this.t("cleanupCandidates")} (${all.length})</h2><p>${device ? this.t(removal ? "removalDeviceHint" : "deviceCandidatesHint", { days: limit }) : removal ? this.t("removalCandidatesHint", { days: limit }) : this.t("cleanupCandidatesHint")}</p></div></div>
-      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("cleanup", n, "data-sel-clear")}<span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
+      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("cleanup", n, "data-sel-clear", { attr: "data-sel-all", label: this.t("selAllOfList", { count: this.formatNumber(this._cleanupAll.length) }), disabled: !this._cleanupAll.length }, n > MAX_PLAN_ACTIONS ? { label: this.t("selOverMax", { n: this.formatNumber(n), max: MAX_PLAN_ACTIONS }), over: true } : {})}<span class="toolgap"></span>${this.kindSelect()}${this.recorderChoice(removal)}
       <button class="btn ${REMOVAL_KINDS.includes(this.cleanupKind) ? "dangersoft" : "primary"}" data-plan-create ${n && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t(REMOVAL_KINDS.includes(this.cleanupKind) ? "prepareDelete" : "createPlan", { count: n })}</button>${this.viewCount(shownList.length)}</div>
       ${bar}${table}${pg.footer}</div>`;
     const typeSwitch = open === "quarantine" ? `<div class="seg qtype" role="group" aria-label="${this.esc(this.t("cleanupTabQuarantine"))}"><button class="chip ${quarantineType === "entity" ? "active" : ""}" data-qtype="entity">${this.t("qTypeEntities", { count: this.quarantineRows("entity").length })}</button><button class="chip ${quarantineType === "device" ? "active" : ""}" data-qtype="device">${this.t("qTypeDevices", { count: this.quarantineRows("device").length })}</button></div>` : "";

@@ -1255,6 +1255,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelector("[data-sel-page]")?.addEventListener("change", ev => { (this._cleanupVisible || []).forEach(id => (ev.target.checked ? this.cleanupSel.add(id) : this.cleanupSel.delete(id))); this.render(); });
     const pageBox = root.querySelector("[data-sel-page]"); if (pageBox) pageBox.indeterminate = pageBox.hasAttribute("data-partial");
     root.querySelector("[data-sel-clear]")?.addEventListener("click", () => { this.cleanupSel.clear(); this.render(); });
+    root.querySelector("[data-sel-all]")?.addEventListener("click", () => { (this._cleanupAll || []).forEach(id => this.cleanupSel.add(id)); this.render(); });
     root.querySelector("[data-recorder-choice]")?.addEventListener("change", ev => { this.cleanupRecorder = ev.target.value; this.render(); });
     root.querySelectorAll("[data-rec-own]").forEach(el => el.addEventListener("click", () => { const [id, value] = el.dataset.recOwn.split("|"); this.cleanupRecorderOwn = { ...(this.cleanupRecorderOwn || {}), [id]: value }; this.render(); }));
     root.querySelectorAll("[data-qtype]").forEach(el => el.onclick = () => { this.quarantineType = el.dataset.qtype; this.cleanupKind = el.dataset.qtype === "device" ? "remove_device" : "remove_entity"; this.cleanupSel = new Set(); if (this.lv.cleanup) this.lv.cleanup.f = {}; this.pages = {}; this.render(); });
@@ -1279,6 +1280,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-repl-pick]").forEach(el => el.onclick = () => { this.replNew = el.dataset.replPick; this.render(); });
     root.querySelectorAll("[data-psel]").forEach(el => el.onchange = () => { this.pickRows("psel", el.dataset.psel, el.checked, this.purgeSel, this._purgePage); this.render(); });
     root.querySelectorAll("[data-psel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { (this._purgePage || []).forEach(id => el.checked ? this.purgeSel.add(id) : this.purgeSel.delete(id)); this.render(); }; });
+    root.querySelector("[data-purge-all]")?.addEventListener("click", () => { (this._purgeAll || []).forEach(id => this.purgeSel.add(id)); this.render(); });
     root.querySelector("[data-purge-clear]")?.addEventListener("click", () => { this.purgeSel.clear(); this.render(); });
     root.querySelector("[data-purge-run]")?.addEventListener("click", () => this.purgeRun());
     root.querySelector("[data-purge-old]")?.addEventListener("click", () => this.purgeOld());
@@ -1350,6 +1352,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-unref-sel]").forEach(el => el.onchange = () => { this.pickRows("unreferenced", el.dataset.unrefSel, el.checked, unrefSel(), [...root.querySelectorAll("[data-unref-sel]")].map(x => x.dataset.unrefSel)); this.render(); });
     const unrefPage = root.querySelector("[data-unref-page]");
     if (unrefPage) { unrefPage.indeterminate = unrefPage.hasAttribute("data-partial"); unrefPage.onchange = ev => { root.querySelectorAll("[data-unref-sel]").forEach(x => (ev.target.checked ? unrefSel().add(x.dataset.unrefSel) : unrefSel().delete(x.dataset.unrefSel))); this.render(); }; }
+    root.querySelector("[data-unref-all]")?.addEventListener("click", () => { (this._unrefAll || []).forEach(id => unrefSel().add(id)); this.render(); });
     root.querySelector("[data-unref-clear]")?.addEventListener("click", () => { unrefSel().clear(); this.unrefBulk = null; this.render(); });
     root.querySelector("[data-unref-bulk]")?.addEventListener("click", () => { this.unrefBulk = { markKind: "", reason: "", days: MARK_DAYS }; this.render(); });
     root.querySelector("[data-unref-kind]")?.addEventListener("change", ev => { this.unrefBulk.markKind = ev.target.value; });

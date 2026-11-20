@@ -187,6 +187,7 @@ class UnusedMixin {
     const pg = this.paginate("orphanstats", rows);
     this._purgeTotal = rows.length;
     this._purgePage = pg.rows.map(o => o.statistic_id);
+    this._purgeAll = refined.map(o => o.statistic_id);
     const lastCell = o => {
       if (this.orphanLastLoading && !this.orphanLast) return `<span class="muted">${this.t("loadingShort")}</span>`;
       if (this.orphanLast?.busy) return `<span class="muted">${this.t("lastEntryBusyShort")}</span>`;
@@ -356,7 +357,7 @@ class UnusedMixin {
     const n = this.purgeSel.size, r = this.purgeResult, del = this.purgeIds().length;
     const result = r ? `<p class="${r.error ? "error" : "factnote"}">${this.esc(r.error ? this.t("purgeNotDeleted", { reason: `${this.t(`purgeReason_${r.error}`)}${r.detail ? ` (${r.detail})` : ""}` }) : this.t("purgeDone", { n: r.removed.length, skipped: r.skipped.length }))}</p>` : "";
     const over = del > MAX_PLAN_ACTIONS;
-    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear")}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${del ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(del) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n: del, rest: del - MAX_PLAN_ACTIONS })}</p>` : ""}`;
+    return `${result}<div class="toolbar">${this.selTools("orphanstats", n, "data-purge-clear", { attr: "data-purge-all", label: this.t("selAllOfList", { count: this.formatNumber((this._purgeAll || []).length) }), disabled: !(this._purgeAll || []).length })}<span class="toolgap"></span>${n ? `<button class="btn" data-xfer-start><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("xferOpenCount", { n: this.formatNumber(n) })}</button>` : ""}${del ? `<button class="btn dangersoft" data-purge-run ${this.purgeBusy ? "disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("purgeOpenCount", { n: this.formatNumber(del) })}</button>` : ""}${this.viewCount(this._purgeTotal || 0)}</div>${over ? `<p class="factnote">${this.t("purgeChunk", { max: MAX_PLAN_ACTIONS, n: del, rest: del - MAX_PLAN_ACTIONS })}</p>` : ""}`;
   }
 
   // The ticked statistics that may be deleted: those of the Energy dashboard may not.
@@ -415,6 +416,8 @@ class UnusedMixin {
       filters: { domain: (o, v) => domainOf(o) === v, area: (o, v) => this.areaName(o) === v, platform: (o, v) => o.platform === v }, sorts, tie: o => o.object_id,
     });
     const pg = this.paginate("unreferenced", rows);
+    const everyUnref = rows.map(o => o.object_id);
+    this._unrefAll = everyUnref;
     const dash = `<span class="muted">–</span>`;
     const ids = pg.rows.map(o => o.object_id);
     const columns = [
@@ -434,7 +437,7 @@ class UnusedMixin {
     ];
     const table = rows.length ? this.listTable("unreferenced", columns, pg.rows, { cls: "unref", rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name)}"` }) : `<div class="emptymsg"><ha-icon icon="mdi:link-variant"></ha-icon>${all.length ? this.noMatches("unreferenced") : this.t("noUnreferenced")}</div>`;
     const n = sel.size, form = this.unrefBulk;
-    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-unref-bulk><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button>` : ""}</div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
+    const tools = all.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("unreferenced", n, "data-unref-clear", { attr: "data-unref-all", label: this.t("selAllOfList", { count: this.formatNumber(everyUnref.length) }), disabled: !everyUnref.length })}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-unref-bulk><ha-icon icon="mdi:bookmark-plus-outline"></ha-icon>${this.t("marksSetN", { n: this.formatNumber(n) })}</button>` : ""}</div>${n && form ? this.unrefBulkForm(form, n) : ""}` : "";
     return `<div class="stack">${this._embedUnref ? "" : this.unrefTiles()}${this.unrefTabs()}<div class="panel"><p class="factnote">${this.t("unreferencedHint")}</p>${bar}${tools}${table}${pg.footer}</div></div>`;
   }
 
