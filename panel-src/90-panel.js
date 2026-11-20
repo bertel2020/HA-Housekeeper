@@ -988,17 +988,24 @@ class HAHousekeeperPanel extends HTMLElement {
         if (!menu?.matches?.("details.rowmenu") || !menu.open) return;
         root.querySelectorAll("details.rowmenu[open]").forEach(other => { if (other !== menu) other.open = false; });
       }, true);
-      // The column and export pop-ups close on a click elsewhere and on Escape.
+      // The pop-ups (row menus, columns, export, saved views) close on a click elsewhere and on Escape; Escape closes the
+      // innermost one and nothing else (a handler later on leaves the event alone when it is marked as taken).
       root.addEventListener("click", ev => {
-        if (!this._colOpen && !this._expOpen) return;
-        if ((ev.composedPath?.() || []).some(node => node.classList?.contains?.("colwrap"))) return;
-        this._colOpen = ""; this._expOpen = ""; this.render();
+        const path = ev.composedPath?.() || [];
+        root.querySelectorAll("details.rowmenu[open]").forEach(menu => { if (!path.includes(menu)) menu.open = false; });
+        if (!this._colOpen && !this._expOpen && !this._viewOpen) return;
+        if (path.some(node => node.classList?.contains?.("colwrap") || node.classList?.contains?.("viewwrap"))) return;
+        this._colOpen = ""; this._expOpen = ""; this._viewOpen = ""; this.render();
       });
       root.addEventListener("keydown", ev => {
-        if (ev.key !== "Escape" || (!this._colOpen && !this._expOpen)) return;
-        const id = this._colOpen ? `[data-col-open="${this._colOpen}"]` : `[data-exp-menu="${this._expOpen}"]`;
-        this._colOpen = ""; this._expOpen = ""; this.render();
+        if (ev.key !== "Escape") return;
+        const menu = root.querySelector("details.rowmenu[open]");
+        if (menu) { menu.open = false; menu.querySelector("summary")?.focus?.(); ev._hkEsc = true; return; }
+        if (!this._colOpen && !this._expOpen && !this._viewOpen) return;
+        const id = this._colOpen ? `[data-col-open="${this._colOpen}"]` : this._expOpen ? `[data-exp-menu="${this._expOpen}"]` : `[data-lview-open="${this._viewOpen}"]`;
+        this._colOpen = ""; this._expOpen = ""; this._viewOpen = ""; this.render();
         root.querySelector(id)?.focus?.();
+        ev._hkEsc = true;
       });
       // Arrow keys move between the rows of a list: to the first control of the next or previous row.
       root.addEventListener("keydown", ev => {
@@ -1017,7 +1024,7 @@ class HAHousekeeperPanel extends HTMLElement {
         if (ev.key === "/" && !typing) {
           const box = root.querySelector("[data-lq]") || root.querySelector("[data-quick]");
           if (box) { ev.preventDefault(); box.focus(); box.select?.(); }
-        } else if (ev.key === "Escape" && !this.menuOpen && !this.navOpen && !(ev.composedPath?.()[0]?.matches?.("input,select,textarea"))) {
+        } else if (ev.key === "Escape" && !ev._hkEsc && !this.menuOpen && !this.navOpen && !(ev.composedPath?.()[0]?.matches?.("input,select,textarea"))) {
           if (this.selected) { ev.preventDefault(); this.goBack(); }
           else if (this.plan && this.plan.status === "dry_run") { ev.preventDefault(); root.querySelector("[data-plan-close]")?.click(); }
         }
@@ -1215,7 +1222,7 @@ class HAHousekeeperPanel extends HTMLElement {
       const input = root.querySelector(selector);
       if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };
     };
-    root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", () => { this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
+    root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", ev => { if (ev.target.closest?.(".rowmenu")) return; this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
     root.querySelector("[data-history-all]")?.addEventListener("click", () => { this.historyAll = !this.historyAll; this.pages = {}; this.render(); });
     const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label, summary, .menupop"); if (inner && inner !== el && el.contains(inner)) return; const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });

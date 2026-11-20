@@ -106,7 +106,7 @@ class McpMixin {
   }
 
   mcpUndoCell(e) {
-    return e.undone ? `<span class="pill mute">${this.t("mcpUndone")}</span>` : e.undoable ? `<button class="btn" data-mcp-undo="${this.esc(e.at)}"><ha-icon icon="mdi:undo"></ha-icon>${this.t("mcpUndo")}</button>` : "";
+    return e.undone ? `<span class="pill mute">${this.t("mcpUndone")}</span>` : e.undoable ? this.rowMenuHtml([["mdi:undo", "mcpUndo", `data-mcp-undo="${this.esc(e.at)}"`]]) : "";
   }
 
   // The row under an open call: the parameters it was made with.
@@ -141,7 +141,7 @@ class McpMixin {
       { key: "kind", label: "mcpColKind", cell: e => this.mcpKindCell(e) },
       { key: "fn", label: "mcpColFn", cell: e => this.esc(this.t(`mcpFn_${e.fn}`) || e.fn) },
       { key: "what", label: "mcpColWhat", sortable: false, cell: e => this.mcpWhatCell(e, multi) },
-      { key: "undo", label: "mcpColUndo", sortable: false, cell: e => this.mcpUndoCell(e) },
+      { key: "undo", label: "mcpColUndo", narrow: true, sortable: false, cell: e => this.mcpUndoCell(e) },
     ];
     const table = rows.length ? this.listTable(id, columns, pg.rows, { cls: "mcplog", rowAttrs: e => `data-mcp-row="${this.esc(e.at)}" tabindex="0" role="button" aria-expanded="${open(e)}"${e.undone ? ' class="undone"' : ""}`, after: e => this.mcpDetail(e) }) : `<div class="emptymsg">${entries.length ? this.noMatches(id) : this.t("mcpLogEmpty")}</div>`;
     return `${bar}${table}${pg.footer}`;

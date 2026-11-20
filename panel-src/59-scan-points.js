@@ -37,7 +37,7 @@ class ScanPointsMixin {
   pinLabel(b) { return b.name || this.formatDate(b.at); }
 
   pinActions(b) {
-    return `<span class="pill pin">${this.t("pinMine")}</span><button class="link" data-pin-del="${this.esc(b.id)}">${this.t("pinDelete")}</button>`;
+    return `<span class="pill pin">${this.t("pinMine")}</span>${this.rowMenuHtml([["mdi:delete-outline", "pinDelete", `data-pin-del="${this.esc(b.id)}"`]])}`;
   }
 
   async pinSave() {
@@ -74,7 +74,7 @@ class ScanPointsMixin {
       const id = el.dataset.pinDel, b = (this.compare?.baselines || []).find(x => x.id === id);
       this.confirmAsk(this.t("confirmPin", { name: b ? this.pinLabel(b) : "" }), () => this.pinDelete(id));
     });
-    root.querySelectorAll("div[data-baseline]").forEach(el => el.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); el.click(); } }));
+    root.querySelectorAll("div[data-baseline]").forEach(el => el.addEventListener("keydown", ev => { if (ev.target === el && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); el.click(); } }));
     if (this._pinFocus && root.querySelector("[data-pin-form]")) { this._pinFocus = false; root.querySelector("[data-pin-name]")?.focus(); }
   }
 }

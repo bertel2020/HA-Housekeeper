@@ -3762,7 +3762,7 @@ test("a device has a history tab with its steps and no note; removed devices sho
   el.data = { ...DATA, notes: [{ id: "n1", title: "Device “Old plug” forgotten", at: "2026-03-02T00:00:00+00:00", target: "device:d8", note: "broken <b>", source: "housekeeper", ref: "forget_device:d8" }] };
   const list = el.removedCard();
   assert.ok(list.includes("Old hub") && list.includes("Device removed") && list.includes("Device “Old plug” forgotten") && list.includes('data-note-edit="n1"') && list.includes("broken &lt;b&gt;") && !list.includes("<b>"));
-  assert.ok(list.includes('<button type="button" class="btn small" data-plan-open="p1">Open plan</button>') && list.includes("beyond the 300 newest"), "the plan is one click away, and the list says how far back it reaches");
+  assert.ok(/class="menuitem"[^>]*data-plan-open="p1"><ha-icon[^>]*><\/ha-icon>Open plan/.test(list) && list.includes("beyond the 300 newest"), "the plan is in the row menu, and the list says how far back it reaches");
 });
 
 test("missing statistics hours say what all series lack, name the periods and list the series", () => {

@@ -52,7 +52,7 @@ class LifecycleMixin {
         { key: "when", label: "lifeColWhen", dir: "desc", cell: d => this.esc(this.formatDate(d.at)) },
         { key: "undo", label: "goneColUndo", sortable: false, cell: d => `<span class="pill ${d.irreversible ? "warn" : "mute"}">${this.t(d.irreversible ? "goneIrreversible" : "goneUndoInPlan")}</span>` },
         { key: "note", label: "lifeColNote", sortable: false, cell: d => { const n = noteOf(d); return n ? `${this.esc(n.title)}${n.note ? `<small class="u-block">${this.esc(n.note)}</small>` : ""}` : "–"; } },
-        { key: "plan", label: "lifeColPlan", sortable: false, cell: d => ((this.journal || []).some(p => p.plan_id === d.plan_id) ? `<button type="button" class="btn small" data-plan-open="${this.esc(d.plan_id)}">${this.t("lifeOpenPlan")}</button>` : "–") },
+        { key: "plan", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: d => this.rowMenuHtml((this.journal || []).some(p => p.plan_id === d.plan_id) ? [["mdi:open-in-new", "lifeOpenPlan", `data-plan-open="${this.esc(d.plan_id)}"`]] : []) },
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("lifeRemovedNone")}</div>`;
     return `<div class="panel">${head}${table}</div>`;

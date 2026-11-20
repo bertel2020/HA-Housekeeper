@@ -232,7 +232,7 @@ class MonitorMixin {
         { key: "event", label: "monitorColEvent", dir: "asc", cell: item => `<span class="pill ${item.tone}">${this.esc(item.label)}</span>` },
         { key: "details", label: "monitorColDetails", sortable: false, cell: item => this.esc(item.details || "—") },
         { key: "object", label: "monitorColObject", sortable: false, cell: item => this.esc(item.object || "—") },
-        ...(hasPlan ? [{ key: "act", label: "btColAct", sortable: false, cell: item => (item.planId ? `<button class="btn small" data-plan-open="${this.esc(item.planId)}">${this.t("openPlan")}</button>` : "") }] : []),
+        ...(hasPlan ? [{ key: "act", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(item.planId ? [["mdi:open-in-new", "openPlan", `data-plan-open="${this.esc(item.planId)}"`]] : []) }] : []),
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:history"></ha-icon>${this.t("monitorHistoryEmpty")}</div>`;
     return `<section class="panel">${head}${list}</section>`;

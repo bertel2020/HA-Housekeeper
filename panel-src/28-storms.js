@@ -65,7 +65,7 @@ class StormsMixin {
       { key: "perDay", label: "stormColPerDay", dir: "desc", cell: g => num(perDay(g)) },
       { key: "peak", label: "stormColPeak", dir: "desc", cell: g => num(peak(g)) },
       { key: "share", label: "stormColNoNew", dir: "desc", cell: g => (share(g) === null ? "–" : `${this.esc(this.formatNumber(share(g)))} %`) },
-      { key: "mark", label: "stormColAction", sortable: false, cell: g => (g.type === "integrations" && g.items[0].entry_id ? this.stormEntryButton(g.items[0].entry_id) : "") },
+      { key: "mark", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: g => (g.type === "integrations" && g.items[0].entry_id ? this.stormEntryButton(g.items[0].entry_id) : "") },
     ];
     return this.sysList("stormfind", groups, {
       sort: "perDay", dir: "desc",
@@ -87,7 +87,7 @@ class StormsMixin {
 
   // Shows the loudest entities of one integration entry: the list already carries each entity's entry_id.
   stormEntryButton(entryId) {
-    return `<button class="btn" data-storm-entry="${this.esc(entryId)}">${this.t("stormShowEntities")}</button>`;
+    return this.rowMenuHtml([["mdi:format-list-bulleted", "stormShowEntities", `data-storm-entry="${this.esc(entryId)}"`]]);
   }
 
   stormLegend(r) {
@@ -151,7 +151,7 @@ class StormsMixin {
         { key: "perDay", label: "stormColPerDay", dir: "desc", cell: item => this.esc(this.formatNumber(item.per_day)) },
         { key: "rowShare", label: "stormColRowShare", dir: "desc", cell: item => `${this.esc(this.formatNumber(item.row_share))} %` },
         { key: "load", label: "stormColLoad", dir: "desc", cell: item => `${this.esc(this.formatNumber(item.load_share))} %${bar(item.load_share)}` },
-        { key: "act", label: "stormColAction", sortable: false, cell: item => (item.entry_id ? this.stormEntryButton(item.entry_id) : "") },
+        { key: "act", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => (item.entry_id ? this.stormEntryButton(item.entry_id) : "") },
       ],
     });
   }

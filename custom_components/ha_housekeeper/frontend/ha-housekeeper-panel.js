@@ -8937,7 +8937,7 @@ class StormsMixin {
       { key: "perDay", label: "stormColPerDay", dir: "desc", cell: g => num(perDay(g)) },
       { key: "peak", label: "stormColPeak", dir: "desc", cell: g => num(peak(g)) },
       { key: "share", label: "stormColNoNew", dir: "desc", cell: g => (share(g) === null ? "–" : `${this.esc(this.formatNumber(share(g)))} %`) },
-      { key: "mark", label: "stormColAction", sortable: false, cell: g => (g.type === "integrations" && g.items[0].entry_id ? this.stormEntryButton(g.items[0].entry_id) : "") },
+      { key: "mark", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: g => (g.type === "integrations" && g.items[0].entry_id ? this.stormEntryButton(g.items[0].entry_id) : "") },
     ];
     return this.sysList("stormfind", groups, {
       sort: "perDay", dir: "desc",
@@ -8959,7 +8959,7 @@ class StormsMixin {
 
   // Shows the loudest entities of one integration entry: the list already carries each entity's entry_id.
   stormEntryButton(entryId) {
-    return `<button class="btn" data-storm-entry="${this.esc(entryId)}">${this.t("stormShowEntities")}</button>`;
+    return this.rowMenuHtml([["mdi:format-list-bulleted", "stormShowEntities", `data-storm-entry="${this.esc(entryId)}"`]]);
   }
 
   stormLegend(r) {
@@ -9023,7 +9023,7 @@ class StormsMixin {
         { key: "perDay", label: "stormColPerDay", dir: "desc", cell: item => this.esc(this.formatNumber(item.per_day)) },
         { key: "rowShare", label: "stormColRowShare", dir: "desc", cell: item => `${this.esc(this.formatNumber(item.row_share))} %` },
         { key: "load", label: "stormColLoad", dir: "desc", cell: item => `${this.esc(this.formatNumber(item.load_share))} %${bar(item.load_share)}` },
-        { key: "act", label: "stormColAction", sortable: false, cell: item => (item.entry_id ? this.stormEntryButton(item.entry_id) : "") },
+        { key: "act", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => (item.entry_id ? this.stormEntryButton(item.entry_id) : "") },
       ],
     });
   }
@@ -10441,7 +10441,7 @@ class LifecycleMixin {
         { key: "when", label: "lifeColWhen", dir: "desc", cell: d => this.esc(this.formatDate(d.at)) },
         { key: "undo", label: "goneColUndo", sortable: false, cell: d => `<span class="pill ${d.irreversible ? "warn" : "mute"}">${this.t(d.irreversible ? "goneIrreversible" : "goneUndoInPlan")}</span>` },
         { key: "note", label: "lifeColNote", sortable: false, cell: d => { const n = noteOf(d); return n ? `${this.esc(n.title)}${n.note ? `<small class="u-block">${this.esc(n.note)}</small>` : ""}` : "–"; } },
-        { key: "plan", label: "lifeColPlan", sortable: false, cell: d => ((this.journal || []).some(p => p.plan_id === d.plan_id) ? `<button type="button" class="btn small" data-plan-open="${this.esc(d.plan_id)}">${this.t("lifeOpenPlan")}</button>` : "–") },
+        { key: "plan", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: d => this.rowMenuHtml((this.journal || []).some(p => p.plan_id === d.plan_id) ? [["mdi:open-in-new", "lifeOpenPlan", `data-plan-open="${this.esc(d.plan_id)}"`]] : []) },
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("lifeRemovedNone")}</div>`;
     return `<div class="panel">${head}${table}</div>`;
@@ -15460,7 +15460,7 @@ class ScanPointsMixin {
   pinLabel(b) { return b.name || this.formatDate(b.at); }
 
   pinActions(b) {
-    return `<span class="pill pin">${this.t("pinMine")}</span><button class="link" data-pin-del="${this.esc(b.id)}">${this.t("pinDelete")}</button>`;
+    return `<span class="pill pin">${this.t("pinMine")}</span>${this.rowMenuHtml([["mdi:delete-outline", "pinDelete", `data-pin-del="${this.esc(b.id)}"`]])}`;
   }
 
   async pinSave() {
@@ -15497,7 +15497,7 @@ class ScanPointsMixin {
       const id = el.dataset.pinDel, b = (this.compare?.baselines || []).find(x => x.id === id);
       this.confirmAsk(this.t("confirmPin", { name: b ? this.pinLabel(b) : "" }), () => this.pinDelete(id));
     });
-    root.querySelectorAll("div[data-baseline]").forEach(el => el.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); el.click(); } }));
+    root.querySelectorAll("div[data-baseline]").forEach(el => el.addEventListener("keydown", ev => { if (ev.target === el && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); el.click(); } }));
     if (this._pinFocus && root.querySelector("[data-pin-form]")) { this._pinFocus = false; root.querySelector("[data-pin-name]")?.focus(); }
   }
 }
@@ -17241,7 +17241,7 @@ class McpMixin {
   }
 
   mcpUndoCell(e) {
-    return e.undone ? `<span class="pill mute">${this.t("mcpUndone")}</span>` : e.undoable ? `<button class="btn" data-mcp-undo="${this.esc(e.at)}"><ha-icon icon="mdi:undo"></ha-icon>${this.t("mcpUndo")}</button>` : "";
+    return e.undone ? `<span class="pill mute">${this.t("mcpUndone")}</span>` : e.undoable ? this.rowMenuHtml([["mdi:undo", "mcpUndo", `data-mcp-undo="${this.esc(e.at)}"`]]) : "";
   }
 
   // The row under an open call: the parameters it was made with.
@@ -17276,7 +17276,7 @@ class McpMixin {
       { key: "kind", label: "mcpColKind", cell: e => this.mcpKindCell(e) },
       { key: "fn", label: "mcpColFn", cell: e => this.esc(this.t(`mcpFn_${e.fn}`) || e.fn) },
       { key: "what", label: "mcpColWhat", sortable: false, cell: e => this.mcpWhatCell(e, multi) },
-      { key: "undo", label: "mcpColUndo", sortable: false, cell: e => this.mcpUndoCell(e) },
+      { key: "undo", label: "mcpColUndo", narrow: true, sortable: false, cell: e => this.mcpUndoCell(e) },
     ];
     const table = rows.length ? this.listTable(id, columns, pg.rows, { cls: "mcplog", rowAttrs: e => `data-mcp-row="${this.esc(e.at)}" tabindex="0" role="button" aria-expanded="${open(e)}"${e.undone ? ' class="undone"' : ""}`, after: e => this.mcpDetail(e) }) : `<div class="emptymsg">${entries.length ? this.noMatches(id) : this.t("mcpLogEmpty")}</div>`;
     return `${bar}${table}${pg.footer}`;
@@ -20840,7 +20840,7 @@ class MonitorMixin {
         { key: "event", label: "monitorColEvent", dir: "asc", cell: item => `<span class="pill ${item.tone}">${this.esc(item.label)}</span>` },
         { key: "details", label: "monitorColDetails", sortable: false, cell: item => this.esc(item.details || "—") },
         { key: "object", label: "monitorColObject", sortable: false, cell: item => this.esc(item.object || "—") },
-        ...(hasPlan ? [{ key: "act", label: "btColAct", sortable: false, cell: item => (item.planId ? `<button class="btn small" data-plan-open="${this.esc(item.planId)}">${this.t("openPlan")}</button>` : "") }] : []),
+        ...(hasPlan ? [{ key: "act", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: item => this.rowMenuHtml(item.planId ? [["mdi:open-in-new", "openPlan", `data-plan-open="${this.esc(item.planId)}"`]] : []) }] : []),
       ],
     }) : `<div class="emptymsg"><ha-icon icon="mdi:history"></ha-icon>${this.t("monitorHistoryEmpty")}</div>`;
     return `<section class="panel">${head}${list}</section>`;
@@ -24602,17 +24602,24 @@ class HAHousekeeperPanel extends HTMLElement {
         if (!menu?.matches?.("details.rowmenu") || !menu.open) return;
         root.querySelectorAll("details.rowmenu[open]").forEach(other => { if (other !== menu) other.open = false; });
       }, true);
-      // The column and export pop-ups close on a click elsewhere and on Escape.
+      // The pop-ups (row menus, columns, export, saved views) close on a click elsewhere and on Escape; Escape closes the
+      // innermost one and nothing else (a handler later on leaves the event alone when it is marked as taken).
       root.addEventListener("click", ev => {
-        if (!this._colOpen && !this._expOpen) return;
-        if ((ev.composedPath?.() || []).some(node => node.classList?.contains?.("colwrap"))) return;
-        this._colOpen = ""; this._expOpen = ""; this.render();
+        const path = ev.composedPath?.() || [];
+        root.querySelectorAll("details.rowmenu[open]").forEach(menu => { if (!path.includes(menu)) menu.open = false; });
+        if (!this._colOpen && !this._expOpen && !this._viewOpen) return;
+        if (path.some(node => node.classList?.contains?.("colwrap") || node.classList?.contains?.("viewwrap"))) return;
+        this._colOpen = ""; this._expOpen = ""; this._viewOpen = ""; this.render();
       });
       root.addEventListener("keydown", ev => {
-        if (ev.key !== "Escape" || (!this._colOpen && !this._expOpen)) return;
-        const id = this._colOpen ? `[data-col-open="${this._colOpen}"]` : `[data-exp-menu="${this._expOpen}"]`;
-        this._colOpen = ""; this._expOpen = ""; this.render();
+        if (ev.key !== "Escape") return;
+        const menu = root.querySelector("details.rowmenu[open]");
+        if (menu) { menu.open = false; menu.querySelector("summary")?.focus?.(); ev._hkEsc = true; return; }
+        if (!this._colOpen && !this._expOpen && !this._viewOpen) return;
+        const id = this._colOpen ? `[data-col-open="${this._colOpen}"]` : this._expOpen ? `[data-exp-menu="${this._expOpen}"]` : `[data-lview-open="${this._viewOpen}"]`;
+        this._colOpen = ""; this._expOpen = ""; this._viewOpen = ""; this.render();
         root.querySelector(id)?.focus?.();
+        ev._hkEsc = true;
       });
       // Arrow keys move between the rows of a list: to the first control of the next or previous row.
       root.addEventListener("keydown", ev => {
@@ -24631,7 +24638,7 @@ class HAHousekeeperPanel extends HTMLElement {
         if (ev.key === "/" && !typing) {
           const box = root.querySelector("[data-lq]") || root.querySelector("[data-quick]");
           if (box) { ev.preventDefault(); box.focus(); box.select?.(); }
-        } else if (ev.key === "Escape" && !this.menuOpen && !this.navOpen && !(ev.composedPath?.()[0]?.matches?.("input,select,textarea"))) {
+        } else if (ev.key === "Escape" && !ev._hkEsc && !this.menuOpen && !this.navOpen && !(ev.composedPath?.()[0]?.matches?.("input,select,textarea"))) {
           if (this.selected) { ev.preventDefault(); this.goBack(); }
           else if (this.plan && this.plan.status === "dry_run") { ev.preventDefault(); root.querySelector("[data-plan-close]")?.click(); }
         }
@@ -24829,7 +24836,7 @@ class HAHousekeeperPanel extends HTMLElement {
       const input = root.querySelector(selector);
       if (input) input.oninput = () => { setter(input.value); this.scheduleRender(); };
     };
-    root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", () => { this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
+    root.querySelectorAll("[data-baseline]").forEach(b => b.addEventListener("click", ev => { if (ev.target.closest?.(".rowmenu")) return; this.compareBaseline = b.dataset.baseline; this.pages = {}; this.loadCompare(); }));
     root.querySelector("[data-history-all]")?.addEventListener("click", () => { this.historyAll = !this.historyAll; this.pages = {}; this.render(); });
     const bl = root.querySelector("#baseline"); if (bl) bl.onchange = () => { this.compareBaseline = bl.value; this.pages = {}; this.loadCompare(); };
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label, summary, .menupop"); if (inner && inner !== el && el.contains(inner)) return; const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
