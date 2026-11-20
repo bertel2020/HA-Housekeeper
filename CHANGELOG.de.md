@@ -28,6 +28,7 @@
 
 ### Behoben
 
+- **Ausfälle:** Ein Button, eine Szene oder ein Ereignis ohne Wert (Zustand „unknown“) gilt nicht mehr als ausgefallen und zählt nicht mehr gegen sein Gerät.
 - **Übertragen und Ersetzen:** Einheiten, die sich nur durch Leerzeichen unterscheiden (kWh/100km und kWh/100 km), gelten als eine Einheit.
 - **Übertragen-Ansicht:** Sie passt auf ein Handy, und die Liste der Zielwahl wird nicht mehr abgeschnitten.
 

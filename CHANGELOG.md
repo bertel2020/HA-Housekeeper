@@ -28,6 +28,7 @@
 
 ### Fixed
 
+- **Outages:** A button, scene or event without a value (state “unknown”) no longer counts as down and no longer counts against its device.
 - **Moving and replacing:** Units that differ only in spaces (kWh/100km and kWh/100 km) count as one unit.
 - **Move view:** It fits a phone, and the list of the target field is no longer cut off.
 

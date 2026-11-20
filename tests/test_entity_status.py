@@ -55,6 +55,7 @@ DISABLED_ENTRY = SimpleNamespace(disabled_by="user")
         ),
         (_entry(), "unavailable", {}, {}, ("unavailable", "state_unavailable")),
         (_entry(), "unknown", {}, {}, ("unknown", "state_unknown")),
+        (_entry(entity_id="button.sync"), "unknown", {}, {}, ("active", "state_available")),
         (_entry(), "42", {}, {}, ("active", "state_available")),
     ],
 )

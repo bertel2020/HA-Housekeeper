@@ -293,6 +293,10 @@ def _device_config_entry_ids(device: Any) -> list[str]:
     return [device.config_entry_id] if getattr(device, "config_entry_id", None) else []
 
 
+# Domains whose entities say "unknown" until something happens to them; that is no lost value.
+NO_VALUE_DOMAINS = frozenset({"button", "input_button", "scene", "event", "notify"})
+
+
 def _entity_status(
     entry: Any,
     state: Any,
@@ -334,6 +338,9 @@ def _entity_status(
     if state.state == "unavailable":
         return "unavailable", "state_unavailable"
     if state.state == "unknown":
+        # A button, scene or event has no value until it is pressed, activated or fired: unknown is how it works.
+        if getattr(entry, "entity_id", "").partition(".")[0] in NO_VALUE_DOMAINS:
+            return "active", "state_available"
         return "unknown", "state_unknown"
     return "active", "state_available"
 
