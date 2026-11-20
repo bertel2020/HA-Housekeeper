@@ -20,7 +20,7 @@
 - **Befunde:** Das Zeilenmenü und das Aktionen-Menü bieten die nächsten Schritte gleich an:
   - Überflüssige Entitäten entfernen und Automationen löschen, einzeln oder gesammelt als Plan mit Vorschau.
   - Ausgefallene Entitäten deaktivieren oder ersetzen; bei kaputten Verweisen das Ersetzen mit dem Vorschlag.
-  - Ein neuer Filter „Ursache“ zeigt zum Beispiel alle Entitäten, die ihre Integration nicht mehr bereitstellt. Die Filter stehen jetzt hinter einem Knopf „Filter“, der zählt, wie viele gelten.
+  - Ein neuer Filter „Ursache“ zeigt zum Beispiel alle Entitäten, die ihre Integration nicht mehr bereitstellt. In Listen mit drei oder mehr Filtern stehen diese jetzt hinter einem Knopf „Filter“, der zählt, wie viele gelten.
 
 ### Geändert
 

@@ -4557,6 +4557,7 @@ test("orphaned statistics can be filtered by whether they already count", () => 
   const { el, shadow } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true }, objects: [], edges: [], findings: [], orphaned_statistics: [{ statistic_id: "sensor.counted", settled: true }, { statistic_id: "sensor.young", settled: false }] };
   el.view = "unreferenced"; el.unrefTab = "statistics"; el._orphanLastRequested = true;
+  el._colOpen = "orphanstats:filter"; // the filters sit behind a button; open it
   el.render();
   assert.ok(shadow.innerHTML.includes("State: any") && shadow.innerHTML.includes("Still waiting"));
   el.lv.orphanstats.f.ready = "waiting"; el.render();
@@ -5560,7 +5561,7 @@ test("the idle helper hint needs no use and a change older than the chosen days"
     { object_type: "entity", object_id: "input_boolean.nodate", name: "No date", platform: "input_boolean", status: "active" },
   ] };
   el.typeFilter = "helper";
-  el.helperIdle = "180";
+  el.helperIdle = "180"; el._colOpen = "inventory:filter";
   assert.deepEqual(el.filtered().map(o => o.object_id), ["input_boolean.idle"]);
   assert.ok(el.inventory().includes('data-lf="inventory|idle"') && el.inventory().includes("Housekeeper"), "the select and the hint show in helper mode");
   el.helperIdle = "";
@@ -6634,7 +6635,7 @@ test("the inventory is the shared list: origin only for integrations, core and c
     { object_type: "config_entry", object_id: "E2", name: "Cust", domain: "hacs", custom: true, integration_version: "2.0", status: "active", entity_count: 5 },
     { object_type: "entity", object_id: "input_boolean.h", name: "H", platform: "input_boolean", status: "active" },
   ] };
-  el.view = "inventory"; el.render();
+  el.view = "inventory"; el._colOpen = "inventory:filter"; el.render();
   let html = shadow.innerHTML;
   assert.ok(html.includes('data-lf="inventory|type"') && html.includes("All types") && !html.includes('data-lf="inventory|origin"'), "no origin filter without the integration type");
   assert.ok(html.includes('data-inv-filter="config_entry||custom"') && html.includes("of which custom") && html.includes("data-inv-sel-page"), "sub rows under integration, selection always there");

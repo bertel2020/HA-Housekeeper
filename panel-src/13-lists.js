@@ -162,13 +162,13 @@ class ListsMixin {
     requestAnimationFrame(() => this.shadowRoot?.querySelector(".filteron, .listbar")?.scrollIntoView?.({ block: top ? "start" : "nearest" }));
   }
 
-  listBar(id, { sorts, filters = [], columns = [], dense = false, table = false, note = true, lead = "", fold = false }) {
+  listBar(id, { sorts, filters = [], columns = [], dense = false, table = false, note = true, lead = "" }) {
     const st = this.lv[id];
     for (const f of filters) if (st.f[f.name] && !f.options.some(([v]) => v === st.f[f.name])) delete st.f[f.name]; // a kept value this list no longer offers
     (this.lvDirs ||= {})[id] = Object.fromEntries(sorts.map(x => [x.key, x.dir]));
     const selectsOf = () => filters.map(f => `<select data-lf="${id}|${f.name}" aria-label="${this.esc(f.all)}"><option value="">${this.esc(f.all)}</option>${f.options.map(([v, label, count]) => `<option value="${this.esc(v)}" ${st.f[f.name] === v ? "selected" : ""}>${this.esc(label)}${count === undefined ? "" : ` (${this.formatNumber(count)})`}</option>`).join("")}</select>`).join("");
-    // A list that asks for it (`fold`) puts three fields or more behind one button that counts the filters that are on, and the notes below say which.
-    const folded = fold && filters.length >= 3, active = filters.filter(f => st.f[f.name]).length, fkey = `${id}:filter`, fopen = this._colOpen === fkey;
+    // Three fields or more go behind one button that counts the filters that are on, and the notes below say which.
+    const folded = filters.length >= 3, active = filters.filter(f => st.f[f.name]).length, fkey = `${id}:filter`, fopen = this._colOpen === fkey;
     const selects = folded
       ? `<span class="colwrap filterwrap"><button type="button" class="btn quiet filterbtn${active ? " on" : ""}" data-col-open="${fkey}" aria-expanded="${fopen}"><ha-icon icon="mdi:filter-variant"></ha-icon>${this.t("filterMenu")}${active ? `<span class="filterbadge">${this.formatNumber(active)}</span>` : ""}</button>${fopen ? `<span class="filterpop" role="group" aria-label="${this.esc(this.t("filterMenu"))}">${selectsOf()}${active ? `<button type="button" class="btn quiet" data-lf-set="${id}||">${this.t("filterReset")}</button>` : ""}</span>` : ""}</span>`
       : selectsOf();
