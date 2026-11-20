@@ -149,7 +149,7 @@ class FindingsMixin {
     if (kept.type === "_causes") delete kept.type; // "causes only" is gone: the outage tile and the grouped list show them
     return this.refine("findings", byClass, {
       text: f => [this.findObject(this.findingKey(f))?.name, f.object_id, f.rule_id, f.affected_object].join(" "),
-      filters: { type: (f, v) => this.findingType(f) === v, area: (f, v) => this.findingArea(f) === v, integration: (f, v) => this.findingIntegrations(f).includes(v), impact: (f, v) => (f.impact || "none") === v, by: (f, v) => (["mark", "rule", "label"].includes(f.ignored_by) ? f.ignored_by : "user") === v },
+      filters: { type: (f, v) => this.findingType(f) === v, area: (f, v) => this.findingArea(f) === v, integration: (f, v) => this.findingIntegrations(f).includes(v), reason: (f, v) => this.findingObjectReason(f) === v, impact: (f, v) => (f.impact || "none") === v, by: (f, v) => (["mark", "rule", "label"].includes(f.ignored_by) ? f.ignored_by : "user") === v },
       sorts: this.findingSorts(), tie: f => f.object_id,
     });
   }
@@ -188,6 +188,8 @@ class FindingsMixin {
 
   // The area and the integrations of the object of a finding, for the filters of the list bar.
   findingArea(f) { const o = this.findObject(this.findingKey(f)); return o ? this.areaName(o) : ""; }
+  // Why the object of a finding is in this state ("the integration no longer provides it"), the text of the cause on its page; none for an object that works.
+  findingObjectReason(f) { const reason = this.findObject(this.findingKey(f))?.reason; return reason && reason !== "state_available" ? reason : ""; }
   findingIntegrations(f) {
     const o = this.findObject(this.findingKey(f));
     if (!o) return [];
@@ -263,6 +265,7 @@ class FindingsMixin {
       { name: "type", all: this.t("allObjectTypes"), options: values(f => this.findingType(f)).map(x => [x, this.t(x)]) },
       { name: "area", all: this.t("allAreas"), options: values(f => this.findingArea(f)).map(a => [a, a]) },
       { name: "integration", all: this.t("allIntegrations"), options: values(f => this.findingIntegrations(f)).map(d => [d, d]) },
+      { name: "reason", all: this.t("allCauseTexts"), options: values(f => this.findingObjectReason(f)).map(r => [r, this.t(r), all.filter(f => this.findingObjectReason(f) === r).length]) },
       { name: "impact", all: this.t("allSeverities"), options: ["high", "medium", "low", "info"].map(x => [x, this.t(`chip_${x}`)]) },
       ...(this.findingStatus === "hidden" ? [{ name: "by", all: this.t("hiddenByAll"), options: ["user", "mark", "rule", "label"].map(x => [x, this.t(`hiddenBy_${x}`)]) }] : []),
     ];

@@ -802,6 +802,7 @@
 "allUnits": "Všetky jednotky",
 "allAges": "Posledný záznam: kedykoľvek",
 "allIntegrations": "Všetky integrácie",
+"allCauseTexts": "Všetky príčiny",
 "statAge30": "Posledný záznam starší než 30 dní",
 "statAge365": "Posledný záznam starší než rok",
 "statAge730": "Posledný záznam starší než 2 roky",

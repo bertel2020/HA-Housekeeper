@@ -6685,7 +6685,8 @@
 "monitorRuleNow": "39177735",
 "monitorRuleNowAvailable": "ddd9818a",
 "monitorRuleNowDown": "2b0d4e18",
-"monitorRuleNowDownUnknown": "ba691ba0"
+"monitorRuleNowDownUnknown": "ba691ba0",
+"allCauseTexts": "daee1ea8"
 },
 "setup": {
 "title": "644c2647",
