@@ -400,7 +400,9 @@ class MonitorMixin {
     root.querySelector("[data-monitor-delete]")?.addEventListener("click", () => this.confirmAsk(this.t("monitorConfirmDelete", { name: this.monitorForm.name }), () => this.deleteMonitor()));
   }
 
-  async saveMonitor() {
+  saveMonitor() { return this.onlyOnce("monitorSave", () => this.saveMonitorNow()); }
+
+  async saveMonitorNow() {
     const form = this.monitorForm;
     const need = !form.name.trim() ? "monitorNeedName" : !form.members.length ? "monitorNeedMembers" : "";
     if (need) { this.monitorError = this.t(need); this.render(); return; }
@@ -412,7 +414,9 @@ class MonitorMixin {
     } catch (err) { this.monitorError = this.t("monitorSaveFailed", { reason: this.errText(err) }); this.render(); }
   }
 
-  async deleteMonitor() {
+  deleteMonitor() { return this.onlyOnce("monitorSave", () => this.deleteMonitorNow()); }
+
+  async deleteMonitorNow() {
     try {
       const response = await this._hass.callWS({ type: "ha_housekeeper/monitor_delete", function_id: this.monitorForm.id });
       this.data.monitor = response.functions; delete this.monitorHistory?.[this.monitorForm.id]; this.monitorSelected = null; this.monitorForm = null; this.monitorError = ""; this.render();

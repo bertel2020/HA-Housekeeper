@@ -62,7 +62,7 @@ class BatteryTypeMixin {
       const choices = this.batteryTypeChoices();
       const known = !type || choices.includes(type) || isRecharge(type);
       const options = this.batteryTypeOptions(type);
-      return `<span class="btedit"><label class="factnote" for="hk-bt-type">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select id="hk-bt-type" data-bt-type-select><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn accent" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
+      return `<span class="btedit"><label class="factnote">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select data-bt-type-select aria-label="${this.esc(this.t("btTypeLabel", { name: this.batteryLabel(entityId) }))}"><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn accent" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
     }
     return `<span class="btctl">${type ? `<span class="pill">${this.esc(this.batteryTypeLabel(type))}</span>` : `<span class="pill mute">${this.t("btTypeNone")}</span>`}<button class="btn quiet" data-bt-type="${this.esc(entityId)}">${this.t("btTypeSet")}</button></span>`;
   }
@@ -72,7 +72,7 @@ class BatteryTypeMixin {
     if (!found.length) return "";
     const rows = found.map(r => {
       const name = this.batteryLabel(r.entity_id);
-      const date = this.formatDate(`${r.day}T12:00:00Z`).split(",")[0];
+      const date = this.formatDay(`${r.day}T12:00:00Z`);
       return `<div class="btrepl"><ha-icon icon="mdi:battery-sync-outline"></ha-icon><span class="row-text"><strong>${this.esc(this.t("btReplLine", { name, date }))}</strong><small>${this.t("btReplLevels", { from: r.from, to: r.to })}</small></span><button class="btn accent" data-bt-enter="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplEnter")}</button>${this.rowMenuHtml([["mdi:close", "btReplDismiss", `data-bt-dismiss="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}"`]])}</div>`;
     }).join("");
     return `<div class="btsuggest"><h3>${this.t("btReplTitle")}</h3><p class="factnote">${this.t("btReplHint")}</p>${rows}<p class="factnote">${this.t("btReplNote")}</p>${this.btMessage ? `<p class="factnote" role="status">${this.esc(this.btMessage)}</p>` : ""}</div>`;
@@ -115,7 +115,9 @@ class BatteryTypeMixin {
     this.render();
   }
 
-  async batterySettle(entityId, day, action) {
+  batterySettle(entityId, day, action) { return this.onlyOnce(`battery:${entityId}:${day}`, () => this.batterySettleNow(entityId, day, action)); }
+
+  async batterySettleNow(entityId, day, action) {
     const name = this.batteryLabel(entityId);
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/battery_replaced", entity_id: entityId, day, action, name, title: this.t("btReplTitleEntry", { name }).slice(0, 80), note: "" });
@@ -128,16 +130,17 @@ class BatteryTypeMixin {
 
   bindBatteryType(root) {
     root.querySelectorAll("[data-bt-type]").forEach(el => el.addEventListener("click", () => { this.btEdit = el.dataset.btType; this.render(); }));
-    root.querySelector("[data-bt-type-cancel]")?.addEventListener("click", () => { this.btEdit = ""; this.render(); });
-    root.querySelector("[data-bt-type-select]")?.addEventListener("change", e => {
-      const custom = root.querySelector("[data-bt-type-custom]");
+    // The editor can stand in two tables at once (the forecast and "all batteries"): each one works on its own fields.
+    root.querySelectorAll("[data-bt-type-cancel]").forEach(el => el.addEventListener("click", () => { this.btEdit = ""; this.render(); }));
+    root.querySelectorAll("[data-bt-type-select]").forEach(select => select.addEventListener("change", e => {
+      const custom = select.closest(".btedit")?.querySelector("[data-bt-type-custom]");
       if (custom) { custom.hidden = e.target.value !== "__custom"; if (!custom.hidden) custom.focus(); }
-    });
-    root.querySelector("[data-bt-type-save]")?.addEventListener("click", e => {
-      const select = root.querySelector("[data-bt-type-select]"), custom = root.querySelector("[data-bt-type-custom]");
+    }));
+    root.querySelectorAll("[data-bt-type-save]").forEach(button => button.addEventListener("click", () => {
+      const box = button.closest(".btedit"), select = box?.querySelector("[data-bt-type-select]"), custom = box?.querySelector("[data-bt-type-custom]");
       const value = select?.value === "__custom" ? (custom?.value || "") : (select?.value || "");
-      this.batterySetType(e.currentTarget.dataset.btTypeSave, value);
-    });
+      this.batterySetType(button.dataset.btTypeSave, value);
+    }));
     root.querySelector("[data-bt-ct-add]")?.addEventListener("click", () => {
       const value = (root.querySelector("[data-bt-ct-new]")?.value || "").trim();
       if (value) this.batteryCustomEdit("add", value);

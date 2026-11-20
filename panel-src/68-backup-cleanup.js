@@ -94,7 +94,7 @@ class BackupCleanupMixin {
     const columns = [
       { key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: rows => this.bkcHeadBox(rows), cell: r => `<input type="checkbox" class="selbox" data-bkc-sel="${this.esc(r.backup_id)}" ${sel.has(r.backup_id) ? "checked" : ""} ${r.protected ? "disabled" : ""} aria-label="${this.esc(r.name)}">` },
       { key: "name", label: "bkcColName", dir: "asc", cell: r => `<div class="statcell"><span class="tile ${r.protected ? "ok" : r.only_return ? "warn" : "mute"}"><ha-icon icon="mdi:backup-restore"></ha-icon></span><div>${this.nameCell(r.name, r.plan_id ? "" : this.t("bkcNoPlan"))}${r.only_return ? `<small class="bkcwarn"><ha-icon icon="mdi:alert-outline"></ha-icon>${this.t("bkcOnlyReturn")}</small>` : ""}</div></div>` },
-      { key: "date", label: "bhColDate", dir: "desc", cell: r => (r.date ? this.esc(this.formatDate(r.date).split(",")[0]) : "–") },
+      { key: "date", label: "bhColDate", dir: "desc", cell: r => (r.date ? this.esc(this.formatDay(r.date)) : "–") },
       { key: "size", label: "bhColSize", dir: "desc", cell: r => this.esc(this.formatBytes(r.size)) },
       { key: "db", label: "bkcColDb", dir: "desc", cell: r => this.t(r.with_database ? "bkcDb" : "bkcNoDb") },
       { key: "state", label: "bkcColState", dir: "asc", cell: r => (r.protected ? `<span class="pill ok">${this.t(`bkcProtected_${r.protected}`)}</span>` : r.age_days !== null && r.age_days !== undefined ? `<span class="pill ${r.suggested ? "" : "mute"}">${r.age_days ? this.t("bkcAge", { days: r.age_days }) : this.t("bkcToday")}</span>` : "–") },
@@ -121,7 +121,7 @@ class BackupCleanupMixin {
   // Optional: Housekeeper tidies up by the rule on its own. Off until switched on; switching on asks first.
   bkcAutoBlock(d) {
     const auto = d.auto || {};
-    const last = auto.last ? `<small>${this.t("bkcAutoLast", { count: this.formatNumber(auto.last.count), bytes: this.formatBytes(auto.last.bytes), date: this.formatDate(auto.last.at).split(",")[0] })}</small>` : "";
+    const last = auto.last ? `<small>${this.t("bkcAutoLast", { count: this.formatNumber(auto.last.count), bytes: this.formatBytes(auto.last.bytes), date: this.formatDay(auto.last.at) })}</small>` : "";
     return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-bkc-auto ${auto.enabled ? "checked" : ""} ${this.bkcBusy ? "disabled" : ""}><span><strong>${this.t("bkcAuto")}</strong><small>${this.t("bkcAutoHint")}</small>${last}</span></label>`;
   }
 

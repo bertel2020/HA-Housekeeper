@@ -142,7 +142,7 @@ class DetailActionsMixin {
     if (kind === "replace_references" || kind === "migrate_meter") {
       const inner = fill, how = kind === "migrate_meter" ? "replace_statistics" : "";
       kind = "replace_wizard";
-      fill = () => { inner(); this.rwState().single = true; this.replHow = how; };
+      fill = () => { inner(); this.rwState().single = true; this.replHow = how; this.rwOld = ""; this.rwRec = ""; };
     }
     this.noteJump?.("cleanup");
     this.cleanupKind = kind; this.cleanupSel = new Set(); this.plan = null; fill();
@@ -172,7 +172,7 @@ class DetailActionsMixin {
   async planDisableMany(ids) {
     if (!ids.length) return;
     try {
-      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "disable_entity", object_id })))) return;
+      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "disable_entity", object_id })))) return;
       this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();
@@ -182,7 +182,7 @@ class DetailActionsMixin {
   async planRemoveMany(ids) {
     if (!ids.length) return;
     try {
-      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "remove_entity", object_id })))) return;
+      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "remove_entity", object_id })))) return;
       this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();

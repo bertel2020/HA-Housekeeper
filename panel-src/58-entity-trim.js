@@ -44,7 +44,9 @@ class EntityTrimMixin {
   // The window of a stretch in epoch seconds: the first day from 00:00, the last day to its end (exclusive end = next midnight).
   entityTrimRange(e) {
     if (!e.from || !e.to) return null;
-    const from = new Date(`${e.from}T00:00:00`).getTime() / 1000, to = new Date(`${e.to}T00:00:00`).getTime() / 1000 + 86400;
+    const day = new Date(`${e.to}T00:00:00`), from = new Date(`${e.from}T00:00:00`).getTime() / 1000;
+    // The end is the next local midnight (not 24 hours: a day with a clock change has 23 or 25), and never later than now.
+    const to = Math.min(new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime() / 1000, Math.floor(Date.now() / 1000));
     return from < to ? { from, to } : null;
   }
 
@@ -61,7 +63,7 @@ class EntityTrimMixin {
   entityTrimBody(item) {
     const id = item.object_id, data = this.entityRec?.[id]?.data;
     if (!data) return null;
-    const e = this.entityTrimState(id), date = ts => this.esc(this.formatDate(new Date(ts * 1000).toISOString()).split(",")[0]);
+    const e = this.entityTrimState(id), date = ts => this.esc(this.formatDay(new Date(ts * 1000).toISOString()));
     const kinds = ET_TABLES.map(([table, label, hint, key]) => {
       const part = data[key] || { rows: 0 }, none = !part.rows, on = e.tables.has(table) && !none;
       return `<label class="etkind${none ? " none" : ""}"><input type="checkbox" data-et-table="${table}" ${on ? "checked" : ""} ${none ? "disabled" : ""}><span><strong>${this.t(label)}</strong><small>${this.t(hint)}</small></span><span class="etnum">${none ? this.t("etNone") : `<b>${this.t("etRows", { count: this.formatNumber(part.rows) })}</b><small>${this.t("etOldest", { date: date(part.first) })}</small>`}</span></label>`;
@@ -104,7 +106,7 @@ class EntityTrimMixin {
     const names = { states: "etStates", short_term: "etShort", long_term: "etLong" };
     const what = a.tables?.length ? `${a.tables.map(t => this.t(names[t])).join(", ")} · ` : "";
     if (a.range) {
-      const day = ts => this.formatDate(new Date(ts * 1000).toISOString()).split(",")[0];
+      const day = ts => this.formatDay(new Date(ts * 1000).toISOString());
       return what + this.t("etSubRange", { from: day(a.range.from), to: day(a.range.to - 86400), rows });
     }
     return what + this.t("etSubOlder", { days: a.keep_days, rows });

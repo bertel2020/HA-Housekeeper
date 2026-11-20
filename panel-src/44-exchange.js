@@ -205,8 +205,9 @@ class ExchangeMixin {
     if (!this.report || typeof document === "undefined") return;
     const url = URL.createObjectURL(new Blob([this.report.markdown], { type: "text/markdown" }));
     const link = document.createElement("a");
-    link.href = url; link.download = this.report.filename; link.click();
-    URL.revokeObjectURL(url);
+    link.href = url; link.download = this.report.filename;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   async copyReport() {

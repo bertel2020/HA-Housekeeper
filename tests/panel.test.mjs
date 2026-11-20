@@ -1973,7 +1973,7 @@ test("scan progress updates the button and the status line without rebuilding th
   const { el, shadow } = panel("en");
   const button = { innerHTML: "", disabled: false };
   const live = { textContent: "" };
-  shadow.querySelector = selector => (selector === "[data-action='scan']" ? button : selector === "[role='status']" ? live : null);
+  shadow.querySelector = selector => (selector === "[data-action='scan']" ? button : selector === "[data-live]" ? live : null);
   el.busy = true; el.scanStatus = { running: true, progress: 42 };
   el.renderProgress();
   assert.ok(button.innerHTML.includes("Scanning") && button.innerHTML.includes("42%") && button.disabled === true);
@@ -7853,6 +7853,31 @@ test("a missing target has Fix all n in its menu, and its page replaces or remov
   await plan.fn();
   assert.deepEqual(plan.requests.map(r => r.object_id), ["automation.a", "automation.c"]);
   assert.equal(plan.requests[0].fix, "remove_reference");
+});
+
+test("the own ways of a finding keep their cards when its object exists, and only the object's plans are grouped", async () => {
+  const { el } = panel("en");
+  const f = { key: "k1", rule_id: "automation.missing_entity", object_id: "automation.a", topic: "broken_references", classification: "broken_reference", affected_object: "sensor.gone", impact: "medium" };
+  el.data = { ...DATA, findings: [f], causes: [], objects: [{ object_type: "automation", object_id: "automation.a", name: "Auto A" }] };
+  el._hass = { language: "en", callWS: async () => ({ ways: [{ way: "replace_target", kind: "panel", target: "sensor.gone", suggestion: "sensor.new", enabled: true }, { way: "object_actions", kind: "panel" }] }) };
+  el.render = () => {};
+  el.openFix("k1");
+  await new Promise(r => setTimeout(r, 0));
+  const html = el.fixView();
+  assert.ok(html.includes("data-fix-replace") && html.includes("Actions of the object") && html.includes("Other ways (1)"));
+});
+
+test("a failed load of the exception rules is no empty list: nothing is saved over the real rules", async () => {
+  const { el } = panel("en");
+  const calls = [];
+  el.data = { ...DATA };
+  el._hass = { language: "en", callWS: async msg => { calls.push(msg.type); throw new Error("timeout"); } };
+  el.render = () => {}; el.failed = () => {};
+  await el.loadExceptions();
+  assert.equal(el.exc, undefined);
+  assert.ok(el.exceptionsView().includes("data-exc-reload"));
+  assert.equal(await el.saveExceptions([], null), false);
+  assert.ok(!calls.includes("ha_housekeeper/exceptions_set"));
 });
 
 test("a decided list shows only its findings, not the outages that explain nothing there", () => {

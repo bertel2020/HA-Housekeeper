@@ -2078,6 +2078,12 @@ class ListsMixin {
     return `<div class="notice ${tone}" role="${tone === "err" ? "alert" : "status"}" ${attrs}><ha-icon icon="${icon}"></ha-icon><span>${this.esc(text)}</span></div>`;
   }
 
+  // A plan takes at most MAX_PLAN_ACTIONS steps: the first ones go in, and the person is told that the rest is still there.
+  capIds(ids, max = MAX_PLAN_ACTIONS) {
+    if (ids.length > max) this.toast(this.t("purgeChunk", { n: this.formatNumber(ids.length), max, rest: this.formatNumber(ids.length - max) }), true);
+    return ids.slice(0, max);
+  }
+
   failed(err) {
     this.noteError("action", err);
     this.toast(this.t("actionFailed", { detail: this.errText(err) }), true);
@@ -4043,13 +4049,23 @@ class SettingsMixin {
       ${on !== saved ? `<div class="setrow"><small>${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-sidebar-save>${this.t("saveOptions")}</button></div>` : ""}</section>`;
   }
 
+  // The integration reloads after options are saved: ask again until it answers, instead of one try after a fixed wait.
+  async reloadAfterOptions() {
+    this.optionsMessage = "";
+    for (let i = 0; i < 6 && !this._gone; i++) {
+      await this.load(false);
+      if (this.data) return;
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  }
+
   async saveSidebar() {
     try {
       await this._hass.callWS({ type: "ha_housekeeper/set_options", show_in_sidebar: this.sidebarDraft });
       this.sidebarDraft = undefined; this.optionsMessage = this.t("optionsSaved");
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
-      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+      setTimeout(() => this.reloadAfterOptions(), 4000);
     } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : this.errText(err); this.render(); }
   }
 
@@ -4107,7 +4123,7 @@ class SettingsMixin {
       this.outageModeDraft = this.refreshViewsDraft = undefined; this.optionsMessage = this.t("optionsSaved");
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
-      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+      setTimeout(() => this.reloadAfterOptions(), 4000);
     } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : this.errText(err); this.render(); }
   }
 
@@ -4387,7 +4403,7 @@ class SettingsMixin {
       this.optDraft = {};
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
-      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+      setTimeout(() => this.reloadAfterOptions(), 4000);
     } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : err?.code === "thresholds_order" ? this.t("optionsOrder") : this.errText(err); this.render(); }
   }
 }
@@ -4579,7 +4595,7 @@ class CleanupMixin {
   // What a meter change will do: the timeline of the two series, the facts behind it, the ID move and the transition.
   meterDetail(action) {
     const s = action.statistics || {}, lines = [];
-    const day = ts => this.formatDate(ts * 1000).split(",")[0];
+    const day = ts => this.formatDay(ts * 1000);
     const join = action.mode !== "id" && s.import_count;
     let timeline = "", facts = "";
     if (join) {
@@ -4701,8 +4717,10 @@ class CleanupMixin {
     try {
       const actions = this.cleanupKind === "replace_wizard" ? this.rwOneActions()
         : this.cleanupKind === "repair_counter" ? [this.counterRangeReq ? { kind: "repair_range", object_id: this.counterSel, mode: this.counterRangeReq.mode, range: this.counterRangeReq.range } : { kind: "repair_counter", object_id: this.counterSel, mode: this.counterMode || "hold" }]
-        : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.recorderFor(object_id) !== "keep" ? { recorder: this.recorderFor(object_id) } : {}) }));
+        : this.capIds([...this.cleanupSel]).map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.recorderFor(object_id) !== "keep" ? { recorder: this.recorderFor(object_id) } : {}) }));
+      const taken = new Set(actions.map(a => a.object_id)), capped = !pair && this.cleanupSel.size > actions.length;
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      if (capped) this.cleanupSel = new Set([...this.cleanupSel].filter(id => !taken.has(id)));
       this.openNewPlan(plan, null); this.toast(this.t("previewReady"));
     } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
@@ -5012,11 +5030,11 @@ class CleanupMixin {
       const result = a.result;
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
       const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" || a.kind === "set_expose_new" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
-      const sub = [sub0 === a.name ? "" : sub0, a.delete_old ? this.t(a.delete_old === "helper" ? "planOldHelper" : "planOldDeleted") : a.disable_old ? this.t("planOldDisabled") : "", a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
+      const sub = [sub0 === a.name ? "" : sub0, a.delete_old ? this.t(a.delete_old === "helper" ? "planOldHelper" : "planOldDeleted") : a.disable_old ? this.t("planOldDisabled") : "", a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDay(a.backup.date) : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
-      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
+      const undo = !this.undoWorks(a) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"${!settled && !idle && a.verdict !== "ok" ? ` data-rowtone="${a.verdict === "blocked" ? "red" : "warn"}"` : ""}><span class="tile ${tone}"><ha-icon icon="${settled || idle || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>
@@ -10786,6 +10804,7 @@ class MarksMixin {
     if (!Array.isArray(data?.findings)) return; // an answer without a scan keeps what is on screen
     this.data = data;
     this._rev++;
+    this.pruneSelections();
     if (key) this.selected = this.findObject(key) || null;
   }
 
@@ -11951,8 +11970,9 @@ class ExchangeMixin {
     if (!this.report || typeof document === "undefined") return;
     const url = URL.createObjectURL(new Blob([this.report.markdown], { type: "text/markdown" }));
     const link = document.createElement("a");
-    link.href = url; link.download = this.report.filename; link.click();
-    URL.revokeObjectURL(url);
+    link.href = url; link.download = this.report.filename;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   async copyReport() {
@@ -12240,7 +12260,7 @@ class DiagnosticsMixin {
     const row = this.diagRow(item), d = this.diagState(), id = item.object_id;
     if (!row) return `<div class="panel">${this.skeleton("qualityLoading")}</div>`;
     d.sel = id;
-    if (item.object_type === "automation" && d.loadedFor !== id) { d.loadedFor = id; d.draft = null; d.message = ""; this.loadDiag(id); }
+    if (item.object_type === "automation" && d.loadedFor !== id) { d.loadedFor = id; d.draft = null; d.message = ""; d.dry = null; this.loadDiag(id); }
     const worst = { red: 0, warn: 1, info: 2, unknown: 3, ok: 4 };
     const dims = DIM_ORDER.filter(dimId => row.dimensions[dimId]).sort((x, y) => (worst[row.dimensions[x].level] ?? 3) - (worst[row.dimensions[y].level] ?? 3)).map(dimId => {
       const dim = row.dimensions[dimId];
@@ -12253,7 +12273,7 @@ class DiagnosticsMixin {
 
   async loadDiag(entityId) {
     const d = this.diagState();
-    try { d.criteria[entityId] = await this._hass.callWS({ type: "ha_housekeeper/criteria", entity_id: entityId }); } catch (_) { /* shown as empty */ }
+    try { d.criteria[entityId] = await this._hass.callWS({ type: "ha_housekeeper/criteria", entity_id: entityId }); } catch (err) { d.criteria[entityId] = { error: this.errText(err) }; }
     this.render();
     await this.loadRefactor?.(entityId);
     await this.loadDiagExtras?.(entityId);
@@ -12263,10 +12283,12 @@ class DiagnosticsMixin {
     const d = this.diagState(), view = d.criteria[entityId];
     const message = d.message ? `<small role="status">${this.esc(d.message)}</small>` : "";
     let body;
-    if (d.draft) body = this.criteriaForm(view);
-    else if (!view?.criteria.length) body = `<div class="pad"><small>${this.t("critNone")}</small></div>`;
+    // A failed load is no empty list: editing from nothing would replace the criteria that are there.
+    if (view?.error) body = `<div class="pad">${this.notice("err", this.t("actionFailed", { detail: view.error }))}<button class="btn" data-crit-retry="${this.esc(entityId)}">${this.t("actRetry")}</button></div>`;
+    else if (d.draft) body = this.criteriaForm(view);
+    else if (!view?.criteria?.length) body = `<div class="pad"><small>${this.t("critNone")}</small></div>`;
     else body = view.criteria.map(c => `<div class="pad"><small>${c.targets.map(t => `${this.esc(t.entity_id)} = ${this.esc(t.state)}`).join(" · ")} · ${c.within} s${c.hold ? ` + ${c.hold} s` : ""}</small></div>`).join("") + `<div class="pad"><small>${this.t("critStats", view.stats)}</small></div>` + this.critHistory(view);
-    const edit = d.draft ? "" : `<button class="btn" data-crit-edit="${this.esc(entityId)}">${this.t("critEdit")}</button>`;
+    const edit = d.draft || view?.error || !view ? "" : `<button class="btn" data-crit-edit="${this.esc(entityId)}">${this.t("critEdit")}</button>`;
     return `<div class="panelhead"><div><h2>${this.t("critTitle")}</h2><p>${this.t("critHint")}</p></div><div class="actions">${edit}</div></div>${body}${message}`;
   }
 
@@ -12304,6 +12326,7 @@ class DiagnosticsMixin {
     const d = () => this.diagState();
     root.querySelector("[data-quality-refresh]")?.addEventListener("click", () => this.loadQuality());
     root.querySelector("[data-crit-edit]")?.addEventListener("click", ev => this.editCriteria(ev.currentTarget.dataset.critEdit));
+    root.querySelector("[data-crit-retry]")?.addEventListener("click", ev => this.loadDiag(ev.currentTarget.dataset.critRetry));
     root.querySelector("[data-crit-cancel]")?.addEventListener("click", () => { d().draft = null; this.render(); });
     root.querySelector("[data-crit-save]")?.addEventListener("click", () => this.saveCriteria());
     root.querySelector("[data-crit-add]")?.addEventListener("click", () => { d().draft.push({ targets: [{ entity_id: "", state: "" }], within: 10, hold: 0 }); this.render(); });
@@ -12345,8 +12368,10 @@ Object.assign(TEXT.en, {
 class TraceDiagMixin {
   async loadDiagExtras(entityId) {
     const d = this.diagState();
-    try { d.coverage = { ...(d.coverage || {}), [entityId]: await this._hass.callWS({ type: "ha_housekeeper/coverage", entity_id: entityId }) }; } catch (_) { /* section stays empty */ }
-    try { d.compare = { runs: (await this._hass.callWS({ type: "ha_housekeeper/trace_compare", entity_id: entityId })).runs, a: "", b: "", result: null, error: "" }; } catch (_) { d.compare = { runs: [], a: "", b: "", result: null, error: "" }; }
+    d.covError = "";
+    try { d.coverage = { ...(d.coverage || {}), [entityId]: await this._hass.callWS({ type: "ha_housekeeper/coverage", entity_id: entityId }) }; } catch (err) { d.covError = this.t("actionFailed", { detail: this.errText(err) }); }
+    // A failed load says so: "no finished runs" would be a statement about Home Assistant that is not known.
+    try { d.compare = { runs: (await this._hass.callWS({ type: "ha_housekeeper/trace_compare", entity_id: entityId })).runs, a: "", b: "", result: null, error: "" }; } catch (err) { d.compare = { runs: [], a: "", b: "", result: null, error: this.t("actionFailed", { detail: this.errText(err) }) }; }
     this.render();
   }
 
@@ -12355,13 +12380,13 @@ class TraceDiagMixin {
   }
 
   async setCoverage(enabled, clear = false) {
-    await this._hass.callWS({ type: "ha_housekeeper/coverage_set", enabled, clear });
+    try { await this._hass.callWS({ type: "ha_housekeeper/coverage_set", enabled, clear }); } catch (err) { this.failed(err); return; }
     await this.loadDiagExtras(this.diagState().sel);
   }
 
   coverageCard(entityId) {
     const view = this.diagState().coverage?.[entityId];
-    if (!view) return "";
+    if (!view) return this.diagState().covError ? this.notice("err", this.diagState().covError) : "";
     const toggle = view.enabled ? `<button class="btn" data-cov-set="off">${this.t("covOff")}</button><button class="btn quiet" data-cov-clear>${this.t("covClear")}</button>` : `<button class="btn" data-cov-set="on">${this.t("covOn")}</button>`;
     let body = `<div class="pad"><small>${this.t("covOffNote")}</small></div>`;
     if (view.enabled) {
@@ -12934,11 +12959,13 @@ class BatteryCareMixin {
     const tools = items.length ? `<div class="toolbar${n ? "" : " nosel"}">${this.selTools("reminders", n, "data-rem-clear")}<span class="toolgap"></span>${n ? `<button type="button" class="btn" data-rem-done-picked><ha-icon icon="mdi:check"></ha-icon>${this.t("remDoneN", { n: this.formatNumber(n) })}</button>` : ""}</div>` : "";
     const table = !items.length ? `<div class="emptymsg"><ha-icon icon="mdi:calendar-clock-outline"></ha-icon>${this.t("remEmpty")}</div>`
       : rows.length ? this.listTable("reminders", this.reminderColumns(pg.rows), pg.rows, { cls: "rem", rowAttrs: r => `data-rem-row="${this.esc(r.id)}" tabindex="0" role="button" aria-expanded="${(this.remOpen || []).includes(r.id)}"`, after: r => this.reminderHistory(r) }) : `<div class="emptymsg">${this.noMatches("reminders")}</div>`;
-    return `${tiles}<div class="panel">${head}${bar}${tools}${table}${pg.footer}</div>`;
+    return `${tiles}<div class="panel">${head}${bar}${tools}${this.remError && !this.remDraft ? this.notice("err", this.remError) : ""}${table}${pg.footer}</div>`;
   }
 
   // Marks the picked reminders as done, one request each; the list shows the answer of the last one.
-  async remDonePicked() {
+  remDonePicked() { return this.onlyOnce("reminder", () => this.remDonePickedNow()); }
+
+  async remDonePickedNow() {
     const sel = this.remSel || new Set();
     this.remError = "";
     for (const id of [...sel]) {
@@ -12948,7 +12975,9 @@ class BatteryCareMixin {
     this.render();
   }
 
-  async reminderCall(msg) {
+  reminderCall(msg) { return this.onlyOnce("reminder", () => this.reminderCallNow(msg)); }
+
+  async reminderCallNow(msg) {
     this.remError = "";
     try { const reply = await this._hass.callWS({ type: "ha_housekeeper/reminder_set", ...msg }); this.data.reminders = reply.reminders; if (msg.action === "save") this.remDraft = null; }
     catch (err) { this.remError = this.t("remInvalid", { field: String(err?.message || err).replace(/^Not accepted: /, "") }); }
@@ -13839,8 +13868,8 @@ class FindingStatusMixin {
     if (!ids.length) { b.error = "labelNoEntities"; this.render(); return; }
     const label = b.label || (this.data.objects || []).find(o => o.object_type === "label")?.object_id;
     try {
-      if (!await this.newPlan(ids.map(object_id => ({ kind: "add_label", object_id, target: label })))) return;
-      this.bulk = null; this.findSel.clear();
+      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "add_label", object_id, target: label })))) return;
+      this.bulk = null; if (ids.length <= MAX_PLAN_ACTIONS) this.findSel.clear();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }
@@ -14179,7 +14208,7 @@ class DetailActionsMixin {
     if (kind === "replace_references" || kind === "migrate_meter") {
       const inner = fill, how = kind === "migrate_meter" ? "replace_statistics" : "";
       kind = "replace_wizard";
-      fill = () => { inner(); this.rwState().single = true; this.replHow = how; };
+      fill = () => { inner(); this.rwState().single = true; this.replHow = how; this.rwOld = ""; this.rwRec = ""; };
     }
     this.noteJump?.("cleanup");
     this.cleanupKind = kind; this.cleanupSel = new Set(); this.plan = null; fill();
@@ -14209,7 +14238,7 @@ class DetailActionsMixin {
   async planDisableMany(ids) {
     if (!ids.length) return;
     try {
-      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "disable_entity", object_id })))) return;
+      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "disable_entity", object_id })))) return;
       this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();
@@ -14219,7 +14248,7 @@ class DetailActionsMixin {
   async planRemoveMany(ids) {
     if (!ids.length) return;
     try {
-      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "remove_entity", object_id })))) return;
+      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "remove_entity", object_id })))) return;
       this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();
@@ -14705,7 +14734,9 @@ class EntityTrimMixin {
   // The window of a stretch in epoch seconds: the first day from 00:00, the last day to its end (exclusive end = next midnight).
   entityTrimRange(e) {
     if (!e.from || !e.to) return null;
-    const from = new Date(`${e.from}T00:00:00`).getTime() / 1000, to = new Date(`${e.to}T00:00:00`).getTime() / 1000 + 86400;
+    const day = new Date(`${e.to}T00:00:00`), from = new Date(`${e.from}T00:00:00`).getTime() / 1000;
+    // The end is the next local midnight (not 24 hours: a day with a clock change has 23 or 25), and never later than now.
+    const to = Math.min(new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1).getTime() / 1000, Math.floor(Date.now() / 1000));
     return from < to ? { from, to } : null;
   }
 
@@ -14722,7 +14753,7 @@ class EntityTrimMixin {
   entityTrimBody(item) {
     const id = item.object_id, data = this.entityRec?.[id]?.data;
     if (!data) return null;
-    const e = this.entityTrimState(id), date = ts => this.esc(this.formatDate(new Date(ts * 1000).toISOString()).split(",")[0]);
+    const e = this.entityTrimState(id), date = ts => this.esc(this.formatDay(new Date(ts * 1000).toISOString()));
     const kinds = ET_TABLES.map(([table, label, hint, key]) => {
       const part = data[key] || { rows: 0 }, none = !part.rows, on = e.tables.has(table) && !none;
       return `<label class="etkind${none ? " none" : ""}"><input type="checkbox" data-et-table="${table}" ${on ? "checked" : ""} ${none ? "disabled" : ""}><span><strong>${this.t(label)}</strong><small>${this.t(hint)}</small></span><span class="etnum">${none ? this.t("etNone") : `<b>${this.t("etRows", { count: this.formatNumber(part.rows) })}</b><small>${this.t("etOldest", { date: date(part.first) })}</small>`}</span></label>`;
@@ -14765,7 +14796,7 @@ class EntityTrimMixin {
     const names = { states: "etStates", short_term: "etShort", long_term: "etLong" };
     const what = a.tables?.length ? `${a.tables.map(t => this.t(names[t])).join(", ")} · ` : "";
     if (a.range) {
-      const day = ts => this.formatDate(new Date(ts * 1000).toISOString()).split(",")[0];
+      const day = ts => this.formatDay(new Date(ts * 1000).toISOString());
       return what + this.t("etSubRange", { from: day(a.range.from), to: day(a.range.to - 86400), rows });
     }
     return what + this.t("etSubOlder", { days: a.keep_days, rows });
@@ -15166,6 +15197,7 @@ class EntitySpaceMixin {
     this._spaceRequested = true;
     try { this.space = await this._hass.callWS({ type: "ha_housekeeper/entity_space", ...(mode ? { [mode]: true } : {}) }); this.spaceError = ""; }
     catch (err) { this.spaceError = this.errText(err); }
+    if (this._gone) return;
     this.render();
     globalThis.clearTimeout?.(this._spaceTimer);
     if (this.space?.running) this._spaceTimer = setTimeout(() => this.loadSpace(), 2000);
@@ -15594,15 +15626,16 @@ class ExcludeMixin {
       <div class="trimfacts"><div><strong>${this.t("trimFactStats")}</strong><small>${this.t("trimFactStatsSub")}</small></div><div><strong>${this.t("trimFactRows")}</strong><small>${this.t("trimFactRowsSub")}</small></div></div>` : "";
     return `<div class="trimbox"><div class="trimhead"><div><h3>${this.t("trimTitle")}</h3><p class="factnote">${this.t("trimHint")}</p></div><span class="pill mute">${all === 1 ? this.t("trimChosenOne") : this.t("trimChosen", { count: all })}</span></div>
       <div class="trimsentence"><strong>${this.t("trimKeep")}</strong><span class="trimseg" role="radiogroup">${seg}</span></div>${timeline}
-      <div class="trimfoot"><p class="factnote">${this.t("trimFoot")}</p><span class="trimbtns"><button type="button" class="btn quiet" data-trim-cancel>${this.t("cancelRun")}</button><button class="btn primary" data-trim-plan ${this.trimBusy ? 'disabled aria-busy="true"' : ""}>${this.trimBusy ? this.t("trimBusy") : n === 1 ? this.t("trimPreviewOne") : this.t("trimPreview", { count: n })}</button></span></div>${this.trimError ? `<p class="factnote" role="alert">${this.esc(this.t("trimFailed", { detail: this.trimError }))}</p>` : ""}</div>`;
+      <div class="trimfoot"><p class="factnote">${this.t("trimFoot")}</p>${all > MAX_PLAN_ACTIONS ? `<p class="factnote">${this.t("purgeChunk", { n: this.formatNumber(all), max: MAX_PLAN_ACTIONS, rest: this.formatNumber(all - MAX_PLAN_ACTIONS) })}</p>` : ""}<span class="trimbtns"><button type="button" class="btn quiet" data-trim-cancel>${this.t("cancelRun")}</button><button class="btn primary" data-trim-plan ${this.trimBusy ? 'disabled aria-busy="true"' : ""}>${this.trimBusy ? this.t("trimBusy") : n === 1 ? this.t("trimPreviewOne") : this.t("trimPreview", { count: n })}</button></span></div>${this.trimError ? `<p class="factnote" role="alert">${this.esc(this.t("trimFailed", { detail: this.trimError }))}</p>` : ""}</div>`;
   }
 
   async trimPlan() {
     this.trimBusy = true; this.trimError = ""; this.render();
     try {
       const keep_days = this.trimDays || 14;
-      const actions = [...this.excludeSel].slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "trim_history", object_id, keep_days }));
+      const chosen = [...this.excludeSel], actions = chosen.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "trim_history", object_id, keep_days }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.excludeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS));
       this.openNewPlan(plan);
     } catch (err) { this.trimError = this.errText(err); }
     this.trimBusy = false;
@@ -15843,7 +15876,8 @@ class ExceptionsMixin {
   async loadExceptions() {
     if (this._excLoading) return;
     this._excLoading = true;
-    try { this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" }); } catch (err) { this.failed(err); this.exc = this.exc || { rules: [], areas: [], labels: [] }; }
+    // A failed load leaves no rules behind: an empty list would be saved over the real ones with the next rule.
+    try { this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" }); this._excLoadError = null; } catch (err) { this.failed(err); this._excLoadError = this.errText(err); }
     this._excLoading = false;
     this.render();
   }
@@ -15882,9 +15916,10 @@ class ExceptionsMixin {
       allBox: () => { const n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-exc-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
       cell: rule => `<input type="checkbox" class="selbox" data-exc-sel="${this.esc(rule.id)}" ${sel.has(rule.id) ? "checked" : ""} aria-label="${this.esc(this.excRuleName(rule))}">` };
     const columns = [pick, ...this.excRuleCells(rules[0]).map((c, i) => ({ key: c.key, label: c.label, sortable: false, narrow: c.narrow, cell: rule => this.excRuleCells(rule)[i].cell() }))];
-    const n = ids.filter(k => sel.has(k)).length, count = this.formatNumber(n), btn = (attr, icon, label) => `<button type="button" class="btn" ${attr} ${n ? "" : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(label, { n: count })}</button>`;
+    const n = ids.filter(k => sel.has(k)).length, count = this.formatNumber(n), btn = (attr, icon, label) => `<button type="button" class="btn" ${attr} data-exc-scope="${scope}" ${n ? "" : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(label, { n: count })}</button>`;
     const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools(id, n, "data-exc-selclear")}<span class="toolgap"></span>${btn('data-exc-bulk="on"', "mdi:toggle-switch-outline", "excOnN")}${btn('data-exc-bulk="off"', "mdi:toggle-switch-off-outline", "excOffN")}${scope === "always" ? btn('data-exc-bulk="renew"', "mdi:calendar-refresh-outline", "excRenewN") : ""}${btn('data-exc-bulk="delete"', "mdi:delete-outline", "excDeleteN")}</div>`;
-    return `${rules.length > 1 ? tools : ""}${this.listTable(id, columns, rules, { cls: "excrules", rowAttrs: () => 'class="static"' })}`;
+    const shown = this.selOnlyOn(id, n) ? rules.filter(r => sel.has(r.id)) : rules;
+    return `${rules.length > 1 ? tools : ""}${this.listTable(id, columns, shown, { cls: "excrules", rowAttrs: () => 'class="static"' })}`;
   }
 
   // Nothing yet in this group: the same empty state as the reminders, with the way to the first rule.
@@ -15942,6 +15977,7 @@ class ExceptionsMixin {
 
   // The page "Exceptions": the rules (with the labels), the vacation mode, the decisions about findings and the notes on objects.
   exceptionsView() {
+    if (!this.exc && this._excLoadError) return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad">${this.notice("err", this.t("actionFailed", { detail: this._excLoadError }))}<button class="btn" data-exc-reload>${this.t("actRetry")}</button></div></section>`;
     if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
     const v = this.exc.vacation || {};
     const state = !v.entity ? "vacStateNone" : v.state === "on" ? "vacStateOn" : v.state && v.state !== "unavailable" && v.state !== "unknown" ? "vacStateOff" : "vacStateMissing";
@@ -16090,6 +16126,7 @@ class ExceptionsMixin {
   }
 
   openException(id, scope) {
+    if (!this.exc) return;
     const rule = this.exc.rules.find(r => r.id === id);
     this.excForm = rule ? { id, kind: rule.kind, targets: [...rule.targets], picks: [], action: rule.action, scope: rule.scope || "always", search: "", days: rule.days || 7, enabled: rule.enabled, note: rule.note || "", error: "", preview: null, review: rule.review_days || 0, reviewWas: rule.review_days || 0, reviewAt: rule.review_at || null }
       : { id: "", kind: "any", targets: [], picks: [], action: "hide", scope: scope || "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, review: 180, reviewWas: 0, reviewAt: null };
@@ -16101,6 +16138,7 @@ class ExceptionsMixin {
   // areas and integrations, so a rule can reach beyond the object. Other kinds are set in the settings.
   async openExceptionFor(objectKeys) {
     if (!this.exc) await this.loadExceptions();
+    if (!this.exc) return;
     const objects = objectKeys.map(key => this.findObject(key)).filter(Boolean);
     const device = o => (o.object_type === "device" ? o : o.device_id ? this.findObject(`device:${o.device_id}`) : null);
     const named = (list, id) => (list || []).find(x => x.id === id)?.name || id;
@@ -16153,6 +16191,8 @@ class ExceptionsMixin {
   // whether it was saved.
   saveExceptions(rules, form) {
     const run = async () => {
+      if (!this.exc) await this.loadExceptions();
+      if (!this.exc) return false;
       const next = typeof rules === "function" ? rules(this.excRules()) : rules;
       let saved = false;
       try {
@@ -16176,12 +16216,15 @@ class ExceptionsMixin {
     if (!(f.kind === "any" ? f.picks.length : f.targets.length)) { f.error = this.t("excNeedTarget"); this.render(); return; }
     const max = this.exc.days_max || 365, days = Number(f.days);
     if (f.scope !== "vacation" && f.action === "delay" && !(Number.isInteger(days) && days >= 1 && days <= max)) { f.error = this.t("excDaysInvalid", { max }); this.render(); return; }
-    const drafts = this.excDrafts(f), rules = this.excRules();
+    const drafts = this.excDrafts(f);
     if (f.scope !== "vacation" && f.action === "hide" && drafts.some(d => d.kind === "domain") && !f.note.trim()) { f.error = this.t("excNoteNeeded"); this.render(); return; }
-    const at = rules.findIndex(r => r.id === f.id);
-    if (at >= 0 && f.kind !== "any") rules[at] = drafts[0];
-    else { if (at >= 0) rules.splice(at, 1); rules.push(...drafts); }
-    this.saveExceptions(rules, f);
+    // The rules are taken when this save is its turn, so a switch flipped a moment ago is not sent back as it was.
+    this.saveExceptions(current => {
+      const rules = [...current], at = rules.findIndex(r => r.id === f.id);
+      if (at >= 0 && f.kind !== "any") rules[at] = drafts[0];
+      else { if (at >= 0) rules.splice(at, 1); rules.push(...drafts); }
+      return rules;
+    }, f);
   }
 
   bindExceptions(root) {
@@ -16205,9 +16248,11 @@ class ExceptionsMixin {
     const excSel = () => (this.excSel ||= new Set());
     root.querySelectorAll("[data-exc-sel]").forEach(el => el.onchange = () => { this.pickRows("exc", el.dataset.excSel, el.checked, excSel(), [...root.querySelectorAll("[data-exc-sel]")].map(x => x.dataset.excSel)); this.render(); });
     root.querySelectorAll("[data-exc-page]").forEach(box => { box.indeterminate = box.hasAttribute("data-partial"); box.onchange = ev => { box.closest("table").querySelectorAll("[data-exc-sel]").forEach(x => (ev.target.checked ? excSel().add(x.dataset.excSel) : excSel().delete(x.dataset.excSel))); this.render(); }; });
+    root.querySelectorAll("[data-exc-reload]").forEach(el => el.onclick = async () => { this._excLoadError = null; await this.loadExceptions(); });
     root.querySelectorAll("[data-exc-selclear]").forEach(el => el.onclick = () => { excSel().clear(); this.render(); });
     root.querySelectorAll("[data-exc-bulk]").forEach(el => el.onclick = () => {
-      const mode = el.dataset.excBulk, sel = excSel(), ids = new Set(sel);
+      // Only the rules of the table the button belongs to: the other group keeps its own ticks.
+      const mode = el.dataset.excBulk, sel = excSel(), inScope = new Set((this.exc?.rules || []).filter(r => (r.scope || "always") === el.dataset.excScope).map(r => r.id)), ids = new Set([...sel].filter(id => inScope.has(id)));
       const apply = all => (mode === "delete" ? all.filter(r => !ids.has(r.id)) : all.map(r => (!ids.has(r.id) ? r : mode === "renew" ? (r.action === "hide" && (r.scope || "always") === "always" ? { ...r, review_at: null } : r) : { ...r, enabled: mode === "on" })));
       const run = async () => { if (await this.saveExceptions(apply, null) && mode === "delete") { ids.forEach(id => sel.delete(id)); this.render(); } };
       if (mode === "delete") this.confirmAsk(this.t("confirmExcRules", { count: ids.size }), run); else run();
@@ -17024,7 +17069,9 @@ class NotesMixin {
     this.render();
   }
 
-  async noteSave() {
+  noteSave() { return this.onlyOnce("noteSave", () => this.noteSaveNow()); }
+
+  async noteSaveNow() {
     const d = this.noteDraft;
     if (!d) return;
     const title = d.title.trim();
@@ -17434,7 +17481,7 @@ class BatteryTypeMixin {
       const choices = this.batteryTypeChoices();
       const known = !type || choices.includes(type) || isRecharge(type);
       const options = this.batteryTypeOptions(type);
-      return `<span class="btedit"><label class="factnote" for="hk-bt-type">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select id="hk-bt-type" data-bt-type-select><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn accent" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
+      return `<span class="btedit"><label class="factnote">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select data-bt-type-select aria-label="${this.esc(this.t("btTypeLabel", { name: this.batteryLabel(entityId) }))}"><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn accent" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
     }
     return `<span class="btctl">${type ? `<span class="pill">${this.esc(this.batteryTypeLabel(type))}</span>` : `<span class="pill mute">${this.t("btTypeNone")}</span>`}<button class="btn quiet" data-bt-type="${this.esc(entityId)}">${this.t("btTypeSet")}</button></span>`;
   }
@@ -17444,7 +17491,7 @@ class BatteryTypeMixin {
     if (!found.length) return "";
     const rows = found.map(r => {
       const name = this.batteryLabel(r.entity_id);
-      const date = this.formatDate(`${r.day}T12:00:00Z`).split(",")[0];
+      const date = this.formatDay(`${r.day}T12:00:00Z`);
       return `<div class="btrepl"><ha-icon icon="mdi:battery-sync-outline"></ha-icon><span class="row-text"><strong>${this.esc(this.t("btReplLine", { name, date }))}</strong><small>${this.t("btReplLevels", { from: r.from, to: r.to })}</small></span><button class="btn accent" data-bt-enter="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplEnter")}</button>${this.rowMenuHtml([["mdi:close", "btReplDismiss", `data-bt-dismiss="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}"`]])}</div>`;
     }).join("");
     return `<div class="btsuggest"><h3>${this.t("btReplTitle")}</h3><p class="factnote">${this.t("btReplHint")}</p>${rows}<p class="factnote">${this.t("btReplNote")}</p>${this.btMessage ? `<p class="factnote" role="status">${this.esc(this.btMessage)}</p>` : ""}</div>`;
@@ -17487,7 +17534,9 @@ class BatteryTypeMixin {
     this.render();
   }
 
-  async batterySettle(entityId, day, action) {
+  batterySettle(entityId, day, action) { return this.onlyOnce(`battery:${entityId}:${day}`, () => this.batterySettleNow(entityId, day, action)); }
+
+  async batterySettleNow(entityId, day, action) {
     const name = this.batteryLabel(entityId);
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/battery_replaced", entity_id: entityId, day, action, name, title: this.t("btReplTitleEntry", { name }).slice(0, 80), note: "" });
@@ -17500,16 +17549,17 @@ class BatteryTypeMixin {
 
   bindBatteryType(root) {
     root.querySelectorAll("[data-bt-type]").forEach(el => el.addEventListener("click", () => { this.btEdit = el.dataset.btType; this.render(); }));
-    root.querySelector("[data-bt-type-cancel]")?.addEventListener("click", () => { this.btEdit = ""; this.render(); });
-    root.querySelector("[data-bt-type-select]")?.addEventListener("change", e => {
-      const custom = root.querySelector("[data-bt-type-custom]");
+    // The editor can stand in two tables at once (the forecast and "all batteries"): each one works on its own fields.
+    root.querySelectorAll("[data-bt-type-cancel]").forEach(el => el.addEventListener("click", () => { this.btEdit = ""; this.render(); }));
+    root.querySelectorAll("[data-bt-type-select]").forEach(select => select.addEventListener("change", e => {
+      const custom = select.closest(".btedit")?.querySelector("[data-bt-type-custom]");
       if (custom) { custom.hidden = e.target.value !== "__custom"; if (!custom.hidden) custom.focus(); }
-    });
-    root.querySelector("[data-bt-type-save]")?.addEventListener("click", e => {
-      const select = root.querySelector("[data-bt-type-select]"), custom = root.querySelector("[data-bt-type-custom]");
+    }));
+    root.querySelectorAll("[data-bt-type-save]").forEach(button => button.addEventListener("click", () => {
+      const box = button.closest(".btedit"), select = box?.querySelector("[data-bt-type-select]"), custom = box?.querySelector("[data-bt-type-custom]");
       const value = select?.value === "__custom" ? (custom?.value || "") : (select?.value || "");
-      this.batterySetType(e.currentTarget.dataset.btTypeSave, value);
-    });
+      this.batterySetType(button.dataset.btTypeSave, value);
+    }));
     root.querySelector("[data-bt-ct-add]")?.addEventListener("click", () => {
       const value = (root.querySelector("[data-bt-ct-new]")?.value || "").trim();
       if (value) this.batteryCustomEdit("add", value);
@@ -17563,7 +17613,7 @@ class CriteriaHistoryMixin {
       return `<i class="${c && c[1] ? "m" : ""}" style="height:${total ? Math.max(8, Math.round(total / peak * 100)) : 4}%"></i>`;
     }).join("");
     const stat = (big, small) => `<div><div class="big">${big}</div><small class="factnote">${small}</small></div>`;
-    return `${head}<div class="chcols">${stat(`${quota} %`, `${this.t("chQuota")}${ok7 + missed7 ? ` (${this.t("chQuota7", { percent: Math.round(ok7 / (ok7 + missed7) * 100) })})` : ""}`)}${stat(this.formatNumber(missed), this.t("chMissed", { days: range }))}${stat(lastMissed ? this.formatDate(`${lastMissed}T12:00:00Z`).split(",")[0] : this.t("chNever"), this.t("chLast"))}</div><div class="chbars" role="img" aria-label="${this.esc(this.t("chBars"))}">${bars}</div><div class="chaxis"><span>${this.t("chAxisFrom", { days: range })}</span><span>${this.t("chAxisTo")}</span></div>`;
+    return `${head}<div class="chcols">${stat(`${quota} %`, `${this.t("chQuota")}${ok7 + missed7 ? ` (${this.t("chQuota7", { percent: Math.round(ok7 / (ok7 + missed7) * 100) })})` : ""}`)}${stat(this.formatNumber(missed), this.t("chMissed", { days: range }))}${stat(lastMissed ? this.formatDay(`${lastMissed}T12:00:00Z`) : this.t("chNever"), this.t("chLast"))}</div><div class="chbars" role="img" aria-label="${this.esc(this.t("chBars"))}">${bars}</div><div class="chaxis"><span>${this.t("chAxisFrom", { days: range })}</span><span>${this.t("chAxisTo")}</span></div>`;
   }
 
   goalLine(finding) {
@@ -17672,7 +17722,7 @@ class BackupCleanupMixin {
     const columns = [
       { key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: rows => this.bkcHeadBox(rows), cell: r => `<input type="checkbox" class="selbox" data-bkc-sel="${this.esc(r.backup_id)}" ${sel.has(r.backup_id) ? "checked" : ""} ${r.protected ? "disabled" : ""} aria-label="${this.esc(r.name)}">` },
       { key: "name", label: "bkcColName", dir: "asc", cell: r => `<div class="statcell"><span class="tile ${r.protected ? "ok" : r.only_return ? "warn" : "mute"}"><ha-icon icon="mdi:backup-restore"></ha-icon></span><div>${this.nameCell(r.name, r.plan_id ? "" : this.t("bkcNoPlan"))}${r.only_return ? `<small class="bkcwarn"><ha-icon icon="mdi:alert-outline"></ha-icon>${this.t("bkcOnlyReturn")}</small>` : ""}</div></div>` },
-      { key: "date", label: "bhColDate", dir: "desc", cell: r => (r.date ? this.esc(this.formatDate(r.date).split(",")[0]) : "–") },
+      { key: "date", label: "bhColDate", dir: "desc", cell: r => (r.date ? this.esc(this.formatDay(r.date)) : "–") },
       { key: "size", label: "bhColSize", dir: "desc", cell: r => this.esc(this.formatBytes(r.size)) },
       { key: "db", label: "bkcColDb", dir: "desc", cell: r => this.t(r.with_database ? "bkcDb" : "bkcNoDb") },
       { key: "state", label: "bkcColState", dir: "asc", cell: r => (r.protected ? `<span class="pill ok">${this.t(`bkcProtected_${r.protected}`)}</span>` : r.age_days !== null && r.age_days !== undefined ? `<span class="pill ${r.suggested ? "" : "mute"}">${r.age_days ? this.t("bkcAge", { days: r.age_days }) : this.t("bkcToday")}</span>` : "–") },
@@ -17699,7 +17749,7 @@ class BackupCleanupMixin {
   // Optional: Housekeeper tidies up by the rule on its own. Off until switched on; switching on asks first.
   bkcAutoBlock(d) {
     const auto = d.auto || {};
-    const last = auto.last ? `<small>${this.t("bkcAutoLast", { count: this.formatNumber(auto.last.count), bytes: this.formatBytes(auto.last.bytes), date: this.formatDate(auto.last.at).split(",")[0] })}</small>` : "";
+    const last = auto.last ? `<small>${this.t("bkcAutoLast", { count: this.formatNumber(auto.last.count), bytes: this.formatBytes(auto.last.bytes), date: this.formatDay(auto.last.at) })}</small>` : "";
     return `<label class="optswitch"><input class="policyswitch" type="checkbox" role="switch" data-bkc-auto ${auto.enabled ? "checked" : ""} ${this.bkcBusy ? "disabled" : ""}><span><strong>${this.t("bkcAuto")}</strong><small>${this.t("bkcAutoHint")}</small>${last}</span></label>`;
   }
 
@@ -18414,9 +18464,9 @@ class BatteryTableMixin {
   batteryTable(rows) {
     const limit = this.data.meta.low_battery_percent ?? 20;
     this.lvState("batteries", "left", "asc");
-    const pg = this.paginate(`batteries-${this.batteryFilter}`, rows);
     const sel = (this.batSel ||= new Set());
     for (const id of [...sel]) if (!rows.some(r => r.item.object_id === id)) sel.delete(id);
+    const pg = this.paginate(`batteries-${this.batteryFilter}`, this.selOnlyOn("batteries", sel.size) ? rows.filter(r => sel.has(r.item.object_id)) : rows);
     const ids = pg.rows.map(r => r.item.object_id);
     const columns = [
       { key: "sel", label: "selectPage", narrow: true, sortable: false,
@@ -18515,7 +18565,7 @@ class BatteryTableMixin {
       { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item)) || `<span class="muted">${this.t("btNoArea")}</span>` },
       { key: "type", label: "btColType", sortable: false, cell: r => this.batteryTypeCell(r) }, // the same cell as in the list: a missing type is a button
       { key: "level", label: "btColLevel", sortable: false, cell: r => this.batteryLevelCell(r, this.data.meta.low_battery_percent ?? 20) },
-      { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDate(new Date(Date.now() + r.days * 86400000).toISOString()).split(",")[0])) },
+      { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDay(new Date(Date.now() + r.days * 86400000).toISOString()))) },
       { key: "left", label: "btColLeft", sortable: false, cell: r => this.batteryLeftCell(r) },
     ];
     const rowAttrs = r => `data-object="${this.esc(this.objectKey(r.item))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(r.item).title)}"`;
@@ -18811,7 +18861,7 @@ class SystemMixin {
   accRiskCell(e) {
     const why = this.accEntryWhy(e);
     const pill = e.known ? `<span class="pill mute"${why ? ` title="${this.esc(why)}"` : ""}>${this.t(`accRisk_${e.risk}`)}</span>` : this.accRiskPill(e.risk, why);
-    const known = e.known ? `<small class="u-dim u-block">${this.esc(this.t("accKnownSince", { date: this.formatDate(e.known.at).split(",")[0] }))}${e.known.reason ? ` · ${this.esc(e.known.reason)}` : ""}</small>` : "";
+    const known = e.known ? `<small class="u-dim u-block">${this.esc(this.t("accKnownSince", { date: this.formatDay(e.known.at) }))}${e.known.reason ? ` · ${this.esc(e.known.reason)}` : ""}</small>` : "";
     return `${pill}${known || (why ? `<small class="u-dim u-block">${this.esc(why)}</small>` : "")}`;
   }
 
@@ -20936,7 +20986,9 @@ class MonitorMixin {
     root.querySelector("[data-monitor-delete]")?.addEventListener("click", () => this.confirmAsk(this.t("monitorConfirmDelete", { name: this.monitorForm.name }), () => this.deleteMonitor()));
   }
 
-  async saveMonitor() {
+  saveMonitor() { return this.onlyOnce("monitorSave", () => this.saveMonitorNow()); }
+
+  async saveMonitorNow() {
     const form = this.monitorForm;
     const need = !form.name.trim() ? "monitorNeedName" : !form.members.length ? "monitorNeedMembers" : "";
     if (need) { this.monitorError = this.t(need); this.render(); return; }
@@ -20948,7 +21000,9 @@ class MonitorMixin {
     } catch (err) { this.monitorError = this.t("monitorSaveFailed", { reason: this.errText(err) }); this.render(); }
   }
 
-  async deleteMonitor() {
+  deleteMonitor() { return this.onlyOnce("monitorSave", () => this.deleteMonitorNow()); }
+
+  async deleteMonitorNow() {
     try {
       const response = await this._hass.callWS({ type: "ha_housekeeper/monitor_delete", function_id: this.monitorForm.id });
       this.data.monitor = response.functions; delete this.monitorHistory?.[this.monitorForm.id]; this.monitorSelected = null; this.monitorForm = null; this.monitorError = ""; this.render();
@@ -21210,6 +21264,8 @@ class ObjectGroupsMixin {
 // FixMixin: the page "Fix" (Beheben) of one finding: understand, decide, carry out, check. A page of its own without a
 // menu entry; "back" returns to the list with its selection and scroll position. It names the ways and opens the
 // existing steps (plan with preview, links into Home Assistant, marks, exits); it changes nothing by itself.
+// The ways that act on the object itself: they are shown as its plans; every other way has a card of its own.
+const FIX_OBJECT_WAYS = ["reload", "exchange", "replace_entity", "object_actions"];
 const FIX_WATCH_MS = 15 * 60 * 1000, FIX_WATCH_STEP_MS = 30 * 1000;
 class FixMixin {
   // "Fix all n": the page of a missing target; its follow-ups are the places that name it. One of them stands for the page.
@@ -21223,6 +21279,8 @@ class FixMixin {
 
   openFix(key, all = "") {
     this.noteJump("fix");
+    // The page decides on its own selection; the one of the list waits for the way back.
+    if (this.view !== "fix") { this._findSelBack = this.findSel; this.findSel = new Set(); }
     this.fixAll = all;
     this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
     this.fixStep = 1; this.fixMax = 1; this.fixPreselect = Boolean(all);
@@ -21353,7 +21411,7 @@ class FixMixin {
       const sorted = [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended));
       const entries = [];
       for (const w of sorted) {
-        if (w.kind === "panel" && object && w.way !== "mark") { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
+        if (FIX_OBJECT_WAYS.includes(w.way) && object) { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
         else entries.push({ html: this.fixWayCard(w, f) });
       }
       if (!entries.length) list = `<p class="factnote">${this.t("fixNoWays")}</p>`;
@@ -21374,11 +21432,11 @@ class FixMixin {
     if (!cause) return "";
     const below = this.data.findings.filter(x => !x.ignored && (this.fixAll || x.key !== f.key) && this.causeKeys(cause.id).has(x.key));
     if (below.length < 2) return "";
-    const rows = below.map(x => `<label class="row"><input type="checkbox" data-fix-pick="${this.esc(x.key)}" ${this.findSel.has(x.key) ? "checked" : ""}><span class="row-text"><strong>${this.esc(this.findObject(this.findingKey(x))?.name || x.object_id)}</strong><small>${this.esc(this.findingTitle(x))}</small></span></label>`).join("");
     if (this.fixPreselect) { this.fixPreselect = false; below.forEach(x => this.findSel.add(x.key)); }
+    const rows = below.map(x => `<label class="row"><input type="checkbox" data-fix-pick="${this.esc(x.key)}" ${this.findSel.has(x.key) ? "checked" : ""}><span class="row-text"><strong>${this.esc(this.findObject(this.findingKey(x))?.name || x.object_id)}</strong><small>${this.esc(this.findingTitle(x))}</small></span></label>`).join("");
     const picked = below.filter(x => this.findSel.has(x.key)).length, off = picked ? "" : "disabled";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("fixCollectTitle")}</h2><p>${picked ? this.t("fixPickCount", { picked, total: below.length }) : this.t("fixPickNone")}</p></div></div>${rows}
-      <div class="fixpickbar"><button type="button" class="btn quiet" data-fix-pick-all="${this.esc(below.map(x => x.key).join("|"))}">${this.t("fixPickAll")}</button><span class="fixpickact"><button type="button" class="btn" data-fsel-state="status" ${off}>${this.t("actDecide")}</button><button type="button" class="btn" data-fsel-state="mark" ${off}>${this.t("markSet")}</button></span></div>${this.bulkForm()}</section>`;
+      <div class="fixpickbar"><button type="button" class="btn quiet" data-fix-pick-all="${this.esc(JSON.stringify(below.map(x => x.key)))}">${this.t("fixPickAll")}</button><span class="fixpickact"><button type="button" class="btn" data-fsel-state="status" ${off}>${this.t("actDecide")}</button><button type="button" class="btn" data-fsel-state="mark" ${off}>${this.t("markSet")}</button></span></div>${this.bulkForm()}</section>`;
   }
 
   // Step 4: a quick look at the object for 15 minutes, then the next regular scan decides; a whole new scan is the second button.
@@ -21416,6 +21474,8 @@ class FixMixin {
   fixView() {
     const f = this.data?.findings?.find(x => x.key === this.fixKey);
     const step = (n, title, body) => `<section class="panel fccard fixcard"><div class="pad"><small class="fceyebrow">${this.t("fixStepOf", { n })}</small><h3>${this.t(title)}</h3><div class="fixbody">${body}</div></div></section>`;
+    // The plan of this page outlives its finding: once it has fixed it, the result and "undo" stay until the plan is closed.
+    if (!f && this.fcPlanKey && this.plan) return `<div class="stack">${this.fcPlanBlock()}</div>`;
     if (!f) return `<div class="stack">${step(3, "fixStepCheck", `${this.fixCheckedFrom ? this.notice("info", this.t("fixDone")) : this.notice("info", this.t("fixGone"))}`)}<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div></div>`;
     const cur = Math.min(this.fixStep || 1, this.fixMax || 1), max = this.fixMax || 1, planOpen = Boolean(this.fcPlanKey && this.plan);
     const names = ["fixStepUnderstand", "fixStepRun", "fixStepCheck"];
@@ -21458,7 +21518,7 @@ class FixMixin {
       catch (err) { this.failed(err); }
     }), { yes: this.t("fixRefactorOnYes"), danger: false }));
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
-    root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { el.dataset.fixPickAll.split("|").forEach(k => this.findSel.add(k)); this.render(); });
+    root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { JSON.parse(el.dataset.fixPickAll).forEach(k => this.findSel.add(k)); this.render(); });
     root.querySelectorAll("[data-fix-work-off]").forEach(el => el.onclick = () => this.fixWork(false));
     root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-remove-all],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-look],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
     root.querySelectorAll("[data-fix-look]").forEach(el => el.onclick = () => this.startFixWatch());
@@ -22036,7 +22096,7 @@ class RoundMixin {
   roundGroup(title, hint, rows, picked, withAll) {
     if (!rows.length) return "";
     const keys = rows.filter(r => r.kind !== "merge" && r.group !== "blocked").map(r => r.finding_key);
-    const all = withAll && keys.length ? `<button type="button" class="btn" data-round-all="${this.esc(keys.join("|"))}">${this.t("roundPickAll")}</button>` : "";
+    const all = withAll && keys.length ? `<button type="button" class="btn" data-round-all="${this.esc(JSON.stringify(keys))}">${this.t("roundPickAll")}</button>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t(title)} (${this.formatNumber(rows.length)})</h2><p>${this.t(hint)}</p></div>${all}</div>${rows.map(r => this.roundRow(r, picked)).join("")}</section>`;
   }
 
@@ -22074,7 +22134,7 @@ class RoundMixin {
 
   bindRound(root) {
     root.querySelectorAll("[data-round-pick]").forEach(el => el.onchange = () => { if (el.checked) this.round.picked.add(el.dataset.roundPick); else this.round.picked.delete(el.dataset.roundPick); this.render(); });
-    root.querySelectorAll("[data-round-all]").forEach(el => el.onclick = () => { el.dataset.roundAll.split("|").forEach(k => this.round.picked.add(k)); this.render(); });
+    root.querySelectorAll("[data-round-all]").forEach(el => el.onclick = () => { JSON.parse(el.dataset.roundAll).forEach(k => this.round.picked.add(k)); this.render(); });
     root.querySelectorAll("[data-round-one]").forEach(el => el.onclick = () => this.roundPlan([el.dataset.roundOne]));
     root.querySelector("[data-round-plan]")?.addEventListener("click", () => this.roundPlan([...this.round.picked]));
     root.querySelectorAll("[data-round-merge]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.roundMerge; this.replNew = el.dataset.roundInto; }));
@@ -23313,7 +23373,7 @@ class FcRecommendMixin {
     // "Fix" is only recommended where Housekeeper has a way to fix it; an outage it cannot repair gets the mark instead.
     const fixable = this.fcFixable(f, key), obj = this.findObject(key);
     // Where the only way is the auto-pause, the answer names it instead of a plain "Fix".
-    const pauseOnly = fixable && obj?.object_type === "config_entry" && !this.fixItems(obj, key).items.some(it => it.plan);
+    const pauseOnly = fixable && f.rule_id === "config_entry.not_loaded" && obj?.object_type === "config_entry" && !this.fixItems(obj, key).items.some(it => it.plan);
     const fix = body => (pauseOnly ? { act: "fix", head: t("fcRecPause"), body: t("fcRecPauseText") } : { act: "fix", head: t("fcRecFix"), body });
     const instead = body => (this.fcCanMark(obj) ? { act: "mark", head: t("fcRecTake"), body } : { act: "later", head: t("fcRecLater"), body });
     const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
@@ -23369,7 +23429,7 @@ class FcRecommendMixin {
     const items = this.fixItems(obj, key).items;
     // The ways of the finding itself (replace the target, remove the reference, catch the error), as on the page Fix.
     const finding = this.data?.findings?.find(x => x.key === this.fixKey && (this.findingKey(x) === key || this.ownerKey(x) === key));
-    const own = finding && this.fixWays ? this.fixWays.filter(w => w.kind !== "panel" && w.way !== "mark").map(w => this.fixWayCard(w, finding)).join("") : "";
+    const own = finding && this.fixWays ? this.fixWays.filter(w => !FIX_OBJECT_WAYS.includes(w.way) && w.way !== "mark").map(w => this.fixWayCard(w, finding)).join("") : "";
     const rows = items.map(it => this.fcWayRow(it, key)).join("") + own;
     if (finding && !this.fcFixable(finding, key)) return this.fcCheckBlock(finding, rows);
     return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${rows ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
@@ -23402,11 +23462,15 @@ class FcRecommendMixin {
     this.planBusy = false; this.render();
   }
 
-  async fcPlanRun() {
-    if (!this.plan || this.cleanupBusy) return;
-    await this.confirmAndRun();
-    if (this.cleanupError) this.fcPlanError = this.cleanupError;
-    this.render();
+  // The same question as on the plan page: what runs, the warning for a large removal, and a red button for what cannot come back.
+  fcPlanRun() {
+    if (!this.plan || this.cleanupBusy || this.modeBlocked(this.plan).length) return;
+    const run = this.runActions(this.plan), risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
+    this.confirmAsk(this.confirmSummary(this.plan, run.length), async () => {
+      await this.confirmAndRun();
+      if (this.cleanupError) this.fcPlanError = this.cleanupError;
+      this.render();
+    }, { title: this.t("confirmRunTitle"), yes: this.t("runNow"), danger: risky, warn: this.largeRemovalWarning(this.plan) });
   }
 
   async fcPlanDrop() {
@@ -23429,12 +23493,13 @@ class FcRecommendMixin {
     const used = acts.reduce((n, a) => n + (a.used_by || []).length, 0);
     const error = this.fcPlanError ? `<div class="error">${this.esc(this.fcPlanError)}</div>` : "";
     const changed = this.planChanges?.length ? `<p class="fcfacts">${t("planChangedTitle")}</p>` : "";
+    const blocked = this.modeBlocked(plan);
     let head, body, btns;
     const drop = (label = "confirmCancel") => `<button type="button" class="btn" data-fc-plan-drop>${t(label)}</button>`;
     if (status === "dry_run") {
       head = t("fcPlanPreviewHead");
-      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${t("planUses", { count: used })}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}`;
-      btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
+      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${t("planUses", { count: used })}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}${blocked.length ? this.modeHint(blocked) : ""}`;
+      btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy || blocked.length ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
     } else if (status === "backup" || status === "running" || (status === "executed" && !plan.verification)) {
       head = t("fcPlanRunning");
       body = `${this.planProgressBar()}<p class="fcfacts">${t(status === "backup" ? "backupRunning" : "fcPlanRunningText")}</p>`;
@@ -23507,7 +23572,7 @@ class HelperIoMixin {
   async exportHelpers(entryIds) {
     if (!entryIds.length) { this.toast(this.t("helperExportNone"), true); return; }
     try {
-      const file = await this._hass.callWS({ type: "ha_housekeeper/helper_export", entry_ids: entryIds.slice(0, 200) });
+      const file = await this._hass.callWS({ type: "ha_housekeeper/helper_export", entry_ids: this.capIds(entryIds, 200) });
       this.downloadText(`helpers-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(file, null, 2), "application/json");
     } catch (err) { this.failed(err); }
   }
@@ -23519,7 +23584,7 @@ class HelperIoMixin {
     const helpers = data && data.format === "housekeeper-helper-export" && Array.isArray(data.helpers) ? data.helpers.filter(h => h && typeof h === "object") : [];
     if (!helpers.length) { this.toast(this.t("helperImportBad"), true); return; }
     try {
-      if (!await this.newPlan(helpers.slice(0, MAX_PLAN_ACTIONS).map((helper, i) => ({ kind: "import_helper", object_id: `import:${i + 1}:${helper.domain || ""}`, helper })))) return;
+      if (!await this.newPlan(this.capIds(helpers).map((helper, i) => ({ kind: "import_helper", object_id: `import:${i + 1}:${helper.domain || ""}`, helper })))) return;
     } catch (err) { this.failed(err); }
     this.render();
   }
@@ -23620,6 +23685,9 @@ class HAHousekeeperPanel extends HTMLElement {
     this.installFonts();
     this.startScanWatch();
     this.render();
+    // A check that was running when the page was left goes on: ask for its state again.
+    if (this._hass && this.dbHealth?.integrity?.running) this.loadDbHealth(false, false, true);
+    if (this._hass && this.space?.running) this.loadSpace();
   }
 
   // Scans also run in the background (every few hours); an open panel would keep showing the old one.
@@ -23654,7 +23722,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.stopScanWatch();
     window.removeEventListener?.("popstate", this._onPop);
     window.removeEventListener?.("resize", this._onResize);
-    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer", "_dbCheckTimer"]) {
+    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer", "_dbCheckTimer", "_spaceTimer"]) {
       if (this[name]) globalThis.clearTimeout?.(this[name]);
       this[name] = null;
     }
@@ -23760,6 +23828,7 @@ class HAHousekeeperPanel extends HTMLElement {
       const trailKeys = this.trail.map(item => this.objectKey(item));
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
       this.firstContact();
+      this.pruneSelections();
       if (this.data?.meta?.scanned_at !== scannedBefore) this.forgetScanViews();
       this.details = new Map();
       this.compare = null;
@@ -23790,6 +23859,14 @@ class HAHousekeeperPanel extends HTMLElement {
       const wait = ((Number(this.data.meta.warmup_seconds_left) || 0) + 20) * 1000;
       this.retryWarmup(wait);
     }
+  }
+
+  // A selection only holds what is still there: after a scan or a plan the findings and objects it named may be gone.
+  pruneSelections() {
+    const keys = new Set((this.data?.findings || []).map(f => f.key)), ids = new Set((this.data?.objects || []).map(o => o.object_id));
+    const keep = set => new Set([...set].filter(key => keys.has(key)));
+    if (this.data?.findings) { this.findSel = keep(this.findSel); if (this._findSelBack) this._findSelBack = keep(this._findSelBack); }
+    if (this.data?.objects && this.cleanupSel) this.cleanupSel = new Set([...this.cleanupSel].filter(id => ids.has(id)));
   }
 
   // What these views computed from the last scan is out of date after a new one: the next time a view is drawn it asks again (the old rows stay until the answer is there).
@@ -23916,6 +23993,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const from = inWizard ? this.wizardBackTarget(true) : this.viewTrail.pop();
     if (!from) return;
     if (inWizard) this.fcWizLeave();
+    if (this.view === "fix" && this._findSelBack) { this.findSel = this._findSelBack; this._findSelBack = null; }
     this.view = from.view; this.pages = {};
     this.render();
     this.restoreScroll(from.scroll);
@@ -24025,7 +24103,7 @@ class HAHousekeeperPanel extends HTMLElement {
   // line for screen readers change, so the page is not rebuilt for it.
   renderProgress() {
     const root = this.shadowRoot, button = root?.querySelector?.("[data-action='scan']");
-    const live = root?.querySelector?.("[role='status']");
+    const live = root?.querySelector?.("[data-live]");
     if (!button || !live) { this.render(); return; }
     button.innerHTML = this.scanButtonInner();
     button.disabled = Boolean(this.busy || this.cleanupRunning());
@@ -24187,7 +24265,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
     try { page = this.fcBand() + (this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`); } catch (err) { page = this.renderFailed(err); }
-    const shell = `<div class="shell${this.prefs.details ? "" : " nodetails"}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.prefs.details ? "" : " nodetails"}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite" data-live>${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     let swapped = false;

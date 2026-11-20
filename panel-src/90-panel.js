@@ -93,6 +93,9 @@ class HAHousekeeperPanel extends HTMLElement {
     this.installFonts();
     this.startScanWatch();
     this.render();
+    // A check that was running when the page was left goes on: ask for its state again.
+    if (this._hass && this.dbHealth?.integrity?.running) this.loadDbHealth(false, false, true);
+    if (this._hass && this.space?.running) this.loadSpace();
   }
 
   // Scans also run in the background (every few hours); an open panel would keep showing the old one.
@@ -127,7 +130,7 @@ class HAHousekeeperPanel extends HTMLElement {
     this.stopScanWatch();
     window.removeEventListener?.("popstate", this._onPop);
     window.removeEventListener?.("resize", this._onResize);
-    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer", "_dbCheckTimer"]) {
+    for (const name of ["_warmupTimer", "_searchTimer", "_tipTimer", "_monitorTimer", "_monitorPreviewTimer", "_tipHide", "_fcToastTimer", "_dbCheckTimer", "_spaceTimer"]) {
       if (this[name]) globalThis.clearTimeout?.(this[name]);
       this[name] = null;
     }
@@ -233,6 +236,7 @@ class HAHousekeeperPanel extends HTMLElement {
       const trailKeys = this.trail.map(item => this.objectKey(item));
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
       this.firstContact();
+      this.pruneSelections();
       if (this.data?.meta?.scanned_at !== scannedBefore) this.forgetScanViews();
       this.details = new Map();
       this.compare = null;
@@ -263,6 +267,14 @@ class HAHousekeeperPanel extends HTMLElement {
       const wait = ((Number(this.data.meta.warmup_seconds_left) || 0) + 20) * 1000;
       this.retryWarmup(wait);
     }
+  }
+
+  // A selection only holds what is still there: after a scan or a plan the findings and objects it named may be gone.
+  pruneSelections() {
+    const keys = new Set((this.data?.findings || []).map(f => f.key)), ids = new Set((this.data?.objects || []).map(o => o.object_id));
+    const keep = set => new Set([...set].filter(key => keys.has(key)));
+    if (this.data?.findings) { this.findSel = keep(this.findSel); if (this._findSelBack) this._findSelBack = keep(this._findSelBack); }
+    if (this.data?.objects && this.cleanupSel) this.cleanupSel = new Set([...this.cleanupSel].filter(id => ids.has(id)));
   }
 
   // What these views computed from the last scan is out of date after a new one: the next time a view is drawn it asks again (the old rows stay until the answer is there).
@@ -389,6 +401,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const from = inWizard ? this.wizardBackTarget(true) : this.viewTrail.pop();
     if (!from) return;
     if (inWizard) this.fcWizLeave();
+    if (this.view === "fix" && this._findSelBack) { this.findSel = this._findSelBack; this._findSelBack = null; }
     this.view = from.view; this.pages = {};
     this.render();
     this.restoreScroll(from.scroll);
@@ -498,7 +511,7 @@ class HAHousekeeperPanel extends HTMLElement {
   // line for screen readers change, so the page is not rebuilt for it.
   renderProgress() {
     const root = this.shadowRoot, button = root?.querySelector?.("[data-action='scan']");
-    const live = root?.querySelector?.("[role='status']");
+    const live = root?.querySelector?.("[data-live]");
     if (!button || !live) { this.render(); return; }
     button.innerHTML = this.scanButtonInner();
     button.disabled = Boolean(this.busy || this.cleanupRunning());
@@ -660,7 +673,7 @@ class HAHousekeeperPanel extends HTMLElement {
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
     try { page = this.fcBand() + (this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`); } catch (err) { page = this.renderFailed(err); }
-    const shell = `<div class="shell${this.prefs.details ? "" : " nodetails"}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite">${this.esc(this.liveStatus())}</div></div>`;
+    const shell = `<div class="shell${this.prefs.details ? "" : " nodetails"}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite" data-live>${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
     let swapped = false;

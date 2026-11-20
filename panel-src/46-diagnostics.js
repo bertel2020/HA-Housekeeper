@@ -228,7 +228,7 @@ class DiagnosticsMixin {
     const row = this.diagRow(item), d = this.diagState(), id = item.object_id;
     if (!row) return `<div class="panel">${this.skeleton("qualityLoading")}</div>`;
     d.sel = id;
-    if (item.object_type === "automation" && d.loadedFor !== id) { d.loadedFor = id; d.draft = null; d.message = ""; this.loadDiag(id); }
+    if (item.object_type === "automation" && d.loadedFor !== id) { d.loadedFor = id; d.draft = null; d.message = ""; d.dry = null; this.loadDiag(id); }
     const worst = { red: 0, warn: 1, info: 2, unknown: 3, ok: 4 };
     const dims = DIM_ORDER.filter(dimId => row.dimensions[dimId]).sort((x, y) => (worst[row.dimensions[x].level] ?? 3) - (worst[row.dimensions[y].level] ?? 3)).map(dimId => {
       const dim = row.dimensions[dimId];
@@ -241,7 +241,7 @@ class DiagnosticsMixin {
 
   async loadDiag(entityId) {
     const d = this.diagState();
-    try { d.criteria[entityId] = await this._hass.callWS({ type: "ha_housekeeper/criteria", entity_id: entityId }); } catch (_) { /* shown as empty */ }
+    try { d.criteria[entityId] = await this._hass.callWS({ type: "ha_housekeeper/criteria", entity_id: entityId }); } catch (err) { d.criteria[entityId] = { error: this.errText(err) }; }
     this.render();
     await this.loadRefactor?.(entityId);
     await this.loadDiagExtras?.(entityId);
@@ -251,10 +251,12 @@ class DiagnosticsMixin {
     const d = this.diagState(), view = d.criteria[entityId];
     const message = d.message ? `<small role="status">${this.esc(d.message)}</small>` : "";
     let body;
-    if (d.draft) body = this.criteriaForm(view);
-    else if (!view?.criteria.length) body = `<div class="pad"><small>${this.t("critNone")}</small></div>`;
+    // A failed load is no empty list: editing from nothing would replace the criteria that are there.
+    if (view?.error) body = `<div class="pad">${this.notice("err", this.t("actionFailed", { detail: view.error }))}<button class="btn" data-crit-retry="${this.esc(entityId)}">${this.t("actRetry")}</button></div>`;
+    else if (d.draft) body = this.criteriaForm(view);
+    else if (!view?.criteria?.length) body = `<div class="pad"><small>${this.t("critNone")}</small></div>`;
     else body = view.criteria.map(c => `<div class="pad"><small>${c.targets.map(t => `${this.esc(t.entity_id)} = ${this.esc(t.state)}`).join(" · ")} · ${c.within} s${c.hold ? ` + ${c.hold} s` : ""}</small></div>`).join("") + `<div class="pad"><small>${this.t("critStats", view.stats)}</small></div>` + this.critHistory(view);
-    const edit = d.draft ? "" : `<button class="btn" data-crit-edit="${this.esc(entityId)}">${this.t("critEdit")}</button>`;
+    const edit = d.draft || view?.error || !view ? "" : `<button class="btn" data-crit-edit="${this.esc(entityId)}">${this.t("critEdit")}</button>`;
     return `<div class="panelhead"><div><h2>${this.t("critTitle")}</h2><p>${this.t("critHint")}</p></div><div class="actions">${edit}</div></div>${body}${message}`;
   }
 
@@ -292,6 +294,7 @@ class DiagnosticsMixin {
     const d = () => this.diagState();
     root.querySelector("[data-quality-refresh]")?.addEventListener("click", () => this.loadQuality());
     root.querySelector("[data-crit-edit]")?.addEventListener("click", ev => this.editCriteria(ev.currentTarget.dataset.critEdit));
+    root.querySelector("[data-crit-retry]")?.addEventListener("click", ev => this.loadDiag(ev.currentTarget.dataset.critRetry));
     root.querySelector("[data-crit-cancel]")?.addEventListener("click", () => { d().draft = null; this.render(); });
     root.querySelector("[data-crit-save]")?.addEventListener("click", () => this.saveCriteria());
     root.querySelector("[data-crit-add]")?.addEventListener("click", () => { d().draft.push({ targets: [{ entity_id: "", state: "" }], within: 10, hold: 0 }); this.render(); });

@@ -103,15 +103,16 @@ class ExcludeMixin {
       <div class="trimfacts"><div><strong>${this.t("trimFactStats")}</strong><small>${this.t("trimFactStatsSub")}</small></div><div><strong>${this.t("trimFactRows")}</strong><small>${this.t("trimFactRowsSub")}</small></div></div>` : "";
     return `<div class="trimbox"><div class="trimhead"><div><h3>${this.t("trimTitle")}</h3><p class="factnote">${this.t("trimHint")}</p></div><span class="pill mute">${all === 1 ? this.t("trimChosenOne") : this.t("trimChosen", { count: all })}</span></div>
       <div class="trimsentence"><strong>${this.t("trimKeep")}</strong><span class="trimseg" role="radiogroup">${seg}</span></div>${timeline}
-      <div class="trimfoot"><p class="factnote">${this.t("trimFoot")}</p><span class="trimbtns"><button type="button" class="btn quiet" data-trim-cancel>${this.t("cancelRun")}</button><button class="btn primary" data-trim-plan ${this.trimBusy ? 'disabled aria-busy="true"' : ""}>${this.trimBusy ? this.t("trimBusy") : n === 1 ? this.t("trimPreviewOne") : this.t("trimPreview", { count: n })}</button></span></div>${this.trimError ? `<p class="factnote" role="alert">${this.esc(this.t("trimFailed", { detail: this.trimError }))}</p>` : ""}</div>`;
+      <div class="trimfoot"><p class="factnote">${this.t("trimFoot")}</p>${all > MAX_PLAN_ACTIONS ? `<p class="factnote">${this.t("purgeChunk", { n: this.formatNumber(all), max: MAX_PLAN_ACTIONS, rest: this.formatNumber(all - MAX_PLAN_ACTIONS) })}</p>` : ""}<span class="trimbtns"><button type="button" class="btn quiet" data-trim-cancel>${this.t("cancelRun")}</button><button class="btn primary" data-trim-plan ${this.trimBusy ? 'disabled aria-busy="true"' : ""}>${this.trimBusy ? this.t("trimBusy") : n === 1 ? this.t("trimPreviewOne") : this.t("trimPreview", { count: n })}</button></span></div>${this.trimError ? `<p class="factnote" role="alert">${this.esc(this.t("trimFailed", { detail: this.trimError }))}</p>` : ""}</div>`;
   }
 
   async trimPlan() {
     this.trimBusy = true; this.trimError = ""; this.render();
     try {
       const keep_days = this.trimDays || 14;
-      const actions = [...this.excludeSel].slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "trim_history", object_id, keep_days }));
+      const chosen = [...this.excludeSel], actions = chosen.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "trim_history", object_id, keep_days }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      this.excludeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS));
       this.openNewPlan(plan);
     } catch (err) { this.trimError = this.errText(err); }
     this.trimBusy = false;

@@ -67,7 +67,7 @@ class FcRecommendMixin {
     // "Fix" is only recommended where Housekeeper has a way to fix it; an outage it cannot repair gets the mark instead.
     const fixable = this.fcFixable(f, key), obj = this.findObject(key);
     // Where the only way is the auto-pause, the answer names it instead of a plain "Fix".
-    const pauseOnly = fixable && obj?.object_type === "config_entry" && !this.fixItems(obj, key).items.some(it => it.plan);
+    const pauseOnly = fixable && f.rule_id === "config_entry.not_loaded" && obj?.object_type === "config_entry" && !this.fixItems(obj, key).items.some(it => it.plan);
     const fix = body => (pauseOnly ? { act: "fix", head: t("fcRecPause"), body: t("fcRecPauseText") } : { act: "fix", head: t("fcRecFix"), body });
     const instead = body => (this.fcCanMark(obj) ? { act: "mark", head: t("fcRecTake"), body } : { act: "later", head: t("fcRecLater"), body });
     const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
@@ -123,7 +123,7 @@ class FcRecommendMixin {
     const items = this.fixItems(obj, key).items;
     // The ways of the finding itself (replace the target, remove the reference, catch the error), as on the page Fix.
     const finding = this.data?.findings?.find(x => x.key === this.fixKey && (this.findingKey(x) === key || this.ownerKey(x) === key));
-    const own = finding && this.fixWays ? this.fixWays.filter(w => w.kind !== "panel" && w.way !== "mark").map(w => this.fixWayCard(w, finding)).join("") : "";
+    const own = finding && this.fixWays ? this.fixWays.filter(w => !FIX_OBJECT_WAYS.includes(w.way) && w.way !== "mark").map(w => this.fixWayCard(w, finding)).join("") : "";
     const rows = items.map(it => this.fcWayRow(it, key)).join("") + own;
     if (finding && !this.fcFixable(finding, key)) return this.fcCheckBlock(finding, rows);
     return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${rows ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
@@ -156,11 +156,15 @@ class FcRecommendMixin {
     this.planBusy = false; this.render();
   }
 
-  async fcPlanRun() {
-    if (!this.plan || this.cleanupBusy) return;
-    await this.confirmAndRun();
-    if (this.cleanupError) this.fcPlanError = this.cleanupError;
-    this.render();
+  // The same question as on the plan page: what runs, the warning for a large removal, and a red button for what cannot come back.
+  fcPlanRun() {
+    if (!this.plan || this.cleanupBusy || this.modeBlocked(this.plan).length) return;
+    const run = this.runActions(this.plan), risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
+    this.confirmAsk(this.confirmSummary(this.plan, run.length), async () => {
+      await this.confirmAndRun();
+      if (this.cleanupError) this.fcPlanError = this.cleanupError;
+      this.render();
+    }, { title: this.t("confirmRunTitle"), yes: this.t("runNow"), danger: risky, warn: this.largeRemovalWarning(this.plan) });
   }
 
   async fcPlanDrop() {
@@ -183,12 +187,13 @@ class FcRecommendMixin {
     const used = acts.reduce((n, a) => n + (a.used_by || []).length, 0);
     const error = this.fcPlanError ? `<div class="error">${this.esc(this.fcPlanError)}</div>` : "";
     const changed = this.planChanges?.length ? `<p class="fcfacts">${t("planChangedTitle")}</p>` : "";
+    const blocked = this.modeBlocked(plan);
     let head, body, btns;
     const drop = (label = "confirmCancel") => `<button type="button" class="btn" data-fc-plan-drop>${t(label)}</button>`;
     if (status === "dry_run") {
       head = t("fcPlanPreviewHead");
-      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${t("planUses", { count: used })}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}`;
-      btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
+      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${t("planUses", { count: used })}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}${blocked.length ? this.modeHint(blocked) : ""}`;
+      btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy || blocked.length ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
     } else if (status === "backup" || status === "running" || (status === "executed" && !plan.verification)) {
       head = t("fcPlanRunning");
       body = `${this.planProgressBar()}<p class="fcfacts">${t(status === "backup" ? "backupRunning" : "fcPlanRunningText")}</p>`;

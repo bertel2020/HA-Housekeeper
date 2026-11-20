@@ -284,7 +284,7 @@ class SystemMixin {
   accRiskCell(e) {
     const why = this.accEntryWhy(e);
     const pill = e.known ? `<span class="pill mute"${why ? ` title="${this.esc(why)}"` : ""}>${this.t(`accRisk_${e.risk}`)}</span>` : this.accRiskPill(e.risk, why);
-    const known = e.known ? `<small class="u-dim u-block">${this.esc(this.t("accKnownSince", { date: this.formatDate(e.known.at).split(",")[0] }))}${e.known.reason ? ` · ${this.esc(e.known.reason)}` : ""}</small>` : "";
+    const known = e.known ? `<small class="u-dim u-block">${this.esc(this.t("accKnownSince", { date: this.formatDay(e.known.at) }))}${e.known.reason ? ` · ${this.esc(e.known.reason)}` : ""}</small>` : "";
     return `${pill}${known || (why ? `<small class="u-dim u-block">${this.esc(why)}</small>` : "")}`;
   }
 

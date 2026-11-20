@@ -46,7 +46,7 @@ class HelperIoMixin {
   async exportHelpers(entryIds) {
     if (!entryIds.length) { this.toast(this.t("helperExportNone"), true); return; }
     try {
-      const file = await this._hass.callWS({ type: "ha_housekeeper/helper_export", entry_ids: entryIds.slice(0, 200) });
+      const file = await this._hass.callWS({ type: "ha_housekeeper/helper_export", entry_ids: this.capIds(entryIds, 200) });
       this.downloadText(`helpers-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(file, null, 2), "application/json");
     } catch (err) { this.failed(err); }
   }
@@ -58,7 +58,7 @@ class HelperIoMixin {
     const helpers = data && data.format === "housekeeper-helper-export" && Array.isArray(data.helpers) ? data.helpers.filter(h => h && typeof h === "object") : [];
     if (!helpers.length) { this.toast(this.t("helperImportBad"), true); return; }
     try {
-      if (!await this.newPlan(helpers.slice(0, MAX_PLAN_ACTIONS).map((helper, i) => ({ kind: "import_helper", object_id: `import:${i + 1}:${helper.domain || ""}`, helper })))) return;
+      if (!await this.newPlan(this.capIds(helpers).map((helper, i) => ({ kind: "import_helper", object_id: `import:${i + 1}:${helper.domain || ""}`, helper })))) return;
     } catch (err) { this.failed(err); }
     this.render();
   }

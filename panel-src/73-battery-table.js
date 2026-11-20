@@ -128,9 +128,9 @@ class BatteryTableMixin {
   batteryTable(rows) {
     const limit = this.data.meta.low_battery_percent ?? 20;
     this.lvState("batteries", "left", "asc");
-    const pg = this.paginate(`batteries-${this.batteryFilter}`, rows);
     const sel = (this.batSel ||= new Set());
     for (const id of [...sel]) if (!rows.some(r => r.item.object_id === id)) sel.delete(id);
+    const pg = this.paginate(`batteries-${this.batteryFilter}`, this.selOnlyOn("batteries", sel.size) ? rows.filter(r => sel.has(r.item.object_id)) : rows);
     const ids = pg.rows.map(r => r.item.object_id);
     const columns = [
       { key: "sel", label: "selectPage", narrow: true, sortable: false,
@@ -229,7 +229,7 @@ class BatteryTableMixin {
       { key: "area", label: "btColArea", sortable: false, cell: r => this.esc(this.areaName(r.item)) || `<span class="muted">${this.t("btNoArea")}</span>` },
       { key: "type", label: "btColType", sortable: false, cell: r => this.batteryTypeCell(r) }, // the same cell as in the list: a missing type is a button
       { key: "level", label: "btColLevel", sortable: false, cell: r => this.batteryLevelCell(r, this.data.meta.low_battery_percent ?? 20) },
-      { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDate(new Date(Date.now() + r.days * 86400000).toISOString()).split(",")[0])) },
+      { key: "date", label: "btColDate", sortable: false, cell: r => (r.low ? "—" : this.esc(this.formatDay(new Date(Date.now() + r.days * 86400000).toISOString()))) },
       { key: "left", label: "btColLeft", sortable: false, cell: r => this.batteryLeftCell(r) },
     ];
     const rowAttrs = r => `data-object="${this.esc(this.objectKey(r.item))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(r.item).title)}"`;

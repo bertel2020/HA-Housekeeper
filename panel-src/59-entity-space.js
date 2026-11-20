@@ -52,6 +52,7 @@ class EntitySpaceMixin {
     this._spaceRequested = true;
     try { this.space = await this._hass.callWS({ type: "ha_housekeeper/entity_space", ...(mode ? { [mode]: true } : {}) }); this.spaceError = ""; }
     catch (err) { this.spaceError = this.errText(err); }
+    if (this._gone) return;
     this.render();
     globalThis.clearTimeout?.(this._spaceTimer);
     if (this.space?.running) this._spaceTimer = setTimeout(() => this.loadSpace(), 2000);

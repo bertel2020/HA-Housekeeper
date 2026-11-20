@@ -38,7 +38,7 @@ class CriteriaHistoryMixin {
       return `<i class="${c && c[1] ? "m" : ""}" style="height:${total ? Math.max(8, Math.round(total / peak * 100)) : 4}%"></i>`;
     }).join("");
     const stat = (big, small) => `<div><div class="big">${big}</div><small class="factnote">${small}</small></div>`;
-    return `${head}<div class="chcols">${stat(`${quota} %`, `${this.t("chQuota")}${ok7 + missed7 ? ` (${this.t("chQuota7", { percent: Math.round(ok7 / (ok7 + missed7) * 100) })})` : ""}`)}${stat(this.formatNumber(missed), this.t("chMissed", { days: range }))}${stat(lastMissed ? this.formatDate(`${lastMissed}T12:00:00Z`).split(",")[0] : this.t("chNever"), this.t("chLast"))}</div><div class="chbars" role="img" aria-label="${this.esc(this.t("chBars"))}">${bars}</div><div class="chaxis"><span>${this.t("chAxisFrom", { days: range })}</span><span>${this.t("chAxisTo")}</span></div>`;
+    return `${head}<div class="chcols">${stat(`${quota} %`, `${this.t("chQuota")}${ok7 + missed7 ? ` (${this.t("chQuota7", { percent: Math.round(ok7 / (ok7 + missed7) * 100) })})` : ""}`)}${stat(this.formatNumber(missed), this.t("chMissed", { days: range }))}${stat(lastMissed ? this.formatDay(`${lastMissed}T12:00:00Z`) : this.t("chNever"), this.t("chLast"))}</div><div class="chbars" role="img" aria-label="${this.esc(this.t("chBars"))}">${bars}</div><div class="chaxis"><span>${this.t("chAxisFrom", { days: range })}</span><span>${this.t("chAxisTo")}</span></div>`;
   }
 
   goalLine(finding) {

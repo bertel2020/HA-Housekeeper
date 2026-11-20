@@ -139,6 +139,7 @@ class MarksMixin {
     if (!Array.isArray(data?.findings)) return; // an answer without a scan keeps what is on screen
     this.data = data;
     this._rev++;
+    this.pruneSelections();
     if (key) this.selected = this.findObject(key) || null;
   }
 

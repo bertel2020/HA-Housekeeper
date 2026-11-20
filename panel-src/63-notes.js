@@ -163,7 +163,9 @@ class NotesMixin {
     this.render();
   }
 
-  async noteSave() {
+  noteSave() { return this.onlyOnce("noteSave", () => this.noteSaveNow()); }
+
+  async noteSaveNow() {
     const d = this.noteDraft;
     if (!d) return;
     const title = d.title.trim();

@@ -128,7 +128,8 @@ class ExceptionsMixin {
   async loadExceptions() {
     if (this._excLoading) return;
     this._excLoading = true;
-    try { this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" }); } catch (err) { this.failed(err); this.exc = this.exc || { rules: [], areas: [], labels: [] }; }
+    // A failed load leaves no rules behind: an empty list would be saved over the real ones with the next rule.
+    try { this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" }); this._excLoadError = null; } catch (err) { this.failed(err); this._excLoadError = this.errText(err); }
     this._excLoading = false;
     this.render();
   }
@@ -167,9 +168,10 @@ class ExceptionsMixin {
       allBox: () => { const n = ids.filter(k => sel.has(k)).length; return `<input type="checkbox" class="selbox" data-exc-page ${n && n === ids.length ? "checked" : ""} ${n && n < ids.length ? "data-partial" : ""} aria-label="${this.esc(this.t("selectPage"))}">`; },
       cell: rule => `<input type="checkbox" class="selbox" data-exc-sel="${this.esc(rule.id)}" ${sel.has(rule.id) ? "checked" : ""} aria-label="${this.esc(this.excRuleName(rule))}">` };
     const columns = [pick, ...this.excRuleCells(rules[0]).map((c, i) => ({ key: c.key, label: c.label, sortable: false, narrow: c.narrow, cell: rule => this.excRuleCells(rule)[i].cell() }))];
-    const n = ids.filter(k => sel.has(k)).length, count = this.formatNumber(n), btn = (attr, icon, label) => `<button type="button" class="btn" ${attr} ${n ? "" : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(label, { n: count })}</button>`;
+    const n = ids.filter(k => sel.has(k)).length, count = this.formatNumber(n), btn = (attr, icon, label) => `<button type="button" class="btn" ${attr} data-exc-scope="${scope}" ${n ? "" : "disabled"}><ha-icon icon="${icon}"></ha-icon>${this.t(label, { n: count })}</button>`;
     const tools = `<div class="toolbar${n ? "" : " nosel"}">${this.selTools(id, n, "data-exc-selclear")}<span class="toolgap"></span>${btn('data-exc-bulk="on"', "mdi:toggle-switch-outline", "excOnN")}${btn('data-exc-bulk="off"', "mdi:toggle-switch-off-outline", "excOffN")}${scope === "always" ? btn('data-exc-bulk="renew"', "mdi:calendar-refresh-outline", "excRenewN") : ""}${btn('data-exc-bulk="delete"', "mdi:delete-outline", "excDeleteN")}</div>`;
-    return `${rules.length > 1 ? tools : ""}${this.listTable(id, columns, rules, { cls: "excrules", rowAttrs: () => 'class="static"' })}`;
+    const shown = this.selOnlyOn(id, n) ? rules.filter(r => sel.has(r.id)) : rules;
+    return `${rules.length > 1 ? tools : ""}${this.listTable(id, columns, shown, { cls: "excrules", rowAttrs: () => 'class="static"' })}`;
   }
 
   // Nothing yet in this group: the same empty state as the reminders, with the way to the first rule.
@@ -227,6 +229,7 @@ class ExceptionsMixin {
 
   // The page "Exceptions": the rules (with the labels), the vacation mode, the decisions about findings and the notes on objects.
   exceptionsView() {
+    if (!this.exc && this._excLoadError) return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad">${this.notice("err", this.t("actionFailed", { detail: this._excLoadError }))}<button class="btn" data-exc-reload>${this.t("actRetry")}</button></div></section>`;
     if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
     const v = this.exc.vacation || {};
     const state = !v.entity ? "vacStateNone" : v.state === "on" ? "vacStateOn" : v.state && v.state !== "unavailable" && v.state !== "unknown" ? "vacStateOff" : "vacStateMissing";
@@ -375,6 +378,7 @@ class ExceptionsMixin {
   }
 
   openException(id, scope) {
+    if (!this.exc) return;
     const rule = this.exc.rules.find(r => r.id === id);
     this.excForm = rule ? { id, kind: rule.kind, targets: [...rule.targets], picks: [], action: rule.action, scope: rule.scope || "always", search: "", days: rule.days || 7, enabled: rule.enabled, note: rule.note || "", error: "", preview: null, review: rule.review_days || 0, reviewWas: rule.review_days || 0, reviewAt: rule.review_at || null }
       : { id: "", kind: "any", targets: [], picks: [], action: "hide", scope: scope || "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null, review: 180, reviewWas: 0, reviewAt: null };
@@ -386,6 +390,7 @@ class ExceptionsMixin {
   // areas and integrations, so a rule can reach beyond the object. Other kinds are set in the settings.
   async openExceptionFor(objectKeys) {
     if (!this.exc) await this.loadExceptions();
+    if (!this.exc) return;
     const objects = objectKeys.map(key => this.findObject(key)).filter(Boolean);
     const device = o => (o.object_type === "device" ? o : o.device_id ? this.findObject(`device:${o.device_id}`) : null);
     const named = (list, id) => (list || []).find(x => x.id === id)?.name || id;
@@ -438,6 +443,8 @@ class ExceptionsMixin {
   // whether it was saved.
   saveExceptions(rules, form) {
     const run = async () => {
+      if (!this.exc) await this.loadExceptions();
+      if (!this.exc) return false;
       const next = typeof rules === "function" ? rules(this.excRules()) : rules;
       let saved = false;
       try {
@@ -461,12 +468,15 @@ class ExceptionsMixin {
     if (!(f.kind === "any" ? f.picks.length : f.targets.length)) { f.error = this.t("excNeedTarget"); this.render(); return; }
     const max = this.exc.days_max || 365, days = Number(f.days);
     if (f.scope !== "vacation" && f.action === "delay" && !(Number.isInteger(days) && days >= 1 && days <= max)) { f.error = this.t("excDaysInvalid", { max }); this.render(); return; }
-    const drafts = this.excDrafts(f), rules = this.excRules();
+    const drafts = this.excDrafts(f);
     if (f.scope !== "vacation" && f.action === "hide" && drafts.some(d => d.kind === "domain") && !f.note.trim()) { f.error = this.t("excNoteNeeded"); this.render(); return; }
-    const at = rules.findIndex(r => r.id === f.id);
-    if (at >= 0 && f.kind !== "any") rules[at] = drafts[0];
-    else { if (at >= 0) rules.splice(at, 1); rules.push(...drafts); }
-    this.saveExceptions(rules, f);
+    // The rules are taken when this save is its turn, so a switch flipped a moment ago is not sent back as it was.
+    this.saveExceptions(current => {
+      const rules = [...current], at = rules.findIndex(r => r.id === f.id);
+      if (at >= 0 && f.kind !== "any") rules[at] = drafts[0];
+      else { if (at >= 0) rules.splice(at, 1); rules.push(...drafts); }
+      return rules;
+    }, f);
   }
 
   bindExceptions(root) {
@@ -490,9 +500,11 @@ class ExceptionsMixin {
     const excSel = () => (this.excSel ||= new Set());
     root.querySelectorAll("[data-exc-sel]").forEach(el => el.onchange = () => { this.pickRows("exc", el.dataset.excSel, el.checked, excSel(), [...root.querySelectorAll("[data-exc-sel]")].map(x => x.dataset.excSel)); this.render(); });
     root.querySelectorAll("[data-exc-page]").forEach(box => { box.indeterminate = box.hasAttribute("data-partial"); box.onchange = ev => { box.closest("table").querySelectorAll("[data-exc-sel]").forEach(x => (ev.target.checked ? excSel().add(x.dataset.excSel) : excSel().delete(x.dataset.excSel))); this.render(); }; });
+    root.querySelectorAll("[data-exc-reload]").forEach(el => el.onclick = async () => { this._excLoadError = null; await this.loadExceptions(); });
     root.querySelectorAll("[data-exc-selclear]").forEach(el => el.onclick = () => { excSel().clear(); this.render(); });
     root.querySelectorAll("[data-exc-bulk]").forEach(el => el.onclick = () => {
-      const mode = el.dataset.excBulk, sel = excSel(), ids = new Set(sel);
+      // Only the rules of the table the button belongs to: the other group keeps its own ticks.
+      const mode = el.dataset.excBulk, sel = excSel(), inScope = new Set((this.exc?.rules || []).filter(r => (r.scope || "always") === el.dataset.excScope).map(r => r.id)), ids = new Set([...sel].filter(id => inScope.has(id)));
       const apply = all => (mode === "delete" ? all.filter(r => !ids.has(r.id)) : all.map(r => (!ids.has(r.id) ? r : mode === "renew" ? (r.action === "hide" && (r.scope || "always") === "always" ? { ...r, review_at: null } : r) : { ...r, enabled: mode === "on" })));
       const run = async () => { if (await this.saveExceptions(apply, null) && mode === "delete") { ids.forEach(id => sel.delete(id)); this.render(); } };
       if (mode === "delete") this.confirmAsk(this.t("confirmExcRules", { count: ids.size }), run); else run();

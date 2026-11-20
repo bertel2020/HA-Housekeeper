@@ -88,6 +88,12 @@ class ListsMixin {
     return `<div class="notice ${tone}" role="${tone === "err" ? "alert" : "status"}" ${attrs}><ha-icon icon="${icon}"></ha-icon><span>${this.esc(text)}</span></div>`;
   }
 
+  // A plan takes at most MAX_PLAN_ACTIONS steps: the first ones go in, and the person is told that the rest is still there.
+  capIds(ids, max = MAX_PLAN_ACTIONS) {
+    if (ids.length > max) this.toast(this.t("purgeChunk", { n: this.formatNumber(ids.length), max, rest: this.formatNumber(ids.length - max) }), true);
+    return ids.slice(0, max);
+  }
+
   failed(err) {
     this.noteError("action", err);
     this.toast(this.t("actionFailed", { detail: this.errText(err) }), true);

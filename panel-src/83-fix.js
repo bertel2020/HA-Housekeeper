@@ -1,6 +1,8 @@
 // FixMixin: the page "Fix" (Beheben) of one finding: understand, decide, carry out, check. A page of its own without a
 // menu entry; "back" returns to the list with its selection and scroll position. It names the ways and opens the
 // existing steps (plan with preview, links into Home Assistant, marks, exits); it changes nothing by itself.
+// The ways that act on the object itself: they are shown as its plans; every other way has a card of its own.
+const FIX_OBJECT_WAYS = ["reload", "exchange", "replace_entity", "object_actions"];
 const FIX_WATCH_MS = 15 * 60 * 1000, FIX_WATCH_STEP_MS = 30 * 1000;
 class FixMixin {
   // "Fix all n": the page of a missing target; its follow-ups are the places that name it. One of them stands for the page.
@@ -14,6 +16,8 @@ class FixMixin {
 
   openFix(key, all = "") {
     this.noteJump("fix");
+    // The page decides on its own selection; the one of the list waits for the way back.
+    if (this.view !== "fix") { this._findSelBack = this.findSel; this.findSel = new Set(); }
     this.fixAll = all;
     this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
     this.fixStep = 1; this.fixMax = 1; this.fixPreselect = Boolean(all);
@@ -144,7 +148,7 @@ class FixMixin {
       const sorted = [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended));
       const entries = [];
       for (const w of sorted) {
-        if (w.kind === "panel" && object && w.way !== "mark") { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
+        if (FIX_OBJECT_WAYS.includes(w.way) && object) { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
         else entries.push({ html: this.fixWayCard(w, f) });
       }
       if (!entries.length) list = `<p class="factnote">${this.t("fixNoWays")}</p>`;
@@ -165,11 +169,11 @@ class FixMixin {
     if (!cause) return "";
     const below = this.data.findings.filter(x => !x.ignored && (this.fixAll || x.key !== f.key) && this.causeKeys(cause.id).has(x.key));
     if (below.length < 2) return "";
-    const rows = below.map(x => `<label class="row"><input type="checkbox" data-fix-pick="${this.esc(x.key)}" ${this.findSel.has(x.key) ? "checked" : ""}><span class="row-text"><strong>${this.esc(this.findObject(this.findingKey(x))?.name || x.object_id)}</strong><small>${this.esc(this.findingTitle(x))}</small></span></label>`).join("");
     if (this.fixPreselect) { this.fixPreselect = false; below.forEach(x => this.findSel.add(x.key)); }
+    const rows = below.map(x => `<label class="row"><input type="checkbox" data-fix-pick="${this.esc(x.key)}" ${this.findSel.has(x.key) ? "checked" : ""}><span class="row-text"><strong>${this.esc(this.findObject(this.findingKey(x))?.name || x.object_id)}</strong><small>${this.esc(this.findingTitle(x))}</small></span></label>`).join("");
     const picked = below.filter(x => this.findSel.has(x.key)).length, off = picked ? "" : "disabled";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("fixCollectTitle")}</h2><p>${picked ? this.t("fixPickCount", { picked, total: below.length }) : this.t("fixPickNone")}</p></div></div>${rows}
-      <div class="fixpickbar"><button type="button" class="btn quiet" data-fix-pick-all="${this.esc(below.map(x => x.key).join("|"))}">${this.t("fixPickAll")}</button><span class="fixpickact"><button type="button" class="btn" data-fsel-state="status" ${off}>${this.t("actDecide")}</button><button type="button" class="btn" data-fsel-state="mark" ${off}>${this.t("markSet")}</button></span></div>${this.bulkForm()}</section>`;
+      <div class="fixpickbar"><button type="button" class="btn quiet" data-fix-pick-all="${this.esc(JSON.stringify(below.map(x => x.key)))}">${this.t("fixPickAll")}</button><span class="fixpickact"><button type="button" class="btn" data-fsel-state="status" ${off}>${this.t("actDecide")}</button><button type="button" class="btn" data-fsel-state="mark" ${off}>${this.t("markSet")}</button></span></div>${this.bulkForm()}</section>`;
   }
 
   // Step 4: a quick look at the object for 15 minutes, then the next regular scan decides; a whole new scan is the second button.
@@ -207,6 +211,8 @@ class FixMixin {
   fixView() {
     const f = this.data?.findings?.find(x => x.key === this.fixKey);
     const step = (n, title, body) => `<section class="panel fccard fixcard"><div class="pad"><small class="fceyebrow">${this.t("fixStepOf", { n })}</small><h3>${this.t(title)}</h3><div class="fixbody">${body}</div></div></section>`;
+    // The plan of this page outlives its finding: once it has fixed it, the result and "undo" stay until the plan is closed.
+    if (!f && this.fcPlanKey && this.plan) return `<div class="stack">${this.fcPlanBlock()}</div>`;
     if (!f) return `<div class="stack">${step(3, "fixStepCheck", `${this.fixCheckedFrom ? this.notice("info", this.t("fixDone")) : this.notice("info", this.t("fixGone"))}`)}<div class="pad"><button class="btn" data-action="view-back">${this.t("fixBack")}</button></div></div>`;
     const cur = Math.min(this.fixStep || 1, this.fixMax || 1), max = this.fixMax || 1, planOpen = Boolean(this.fcPlanKey && this.plan);
     const names = ["fixStepUnderstand", "fixStepRun", "fixStepCheck"];
@@ -249,7 +255,7 @@ class FixMixin {
       catch (err) { this.failed(err); }
     }), { yes: this.t("fixRefactorOnYes"), danger: false }));
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
-    root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { el.dataset.fixPickAll.split("|").forEach(k => this.findSel.add(k)); this.render(); });
+    root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { JSON.parse(el.dataset.fixPickAll).forEach(k => this.findSel.add(k)); this.render(); });
     root.querySelectorAll("[data-fix-work-off]").forEach(el => el.onclick = () => this.fixWork(false));
     root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-remove-all],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-look],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
     root.querySelectorAll("[data-fix-look]").forEach(el => el.onclick = () => this.startFixWatch());

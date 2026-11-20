@@ -136,13 +136,23 @@ class SettingsMixin {
       ${on !== saved ? `<div class="setrow"><small>${this.esc(this.optionsMessage || "")}</small><button class="btn primary" data-sidebar-save>${this.t("saveOptions")}</button></div>` : ""}</section>`;
   }
 
+  // The integration reloads after options are saved: ask again until it answers, instead of one try after a fixed wait.
+  async reloadAfterOptions() {
+    this.optionsMessage = "";
+    for (let i = 0; i < 6 && !this._gone; i++) {
+      await this.load(false);
+      if (this.data) return;
+      await new Promise(resolve => setTimeout(resolve, 3000));
+    }
+  }
+
   async saveSidebar() {
     try {
       await this._hass.callWS({ type: "ha_housekeeper/set_options", show_in_sidebar: this.sidebarDraft });
       this.sidebarDraft = undefined; this.optionsMessage = this.t("optionsSaved");
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
-      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+      setTimeout(() => this.reloadAfterOptions(), 4000);
     } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : this.errText(err); this.render(); }
   }
 
@@ -200,7 +210,7 @@ class SettingsMixin {
       this.outageModeDraft = this.refreshViewsDraft = undefined; this.optionsMessage = this.t("optionsSaved");
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
-      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+      setTimeout(() => this.reloadAfterOptions(), 4000);
     } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : this.errText(err); this.render(); }
   }
 
@@ -480,7 +490,7 @@ class SettingsMixin {
       this.optDraft = {};
       this.data = null; // the integration reloads; fetch again once it is back
       this.render();
-      setTimeout(() => { this.optionsMessage = ""; this.load(false); }, 4000);
+      setTimeout(() => this.reloadAfterOptions(), 4000);
     } catch (err) { this.optionsMessage = err?.code === "busy" ? this.t("optionsBusy") : err?.code === "thresholds_order" ? this.t("optionsOrder") : this.errText(err); this.render(); }
   }
 }

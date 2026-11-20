@@ -23,8 +23,10 @@ Object.assign(TEXT.en, {
 class TraceDiagMixin {
   async loadDiagExtras(entityId) {
     const d = this.diagState();
-    try { d.coverage = { ...(d.coverage || {}), [entityId]: await this._hass.callWS({ type: "ha_housekeeper/coverage", entity_id: entityId }) }; } catch (_) { /* section stays empty */ }
-    try { d.compare = { runs: (await this._hass.callWS({ type: "ha_housekeeper/trace_compare", entity_id: entityId })).runs, a: "", b: "", result: null, error: "" }; } catch (_) { d.compare = { runs: [], a: "", b: "", result: null, error: "" }; }
+    d.covError = "";
+    try { d.coverage = { ...(d.coverage || {}), [entityId]: await this._hass.callWS({ type: "ha_housekeeper/coverage", entity_id: entityId }) }; } catch (err) { d.covError = this.t("actionFailed", { detail: this.errText(err) }); }
+    // A failed load says so: "no finished runs" would be a statement about Home Assistant that is not known.
+    try { d.compare = { runs: (await this._hass.callWS({ type: "ha_housekeeper/trace_compare", entity_id: entityId })).runs, a: "", b: "", result: null, error: "" }; } catch (err) { d.compare = { runs: [], a: "", b: "", result: null, error: this.t("actionFailed", { detail: this.errText(err) }) }; }
     this.render();
   }
 
@@ -33,13 +35,13 @@ class TraceDiagMixin {
   }
 
   async setCoverage(enabled, clear = false) {
-    await this._hass.callWS({ type: "ha_housekeeper/coverage_set", enabled, clear });
+    try { await this._hass.callWS({ type: "ha_housekeeper/coverage_set", enabled, clear }); } catch (err) { this.failed(err); return; }
     await this.loadDiagExtras(this.diagState().sel);
   }
 
   coverageCard(entityId) {
     const view = this.diagState().coverage?.[entityId];
-    if (!view) return "";
+    if (!view) return this.diagState().covError ? this.notice("err", this.diagState().covError) : "";
     const toggle = view.enabled ? `<button class="btn" data-cov-set="off">${this.t("covOff")}</button><button class="btn quiet" data-cov-clear>${this.t("covClear")}</button>` : `<button class="btn" data-cov-set="on">${this.t("covOn")}</button>`;
     let body = `<div class="pad"><small>${this.t("covOffNote")}</small></div>`;
     if (view.enabled) {

@@ -185,7 +185,7 @@ class CleanupMixin {
   // What a meter change will do: the timeline of the two series, the facts behind it, the ID move and the transition.
   meterDetail(action) {
     const s = action.statistics || {}, lines = [];
-    const day = ts => this.formatDate(ts * 1000).split(",")[0];
+    const day = ts => this.formatDay(ts * 1000);
     const join = action.mode !== "id" && s.import_count;
     let timeline = "", facts = "";
     if (join) {
@@ -307,8 +307,10 @@ class CleanupMixin {
     try {
       const actions = this.cleanupKind === "replace_wizard" ? this.rwOneActions()
         : this.cleanupKind === "repair_counter" ? [this.counterRangeReq ? { kind: "repair_range", object_id: this.counterSel, mode: this.counterRangeReq.mode, range: this.counterRangeReq.range } : { kind: "repair_counter", object_id: this.counterSel, mode: this.counterMode || "hold" }]
-        : [...this.cleanupSel].map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.recorderFor(object_id) !== "keep" ? { recorder: this.recorderFor(object_id) } : {}) }));
+        : this.capIds([...this.cleanupSel]).map(object_id => ({ kind: this.cleanupKind, object_id, ...(REMOVAL_KINDS.includes(this.cleanupKind) && this.recorderFor(object_id) !== "keep" ? { recorder: this.recorderFor(object_id) } : {}) }));
+      const taken = new Set(actions.map(a => a.object_id)), capped = !pair && this.cleanupSel.size > actions.length;
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
+      if (capped) this.cleanupSel = new Set([...this.cleanupSel].filter(id => !taken.has(id)));
       this.openNewPlan(plan, null); this.toast(this.t("previewReady"));
     } catch (err) { this.cleanupError = this.errText(err); }
     this.cleanupBusy = false; this.render();
@@ -618,11 +620,11 @@ class CleanupMixin {
       const result = a.result;
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
       const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" || a.kind === "set_expose_new" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
-      const sub = [sub0 === a.name ? "" : sub0, a.delete_old ? this.t(a.delete_old === "helper" ? "planOldHelper" : "planOldDeleted") : a.disable_old ? this.t("planOldDisabled") : "", a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDate(a.backup.date).split(",")[0] : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
+      const sub = [sub0 === a.name ? "" : sub0, a.delete_old ? this.t(a.delete_old === "helper" ? "planOldHelper" : "planOldDeleted") : a.disable_old ? this.t("planOldDisabled") : "", a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDay(a.backup.date) : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
-      const undo = result?.state !== "done" || PURGE_KINDS.includes(a.kind) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
+      const undo = !this.undoWorks(a) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
         ? `<span class="askrow"><span>${this.t("undoAskOne")}</span><button class="btn danger" data-undo-one-yes="${this.esc(a.object_id)}">${this.t("undoYes")}</button><button class="btn accent" data-undo-no>${this.t("cancelRun")}</button></span>`
         : `<button class="btn accent" data-undo-one="${this.esc(a.object_id)}"><ha-icon icon="mdi:undo-variant"></ha-icon>${this.t("undoOne")}</button>`;
       return `<div class="row planrow ${a.verdict === "blocked" ? "dim" : ""}"${!settled && !idle && a.verdict !== "ok" ? ` data-rowtone="${a.verdict === "blocked" ? "red" : "warn"}"` : ""}><span class="tile ${tone}"><ha-icon icon="${settled || idle || a.verdict === "ok" ? "mdi:check" : a.verdict === "review" ? "mdi:alert-outline" : "mdi:close-octagon-outline"}"></ha-icon></span>

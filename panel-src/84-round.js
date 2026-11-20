@@ -42,7 +42,7 @@ class RoundMixin {
   roundGroup(title, hint, rows, picked, withAll) {
     if (!rows.length) return "";
     const keys = rows.filter(r => r.kind !== "merge" && r.group !== "blocked").map(r => r.finding_key);
-    const all = withAll && keys.length ? `<button type="button" class="btn" data-round-all="${this.esc(keys.join("|"))}">${this.t("roundPickAll")}</button>` : "";
+    const all = withAll && keys.length ? `<button type="button" class="btn" data-round-all="${this.esc(JSON.stringify(keys))}">${this.t("roundPickAll")}</button>` : "";
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t(title)} (${this.formatNumber(rows.length)})</h2><p>${this.t(hint)}</p></div>${all}</div>${rows.map(r => this.roundRow(r, picked)).join("")}</section>`;
   }
 
@@ -80,7 +80,7 @@ class RoundMixin {
 
   bindRound(root) {
     root.querySelectorAll("[data-round-pick]").forEach(el => el.onchange = () => { if (el.checked) this.round.picked.add(el.dataset.roundPick); else this.round.picked.delete(el.dataset.roundPick); this.render(); });
-    root.querySelectorAll("[data-round-all]").forEach(el => el.onclick = () => { el.dataset.roundAll.split("|").forEach(k => this.round.picked.add(k)); this.render(); });
+    root.querySelectorAll("[data-round-all]").forEach(el => el.onclick = () => { JSON.parse(el.dataset.roundAll).forEach(k => this.round.picked.add(k)); this.render(); });
     root.querySelectorAll("[data-round-one]").forEach(el => el.onclick = () => this.roundPlan([el.dataset.roundOne]));
     root.querySelector("[data-round-plan]")?.addEventListener("click", () => this.roundPlan([...this.round.picked]));
     root.querySelectorAll("[data-round-merge]").forEach(el => el.onclick = () => this.startCleanup("replace_references", () => { this.replOld = el.dataset.roundMerge; this.replNew = el.dataset.roundInto; }));
