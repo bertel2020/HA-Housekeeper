@@ -103,16 +103,31 @@ class EntitySpaceMixin {
       ],
       text: e => `${this.spaceName(e.entity_id)} ${e.entity_id}`, tie: e => e.entity_id, empty: "dbSeriesNone",
       columns: [
+        ...(interim ? [] : [{ key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.map(e => e.entity_id)), cell: e => this.excludeBox(e.entity_id) }]),
         { key: "name", label: "utName", dir: "asc", cell: e => (interim ? this.nameCell(this.spaceName(e.entity_id), e.entity_id) : `<button type="button" class="link namelink" data-space-open="${this.esc(e.entity_id)}">${this.nameCell(this.spaceName(e.entity_id), e.entity_id, "span")}</button>`) },
         { key: "size", label: "spaceColSize", dir: "desc", cell: e => `<span class="dbshare">${this.sysShare(e.bytes, max)}<b>${this.esc(this.formatBytes(e.bytes))}</b></span>` },
         { key: "rows", label: "spaceColRows", dir: "desc", cell: e => num(e.rows) },
         { key: "variants", label: "spaceColVariants", dir: "desc", cell: e => num(e.variants) },
+        ...(interim ? [] : [{ key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: e => this.spaceRowMenu(e.entity_id) }]),
       ],
       rowAttrs: e => (interim ? 'class="static"' : `data-space-ent="${this.esc(e.entity_id)}" tabindex="0" role="button" aria-expanded="${this.spaceSel === e.entity_id}"`),
-      after: e => (!interim && !this.spaceSelTop && this.spaceSel === e.entity_id ? `<tr class="static"><td colspan="4"><div class="spacekeys">${this.spaceAttrsBlock(e.entity_id, e)}</div></td></tr>` : ""),
+      after: e => (!interim && !this.spaceSelTop && this.spaceSel === e.entity_id ? `<tr class="static"><td colspan="6"><div class="spacekeys">${this.spaceAttrsBlock(e.entity_id, e)}</div></td></tr>` : ""),
       bare: true,
       ...(interim ? {} : { exportName: "entity-space", header: ["Name", "Entity", "Bytes", this.t("spaceColRows"), this.t("spaceColVariants")], rows: e => [this.spaceName(e.entity_id), e.entity_id, e.bytes, e.rows, e.variants] }),
     });
+  }
+
+  // The three dots of a row: the entity, its attributes, the exclusion (the same pick as the box) and the trimming of its history.
+  spaceRowMenu(id) {
+    const marked = this.excludeSel.has(id), page = this.findObject(`entity:${id}`);
+    return this.rowMenuHtml([
+      page ? ["mdi:open-in-new", "polOpenObject", `data-space-open="${this.esc(id)}"`] : null,
+      this.canMoreInfo(id) ? ["mdi:information-outline", "openEntity", `data-more-info="${this.esc(id)}"`] : null,
+      ["mdi:format-list-bulleted-square", "spaceAttrsOpen", `data-space-show="${this.esc(id)}"`],
+      null,
+      ["mdi:database-off-outline", marked ? "spaceExOn" : "spaceExAdd", `data-space-ex="${this.esc(id)}"`],
+      page ? ["mdi:content-cut", "spaceTrim", `data-object="entity:${this.esc(id)}"`] : null,
+    ]);
   }
 
   // What opens below the rows states and state_attributes: the button, the running measurement or its result.
@@ -139,7 +154,7 @@ class EntitySpaceMixin {
       r.loose_attrs_bytes ? this.t("spaceLoose", { size: this.formatBytes(r.loose_attrs_bytes), n: this.formatNumber(r.loose_attrs_rows) }) : "",
       r.entities_total > r.entities.length ? this.t("spaceMore", { shown: this.formatNumber(r.entities.length), total: this.formatNumber(r.entities_total) }) : "",
     ].filter(Boolean).map(x => `<p class="factnote">${this.esc(x)}</p>`).join("");
-    return `${top}<div class="spacehead"><span>${this.esc(this.t("spaceAt", { when, took }))}</span></div>${partial}${this.spaceList(r)}${notes}`;
+    return `${top}<div class="spacehead"><span>${this.esc(this.t("spaceAt", { when, took }))}</span></div>${partial}${this.excludeCard([], { only: false })}${this.spaceList(r)}${notes}`;
   }
 
   // The attributes of one entity by their share; `measured` is its row of the measurement (bytes instead of lengths), `page` leaves out the way to the page.
@@ -202,11 +217,17 @@ class EntitySpaceMixin {
       this.render();
     });
     root.querySelectorAll("[data-space-ent]").forEach(el => el.onclick = ev => {
-      if (ev?.target?.closest?.("button, a, input") && ev.target.closest("tr") === el) return;
+      if (ev?.target?.closest?.("button, a, input, summary, .menupop") && ev.target.closest("tr") === el) return;
       const id = el.dataset.spaceEnt;
       this.spaceSel = this.spaceSel === id && !this.spaceSelTop ? "" : id;
       this.spaceSelTop = false;
       if (this.spaceSel && !this.spaceAttrs?.[id]?.data) this.loadSpaceAttrs(id);
+      else this.render();
+    });
+    root.querySelectorAll("[data-space-show]").forEach(el => el.onclick = () => {
+      const id = el.dataset.spaceShow;
+      this.spaceSel = id; this.spaceSelTop = false;
+      if (!this.spaceAttrs?.[id]?.data) this.loadSpaceAttrs(id);
       else this.render();
     });
     root.querySelectorAll("[data-space-attrs]").forEach(el => el.onclick = () => this.loadSpaceAttrs(el.dataset.spaceAttrs));
