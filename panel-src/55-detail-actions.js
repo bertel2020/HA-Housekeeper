@@ -11,7 +11,7 @@ class DetailActionsMixin {
   // first one becomes the next step). Such a button stands in that finding's row, not on its own.
   fixItems(item, key) {
     const open = this.data.findings.filter(f => !f.ignored && this.findingKey(f) === key);
-    const out = this.missingEntities(key).map(id => ({ attr: `data-act-replace="${this.esc(id)}"`, icon: "mdi:swap-horizontal", label: `${this.t("actReplace")} ${this.esc(id)}`, hint: "actHintReplace", finding: open.find(f => f.affected_object === id && f.classification === "broken_reference")?.key || true }));
+    const out = this.missingEntities(key).map(id => ({ attr: `data-act-replace="${this.esc(id)}"`, icon: "mdi:swap-horizontal", label: `${this.t("actReplace")} ${this.esc(id)}`, shortLabel: this.t("actReplace").replace(/\s*[:：]\s*$/, ""), hint: "actHintReplace", finding: open.find(f => f.affected_object === id && f.classification === "broken_reference")?.key || true }));
     const broken = open.some(f => f.classification === "broken_reference");
     const dup = item.object_type === "entity" ? open.find(f => f.rule_id === "entity.possible_duplicate" && f.affected_object) : null;
     const down = item.object_type === "entity" ? open.find(f => f.rule_id.startsWith("entity.") && ["orphaned", "unavailable"].includes(f.classification)) : null;
