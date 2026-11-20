@@ -272,7 +272,7 @@ class FindingsMixin {
     // The export button of the list bar, as on every list: the rows as shown, or only the selected ones.
     const cols = ["rule_id", "topic", "classification", "confidence", "confidence_level", "impact", "cause", "object_id", "name", "affected_object", "first_detected_at", "location"];
     this.setExporter("findings", "ha-housekeeper-findings", cols, () => this.exportRows().map(r => cols.map(c => r[c])));
-    const bar = this.listBar("findings", { table: true, dense: true, note: false, sorts: this.findingSorts(), filters });
+    const bar = this.listBar("findings", { table: true, dense: true, note: false, fold: true, sorts: this.findingSorts(), filters });
     this.ensureSeries();
     const spark = (key, rising) => this.series ? this.sparkline(key, rising) : "";
     this.ensureCorrelations();

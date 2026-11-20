@@ -711,6 +711,7 @@
 "allAges": "最后条目：任意",
 "allIntegrations": "所有集成",
 "allCauseTexts": "所有原因",
+"filterMenu": "筛选",
 "statAge30": "最后条目超过 30 天",
 "statAge365": "最后条目超过 1 年",
 "statAge730": "最后条目超过 2 年",

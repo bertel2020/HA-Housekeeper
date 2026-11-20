@@ -711,6 +711,7 @@
 "allAges": "Dernière entrée : toutes",
 "allIntegrations": "Toutes les intégrations",
 "allCauseTexts": "Toutes les causes",
+"filterMenu": "Filtres",
 "statAge30": "Dernière entrée de plus de 30 jours",
 "statAge365": "Dernière entrée de plus d’un an",
 "statAge730": "Dernière entrée de plus de 2 ans",

@@ -8762,3 +8762,14 @@ test("a failed read of the details is asked for again, and removing decisions as
   assert.ok(!el.details.get("entity:sensor.b")._failed);
   assert.ok(el.t("confirmDecisionsRemove", { count: 3 }).includes("3"));
 });
+
+test("the findings list keeps its filters behind one button that counts them, and opens them on a click", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, findings: [{ ...DATA.findings[0], key: "k1", ignored: false }] };
+  el.lv = {}; el._colOpen = ""; el.findingsView(); el.lv.findings.f.impact = "low";
+  let html = el.findingsView();
+  assert.ok(html.includes('data-col-open="findings:filter"') && html.includes('class="filterbadge">1') && !html.includes('data-lf="findings|type"'));
+  el._colOpen = "findings:filter";
+  html = el.findingsView();
+  assert.ok(html.includes('data-lf="findings|type"') && html.includes('data-lf="findings|impact"'));
+});

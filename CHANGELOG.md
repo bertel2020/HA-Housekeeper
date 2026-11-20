@@ -20,7 +20,7 @@
 - **Findings:** The row menu and the actions menu offer the next steps right away:
   - Remove unneeded entities and delete automations, one by one or together as a plan with a preview.
   - Disable or replace entities that are down; for broken references, replace with the suggestion filled in.
-  - A new “Cause” filter shows, for example, all entities their integration no longer provides.
+  - A new “Cause” filter shows, for example, all entities their integration no longer provides. The filters now sit behind one “Filters” button that counts how many are on.
 
 ### Changed
 
