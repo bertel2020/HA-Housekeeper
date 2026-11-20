@@ -15147,6 +15147,11 @@ class EntitySpaceMixin {
   spaceList(result, interim = false) {
     const items = result.entities || [], max = Math.max(0, ...items.map(e => e.bytes));
     const num = v => this.esc(this.formatNumber(v ?? 0));
+    // What the recorder load already knows about an entity: excluded, or recommended for the exclusion. Empty until that list is in.
+    if (!interim) this.ensureCosts();
+    const costOf = new Map((this.costs?.entities || []).map(e => [e.entity_id, e]));
+    const state = id => { const c = costOf.get(id); return this.excludeSel.has(id) && !c?.excluded ? "marked" : c?.excluded ? "excluded" : c && this.excludeInfo(c).suggest ? "suggest" : ""; };
+    const tags = id => { const x = state(id); return x ? `<span class="extags"><span class="pill ${{ marked: "blue", excluded: "ok", suggest: "warn" }[x]}">${this.t({ marked: "spaceExOn", excluded: "recorderExcluded", suggest: "exSuggest" }[x])}</span></span>` : ""; };
     return this.sysList(interim ? "spaceinterim" : "spaceents", items, {
       sort: "size", dir: "desc",
       sorts: [
@@ -15158,7 +15163,7 @@ class EntitySpaceMixin {
       text: e => `${this.spaceName(e.entity_id)} ${e.entity_id}`, tie: e => e.entity_id, empty: "dbSeriesNone",
       columns: [
         ...(interim ? [] : [{ key: "sel", label: "stormColSelect", sortable: false, narrow: true, allBox: rows => this.excludeAllBox(rows.map(e => e.entity_id)), cell: e => this.excludeBox(e.entity_id) }]),
-        { key: "name", label: "utName", dir: "asc", cell: e => (interim ? this.nameCell(this.spaceName(e.entity_id), e.entity_id) : `<button type="button" class="link namelink" data-space-open="${this.esc(e.entity_id)}">${this.nameCell(this.spaceName(e.entity_id), e.entity_id, "span")}</button>`) },
+        { key: "name", label: "utName", dir: "asc", cell: e => (interim ? this.nameCell(this.spaceName(e.entity_id), e.entity_id) : `<button type="button" class="link namelink" data-space-open="${this.esc(e.entity_id)}">${this.nameCell(this.spaceName(e.entity_id), e.entity_id, "span")}</button>${tags(e.entity_id)}`) },
         { key: "size", label: "spaceColSize", dir: "desc", cell: e => `<span class="dbshare">${this.sysShare(e.bytes, max)}<b>${this.esc(this.formatBytes(e.bytes))}</b></span>` },
         { key: "rows", label: "spaceColRows", dir: "desc", cell: e => num(e.rows) },
         { key: "variants", label: "spaceColVariants", dir: "desc", cell: e => num(e.variants) },
@@ -15166,7 +15171,9 @@ class EntitySpaceMixin {
       ],
       rowAttrs: e => (interim ? 'class="static"' : `data-space-ent="${this.esc(e.entity_id)}" tabindex="0" role="button" aria-expanded="${this.spaceSel === e.entity_id}"`),
       after: e => (!interim && !this.spaceSelTop && this.spaceSel === e.entity_id ? `<tr class="static"><td colspan="6"><div class="spacekeys">${this.spaceAttrsBlock(e.entity_id, e)}</div></td></tr>` : ""),
-      bare: true,
+      bare: interim,
+      filters: [{ name: "state", all: this.t("recorderFilterAll"), options: [["suggest", this.t("exSuggest")], ["marked", this.t("spaceExOn")], ["excluded", this.t("recorderExcluded")]] }],
+      filterFns: { state: (e, v) => state(e.entity_id) === v },
       ...(interim ? {} : { exportName: "entity-space", header: ["Name", "Entity", "Bytes", this.t("spaceColRows"), this.t("spaceColVariants")], rows: e => [this.spaceName(e.entity_id), e.entity_id, e.bytes, e.rows, e.variants] }),
     });
   }
