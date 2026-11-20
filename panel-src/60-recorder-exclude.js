@@ -103,7 +103,7 @@ class ExcludeMixin {
       <div class="trimfacts"><div><strong>${this.t("trimFactStats")}</strong><small>${this.t("trimFactStatsSub")}</small></div><div><strong>${this.t("trimFactRows")}</strong><small>${this.t("trimFactRowsSub")}</small></div></div>` : "";
     return `<div class="trimbox"><div class="trimhead"><div><h3>${this.t("trimTitle")}</h3><p class="factnote">${this.t("trimHint")}</p></div><span class="pill mute">${all === 1 ? this.t("trimChosenOne") : this.t("trimChosen", { count: all })}</span></div>
       <div class="trimsentence"><strong>${this.t("trimKeep")}</strong><span class="trimseg" role="radiogroup">${seg}</span></div>${timeline}
-      <div class="trimfoot"><p class="factnote">${this.t("trimFoot")}</p><button class="btn primary" data-trim-plan ${this.trimBusy ? 'disabled aria-busy="true"' : ""}>${this.trimBusy ? this.t("trimBusy") : n === 1 ? this.t("trimPreviewOne") : this.t("trimPreview", { count: n })}</button></div>${this.trimError ? `<p class="factnote" role="alert">${this.esc(this.t("trimFailed", { detail: this.trimError }))}</p>` : ""}</div>`;
+      <div class="trimfoot"><p class="factnote">${this.t("trimFoot")}</p><span class="trimbtns"><button type="button" class="btn quiet" data-trim-cancel>${this.t("cancelRun")}</button><button class="btn primary" data-trim-plan ${this.trimBusy ? 'disabled aria-busy="true"' : ""}>${this.trimBusy ? this.t("trimBusy") : n === 1 ? this.t("trimPreviewOne") : this.t("trimPreview", { count: n })}</button></span></div>${this.trimError ? `<p class="factnote" role="alert">${this.esc(this.t("trimFailed", { detail: this.trimError }))}</p>` : ""}</div>`;
   }
 
   async trimPlan() {
@@ -120,6 +120,7 @@ class ExcludeMixin {
 
   bindExclude(root) {
     root.querySelectorAll("[data-trim-days]").forEach(el => el.onclick = () => { this.trimDays = Number(el.dataset.trimDays) || 14; this.render(); });
+    root.querySelector("[data-trim-cancel]")?.addEventListener("click", () => { this.excludeSel.clear(); this.trimError = ""; this.render(); });
     root.querySelector("[data-trim-plan]")?.addEventListener("click", () => this.trimPlan());
     root.querySelectorAll("[data-exsel]").forEach(el => el.onchange = () => { el.checked ? this.excludeSel.add(el.dataset.exsel) : this.excludeSel.delete(el.dataset.exsel); this.render(); });
     root.querySelectorAll("[data-exsel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { el.dataset.exselAll.split(",").forEach(id => (el.checked ? this.excludeSel.add(id) : this.excludeSel.delete(id))); this.render(); }; });
