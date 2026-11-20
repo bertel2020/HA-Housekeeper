@@ -3400,6 +3400,7 @@ class FindingsMixin {
     const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
     const facts = this.selectionFacts(), picked = facts.picked;
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
+    const removable = [...new Set(picked.filter(f => this.removableFinding(f)).map(f => f.object_id))];
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
@@ -3419,6 +3420,7 @@ class FindingsMixin {
         facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
         facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
       ],
+      [removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", some(removable.length)) : ""],
       [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
       [
         facts.owners.size === 1 ? item("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
@@ -11300,6 +11302,11 @@ class CausesMixin {
 
   // The menu at the end of a row: what can be decided about the finding, and where it applies the removal.
   // An open decision shows its form below the row. One menu for open and decided findings: only its top block differs.
+  // A finding of an entity that is unneeded (not the duplicates, they are merged) can be removed by a plan.
+  removableFinding(f) {
+    return Boolean(f) && !f.ignored && this.findingTopic(f) === "unneeded" && f.rule_id.startsWith("entity.") && f.rule_id !== "entity.possible_duplicate";
+  }
+
   rowMenu(f) {
     if (!f) return "";
     const key = this.esc(f.key);
@@ -11324,7 +11331,7 @@ class CausesMixin {
     const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, "", " tech") : "";
     const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep tech">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"), " tech")}` : "";
     const about = mark + exc;
-    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}<hr class="menusep">`;
+    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}${this.removableFinding(f) ? item("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`) : ""}<hr class="menusep">`;
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep tech">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
   }
 
@@ -14122,6 +14129,16 @@ class DetailActionsMixin {
     this.render();
   }
 
+  // The removal of several entities at once, as one plan with its preview.
+  async planRemoveMany(ids) {
+    if (!ids.length) return;
+    try {
+      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "remove_entity", object_id })))) return;
+      this.selected = null;
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   async planLabel(entityId, label) {
     try {
       if (!await this.newPlan([{ kind: "add_label", object_id: entityId, target: label }])) return;
@@ -14165,6 +14182,8 @@ class DetailActionsMixin {
       this.render();
     });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
+    root.querySelectorAll("[data-find-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.findRemove));
+    root.querySelectorAll("[data-fsel-remove]").forEach(el => el.onclick = () => this.planRemoveMany([...new Set(this.pickedFindings().filter(f => this.removableFinding(f)).map(f => f.object_id))]));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
     root.querySelector("[data-act-label-plan]")?.addEventListener("click", e => this.planLabel(e.currentTarget.dataset.actLabelPlan, root.querySelector("[data-act-label]")?.value || this.actLabel));

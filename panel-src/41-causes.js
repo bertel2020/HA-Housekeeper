@@ -141,6 +141,11 @@ class CausesMixin {
 
   // The menu at the end of a row: what can be decided about the finding, and where it applies the removal.
   // An open decision shows its form below the row. One menu for open and decided findings: only its top block differs.
+  // A finding of an entity that is unneeded (not the duplicates, they are merged) can be removed by a plan.
+  removableFinding(f) {
+    return Boolean(f) && !f.ignored && this.findingTopic(f) === "unneeded" && f.rule_id.startsWith("entity.") && f.rule_id !== "entity.possible_duplicate";
+  }
+
   rowMenu(f) {
     if (!f) return "";
     const key = this.esc(f.key);
@@ -165,7 +170,7 @@ class CausesMixin {
     const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, "", " tech") : "";
     const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep tech">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"), " tech")}` : "";
     const about = mark + exc;
-    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}<hr class="menusep">`;
+    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}${this.removableFinding(f) ? item("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`) : ""}<hr class="menusep">`;
     return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep tech">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
   }
 

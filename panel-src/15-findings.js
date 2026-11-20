@@ -367,6 +367,7 @@ class FindingsMixin {
     const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
     const facts = this.selectionFacts(), picked = facts.picked;
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
+    const removable = [...new Set(picked.filter(f => this.removableFinding(f)).map(f => f.object_id))];
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
@@ -386,6 +387,7 @@ class FindingsMixin {
         facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
         facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
       ],
+      [removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", some(removable.length)) : ""],
       [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
       [
         facts.owners.size === 1 ? item("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",

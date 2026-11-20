@@ -168,6 +168,16 @@ class DetailActionsMixin {
     this.render();
   }
 
+  // The removal of several entities at once, as one plan with its preview.
+  async planRemoveMany(ids) {
+    if (!ids.length) return;
+    try {
+      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "remove_entity", object_id })))) return;
+      this.selected = null;
+    } catch (err) { this.failed(err); }
+    this.render();
+  }
+
   async planLabel(entityId, label) {
     try {
       if (!await this.newPlan([{ kind: "add_label", object_id: entityId, target: label }])) return;
@@ -211,6 +221,8 @@ class DetailActionsMixin {
       this.render();
     });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
+    root.querySelectorAll("[data-find-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.findRemove));
+    root.querySelectorAll("[data-fsel-remove]").forEach(el => el.onclick = () => this.planRemoveMany([...new Set(this.pickedFindings().filter(f => this.removableFinding(f)).map(f => f.object_id))]));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
     root.querySelector("[data-act-label-plan]")?.addEventListener("click", e => this.planLabel(e.currentTarget.dataset.actLabelPlan, root.querySelector("[data-act-label]")?.value || this.actLabel));
