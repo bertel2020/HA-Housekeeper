@@ -171,6 +171,15 @@ class BackupCleanupMixin {
     this.render();
   }
 
+  // The deletion of several automations at once, as one plan with its preview.
+  async automationDeleteMany(ids) {
+    if (!ids.length) return;
+    try {
+      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "delete_automation", object_id })))) return;
+    } catch (err) { this.toast?.(this.t("autoDeleteFailed", { detail: this.errText(err) })); }
+    this.render();
+  }
+
   // What leaves the file: the whole block of the automation, line by line.
   deleteDiff(a) {
     if (!a.yaml) return "";
@@ -194,6 +203,7 @@ class BackupCleanupMixin {
     });
     root.querySelector("[data-bkc-pick]")?.addEventListener("click", () => this.loadBackupCleanup(true));
     root.querySelector("[data-bkc-plan]")?.addEventListener("click", () => this.backupDeletePlan());
+    root.querySelectorAll("[data-fsel-delete-auto]").forEach(el => el.addEventListener("click", () => this.automationDeleteMany([...new Set(this.pickedFindings().filter(f => this.deletableAutomation(f)).map(f => f.object_id))])));
     root.querySelectorAll("[data-auto-delete]").forEach(el => el.addEventListener("click", () => this.automationDeletePlan(el.dataset.autoDelete)));
   }
 }

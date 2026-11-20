@@ -146,6 +146,11 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && this.findingTopic(f) === "unneeded" && f.rule_id.startsWith("entity.") && f.rule_id !== "entity.possible_duplicate";
   }
 
+  // An automation finding the plan to delete the automation answers.
+  deletableAutomation(f) {
+    return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id);
+  }
+
   rowMenu(f) {
     if (!f) return "";
     const key = this.esc(f.key);

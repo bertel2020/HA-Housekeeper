@@ -3401,6 +3401,7 @@ class FindingsMixin {
     const facts = this.selectionFacts(), picked = facts.picked;
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
     const removable = [...new Set(picked.filter(f => this.removableFinding(f)).map(f => f.object_id))];
+    const deletable = [...new Set(picked.filter(f => this.deletableAutomation(f)).map(f => f.object_id))];
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
@@ -3420,7 +3421,10 @@ class FindingsMixin {
         facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
         facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
       ],
-      [removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", some(removable.length)) : ""],
+      [
+        removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", some(removable.length)) : "",
+        deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", some(deletable.length)) : "",
+      ],
       [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
       [
         facts.owners.size === 1 ? item("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
@@ -11307,6 +11311,11 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && this.findingTopic(f) === "unneeded" && f.rule_id.startsWith("entity.") && f.rule_id !== "entity.possible_duplicate";
   }
 
+  // An automation finding the plan to delete the automation answers.
+  deletableAutomation(f) {
+    return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id);
+  }
+
   rowMenu(f) {
     if (!f) return "";
     const key = this.esc(f.key);
@@ -17654,6 +17663,15 @@ class BackupCleanupMixin {
     this.render();
   }
 
+  // The deletion of several automations at once, as one plan with its preview.
+  async automationDeleteMany(ids) {
+    if (!ids.length) return;
+    try {
+      if (!await this.newPlan(ids.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "delete_automation", object_id })))) return;
+    } catch (err) { this.toast?.(this.t("autoDeleteFailed", { detail: this.errText(err) })); }
+    this.render();
+  }
+
   // What leaves the file: the whole block of the automation, line by line.
   deleteDiff(a) {
     if (!a.yaml) return "";
@@ -17677,6 +17695,7 @@ class BackupCleanupMixin {
     });
     root.querySelector("[data-bkc-pick]")?.addEventListener("click", () => this.loadBackupCleanup(true));
     root.querySelector("[data-bkc-plan]")?.addEventListener("click", () => this.backupDeletePlan());
+    root.querySelectorAll("[data-fsel-delete-auto]").forEach(el => el.addEventListener("click", () => this.automationDeleteMany([...new Set(this.pickedFindings().filter(f => this.deletableAutomation(f)).map(f => f.object_id))])));
     root.querySelectorAll("[data-auto-delete]").forEach(el => el.addEventListener("click", () => this.automationDeletePlan(el.dataset.autoDelete)));
   }
 }
