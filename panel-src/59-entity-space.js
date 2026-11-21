@@ -121,7 +121,7 @@ class EntitySpaceMixin {
       bare: interim,
       filters: [{ name: "state", all: this.t("recorderFilterAll"), options: [["suggest", this.t("exSuggest")], ["marked", this.t("spaceExOn")], ["excluded", this.t("recorderExcluded")]] }],
       filterFns: { state: (e, v) => state(e.entity_id) === v },
-      ...(interim ? {} : { exportName: "entity-space", header: ["Name", "Entity", "Bytes", this.t("spaceColRows"), this.t("spaceColVariants")], rows: e => [this.spaceName(e.entity_id), e.entity_id, e.bytes, e.rows, e.variants] }),
+      ...(interim ? {} : { exportName: "entity-space", header: [this.t("utName"), this.t("entity"), "Bytes", this.t("spaceColRows"), this.t("spaceColVariants")], rows: e => [this.spaceName(e.entity_id), e.entity_id, e.bytes, e.rows, e.variants] }),
     });
   }
 

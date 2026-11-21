@@ -182,7 +182,7 @@ class DbHealthMixin {
         this.sysSizeColumns(max)[0],
         { key: "share", label: "dbColPct", sortable: false, cell: t => `<span class="dbshare">${this.sysShare(t.bytes, total)}<b>${this.esc(`${this.formatNumber(share(t))} %`)}</b></span>` },
       ],
-      exportName: "recorder-tables", header: [this.t("dbColTable"), "Name", "Bytes", "%"], rows: t => [label(t), t.name, t.bytes, share(t)],
+      exportName: "recorder-tables", header: [this.t("dbColTable"), this.t("utName"), "Bytes", "%"], rows: t => [label(t), t.name, t.bytes, share(t)],
       // states and state_attributes unfold the space per entity below them.
       rowAttrs: t => (this.spaceTable(t.name) ? `data-space-toggle="${this.esc(t.name)}" tabindex="0" role="button" aria-expanded="${this.spaceOpen === t.name}"` : 'class="static"'),
       after: t => (this.spaceOpen === t.name ? `<tr class="static"><td colspan="3"><div class="spacebox">${this.spaceBlock()}</div></td></tr>` : ""),
