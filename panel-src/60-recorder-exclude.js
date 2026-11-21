@@ -91,7 +91,15 @@ class ExcludeMixin {
     const bar = `<div class="toolbar exbar${any ? "" : " nosel"}">${only && (sug || this.exOnlySug) ? `<button type="button" class="chip${this.exOnlySug ? " active" : ""}" data-ex-only aria-pressed="${Boolean(this.exOnlySug)}">${this.t("exOnlySug")}</button>` : ""}${sug ? `<button type="button" class="chip" data-ex-suggested>${this.t("exPickSuggested")}</button>` : ""}${any ? `<button type="button" class="chip" data-ex-clear>${this.t("clearSelection")}</button>` : ""}${label ? `<span class="selcount" role="status" title="${this.esc(this.t("exclHint"))}">${label}</span>` : ""}<span class="toolgap"></span>${n ? `<button class="btn primary" data-copy-snippet title="${this.esc(this.t("exclHint"))}">${this.snippetCopied ? this.t("recorderCopied") : this.t("exCopy")}</button>` : ""}${leftNote}</div>`;
     const steps = `<div class="exsteps"><strong>${this.t("exStepsTitle")}</strong><ol><li>${this.t("exStep1")}</li><li>${this.t("exStep2")}</li><li>${this.t("exStep3")}</li></ol></div>`;
     const rule = `<p class="factnote exrule">${this.t("exRule", { min: EXCLUDE_MIN_PER_DAY })}</p>`;
-    return `${bar}${rule}${n ? `<pre class="code exblock">${this.esc(this.excludeSnippet())}</pre>${steps}` : ""}${any ? this.trimBlock() : ""}`;
+    return `${bar}${rule}${n ? `<pre class="code exblock">${this.esc(this.excludeSnippet())}</pre>${steps}` : ""}${this.trimPart(n, trim)}`;
+  }
+
+  // Trimming the old history belongs to what is already excluded. For entities that are only picked to be excluded it
+  // stays behind a quiet button, so the way of the exclusion (copy the YAML) is not mistaken for a step that deletes.
+  trimPart(n, trim) {
+    if (!n && !trim) return "";
+    if (trim || this.trimOpen) return this.trimBlock();
+    return `<div class="toolbar"><button type="button" class="btn quiet" data-trim-open>${this.t("exTrimToo")}</button></div>`;
   }
 
   // Deleting the states stored before: the exclusion alone leaves them. Made as an ordinary plan.
@@ -121,14 +129,15 @@ class ExcludeMixin {
 
   bindExclude(root) {
     root.querySelectorAll("[data-trim-days]").forEach(el => el.onclick = () => { this.trimDays = Number(el.dataset.trimDays) || 14; this.render(); });
-    root.querySelector("[data-trim-cancel]")?.addEventListener("click", () => { this.excludeSel.clear(); this.trimError = ""; this.render(); });
+    root.querySelector("[data-trim-cancel]")?.addEventListener("click", () => { this.excludeSel.clear(); this.trimOpen = false; this.trimError = ""; this.render(); });
+    root.querySelector("[data-trim-open]")?.addEventListener("click", () => { this.trimOpen = true; this.render(); });
     root.querySelector("[data-trim-plan]")?.addEventListener("click", () => this.trimPlan());
     root.querySelectorAll("[data-exsel]").forEach(el => el.onchange = () => { el.checked ? this.excludeSel.add(el.dataset.exsel) : this.excludeSel.delete(el.dataset.exsel); this.render(); });
     root.querySelectorAll("[data-exsel-all]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { el.dataset.exselAll.split(",").forEach(id => (el.checked ? this.excludeSel.add(id) : this.excludeSel.delete(id))); this.render(); }; });
     root.querySelector("[data-ex-suggested]")?.addEventListener("click", () => { (this._exSuggested || []).forEach(id => this.excludeSel.add(id)); this.render(); });
     root.querySelector("[data-ex-left]")?.addEventListener("click", () => { this.excludeLeft().ids.forEach(id => this.excludeSel.add(id)); this.render(); });
     root.querySelector("[data-ex-only]")?.addEventListener("click", () => { this.exOnlySug = !this.exOnlySug; this.pages.costs = 1; this.pages.stormentities = 1; this.render(); });
-    root.querySelector("[data-ex-clear]")?.addEventListener("click", () => { this.excludeSel.clear(); this.render(); });
+    root.querySelector("[data-ex-clear]")?.addEventListener("click", () => { this.excludeSel.clear(); this.trimOpen = false; this.render(); });
     root.querySelector("[data-copy-snippet]")?.addEventListener("click", async () => {
       try { await this.copyText(this.excludeSnippet()); this.snippetCopied = true; } catch (_) { this.snippetCopied = false; }
       this.render();

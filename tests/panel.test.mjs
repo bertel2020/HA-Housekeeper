@@ -5209,7 +5209,7 @@ test("the selection can be trimmed: a plan with a day count for each entity, and
   const { el } = panel("en");
   el.excludeSel.add("sensor.hue");
   el.excludeSel.add("sensor.hue2");
-  el.trimDays = 30;
+  el.trimDays = 30; el.trimOpen = true;
   const card = el.excludeCard([]);
   assert.ok(card.includes("Trim the old history") && card.includes("2 entities selected") && card.includes("Create preview (2)"));
   let sent;
@@ -5457,6 +5457,19 @@ test("the detail page offers a rename and an area for one entity and sends one a
   await el.makeDetailPlan({ kind: "rename_entity", object_id: item.object_id, target: "light.hall" });
   await el.makeDetailPlan({ kind: "set_area", object_id: item.object_id, target: "kitchen" });
   assert.equal(JSON.stringify(calls.map(c => c.actions[0].kind)), JSON.stringify(["rename_entity", "set_area"]));
+});
+
+test("trimming the old history waits behind a quiet button while entities are only picked to be excluded", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true } };
+  el.excludedIds = () => new Set(["sensor.done"]);
+  el.excludeSel = new Set(["sensor.new"]);
+  let html = el.excludeCard([]);
+  assert.ok(html.includes("data-trim-open") && !html.includes("data-trim-plan"), "picked for exclusion: only the quiet button");
+  el.trimOpen = true;
+  assert.ok(el.excludeCard([]).includes("data-trim-plan") && !el.excludeCard([]).includes("data-trim-open"));
+  el.trimOpen = false; el.excludeSel = new Set(["sensor.done"]);
+  assert.ok(el.excludeCard([]).includes("data-trim-plan"), "already excluded: the block stands open");
 });
 
 test("what the recorder already excludes stays pickable for trimming but never reaches the block", () => {

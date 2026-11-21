@@ -6716,5 +6716,6 @@
 "causeUsers1": "1 个自动化、脚本或仪表板指向它",
 "causeCallers1": "1 个自动化或脚本调用它",
 "visitAdded1": "1 个新发现项",
-"whyLevel1": "1 个对象 · {level} · {weight}"
+"whyLevel1": "1 个对象 · {level} · {weight}",
+"exTrimToo": "同时精简旧历史记录 …"
 }

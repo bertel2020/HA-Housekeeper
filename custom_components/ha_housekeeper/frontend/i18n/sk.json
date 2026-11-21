@@ -7251,5 +7251,6 @@
 "causeUsers1": "Odkazuje naň automatizácia, skript alebo dashboard: 1",
 "causeCallers1": "Volá ju automatizácia alebo skript: 1",
 "visitAdded1": "1 nový nález",
-"whyLevel1": "1 objekt · {level} · {weight}"
+"whyLevel1": "1 objekt · {level} · {weight}",
+"exTrimToo": "Skrátiť aj starú históriu …"
 }

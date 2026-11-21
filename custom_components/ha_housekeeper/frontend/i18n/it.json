@@ -6716,5 +6716,6 @@
 "causeUsers1": "1 automazione, script o dashboard vi fa riferimento",
 "causeCallers1": "1 automazione o script lo richiama",
 "visitAdded1": "1 nuovo rilievo",
-"whyLevel1": "1 oggetto · {level} · {weight}"
+"whyLevel1": "1 oggetto · {level} · {weight}",
+"exTrimToo": "Accorciare anche la cronologia vecchia …"
 }

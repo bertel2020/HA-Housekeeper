@@ -6716,5 +6716,6 @@
 "causeUsers1": "1 automatização, script ou painel aponta para ele",
 "causeCallers1": "1 automatização ou script chama-o",
 "visitAdded1": "1 nova ocorrência",
-"whyLevel1": "1 objeto · {level} · {weight}"
+"whyLevel1": "1 objeto · {level} · {weight}",
+"exTrimToo": "Reduzir também o histórico antigo …"
 }

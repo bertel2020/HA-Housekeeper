@@ -6716,5 +6716,6 @@
 "causeUsers1": "1 automatisation, script ou tableau de bord y renvoie",
 "causeCallers1": "1 automatisation ou script l’appelle",
 "visitAdded1": "1 nouveau constat",
-"whyLevel1": "1 objet · {level} · {weight}"
+"whyLevel1": "1 objet · {level} · {weight}",
+"exTrimToo": "Réduire aussi l’ancien historique …"
 }
