@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"d51fc65b13"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"659c3e5890"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f1c79b55ba"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"45fe52ec21"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"11a625cf73"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"e9fb64c640"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"79f52a248c"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"5d97d34e46"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"515394e355"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d35bae2ecd"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"dbf0c295e2"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"97ea5a03d8"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"661ef60db4"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"73102c7964"}];
 
 const TEXT = {
   de: {
@@ -2485,7 +2485,7 @@ class ListsMixin {
   // The bar below a paged list: which rows of how many, the page size, and the way to the other pages.
   pageFooter(id, { page, count, from, shown, total, size, own }) {
     const sizes = (own || PAGE_SIZES).map(n => `<option value="${n}" ${n === size ? "selected" : ""}>${n}</option>`).join("");
-    return `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.formatNumber(from + 1)}–${this.formatNumber(from + shown)} ${this.t("of")} ${this.formatNumber(total)} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("page")} ${page} ${this.t("of")} ${count} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
+    return `<div class="tablefoot" data-lpage-footer="${this.esc(id)}" data-page-count="${count}"><span>${this.t("pagerRange", { from: this.formatNumber(from + 1), to: this.formatNumber(from + shown), total: this.formatNumber(total) })} · ${this.t("perPage")} <select ${own ? `data-lpagesize="${this.esc(id)}"` : "data-pagesize"} aria-label="${this.t("perPage")}">${sizes}</select></span>${count > 1 ? `<span class="pager"><button data-lpage="${id}|${page - 1}" ${page === 1 ? "disabled" : ""}>${this.t("previous")}</button> ${this.t("pagerPage", { page: this.formatNumber(page), pages: this.formatNumber(count) })} <button data-lpage="${id}|${page + 1}" ${page === count ? "disabled" : ""}>${this.t("next")}</button></span>` : ""}</div>`;
   }
 
   // A fold: the head always shows, the body only while open. `def` is the state until the person toggles it.
@@ -7053,7 +7053,7 @@ class DiagnosisMixin {
     const menu = [reloadIds.length ? ["mdi:reload", "actReload", `data-act-reload="${this.esc(reloadIds.join(","))}"`] : null, ["mdi:source-fork", "showInGraph", `data-graph-open="${this.esc(item.object_type === "integration" ? this.objectKey(item.entries[0]) : key)}"`], exportable ? ["mdi:export-variant", "xpButton", `data-xp-from="${this.esc(key)}"`] : null, null, ...ap.menu];
     const summary = this.detailSummary(item, key).map(([label, value]) => `<span><small>${label}</small><b>${value}</b></span>`).join("");
     const tablist = tabs.map(([id, label, count, tone]) => `<button class="tab" role="tab" id="hk-tab-${id}" aria-selected="${id === tab}" aria-controls="hk-tabpanel" tabindex="${id === tab ? 0 : -1}" data-detail-tab="${id}">${this.t(label)}${count ? ` <em>${this.formatNumber(count)}</em>` : ""}${tone ? `<i class="tabdot ${tone}" aria-hidden="true"></i>` : ""}</button>`).join("");
-    return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(back)}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
+    return `<div class="crumbs"><button class="btn" data-action="back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backToName", { name: this.esc(back) })}</button><span class="trail">${this.t(this.view)} › ${this.t(item.object_type)}</span></div>
       <div class="panel detailhead">${this.tile(item.object_type, tone)}<div><div class="headpills">${this.pill(item.status)}<span class="pill mute">${this.t(item.object_type)}</span></div><h1>${this.esc(item.name)}</h1><span class="id">${this.esc(item.object_id)}</span></div>
       <div class="actions">${ap.pill}${primary}${path ? `<button class="btn" data-ha-path="${this.esc(path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("openInHA")}</button>` : ""}${this.rowMenuHtml(menu)}</div></div>
       <div class="panel sumline">${summary}</div>
@@ -10568,7 +10568,7 @@ class BlueprintsMixin {
   // The page of one blueprint takes over the whole view like the page of any other object.
   blueprintPage() {
     this.ensureBlueprints();
-    const back = `<div class="crumbs"><button class="btn" data-bp-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t("maintenance")}</button><span class="trail">${this.t("maintenance")} › ${this.t("bpTab")}</span></div>`;
+    const back = `<div class="crumbs"><button class="btn" data-bp-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backToName", { name: this.t("maintenance") })}</button><span class="trail">${this.t("maintenance")} › ${this.t("bpTab")}</span></div>`;
     if (!this.blueprints) return `${back}${this.skeleton("loading")}`;
     const item = this.bpItems().find(i => `${i.domain}/${i.path}` === this.bpOpen);
     if (item) return `${back}${this.blueprintDetail(item)}`;
@@ -20261,6 +20261,14 @@ Object.assign(TEXT.en, {
 Object.assign(TEXT.de, { fcRecQuiet: "Seit {span} aus, und kaum etwas hängt daran. Ist das so gewollt, passt eine Objekt-Notiz." });
 Object.assign(TEXT.en, { fcRecQuiet: "Down for {span}, and hardly anything depends on it. If it is off on purpose, an object note fits." });
 
+// Templates with placeholders, so the word order can differ by language: the pager, the last scan, the way back.
+Object.assign(TEXT.de, {
+  pagerRange: "{from}–{to} von {total}", pagerPage: "Seite {page} von {pages}", lastScanAgo: "Letzter Scan: {ago}", backToName: "Zurück zu {name}",
+});
+Object.assign(TEXT.en, {
+  pagerRange: "{from}–{to} of {total}", pagerPage: "Page {page} of {pages}", lastScanAgo: "Last scan: {ago}", backToName: "Back to {name}",
+});
+
 // The quiet button that opens the trimming of the old history under the exclusion.
 Object.assign(TEXT.de, { exTrimToo: "Auch alten Verlauf kürzen …" });
 Object.assign(TEXT.en, { exTrimToo: "Also trim the old history …" });
@@ -24271,7 +24279,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const region = footer?.closest(".foldbody, .panel") || footer?.parentElement;
     if (!region) return;
     region.setAttribute("tabindex", "-1");
-    region.setAttribute("aria-label", `${this.t("page")} ${this.pages[id]} ${this.t("of")} ${footer.dataset.pageCount}`);
+    region.setAttribute("aria-label", this.t("pagerPage", { page: this.formatNumber(this.pages[id]), pages: this.formatNumber(footer.dataset.pageCount) }));
     region.scrollIntoView?.({ block: "start" });
     region.focus?.({ preventScroll: true });
   }
@@ -24572,11 +24580,11 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
     const scanned = this.data?.meta?.scanned_at;
-    const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
+    const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScanAgo", { ago: this.agoText(scanned) })}</span>` : "";
     const from = this.fcWizOn() && !this.selected ? this.wizardBackTarget() : this.viewTrail[this.viewTrail.length - 1];
     // Every back button sits in this row at the top of the page, like the one of the detail page.
-    const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
-    const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
+    const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backToName", { name: this.esc(this.graphBackLabel()) })}</button>` : "";
+    const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backToName", { name: this.t(from.view) })}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" && !this.fcWizOn() ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
       <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;

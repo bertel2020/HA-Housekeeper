@@ -6723,5 +6723,9 @@
 "relEntities1": "1 entité",
 "deviceEntities1": "1 entité",
 "propChildrenCount1": "1 appareil",
-"markEffHides1": "1 constat masqué"
+"markEffHides1": "1 constat masqué",
+"pagerRange": "{from}–{to} sur {total}",
+"pagerPage": "Page {page} sur {pages}",
+"lastScanAgo": "Dernière analyse : {ago}",
+"backToName": "Retour à {name}"
 }

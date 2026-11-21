@@ -620,7 +620,7 @@ class HAHousekeeperPanel extends HTMLElement {
     const region = footer?.closest(".foldbody, .panel") || footer?.parentElement;
     if (!region) return;
     region.setAttribute("tabindex", "-1");
-    region.setAttribute("aria-label", `${this.t("page")} ${this.pages[id]} ${this.t("of")} ${footer.dataset.pageCount}`);
+    region.setAttribute("aria-label", this.t("pagerPage", { page: this.formatNumber(this.pages[id]), pages: this.formatNumber(footer.dataset.pageCount) }));
     region.scrollIntoView?.({ block: "start" });
     region.focus?.({ preventScroll: true });
   }
@@ -921,11 +921,11 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     const [title, sub] = titles[this.fcWizOn() ? "firstcleanup" : this.view] || titles.overview;
     const scanned = this.data?.meta?.scanned_at;
-    const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScan")}: ${this.agoText(scanned)}</span>` : "";
+    const ago = scanned ? `<span class="scanago" title="${this.esc(this.formatDate(scanned))}">${this.t("lastScanAgo", { ago: this.agoText(scanned) })}</span>` : "";
     const from = this.fcWizOn() && !this.selected ? this.wizardBackTarget() : this.viewTrail[this.viewTrail.length - 1];
     // Every back button sits in this row at the top of the page, like the one of the detail page.
-    const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.esc(this.graphBackLabel())}</button>` : "";
-    const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t(from.view)}</button>` : "";
+    const graphBack = this.view === "graph" && this.graphSelected && this.graphBackLabel() ? `<button class="btn" data-action="graph-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backToName", { name: this.esc(this.graphBackLabel()) })}</button>` : "";
+    const viewBack = from ? `<button class="btn" data-action="view-back"><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backToName", { name: this.t(from.view) })}</button>` : "";
     const back = graphBack || viewBack ? `<div class="crumbs">${viewBack}${graphBack}</div>` : "";
     return `${back}<div class="heading"><div>${this.eyebrowFor(this.view) ? `<p class="eyebrow">${this.eyebrowFor(this.view)}</p>` : ""}<h1>${title}${this.view === "findingsNav" && !this.fcWizOn() ? `<button type="button" class="infotip${this.foldOpen("findings_help", false) ? " on" : ""}" data-fold="findings_help" aria-expanded="${this.foldOpen("findings_help", false)}" aria-label="${this.esc(this.t("helpOpen"))}" title="${this.esc(this.t("helpOpen"))}"><ha-icon icon="mdi:information-outline"></ha-icon></button>` : ""}${INFO_SUB_VIEWS.includes(this.view) ? this.infoTip(sub) : ""}${["cleanup", "repair", "journal"].includes(this.view) ? this.infoTip(this.t("cleanupDryRun"), true) : ""}</h1>${VIEW_HINT[this.view] ? `<span class="sub">${this.t(VIEW_HINT[this.view])}</span>` : INFO_SUB_VIEWS.includes(this.view) ? "" : `<span class="sub">${sub}</span>`}</div>
       <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;

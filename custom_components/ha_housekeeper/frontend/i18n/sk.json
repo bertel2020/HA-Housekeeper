@@ -7253,5 +7253,9 @@
 "relEntities1": "1 entita",
 "deviceEntities1": "1 entita",
 "propChildrenCount1": "1 zariadenie",
-"markEffHides1": "skrytý 1 nález"
+"markEffHides1": "skrytý 1 nález",
+"pagerRange": "{from}–{to} z {total}",
+"pagerPage": "Strana {page} z {pages}",
+"lastScanAgo": "Posledná kontrola: {ago}",
+"backToName": "Späť na {name}"
 }

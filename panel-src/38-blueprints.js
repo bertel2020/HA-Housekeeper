@@ -27,7 +27,7 @@ class BlueprintsMixin {
   // The page of one blueprint takes over the whole view like the page of any other object.
   blueprintPage() {
     this.ensureBlueprints();
-    const back = `<div class="crumbs"><button class="btn" data-bp-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backTo")} ${this.t("maintenance")}</button><span class="trail">${this.t("maintenance")} › ${this.t("bpTab")}</span></div>`;
+    const back = `<div class="crumbs"><button class="btn" data-bp-back><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("backToName", { name: this.t("maintenance") })}</button><span class="trail">${this.t("maintenance")} › ${this.t("bpTab")}</span></div>`;
     if (!this.blueprints) return `${back}${this.skeleton("loading")}`;
     const item = this.bpItems().find(i => `${i.domain}/${i.path}` === this.bpOpen);
     if (item) return `${back}${this.blueprintDetail(item)}`;

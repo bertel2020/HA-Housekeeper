@@ -6723,5 +6723,9 @@
 "relEntities1": "1 entidad",
 "deviceEntities1": "1 entidad",
 "propChildrenCount1": "1 dispositivo",
-"markEffHides1": "1 hallazgo oculto"
+"markEffHides1": "1 hallazgo oculto",
+"pagerRange": "{from}–{to} de {total}",
+"pagerPage": "Página {page} de {pages}",
+"lastScanAgo": "Último análisis: {ago}",
+"backToName": "Volver a {name}"
 }

@@ -6723,5 +6723,9 @@
 "relEntities1": "1 个实体",
 "deviceEntities1": "1 个实体",
 "propChildrenCount1": "1 个设备",
-"markEffHides1": "已隐藏 1 个发现项"
+"markEffHides1": "已隐藏 1 个发现项",
+"pagerRange": "第 {from}–{to} 项，共 {total} 项",
+"pagerPage": "第 {page} 页，共 {pages} 页",
+"lastScanAgo": "上次扫描：{ago}",
+"backToName": "返回 {name}"
 }

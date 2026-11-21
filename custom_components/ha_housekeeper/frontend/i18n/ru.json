@@ -7993,5 +7993,9 @@
 "relEntities1": "1 сущность",
 "deviceEntities1": "1 сущность",
 "propChildrenCount1": "1 устройство",
-"markEffHides1": "скрыта 1 находка"
+"markEffHides1": "скрыта 1 находка",
+"pagerRange": "{from}–{to} из {total}",
+"pagerPage": "Страница {page} из {pages}",
+"lastScanAgo": "Последняя проверка: {ago}",
+"backToName": "Назад к {name}"
 }
