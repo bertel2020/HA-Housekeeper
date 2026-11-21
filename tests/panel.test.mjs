@@ -864,7 +864,7 @@ test("findings render as a sortable table and compact rows change its layout", (
   assert.match(html, /data-lsort="findings\|id\|asc"/);
   assert.match(html, /data-dense="findings" aria-pressed="false"/);
   assert.match(html, /<span class="listbar-actions">/);
-  assert.match(html, /<td data-label="Severity">/);
+  assert.match(html, /<td data-label="Impact">/);
   assert.equal((html.match(/class="finding-data/g) || []).length, 2);
   el.render = () => {};
   el.toggleDenseList("findings");
@@ -5297,7 +5297,7 @@ test("housekeeper backups: the list marks protected ones, the rule picks the res
   const html = el.backupCleanupCard();
   assert.ok(html.includes("protected: being watched") && html.includes("41 days old") && html.includes("only way to get back"));
   assert.ok(html.includes('data-bkc-sel="b1"') && /data-bkc-sel="b1"[^>]*disabled/.test(html), "a protected backup cannot be ticked");
-  assert.ok(html.includes("Prepare deletion (1)"));
+  assert.ok(html.includes("Create preview (1)"));
   assert.ok(html.includes("<table") && html.includes('data-bkc-page="b2"') && !html.includes('data-bkc-page="b1'), "the backups are a table whose head box covers the ones that can be ticked");
   let sent;
   el._hass.callWS = async msg => { sent = msg; return { plan_id: "p9", status: "dry_run", actions: [], summary: {} }; };

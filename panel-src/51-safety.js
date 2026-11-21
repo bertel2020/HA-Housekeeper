@@ -117,7 +117,7 @@ Object.assign(TEXT.de, {
   modeBlockTitle: "Der Schutzmodus „{mode}“ erlaubt diesen Plan nicht", modeBlockText: "{count} Schritt(e) darf Housekeeper in diesem Modus nicht ausführen. Du kannst den Plan ansehen, aber erst nach einer Änderung des Modus bestätigen.", modeBlockLink: "Schutzmodus ändern",
   err_protection_mode: "Der Schutzmodus erlaubt das nicht. Ändere ihn unter Einstellungen → Schutzmodus.",
   eventsTitle: "Ereignisse für eigene Automationen", eventsHint: "Nach jedem Scan löst Housekeeper für jede neue Lage ein Ereignis aus, einmal je Lage, beim ersten Mal still. Nichts verlässt Home Assistant.", eventColName: "Ereignis", eventColWhen: "Wann", eventCopy: "Namen kopieren",
-  event_critical_finding: "neuer Befund mit hoher Auswirkung", event_backup_overdue: "Backup überfällig", event_quarantine_expired: "Quarantäne abgelaufen", event_followup_regression: "Nachkontrolle: Rückfall", event_integration_down: "Integration nicht geladen",
+  event_critical_finding: "neuer Befund mit hoher Wirkung", event_backup_overdue: "Backup überfällig", event_quarantine_expired: "Quarantäne abgelaufen", event_followup_regression: "Nachkontrolle: Rückfall", event_integration_down: "Integration nicht geladen",
 });
 Object.assign(TEXT.en, {
   modeBadge_full: "Everything", modeBadge_confirmed: "Change", modeBadge_read_only: "Watch",

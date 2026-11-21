@@ -42,7 +42,7 @@ const TEXT = {
     systemState: "Systemzustand", health: "Housekeeping-Status", healthGood: "In Ordnung", healthCheck: "Offen",
     healthBad: "Dringend", healthHint: "Zustand in Punkten von 100, nach den Befunden der Objekte", healthTip: "Zustand in Punkten. Betroffen: {affected} von {base} Objekten.",
     openFindings: "Befunde",
-    actTitle: "Was muss ich jetzt tun?", actSub: "Nach Dringlichkeit sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
+    actTitle: "Was muss ich jetzt tun?", actSub: "Nach Wirkung sortiert", actNone: "Nichts zu tun. Letzter Scan: {date}.",
     outagesFilter: "Ausfälle aus der Übersicht ({n})", outagesFilterHigh: "Ausfälle ({n})", outagesFilterMedium: "Weitere Ausfälle ({n})", heldFilter: "Im Urlaub zurückgehalten ({n})",
    
     actQuarantine: "Quarantäne abgelaufen", actQuarantineHint: "Bereit zur Entfernung nach deiner Bestätigung",
@@ -227,7 +227,7 @@ const TEXT = {
     systemState: "System health", health: "Housekeeping status", healthGood: "In order", healthCheck: "Open",
     healthBad: "Urgent", healthHint: "State in points out of 100, by the findings of the objects", healthTip: "State in points. Affected: {affected} of {base} objects.",
     openFindings: "Findings",
-    actTitle: "What needs doing now?", actSub: "Sorted by urgency", actNone: "Nothing to do. Last scan: {date}.",
+    actTitle: "What needs doing now?", actSub: "Sorted by impact", actNone: "Nothing to do. Last scan: {date}.",
     outagesFilter: "Outages from the overview ({n})", outagesFilterHigh: "Outages ({n})", outagesFilterMedium: "Further outages ({n})", heldFilter: "Held back for the vacation ({n})",
    
     actQuarantine: "Quarantine over", actQuarantineHint: "Ready for removal once you confirm",
