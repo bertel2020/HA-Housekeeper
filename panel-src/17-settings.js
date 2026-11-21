@@ -295,7 +295,7 @@ class SettingsMixin {
     const keyOf = o => `${o.object_type}:${o.object_id}`;
     // A mark on an object that has run without a gap for a long time asks whether it is still needed.
     const quiet = o => (!o.mark_due && !hides.get(keyOf(o)) ? this.markQuietDays(o) : null), isQuiet = o => quiet(o) !== null;
-    const effect = o => (o.mark_due ? this.t("markEffDue") : o.mark.kind === "keep" ? this.t("markEffKeep") : hides.get(keyOf(o)) ? this.t("markEffHides", { n: this.formatNumber(hides.get(keyOf(o))) }) : isQuiet(o) ? this.t("markEffQuiet", { n: this.formatNumber(quiet(o)) }) : this.t("markEffNone"));
+    const effect = o => (o.mark_due ? this.t("markEffDue") : o.mark.kind === "keep" ? this.t("markEffKeep") : hides.get(keyOf(o)) ? this.tCount("markEffHides", hides.get(keyOf(o))) : isQuiet(o) ? this.t("markEffQuiet", { n: this.formatNumber(quiet(o)) }) : this.t("markEffNone"));
     const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: o => o.name || o.object_id }, { key: "kind", label: "markKind", dir: "asc", get: o => this.t(`mark_${o.mark.kind}`) }, { key: "review", label: "markReview", dir: "asc", get: o => o.mark.until || "9999" }];
     const filters = [{ name: "kind", all: this.t("decAllMarks"), options: [["due", this.t("decReviewDueShort")], ...(list.some(isQuiet) ? [["quiet", this.t("markQuietFilter")]] : []), ...["expected_offline", "seasonal", "spare", "keep", "replaced"].filter(k => list.some(o => o.mark.kind === k)).map(k => [k, this.t(`mark_${k}`)])] }];
     const st = this.lvState("marks", "name", "asc");

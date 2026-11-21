@@ -6718,5 +6718,10 @@
 "visitAdded1": "1 nova ocorrência",
 "whyLevel1": "1 objeto · {level} · {weight}",
 "exTrimToo": "Reduzir também o histórico antigo …",
-"fcRecQuiet": "Desligado há {span}, e quase nada depende dele. Se é de propósito, uma nota de objeto serve."
+"fcRecQuiet": "Desligado há {span}, e quase nada depende dele. Se é de propósito, uma nota de objeto serve.",
+"monitorHistObjects1": "1 objeto",
+"relEntities1": "1 entidade",
+"deviceEntities1": "1 entidade",
+"propChildrenCount1": "1 dispositivo",
+"markEffHides1": "1 ocorrência oculta"
 }

@@ -98,7 +98,7 @@ class PropertiesMixin {
       [t("propKind"), isChild ? t("propKindChild") : ""],
       [t("propParent"), parent ? this.propLink(`device:${parent.object_id}`, parent.name) : ""],
       [t("propVia"), via ? this.propLink(`device:${via.object_id}`, via.name) : ""],
-      [t("propChildren"), children.length ? this.t("propChildrenCount", { count: children.length }) : ""],
+      [t("propChildren"), children.length ? this.tCount("propChildrenCount", children.length) : ""],
       [t("propCleanupBlock"), blocks],
       ...this.labelRows(item),
       [t("propConfigUrl"), /^https?:\/\//i.test(item.configuration_url || "") ? `<a href="${this.esc(item.configuration_url)}" target="_blank" rel="noopener noreferrer">${this.esc(item.configuration_url)}</a>` : this.esc(item.configuration_url || "")],

@@ -6718,5 +6718,10 @@
 "visitAdded1": "1 nuovo rilievo",
 "whyLevel1": "1 oggetto · {level} · {weight}",
 "exTrimToo": "Accorciare anche la cronologia vecchia …",
-"fcRecQuiet": "Spento da {span}, e quasi nulla ne dipende. Se è voluto, va bene una nota oggetto."
+"fcRecQuiet": "Spento da {span}, e quasi nulla ne dipende. Se è voluto, va bene una nota oggetto.",
+"monitorHistObjects1": "1 oggetto",
+"relEntities1": "1 entità",
+"deviceEntities1": "1 entità",
+"propChildrenCount1": "1 dispositivo",
+"markEffHides1": "1 rilevamento nascosto"
 }

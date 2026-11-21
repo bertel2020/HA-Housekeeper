@@ -122,7 +122,7 @@ class CausesMixin {
 
   // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
   // A count with its noun; one of a kind takes the text with the suffix 1: "1 follow-up", not "1 follow-ups".
-  tCount(key, n, vars = {}) { return this.t(n === 1 ? `${key}1` : key, { ...vars, n: this.formatNumber(n) }); }
+  tCount(key, n, vars = {}) { return this.t(n === 1 ? `${key}1` : key, { ...vars, n: this.formatNumber(n), count: this.formatNumber(n) }); }
 
   causeCounts(c) {
     if (c.kind === "service_missing") return this.tCount("causeCallers", c.follower_count);

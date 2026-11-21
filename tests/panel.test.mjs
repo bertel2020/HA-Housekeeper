@@ -1541,7 +1541,7 @@ test("device candidates are the devices without working entities; removal lists 
   el.render();
   let html = shadow.innerHTML;
   assert.ok(html.includes("Candidates (1)") && html.includes('data-sel="d-dead"') && !html.includes('data-sel="d-live"') && !html.includes('data-sel="d-q"'));
-  assert.ok(html.includes("1 entities") && html.includes('data-object="device:d-dead"'));
+  assert.ok(html.includes("1 entity") && html.includes('data-object="device:d-dead"'));
   for (const kind of ["remove_device", "forget_device"]) {
     el.viewTab = { cleanup: "quarantine" }; el.quarantineType = "device"; el.cleanupKind = kind; el.lv.cleanup = undefined; el.render();
     html = shadow.innerHTML;

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"e4d33cb5e3"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"5345fcff32"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a48292d9cb"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"685bb0b0bf"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"708261c477"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"2c70ba7340"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"09636aa5dd"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"d51fc65b13"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"659c3e5890"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"f1c79b55ba"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"45fe52ec21"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"11a625cf73"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"e9fb64c640"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"79f52a248c"}];
 
 const TEXT = {
   de: {
@@ -4215,7 +4215,7 @@ class SettingsMixin {
     const keyOf = o => `${o.object_type}:${o.object_id}`;
     // A mark on an object that has run without a gap for a long time asks whether it is still needed.
     const quiet = o => (!o.mark_due && !hides.get(keyOf(o)) ? this.markQuietDays(o) : null), isQuiet = o => quiet(o) !== null;
-    const effect = o => (o.mark_due ? this.t("markEffDue") : o.mark.kind === "keep" ? this.t("markEffKeep") : hides.get(keyOf(o)) ? this.t("markEffHides", { n: this.formatNumber(hides.get(keyOf(o))) }) : isQuiet(o) ? this.t("markEffQuiet", { n: this.formatNumber(quiet(o)) }) : this.t("markEffNone"));
+    const effect = o => (o.mark_due ? this.t("markEffDue") : o.mark.kind === "keep" ? this.t("markEffKeep") : hides.get(keyOf(o)) ? this.tCount("markEffHides", hides.get(keyOf(o))) : isQuiet(o) ? this.t("markEffQuiet", { n: this.formatNumber(quiet(o)) }) : this.t("markEffNone"));
     const sorts = [{ key: "name", label: "hidColObject", dir: "asc", get: o => o.name || o.object_id }, { key: "kind", label: "markKind", dir: "asc", get: o => this.t(`mark_${o.mark.kind}`) }, { key: "review", label: "markReview", dir: "asc", get: o => o.mark.until || "9999" }];
     const filters = [{ name: "kind", all: this.t("decAllMarks"), options: [["due", this.t("decReviewDueShort")], ...(list.some(isQuiet) ? [["quiet", this.t("markQuietFilter")]] : []), ...["expected_offline", "seasonal", "spare", "keep", "replaced"].filter(k => list.some(o => o.mark.kind === k)).map(k => [k, this.t(`mark_${k}`)])] }];
     const st = this.lvState("marks", "name", "asc");
@@ -5036,7 +5036,7 @@ class CleanupMixin {
       const type = a.object_type || "entity", obj = this.findObject(`${type}:${a.object_id}`);
       const result = a.result;
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
-      const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" || a.kind === "set_expose_new" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.t("deviceEntities", { count: (a.entities || []).length })}` : a.object_id;
+      const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" || a.kind === "set_expose_new" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.tCount("deviceEntities", (a.entities || []).length)}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.delete_old ? this.t(a.delete_old === "helper" ? "planOldHelper" : "planOldDeleted") : a.disable_old ? this.t("planOldDisabled") : "", a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDay(a.backup.date) : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
       const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
@@ -5231,7 +5231,7 @@ class CleanupMixin {
     this._cleanupAll = list.filter(ready).map(r => r.item.object_id);
     const badge = r => {
       const left = r.quarantine ? limit - this.daysSince(r.quarantine.since) : 0;
-      return r.finding ? this.pill(r.finding.classification) : r.quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${this.t(r.count ? "deviceEntities" : "deviceNoEntities", { count: r.count })}</span>`;
+      return r.finding ? this.pill(r.finding.classification) : r.quarantine ? `<span class="pill ${left > 0 ? "mute" : "ok"}">${left > 0 ? this.t("daysLeftShort", { days: left }) : this.t("removalReady")}</span>` : `<span class="pill mute">${(r.count ? this.tCount("deviceEntities", r.count) : this.t("deviceNoEntities"))}</span>`;
     };
     const recorderCol = this.cleanupKind === "remove_entity" && this.data?.meta?.recorder_available;
     if (recorderCol) this.ensureHistRows(pg.rows.filter(r => r.item.object_type === "entity").map(r => r.item.object_id));
@@ -7197,7 +7197,7 @@ class PropertiesMixin {
       [t("propKind"), isChild ? t("propKindChild") : ""],
       [t("propParent"), parent ? this.propLink(`device:${parent.object_id}`, parent.name) : ""],
       [t("propVia"), via ? this.propLink(`device:${via.object_id}`, via.name) : ""],
-      [t("propChildren"), children.length ? this.t("propChildrenCount", { count: children.length }) : ""],
+      [t("propChildren"), children.length ? this.tCount("propChildrenCount", children.length) : ""],
       [t("propCleanupBlock"), blocks],
       ...this.labelRows(item),
       [t("propConfigUrl"), /^https?:\/\//i.test(item.configuration_url || "") ? `<a href="${this.esc(item.configuration_url)}" target="_blank" rel="noopener noreferrer">${this.esc(item.configuration_url)}</a>` : this.esc(item.configuration_url || "")],
@@ -8413,7 +8413,7 @@ class ReliabilityMixin {
   relRowBody(item) {
     const percent = item.availability;
     const tone = item.dead ? "red" : percent === null ? "mute" : percent >= REL_GREEN ? "ok" : percent >= REL_YELLOW ? "warn" : "red";
-    const lines = [`${this.esc(item.domain || "")} · ${this.t("relEntities", { n: item.entities })}${item.permanent ? ` · ${this.t("relPermanent", { n: item.permanent })}` : ""}`];
+    const lines = [`${this.esc(item.domain || "")} · ${this.tCount("relEntities", item.entities)}${item.permanent ? ` · ${this.t("relPermanent", { n: item.permanent })}` : ""}`];
     const layer = item.shared_outages ? (item.layer === "cloud" ? this.t("relLayerCloud") : this.t("relLayerLocal")) : "";
     if (layer) lines.push(layer);
     const flags = [];
@@ -8511,7 +8511,7 @@ class ReliabilityMixin {
     const compare = Boolean(r.comparison?.available);
     const delta = e => (e.delta === null || e.delta === undefined ? null : e.delta);
     const columns = [
-      { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.t("relEntities", { n: e.entities })}`) },
+      { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.tCount("relEntities", e.entities)}`) },
       { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", this.apRowAction(e.entry_id), e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ").replace(/^(.+)$/, '<span class="relpills">$1</span>') },
       { key: "setup", label: "relColSetup", dir: "desc", cell: e => this.relSetupCell(e.setup) },
       { key: "avail", label: "relSortAvail", dir: "asc", cell: availCell },
@@ -11344,7 +11344,7 @@ class CausesMixin {
 
   // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
   // A count with its noun; one of a kind takes the text with the suffix 1: "1 follow-up", not "1 follow-ups".
-  tCount(key, n, vars = {}) { return this.t(n === 1 ? `${key}1` : key, { ...vars, n: this.formatNumber(n) }); }
+  tCount(key, n, vars = {}) { return this.t(n === 1 ? `${key}1` : key, { ...vars, n: this.formatNumber(n), count: this.formatNumber(n) }); }
 
   causeCounts(c) {
     if (c.kind === "service_missing") return this.tCount("causeCallers", c.follower_count);
@@ -20249,6 +20249,14 @@ Object.assign(TEXT.en, {
   causeUses_automation1: "1 automation affected", causeUses_script1: "1 script affected", causeUses_dashboard1: "1 dashboard affected", causeUsers1: "1 automation, script or dashboard points to it", causeCallers1: "1 automation or script calls it", visitAdded1: "1 new finding", whyLevel1: "1 object · {level} · {weight}",
 });
 
+// More singular forms: "1 Objekt" instead of "1 Objekte".
+Object.assign(TEXT.de, {
+  monitorHistObjects1: "1 Objekt", relEntities1: "1 Entität", deviceEntities1: "1 Entität", propChildrenCount1: "1 Gerät", markEffHides1: "1 Befund ausgeblendet",
+});
+Object.assign(TEXT.en, {
+  monitorHistObjects1: "1 object", relEntities1: "1 entity", deviceEntities1: "1 entity", propChildrenCount1: "1 device", markEffHides1: "1 finding hidden",
+});
+
 // The card recommends the object note for a quiet outage, as the page "Fix" does.
 Object.assign(TEXT.de, { fcRecQuiet: "Seit {span} aus, und kaum etwas hängt daran. Ist das so gewollt, passt eine Objekt-Notiz." });
 Object.assign(TEXT.en, { fcRecQuiet: "Down for {span}, and hardly anything depends on it. If it is off on purpose, an object note fits." });
@@ -20782,7 +20790,7 @@ class MonitorMixin {
     const meta = [
       this.t("monitorLastScan", { date: this.formatDate(item.scanned_at) }),
       item.last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(item.last_verified_at) }) : this.t("monitorNeverVerified"),
-      this.t("monitorHistObjects", { n: item.members.length }),
+      this.tCount("monitorHistObjects", item.members.length),
     ].map(text => this.esc(text)).join(" · ");
     const unverified = item.state === "unverified" ? `<div class="row"><span class="tile warn"><ha-icon icon="mdi:help-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t(item.incident_open ? "monitorUnresolved" : "monitorNoProof")}</strong>${item.incident_open && item.last_problem_reason ? `<small>${this.esc(this.monitorReason(item.last_problem_reason))}</small>` : ""}</span></div>` : "";
     const head = `<div class="panelhead"><div><h2>${this.esc(item.name)} <span class="pill ${tone}">${this.monitorState(item)}</span></h2>${item.description ? `<p>${this.esc(item.description)}</p>` : ""}<p class="monitor-meta">${meta}</p></div><button class="btn" data-monitor-edit>${this.t("monitorEdit")}</button></div>`;
@@ -20834,7 +20842,7 @@ class MonitorMixin {
       const parts = [];
       if (flap) parts.push(this.t("monitorHistFlap", { n: entry.count, until: this.formatDate(entry.until), state: stateLabel(entry.state) }));
       if (state || flap) parts.push(this.monitorReason(entry.reason));
-      if (entry.kind === "created" && entry.added?.length) parts.push(this.t("monitorHistObjects", { n: entry.added.length }));
+      if (entry.kind === "created" && entry.added?.length) parts.push(this.tCount("monitorHistObjects", entry.added.length));
       for (const [list, text] of [["added", "monitorHistAdded"], ["removed", "monitorHistRemoved"], ["changed", "monitorHistChanged"]]) if (entry[list]?.length) parts.push(`${this.t(text)}: ${entry[list].map(name).join(", ")}`);
       if (entry.fields?.length) parts.push(`${this.t("monitorHistFields")}: ${entry.fields.map(f => this.t(`monitorHistField_${f}`)).join(", ")}`);
       const key = (state || flap) && entry.key ? entry.key : "";

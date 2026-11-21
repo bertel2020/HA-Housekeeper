@@ -147,7 +147,7 @@ class MonitorMixin {
     const meta = [
       this.t("monitorLastScan", { date: this.formatDate(item.scanned_at) }),
       item.last_verified_at ? this.t("monitorLastVerified", { date: this.formatDate(item.last_verified_at) }) : this.t("monitorNeverVerified"),
-      this.t("monitorHistObjects", { n: item.members.length }),
+      this.tCount("monitorHistObjects", item.members.length),
     ].map(text => this.esc(text)).join(" · ");
     const unverified = item.state === "unverified" ? `<div class="row"><span class="tile warn"><ha-icon icon="mdi:help-circle-outline"></ha-icon></span><span class="row-text"><strong>${this.t(item.incident_open ? "monitorUnresolved" : "monitorNoProof")}</strong>${item.incident_open && item.last_problem_reason ? `<small>${this.esc(this.monitorReason(item.last_problem_reason))}</small>` : ""}</span></div>` : "";
     const head = `<div class="panelhead"><div><h2>${this.esc(item.name)} <span class="pill ${tone}">${this.monitorState(item)}</span></h2>${item.description ? `<p>${this.esc(item.description)}</p>` : ""}<p class="monitor-meta">${meta}</p></div><button class="btn" data-monitor-edit>${this.t("monitorEdit")}</button></div>`;
@@ -199,7 +199,7 @@ class MonitorMixin {
       const parts = [];
       if (flap) parts.push(this.t("monitorHistFlap", { n: entry.count, until: this.formatDate(entry.until), state: stateLabel(entry.state) }));
       if (state || flap) parts.push(this.monitorReason(entry.reason));
-      if (entry.kind === "created" && entry.added?.length) parts.push(this.t("monitorHistObjects", { n: entry.added.length }));
+      if (entry.kind === "created" && entry.added?.length) parts.push(this.tCount("monitorHistObjects", entry.added.length));
       for (const [list, text] of [["added", "monitorHistAdded"], ["removed", "monitorHistRemoved"], ["changed", "monitorHistChanged"]]) if (entry[list]?.length) parts.push(`${this.t(text)}: ${entry[list].map(name).join(", ")}`);
       if (entry.fields?.length) parts.push(`${this.t("monitorHistFields")}: ${entry.fields.map(f => this.t(`monitorHistField_${f}`)).join(", ")}`);
       const key = (state || flap) && entry.key ? entry.key : "";

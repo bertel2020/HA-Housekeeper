@@ -7248,5 +7248,10 @@
 "visitAdded1": "1 nový nález",
 "whyLevel1": "1 objekt · {level} · {weight}",
 "exTrimToo": "Skrátiť aj starú históriu …",
-"fcRecQuiet": "Nedostupné už {span} a takmer nič od neho nezávisí. Ak je to zámer, hodí sa poznámka k objektu."
+"fcRecQuiet": "Nedostupné už {span} a takmer nič od neho nezávisí. Ak je to zámer, hodí sa poznámka k objektu.",
+"monitorHistObjects1": "1 objekt",
+"relEntities1": "1 entita",
+"deviceEntities1": "1 entita",
+"propChildrenCount1": "1 zariadenie",
+"markEffHides1": "skrytý 1 nález"
 }

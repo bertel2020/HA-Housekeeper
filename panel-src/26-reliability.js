@@ -55,7 +55,7 @@ class ReliabilityMixin {
   relRowBody(item) {
     const percent = item.availability;
     const tone = item.dead ? "red" : percent === null ? "mute" : percent >= REL_GREEN ? "ok" : percent >= REL_YELLOW ? "warn" : "red";
-    const lines = [`${this.esc(item.domain || "")} · ${this.t("relEntities", { n: item.entities })}${item.permanent ? ` · ${this.t("relPermanent", { n: item.permanent })}` : ""}`];
+    const lines = [`${this.esc(item.domain || "")} · ${this.tCount("relEntities", item.entities)}${item.permanent ? ` · ${this.t("relPermanent", { n: item.permanent })}` : ""}`];
     const layer = item.shared_outages ? (item.layer === "cloud" ? this.t("relLayerCloud") : this.t("relLayerLocal")) : "";
     if (layer) lines.push(layer);
     const flags = [];
@@ -153,7 +153,7 @@ class ReliabilityMixin {
     const compare = Boolean(r.comparison?.available);
     const delta = e => (e.delta === null || e.delta === undefined ? null : e.delta);
     const columns = [
-      { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.t("relEntities", { n: e.entities })}`) },
+      { key: "title", label: "utName", cell: e => this.nameCell(e.title, `${e.domain || ""} · ${this.tCount("relEntities", e.entities)}`) },
       { key: "status", label: "relColStatus", sortable: false, cell: e => [e.reauth ? `<span class="pill red" role="link" tabindex="0" ${this.findObject(`config_entry:${e.entry_id}`) ? `data-object="${this.esc(`config_entry:${e.entry_id}`)}"` : 'data-jump="findingsNav" data-filter="config_entry.reauth"'} title="${this.esc(this.t("relReauthOpen"))}">${this.t("relReauth")}</span>` : "", e.state && e.state !== "loaded" ? `<span class="pill warn" title="${this.esc(e.state)}">${this.esc(this.entryStateLabel(e.state))}</span>` : "", this.apRowAction(e.entry_id), e.shared_outages && e.layer === "cloud" ? `<span class="pill mute">${this.t("relLayerCloud")}</span>` : ""].filter(Boolean).join(" ").replace(/^(.+)$/, '<span class="relpills">$1</span>') },
       { key: "setup", label: "relColSetup", dir: "desc", cell: e => this.relSetupCell(e.setup) },
       { key: "avail", label: "relSortAvail", dir: "asc", cell: availCell },

@@ -6718,5 +6718,10 @@
 "visitAdded1": "1 个新发现项",
 "whyLevel1": "1 个对象 · {level} · {weight}",
 "exTrimToo": "同时精简旧历史记录 …",
-"fcRecQuiet": "已离线 {span}，几乎没有东西依赖它。如果是有意关闭，适合设置对象备注。"
+"fcRecQuiet": "已离线 {span}，几乎没有东西依赖它。如果是有意关闭，适合设置对象备注。",
+"monitorHistObjects1": "1 个对象",
+"relEntities1": "1 个实体",
+"deviceEntities1": "1 个实体",
+"propChildrenCount1": "1 个设备",
+"markEffHides1": "已隐藏 1 个发现项"
 }

@@ -6718,5 +6718,10 @@
 "visitAdded1": "1 hallazgo nuevo",
 "whyLevel1": "1 objeto · {level} · {weight}",
 "exTrimToo": "Recortar también el historial antiguo …",
-"fcRecQuiet": "Apagado desde hace {span}, y casi nada depende de él. Si es a propósito, encaja una nota de objeto."
+"fcRecQuiet": "Apagado desde hace {span}, y casi nada depende de él. Si es a propósito, encaja una nota de objeto.",
+"monitorHistObjects1": "1 objeto",
+"relEntities1": "1 entidad",
+"deviceEntities1": "1 entidad",
+"propChildrenCount1": "1 dispositivo",
+"markEffHides1": "1 hallazgo oculto"
 }
