@@ -22,18 +22,35 @@
   - Ausgefallene Entitäten deaktivieren oder ersetzen; bei kaputten Verweisen das Ersetzen mit dem Vorschlag.
   - Quarantäne, verwaiste Statistiken, nicht verwiesene Objekte und „Bereich zuweisen“ bieten „Alle … der Liste“ an, wie schon die Befunde.
   - Ein neuer Filter „Ursache“ zeigt zum Beispiel alle Entitäten, die ihre Integration nicht mehr bereitstellt. In Listen mit drei oder mehr Filtern stehen diese jetzt hinter einem Knopf „Filter“, der zählt, wie viele gelten.
+- **Quarantäne:** Die Liste zeigt, wie viele Recorder-Zeilen eine Entität hält, und „Freigeben“ steht im Zeilenmenü.
 
 ### Geändert
 
 - **Ausfälle:** Ein ausgefallenes Gerät nennt in Liste und Karte die Dauer und was dadurch nicht verfügbar ist („Gerät X ist seit 44 Tagen aus“). Auf der Beheben-Seite steht die Frage „Ist das so gewollt?“, und „Absichtlich aus, notieren“ ist eine eigene Karte; sie wird empfohlen, wenn das Gerät seit einer Woche aus ist und kaum etwas daran hängt.
 - **Hausfunktionen:** Die Soll-Regeln passen zum Objekt: ein Mindestwert wird nur bei Zahlen angeboten, und jede Regel zeigt den aktuellen Wert.
 - **Verwaiste Statistiken:** Der Hilfetext nennt die Wartemarke und die Übertragung.
+- **Wörter:** Ein Wort, „Wirkung“, ersetzt Schweregrad, Auswirkung und Dringlichkeit (Liste, Filter, Chips, Hilfe, Beheben-Seite). Etappe 2 des Erstaufräumens sagt „Ablehnen“ statt „Später erinnern“. Die Menüs sagen „Ausnahme-Regel“, und die Knöpfe bei Backups, Backup-Automatik und Umbenennen sagen „Vorschau erstellen“ wie jeder andere Plan.
+- **Menüs und Popups:** Escape schließt nur das innerste Popup und geht nicht mehr zusätzlich zurück; ein Klick daneben schließt Zeilenmenüs und gespeicherte Ansichten. Die Zeilenaktionen der Sturm-Liste, der Entfernt-Liste, des Monitor-Verlaufs, gespeicherter Scans und des KI-Protokolls stehen im Zeilenmenü.
+- **Rückfragen:** Das Aufheben einer einzelnen Entscheidung, das Entfernen einer einzelnen Objekt-Notiz, das Zurücksetzen der Anzeige-Einstellungen, das Zurücknehmen von KI-Änderungen und das Löschen der Zähler einer Abdeckung fragen vorher.
+- **KI-Zugriff:** Das Einschalten von „Merkliste ändern“ oder „Befunde beheben“ setzt das automatische Ausschalten auf 8 Stunden, wenn keines gewählt war.
+- **Datenschutz:** Der Export mit Platzhaltern lässt auch Attribute mit Namen weg, und user, host, serial und owner gelten als sensibel. Die Diagnosedatei kürzt Entitäts-IDs und Registry-IDs in Fehlertexten.
+- **Platz (Recorder):** Bei Entitäten, die nur zum Ausschließen angehakt sind, wartet das Kürzen des alten Verlaufs hinter einem ruhigen Knopf; bei schon ausgeschlossenen bleibt es offen.
+- **Erstaufräumen:** Bei einem Gerät, das seit einer Woche aus ist und von dem fast nichts abhängt, empfiehlt die Karte die Objekt-Notiz, wie die Beheben-Seite.
+- **Sprachen:** „1 Objekt“, „1 Entität“, „1 Befund ausgeblendet“ und weitere Einzahlformen; Pager, „Letzter Scan“ und „Zurück zu“ sind Vorlagen, damit die Wortstellung je Sprache stimmt; ein Wechsel der Home-Assistant-Sprache gilt ohne Neuladen; die Export-Köpfe „Name“ und „Entität“ folgen der Sprache.
 
 ### Behoben
 
 - **Ausfälle:** Ein Button, eine Szene oder ein Ereignis ohne Wert (Zustand „unknown“) gilt nicht mehr als ausgefallen und zählt nicht mehr gegen sein Gerät.
 - **Übertragen und Ersetzen:** Einheiten, die sich nur durch Leerzeichen unterscheiden (kWh/100km und kWh/100 km), gelten als eine Einheit.
 - **Übertragen-Ansicht:** Sie passt auf ein Handy, und die Liste der Zielwahl wird nicht mehr abgeschnitten.
+- **Ausnahmeregeln und Erfolgskriterien:** Ein Ladefehler lässt beim nächsten Speichern nicht mehr die gespeicherten Regeln oder Kriterien ersetzen. Sammelaktionen der Ausnahme-Tabellen treffen nur die eigene Tabelle, und das Speichern einer Regel macht einen kurz zuvor gesetzten Schalter nicht mehr rückgängig.
+- **Beheben-Seite:**
+  - Die Wege eines Befunds (Ziel ersetzen, Verweis entfernen, Fehler abfangen) erscheinen wieder, wenn sein Objekt existiert.
+  - „Gesammelt beheben“ hat eine eigene Auswahl und „Alle wählen“ wirkt; das Ausführen eines Plans fragt wie die Plan-Seite; Ergebnis und „Rückgängig“ bleiben, nachdem der Befund weg ist.
+- **Batterien:** „Speichern“ beim Batterietyp funktioniert in beiden Tabellen.
+- **Listen und Pläne:** Auswahlen verlieren, was ein Scan oder ein Plan entfernt hat. Ein Plan nimmt höchstens 250 Schritte, die Liste sagt es und lässt den Rest gewählt. Ein Doppelklick legt nicht mehr zwei Notizen, Logbuch-Einträge oder Erinnerungen an. Fehler bei Erinnerungen, Trace und Abdeckung werden angezeigt.
+- **Recorder:** Das Kürzen bis heute geht; die Platzmessung und die Integritätsprüfung enden und starten mit dem Panel.
+- **Einstellungen und Downloads:** Nach dem Speichern fragt das Panel wiederholt, bis die Integration wieder da ist; der Download des Prüfberichts bricht in Firefox und Safari nicht mehr ab.
 
 ## 2.1.4 - 2026-11-15
 

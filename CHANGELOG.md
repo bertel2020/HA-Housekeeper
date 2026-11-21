@@ -22,18 +22,35 @@
   - Disable or replace entities that are down; for broken references, replace with the suggestion filled in.
   - Quarantine, orphaned statistics, unreferenced objects and “Assign area” offer “All … in the list”, as the findings do already.
   - A new “Cause” filter shows, for example, all entities their integration no longer provides. In lists with three or more filters, these now sit behind one “Filters” button that counts how many are on.
+- **Quarantine:** The list shows how many recorder rows an entity holds, and “Release” is an entry of the row menu.
 
 ### Changed
 
 - **Outages:** A device that is down names the duration and what is unavailable because of it in the list and the card (“Device X has been down for 44 days”). The Fix page asks “Is that intended?” and “Off on purpose, note it” is a card of its own; it is recommended when the device has been down for a week and hardly anything depends on it.
 - **House functions:** The expected conditions fit the object: a minimum value is offered for numbers only, and each condition shows the current value.
 - **Orphaned statistics:** The help text names the waiting mark and the move.
+- **Wording:** One word, “Impact”, replaces severity, effect and urgency (list, filter, chips, help, Fix page). Stage 2 of the first cleanup says “Decline” instead of “Remind me later”. The menus say “Exception rule”, and the backup, auto-delete and rename buttons say “Create preview” like every other plan.
+- **Menus and pop-ups:** Escape closes only the innermost pop-up and no longer also goes back; a click elsewhere closes row menus and saved views. The row actions of the storm list, the removed list, the monitor history, stored scans and the AI log are entries of the row menu.
+- **Questions before things go:** Taking back a single decision, removing a single object note, resetting the display settings, taking back AI changes and deleting the counters of a coverage ask first.
+- **AI access:** Switching on “Change the list” or “Fix findings” sets the automatic switch-off to 8 hours when none was chosen.
+- **Privacy:** The export with placeholders also leaves out attributes that carry a name, and user, host, serial and owner count as sensitive. The diagnostics file cuts entity IDs and registry IDs out of error texts.
+- **Space (recorder):** For entities that are only picked to be excluded, trimming the old history waits behind a quiet button; for entities that are already excluded it stays open.
+- **First cleanup:** For a device that has been off for a week with almost nothing depending on it, the card recommends the object note, like the Fix page.
+- **Languages:** “1 object”, “1 entity”, “1 finding hidden” and other singular forms; the pager, “Last scan” and “Back to” are templates, so the word order fits each language; a change of the Home Assistant language applies without a reload; the export headers “Name” and “Entity” follow the language.
 
 ### Fixed
 
 - **Outages:** A button, scene or event without a value (state “unknown”) no longer counts as down and no longer counts against its device.
 - **Moving and replacing:** Units that differ only in spaces (kWh/100km and kWh/100 km) count as one unit.
 - **Move view:** It fits a phone, and the list of the target field is no longer cut off.
+- **Exception rules and success criteria:** A failed load no longer lets the next save replace the stored rules or criteria. Bulk actions of the exception tables only touch their own table, and saving a rule no longer undoes a switch flipped a moment before.
+- **Fix page:**
+  - The ways of a finding (replace the target, remove the reference, catch the error) show again when its object exists.
+  - “Fix together” has its own selection and “Pick all” works; running a plan asks like the plan page; the result and “Undo” stay after the finding is gone.
+- **Batteries:** “Save” of the battery type works in both tables.
+- **Lists and plans:** Selections lose what a scan or a plan removed. A plan takes at most 250 steps, and the list says so and keeps the rest picked. A double click no longer creates two notes, logbook entries or reminders. Errors of reminders, the trace and the coverage show.
+- **Recorder:** Trimming up to today works; the space measurement and the integrity check stop and resume with the panel.
+- **Settings and downloads:** After saving, the panel asks again until the integration is back; the report download no longer fails in Firefox and Safari.
 
 ## 2.1.4 - 2026-11-15
 
