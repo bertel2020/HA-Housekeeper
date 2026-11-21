@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"50817af6fb"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"bf600266ea"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"592fa74704"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a124ff0eff"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"303b453bc4"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"ff34c710f5"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"a3c5bba317"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"8d6405ef03"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"0ef0c41446"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"98b3dfdd55"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b423e5062a"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"35af6c1e84"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"b7c1262bef"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"92c5f44eb3"}];
 
 const TEXT = {
   de: {
@@ -20249,6 +20249,10 @@ Object.assign(TEXT.en, {
   causeUses_automation1: "1 automation affected", causeUses_script1: "1 script affected", causeUses_dashboard1: "1 dashboard affected", causeUsers1: "1 automation, script or dashboard points to it", causeCallers1: "1 automation or script calls it", visitAdded1: "1 new finding", whyLevel1: "1 object · {level} · {weight}",
 });
 
+// The card recommends the object note for a quiet outage, as the page "Fix" does.
+Object.assign(TEXT.de, { fcRecQuiet: "Seit {span} aus, und kaum etwas hängt daran. Ist das so gewollt, passt eine Objekt-Notiz." });
+Object.assign(TEXT.en, { fcRecQuiet: "Down for {span}, and hardly anything depends on it. If it is off on purpose, an object note fits." });
+
 // The quiet button that opens the trimming of the old history under the exclusion.
 Object.assign(TEXT.de, { exTrimToo: "Auch alten Verlauf kürzen …" });
 Object.assign(TEXT.en, { exTrimToo: "Also trim the old history …" });
@@ -23421,6 +23425,8 @@ class FcRecommendMixin {
     const pauseOnly = fixable && f.rule_id === "config_entry.not_loaded" && obj?.object_type === "config_entry" && !this.fixItems(obj, key).items.some(it => it.plan);
     const fix = body => (pauseOnly ? { act: "fix", head: t("fcRecPause"), body: t("fcRecPauseText") } : { act: "fix", head: t("fcRecFix"), body });
     const instead = body => (this.fcCanMark(obj) ? { act: "mark", head: t("fcRecTake"), body } : { act: "later", head: t("fcRecLater"), body });
+    // The same as on the page "Fix": a device that has been off for a week with almost nothing on it is most likely off on purpose.
+    if (f.quiet_outage && this.fcCanMark(obj)) return { act: "mark", head: t("fcRecTake"), body: t("fcRecQuiet", { span: this.spanText(Math.max(0, (Date.now() - Date.parse(f.first_detected_at)) / 3600000)) }) };
     const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
     if (followers >= 5) return fixable ? fix(t("fcRecFixFollows", { n: this.formatNumber(followers) })) : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
     if (!since) return fixable ? fix(t("fcRecFixNoSince")) : instead(t("fcRecNoFixNoSince"));

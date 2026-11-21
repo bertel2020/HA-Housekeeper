@@ -421,3 +421,26 @@ def test_a_device_that_is_down_for_a_week_with_nothing_on_it_recommends_the_note
     assert recommended(1) == "reload"
     assert recommended(44, consumers={"automation": 2}) == "reload"
     assert recommended(44, followers=5) == "reload"
+
+
+def test_a_quiet_device_outage_is_flagged_for_the_cards() -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.ha_housekeeper.fix_ways import mark_quiet_outages
+
+    old = (datetime.now(UTC) - timedelta(days=10)).isoformat()
+    young = (datetime.now(UTC) - timedelta(days=1)).isoformat()
+    finding = {"key": "k", "rule_id": "device.down", "object_id": "d", "first_detected_at": old}
+    snapshot = {
+        "findings": [finding, {**finding, "key": "y", "first_detected_at": young}],
+        "causes": [
+            {"finding_key": "k", "total_followers": 1, "consumers": {}},
+            {"finding_key": "y", "total_followers": 1, "consumers": {}},
+        ],
+    }
+    mark_quiet_outages(snapshot)
+    assert snapshot["findings"][0].get("quiet_outage") is True
+    assert "quiet_outage" not in snapshot["findings"][1]
+    snapshot["causes"][0]["total_followers"] = 5
+    mark_quiet_outages(snapshot)
+    assert "quiet_outage" not in snapshot["findings"][0], "a flag that no longer holds is taken off"

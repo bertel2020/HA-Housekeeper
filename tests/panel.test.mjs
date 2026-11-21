@@ -5459,6 +5459,13 @@ test("the detail page offers a rename and an area for one entity and sends one a
   assert.equal(JSON.stringify(calls.map(c => c.actions[0].kind)), JSON.stringify(["rename_entity", "set_area"]));
 });
 
+test("the card recommends the object note for a quiet outage, as the page Fix does", () => {
+  const { el } = panel("en");
+  const f = { key: "k", rule_id: "device.down", object_id: "d1", classification: "unavailable", first_detected_at: new Date(Date.now() - 10 * 86400000).toISOString(), quiet_outage: true };
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "device", object_id: "d1", name: "Plug" }], findings: [f], causes: [] };
+  assert.equal(el.fcRecCard(f, "device:d1").act, "mark");
+});
+
 test("trimming the old history waits behind a quiet button while entities are only picked to be excluded", () => {
   const { el } = panel("en");
   el.data = { ...DATA, meta: { ...DATA.meta, recorder_available: true } };

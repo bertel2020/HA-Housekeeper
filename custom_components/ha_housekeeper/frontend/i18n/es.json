@@ -6717,5 +6717,6 @@
 "causeCallers1": "1 automatización o script la llama",
 "visitAdded1": "1 hallazgo nuevo",
 "whyLevel1": "1 objeto · {level} · {weight}",
-"exTrimToo": "Recortar también el historial antiguo …"
+"exTrimToo": "Recortar también el historial antiguo …",
+"fcRecQuiet": "Apagado desde hace {span}, y casi nada depende de él. Si es a propósito, encaja una nota de objeto."
 }

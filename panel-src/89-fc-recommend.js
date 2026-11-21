@@ -70,6 +70,8 @@ class FcRecommendMixin {
     const pauseOnly = fixable && f.rule_id === "config_entry.not_loaded" && obj?.object_type === "config_entry" && !this.fixItems(obj, key).items.some(it => it.plan);
     const fix = body => (pauseOnly ? { act: "fix", head: t("fcRecPause"), body: t("fcRecPauseText") } : { act: "fix", head: t("fcRecFix"), body });
     const instead = body => (this.fcCanMark(obj) ? { act: "mark", head: t("fcRecTake"), body } : { act: "later", head: t("fcRecLater"), body });
+    // The same as on the page "Fix": a device that has been off for a week with almost nothing on it is most likely off on purpose.
+    if (f.quiet_outage && this.fcCanMark(obj)) return { act: "mark", head: t("fcRecTake"), body: t("fcRecQuiet", { span: this.spanText(Math.max(0, (Date.now() - Date.parse(f.first_detected_at)) / 3600000)) }) };
     const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
     if (followers >= 5) return fixable ? fix(t("fcRecFixFollows", { n: this.formatNumber(followers) })) : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
     if (!since) return fixable ? fix(t("fcRecFixNoSince")) : instead(t("fcRecNoFixNoSince"));

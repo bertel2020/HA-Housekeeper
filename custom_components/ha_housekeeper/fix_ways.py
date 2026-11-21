@@ -46,6 +46,15 @@ def _quiet_outage(finding: dict[str, Any], snapshot: dict[str, Any]) -> bool:
     )
 
 
+def mark_quiet_outages(snapshot: dict[str, Any]) -> None:
+    """Flag the device outages that are quiet, so that a card can recommend the same as the page of the finding."""
+    for finding in snapshot.get("findings", []):
+        if finding.get("rule_id") == "device.down" and _quiet_outage(finding, snapshot):
+            finding["quiet_outage"] = True
+        else:
+            finding.pop("quiet_outage", None)
+
+
 def _way(way: str, kind: str, recommended: bool = False, **fields: Any) -> dict[str, Any]:
     return {"way": way, "kind": kind, "recommended": recommended, **fields}
 

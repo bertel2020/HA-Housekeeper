@@ -102,6 +102,7 @@ from .exceptions import ExceptionStore, entry_traits, traits, verdict
 from .exceptions import matches as _hits
 from .finding_topics import apply_topics
 from .first_cleanup import FirstCleanupStore
+from .fix_ways import mark_quiet_outages
 from .goals import GoalStore
 from .goals import evaluate as evaluate_goals
 from .goals import measure as measure_goals
@@ -2574,6 +2575,7 @@ class InventoryScanner:
         self._snapshot["causes"] = apply_causes(
             self._snapshot["objects"], self._snapshot["edges"], self._snapshot["findings"]
         )
+        mark_quiet_outages(self._snapshot)
         self._sync_issues(self._snapshot)
         self.announce_changes()
 
@@ -2887,6 +2889,7 @@ class InventoryScanner:
         snapshot["causes"] = apply_causes(
             snapshot["objects"], snapshot["edges"], snapshot["findings"]
         )
+        mark_quiet_outages(snapshot)
         self._sync_issues(snapshot)
         self.announce_changes()
 

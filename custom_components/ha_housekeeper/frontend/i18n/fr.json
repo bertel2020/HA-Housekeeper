@@ -6717,5 +6717,6 @@
 "causeCallers1": "1 automatisation ou script l’appelle",
 "visitAdded1": "1 nouveau constat",
 "whyLevel1": "1 objet · {level} · {weight}",
-"exTrimToo": "Réduire aussi l’ancien historique …"
+"exTrimToo": "Réduire aussi l’ancien historique …",
+"fcRecQuiet": "Hors service depuis {span}, et presque rien n’en dépend. Si c’est voulu, une note d’objet convient."
 }
