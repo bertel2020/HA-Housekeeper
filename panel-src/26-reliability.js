@@ -39,7 +39,7 @@ class ReliabilityMixin {
   }
 
   relDuration(seconds) {
-    if (seconds >= 86400) return this.t("relDays", { n: Math.round(seconds / 86400) });
+    if (seconds >= 86400) return this.tCount("relDays", Math.round(seconds / 86400));
     if (seconds >= 7200) return this.t("relHours", { n: Math.round(seconds / 3600) });
     return this.t("relMinutes", { n: Math.max(1, Math.round(seconds / 60)) });
   }

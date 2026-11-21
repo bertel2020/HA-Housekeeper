@@ -49,7 +49,7 @@ class GoalsMixin {
 
   goalAmount(g, n) {
     if (g.unit === "hours") return this.bhAge(n);
-    if (g.unit === "days") return this.t("daysValue", { n });
+    if (g.unit === "days") return this.tCount("daysValue", n);
     if (g.unit === "mb_per_day") return this.t("goalUnit_mb_per_day", { n: this.formatNumber(n) });
     return this.formatNumber(n);
   }

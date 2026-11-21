@@ -153,7 +153,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
-    return this.t(key === "confirmedSummaryReplace" && changes === 1 ? "confirmedSummaryReplaceOne" : key, { count: key === "confirmedSummaryReplace" ? changes : count });
+    return key === "confirmedSummaryReplace" ? this.t(changes === 1 ? "confirmedSummaryReplaceOne" : key, { count: changes }) : this.tCount(key, count);
   }
 
   // "trigger/0/entity_id" reads as "Trigger 1 · entity_id"; a path in another shape stays as it is.
@@ -174,7 +174,7 @@ class CleanupMixin {
     const block = src => {
       const lines = (src.changes || []).slice(0, 5).map(c => `<span class="srcspot">${this.esc(this.sourceSpot(c.location))}</span><span class="srcln del"><i>−</i><span>${this.esc(c.from)}</span></span><span class="srcln add"><i>+</i><span>${this.esc(c.to)}</span></span>`).join("");
       const more = src.change_count > Math.min(5, (src.changes || []).length) ? `<small class="u-dim u-block">${this.t("replaceMoreChanges", { count: src.change_count - Math.min(5, (src.changes || []).length) })}</small>` : "";
-      return `<div class="srcblock"><div class="srchead"><ha-icon icon="${src.type === "energy" ? "mdi:lightning-bolt-outline" : "mdi:file-edit-outline"}"></ha-icon><span><strong>${this.esc(src.name)}</strong><small>${this.esc(this.t(src.type === "energy" ? "energyDashboard" : src.type))} · ${this.esc(this.t("replaceChanges", { count: src.change_count }))}</small></span></div>${src.undo_per_item ? `<small class="u-amber u-block"><ha-icon icon="mdi:alert-outline" class="u-ic14"></ha-icon> ${this.esc(this.t("sourceUndoPerItem"))}</small>` : ""}${lines ? `<div class="srcdiff">${lines}</div>` : ""}${more}</div>`;
+      return `<div class="srcblock"><div class="srchead"><ha-icon icon="${src.type === "energy" ? "mdi:lightning-bolt-outline" : "mdi:file-edit-outline"}"></ha-icon><span><strong>${this.esc(src.name)}</strong><small>${this.esc(this.t(src.type === "energy" ? "energyDashboard" : src.type))} · ${this.esc(this.tCount("replaceChanges", src.change_count))}</small></span></div>${src.undo_per_item ? `<small class="u-amber u-block"><ha-icon icon="mdi:alert-outline" class="u-ic14"></ha-icon> ${this.esc(this.t("sourceUndoPerItem"))}</small>` : ""}${lines ? `<div class="srcdiff">${lines}</div>` : ""}${more}</div>`;
     };
     const shown = open.slice(0, 3), folded = open.slice(3);
     const foldedHtml = folded.length ? `<details class="rowdetails"><summary>${this.t("replaceMoreSources", { count: folded.length })}</summary>${folded.map(block).join("")}</details>` : "";
@@ -631,7 +631,7 @@ class CleanupMixin {
         <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc([sub, reasons, abort.replace(/^ · /, "")].filter(Boolean).join(" · "))}</small>${blockWhy}${ack}${keepOpen ? sources : ""}${(keepOpen ? "" : sources) || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${keepOpen ? "" : sources}${uses ? `<span class="chips planchips">${uses}${more}</span>` : ""}</details>` : ""}</span>
         <span class="planresult">${resultPill}${undo}${a.executable && (result || !(a.reasons || []).includes("irreversible")) ? this.undoBadge(a) : ""}${result || (a.verdict === "ok" && !idle) ? "" : `<span class="pill ${tone}">${this.t(idle ? "verdictNothing" : a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
     });
-    const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
+    const extra = [sm.uses ? this.tCount("planUses", sm.uses) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
     const word = this.planWord(plan), conf = this.confirmation?.plan_id === plan.plan_id ? this.confirmation : null;
     let control = "";

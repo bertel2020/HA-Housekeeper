@@ -140,7 +140,7 @@ class OftenMixin {
       // The other entities of the device that say something about it: they stay watched.
       const rest = group ? (this.data?.objects || []).filter(o => o.object_type === "entity" && o.device_id === item?.object_id && ["active", "unavailable", "unknown"].includes(o.status) && !members.includes(o.object_id)).length : 0;
       const restText = rest ? (rest === 1 ? this.t("oftenRest1") : this.t("oftenRest", { n: this.formatNumber(rest) })) : "";
-      const title = group ? this.t("oftenGroup", { device: item?.name || link, n: this.formatNumber(members.length) }) : item?.name || key;
+      const title = group ? this.tCount("oftenGroup", members.length, { device: item?.name || link }) : item?.name || key;
       return { key, link, type: item?.object_type || "entity", title, id: group ? names : link.split(":").slice(1).join(":"), note: restText, pattern: w ? this.t("oftenChipAt", w) : this.t("oftenChip"), hides };
   }
 
@@ -174,7 +174,7 @@ class OftenMixin {
         { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
       ],
     });
-    const top = `<button class="row foldhead" data-fold="often" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("oftenCardTitle")}</strong><small>${this.esc(this.t("oftenCardHint"))}</small></span><span class="pill warn">${this.esc(this.t("oftenCount", { n: this.formatNumber(items.length) }))}</span></button>`;
+    const top = `<button class="row foldhead" data-fold="often" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("oftenCardTitle")}</strong><small>${this.esc(this.t("oftenCardHint"))}</small></span><span class="pill warn">${this.esc(this.tCount("oftenCount", items.length))}</span></button>`;
     return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${list}</div>` : ""}</div></div>`;
   }
 

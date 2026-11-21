@@ -386,7 +386,7 @@ class FindingStatusMixin {
       const when = this.markWhen({ ...b, kind: b.markKind || kinds[0] }, "bulk");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
       const names = [...new Set(targets.values())].map(k => ({ key: k, name: this.findObject(k)?.name || k.split(":").slice(1).join(":"), sub: "" }));
-      return form(this.t("markBulkTitle", { n: this.formatNumber(objects) }), `${this.pickedBlock(names, "pickedObjects", "data-bulk-dropobj")}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="markform"><div class="mrow">${when.window}</div></div><div class="statusrow">
+      return form(this.tCount("markBulkTitle", objects), `${this.pickedBlock(names, "pickedObjects", "data-bulk-dropobj")}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="markform"><div class="mrow">${when.window}</div></div><div class="statusrow">
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
         </div><div class="markform">${when.autoBox}${when.graceBack}${when.hints}</div>${this.coverHint(this.selectionFacts().picked, ["user", "label", "rule"])}${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}`, save);

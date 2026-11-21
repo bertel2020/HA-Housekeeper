@@ -446,7 +446,7 @@ class UnusedMixin {
     const kinds = this.markKindsFor(new Map([["entity:x", "entity:x"]]));
     const days = [0, 30, 90, 180, 365].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
     const cancel = "data-unref-cancel";
-    return `<form class="actionarea" data-unref-form>${this.actionHead(this.t("marksSetTitle", { n: this.formatNumber(n) }), cancel)}
+    return `<form class="actionarea" data-unref-form>${this.actionHead(this.tCount("marksSetTitle", n), cancel)}
       <div class="statusrow"><select data-unref-kind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
       <input data-unref-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
       <select data-unref-days aria-label="${this.esc(this.t("markReview"))}">${days}</select></div>

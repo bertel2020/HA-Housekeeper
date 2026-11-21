@@ -69,7 +69,7 @@ class WatchMixin {
 
   watchBody(w) {
     const r = { silent: [], marked: [], ...w.result }, parts = [];
-    parts.push(`<p class="sub u-mb14">${w.before ? this.t("watchBefore", { when: this.formatDate(w.before.at) }) : this.t("watchNoBefore")} · ${this.t("watchSamples", { n: w.samples.length })}</p>`);
+    parts.push(`<p class="sub u-mb14">${w.before ? this.t("watchBefore", { when: this.formatDate(w.before.at) }) : this.t("watchNoBefore")} · ${this.tCount("watchSamples", w.samples.length)}</p>`);
     if (r.reason === "unread") parts.push(`<p class="factnote">${this.t("watchUnread")}</p>`);
     const section = (id, keys, tone, past = false) => keys.length ? `<div class="sectionlabel">${this.t(id, { n: this.formatNumber(keys.length) })}</div>${this.watchRows(keys, tone, past)}` : "";
     parts.push(section("watchNew", r.new, "warn"), section("watchSilent", r.silent, "mute"), section("watchMarked", r.marked, "mute"), section("watchTransient", r.transient, "mute", true), section("watchFixed", r.fixed, "ok", true));

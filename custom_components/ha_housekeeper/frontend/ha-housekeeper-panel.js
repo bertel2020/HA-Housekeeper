@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"5d97d34e46"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"515394e355"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d35bae2ecd"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"dbf0c295e2"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"97ea5a03d8"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"661ef60db4"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"73102c7964"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"ab9dd43ec3"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"7a8cd52a35"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"33d6635b3e"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"87da040a1a"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"ca19a59f83"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"bf349e898b"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"7ea15fe76f"}];
 
 const TEXT = {
   de: {
@@ -2697,7 +2697,7 @@ class OverviewMixin {
     }
     const stale = this.staleScan();
     if (stale) {
-      const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
+      const age = stale.hours >= 48 ? this.tCount("daysValue", Math.round(stale.hours / 24)) : `${stale.hours} h`;
       items.push({ key: "stale", area: "state", tone: "warn", icon: "mdi:clock-alert-outline", text: stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age }), scan: true });
     }
     // Only real problems are listed; notes such as "emergency kit not confirmed" stay on the Maintenance card.
@@ -3398,7 +3398,7 @@ class FindingsMixin {
     this.ensureStability?.(); this.ensureWatches?.();
     const often = this.oftenSuggestions?.() || [], incidents = this.incidents?.() || [];
     const btn = (fold, icon, text, tone, short) => `<button type="button" class="hintbtn ${tone}${this.foldOpen(fold, false) ? " on" : ""}" data-fold="${fold}" aria-expanded="${this.foldOpen(fold, false)}" title="${this.esc(text)}"><ha-icon icon="${icon}"></ha-icon><span class="hlong">${this.esc(text)}</span><span class="hshort" aria-hidden="true">${this.esc(short)}</span><ha-icon icon="mdi:chevron-${this.foldOpen(fold, false) ? "down" : "right"}"></ha-icon></button>`;
-    const row = `<div class="panel hintrow"><span class="hintlabel">${this.t("hintsLabel")}</span><button type="button" class="hintbtn act" data-fc-open><ha-icon icon="mdi:broom"></ha-icon>${this.t("fcButton")}</button>${often.length ? btn("often", "mdi:lightbulb-on-outline", this.t("hintOften", { n: this.formatNumber(often.length) }), "warn", this.t("hintOftenShort", { n: this.formatNumber(often.length) })) : ""}${incidents.length ? btn("corr", "mdi:update", this.t("hintCorr", { n: this.formatNumber(incidents.length) }), "mute", this.t("hintCorrShort", { n: this.formatNumber(incidents.length) })) : ""}</div>`;
+    const row = `<div class="panel hintrow"><span class="hintlabel">${this.t("hintsLabel")}</span><button type="button" class="hintbtn act" data-fc-open><ha-icon icon="mdi:broom"></ha-icon>${this.t("fcButton")}</button>${often.length ? btn("often", "mdi:lightbulb-on-outline", this.tCount("hintOften", often.length), "warn", this.t("hintOftenShort", { n: this.formatNumber(often.length) })) : ""}${incidents.length ? btn("corr", "mdi:update", this.tCount("hintCorr", incidents.length), "mute", this.t("hintCorrShort", { n: this.formatNumber(incidents.length) })) : ""}</div>`;
     return `${row}${this.foldOpen("often", false) ? this.oftenCard() : ""}${this.foldOpen("corr", false) ? this.corrGroupsCard(afterCount, afterFollows) : ""}`;
   }
 
@@ -4258,13 +4258,13 @@ class SettingsMixin {
     const days = [30, 90, 180, 365, 0].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
     const cancel = "data-mark-bulkcancel", save = `<button type="submit" class="btn primary">${this.t("saveOptions")}</button>`;
     if (b.kind === "review") {
-      return `<form class="actionarea" data-mark-bulkform>${this.actionHead(this.t("marksReviewTitle", { n: this.formatNumber(n) }), cancel)}
+      return `<form class="actionarea" data-mark-bulkform>${this.actionHead(this.tCount("marksReviewTitle", n), cancel)}
         <div class="statusrow"><select data-mark-bulkdays aria-label="${this.esc(this.t("markReview"))}">${days}</select></div>
         ${this.actionFoot(cancel, save)}</form>`;
     }
     const kinds = this.markKindsFor(new Map([...this.markSel].map(k => [k, k])));
     const kind = b.markKind && kinds.includes(b.markKind) ? b.markKind : kinds[0];
-    return `<form class="actionarea" data-mark-bulkform>${this.actionHead(this.t("marksKindTitle", { n: this.formatNumber(n) }), cancel)}
+    return `<form class="actionarea" data-mark-bulkform>${this.actionHead(this.tCount("marksKindTitle", n), cancel)}
       <div class="statusrow"><select data-mark-bulkkind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${kind === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select></div>
       ${this.actionFoot(cancel, save)}</form>`;
   }
@@ -4570,7 +4570,7 @@ class CleanupMixin {
       : executable.some(a => a.kind === "rename_entity") ? "confirmedSummaryRename"
       : executable.some(a => a.kind === "replace_references") ? "confirmedSummaryReplace" : executable.some(a => a.kind === "refactor_automation") ? "confirmedSummaryRefactor" : devices ? "confirmedSummaryDeviceDisable" : "confirmedSummary";
     const changes = executable.filter(a => a.kind === "replace_references").flatMap(a => a.sources || []).reduce((n, src) => n + (src.change_count || 0), 0);
-    return this.t(key === "confirmedSummaryReplace" && changes === 1 ? "confirmedSummaryReplaceOne" : key, { count: key === "confirmedSummaryReplace" ? changes : count });
+    return key === "confirmedSummaryReplace" ? this.t(changes === 1 ? "confirmedSummaryReplaceOne" : key, { count: changes }) : this.tCount(key, count);
   }
 
   // "trigger/0/entity_id" reads as "Trigger 1 · entity_id"; a path in another shape stays as it is.
@@ -4591,7 +4591,7 @@ class CleanupMixin {
     const block = src => {
       const lines = (src.changes || []).slice(0, 5).map(c => `<span class="srcspot">${this.esc(this.sourceSpot(c.location))}</span><span class="srcln del"><i>−</i><span>${this.esc(c.from)}</span></span><span class="srcln add"><i>+</i><span>${this.esc(c.to)}</span></span>`).join("");
       const more = src.change_count > Math.min(5, (src.changes || []).length) ? `<small class="u-dim u-block">${this.t("replaceMoreChanges", { count: src.change_count - Math.min(5, (src.changes || []).length) })}</small>` : "";
-      return `<div class="srcblock"><div class="srchead"><ha-icon icon="${src.type === "energy" ? "mdi:lightning-bolt-outline" : "mdi:file-edit-outline"}"></ha-icon><span><strong>${this.esc(src.name)}</strong><small>${this.esc(this.t(src.type === "energy" ? "energyDashboard" : src.type))} · ${this.esc(this.t("replaceChanges", { count: src.change_count }))}</small></span></div>${src.undo_per_item ? `<small class="u-amber u-block"><ha-icon icon="mdi:alert-outline" class="u-ic14"></ha-icon> ${this.esc(this.t("sourceUndoPerItem"))}</small>` : ""}${lines ? `<div class="srcdiff">${lines}</div>` : ""}${more}</div>`;
+      return `<div class="srcblock"><div class="srchead"><ha-icon icon="${src.type === "energy" ? "mdi:lightning-bolt-outline" : "mdi:file-edit-outline"}"></ha-icon><span><strong>${this.esc(src.name)}</strong><small>${this.esc(this.t(src.type === "energy" ? "energyDashboard" : src.type))} · ${this.esc(this.tCount("replaceChanges", src.change_count))}</small></span></div>${src.undo_per_item ? `<small class="u-amber u-block"><ha-icon icon="mdi:alert-outline" class="u-ic14"></ha-icon> ${this.esc(this.t("sourceUndoPerItem"))}</small>` : ""}${lines ? `<div class="srcdiff">${lines}</div>` : ""}${more}</div>`;
     };
     const shown = open.slice(0, 3), folded = open.slice(3);
     const foldedHtml = folded.length ? `<details class="rowdetails"><summary>${this.t("replaceMoreSources", { count: folded.length })}</summary>${folded.map(block).join("")}</details>` : "";
@@ -5048,7 +5048,7 @@ class CleanupMixin {
         <span class="row-text"><strong>${obj ? `<button class="link" data-object="${this.esc(`${type}:${a.object_id}`)}">${this.esc(a.name)}</button>` : this.esc(a.name)}</strong><small>${this.esc([sub, reasons, abort.replace(/^ · /, "")].filter(Boolean).join(" · "))}</small>${blockWhy}${ack}${keepOpen ? sources : ""}${(keepOpen ? "" : sources) || uses ? `<details class="rowdetails"><summary>${this.t("planDetails")}</summary>${keepOpen ? "" : sources}${uses ? `<span class="chips planchips">${uses}${more}</span>` : ""}</details>` : ""}</span>
         <span class="planresult">${resultPill}${undo}${a.executable && (result || !(a.reasons || []).includes("irreversible")) ? this.undoBadge(a) : ""}${result || (a.verdict === "ok" && !idle) ? "" : `<span class="pill ${tone}">${this.t(idle ? "verdictNothing" : a.verdict === "review" && (a.reasons || []).includes("irreversible") ? "verdictIrreversible" : `verdict_${a.verdict}`)}</span>`}</span></div>`;
     });
-    const extra = [sm.uses ? this.t("planUses", { count: sm.uses }) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
+    const extra = [sm.uses ? this.tCount("planUses", sm.uses) : "", sm.statistics ? this.t("planStats", { count: sm.statistics }) : ""].filter(Boolean).join(" · ");
     const executable = plan.actions.some(a => a.executable);
     const word = this.planWord(plan), conf = this.confirmation?.plan_id === plan.plan_id ? this.confirmation : null;
     let control = "";
@@ -6585,7 +6585,7 @@ class UnusedMixin {
     const kinds = this.markKindsFor(new Map([["entity:x", "entity:x"]]));
     const days = [0, 30, 90, 180, 365].map(d => `<option value="${d}" ${Number(b.days) === d ? "selected" : ""}>${d ? this.t("decideDays", { n: d }) : this.t("markNever")}</option>`).join("");
     const cancel = "data-unref-cancel";
-    return `<form class="actionarea" data-unref-form>${this.actionHead(this.t("marksSetTitle", { n: this.formatNumber(n) }), cancel)}
+    return `<form class="actionarea" data-unref-form>${this.actionHead(this.tCount("marksSetTitle", n), cancel)}
       <div class="statusrow"><select data-unref-kind aria-label="${this.esc(this.t("markKind"))}">${kinds.map(k => `<option value="${k}" ${(b.markKind || kinds[0]) === k ? "selected" : ""}>${this.t(`mark_${k}`)}</option>`).join("")}</select>
       <input data-unref-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
       <select data-unref-days aria-label="${this.esc(this.t("markReview"))}">${days}</select></div>
@@ -7876,7 +7876,7 @@ class AutoPauseMixin {
 
   apSpan(ms) {
     const hours = Math.max(1, Math.round(ms / 3600000));
-    return hours >= 48 ? this.t("relDays", { n: Math.round(hours / 24) }) : hours >= 2 ? this.t("relHours", { n: hours }) : this.t("relMinutes", { n: Math.max(1, Math.round(ms / 60000)) });
+    return hours >= 48 ? this.tCount("relDays", Math.round(hours / 24)) : hours >= 2 ? this.t("relHours", { n: hours }) : this.t("relMinutes", { n: Math.max(1, Math.round(ms / 60000)) });
   }
 
   // On the reliability page, a line that leads to the auto-pause while it holds an integration.
@@ -8397,7 +8397,7 @@ class ReliabilityMixin {
   }
 
   relDuration(seconds) {
-    if (seconds >= 86400) return this.t("relDays", { n: Math.round(seconds / 86400) });
+    if (seconds >= 86400) return this.tCount("relDays", Math.round(seconds / 86400));
     if (seconds >= 7200) return this.t("relHours", { n: Math.round(seconds / 3600) });
     return this.t("relMinutes", { n: Math.max(1, Math.round(seconds / 60)) });
   }
@@ -9931,7 +9931,7 @@ class PoliciesMixin {
 
   // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
   polRuleBlock(rule) {
-    const state = !rule.enabled ? this.t("polOff") : rule.count === 1 ? this.t("polCountOne") : rule.count ? this.t("polCount", { n: this.formatNumber(rule.count) }) : this.t("polNone");
+    const state = !rule.enabled ? this.t("polOff") : rule.count === 1 ? this.t("polCountOne") : rule.count ? this.tCount("polCount", rule.count) : this.t("polNone");
     const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
@@ -10007,7 +10007,7 @@ class PoliciesMixin {
     const tabs = [
       { id: "rules", icon: "mdi:clipboard-list-outline", label: this.t("polTabRules"), hint: r ? this.t("polTileRulesHint", { on: this.formatNumber(on.length) }) : "", count: r ? r.rules.length : undefined, tone: on.length ? "ok" : "mute", status: !r },
       { id: "violations", icon: "mdi:clipboard-alert-outline", label: this.t("polTabViolations"), hint: this.t("polTileViolationsHint"), count: r ? violations : undefined, tone: !on.length ? "mute" : violations ? "warn" : "ok", pill: hidden ? this.t("polTileHidden", { n: this.formatNumber(hidden) }) : "", pillTone: "mute", status: !r },
-      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: this.t("maintHintGoals"), count: g ? (g.goals || []).length : undefined, tone: missed ? "red" : g?.goals?.length ? "ok" : "mute", pill: missed ? this.t("tilesMissed", { count: missed }) : "", status: !g },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: this.t("maintHintGoals"), count: g ? (g.goals || []).length : undefined, tone: missed ? "red" : g?.goals?.length ? "ok" : "mute", pill: missed ? this.tCount("tilesMissed", missed) : "", status: !g },
     ];
     const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
     const tiles = this.navTiles("policies", tabs, open, this.t("policies"), true);
@@ -10357,7 +10357,7 @@ class CorrelationMixin {
     ];
     const table = this.listTable("corr", columns, pg.rows, { cls: "inc", rowAttrs: it => `data-inc-row="${this.esc(this.incidentId(it))}" tabindex="0" role="button" aria-expanded="${isOpen(it)}"`,
       after: it => (isOpen(it) ? `<tr class="static remhist"><td colspan="${columns.length}"><div class="incdetail">${this.incidentBody(it)}</div></td></tr>` : "") });
-    const pill = `<span class="pill warn">${this.esc(this.t("corrIncidents", { n: this.formatNumber(items.length) }))}</span>`;
+    const pill = `<span class="pill warn">${this.esc(this.tCount("corrIncidents", items.length))}</span>`;
     const top = `<button class="row foldhead" data-fold="corr" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("corrTitle")}</strong><small>${this.esc(this.t("corrHint"))}</small></span>${pill}</button>`;
     const on = Boolean(this.findingAfter);
     const strip = afterCount ? `<div class="incfilter${on ? " on" : ""}"><span><b>${this.esc(this.t("corrStrip", { n: this.formatNumber(afterCount) }))}</b>${follows ? ` <span class="muted">· ${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) }))}</span>` : ""}</span><button class="chip" data-finding-after="1" aria-pressed="${on}"><ha-icon icon="mdi:${on ? "close" : "filter-variant"}"></ha-icon>${this.t(on ? "corrFilterOff" : "corrFilterOn")}</button></div>` : "";
@@ -10521,7 +10521,7 @@ class WatchMixin {
 
   watchBody(w) {
     const r = { silent: [], marked: [], ...w.result }, parts = [];
-    parts.push(`<p class="sub u-mb14">${w.before ? this.t("watchBefore", { when: this.formatDate(w.before.at) }) : this.t("watchNoBefore")} · ${this.t("watchSamples", { n: w.samples.length })}</p>`);
+    parts.push(`<p class="sub u-mb14">${w.before ? this.t("watchBefore", { when: this.formatDate(w.before.at) }) : this.t("watchNoBefore")} · ${this.tCount("watchSamples", w.samples.length)}</p>`);
     if (r.reason === "unread") parts.push(`<p class="factnote">${this.t("watchUnread")}</p>`);
     const section = (id, keys, tone, past = false) => keys.length ? `<div class="sectionlabel">${this.t(id, { n: this.formatNumber(keys.length) })}</div>${this.watchRows(keys, tone, past)}` : "";
     parts.push(section("watchNew", r.new, "warn"), section("watchSilent", r.silent, "mute"), section("watchMarked", r.marked, "mute"), section("watchTransient", r.transient, "mute", true), section("watchFixed", r.fixed, "ok", true));
@@ -11067,7 +11067,7 @@ class OftenMixin {
       // The other entities of the device that say something about it: they stay watched.
       const rest = group ? (this.data?.objects || []).filter(o => o.object_type === "entity" && o.device_id === item?.object_id && ["active", "unavailable", "unknown"].includes(o.status) && !members.includes(o.object_id)).length : 0;
       const restText = rest ? (rest === 1 ? this.t("oftenRest1") : this.t("oftenRest", { n: this.formatNumber(rest) })) : "";
-      const title = group ? this.t("oftenGroup", { device: item?.name || link, n: this.formatNumber(members.length) }) : item?.name || key;
+      const title = group ? this.tCount("oftenGroup", members.length, { device: item?.name || link }) : item?.name || key;
       return { key, link, type: item?.object_type || "entity", title, id: group ? names : link.split(":").slice(1).join(":"), note: restText, pattern: w ? this.t("oftenChipAt", w) : this.t("oftenChip"), hides };
   }
 
@@ -11101,7 +11101,7 @@ class OftenMixin {
         { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: menu },
       ],
     });
-    const top = `<button class="row foldhead" data-fold="often" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("oftenCardTitle")}</strong><small>${this.esc(this.t("oftenCardHint"))}</small></span><span class="pill warn">${this.esc(this.t("oftenCount", { n: this.formatNumber(items.length) }))}</span></button>`;
+    const top = `<button class="row foldhead" data-fold="often" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("oftenCardTitle")}</strong><small>${this.esc(this.t("oftenCardHint"))}</small></span><span class="pill warn">${this.esc(this.tCount("oftenCount", items.length))}</span></button>`;
     return `<div class="panel"><div class="fold${open ? " open" : ""}">${top}${open ? `<div class="foldbody">${list}</div>` : ""}</div></div>`;
   }
 
@@ -11344,7 +11344,8 @@ class CausesMixin {
 
   // One headline per cause with the counts of what it touches; the follow-up findings sit in a fold.
   // A count with its noun; one of a kind takes the text with the suffix 1: "1 follow-up", not "1 follow-ups".
-  tCount(key, n, vars = {}) { return this.t(n === 1 ? `${key}1` : key, { ...vars, n: this.formatNumber(n), count: this.formatNumber(n) }); }
+  // "1 entity" instead of "1 entities": the singular is the text under `key1`; a text without one keeps its plural.
+  tCount(key, n, vars = {}) { return this.t(n === 1 && TEXT.en[`${key}1`] ? `${key}1` : key, { ...vars, n: this.formatNumber(n), count: this.formatNumber(n) }); }
 
   causeCounts(c) {
     if (c.kind === "service_missing") return this.tCount("causeCallers", c.follower_count);
@@ -11628,7 +11629,7 @@ class GoalsMixin {
 
   goalAmount(g, n) {
     if (g.unit === "hours") return this.bhAge(n);
-    if (g.unit === "days") return this.t("daysValue", { n });
+    if (g.unit === "days") return this.tCount("daysValue", n);
     if (g.unit === "mb_per_day") return this.t("goalUnit_mb_per_day", { n: this.formatNumber(n) });
     return this.formatNumber(n);
   }
@@ -13827,7 +13828,7 @@ class FindingStatusMixin {
       const when = this.markWhen({ ...b, kind: b.markKind || kinds[0] }, "bulk");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
       const names = [...new Set(targets.values())].map(k => ({ key: k, name: this.findObject(k)?.name || k.split(":").slice(1).join(":"), sub: "" }));
-      return form(this.t("markBulkTitle", { n: this.formatNumber(objects) }), `${this.pickedBlock(names, "pickedObjects", "data-bulk-dropobj")}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="markform"><div class="mrow">${when.window}</div></div><div class="statusrow">
+      return form(this.tCount("markBulkTitle", objects), `${this.pickedBlock(names, "pickedObjects", "data-bulk-dropobj")}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="markform"><div class="mrow">${when.window}</div></div><div class="statusrow">
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
         </div><div class="markform">${when.autoBox}${when.graceBack}${when.hints}</div>${this.coverHint(this.selectionFacts().picked, ["user", "label", "rule"])}${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}`, save);
@@ -20257,6 +20258,52 @@ Object.assign(TEXT.en, {
   monitorHistObjects1: "1 object", relEntities1: "1 entity", deviceEntities1: "1 entity", propChildrenCount1: "1 device", markEffHides1: "1 finding hidden",
 });
 
+// Singular forms of counts seen every day: "1 Entität wird deaktiviert", "1 Verstoß", "1 Tag".
+Object.assign(TEXT.de, {
+  confirmedSummary1: "1 Entität wird deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange die Entität unverändert bleibt.",
+  confirmedSummaryRemove1: "1 Entität wird entfernt. Wiederherstellen geht, solange die Entitäts-ID frei ist und die Integration noch existiert.",
+  confirmedSummaryDeviceDisable1: "1 Gerät wird deaktiviert (Quarantäne). Das ist jederzeit umkehrbar, solange das Gerät unverändert bleibt.",
+  confirmedSummaryDeviceRemove1: "1 Gerät wird samt Entitäten entfernt. Wiederherstellen legt den Registry-Eintrag neu an; Entitäten stellt die Integration bereit, wenn sie es kann.",
+  marksSetTitle1: "Objekt-Notiz für 1 Entität",
+  markBulkTitle1: "Objekt-Notiz setzen · 1 Objekt",
+  marksReviewTitle1: "Neues Prüfdatum für 1 Objekt-Notiz",
+  marksKindTitle1: "Neue Art für 1 Objekt-Notiz",
+  polCount1: "1 Verstoß",
+  corrIncidents1: "1 Vorfall",
+  oftenCount1: "1 Vorschlag",
+  hintOften1: "1 Vorschlag für eine Objekt-Notiz",
+  hintCorr1: "1 Vorfall nach Updates",
+  tilesMissed1: "1 Ziel verfehlt",
+  daysValue1: "1 Tag",
+  relDays1: "1 Tag",
+  planUses1: "1 Verwendung betroffen",
+  replaceChanges1: "1 Änderung",
+  oftenGroup1: "{device}: 1 Entität",
+  watchSamples1: "1 Messung",
+});
+Object.assign(TEXT.en, {
+  confirmedSummary1: "1 entity will be disabled (quarantine). This is reversible at any time while the entity stays unchanged.",
+  confirmedSummaryRemove1: "1 entity will be removed. Restoring works while the entity ID is free and the integration still exists.",
+  confirmedSummaryDeviceDisable1: "1 device will be disabled (quarantine). This is reversible at any time while the device stays unchanged.",
+  confirmedSummaryDeviceRemove1: "1 device will be removed together with its entities. Restoring recreates the registry entry; the integration provides the entities if it can.",
+  marksSetTitle1: "Object note for 1 entity",
+  markBulkTitle1: "Set object note · 1 object",
+  marksReviewTitle1: "New review date for 1 object note",
+  marksKindTitle1: "New kind for 1 object note",
+  polCount1: "1 violation",
+  corrIncidents1: "1 incident",
+  oftenCount1: "1 suggestion",
+  hintOften1: "1 suggestion for an object note",
+  hintCorr1: "1 incident after updates",
+  tilesMissed1: "1 goal missed",
+  daysValue1: "1 day",
+  relDays1: "1 day",
+  planUses1: "1 use affected",
+  replaceChanges1: "1 change",
+  oftenGroup1: "{device}: 1 entity",
+  watchSamples1: "1 check",
+});
+
 // The card recommends the object note for a quiet outage, as the page "Fix" does.
 Object.assign(TEXT.de, { fcRecQuiet: "Seit {span} aus, und kaum etwas hängt daran. Ist das so gewollt, passt eine Objekt-Notiz." });
 Object.assign(TEXT.en, { fcRecQuiet: "Down for {span}, and hardly anything depends on it. If it is off on purpose, an object note fits." });
@@ -23565,7 +23612,7 @@ class FcRecommendMixin {
     const drop = (label = "confirmCancel") => `<button type="button" class="btn" data-fc-plan-drop>${t(label)}</button>`;
     if (status === "dry_run") {
       head = t("fcPlanPreviewHead");
-      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${t("planUses", { count: used })}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}${blocked.length ? this.modeHint(blocked) : ""}`;
+      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${this.tCount("planUses", used)}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}${blocked.length ? this.modeHint(blocked) : ""}`;
       btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy || blocked.length ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
     } else if (status === "backup" || status === "running" || (status === "executed" && !plan.verification)) {
       head = t("fcPlanRunning");

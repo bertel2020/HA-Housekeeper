@@ -121,7 +121,7 @@ class CorrelationMixin {
     ];
     const table = this.listTable("corr", columns, pg.rows, { cls: "inc", rowAttrs: it => `data-inc-row="${this.esc(this.incidentId(it))}" tabindex="0" role="button" aria-expanded="${isOpen(it)}"`,
       after: it => (isOpen(it) ? `<tr class="static remhist"><td colspan="${columns.length}"><div class="incdetail">${this.incidentBody(it)}</div></td></tr>` : "") });
-    const pill = `<span class="pill warn">${this.esc(this.t("corrIncidents", { n: this.formatNumber(items.length) }))}</span>`;
+    const pill = `<span class="pill warn">${this.esc(this.tCount("corrIncidents", items.length))}</span>`;
     const top = `<button class="row foldhead" data-fold="corr" aria-expanded="${open}"><span class="tile warn"><ha-icon icon="mdi:${open ? "chevron-down" : "chevron-right"}"></ha-icon></span><span class="row-text"><strong>${this.t("corrTitle")}</strong><small>${this.esc(this.t("corrHint"))}</small></span>${pill}</button>`;
     const on = Boolean(this.findingAfter);
     const strip = afterCount ? `<div class="incfilter${on ? " on" : ""}"><span><b>${this.esc(this.t("corrStrip", { n: this.formatNumber(afterCount) }))}</b>${follows ? ` <span class="muted">· ${this.esc(this.t("findingsOfFollow", { n: this.formatNumber(follows) }))}</span>` : ""}</span><button class="chip" data-finding-after="1" aria-pressed="${on}"><ha-icon icon="mdi:${on ? "close" : "filter-variant"}"></ha-icon>${this.t(on ? "corrFilterOff" : "corrFilterOn")}</button></div>` : "";

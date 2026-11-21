@@ -128,7 +128,7 @@ class AutoPauseMixin {
 
   apSpan(ms) {
     const hours = Math.max(1, Math.round(ms / 3600000));
-    return hours >= 48 ? this.t("relDays", { n: Math.round(hours / 24) }) : hours >= 2 ? this.t("relHours", { n: hours }) : this.t("relMinutes", { n: Math.max(1, Math.round(ms / 60000)) });
+    return hours >= 48 ? this.tCount("relDays", Math.round(hours / 24)) : hours >= 2 ? this.t("relHours", { n: hours }) : this.t("relMinutes", { n: Math.max(1, Math.round(ms / 60000)) });
   }
 
   // On the reliability page, a line that leads to the auto-pause while it holds an integration.

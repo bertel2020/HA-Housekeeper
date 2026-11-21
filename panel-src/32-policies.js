@@ -95,7 +95,7 @@ class PoliciesMixin {
 
   // One rule on the "Rules" tab: what it checks, how many violations, and its switch.
   polRuleBlock(rule) {
-    const state = !rule.enabled ? this.t("polOff") : rule.count === 1 ? this.t("polCountOne") : rule.count ? this.t("polCount", { n: this.formatNumber(rule.count) }) : this.t("polNone");
+    const state = !rule.enabled ? this.t("polOff") : rule.count === 1 ? this.t("polCountOne") : rule.count ? this.tCount("polCount", rule.count) : this.t("polNone");
     const tone = !rule.enabled ? "mute" : rule.count ? "warn" : "ok";
     const toggle = `<input class="policyswitch" type="checkbox" role="switch" aria-label="${this.esc(this.t(`polRule_${rule.id}`))}" data-policy-toggle="${rule.id}" ${rule.enabled ? "checked" : ""}>`;
     const head = `<div class="row"><span class="tile ${tone}"><ha-icon icon="mdi:clipboard-check-outline"></ha-icon></span><span class="row-text"><strong>${this.t(`polRule_${rule.id}`)}</strong><small>${this.t(`polDesc_${rule.id}`)}</small></span><span class="pill ${tone}">${this.esc(state)}</span>${toggle}</div>`;
@@ -171,7 +171,7 @@ class PoliciesMixin {
     const tabs = [
       { id: "rules", icon: "mdi:clipboard-list-outline", label: this.t("polTabRules"), hint: r ? this.t("polTileRulesHint", { on: this.formatNumber(on.length) }) : "", count: r ? r.rules.length : undefined, tone: on.length ? "ok" : "mute", status: !r },
       { id: "violations", icon: "mdi:clipboard-alert-outline", label: this.t("polTabViolations"), hint: this.t("polTileViolationsHint"), count: r ? violations : undefined, tone: !on.length ? "mute" : violations ? "warn" : "ok", pill: hidden ? this.t("polTileHidden", { n: this.formatNumber(hidden) }) : "", pillTone: "mute", status: !r },
-      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: this.t("maintHintGoals"), count: g ? (g.goals || []).length : undefined, tone: missed ? "red" : g?.goals?.length ? "ok" : "mute", pill: missed ? this.t("tilesMissed", { count: missed }) : "", status: !g },
+      { id: "goals", icon: "mdi:target", label: this.t("goalsTab"), hint: this.t("maintHintGoals"), count: g ? (g.goals || []).length : undefined, tone: missed ? "red" : g?.goals?.length ? "ok" : "mute", pill: missed ? this.tCount("tilesMissed", missed) : "", status: !g },
     ];
     const open = this.viewTabOf("policies", tabs, violations ? "violations" : "rules");
     const tiles = this.navTiles("policies", tabs, open, this.t("policies"), true);

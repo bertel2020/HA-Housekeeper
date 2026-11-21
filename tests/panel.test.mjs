@@ -3935,7 +3935,7 @@ test("the selection bar can mark a device that is down once instead of each of i
   assert.equal(el.markDeviceCount(), 1);
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
   el.bulk = { kind: "mark", reason: "", days: 0, markKind: "", error: "", onDevice: true };
-  assert.ok(el.bulkForm().includes("data-bulk-ondevice") && el.bulkForm().includes("· 1 objects"));
+  assert.ok(el.bulkForm().includes("data-bulk-ondevice") && el.bulkForm().includes("· 1 object") && !el.bulkForm().includes("· 1 objects"));
   await el.commitBulk();
   assert.deepEqual(calls.filter(c => c.type === "ha_housekeeper/mark_set").map(c => `${c.object_type}:${c.object_id}`), ["device:tv"]);
   assert.equal(el.findSel.size, 0);
@@ -7898,6 +7898,16 @@ test("a failed load of the exception rules is no empty list: nothing is saved ov
   assert.ok(el.exceptionsView().includes("data-exc-reload"));
   assert.equal(await el.saveExceptions([], null), false);
   assert.ok(!calls.includes("ha_housekeeper/exceptions_set"));
+});
+
+test("everyday counts have a singular, and a count without one keeps its plural", () => {
+  const { el } = panel("en");
+  assert.equal(el.tCount("polCount", 1), "1 violation");
+  assert.equal(el.tCount("polCount", 3), "3 violations");
+  assert.equal(el.tCount("oftenGroup", 1, { device: "Lamp" }), "Lamp: 1 entity");
+  const de = panel("de").el;
+  assert.equal(de.tCount("daysValue", 1), "1 Tag");
+  assert.equal(de.tCount("mtChecks", 1), "1 Prüfungen", "no singular text: the plural stays");
 });
 
 test("the diagnostics keep no entity IDs or registry IDs from an error text", () => {

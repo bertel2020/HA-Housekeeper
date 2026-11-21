@@ -174,7 +174,7 @@ class OverviewMixin {
     }
     const stale = this.staleScan();
     if (stale) {
-      const age = stale.hours >= 48 ? this.t("daysValue", { n: Math.round(stale.hours / 24) }) : `${stale.hours} h`;
+      const age = stale.hours >= 48 ? this.tCount("daysValue", Math.round(stale.hours / 24)) : `${stale.hours} h`;
       items.push({ key: "stale", area: "state", tone: "warn", icon: "mdi:clock-alert-outline", text: stale.interval > 0 ? this.t("staleScan", { age, hours: stale.interval }) : this.t("staleScanManual", { age }), scan: true });
     }
     // Only real problems are listed; notes such as "emergency kit not confirmed" stay on the Maintenance card.

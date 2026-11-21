@@ -194,7 +194,7 @@ class FcRecommendMixin {
     const drop = (label = "confirmCancel") => `<button type="button" class="btn" data-fc-plan-drop>${t(label)}</button>`;
     if (status === "dry_run") {
       head = t("fcPlanPreviewHead");
-      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${t("planUses", { count: used })}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}${blocked.length ? this.modeHint(blocked) : ""}`;
+      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${this.tCount("planUses", used)}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}${blocked.length ? this.modeHint(blocked) : ""}`;
       btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy || blocked.length ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
     } else if (status === "backup" || status === "running" || (status === "executed" && !plan.verification)) {
       head = t("fcPlanRunning");
