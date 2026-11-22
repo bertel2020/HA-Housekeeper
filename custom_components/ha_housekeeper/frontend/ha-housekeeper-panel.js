@@ -24689,7 +24689,7 @@ class HAHousekeeperPanel extends HTMLElement {
     // A view that throws shows a message under the top bar instead of freezing the panel on the last page.
     let page;
     if (this.view !== "maintenance") this.bpOpen = "";
-    try { page = this.fcBand() + (this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`); } catch (err) { page = this.renderFailed(err); }
+    try { page = this.fcBand() + this.loadErrorBar() + (this.selected && this.data ? this.detail() : this.bpOpen ? this.blueprintPage() : `${this.heading()}${this.content()}`); } catch (err) { page = this.renderFailed(err); }
     const shell = `<div class="shell${this.prefs.details ? "" : " nodetails"}"><div class="stickyhead">${this.topbar()}${this.safetyBar()}${this.vacationBar()}</div><main class="main">${page}</main>${this.confirmDialog()}<div class="sr-only" role="status" aria-live="polite" data-live>${this.esc(this.liveStatus())}</div></div>`;
     // The style sheet is only parsed again when the theme changed; otherwise just the page is replaced.
     const root = this.shadowRoot, css = this.themeCss(), current = root.querySelector?.(".shell");
@@ -24927,9 +24927,15 @@ class HAHousekeeperPanel extends HTMLElement {
       <div class="head-actions">${ago}<button class="btn primary" data-action="scan" ${this.busy || this.cleanupRunning() ? 'disabled aria-busy="true"' : ""} title="${this.esc(this.t("scanHint"))}">${this.scanButtonInner()}</button></div></div>${this.warmupBanner()}${this.healthBanner()}`;
   }
 
+  // A failed reload keeps the page and its data: the error stands above it, with a way to try again.
+  loadErrorBar() {
+    if (!this.error || !this.data) return "";
+    return `<div class="notice err" role="alert"><ha-icon icon="mdi:alert-circle-outline"></ha-icon><span><strong>${this.t("loadError")}</strong> · ${this.esc(this.error)}</span><button type="button" class="btn small" data-action="load-retry" ${this.busy ? "disabled" : ""}>${this.t("actRetry")}</button></div>`;
+  }
+
   content() {
     if (this.view === "settings") return this.settingsView();
-    if (this.error) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}</div>`;
+    if (this.error && !this.data) return `<div class="error"><strong>${this.t("loadError")}</strong><br>${this.esc(this.error)}<br><button type="button" class="btn small" data-action="load-retry">${this.t("actRetry")}</button></div>`;
     if (!this.data) { const pct = this.scanStatus?.running ? Math.max(0, Math.min(100, Number(this.scanStatus.progress) || 0)) : null; return `${this.skeleton("loading")}${pct === null ? "" : `<div class="panel"><p class="factnote">${this.t("firstScan", { percent: pct })}</p><div class="bar"><i style="width:${pct}%"></i></div></div>`}`; }
     if (this.fcWizOn()) return this.wizardView();
     if (this.view === "exceptions") return this.exceptionsView();
@@ -25043,6 +25049,7 @@ class HAHousekeeperPanel extends HTMLElement {
     }
     root.querySelectorAll("[data-scan-point]").forEach(el => el.addEventListener("click", () => this.load(true)));
     root.querySelectorAll("[data-action='scan']").forEach(el => el.addEventListener("click", () => this.load(true)));
+    root.querySelectorAll("[data-action='load-retry']").forEach(el => el.addEventListener("click", () => this.load(false)));
     root.querySelector("[data-action='back']")?.addEventListener("click", () => this.goBack());
     root.querySelectorAll("[data-view-tab]").forEach(el => {
       el.onclick = () => this.pickViewTab(el.dataset.viewTab);

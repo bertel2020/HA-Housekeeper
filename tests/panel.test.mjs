@@ -9061,3 +9061,18 @@ test("the recorder card of an entity offers its hourly rows, closed until asked 
   assert.doesNotMatch(html, /statrows/);
   assert.doesNotMatch(el.entityRecorderRows({ states: part, short: part, long: part }, "sensor.power"), /data-stat-rows/);
 });
+
+test("a failed reload keeps the page and its data and offers to try again", () => {
+  const { el, shadow } = panel("en");
+  el.view = "inventory";
+  el.render();
+  assert.ok(!shadow.innerHTML.includes("data-action=\"load-retry\""), "no error, no bar");
+  el.error = "timeout";
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes('data-action="load-retry"') && html.includes("timeout"), "the error stands above the page with a retry");
+  assert.ok(html.includes("data-lsort=\"inventory"), "the page is still there");
+  el.data = null;
+  el.render();
+  assert.ok(shadow.innerHTML.includes('data-action="load-retry"') && !shadow.innerHTML.includes("data-lsort=\"inventory"), "without data only the error box shows, with a retry");
+});
