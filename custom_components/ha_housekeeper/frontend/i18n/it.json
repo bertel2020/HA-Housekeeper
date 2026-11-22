@@ -3850,6 +3850,7 @@
 "notDuplicateReason": "Non è un duplicato (confermato)",
 "openTwin": "Apri l’entità funzionante",
 "actOpen": "Apri",
+"actGroupHide": "Nascondi",
 "tabActions": "Azioni",
 "nextStep": "Prossimo passo",
 "moreActions": "Altre azioni",

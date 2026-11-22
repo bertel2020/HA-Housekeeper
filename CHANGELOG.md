@@ -36,6 +36,7 @@
   - “Set label” from a row keeps the selection; “1 of 39 findings of the group matches the filter” and other singular forms.
   - The object note says what it does for the finding (“Keeps outages quiet” or “Protects from cleanup”), the exception rule says it also applies to future findings, and the long hints that repeated the title are gone. The object page no longer offers the note twice.
   - In the simple view the head of a group hides certainty and rule ID like the rows. A text in the first cleanup said a decision leaves the finding in place; it hides it. The reason “carries the label housekeeper_ignore” also names exception rules.
+  - The page of a device, integration or other object whose findings sit below it offers “Decide on findings …” and the exception rule for them in the new group “Hide”, and a logbook entry beside the notes.
   - The head of an object with several findings has the same groups; deciding and the label there apply to all findings of the group.
   - An entity that is down is handled the same everywhere: an orphaned one can be disabled or replaced from the row menu too, one its integration no longer provides is removed instead of disabled, and one that is already disabled is not offered again.
 - **Orphaned statistics:** The help text names the waiting mark and the move.

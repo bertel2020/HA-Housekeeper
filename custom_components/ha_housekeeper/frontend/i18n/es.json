@@ -3770,6 +3770,7 @@
 "notDuplicateReason": "No es un duplicado (confirmado)",
 "openTwin": "Abrir la entidad que funciona",
 "actOpen": "Abrir",
+"actGroupHide": "Ocultar",
 "tabActions": "Acciones",
 "nextStep": "Siguiente paso",
 "moreActions": "Más acciones",

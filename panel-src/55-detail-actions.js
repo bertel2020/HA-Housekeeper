@@ -71,7 +71,29 @@ class DetailActionsMixin {
   // Whether the tab "Actions" has anything to show for this object: findings to decide, buttons, a label or an edit form.
   hasActionsTab(item, key) {
     if (!ACTION_TYPES.includes(item.object_type) && item.object_type !== "app") return false;
-    return Boolean(this.findingRows(key, item) || this.fixItems(item, key).items.length || this.labelForm(item) || this.detailEditCard(item) || this.entityTrimCard(item) || this.staleCard(item) || (MARK_TYPES.includes(item.object_type) && this.markRows(item).length));
+    return Boolean(this.findingRows(key, item) || this.fixItems(item, key).items.length || this.labelForm(item) || this.hideRows(item, key).length || this.detailEditCard(item) || this.entityTrimCard(item) || this.staleCard(item) || (MARK_TYPES.includes(item.object_type) && this.markRows(item).length));
+  }
+
+  // The open findings of an object and everything below it (a device: those of its entities), the same set the head of the group counts.
+  objectGroupFindings(key) {
+    if (this._ogTree?.data !== this.data) {
+      const open = this.data.findings.filter(f => !f.ignored);
+      this._ogTree = { data: this.data, nodes: this.objectTree(open, open, true) };
+    }
+    const find = nodes => { for (const n of nodes) { if (n.key === key) return n; const hit = find(n.kids); if (hit) return hit; } return null; };
+    const node = find(this._ogTree.nodes);
+    return node ? this.nodeFindings(node) : [];
+  }
+
+  // Deciding and an exception rule for the findings below an object: only when some of them are not the object's own, which have their rows already.
+  hideRows(item, key) {
+    const own = this.data.findings.filter(f => !f.ignored && this.findingKey(f) === key).length, group = this.objectGroupFindings(key);
+    if (group.length <= own) return [];
+    const id = `og:${key}`, at = `data-form-at="${this.esc(key)}"`, n = group.length;
+    (this._findGroups ||= {})[id] = group.map(f => f.key);
+    const rows = [this.actRow(this.t(n === 1 ? "fselStatus" : "actDecide"), this.t(n === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(n) }), `<button class="btn" data-group-state="status" data-group-id="${this.esc(id)}" ${at}>${this.t("actOpen")}</button>`)];
+    if (this.excTargetOf(item)) rows.push(this.actRow(this.t("excCreate"), this.t("actRuleSub1"), `<button class="btn" data-exc-for="${this.esc(key)}" ${at}>${this.t("actOpen")}</button>`));
+    return rows;
   }
 
   // The tab "Actions" of an object: everything that changes something as rows in one card, grouped by purpose.
@@ -86,11 +108,11 @@ class DetailActionsMixin {
     if (broken) recommended.push(`<div class="actblock"><small class="factnote">${this.t("actEditInHa")}</small></div>`);
     const labelControls = broken ? null : this.labelParts(item, true);
     const name = [...this.detailEditRows(item), labelControls ? this.actRow(this.t("actLabelTitle"), this.t("actLabelHint"), labelControls) : ""];
-    const notes = this.markRows(item);
+    const notes = this.markRows(item), hide = this.hideRows(item, key);
     const record = [...this.entityTrimRows(item), this.staleRow(item)];
     const group = (title, rows, sub = "") => { const html = rows.filter(Boolean).join(""); return html ? `<div class="actsec">${this.t(title)}${sub ? `<small>${sub}</small>` : ""}</div>${html}` : ""; };
     // What always exists (tools, name, record) is folded away while something answers a finding; it opens when nothing else is there.
-    const lead = [recommended, notes].some(rows => rows.filter(Boolean).length);
+    const lead = [recommended, notes, hide].some(rows => rows.filter(Boolean).length);
     const fold = (id, title, rows, sub = "") => {
       const html = rows.filter(Boolean).join("");
       if (!html) return "";
@@ -99,8 +121,13 @@ class DetailActionsMixin {
     };
     const preview = this.t("actPreviewOnly");
     // A tab with nothing but the mark (a healthy integration or app) says what it is for.
-    const onlyMark = notes.length && ![recommended, tools, name, record].some(rows => rows.filter(Boolean).length);
-    const body = [group("actGroupRecommended", recommended, items.some(it => it.finding) ? preview : ""), group("actGroupNotes", notes), fold("act_tools", "moreActions", tools, preview), fold("act_name", "actGroupName", name), fold("act_record", "actGroupRecord", record)].join("") + (onlyMark ? `<div class="pad"><p class="factnote">${this.t("actOnlyNotes")}</p></div>` : "");
+    const onlyMark = notes.length && ![recommended, tools, name, record, hide].some(rows => rows.filter(Boolean).length);
+    // The logbook is always possible, but alone it does not make a tab.
+    const other = [recommended, hide, tools, name, record, notes].some(rows => rows.filter(Boolean).length);
+    const logbook = other ? [this.actRow(this.t("findingNote"), "", `<button class="btn" data-object-note="${this.esc(key)}">${this.t("actOpen")}</button>`)] : [];
+    // A form opened from here (deciding, an exception rule) stands at the top of the tab, only on the object it was opened for.
+    const forms = this._formAt === key ? `${this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : ""}${this.bulkForm()}` : "";
+    const body = (forms ? `<div class="actblock">${forms}</div>` : "") + [group("actGroupRecommended", recommended, items.some(it => it.finding) ? preview : ""), group("actGroupHide", hide), group("actGroupNotes", [...notes, ...logbook]), fold("act_tools", "moreActions", tools, preview), fold("act_name", "actGroupName", name), fold("act_record", "actGroupRecord", record)].join("") + (onlyMark ? `<div class="pad"><p class="factnote">${this.t("actOnlyNotes")}</p></div>` : "");
     return body ? `<section class="panel actpanel">${body}</section>` : `<p class="factnote">${this.t("actNone")}</p>`;
   }
 
@@ -246,14 +273,14 @@ class DetailActionsMixin {
   }
 }
 Object.assign(TEXT.de, {
-  actOpen: "Öffnen", tabActions: "Aktionen", nextStep: "Nächster Schritt", moreActions: "Weitere Aktionen", actGroupRecommended: "Empfohlen", actGroupName: "Benennen und einordnen", actGroupNotes: "Notizen", actOnlyNotes: "Hier legst du fest, was bei diesem Objekt normal ist, zum Beispiel „nachts offline“. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“.", actMore: "Mehr", actLess: "Weniger", actLabelPreviewShort: "Vorschau", actGroupRecord: "Aufzeichnung und Überwachung", actNone: "Hier gibt es nichts zu tun.",
+  actOpen: "Öffnen", actGroupHide: "Ausblenden", tabActions: "Aktionen", nextStep: "Nächster Schritt", moreActions: "Weitere Aktionen", actGroupRecommended: "Empfohlen", actGroupName: "Benennen und einordnen", actGroupNotes: "Notizen", actOnlyNotes: "Hier legst du fest, was bei diesem Objekt normal ist, zum Beispiel „nachts offline“. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“.", actMore: "Mehr", actLess: "Weniger", actLabelPreviewShort: "Vorschau", actGroupRecord: "Aufzeichnung und Überwachung", actNone: "Hier gibt es nichts zu tun.",
   actionsTitle: "Was möchtest du tun?", actReplace: "Ersetzen:", actReplaceThis: "Durch andere Entität ersetzen", actDisable: "Deaktivieren planen", actRemove: "Entfernen planen", actReplaceTwin: "Durch funktionierende Entität ersetzen", actHintReplaceTwin: "Überall durch die funktionierende Entität ersetzen; sie ist schon eingetragen.", actHintRemove: "Die Integration stellt sie nicht mehr bereit, darum ohne Quarantäne: mit Vorschau, Backup und Wiederherstellen.", actDisableAuto: "Automation deaktivieren (Plan)", actHintDisableAuto: "Keiner ihrer Auslöser kann feuern. Der Plan schaltet sie aus, mit Vorschau, Bestätigung und Rückgängig.",
   actLabelTitle: "Label ergänzen", actLabelHint: "Fügt ein vorhandenes Label hinzu, zum Beispiel zum Filtern. Du siehst zuerst eine Vorschau.", actLabelPreview: "Vorschau erstellen",
   actPreviewOnly: "Hier startest du nur eine Vorschau. Geändert wird erst, wenn du sie bestätigst.",
   actEditInHa: "Eine einzelne Referenz entfernt Housekeeper nicht selbst. Öffne die Automation in Home Assistant und bearbeite sie dort.",
 });
 Object.assign(TEXT.en, {
-  actOpen: "Open", tabActions: "Actions", nextStep: "Next step", moreActions: "More actions", actGroupRecommended: "Recommended", actGroupName: "Name and classify", actGroupNotes: "Notes", actOnlyNotes: "Here you say what is normal for this object, for example “offline at night”. Housekeeper then stops reporting it as “not available”.", actMore: "More", actLess: "Less", actLabelPreviewShort: "Preview", actGroupRecord: "Recording and monitoring", actNone: "There is nothing to do here.",
+  actOpen: "Open", actGroupHide: "Hide", tabActions: "Actions", nextStep: "Next step", moreActions: "More actions", actGroupRecommended: "Recommended", actGroupName: "Name and classify", actGroupNotes: "Notes", actOnlyNotes: "Here you say what is normal for this object, for example “offline at night”. Housekeeper then stops reporting it as “not available”.", actMore: "More", actLess: "Less", actLabelPreviewShort: "Preview", actGroupRecord: "Recording and monitoring", actNone: "There is nothing to do here.",
   actionsTitle: "What would you like to do?", actReplace: "Replace:", actReplaceThis: "Replace by another entity", actDisable: "Plan to disable", actRemove: "Plan to remove", actReplaceTwin: "Replace by the working entity", actHintReplaceTwin: "Replace it everywhere by the working entity; it is already filled in.", actHintRemove: "Its integration no longer provides it, so no quarantine: with preview, backup and restore.", actDisableAuto: "Disable automation (plan)", actHintDisableAuto: "None of its triggers can fire. The plan switches it off, with preview, confirmation and undo.",
   actLabelTitle: "Add a label", actLabelHint: "Adds an existing label, for example for filtering. You see a preview first.", actLabelPreview: "Create preview",
   actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it.",

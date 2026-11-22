@@ -4705,6 +4705,7 @@
 "notDuplicateReason": "Не дубликат (подтверждено)",
 "openTwin": "Открыть рабочую сущность",
 "actOpen": "Открыть",
+"actGroupHide": "Скрыть",
 "tabActions": "Действия",
 "nextStep": "Следующий шаг",
 "moreActions": "Другие действия",

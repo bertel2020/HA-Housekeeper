@@ -3770,6 +3770,7 @@
 "notDuplicateReason": "不是重复项（已确认）",
 "openTwin": "打开可用的实体",
 "actOpen": "打开",
+"actGroupHide": "隐藏",
 "tabActions": "操作",
 "nextStep": "下一步",
 "moreActions": "更多操作",

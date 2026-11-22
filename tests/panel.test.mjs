@@ -7114,6 +7114,20 @@ test("every finding stands below its object: a device gathers all kinds of its e
   assert.ok(el.findingsView().includes("1 of 3 findings of the group matches the filter"));
 });
 
+test("the page of a device offers deciding and an exception rule for the findings of its entities, the logbook only beside other content", () => {
+  const { el } = panel("en");
+  const ent = id => ({ object_type: "entity", object_id: id, name: id, status: "unavailable", device_id: "avr" });
+  const find = id => ({ rule_id: "entity.state_unavailable", object_id: id, classification: "unavailable", confidence: 0.75, ignored: false, impact: "medium", key: `k:${id}`, first_detected_at: "2026-10-01T00:00:00+00:00", evidence: [] });
+  el.data = { ...DATA, causes: [], edges: [], objects: [{ object_type: "device", object_id: "avr", name: "Receiver" }, ent("sensor.a"), ent("sensor.b")], findings: [find("sensor.a"), find("sensor.b")] };
+  const device = el.actionsTab(el.findObject("device:avr"), "device:avr");
+  assert.ok(device.includes('data-group-state="status"') && device.includes('data-exc-for="device:avr"') && device.includes('data-object-note="device:avr"') && device.includes("Hide"), "the findings below the device can be decided from its page");
+  assert.deepEqual([...el._findGroups["og:device:avr"]], ["k:sensor.a", "k:sensor.b"]);
+  assert.ok(!el.actionsTab(el.findObject("entity:sensor.a"), "entity:sensor.a").includes("data-group-state"), "an entity has its own rows, no group");
+  el.data = { ...el.data, objects: [...el.data.objects, { object_type: "automation", object_id: "automation.q", name: "Q", status: "active" }], findings: [] };
+  const quiet = el.findObject("automation:automation.q");
+  assert.ok(!el.hasActionsTab(quiet, "automation:automation.q") && !el.actionsTab(quiet, "automation:automation.q").includes("data-object-note"), "the logbook alone makes no tab");
+});
+
 test("an exception is added from the menu of a finding or the selection bar, with its object picked, above the findings list", async () => {
   const { el } = panel("en");
   const object = { object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" };
