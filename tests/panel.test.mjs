@@ -4587,7 +4587,7 @@ test("the overview of an object offers its actions: decide a finding, replace a 
   const twinData = el.data;
   el.data = { ...twinData, findings: [{ ...DATA.findings[0], key: "k1", ignored: false }, { rule_id: "entity.possible_duplicate", object_id: "sensor.a", classification: "possible_duplicate", confidence: 0.7, affected_object: "sensor.b", key: "kd", ignored: false }] };
   const twin = el.findingRows("entity:sensor.a");
-  assert.ok(twin.includes("Replace by the working entity") && !twin.includes("Replace by another entity"), "with a working twin, replacing is offered once, at the duplicate");
+  assert.equal((twin.match(/data-act-replace=/g) || []).length, 1, "with a working twin, replacing is offered once, at the duplicate");
   el.data = twinData;
   assert.ok(el.labelForm({ object_type: "script", object_id: "script.x" }).includes("data-act-label-plan") && el.labelForm({ object_type: "device", object_id: "d1" }) === "", "scripts and scenes take a label too, devices not");
   el.startCleanup("replace_references", () => { el.replOld = "sensor.gone"; });
@@ -7972,6 +7972,22 @@ test("the line under the name of a cleanup card links the area and the integrati
   const line = el.fcObjectLine(el.findObject("entity:sensor.t"));
   assert.ok(line.includes('data-object="area:wash"') && line.includes(">Laundry<") && line.includes('data-object="config_entry:e1"'));
   assert.ok(!el.fcObjectLine(el.findObject("config_entry:e2")).includes("Hue"));
+});
+
+test("an action has one name wherever it stands: menus, rows and buttons say the same", () => {
+  const groups = [
+    ["actRemove", "fcPlanRemove"], ["actDisable", "fcPlanDisable"],
+    ["actDisableAuto", "fixWay_disable_automation"], ["autoDelete", "fixWay_delete_automation"],
+    ["actReload", "fixWay_reload", "fcPlanReload"],
+    ["actReplaceThis", "actReplaceTwin", "actReplaceMany", "fixWay_replace_entity", "fcPlanReplace"],
+    ["actMark", "markSet", "fixWay_mark"], ["excCreate", "actRule"], ["actExchange", "fixWay_exchange"],
+    ["fixWay_object_actions", "fixOpenActions"], ["fixRoundStart", "fixWay_cleanup_round"],
+    ["fixReplaceStart", "fixWay_replace_target"], ["fixRemoveStart", "fixWay_remove_reference"], ["fixCatchStart", "fixWay_catch_error"],
+  ];
+  for (const lang of ["de", "en"]) {
+    const { el } = panel(lang);
+    for (const keys of groups) assert.equal(new Set(keys.map(k => el.t(k))).size, 1, `${lang}: ${keys.join(", ")}`);
+  }
 });
 
 test("a row of the cleanup card with nothing to say is not shown, the recommendation always is", () => {
