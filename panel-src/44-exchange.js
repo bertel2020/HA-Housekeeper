@@ -2,7 +2,7 @@
 Object.assign(TEXT.de, {
   kindExchange: "Gerät austauschen",
   exTitle: "Gerät austauschen", exHint: "Wähle das alte und das neue Gerät. Housekeeper schlägt zu jeder alten Entität eine neue vor; nichts ist vorausgewählt. Was du bestätigst, wird eine normale Vorschau mit Backup, Prüfung und Rückgängig.",
-  exOld: "Altes Gerät", exNew: "Neues Gerät", exPick: "Gerät wählen", exLoad: "Vorschläge laden", exLoading: "Lade …", exFailed: "Keine Vorschläge: {reason}",
+  exOld: "Altes Gerät", exNew: "Neues Gerät", exPick: "Gerät wählen", exLoad: "Vorschläge laden", exLoading: "Wird geladen …", exFailed: "Keine Vorschläge: {reason}",
   exNoPairs: "Das alte Gerät hat keine Entitäten.", exNoTarget: "Kein Ersatz", exSuggested: "Vorschlag", exUsed: "{count} Verwendungen", exUnused: "Nichts zu ersetzen",
   exHow: "Art", exHow_replace: "Referenzen ersetzen", exHow_both: "Statistik übernehmen (Verlauf und ID)", exHow_statistics: "Statistik übernehmen (nur Verlauf)", exHow_id: "Statistik übernehmen (nur ID)",
   exChosen: "{count} Paare bestätigt", exCreate: "Austauschen: Vorschau ({count})", exUnmatched: "Ohne Gegenstück am alten Gerät: {list}",

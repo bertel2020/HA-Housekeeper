@@ -14,7 +14,7 @@ Object.assign(TEXT.de, {
   knownStructure: "Struktur", knownStructureText: "{t} Auslöser, {c} Bedingungen, {a} Aktionen", knownStructureScript: "{a} Aktionen", knownBlueprint: "Herkunft", knownBlueprintText: "Blueprint „{name}“",
   knownRefs: "Verweist auf", knownRefsText: "{n} Objekte", knownRefsMissing: "davon {n} nicht vorhanden", knownCalledBy: "Aufgerufen von", knownLastTriggered: "Zuletzt ausgelöst",
   knownTitle: "Bekannt über diese Entität", knownHint: "Was Housekeeper aus Scan, Recorder, Freigaben und Logbuch weiß. Zeilen ohne Wissen fehlen.",
-  knownLoad: "Recorder-Werte laden", knownLoading: "Lädt …",
+  knownLoad: "Recorder-Werte laden", knownLoading: "Wird geladen …",
   knownTimes: "Zeiten", knownState: "Zustand", knownRecorder: "Recorder", knownUse: "Nutzung", knownCare: "Regeln und Pflege", knownHistory: "Verlauf",
   knownSrcScan: "Scan", knownSrcRecorder: "Recorder", knownSrcRelations: "Beziehungen", knownSrcRules: "Regeln", knownSrcReliability: "Zuverlässigkeit", knownSrcLog: "Logbuch", knownSrcCorr: "Korrelation", knownSrcExposure: "Freigaben", knownSrcDecisions: "Entscheidungen", knownSrcJournal: "Journal", knownSrcRuns: "Läufe",
   knownRunning: "Zustand", knownDevice: "Gerät", knownAttrs: "Eigenschaften", knownUnit: "Einheit", knownClass: "Geräteklasse", knownStateClass: "Zustandsklasse",

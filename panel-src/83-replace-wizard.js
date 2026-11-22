@@ -19,7 +19,7 @@ Object.assign(TEXT.de, {
   rwFilterDomain: "Alle Arten", rwFilterPlatform: "Alle Integrationen", rwFilterScope: "Alle", rwFilterUsed: "Nur verwendete", rwFilterGone: "Nur nicht verfügbare",
   rwSelectFiltered: "Alle {count} gefilterten wählen", rwNext: "Weiter zu „Zuordnen“ ({count})", rwNoEntities: "Keine Entitäten.",
   rwSetupTitle: "Welche neue Entität ersetzt welche?", rwSetupHint: "Housekeeper schlägt vor (Klasse, Einheit, Bereich, Name, ID-Endung). Nichts ist vorausgewählt, was du nicht bestätigst.",
-  rwScope: "Vorschläge aus", rwScopeAll: "Allen Entitäten", rwLoad: "Vorschläge laden", rwLoading: "Lade …", rwFailed: "Keine Vorschläge: {reason}", rwUnknown: "Nicht mehr bekannt: {list}",
+  rwScope: "Vorschläge aus", rwScopeAll: "Allen Entitäten", rwLoad: "Vorschläge laden", rwLoading: "Wird geladen …", rwFailed: "Keine Vorschläge: {reason}", rwUnknown: "Nicht mehr bekannt: {list}",
   rwTakeAll: "Alle Vorschläge übernehmen ({count})", rwBack: "Zurück zur Auswahl",
   rwSumPairs: "{count} Paare", rwSumChosen: "{count} zugeordnet", rwSumErrors: "{count} mit Fehler", rwSumSuggest: "{count} mit Vorschlag", rwSumNone: "{count} ohne Verwendung",
   rwColTarget: "Neue Entität", rwColHow: "Art", rwNoTarget: "Kein Ersatz (überspringen)", rwSuggested: "Vorschlag",
