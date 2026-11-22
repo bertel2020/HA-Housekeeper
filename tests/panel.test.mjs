@@ -5310,8 +5310,6 @@ test("housekeeper backups: the list marks protected ones, the rule picks the res
   const auto = { kind: "delete_automation", object_id: "automation.old", name: "Old", object_type: "automation", verdict: "review", executable: true, reasons: ["deletes_config"], yaml: "alias: Old\ntrigger: []\n", used_by: [] };
   const card = el.planCard({ plan_id: "p8", status: "dry_run", actions: [auto], summary: {} });
   assert.ok(card.includes("- alias: Old") && card.includes("removed from the file"));
-  assert.ok(el.autoDeleteButton({ rule_id: "automation.stale", object_id: "automation.old" }).includes("data-auto-delete"));
-  assert.equal(el.autoDeleteButton({ rule_id: "entity.stale", object_id: "sensor.x" }), "");
 });
 
 function policyPanel(calls) {
@@ -7093,8 +7091,9 @@ test("every finding stands below its object: a device gathers all kinds of its e
   assert.ok(html.includes("2 of 3 entities without a value · Orphaned (1)") && html.includes("75–98 %") && html.includes("latest: "), "summary, span of certainty, the newest beside the oldest");
   assert.ok(html.includes("Audi</strong><small>Lock: "), "a single finding is named in the head");
   assert.ok(html.indexOf("Receiver") < html.indexOf("Audi"), "the worst impact first");
+  assert.ok(html.includes('data-group-state="status"') && html.includes('data-group-state="label"'), "the head of a group offers deciding and the label for all its findings");
   el.lv.findings.f.type = "entity"; el.lv.findings.q = "select.old";
-  assert.ok(el.findingsView().includes("1 of 3 findings matches the filter"));
+  assert.ok(el.findingsView().includes("1 of 3 findings of the group matches the filter"));
 });
 
 test("an exception is added from the menu of a finding or the selection bar, with its object picked, above the findings list", async () => {

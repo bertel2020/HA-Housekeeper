@@ -4104,7 +4104,7 @@
 "actRuleSub1": "Tento objekt · aj budúce nálezy",
 "actPlanSub": "Najprv náhľad, nič sa nestane hneď",
 "actSingleOnly": "Opraviť a záznam v denníku sú len pre jeden nález.",
-"ogMatch1": "Filtru zodpovedá {n} z {m} nálezov",
+"ogMatch1": "Filtru zodpovedá {n} z {m} nálezov skupiny",
 "fselMarkClear": "Odstrániť poznámku k objektu",
 "fselMarksCleared": "Odstránené poznámky k objektom: {n}",
 "fselNothing": "Na tento výber sa nehodí žiadna hromadná akcia.",
@@ -6432,7 +6432,7 @@
 },
 "ogNoValue1": "1 z {m} entít bez hodnoty",
 "ogKind": "{label} ({n})",
-"ogMatch": "Filtru zodpovedá {n} z {m} nálezov",
+"ogMatch": "Filtru zodpovedá {n} z {m} nálezov skupiny",
 "ogMarkHides": {
 "one": "{mark} · 1 skrytý výpadok",
 "few": "{mark} · {n} skryté výpadky",

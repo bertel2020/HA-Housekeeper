@@ -186,11 +186,6 @@ class BackupCleanupMixin {
     return `<pre class="code codefull">${a.yaml.trimEnd().split("\n").map(line => this.esc(`- ${line}`)).join("\n")}</pre>`;
   }
 
-  autoDeleteButton(finding) {
-    if (!["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(finding.rule_id)) return "";
-    return `<button class="btn quiet" data-auto-delete="${this.esc(finding.object_id)}" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("autoDelete")}</button>`;
-  }
-
   bindBackupCleanup(root) {
     root.querySelectorAll("[data-bkc-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { el.dataset.bkcPage.split(",").forEach(id => (el.checked ? this.bkcSel.add(id) : this.bkcSel.delete(id))); this.render(); }; });
     root.querySelectorAll("[data-bkc-sel]").forEach(el => el.onchange = () => { el.checked ? this.bkcSel.add(el.dataset.bkcSel) : this.bkcSel.delete(el.dataset.bkcSel); this.render(); });

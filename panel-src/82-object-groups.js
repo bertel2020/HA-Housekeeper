@@ -4,13 +4,13 @@
 // app › integration › device › findings. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
-  ogMatch: "{n} von {m} Befunden passen zum Filter", ogMatch1: "{n} von {m} Befunden passt zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
+  ogMatch: "{n} von {m} Befunden der Gruppe passen zum Filter", ogMatch1: "{n} von {m} Befunden der Gruppe passt zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
   ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{m} Objekte mit {n} Befunden", ogViewCount1: "1 Objekt mit {n} Befunden", ogViewCountOne: "1 Objekt mit 1 Befund", ogViewOutages: "{o} Ausfälle mit {n} Befunden", ogViewOutage1: "1 Ausfall mit {n} Befunden", ogViewOutageOne: "1 Ausfall mit 1 Befund",
   ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", certSpanHint: "Sicherheit des unsichersten bis zum sichersten Befund dieses Objekts", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
-  ogMatch: "{n} of {m} findings match the filter", ogMatch1: "{n} of {m} findings matches the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
+  ogMatch: "{n} of {m} findings of the group match the filter", ogMatch1: "{n} of {m} findings of the group matches the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
   ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{m} objects with {n} findings", ogViewCount1: "1 object with {n} findings", ogViewCountOne: "1 object with 1 finding", ogViewOutages: "{o} outages with {n} findings", ogViewOutage1: "1 outage with {n} findings", ogViewOutageOne: "1 outage with 1 finding",
   ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", certSpanHint: "Certainty of the least to the most certain finding of this object", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
@@ -225,7 +225,7 @@ class ObjectGroupsMixin {
     const since = f.since[0] && f.since[1] && f.since[0] !== f.since[1] ? `${this.ageCell(f.since[0])}<small class="ognew">${this.esc(this.t("ogNew", { age: this.relTime(f.since[1]) }))}</small>` : this.ageCell(f.since[0]);
     // What a person reads first: the reason in words, or how many findings the object has; the rule ID small below.
     const rule = f.own ? `<span class="finding-label">${this.t("chip_outage")}</span><small class="finding-rule">${this.esc(f.own.rule_id)}</small>` : `<span class="finding-label">${this.esc(this.t(f.list.length === 1 ? "ogFindings1" : "ogFindings", { n: this.formatNumber(f.list.length) }))}</span>`;
-    const menu = n.cause ? this.causeMenu(n.cause, f.own) : f.list.length === 1 ? this.rowMenu(f.list[0]) : object ? this.objectMenu(n.key, MARK_TYPES.includes(type) && !object.mark, true) : "";
+    const menu = n.cause ? this.causeMenu(n.cause, f.own) : f.list.length === 1 ? this.rowMenu(f.list[0]) : object ? this.objectMenu(n.key, MARK_TYPES.includes(type) && !object.mark, true, { id, list: f.list }) : "";
     const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol">${pick}</td><td><div class="finding-link-group">${fold}${link}</div></td><td data-label="${this.t("sortTopic")}">${f.topic ? this.esc(this.t(`topic_${f.topic}`)) : `<span class="muted">–</span>`}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${conf}</td><td data-label="${this.t("sortSince")}">${since}</td><td data-label="${this.t("sortRuleGrouped")}">${rule}</td><td class="finding-action">${menu}</td></tr>`;
     const decision = n.cause && f.own ? this.rowDecide(f.own) : "";
     const decide = decision ? `<tr class="finding-detail"><td colspan="8">${decision}</td></tr>` : "";

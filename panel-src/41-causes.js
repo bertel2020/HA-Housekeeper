@@ -280,13 +280,21 @@ class CausesMixin {
   }
 
   // The menu of an object that is not a finding (the watch lists such objects): the same shape as the menu of a finding row, with what applies to an object.
-  objectMenu(key, canMark = true, open = false) {
-    const k = this.esc(key);
-    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
-    const object = this.findObject(key), exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`) : "";
-    const about = (canMark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${k}"`) : "") + exc;
-    const show = open && object ? `${item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${k}"`)}<hr class="menusep">` : "";
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${show}${about ? `${about}<hr class="menusep">` : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
+  // The same groups as the menu of a finding, for the head of an object: decide (all findings of the group, when it has a group), the object
+  // (note, exception rule), Home Assistant (label for the findings of the group), write down, go to.
+  objectMenu(key, canMark = true, open = false, group = null) {
+    const k = this.esc(key), object = this.findObject(key), list = group?.list || [];
+    const item = (icon, label, attr, sub = "") => this.actionMenuItem({ icon, label, attr, sub });
+    const labels = list.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length;
+    const pick = kind => `data-group-state="${kind}" data-group-id="${this.esc(group?.id || "")}"`;
+    const groups = [
+      list.length ? [item(FSEL_ICONS.status, "actDecide", pick("status"), this.t(list.length === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(list.length) }))] : [],
+      [canMark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${k}"`) : "", object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`, this.t("actRuleSub1")) : ""],
+      labels ? [item(FSEL_ICONS.label, "fselLabel", pick("label"), this.t("changesHa"))] : [],
+      [item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)],
+      open && object ? [item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${k}"`)] : [],
+    ].map(g => g.filter(Boolean).join("")).filter(Boolean).join('<hr class="menusep">');
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${groups}</div></details>`;
   }
 
   rowDecide(f) {

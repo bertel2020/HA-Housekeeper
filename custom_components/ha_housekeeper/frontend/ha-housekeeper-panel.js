@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"836f78b1f7"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"41f94224bd"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9c5abd2e1c"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5938f40ee1"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"80d9befe99"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"a6887a9ce9"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"2117184edd"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"200a037a8f"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"5014f7aeab"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a9c42107b3"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d3adddf39e"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"e19976eaff"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"42bb1c5003"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"aedd4fdd18"}];
 
 const TEXT = {
   de: {
@@ -11563,13 +11563,21 @@ class CausesMixin {
   }
 
   // The menu of an object that is not a finding (the watch lists such objects): the same shape as the menu of a finding row, with what applies to an object.
-  objectMenu(key, canMark = true, open = false) {
-    const k = this.esc(key);
-    const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
-    const object = this.findObject(key), exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`) : "";
-    const about = (canMark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${k}"`) : "") + exc;
-    const show = open && object ? `${item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${k}"`)}<hr class="menusep">` : "";
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${show}${about ? `${about}<hr class="menusep">` : ""}${item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)}</div></details>`;
+  // The same groups as the menu of a finding, for the head of an object: decide (all findings of the group, when it has a group), the object
+  // (note, exception rule), Home Assistant (label for the findings of the group), write down, go to.
+  objectMenu(key, canMark = true, open = false, group = null) {
+    const k = this.esc(key), object = this.findObject(key), list = group?.list || [];
+    const item = (icon, label, attr, sub = "") => this.actionMenuItem({ icon, label, attr, sub });
+    const labels = list.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length;
+    const pick = kind => `data-group-state="${kind}" data-group-id="${this.esc(group?.id || "")}"`;
+    const groups = [
+      list.length ? [item(FSEL_ICONS.status, "actDecide", pick("status"), this.t(list.length === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(list.length) }))] : [],
+      [canMark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${k}"`) : "", object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`, this.t("actRuleSub1")) : ""],
+      labels ? [item(FSEL_ICONS.label, "fselLabel", pick("label"), this.t("changesHa"))] : [],
+      [item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)],
+      open && object ? [item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${k}"`)] : [],
+    ].map(g => g.filter(Boolean).join("")).filter(Boolean).join('<hr class="menusep">');
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${groups}</div></details>`;
   }
 
   rowDecide(f) {
@@ -14098,6 +14106,12 @@ class FindingStatusMixin {
     this.render();
   }
 
+  // Opens the form of one bulk action (status, mark, label) for the picked findings.
+  openBulkForm(kind) {
+    this.excForm = this.excForm?.here ? null : this.excForm; this.bulk = { kind, state: "keep", autoClear: kind === "mark", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? MARK_DAYS : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render();
+    this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.();
+  }
+
   bindFindingStatus(root) {
     root.querySelector("[data-fsel-exc]")?.addEventListener("click", () => this.openExceptionFor([...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean).map(f => this.findingKey(f))));
     root.querySelectorAll("[data-exc-note-open]").forEach(el => el.onclick = () => { this.excForm = null; this.openMark(el.dataset.excNoteOpen); });
@@ -14105,7 +14119,9 @@ class FindingStatusMixin {
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
     root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([...this.findSel, el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
-    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.excForm = this.excForm?.here ? null : this.excForm; this.bulk = { kind, state: "keep", autoClear: kind === "mark", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? MARK_DAYS : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
+    root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => this.openBulkForm(el.dataset.fselState));
+    // The head of an object adds the findings of its group to the picks and opens the same form.
+    root.querySelectorAll("[data-group-state]").forEach(el => el.onclick = () => { this.findSel = new Set([...this.findSel, ...(this._findGroups?.[el.dataset.groupId] || [])]); this.openBulkForm(el.dataset.groupState); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
     root.querySelectorAll("[data-due-keep]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.keepOn(el.dataset.dueKeep); });
     root.querySelector("[data-dnotice-ok]")?.addEventListener("click", () => this.dismissDecisionNotice());
@@ -17956,11 +17972,6 @@ class BackupCleanupMixin {
     return `<pre class="code codefull">${a.yaml.trimEnd().split("\n").map(line => this.esc(`- ${line}`)).join("\n")}</pre>`;
   }
 
-  autoDeleteButton(finding) {
-    if (!["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(finding.rule_id)) return "";
-    return `<button class="btn quiet" data-auto-delete="${this.esc(finding.object_id)}" ${this.planBusy ? 'disabled aria-busy="true"' : ""}>${this.t("autoDelete")}</button>`;
-  }
-
   bindBackupCleanup(root) {
     root.querySelectorAll("[data-bkc-page]").forEach(el => { el.indeterminate = el.hasAttribute("data-partial"); el.onchange = () => { el.dataset.bkcPage.split(",").forEach(id => (el.checked ? this.bkcSel.add(id) : this.bkcSel.delete(id))); this.render(); }; });
     root.querySelectorAll("[data-bkc-sel]").forEach(el => el.onchange = () => { el.checked ? this.bkcSel.add(el.dataset.bkcSel) : this.bkcSel.delete(el.dataset.bkcSel); this.render(); });
@@ -21244,13 +21255,13 @@ class MonitorMixin {
 // app › integration › device › findings. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
-  ogMatch: "{n} von {m} Befunden passen zum Filter", ogMatch1: "{n} von {m} Befunden passt zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
+  ogMatch: "{n} von {m} Befunden der Gruppe passen zum Filter", ogMatch1: "{n} von {m} Befunden der Gruppe passt zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
   ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{m} Objekte mit {n} Befunden", ogViewCount1: "1 Objekt mit {n} Befunden", ogViewCountOne: "1 Objekt mit 1 Befund", ogViewOutages: "{o} Ausfälle mit {n} Befunden", ogViewOutage1: "1 Ausfall mit {n} Befunden", ogViewOutageOne: "1 Ausfall mit 1 Befund",
   ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", certSpanHint: "Sicherheit des unsichersten bis zum sichersten Befund dieses Objekts", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
-  ogMatch: "{n} of {m} findings match the filter", ogMatch1: "{n} of {m} findings matches the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
+  ogMatch: "{n} of {m} findings of the group match the filter", ogMatch1: "{n} of {m} findings of the group matches the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
   ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{m} objects with {n} findings", ogViewCount1: "1 object with {n} findings", ogViewCountOne: "1 object with 1 finding", ogViewOutages: "{o} outages with {n} findings", ogViewOutage1: "1 outage with {n} findings", ogViewOutageOne: "1 outage with 1 finding",
   ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", certSpanHint: "Certainty of the least to the most certain finding of this object", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
@@ -21465,7 +21476,7 @@ class ObjectGroupsMixin {
     const since = f.since[0] && f.since[1] && f.since[0] !== f.since[1] ? `${this.ageCell(f.since[0])}<small class="ognew">${this.esc(this.t("ogNew", { age: this.relTime(f.since[1]) }))}</small>` : this.ageCell(f.since[0]);
     // What a person reads first: the reason in words, or how many findings the object has; the rule ID small below.
     const rule = f.own ? `<span class="finding-label">${this.t("chip_outage")}</span><small class="finding-rule">${this.esc(f.own.rule_id)}</small>` : `<span class="finding-label">${this.esc(this.t(f.list.length === 1 ? "ogFindings1" : "ogFindings", { n: this.formatNumber(f.list.length) }))}</span>`;
-    const menu = n.cause ? this.causeMenu(n.cause, f.own) : f.list.length === 1 ? this.rowMenu(f.list[0]) : object ? this.objectMenu(n.key, MARK_TYPES.includes(type) && !object.mark, true) : "";
+    const menu = n.cause ? this.causeMenu(n.cause, f.own) : f.list.length === 1 ? this.rowMenu(f.list[0]) : object ? this.objectMenu(n.key, MARK_TYPES.includes(type) && !object.mark, true, { id, list: f.list }) : "";
     const head = `<tr class="finding-data finding-cause og lvl${Math.min(depth, 3)}"><td class="selcol">${pick}</td><td><div class="finding-link-group">${fold}${link}</div></td><td data-label="${this.t("sortTopic")}">${f.topic ? this.esc(this.t(`topic_${f.topic}`)) : `<span class="muted">–</span>`}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td data-label="${this.t("sortCertainty")}">${conf}</td><td data-label="${this.t("sortSince")}">${since}</td><td data-label="${this.t("sortRuleGrouped")}">${rule}</td><td class="finding-action">${menu}</td></tr>`;
     const decision = n.cause && f.own ? this.rowDecide(f.own) : "";
     const decide = decision ? `<tr class="finding-detail"><td colspan="8">${decision}</td></tr>` : "";
