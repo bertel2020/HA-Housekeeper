@@ -1894,7 +1894,7 @@ test("inventory rows and sortable headers can be used with the keyboard", () => 
   el.shadowRoot.querySelectorAll = selector => (selector === "tr[data-object], g[data-graph]" ? [row] : []);
   el.render();
   const html = shadow.innerHTML;
-  assert.ok(/<tr data-object="[^"]+" tabindex="0" role="button" aria-label="[^"]+">/.test(html), "rows are focusable");
+  assert.ok(/<tr data-object="[^"]+" tabindex="0" aria-label="[^"]+">/.test(html), "rows are focusable");
   assert.ok(/<th scope="col" aria-sort="[a-z]+"><button type="button" class="thbtn" data-lsort="inventory\|name\|asc">/.test(html), "headers hold a real button");
   const key = (k, target = row) => { const ev = { key: k, target, prevented: false, preventDefault() { this.prevented = true; } }; row.onkeydown(ev); return ev; };
   assert.ok(key("Enter").prevented && row.clicked === 1);
@@ -3076,7 +3076,7 @@ test("open previews can be selected and merged into one plan; a ran plan cannot"
   assert.ok(/data-merge disabled/.test(shadow.innerHTML), "needs two");
   el.mergeSel = new Set(); el.render();
   assert.ok(shadow.innerHTML.includes('data-merge-page="a,b"') && shadow.innerHTML.includes("<table"), "the journal is a table with a page box for the plans that can be merged");
-  assert.ok(/<tr data-plan-open="a" tabindex="0" role="button"/.test(shadow.innerHTML) && !/<button class="btn" data-plan-open/.test(shadow.innerHTML) && shadow.innerHTML.includes('class="jsum"'), "the row opens the plan, there is no open button, the check column wraps");
+  assert.ok(/<tr data-plan-open="a" tabindex="0"/.test(shadow.innerHTML) && !/<button class="btn" data-plan-open/.test(shadow.innerHTML) && shadow.innerHTML.includes('class="jsum"'), "the row opens the plan, there is no open button, the check column wraps");
   el.toggleDenseList("journal");
   assert.ok(!el.journalView().includes('class="jsum"'), "the compact row leaves the check column out");
   el.toggleDenseList("journal");
@@ -6627,7 +6627,7 @@ test("object lists share one table: device entities, integration entries, remind
   assert.deepEqual([true, false, null, undefined].map(automatic => el.bhKind({ automatic })), ["auto", "manual", "other", "other"], "a backup without the flag is from another tool, not a manual one");
   assert.deepEqual(["hassio.local", "backup.local", "hassio.Backup", "google_drive.me_gmail_com", "cloud.cloud", "foo_bar.x"].map(id => el.bhAgent(id).label), ["Local", "Local", "Network storage: Backup", "Google Drive", "Nabu Casa", "Foo bar"], "targets are named, accounts left out");
   assert.ok(el.bhAgent("hassio.local").local && !el.bhAgent("hassio.Backup").local);
-  assert.ok(rem.includes('data-rem-row="r1"') && rem.includes('role="button"'), "the row opens the history");
+  assert.ok(rem.includes('data-rem-row="r1"') && rem.includes('tabindex="0"'), "the row opens the history");
   assert.ok(rem.includes('data-lf-set="reminders|state|soon"') && rem.includes('data-lf-set="reminders||"'), "the key figures set the state filter");
   assert.ok(rem.includes('data-exp-menu="reminders"') && !rem.includes("data-export-list") && el._exporters.reminders.rows()[0][0] === "Filter", "the list exports to CSV");
 });

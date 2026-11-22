@@ -308,8 +308,11 @@ class ListsMixin {
       return `<th scope="col"${c.narrow ? ' class="selcol"' : ""} aria-sort="${sortedHere ? (st.dir === "desc" ? "descending" : "ascending") : "none"}">${c.headPrefix ? `<span class="headsel">${c.headPrefix()}${inner}</span>` : inner}${c.headSuffix ? c.headSuffix() : ""}</th>`;
     }).join("");
     const body = rows.map(item => {
-      const attrs = rowAttrs(item);
-      return `${before(item, columns.length)}<tr ${attrs}>${columns.map((c, i) => `<td${c.narrow ? ' class="selcol"' : ""}${i ? ` data-label="${this.esc(this.t(c.label))}"` : ""}>${c.cell(item)}</td>`).join("")}</tr>${after(item)}`;
+      const cells = columns.map((c, i) => `<td${c.narrow ? ' class="selcol"' : ""}${i ? ` data-label="${this.esc(this.t(c.label))}"` : ""}>${c.cell(item)}</td>`).join("");
+      // A row that opens its object is a button for the keyboard (tabindex) but not for a screen reader when it holds controls of its own
+      // (checkbox, menu, link): a button must not contain other interactive elements. aria-expanded goes with the role (a plain row cannot carry it).
+      const attrs = /<(input|button|summary|select|a)[\s>]/.test(cells) ? rowAttrs(item).replace(' role="button"', "").replace(/ aria-expanded="[^"]*"/, "") : rowAttrs(item);
+      return `${before(item, columns.length)}<tr ${attrs}>${cells}</tr>${after(item)}`;
     }).join("");
     return `<div class="${["tablewrap", "lt", cls, this.isDenseList(id) ? "dense-list" : ""].filter(Boolean).join(" ")}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
