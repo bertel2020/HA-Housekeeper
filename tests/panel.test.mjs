@@ -2238,7 +2238,7 @@ test("the plan card shows the steps with text, marks undo kinds and folds the de
   const open = el.planCard(planOf("dry_run", [act("disable_entity")]));
   assert.equal((open.match(/aria-current="step"/g) || []).length, 1);
   assert.ok(open.includes('<span class="sr-only">: not needed</span>') && open.includes('<span class="sr-only">: current</span>') && open.includes('<span class="sr-only">: pending</span>'));
-  assert.ok(open.includes("Not needed: everything can be taken back by Housekeeper"));
+  assert.ok(open.includes("Not needed: everything can be undone by Housekeeper"));
   for (const lang of ["de", "en"]) {
     const text = panel(lang).el.t.bind(panel(lang).el);
     for (const key of ["stepsLabel", "stepSelect", "stepAnalysis", "stepConfirm", "stepBackup", "stepRun", "stepVerify", "stepDone", "stepCurrent", "stepTodo", "stepSkipped", "stepFailed", "undoHousekeeper", "undoBackupOnly", "backupRestoreHint", "planDetails"]) assert.notEqual(text(key), key, `${lang} ${key}`);

@@ -28,7 +28,7 @@ Object.assign(TEXT.en, {
   trimFoot: "Before deleting, Housekeeper creates a Home Assistant backup including the database. It can only be undone with that backup.", trimPreview: "Trim: preview ({count})", trimPreviewOne: "Trim: preview (1)", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
   trimSub: "older than {days} days: {rows} rows", reason_bad_keep_days: "The time to keep is not valid.", reason_not_counted: "The rows could not be counted.", reason_nothing_to_trim: "Nothing to delete: there are no states that old.",
   check_history_trimmed: "Old history is deleted", abort_trim_unverified: "Deleted, but the rows left could not be counted.", abort_trim_left: "Older rows were still there after deleting.",
-  confirmedSummaryTrim: "The old history of {count} entities will be deleted. The backup includes the database. It can only be taken back with that backup.",
+  confirmedSummaryTrim: "The old history of {count} entities will be deleted. The backup includes the database. It can only be undone with that backup.",
 });
 
 const EXCLUDE_MIN_PER_DAY = 100; // only for the text of the rule: the backend decides (SUGGEST_MIN_PER_DAY in maintenance.py)

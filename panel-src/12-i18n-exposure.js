@@ -76,12 +76,12 @@ Object.assign(TEXT.de, {
 Object.assign(TEXT.en, {
   expoActRemove: "Remove exposures …", expoActPin: "Ask for the PIN again …", expoActNewOff: "Stop exposing new ones automatically …",
   expoActRemoveOne: "Remove exposure …", expoActRemoveFrom: "Remove from {name} …", expoOpenNames: "Open voice names in Home Assistant", expoPlanNewOff: "stop exposing new entities automatically",
-  confirmedSummaryExposeNew: "New entities are no longer exposed automatically at {count} assistants. What is exposed already stays exposed. This can be taken back.",
+  confirmedSummaryExposeNew: "New entities are no longer exposed automatically at {count} assistants. What is exposed already stays exposed. This can be undone.",
   expoPlanRemove: "take out of {list}", expoPlanPin: "Google asks for the PIN again",
   reason_filtered_by_yaml: "A filter in the YAML configuration of Nabu Casa decides what is exposed. It cannot be changed here.",
   abort_integration_reload_failed: "Reloading the integration failed. See the log for what the integration reports.", abort_integration_reload_timeout: "The integration is still loading. The check shows the result once it is done (or that it did not happen).",
   reason_filter_unknown: "Whether a filter in the YAML configuration of Nabu Casa decides what is exposed could not be read. If it does, the entity stays exposed anyway.",
   check_exposure_set: "Exposure is changed", result_exposure: "Exposure changed", actKind_set_exposure: "Exposure changed",
-  confirmedSummaryExposure: "{count} entities are taken out of assistants or ask for the PIN again at Google. Alexa and Google synchronise at once: Alexa routines with these devices may stop working, and an undo does not restore them in the Alexa app. The exposure itself can be taken back.",
+  confirmedSummaryExposure: "{count} entities are taken out of assistants or ask for the PIN again at Google. Alexa and Google synchronise at once: Alexa routines with these devices may stop working, and an undo does not restore them in the Alexa app. The exposure itself can be undone.",
   sim_exposure_set: "{count} entities change their exposure",
 });

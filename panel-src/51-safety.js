@@ -93,7 +93,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   safeLabel: "Safety status", safeBackup: "Last backup: {age} ago", safeNoBackup: "No backup found",
-  safeLast: "Last plan: {when}", safeUndo: "undo available", safeNoUndo: "final", safeUndoTip: "The plan can be rolled back with its backup. A click opens the journal.", safeNoUndoTip: "No longer undoable: the backup for it is gone or too old. A click opens the journal.", safeView: "View: {view}", safeAi: "AI access: {mode}",
+  safeLast: "Last plan: {when}", safeUndo: "undo available", safeNoUndo: "final", safeUndoTip: "The plan can be undone with its backup. A click opens the journal.", safeNoUndoTip: "No longer undoable: the backup for it is gone or too old. A click opens the journal.", safeView: "View: {view}", safeAi: "AI access: {mode}",
   safeRunning: "A plan is running", safeBackupRunning: "Backup for a plan is running", safeWatching: "{n} plans are being watched", safeWatching1: "1 plan is being watched", safeWatchingTip: "For up to 24 hours after the run, Housekeeper checks at every scan whether new findings appeared.", safeRegression: "{n} regression after a change",
   healthScore: "{percent} / 100 healthy", healthAffected: "{affected} of {base} rated objects affected",
   healthWord_ok: "All good", healthWord_warn: "Needs a look", healthWord_red: "Action needed",
