@@ -84,6 +84,7 @@ async def battery_forecast(
         {k: battery_voltage.UNITS[o["unit"]] for k, o in volts.items()},
         types,
         limit,
+        scanner.batteries.volt_classes,
     )
     result["replaced"] = scanner.batteries.open_replacements(result["replaced"])
     return {
@@ -93,4 +94,5 @@ async def battery_forecast(
         "voltage": voltage,
         "types": types,
         "custom_types": scanner.batteries.custom_types,
+        "volt_classes": scanner.batteries.volt_classes,
     }

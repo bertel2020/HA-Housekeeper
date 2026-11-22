@@ -341,6 +341,32 @@ def websocket_battery_type_set(
 @websocket_api.require_admin
 @websocket_api.websocket_command(
     {
+        vol.Required("type"): f"{DOMAIN}/battery_class_set",
+        vol.Required("entity_id"): str,
+        vol.Required("volt_class"): str,
+    }
+)
+@callback
+@with_scanner
+def websocket_battery_class_set(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+    scanner: InventoryScanner,
+) -> None:
+    """Set the class of a battery in volts (empty = back to the guess). Only Housekeeper's list changes."""
+    try:
+        scanner.batteries.set_volt_class(msg["entity_id"], msg["volt_class"])
+    except BatteryError as err:
+        connection.send_error(msg["id"], "invalid_format", f"Not accepted: {err}")
+        return
+    scanner.announce_changes()  # the card follows the new limit
+    connection.send_result(msg["id"], _versioned({"volt_classes": scanner.batteries.volt_classes}))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
         vol.Required("type"): f"{DOMAIN}/battery_custom_type",
         vol.Required("action"): vol.In(["add", "rename", "delete"]),
         vol.Required("name"): str,
@@ -1088,6 +1114,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_notify_set)
     websocket_api.async_register_command(hass, websocket_battery_type_set)
     websocket_api.async_register_command(hass, websocket_battery_custom_type)
+    websocket_api.async_register_command(hass, websocket_battery_class_set)
     websocket_api.async_register_command(hass, websocket_battery_kind_set)
     websocket_api.async_register_command(hass, websocket_battery_replaced)
     websocket_api.async_register_command(hass, websocket_lifecycle)

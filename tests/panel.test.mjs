@@ -4721,6 +4721,23 @@ test("batteries in volts are not read as percent and sit in the same list with t
   assert.ok(html.includes("2.86 V") && html.includes("3 V cell") && html.includes("2.50 V") && html.includes("sensor.pct"));
 });
 
+test("the class of a battery in volts is changed from the row menu, says it was chosen, and goes back to the guess", async () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.volt", name: "volt", status: "active", device_class: "battery", unit: "V", state: "3.1" }] };
+  const row = manual => ({ entity_id: "sensor.volt", name: "Coin", type: manual ? "cell15" : "coin3", limit: manual ? 1.1 : 2.5, level: 2.86, state: "falling", days_left: 24, ...(manual ? { manual: true } : {}) });
+  el.batteryTrend = { available: true, busy: false, rows: [], groups: [], unknown: 0, voltage: { unknown: 0, rows: [row(true)] } };
+  el.batteryFilter = "all";
+  assert.ok(el.batteriesView().includes('data-bv-open="sensor.volt"') && el.batteriesView().includes("chosen by you"));
+  el.bvEdit = "sensor.volt";
+  const form = el.batteriesView();
+  assert.ok(form.includes("data-bv-select") && form.includes("Detect automatically") && form.includes('<option value="cell15" selected>'));
+  const calls = [];
+  el._hass.callWS = async msg => { calls.push(msg); return msg.type.endsWith("battery_trend") ? { available: true, busy: false, rows: [], groups: [], unknown: 0, voltage: { unknown: 0, rows: [row(false)] } } : { volt_classes: {} }; };
+  await el.batterySetClass("sensor.volt", "");
+  assert.equal(JSON.stringify(calls[0]), JSON.stringify({ type: "ha_housekeeper/battery_class_set", entity_id: "sensor.volt", volt_class: "" }));
+  assert.ok(!el.bvEdit && !el.batteriesView().includes("chosen by you"), "back to the guess");
+});
+
 test("the recorder card of an entity counts on request and shows rows per table", async () => {
   const { el } = panel("en");
   el._hass.callWS = async () => ({ available: true, busy: false, keep_days: 10, states: { rows: 51405, first: 1.7e9, last: 1.7e9 + 864000 }, short: { rows: 0, first: null, last: null }, long: { rows: 0, first: null, last: null } });

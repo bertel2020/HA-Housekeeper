@@ -119,8 +119,9 @@ class BatteryTableMixin {
   batteryTypeCell(row) {
     const id = row.item.object_id;
     if (this.btEdit === id) return this.batteryTypeControls(id);
+    if (row.volt && this.bvEdit === id) return this.batteryClassControls(row);
     if (row.type) return `<span class="btctl"><span class="pill">${this.esc(this.batteryTypeLabel(row.type))}</span><button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.esc(this.t("btTypeChange"))}" aria-label="${this.esc(this.t("btTypeLabel", { name: this.batteryName(row.item).title }))}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button></span>`;
-    if (row.volt) return `<span class="muted" title="${this.esc(this.t("bvLine", { now: this.voltNum(row.level), kind: this.t(`bvType_${row.volt.type}`), limit: this.voltNum(row.volt.limit) }))}">${this.esc(this.t(`bvType_${row.volt.type}`).split(" (")[0])}</span><button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.t("btTypeChange")}" aria-label="${this.t("btTypeChange")}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button>`;
+    if (row.volt) return `<span class="muted" title="${this.esc(this.t("bvLine", { now: this.voltNum(row.level), kind: this.t(`bvType_${row.volt.type}`), limit: this.voltNum(row.volt.limit) }))}">${this.esc(this.t(`bvType_${row.volt.type}`).split(" (")[0])}</span>${row.volt.manual ? `<small class="pill mute">${this.t("bvManual")}</small>` : ""}<button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.t("btTypeChange")}" aria-label="${this.t("btTypeChange")}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button>`;
     return `<button class="btn quiet miss" data-bt-type="${this.esc(id)}" title="${this.esc(this.t("btTypeChange"))}">${this.t("btTypeNone")}<ha-icon icon="mdi:pencil-outline"></ha-icon></button>`;
   }
 
@@ -142,7 +143,7 @@ class BatteryTableMixin {
       { key: "level", label: "btColLevel", dir: "asc", cell: r => this.batteryLevelCell(r, limit) },
       { key: "slope", label: "btColSlope", dir: "asc", cell: r => this.batterySlopeCell(r) },
       { key: "left", label: "btColLeft", dir: "asc", cell: r => this.batteryLeftCell(r) },
-      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml([["mdi:battery-off-outline", "bkSet", `data-bk-open="${this.esc(r.item.object_id)}"`]]) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml([r.volt ? ["mdi:flash-outline", "bvChange", `data-bv-open="${this.esc(r.item.object_id)}"`] : null, ["mdi:battery-off-outline", "bkSet", `data-bk-open="${this.esc(r.item.object_id)}"`]]) },
     ];
     // The form for the kind opens in a row of its own below, over the whole width: the menu column is too narrow for it.
     const table = this.listTable("batteries", columns, pg.rows, { cls: "batt", after: r => (this.bkEdit === r.item.object_id ? `<tr class="static bkrow"><td colspan="${columns.length}">${this.batteryKindForm(r.item)}</td></tr>` : ""), rowAttrs: r => `${r.low ? 'data-rowtone="red" ' : ""}data-object="${this.esc(this.objectKey(r.item))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(r.item).title)}"` });

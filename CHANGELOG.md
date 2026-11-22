@@ -13,6 +13,7 @@
   - Statistics of the Energy dashboard can be moved too, and the dashboard follows.
   - After a verified move the old statistics are offered for deletion; a switch opens that step by itself.
 - **Batteries:** A battery that reports a word (low, medium, high) is listed, and only “low” warns.
+- **Batteries in volts:** The class that Housekeeper guesses from the voltage (and with it the limit) can be changed in the row menu, or set back to the guess; a chosen class is marked “chosen by you”.
 - **House functions:** The objects of a function can be sorted with arrows in the edit form. The order is only for display.
 - **Space per entity (database, states):**
   - The name opens the entity. The list has a pick column, a row menu and, above the list, the exclusion bar; a cancel button clears the pick.

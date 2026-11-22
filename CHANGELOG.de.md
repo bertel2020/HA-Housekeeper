@@ -13,6 +13,7 @@
   - Auch Statistiken des Energie-Dashboards lassen sich übertragen, das Dashboard folgt.
   - Nach einer geprüften Übertragung werden die alten Statistiken zum Löschen angeboten; ein Schalter öffnet diesen Schritt von selbst.
 - **Batterien:** Eine Batterie, die ein Wort meldet (low, medium, high), wird aufgeführt, und nur „low“ warnt.
+- **Batterien in Volt:** Die Klasse, die Housekeeper aus der Spannung rät (und damit die Grenze), lässt sich im Zeilenmenü ändern oder auf die Schätzung zurücksetzen; eine gewählte Klasse ist als „von dir gewählt“ markiert.
 - **Hausfunktionen:** Die Objekte einer Funktion lassen sich im Bearbeiten-Formular mit Pfeilen sortieren. Die Reihenfolge dient nur der Anzeige.
 - **Platz je Entität (Datenbank, Zustände):**
   - Der Name öffnet die Entität. Die Liste hat eine Auswahlspalte, ein Zeilenmenü und über der Liste die Ausschluss-Leiste; ein Abbrechen leert die Auswahl.

@@ -7,6 +7,7 @@ from datetime import UTC, date, datetime, timedelta
 import pytest
 from homeassistant.core import HomeAssistant
 
+from custom_components.ha_housekeeper import battery_voltage
 from custom_components.ha_housekeeper.battery_care import BatteryError, BatteryStore, noted_types
 from custom_components.ha_housekeeper.battery_trend import DAY, build, detect_replacement
 from custom_components.ha_housekeeper.criteria import CriteriaStore
@@ -54,6 +55,24 @@ async def test_own_types_are_remembered_renamed_and_kept_while_used(hass: HomeAs
     ):
         with pytest.raises(BatteryError):
             store.edit_custom(action, name, new)
+
+
+async def test_the_class_of_a_battery_in_volts_you_chose_replaces_the_guess(
+    hass: HomeAssistant,
+) -> None:
+    store = BatteryStore(hass)
+    store.set_volt_class("sensor.volt", "lithium")
+    assert store.volt_classes == {"sensor.volt": "lithium"}
+    for entity_id, key in (("volt", "lithium"), ("sensor.volt", "nope")):
+        with pytest.raises(BatteryError):
+            store.set_volt_class(entity_id, key)
+    series = {"sensor.volt": _series(*[3.2 - 0.01 * i for i in range(40)])}
+    guess = battery_voltage.build(series, {}, {}, None, 20.0)["rows"][0]
+    chosen = battery_voltage.build(series, {}, {}, None, 20.0, {"sensor.volt": "cell15"})["rows"][0]
+    assert (guess["type"], guess["limit"], "manual" in guess) == ("coin3", 2.5, False)
+    assert (chosen["type"], chosen["limit"], chosen["manual"]) == ("cell15", 1.1, True)
+    store.set_volt_class("sensor.volt", "")
+    assert store.volt_classes == {}
 
 
 def test_a_recent_rise_is_a_replacement_and_an_old_one_or_a_small_one_is_not() -> None:

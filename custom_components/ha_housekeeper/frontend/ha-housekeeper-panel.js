@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"200a037a8f"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"5014f7aeab"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a9c42107b3"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d3adddf39e"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"e19976eaff"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"42bb1c5003"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"aedd4fdd18"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"266cc3d4db"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"7ca7042221"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"c0701afadc"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"4e4295bea7"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"f526fcaae4"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"90593f3960"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"cba46cddf8"}];
 
 const TEXT = {
   de: {
@@ -17584,6 +17584,7 @@ Object.assign(TEXT.de, {
   btLeftCharge: "Laden in {n} Tagen",
   btLeftChargeNow: "jetzt laden",
   btNeedCharge: "Akkus zum Laden",
+  bvChange: "Spannungsklasse ändern …", bvAuto: "Automatisch erkennen", bvManual: "von dir gewählt", bvClassLabel: "Klasse von {name}",
   btTypeSet: "Typ", btTypeSetN: "Batterietyp setzen ({n})", btTypeSetTitle: "Batterietyp für {n} Batterien", btTypeNone: "Typ fehlt", btTypeSave: "Speichern", btTypeCustom: "Eigener Text …", btTypeLabel: "Batterietyp für {name}", btTypeHint: "Gespeichert nur in Housekeeper.",
   btCtTitle: "Eigene Batterietypen", btCtHint: "Eigene Typen stehen bei jedem Sensor in der Auswahl. Eingebaute und genutzte Typen lassen sich nicht löschen.", btCtNone: "Noch keine eigenen Typen. Ein Typ, den du bei einem Sensor eintippst, landet hier.",
   btCtUsed: "von {n} Sensoren genutzt", btCtUsed1: "von 1 Sensor genutzt", btCtUnused: "nicht genutzt", btCtAdd: "Hinzufügen", btCtNew: "Neuer Typ", btCtRename: "Umbenennen", btCtDelete: "Löschen", btCtInUse: "Wird genutzt: erst bei den Sensoren ändern", btCtSave: "Speichern",
@@ -17599,6 +17600,7 @@ Object.assign(TEXT.en, {
   btLeftCharge: "Charge in {n} days",
   btLeftChargeNow: "charge now",
   btNeedCharge: "packs to charge",
+  bvChange: "Change voltage class …", bvAuto: "Detect automatically", bvManual: "chosen by you", bvClassLabel: "Class of {name}",
   btTypeSet: "Type", btTypeSetN: "Set battery type ({n})", btTypeSetTitle: "Battery type for {n} batteries", btTypeNone: "Type missing", btTypeSave: "Save", btTypeCustom: "Own text …", btTypeLabel: "Battery type for {name}", btTypeHint: "Stored only in Housekeeper.",
   btCtTitle: "Own battery types", btCtHint: "Own types appear in the choice of every sensor. Built-in and used types cannot be deleted.", btCtNone: "No own types yet. A type you enter for a sensor ends up here.",
   btCtUsed: "used by {n} sensors", btCtUsed1: "used by 1 sensor", btCtUnused: "not used", btCtAdd: "Add", btCtNew: "New type", btCtRename: "Rename", btCtDelete: "Delete", btCtInUse: "In use: change the sensors first", btCtSave: "Save",
@@ -17629,6 +17631,23 @@ class BatteryTypeMixin {
   batteryTypeOptions(type) {
     const opt = (o, label = o) => `<option value="${this.esc(o)}" ${o === type || (isRecharge(o) && isRecharge(type)) ? "selected" : ""}>${this.esc(label)}</option>`;
     return `<optgroup label="${this.esc(this.t("btGroupChange"))}">${this.batteryTypeChoices().map(o => opt(o)).join("")}</optgroup><optgroup label="${this.esc(this.t("btGroupCharge"))}">${opt(BATTERY_RECHARGE, this.t("btRecharge"))}</optgroup>`;
+  }
+
+  // The class of a battery in volts decides its limit. The choice is the seven classes the guess knows, or the guess itself.
+  batteryClassControls(row) {
+    const id = row.item.object_id, now = row.volt.manual ? row.volt.type : "";
+    const options = ["cell15", "coin3", "lithium", "cells3", "cells4", "block9", "lead12"].map(key => `<option value="${key}" ${now === key ? "selected" : ""}>${this.esc(this.t(`bvType_${key}`))}</option>`).join("");
+    return `<span class="btedit"><label class="factnote">${this.t("bvClassLabel", { name: this.esc(this.batteryLabel(id)) })}</label><select data-bv-select aria-label="${this.esc(this.t("bvClassLabel", { name: this.batteryLabel(id) }))}"><option value="" ${now ? "" : "selected"}>${this.t("bvAuto")}</option>${options}</select><button class="btn accent" data-bv-save="${this.esc(id)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bv-cancel>${this.t("cancelRun")}</button></span>`;
+  }
+
+  async batterySetClass(entityId, value) {
+    try {
+      await this._hass.callWS({ type: "ha_housekeeper/battery_class_set", entity_id: entityId, volt_class: value });
+      this.bvEdit = "";
+      await this.loadBatteryTrend();
+      return;
+    } catch (err) { this.btMessage = this.t("btReplFailed", { detail: this.errText(err) }); }
+    this.render();
   }
 
   batteryTypeLabel(type) { return isRecharge(type) ? this.t("btRecharge") : type; }
@@ -17706,6 +17725,9 @@ class BatteryTypeMixin {
   }
 
   bindBatteryType(root) {
+    root.querySelectorAll("[data-bv-open]").forEach(el => el.addEventListener("click", () => { this.bvEdit = el.dataset.bvOpen; this.render(); }));
+    root.querySelectorAll("[data-bv-cancel]").forEach(el => el.addEventListener("click", () => { this.bvEdit = ""; this.render(); }));
+    root.querySelectorAll("[data-bv-save]").forEach(el => el.addEventListener("click", () => this.batterySetClass(el.dataset.bvSave, el.closest(".btedit")?.querySelector("[data-bv-select]")?.value || "")));
     root.querySelectorAll("[data-bt-type]").forEach(el => el.addEventListener("click", () => { this.btEdit = el.dataset.btType; this.render(); }));
     // The editor can stand in two tables at once (the forecast and "all batteries"): each one works on its own fields.
     root.querySelectorAll("[data-bt-type-cancel]").forEach(el => el.addEventListener("click", () => { this.btEdit = ""; this.render(); }));
@@ -18608,8 +18630,9 @@ class BatteryTableMixin {
   batteryTypeCell(row) {
     const id = row.item.object_id;
     if (this.btEdit === id) return this.batteryTypeControls(id);
+    if (row.volt && this.bvEdit === id) return this.batteryClassControls(row);
     if (row.type) return `<span class="btctl"><span class="pill">${this.esc(this.batteryTypeLabel(row.type))}</span><button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.esc(this.t("btTypeChange"))}" aria-label="${this.esc(this.t("btTypeLabel", { name: this.batteryName(row.item).title }))}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button></span>`;
-    if (row.volt) return `<span class="muted" title="${this.esc(this.t("bvLine", { now: this.voltNum(row.level), kind: this.t(`bvType_${row.volt.type}`), limit: this.voltNum(row.volt.limit) }))}">${this.esc(this.t(`bvType_${row.volt.type}`).split(" (")[0])}</span><button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.t("btTypeChange")}" aria-label="${this.t("btTypeChange")}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button>`;
+    if (row.volt) return `<span class="muted" title="${this.esc(this.t("bvLine", { now: this.voltNum(row.level), kind: this.t(`bvType_${row.volt.type}`), limit: this.voltNum(row.volt.limit) }))}">${this.esc(this.t(`bvType_${row.volt.type}`).split(" (")[0])}</span>${row.volt.manual ? `<small class="pill mute">${this.t("bvManual")}</small>` : ""}<button class="btn quiet iconbtn" data-bt-type="${this.esc(id)}" title="${this.t("btTypeChange")}" aria-label="${this.t("btTypeChange")}"><ha-icon icon="mdi:pencil-outline"></ha-icon></button>`;
     return `<button class="btn quiet miss" data-bt-type="${this.esc(id)}" title="${this.esc(this.t("btTypeChange"))}">${this.t("btTypeNone")}<ha-icon icon="mdi:pencil-outline"></ha-icon></button>`;
   }
 
@@ -18631,7 +18654,7 @@ class BatteryTableMixin {
       { key: "level", label: "btColLevel", dir: "asc", cell: r => this.batteryLevelCell(r, limit) },
       { key: "slope", label: "btColSlope", dir: "asc", cell: r => this.batterySlopeCell(r) },
       { key: "left", label: "btColLeft", dir: "asc", cell: r => this.batteryLeftCell(r) },
-      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml([["mdi:battery-off-outline", "bkSet", `data-bk-open="${this.esc(r.item.object_id)}"`]]) },
+      { key: "menu", label: "rowMenu", menu: true, narrow: true, sortable: false, cell: r => this.rowMenuHtml([r.volt ? ["mdi:flash-outline", "bvChange", `data-bv-open="${this.esc(r.item.object_id)}"`] : null, ["mdi:battery-off-outline", "bkSet", `data-bk-open="${this.esc(r.item.object_id)}"`]]) },
     ];
     // The form for the kind opens in a row of its own below, over the whole width: the menu column is too narrow for it.
     const table = this.listTable("batteries", columns, pg.rows, { cls: "batt", after: r => (this.bkEdit === r.item.object_id ? `<tr class="static bkrow"><td colspan="${columns.length}">${this.batteryKindForm(r.item)}</td></tr>` : ""), rowAttrs: r => `${r.low ? 'data-rowtone="red" ' : ""}data-object="${this.esc(this.objectKey(r.item))}" tabindex="0" role="button" aria-label="${this.esc(this.batteryName(r.item).title)}"` });

@@ -30,6 +30,7 @@ WRITES = [
     {"type": D + "set_policy_limit", "limit": 50},
     {"type": D + "check_log_mark", "change": "x|a|b", "reason": "test"},
     {"type": D + "battery_type_set", "entity_id": "sensor.none", "battery_type": "AA"},
+    {"type": D + "battery_class_set", "entity_id": "sensor.none", "volt_class": "lithium"},
     {"type": D + "battery_custom_type", "action": "add", "name": "CR9"},
     {"type": D + "battery_custom_type", "action": "rename", "name": "CR9", "new_name": "CR8"},
     {"type": D + "battery_custom_type", "action": "delete", "name": "CR8"},

@@ -14,12 +14,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
 from .battery_kind import ALL_KINDS
+from .battery_voltage import TYPES as VOLT_CLASSES
 from .const import BATTERY_STORAGE_KEY, STORAGE_VERSION
 
 SAVE_DELAY = 5
 MAX_ITEMS = 500
 TYPE_MAX = 30
 ENTITY = re.compile(r"^[a-z0-9_]+\.[a-z0-9_]+$")
+_CLASS_KEYS = frozenset(key for _, _, key, _ in VOLT_CLASSES)
 BUILTIN_TYPES = ("2× AAA", "2× AA", "CR2016", "CR2032", "CR2450", "9 V", "Rechargeable")
 
 
@@ -50,24 +52,32 @@ class BatteryError(Exception):
 
 
 class BatteryStore:
-    """Battery type per sensor and the day up to which replacements are settled."""
+    """Battery type per sensor, the class of a battery in volts you chose, and the day up to which replacements are settled."""
 
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, BATTERY_STORAGE_KEY)
         self.types: dict[str, str] = {}
         self.handled: dict[str, str] = {}
         self.kinds: dict[str, str] = {}
+        self.volt_classes: dict[str, str] = {}
         self.custom_types: list[str] = []
 
     async def async_load(self) -> None:
         data = await self._store.async_load()
         if not isinstance(data, dict):
             return
-        for name, kept in (("types", self.types), ("handled", self.handled), ("kinds", self.kinds)):
+        for name, kept in (
+            ("types", self.types),
+            ("handled", self.handled),
+            ("kinds", self.kinds),
+            ("volt_classes", self.volt_classes),
+        ):
             found = data.get(name)
             for key, value in found.items() if isinstance(found, dict) else ():
                 if isinstance(key, str) and ENTITY.match(key) and isinstance(value, str):
                     if name == "kinds" and value not in ALL_KINDS:
+                        continue
+                    if name == "volt_classes" and value not in _CLASS_KEYS:
                         continue
                     kept[key] = value[:TYPE_MAX] if name == "types" else value
         found = data.get("custom_types")
@@ -76,7 +86,7 @@ class BatteryStore:
                 self._remember(value.strip()[:TYPE_MAX])
         for key in [k for k, v in self.handled.items() if not _day(v)]:
             del self.handled[key]
-        for kept in (self.types, self.handled, self.kinds):
+        for kept in (self.types, self.handled, self.kinds, self.volt_classes):
             for key in list(kept)[MAX_ITEMS:]:
                 del kept[key]
 
@@ -86,6 +96,7 @@ class BatteryStore:
                 "types": self.types,
                 "handled": self.handled,
                 "kinds": self.kinds,
+                "volt_classes": self.volt_classes,
                 "custom_types": self.custom_types,
             },
             SAVE_DELAY,
@@ -130,6 +141,20 @@ class BatteryStore:
             self._remember(new_name)
         else:
             raise BatteryError("action")
+        self._save()
+
+    def set_volt_class(self, entity_id: str, key: str) -> None:
+        """Set the class of a battery in volts (it decides the limit); an empty text goes back to the guess."""
+        if not ENTITY.match(entity_id):
+            raise BatteryError("entity_id")
+        if not key:
+            self.volt_classes.pop(entity_id, None)
+        elif key not in _CLASS_KEYS:
+            raise BatteryError("class")
+        else:
+            if entity_id not in self.volt_classes and len(self.volt_classes) >= MAX_ITEMS:
+                raise BatteryError("too_many")
+            self.volt_classes[entity_id] = key
         self._save()
 
     def set_type(self, entity_id: str, value: str) -> None:

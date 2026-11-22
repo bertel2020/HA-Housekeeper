@@ -91,11 +91,13 @@ def build(
     scale: dict[str, float],
     types: dict[str, str] | None = None,
     limit_percent: float = 20.0,
+    classes: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Rows with a guessed type, the limit and the forecast; low ones first, then the soonest.
 
     A sensor with a coin cell of yours (``types``) gets its percent from the curve of that cell and
-    its limit at ``limit_percent``; any other keeps the guess and its fixed limit.
+    its limit at ``limit_percent``; any other keeps the guess and its fixed limit. A class you chose
+    (``classes``) replaces the guess, but a named coin cell still comes first.
     """
     rows = []
     for entity_id, raw in series.items():
@@ -105,7 +107,8 @@ def build(
             continue
         full = max(v for _, v in points)
         named = curve_for((types or {}).get(entity_id))
-        kind = guess_type(full)
+        chosen = next((t for t in TYPES if t[2] == (classes or {}).get(entity_id)), None)
+        kind = (chosen[2], chosen[3]) if chosen else guess_type(full)
         if named is not None:
             kind = ("coin3", volts_at(named[1], limit_percent))
         if kind is None:
@@ -125,6 +128,8 @@ def build(
                 **found,
             }
         )
+        if chosen is not None and named is None:
+            rows[-1]["manual"] = True
         if named is not None:
             rows[-1]["percent"] = round(percent_at(named[1], found["level"]))
             rows[-1]["cell"] = named[0]
