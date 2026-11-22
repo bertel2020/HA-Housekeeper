@@ -6195,6 +6195,8 @@
 "fixWay_replace_entity": "Sostituisci l'entità",
 "fixWayHint_replace_entity": "Sposta ogni punto che usa questa entità su un'altra.",
 "fixWay_object_actions": "Disabilita o rimuovi",
+"fixWay_delete_automation": "Elimina l’automazione",
+"fixWayHint_delete_automation": "Prima un’anteprima; nulla viene eliminato finché non confermi.",
 "fixWayHint_object_actions": "Le azioni dell'oggetto: disabilitare, rimuovere, sostituire, ciascuna con anteprima.",
 "fixWay_replace_target": "Sostituisci la destinazione",
 "fixWayHint_replace_target": "Sposta ogni punto che nomina la destinazione mancante su una esistente: per un'entità con una simile proposta, per un'area, un piano o un'etichetta a tua scelta (solo dove esiste la chiave per farlo). L'anteprima mostra ogni punto.",

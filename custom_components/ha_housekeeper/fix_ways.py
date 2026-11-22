@@ -110,6 +110,24 @@ def _broken_ways(finding: dict[str, Any], refactor_enabled: bool) -> list[dict[s
     return ways
 
 
+# The objects an object note can be set on; the others have no note, so a way that says "note it" would lead nowhere.
+NOTE_DOMAINS = frozenset({"entity", "device", "config_entry", "app"})
+DELETABLE_AUTOMATION_RULES = frozenset(
+    {"automation.never_triggered", "automation.stale", "automation.disabled_long"}
+)
+
+
+def _unneeded_ways(finding: dict[str, Any]) -> list[dict[str, Any]]:
+    """The ways for something unneeded: the round first; the note and the actions of the object only where the object has them."""
+    ways = [_way("cleanup_round", "panel", True)]
+    rule_id = finding["rule_id"]
+    if rule_id in DELETABLE_AUTOMATION_RULES:
+        ways.append(_way("delete_automation", "panel"))
+    elif rule_id.partition(".")[0] in NOTE_DOMAINS:
+        ways += [_way("mark", "panel"), _way("object_actions", "panel")]
+    return ways
+
+
 def ways_for(
     finding: dict[str, Any], snapshot: dict[str, Any], *, refactor_enabled: bool = False
 ) -> list[dict[str, Any]]:
@@ -126,11 +144,7 @@ def ways_for(
             ways.append(_way("object_actions", "panel"))
         return ways
     if finding.get("topic") == UNNEEDED:
-        return [
-            _way("cleanup_round", "panel", True),
-            _way("mark", "panel"),
-            _way("object_actions", "panel"),
-        ]
+        return _unneeded_ways(finding)
     if finding.get("topic") != DOWN:
         return []
     rule = finding["rule_id"]

@@ -216,6 +216,16 @@ def test_the_ways_to_fix_an_outage_follow_the_state_of_the_integration() -> None
         == "cleanup_round"
     )
     assert ways_for({"rule_id": "x.y", "object_id": "a", "topic": "other"}, snapshot) == []
+    stale = ways_for(
+        {"rule_id": "automation.stale", "object_id": "a", "topic": "unneeded"}, snapshot
+    )
+    assert [w["way"] for w in stale] == ["cleanup_round", "delete_automation"], (
+        "no note for an automation"
+    )
+    entity = ways_for(
+        {"rule_id": "entity.state_missing", "object_id": "a", "topic": "unneeded"}, snapshot
+    )
+    assert [w["way"] for w in entity] == ["cleanup_round", "mark", "object_actions"]
 
 
 def test_the_ways_to_fix_a_broken_reference_replace_an_entity_or_open_the_editor() -> None:

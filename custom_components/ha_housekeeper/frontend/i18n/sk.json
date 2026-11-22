@@ -6539,6 +6539,8 @@
 "fixWay_replace_entity": "Nahradiť entitu",
 "fixWayHint_replace_entity": "Presunúť každé miesto, ktoré túto entitu používa, na inú.",
 "fixWay_object_actions": "Vypnúť alebo odstrániť",
+"fixWay_delete_automation": "Odstrániť automatizáciu",
+"fixWayHint_delete_automation": "Najprv uvidíš náhľad; nič sa neodstráni, kým to nepotvrdíš.",
 "fixWayHint_object_actions": "Akcie objektu: vypnúť, odstrániť, vymeniť, každá s náhľadom.",
 "fixWay_replace_target": "Nahradiť cieľ",
 "fixWayHint_replace_target": "Presunúť každé miesto, ktoré uvádza chýbajúci cieľ, na existujúci: pri entite s navrhnutou podobnou, pri oblasti, poschodí alebo štítku podľa tvojho výberu (len tam, kde stojí kľúč preň). Náhľad ukáže každé miesto.",

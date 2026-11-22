@@ -6054,6 +6054,8 @@
 "fixWay_replace_entity": "Remplacer l’entité",
 "fixWayHint_replace_entity": "Déplacer chaque endroit qui utilise cette entité vers une autre.",
 "fixWay_object_actions": "Désactiver ou supprimer",
+"fixWay_delete_automation": "Supprimer l’automatisation",
+"fixWayHint_delete_automation": "D’abord un aperçu ; rien n’est supprimé tant que tu ne confirmes pas.",
 "fixWayHint_object_actions": "Les actions de l’objet : désactiver, supprimer, échanger, chacune avec un aperçu.",
 "fixWay_replace_target": "Remplacer la cible",
 "fixWayHint_replace_target": "Déplacer chaque endroit qui nomme la cible manquante vers une cible existante : pour une entité, avec une similaire proposée ; pour une zone, un étage ou une étiquette, à ton choix (seulement là où la clé existe). L’aperçu montre chaque endroit.",

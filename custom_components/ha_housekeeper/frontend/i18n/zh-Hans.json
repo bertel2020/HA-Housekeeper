@@ -6054,6 +6054,8 @@
 "fixWay_replace_entity": "替换实体",
 "fixWayHint_replace_entity": "将所有使用此实体的位置迁移到另一个实体。",
 "fixWay_object_actions": "禁用或移除",
+"fixWay_delete_automation": "删除自动化",
+"fixWayHint_delete_automation": "先显示预览；在你确认之前不会删除任何内容。",
 "fixWayHint_object_actions": "对象的操作：禁用、移除、更换，每项都带预览。",
 "fixWay_replace_target": "替换目标",
 "fixWayHint_replace_target": "将所有指向缺失目标的位置迁移到现有目标：对于实体，会提议一个相似的；对于区域、楼层或标签，由你选择（仅限相应键存在的位置）。预览会显示每一处。",

@@ -6054,6 +6054,8 @@
 "fixWay_replace_entity": "Sustituir la entidad",
 "fixWayHint_replace_entity": "Pasa todos los lugares que usan esta entidad a otra.",
 "fixWay_object_actions": "Desactivar o eliminar",
+"fixWay_delete_automation": "Eliminar la automatización",
+"fixWayHint_delete_automation": "Primero una vista previa; no se elimina nada hasta que confirmes.",
 "fixWayHint_object_actions": "Las acciones del objeto: desactivar, eliminar, sustituir, cada una con vista previa.",
 "fixWay_replace_target": "Sustituir el destino",
 "fixWayHint_replace_target": "Pasa todos los lugares que nombran el destino ausente a uno existente: para una entidad, con una similar propuesta; para un área, planta o etiqueta, a tu elección (solo donde esté su clave). La vista previa muestra cada lugar.",

@@ -6054,6 +6054,8 @@
 "fixWay_replace_entity": "Substituir a entidade",
 "fixWayHint_replace_entity": "Mover todos os locais que usam esta entidade para outra.",
 "fixWay_object_actions": "Desativar ou remover",
+"fixWay_delete_automation": "Eliminar a automação",
+"fixWayHint_delete_automation": "Primeiro uma pré-visualização; nada é eliminado até confirmares.",
 "fixWayHint_object_actions": "As ações do objeto: desativar, remover, trocar, cada uma com pré-visualização.",
 "fixWay_replace_target": "Substituir o destino",
 "fixWayHint_replace_target": "Mover todos os locais que nomeiam o destino em falta para um existente: numa entidade com uma semelhante proposta, numa área, piso ou etiqueta à tua escolha (só onde existe a chave para isso). A pré-visualização mostra cada local.",

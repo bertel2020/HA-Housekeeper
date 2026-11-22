@@ -7128,6 +7128,14 @@ test("the page of a device offers deciding and an exception rule for the finding
   assert.ok(!el.hasActionsTab(quiet, "automation:automation.q") && !el.actionsTab(quiet, "automation:automation.q").includes("data-object-note"), "the logbook alone makes no tab");
 });
 
+test("the way to fix an unused automation is deleting it with a preview, not a note it cannot take", () => {
+  const { el } = panel("en");
+  const f = { rule_id: "automation.stale", object_id: "automation.c", classification: "stale", key: "k", ignored: false, evidence: [] };
+  el.data = { ...DATA, objects: [...DATA.objects], findings: [f] };
+  const card = el.fixWayCard({ way: "delete_automation", kind: "panel", recommended: false }, f);
+  assert.ok(card.includes('data-auto-delete="automation.c"') && card.includes("Delete the automation") && !card.includes("data-fix-object"));
+});
+
 test("an exception is added from the menu of a finding or the selection bar, with its object picked, above the findings list", async () => {
   const { el } = panel("en");
   const object = { object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" };
