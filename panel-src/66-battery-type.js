@@ -60,7 +60,7 @@ class BatteryTypeMixin {
   batteryClassControls(row) {
     const id = row.item.object_id, now = row.volt.manual ? row.volt.type : "";
     const options = ["cell15", "coin3", "lithium", "cells3", "cells4", "block9", "lead12"].map(key => `<option value="${key}" ${now === key ? "selected" : ""}>${this.esc(this.t(`bvType_${key}`))}</option>`).join("");
-    return `<span class="btedit"><label class="factnote">${this.t("bvClassLabel", { name: this.esc(this.batteryLabel(id)) })}</label><select data-bv-select aria-label="${this.esc(this.t("bvClassLabel", { name: this.batteryLabel(id) }))}"><option value="" ${now ? "" : "selected"}>${this.t("bvAuto")}</option>${options}</select><button class="btn accent" data-bv-save="${this.esc(id)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bv-cancel>${this.t("cancelRun")}</button></span>`;
+    return `<span class="btedit"><label class="factnote">${this.t("bvClassLabel", { name: this.esc(this.batteryLabel(id)) })}</label><select data-bv-select aria-label="${this.esc(this.t("bvClassLabel", { name: this.batteryLabel(id) }))}"><option value="" ${now ? "" : "selected"}>${this.t("bvAuto")}</option>${options}</select><button class="btn small primary" data-bv-save="${this.esc(id)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bv-cancel>${this.t("cancelRun")}</button></span>`;
   }
 
   async batterySetClass(entityId, value) {
@@ -81,7 +81,7 @@ class BatteryTypeMixin {
       const choices = this.batteryTypeChoices();
       const known = !type || choices.includes(type) || isRecharge(type);
       const options = this.batteryTypeOptions(type);
-      return `<span class="btedit"><label class="factnote">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select data-bt-type-select aria-label="${this.esc(this.t("btTypeLabel", { name: this.batteryLabel(entityId) }))}"><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn accent" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
+      return `<span class="btedit"><label class="factnote">${this.t("btTypeLabel", { name: this.esc(this.batteryLabel(entityId)) })}</label><select data-bt-type-select aria-label="${this.esc(this.t("btTypeLabel", { name: this.batteryLabel(entityId) }))}"><option value="">–</option>${options}<option value="__custom" ${known ? "" : "selected"}>${this.t("btTypeCustom")}</option></select><input type="text" maxlength="30" data-bt-type-custom value="${this.esc(known ? "" : type)}" ${known ? "hidden" : ""} aria-label="${this.t("btTypeCustom")}"><button class="btn small primary" data-bt-type-save="${this.esc(entityId)}">${this.t("btTypeSave")}</button><button class="btn quiet" data-bt-type-cancel>${this.t("cancelRun")}</button></span>`;
     }
     return `<span class="btctl">${type ? `<span class="pill">${this.esc(this.batteryTypeLabel(type))}</span>` : `<span class="pill mute">${this.t("btTypeNone")}</span>`}<button class="btn quiet" data-bt-type="${this.esc(entityId)}">${this.t("btTypeSet")}</button></span>`;
   }
@@ -92,7 +92,7 @@ class BatteryTypeMixin {
     const rows = found.map(r => {
       const name = this.batteryLabel(r.entity_id);
       const date = this.formatDay(`${r.day}T12:00:00Z`);
-      return `<div class="btrepl"><ha-icon icon="mdi:battery-sync-outline"></ha-icon><span class="row-text"><strong>${this.esc(this.t("btReplLine", { name, date }))}</strong><small>${this.t("btReplLevels", { from: r.from, to: r.to })}</small></span><button class="btn accent" data-bt-enter="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplEnter")}</button>${this.rowMenuHtml([["mdi:close", "btReplDismiss", `data-bt-dismiss="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}"`]])}</div>`;
+      return `<div class="btrepl"><ha-icon icon="mdi:battery-sync-outline"></ha-icon><span class="row-text"><strong>${this.esc(this.t("btReplLine", { name, date }))}</strong><small>${this.t("btReplLevels", { from: r.from, to: r.to })}</small></span><button class="btn small primary" data-bt-enter="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}">${this.t("btReplEnter")}</button>${this.rowMenuHtml([["mdi:close", "btReplDismiss", `data-bt-dismiss="${this.esc(r.entity_id)}" data-day="${this.esc(r.day)}"`]])}</div>`;
     }).join("");
     return `<div class="btsuggest"><h3>${this.t("btReplTitle")}</h3><p class="factnote">${this.t("btReplHint")}</p>${rows}<p class="factnote">${this.t("btReplNote")}</p>${this.btMessage ? `<p class="factnote" role="status">${this.esc(this.btMessage)}</p>` : ""}</div>`;
   }
@@ -114,7 +114,7 @@ class BatteryTypeMixin {
     const uses = name => Object.values(b.types || {}).filter(t => t === name).length;
     const rows = list.map(name => {
       const n = uses(name);
-      if (this.btCtEdit === name) return `<div class="btct"><input type="text" maxlength="30" data-bt-ct-input value="${this.esc(name)}" aria-label="${this.t("btCtRename")}"><button class="btn accent" data-bt-ct-save="${this.esc(name)}">${this.t("btCtSave")}</button><button class="btn quiet" data-bt-ct-cancel>${this.t("cancelRun")}</button></div>`;
+      if (this.btCtEdit === name) return `<div class="btct"><input type="text" maxlength="30" data-bt-ct-input value="${this.esc(name)}" aria-label="${this.t("btCtRename")}"><button class="btn small primary" data-bt-ct-save="${this.esc(name)}">${this.t("btCtSave")}</button><button class="btn quiet" data-bt-ct-cancel>${this.t("cancelRun")}</button></div>`;
       const used = n ? this.t(n === 1 ? "btCtUsed1" : "btCtUsed", { n: this.formatNumber(n) }) : this.t("btCtUnused");
       const del = this.deleteButton(`data-bt-ct-delete="${this.esc(name)}"`, this.t("btCtDelete"), n ? { why: this.t("btCtInUse") } : {});
       return `<div class="btct"><span class="pill">${this.esc(name)}</span><span class="factnote">${this.esc(used)}</span><button class="btn quiet" data-bt-ct-rename="${this.esc(name)}">${this.t("btCtRename")}</button>${del}</div>`;
