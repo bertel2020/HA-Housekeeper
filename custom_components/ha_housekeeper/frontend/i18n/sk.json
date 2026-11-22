@@ -6693,10 +6693,9 @@
 "other": "{n} visí na výpadkoch"
 },
 "fcEndFollowN1": "1 visí na výpadku",
-"fcActsIntro": "Nález je to, čo pravidlo našlo na objekte. Spodok každej karty hovorí, na čo sa vzťahuje.",
-"fcScopeObject": "Platí pre: objekt",
-"fcScopeFinding": "Platí pre: tento nález",
-"fcScopeFindings": "Platí pre: tieto nálezy",
+"fcGroupFinding": "Pre tento nález",
+"fcGroupFindings": "Pre tieto nálezy",
+"fcGroupObject": "Pre objekt",
 "fcCardOf": "{n} z {total}",
 "fcFix": "Opraviť",
 "fcFixHint": "Ukáže spôsoby, ktoré sa hodia na tento objekt.",

@@ -6295,10 +6295,6 @@
 "fcEndFollowSub": "fa294315",
 "fcEndFollowN": "e7cd288c",
 "fcEndFollowN1": "776536c7",
-"fcActsIntro": "39eb8ee1",
-"fcScopeObject": "b9f70134",
-"fcScopeFinding": "c20e4554",
-"fcScopeFindings": "9cb3d6ff",
 "fcCardOf": "3612e1cd",
 "fcFix": "21f1595b",
 "fcFixHint": "789d5acb",
@@ -6778,7 +6774,10 @@
 "fixIdleDays": "d5061147",
 "fixIdleDays1": "89e13f8f",
 "fixNeverTriggered": "c77b3d60",
-"fixSure": "4a1cfba2"
+"fixSure": "4a1cfba2",
+"fcGroupFinding": "5a5a5def",
+"fcGroupFindings": "33589f4b",
+"fcGroupObject": "bb1118c4"
 },
 "setup": {
 "title": "644c2647",

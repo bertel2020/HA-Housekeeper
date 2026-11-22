@@ -392,6 +392,26 @@ class FirstCleanupMixin {
     return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${sel ? " sel" : ""}${tone ? ` ${tone}` : ""}" ${sel === null ? "" : `aria-pressed="${sel}" `}${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small>${scope ? `<span class="fcscope">${scope}</span>` : ""}</span></button>`;
   }
 
+  // The actions of a card as two short rows of buttons: what applies to the finding (decide) and what to the object (fix, note).
+  // The group says what it applies to; one line below says what the recommended button does (or the one just touched).
+  fcActGroups({ f, key, obj, many, rec, chosen, kattr, opt }) {
+    const hint = { fix: this.t("fcFixHint"), check: this.t("fcCheckHint"), keep: this.t("fcKeepHint"), snooze: this.t("fcLaterHint"), ignore: this.t("fcIgnoreHint"), mark: this.t("fcMarkHint") };
+    const btn = (id, attr, label, icon, recommended, selected) => `<button type="button" class="fcbtn${recommended ? " rec" : ""}${selected ? " sel" : ""}" aria-pressed="${selected}" data-fc-hint="${this.esc(hint[id])}" title="${this.esc(hint[id])}" ${attr}><ha-icon icon="${icon}"></ha-icon>${label}${recommended ? ` <em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}</button>`;
+    const fixable = obj && this.fcFixable(f, key), check = obj && !fixable && OUTAGE_RULES.includes(f.rule_id);
+    const forFinding = [
+      btn("keep", opt("keep"), this.t("fcKeep"), STATUS_TONES.keep.icon, false, chosen === "keep"),
+      btn("snooze", opt("snooze"), this.t("fcLater"), STATUS_TONES.snooze.icon, rec?.act === "later", chosen === "snooze"),
+      btn("ignore", opt("ignore"), this.t("decideKind_ignore"), STATUS_TONES.ignore.icon, false, chosen === "ignore"),
+    ].join("");
+    const forObject = [
+      fixable || check ? btn(fixable ? "fix" : "check", `data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t(fixable ? "fcFix" : "fcCheck"), fixable ? "mdi:wrench-outline" : "mdi:clipboard-check-outline", fixable && rec?.act === "fix", chosen === "fix") : "",
+      this.fcCanMark(obj) ? btn("mark", `data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), FSEL_ICONS.mark, rec?.act === "mark", chosen === "mark") : "",
+    ].join("");
+    const shown = { fix: "fix", later: "snooze", mark: "mark" }[rec?.act] || "", open = chosen === "fix" ? (fixable ? "fix" : "check") : chosen, first = open || shown;
+    const group = (label, buttons) => buttons ? `<div class="fcgrp"><div class="fcgl">${this.t(label)}</div><div class="fcbtns">${buttons}</div></div>` : "";
+    return `<div class="fcactions">${group(many ? "fcGroupFindings" : "fcGroupFinding", forFinding)}<p class="fccap" data-fc-cap="${this.esc(first ? hint[first] : "")}" aria-live="polite">${this.esc(first ? hint[first] : "")}</p>${group("fcGroupObject", forObject)}</div>`;
+  }
+
   // A card shows with a short slide-in when it is a new one; renders of the same card within the moment keep it running.
   fcAnim(id) {
     const now = Date.now();
@@ -416,18 +436,10 @@ class FirstCleanupMixin {
     if (this.fcMarkCtx && (this.markForm?.key !== key || this.fcMarkCtx.keys.join() !== keys.join())) { this.fcMarkCtx = null; if (this.markForm?.key === key) this.markForm = null; }
     const chosen = this.decide?.fc ? this.decide.kind : this.markForm && this.fcMarkCtx ? "mark" : this.fcFixOpen === key ? "fix" : "";
     const opt = k => `data-fc-opt="${k}" ${kattr}`;
-    const sObj = this.t("fcScopeObject"), sFind = this.t(many ? "fcScopeFindings" : "fcScopeFinding");
-    const acts = [
-      obj && this.fcFixable(f, key) ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcFix"), this.t("fcFixHint"), false, "mdi:wrench-outline", "blue", rec?.act === "fix", chosen === "fix", sObj)
-        : obj && OUTAGE_RULES.includes(f.rule_id) ? this.fcAct(`data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t("fcCheck"), this.t("fcCheckHint"), false, "mdi:clipboard-check-outline", "blue", false, chosen === "fix", sObj) : "",
-      this.fcAct(opt("keep"), this.t("fcKeep"), this.t("fcKeepHint"), false, STATUS_TONES.keep.icon, STATUS_TONES.keep.tone, false, chosen === "keep", sFind),
-      this.fcAct(opt("snooze"), this.t("fcLater"), this.t("fcLaterHint"), false, STATUS_TONES.snooze.icon, STATUS_TONES.snooze.tone, rec?.act === "later", chosen === "snooze", sFind),
-      this.fcAct(opt("ignore"), this.t("decideKind_ignore"), this.t("fcIgnoreHint"), false, STATUS_TONES.ignore.icon, STATUS_TONES.ignore.tone, false, chosen === "ignore", sFind),
-      this.fcCanMark(obj) ? this.fcAct(`data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), this.t("fcMarkHint"), false, FSEL_ICONS.mark, "blue", rec?.act === "mark", chosen === "mark", sObj) : "",
-    ].join("");
+    const groups = this.fcActGroups({ f, key, obj, many, rec, chosen, kattr, opt });
     const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
-    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid"${many ? "" : ` title="${this.esc(f.object_id)}"`}>${many ? this.esc(key.slice(key.indexOf(":") + 1)) : this.fcObjectLine(obj) || this.esc(f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, rec)}<p class="fcfacts fcactsintro">${this.t("fcActsIntro")}</p><div class="fcacts">${acts}</div>${this.fcOptBlock(f, keys, key, obj)}${this.fcFixWays(key, obj)}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid"${many ? "" : ` title="${this.esc(f.object_id)}"`}>${many ? this.esc(key.slice(key.indexOf(":") + 1)) : this.fcObjectLine(obj) || this.esc(f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, rec)}${groups}${this.fcOptBlock(f, keys, key, obj)}${this.fcFixWays(key, obj)}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
   }
 
   // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
@@ -621,6 +633,13 @@ class FirstCleanupMixin {
     root.querySelector("[data-fc-next]")?.addEventListener("click", () => this.fcWizNext());
     root.querySelectorAll("[data-fc-exit]").forEach(el => el.onclick = () => this.fcWizExit());
     root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
+    // The line under the buttons says what the button under the pointer, in focus or touched last does; it falls back to the recommended one.
+    root.querySelectorAll(".fcactions").forEach(box => {
+      const cap = box.querySelector(".fccap");
+      const say = text => { cap.textContent = text; };
+      box.querySelectorAll("[data-fc-hint]").forEach(b => { for (const ev of ["mouseenter", "focus", "touchstart"]) b.addEventListener(ev, () => say(b.dataset.fcHint)); });
+      box.addEventListener("mouseleave", () => say(cap.dataset.fcCap));
+    });
     root.querySelectorAll("[data-fc-opt]").forEach(el => el.onclick = () => this.fcOpen(this.fcKeysOf(el), el.dataset.fcOpt));
     root.querySelectorAll("[data-fc-looknow]").forEach(el => el.onclick = () => this.fcLookNow(el.dataset.fcLooknow));
     root.querySelectorAll("[data-fc-markopen]").forEach(el => el.onclick = () => this.fcMarkOpen(el.dataset.fcMarkopen, this.fcKeysOf(el)));
@@ -680,7 +699,7 @@ Object.assign(TEXT.de, {
   fcEndSubAll: "Es ist nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcEndSubDone: "Du hast {d} bearbeitet. {now} Befunde sind noch offen.", fcEndSubNone: "{now} Befunde warten. Etappe 1 ist der beste Einstieg.", fcSumWaiting: "{n}",
   fcEndLaterBack: "kommen ab {date} zurück", fcEndStartOnly: "{start} zu Beginn", fcEndStartFresh: "{start} zu Beginn, {fresh} neu dazugekommen", fcEndBar: "{p} % der {start} Befunde bearbeitet",
   fcEndFollow: "Folgebefunde", fcEndFollowSub: "gehören zu den Ursachen", fcEndFollowN: "{n} hängen an Ausfällen", fcEndFollowN1: "1 hängt an einem Ausfall", 
-  fcActsIntro: "Ein Befund ist ein Fund einer Regel an einem Objekt. Unten auf jeder Karte steht, worauf sie wirkt.", fcScopeObject: "Wirkt auf: das Objekt", fcScopeFinding: "Wirkt auf: diesen Befund", fcScopeFindings: "Wirkt auf: diese Befunde",
+  fcGroupFinding: "Für diesen Befund", fcGroupFindings: "Für diese Befunde", fcGroupObject: "Für das Objekt",
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Zeigt die Wege, die zu diesem Objekt passen.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Der Befund wird nicht mehr gezeigt. Du sagst kurz, warum und für wie lange.", fcLater: "Später", fcLaterHint: "Der Befund verschwindet bis zur gewählten Frist und kommt dann wieder.",
   fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel liegt hier falsch. Der Befund wird ausgeblendet.", fcMarkHint: "Merkt sich, warum das Objekt so ist, auch mit Zeitfenster. Gilt auch für künftige Ausfälle.", fcLogHidden: "Fehlalarm", fcSumHidden: "{n} als Fehlalarm", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
@@ -719,7 +738,7 @@ Object.assign(TEXT.en, {
   fcEndSubAll: "Nothing is open any more. New findings show up under “New”.", fcEndSubDone: "You handled {d}. {now} findings are still open.", fcEndSubNone: "{now} findings are waiting. Stage 1 is the best place to start.", fcSumWaiting: "{n}",
   fcEndLaterBack: "come back from {date}", fcEndStartOnly: "{start} at the start", fcEndStartFresh: "{start} at the start, {fresh} new since", fcEndBar: "{p} % of the {start} findings handled",
   fcEndFollow: "Follow-up findings", fcEndFollowSub: "belong to the causes", fcEndFollowN: "{n} hang on outages", fcEndFollowN1: "1 hangs on an outage", 
-  fcActsIntro: "A finding is what a rule found on an object. The bottom of each card says what it applies to.", fcScopeObject: "Applies to: the object", fcScopeFinding: "Applies to: this finding", fcScopeFindings: "Applies to: these findings",
+  fcGroupFinding: "For this finding", fcGroupFindings: "For these findings", fcGroupObject: "For the object",
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Shows the ways that fit this object.",
   fcKeep: "Intended", fcKeepHint: "The finding is no longer shown. You say briefly why and for how long.", fcLater: "Later", fcLaterHint: "The finding disappears until the time you choose and then comes back.",
   fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply and continue", fcIgnoreHint: "The rule is wrong here. The finding is hidden.", fcMarkHint: "Records why the object is as it is, also with a time window. Also covers future outages.", fcLogHidden: "False alarm", fcSumHidden: "{n} as false alarm", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",

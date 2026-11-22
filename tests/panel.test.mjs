@@ -8397,7 +8397,7 @@ test("the cards of the cleanup open the answers with their reason and days, for 
   const f = key => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", impact: "low", ignored: false });
   el.data = { ...DATA, findings: [f("a"), f("b")] };
   el.fcOpen(["a", "b"], "keep");
-  assert.ok(el.fcCards(3).includes("fcact sel green"), "the open tile is the marked one");
+  assert.ok(/class="fcbtn sel"[^>]*aria-pressed="true"[^>]*data-fc-opt="keep"|class="fcbtn sel" aria-pressed="true"[^>]*data-fc-opt="keep"/.test(el.fcCards(3)), "the open button is the pressed one");
   el.fcOpen(["a", "b"], "keep");
   assert.equal(el.decide, null, "a tile that is open closes when clicked again");
   el.fcOpen(["a", "b"], "keep");
@@ -8417,6 +8417,22 @@ test("the cards of the cleanup open the answers with their reason and days, for 
   assert.equal(JSON.stringify([log[0].action, log[0].n, log[0].keys]), JSON.stringify(["keep", 2, ["a", "b"]]));
 });
 
+test("the actions of a cleanup card are two groups of buttons, one line says what the recommended one does, and a card of several findings says so", () => {
+  const { el } = panel("en");
+  el._hass = { language: "en", callWS: async () => ({}) };
+  el.render = () => {};
+  const f = key => ({ key, rule_id: "device.down", object_id: "d", classification: "unavailable", topic: "down", impact: "low", ignored: false, first_detected_at: new Date(Date.now() - 9 * 3600000).toISOString(), confidence: 0.9 });
+  el.data = { ...DATA, objects: [{ object_type: "device", object_id: "d", name: "Echo" }], causes: [], findings: [f("k1")] };
+  el.fc = { later_days: 90, state: { stage: 3, done: [], log: [], start_count: 1 }, stages: { 1: [], 2: [], 3: ["k1"], 4: [], 5: [] } };
+  el.fcWiz = { step: 3, on: true };
+  const html = el.fcCards(3);
+  assert.ok(html.includes("For this finding") && html.includes("For the object") && html.indexOf("For this finding") < html.indexOf("For the object"));
+  assert.ok(html.includes('class="fccap"') && (html.match(/data-fc-hint=/g) || []).length >= 4 && !/class="fcact[ "]/.test(html));
+  el.data = { ...el.data, findings: [f("k1"), f("k2")] };
+  el.fc.stages[3] = ["k1", "k2"];
+  assert.ok(el.fcCards(3).includes("For these findings"));
+});
+
 test("an offline device has a tile Check with what to look at and a look now, and no tile Fix", async () => {
   const { el } = panel("en");
   const calls = [];
@@ -8427,7 +8443,7 @@ test("an offline device has a tile Check with what to look at and a look now, an
   el.fc = { later_days: 90, state: { stage: 3, done: [], log: [], start_count: 1 }, stages: { 1: [], 2: [], 3: ["k1"], 4: [], 5: [] } };
   el.fcWiz = { step: 3, on: true };
   let html = el.fcCards(3);
-  assert.ok(html.includes("Check</strong>") && !html.includes("Fix</strong>") && html.includes('data-fc-opt="keep"'), "Check instead of Fix");
+  assert.ok(html.includes("</ha-icon>Check</button>") && !html.includes("</ha-icon>Fix</button>") && html.includes('data-fc-opt="keep"'), "Check instead of Fix");
   el.fcFixToggle("device:d", "k1");
   html = el.fcCards(3);
   assert.ok(html.includes("data-fc-looknow") && html.includes("Check the device") && !html.includes("data-fc-object"));
