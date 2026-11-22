@@ -715,7 +715,7 @@ Object.assign(TEXT.de, {
   fcResetAsk: "Das Aufräumen wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.", fcNewRound: "Neuen Durchgang beginnen", fcNewRoundAsk: "Das Aufräumen beginnt von vorn. Was du entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.",
   fcSumKeep: "{n} so gewollt", fcSumLater: "{n} auf „Später“", fcSumMark: "{n} Objekt-Notizen gesetzt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Pause, später weitermachen",
-  fcLeft: "{n} offen", fcLeftObj: "{o} Objekte · {n} Befunde", fcToRound: "Zurück zur Runde", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
+  fcLeft: "{n} offen", fcLeftObj: "{o} Objekte · {n} Befunde", fcToRound: "Zurück zur Runde", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe erledigt", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
   fcCounter: "{start} zu Beginn · {now} jetzt offen · {d} entschieden", fcLaterGo: "Alle {n} auf „Später“ legen", fcLookOff: "Zurück zur Frage",
   fcKpiDecided: "Entschieden", fcKpiOpen: "Noch offen", fcKpiLater: "Auf „Später“", fcProgress: "Fortschritt", fcMinutes: "{c} Karten, etwa {n} Minuten.", fcFollowsChip: "{n} Folgen", fcFollowsChip1: "1 Folge", fcToFindings: "Offene Befunde ansehen",
