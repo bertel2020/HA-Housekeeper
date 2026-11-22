@@ -31,7 +31,9 @@
 - **Actions on findings:** The row menu, the actions menu of a selection and the actions of the object page use the same groups in the same order (fix or plan, decide, object note and exception rule, label, logbook entry).
   - Every entry says what it reaches (“Only this finding”, “This object · future findings too”); “Create preview” for an automation is now “Delete automation …”.
   - The object page offers fix, exception rule and logbook entry as well; the simple mode no longer hides entries of the row menu.
-  - “Set label” from a row keeps the selection; “1 of 39 findings matches the filter” and other singular forms.
+  - “Set label” from a row keeps the selection; “1 of 39 findings of the group matches the filter” and other singular forms.
+  - The head of an object with several findings has the same groups; deciding and the label there apply to all findings of the group.
+  - An entity that is down is handled the same everywhere: an orphaned one can be disabled or replaced from the row menu too, one its integration no longer provides is removed instead of disabled, and one that is already disabled is not offered again.
 - **Orphaned statistics:** The help text names the waiting mark and the move.
 - **Wording:** One word, “Impact”, replaces severity, effect and urgency (list, filter, chips, help, Fix page). Stage 2 of the first cleanup says “Decline” instead of “Remind me later”. The menus say “Exception rule”, and the backup, auto-delete and rename buttons say “Create preview” like every other plan.
 - **Menus and pop-ups:** Escape closes only the innermost pop-up and no longer also goes back; a click elsewhere closes row menus and saved views. The row actions of the storm list, the removed list, the monitor history, stored scans and the AI log are entries of the row menu.

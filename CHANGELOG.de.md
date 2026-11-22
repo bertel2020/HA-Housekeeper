@@ -31,7 +31,9 @@
 - **Aktionen an Befunden:** Zeilenmenü, Aktionen-Menü der Auswahl und die Aktionen der Objektseite haben dieselben Gruppen in derselben Reihenfolge (Beheben oder Plan, Entscheiden, Objekt-Notiz und Ausnahme-Regel, Label, Logbuch-Eintrag).
   - Jeder Eintrag sagt, was er erreicht („Nur dieser Befund“, „Dieses Objekt · auch künftige Befunde“); „Vorschau erstellen“ bei einer Automation heißt jetzt „Automation löschen …“.
   - Die Objektseite bietet auch Beheben, Ausnahme-Regel und Logbuch-Eintrag an; der einfache Modus blendet im Zeilenmenü nichts mehr aus.
-  - „Label ergänzen“ aus einer Zeile behält die Auswahl; „1 von 39 Befunden passt zum Filter“ und weitere Einzahlformen.
+  - „Label ergänzen“ aus einer Zeile behält die Auswahl; „1 von 39 Befunden der Gruppe passt zum Filter“ und weitere Einzahlformen.
+  - Die Kopfzeile eines Objekts mit mehreren Befunden hat dieselben Gruppen; Entscheiden und Label gelten dort für alle Befunde der Gruppe.
+  - Eine ausgefallene Entität wird überall gleich behandelt: eine verwaiste lässt sich auch im Zeilenmenü deaktivieren oder ersetzen, eine, die ihre Integration nicht mehr liefert, wird entfernt statt deaktiviert, und eine schon deaktivierte wird nicht noch einmal angeboten.
 - **Verwaiste Statistiken:** Der Hilfetext nennt die Wartemarke und die Übertragung.
 - **Wörter:** Ein Wort, „Wirkung“, ersetzt Schweregrad, Auswirkung und Dringlichkeit (Liste, Filter, Chips, Hilfe, Beheben-Seite). Etappe 2 des Erstaufräumens sagt „Ablehnen“ statt „Später erinnern“. Die Menüs sagen „Ausnahme-Regel“, und die Knöpfe bei Backups, Backup-Automatik und Umbenennen sagen „Vorschau erstellen“ wie jeder andere Plan.
 - **Menüs und Popups:** Escape schließt nur das innerste Popup und geht nicht mehr zusätzlich zurück; ein Klick daneben schließt Zeilenmenüs und gespeicherte Ansichten. Die Zeilenaktionen der Sturm-Liste, der Entfernt-Liste, des Monitor-Verlaufs, gespeicherter Scans und des KI-Protokolls stehen im Zeilenmenü.

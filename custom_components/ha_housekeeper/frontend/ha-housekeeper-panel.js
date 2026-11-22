@@ -11512,7 +11512,7 @@ class CausesMixin {
       : f.ignored_by === "label" ? [e("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)]
       : [e("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`), e(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)];
     const about = [
-      object && MARK_TYPES.includes(object.object_type) && !object.mark ? e(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : null,
+      object && MARK_TYPES.includes(object.object_type) && !object.mark ? e(FSEL_ICONS.mark, "actMark", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : null,
       object && this.excTargetOf(object) ? e(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, this.t("actRuleSub1")) : null,
     ];
     const ha = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? [e(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))] : [];
@@ -11572,7 +11572,7 @@ class CausesMixin {
     const pick = kind => `data-group-state="${kind}" data-group-id="${this.esc(group?.id || "")}"`;
     const groups = [
       list.length ? [item(FSEL_ICONS.status, "actDecide", pick("status"), this.t(list.length === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(list.length) }))] : [],
-      [canMark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${k}"`) : "", object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`, this.t("actRuleSub1")) : ""],
+      [canMark ? item(FSEL_ICONS.mark, "actMark", `data-watch-mark="${k}"`) : "", object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`, this.t("actRuleSub1")) : ""],
       labels ? [item(FSEL_ICONS.label, "fselLabel", pick("label"), this.t("changesHa"))] : [],
       [item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)],
       open && object ? [item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${k}"`)] : [],

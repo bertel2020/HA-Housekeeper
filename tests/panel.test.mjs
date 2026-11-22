@@ -7103,7 +7103,7 @@ test("an exception is added from the menu of a finding or the selection bar, wit
   el.data = { ...DATA, objects: [object], edges: [], findings: [finding] };
   el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] };
   const menu = el.rowMenu(finding);
-  assert.ok(["fselStatus", "markSet", "excCreate", "fselLabel"].map(k => menu.indexOf(el.t(k))).every((at, i, all) => at > (i ? all[i - 1] : -1)), "the actions in the order of the bar");
+  assert.ok(["fselStatus", "actMark", "excCreate", "fselLabel"].map(k => menu.indexOf(el.t(k))).every((at, i, all) => at > (i ? all[i - 1] : -1)), "the actions in the order of the bar");
   await el.openExceptionFor(["entity:light.a"]);
   assert.equal(el.excForm.picks.map(p => `${p.kind}:${p.id}`).join(), "entity:light.a");
   el.view = "findingsNav";
