@@ -129,7 +129,7 @@ class FcRoundMixin {
 }
 Object.assign(TEXT.de, {
   fcRoundKeepHint: "Der Befund bleibt und gilt {days} Tage als geprüft. Entität und Gerät bekommen die Objekt-Notiz „Nicht löschen“, eine vorhandene Notiz bleibt.", fcRoundLaterHint: "Der Befund verschwindet für {days} Tage und kommt dann wieder.",
-  fcRoundTitle: "Überflüssig", fcRoundSafe: "Sicher entfernbar", fcRoundLook: "Erst ansehen", fcRoundPick: "Vormerken", fcRoundPickHint: "Zum Entfernen im Plan am Ende. Nichts läuft jetzt.", fcRoundPickAll: "Alle {n} vormerken",
+  fcRoundTitle: "Überflüssig", fcRoundSafe: "Sicher entfernbar", fcRoundLook: "Erst ansehen", fcRoundPick: "Zum Entfernen vormerken", fcRoundPickHint: "Zum Entfernen im Plan am Ende. Nichts läuft jetzt.", fcRoundPickAll: "Alle {n} zum Entfernen vormerken",
   fcRoundSingle: "Einzeln ansehen", fcRoundSingleHint: "Jedes mit einer eigenen Karte.", fcRoundCollectTitle: "{n} Objekte sind sicher entfernbar", fcRoundCollectId: "Nirgends verwendet, nicht kritisch, ohne Objekt-Notiz",
   fcRoundAction: "Aktion", fcRoundUsed: "Verwendet", fcRoundSince: "Erkannt", fcRoundUndoRow: "Rückgängig", fcRoundWhat: "Was", fcRoundUnused: "Nirgends verwendet", fcRoundOldest: "der älteste {age}",
   fcRoundUndoText: "Im Journal, solange nichts geändert wurde", fcRoundUndoMerge: "Im Journal",
@@ -140,7 +140,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   fcRoundKeepHint: "The finding stays and counts as checked for {days} days. An entity or device gets the object note “Do not delete”; a note it already has stays.", fcRoundLaterHint: "The finding disappears for {days} days and then comes back.",
-  fcRoundTitle: "Unneeded", fcRoundSafe: "Safe to remove", fcRoundLook: "Look first", fcRoundPick: "Mark", fcRoundPickHint: "For removal in the plan at the end. Nothing runs now.", fcRoundPickAll: "Mark all {n}",
+  fcRoundTitle: "Unneeded", fcRoundSafe: "Safe to remove", fcRoundLook: "Look first", fcRoundPick: "Mark for removal", fcRoundPickHint: "For removal in the plan at the end. Nothing runs now.", fcRoundPickAll: "Mark all {n} for removal",
   fcRoundSingle: "One by one", fcRoundSingleHint: "Each with a card of its own.", fcRoundCollectTitle: "{n} objects are safe to remove", fcRoundCollectId: "Used nowhere, not critical, without an object note",
   fcRoundAction: "Action", fcRoundUsed: "Used", fcRoundSince: "Found", fcRoundUndoRow: "Undo", fcRoundWhat: "What", fcRoundUnused: "Used nowhere", fcRoundOldest: "the oldest {age}",
   fcRoundUndoText: "In the Journal, as long as nothing was changed", fcRoundUndoMerge: "In the Journal",

@@ -690,7 +690,7 @@ class FirstCleanupMixin {
 }
 Object.assign(TEXT.de, {
   fcAllActivity: "Gesamte Aktivität", fcBandText: "Du bist mitten im Aufräumen, bei Etappe {n}.", fcBandBack: "Zurück zum Aufräumen", fcUndo: "Rückgängig", fcHistory: "Verlauf", fcHistoryHint: "Alles, was du beim Aufräumen entschieden hast, das Neueste zuerst.",
-  fcHistoryNone: "Noch nichts entschieden.", fcHistoryCut: "Die {n} ältesten Einträge sind nicht mehr im Verlauf und lassen sich hier nicht mehr zurücknehmen. Die Entscheidungen selbst gelten weiter (Aktivität).", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Objekt-Notiz angelegt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
+  fcHistoryNone: "Noch nichts entschieden.", fcHistoryCut: "Die {n} ältesten Einträge sind nicht mehr im Verlauf und lassen sich hier nicht mehr zurücknehmen. Die Entscheidungen selbst gelten weiter (Aktivität).", fcHistoryBack: "Zurück zum Aufräumen", fcLogMark: "Objekt-Notiz gesetzt", fcLogSkip: "Übersprungen", fcLogLaterAll: "{n} ruhige Befunde auf „Später“", fcLogSeveral: "{n} Vorschläge",
   fcFollowMore: "… und {n} weitere", 
   fcSumSuggest: "{n} Vorschläge", fcSumDeclined: "{n} abgelehnt", fcPendingPlan: "{n} Befunde sind vorgemerkt, es gibt noch keinen Plan. Bisher wurde nichts entfernt.", fcPendingGo: "Zu Etappe 4",
   
@@ -705,10 +705,10 @@ Object.assign(TEXT.de, {
   fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel liegt hier falsch. Der Befund wird ausgeblendet.", fcMarkHint: "Merkt sich, warum das Objekt so ist, auch mit Zeitfenster. Gilt auch für künftige Ausfälle.", fcLogHidden: "Fehlalarm", fcSumHidden: "{n} als Fehlalarm", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
   fcCardsDone: "Alle Karten dieser Etappe sind durchgesehen.", fcCardsLeft: "Alle Karten sind durchgesehen, {n} übersprungene bleiben offen.", fcCardsAgain: "Übersprungene noch einmal zeigen",
-  fcTake: "Objekt-Notiz anlegen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Ablehnen", fcNoThanksHint: "Der Vorschlag kommt nach 180 Tagen wieder.", fcTakeAll: "Alle {n} als Objekt-Notiz anlegen",
+  fcTake: "Objekt-Notiz setzen", fcTakeHint: "Gilt als absichtlich zeitweise offline; nach 90 Tagen wird wieder gefragt.", fcNoThanks: "Ablehnen", fcNoThanksHint: "Der Vorschlag kommt nach 180 Tagen wieder.", fcTakeAll: "Alle {n} als Objekt-Notiz setzen",
   fcPrev: "Letzte zurücknehmen", fcPrevHint: "Nimmt die letzte Entscheidung oder das Überspringen zurück und zeigt die Karte noch einmal.", fcReset: "Zurücksetzen", fcResetTitle: "Aufräumen zurücksetzen?", fcResetYes: "Zurücksetzen",
   fcResetAsk: "Das Aufräumen wird zurückgesetzt und beginnt wieder bei der Willkommensseite. Was du darin entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.", fcNewRound: "Neuen Durchgang beginnen", fcNewRoundAsk: "Das Aufräumen beginnt von vorn. Was du entschieden hast, bleibt entschieden; der Verlauf mit „Rückgängig“ wird geleert.",
-  fcSumKeep: "{n} so gewollt", fcSumLater: "{n} auf „Später“", fcSumMark: "{n} Objekt-Notizen angelegt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
+  fcSumKeep: "{n} so gewollt", fcSumLater: "{n} auf „Später“", fcSumMark: "{n} Objekt-Notizen gesetzt", fcSumLeft: "{n} noch offen", fcSumNone: "nichts zu tun",
   fcStageOf: "Etappe {n} von 5", fcSkip: "Etappe überspringen", fcNextStage: "Weiter zu Etappe {n}", fcFinish: "Abschließen", fcBack: "Zurück", fcExit: "Pause, später weitermachen",
   fcLeft: "{n} offen", fcLeftObj: "{o} Objekte · {n} Befunde", fcToRound: "Zurück zur Runde", fcLeftNow: "{n} offen in dieser Etappe", fcStageClear: "Etappe geschafft", fcNothing: "Hier ist nichts zu tun.", fcStepsLabel: "Etappen",
   fcSkipTitle: "Etappe verlassen?", fcSkipAsk: "In dieser Etappe sind noch {n} offen. Trotzdem weiter?", fcSkipYes: "Weiter",
