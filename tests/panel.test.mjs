@@ -9162,3 +9162,13 @@ test("the card shows what a step changes before its one button, names a step tha
   el.fcPlanRun();
   assert.ok(/Review: 1 · Not reversible: 1\./.test(el.confirmState.text), "the question says how many steps need a look and cannot be undone");
 });
+
+test("the reasons of an outage rating are escaped once, so an apostrophe stays one", () => {
+  const { el } = panel("en");
+  const out = { key: "o", rule_id: "entity.state_unavailable", object_id: "light.a", classification: "unavailable", confidence: 0.75, ignored: false, impact: "high", impact_facts: [{ fact: "critical", why: "area_label" }], first_detected_at: new Date(Date.now() - 6 * 3600000).toISOString() };
+  el.data = { ...DATA, objects: [], edges: [], causes: [], findings: [out] };
+  const t = el.t.bind(el);
+  el.t = (k, p) => (k === "impactFact_critical" ? "critical: the area's label" : t(k, p));
+  const html = el.ratingBlock({ object_type: "entity", object_id: "light.a" }, el.findingKey(out));
+  assert.ok(html.includes("the area&#39;s label") && !html.includes("&amp;#39;"), "escaped exactly once");
+});

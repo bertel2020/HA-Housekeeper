@@ -11390,7 +11390,7 @@ class CausesMixin {
     // An outage reads as one answer: how long, what it leaves behind, why it matters. How sure Housekeeper is and what the next level takes sit behind "More".
     if (hours !== null) {
       const used = ["automation", "script", "dashboard"].some(k => cause?.consumers?.[k]);
-      const sentence = cause?.kind === "device_down" ? this.causeDeviceLine(cause) : reasons.slice(1).map(x => this.esc(x)).join(" · ");
+      const sentence = cause?.kind === "device_down" ? this.causeDeviceLine(cause) : reasons.slice(1).join(" · "); // escaped once, where the line is written
       const sure = Math.round((finding.confidence || 0) * 100);
       return `<div class="rating"><h3 class="ratinghead">${this.t("ratingWhat")}</h3>
         <p class="ratinglead"><b>${this.esc(this.t("outageHeadline", { span: this.spanText(hours) }))}</b> ${this.esc(sentence)}</p>
