@@ -6780,7 +6780,10 @@
 "fcGroupObject": "bb1118c4",
 "fcGroupSuggestion": "dab06ae1",
 "fixWaysFailed": "f3b2013c",
-"fixLiveError": "2113564f"
+"fixLiveError": "2113564f",
+"fcRecNoteFollows": "c65d6bc4",
+"fcRecNoteLong": "e17c6bfb",
+"fcRecNoteNoSince": "c6163828"
 },
 "setup": {
 "title": "644c2647",

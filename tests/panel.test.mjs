@@ -9208,3 +9208,15 @@ test("the caption of the action box follows the recommended button even when a g
   const html = el.fcActBox([{ label: "fcGroupFinding", items: [] }, { label: "fcGroupObject", items: [{ attr: "data-a", label: "A", icon: "mdi:check", hint: "says A", rec: true }] }]);
   assert.ok(html.includes("fccap") && html.includes("says A") && !html.includes("aria-live"), "the line is drawn, and it is not a live region");
 });
+
+test("for an entity that is down the card recommends the object note when the outage is old, like the page Fix; a young one waits", () => {
+  const { el } = panel("en");
+  const f = (key, hours) => ({ key, rule_id: "entity.state_unavailable", object_id: "sensor.a", classification: "unavailable", first_detected_at: new Date(Date.now() - hours * 3600000).toISOString() });
+  el.data = { ...DATA, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.a", name: "A" }], findings: [f("o", 240), f("y", 2)], causes: [] };
+  const old = el.fcRecCard(f("o", 240), "entity:sensor.a");
+  assert.equal(old.act, "mark");
+  assert.ok(old.body.includes("object note fits") && old.body.includes("replace or remove it"), "the reason names the note and the other ways");
+  assert.equal(el.fcRecCard(f("y", 2), "entity:sensor.a").act, "later", "a young outage still waits");
+  el.data = { ...el.data, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.a", name: "A", mark: { kind: "expected_offline" } }] };
+  assert.notEqual(el.fcRecCard(f("o", 240), "entity:sensor.a").act, "mark", "an entity that already has a note does not get the same advice again");
+});

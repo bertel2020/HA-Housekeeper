@@ -26,6 +26,9 @@ Object.assign(TEXT.de, {
   fcRecNoFixFollows: "{n} Folgen hängen daran. Housekeeper kann hier nichts reparieren; ist es absichtlich aus, stellt eine Objekt-Notiz den Ausfall samt Folgen still.",
   fcRecNoFixLong: "Seit {span} aus, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt eine Objekt-Notiz; sonst sieh nach dem Gerät.",
   fcRecNoFixNoSince: "Seit wann es besteht, ist nicht bekannt, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt eine Objekt-Notiz.",
+  fcRecNoteFollows: "{n} Folgen hängen daran. Ist es absichtlich aus, stellt eine Objekt-Notiz den Ausfall samt Folgen still; sonst ersetze oder entferne es.",
+  fcRecNoteLong: "Seit {span} aus. Ist es absichtlich aus, passt eine Objekt-Notiz; sonst ersetze oder entferne es.",
+  fcRecNoteNoSince: "Seit wann es besteht, ist nicht bekannt. Ist es absichtlich aus, passt eine Objekt-Notiz; sonst ersetze oder entferne es.",
   fcRecPause: "Auto-Pause.", fcRecPauseText: "Die Integration lässt sich immer wieder nicht einrichten. Auto-Pause schaltet sie ab und versucht es nach 1, 3 und 6 Stunden und dann täglich wieder, höchstens 7 Tage lang.",
   fcFixNone: "Für diesen Befund führt Housekeeper keinen Schritt aus; die Seite des Objekts zeigt, was du in Home Assistant tun kannst.",
 });
@@ -53,6 +56,9 @@ Object.assign(TEXT.en, {
   fcRecNoFixFollows: "{n} findings hang on it. Housekeeper cannot repair anything here; if it is off on purpose, an object note silences the outage with everything that follows.",
   fcRecNoFixLong: "Down for {span}, and Housekeeper cannot repair anything here. If it is off on purpose, an object note fits; otherwise look at the device.",
   fcRecNoFixNoSince: "It is not known since when this has been the case, and Housekeeper cannot repair anything here. If it is off on purpose, an object note fits.",
+  fcRecNoteFollows: "{n} findings hang on it. If it is off on purpose, an object note silences the outage with everything that follows; otherwise replace or remove it.",
+  fcRecNoteLong: "Down for {span}. If it is off on purpose, an object note fits; otherwise replace or remove it.",
+  fcRecNoteNoSince: "It is not known since when this has been the case. If it is off on purpose, an object note fits; otherwise replace or remove it.",
   fcRecPause: "Auto-pause.", fcRecPauseText: "The integration keeps failing to set up. Auto-pause switches it off and tries again after 1, 3 and 6 hours and then daily, for up to 7 days.",
   fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
 });
@@ -72,11 +78,14 @@ class FcRecommendMixin {
     const instead = body => (this.fcCanMark(obj) ? { act: "mark", head: t("fcRecTake"), body } : { act: "later", head: t("fcRecLater"), body });
     // The same as on the page "Fix": a device that has been off for a week with almost nothing on it is most likely off on purpose.
     if (f.quiet_outage && this.fcCanMark(obj)) return { act: "mark", head: t("fcRecTake"), body: t("fcRecQuiet", { span: this.spanText(Math.max(0, (Date.now() - Date.parse(f.first_detected_at)) / 3600000)) }) };
+    // The same as on the page "Fix": an entity without a value is first a matter for the object note; "Fix" shows the other ways.
+    const note = ["entity.state_unavailable", "entity.state_unknown"].includes(f.rule_id) && this.fcCanMark(obj);
+    const noted = key => ({ act: "mark", head: t("fcRecTake"), body: key });
     const followers = this.fcFollowers(f), since = Date.parse(f.first_detected_at);
-    if (followers >= 5) return fixable ? fix(t("fcRecFixFollows", { n: this.formatNumber(followers) })) : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
-    if (!since) return fixable ? fix(t("fcRecFixNoSince")) : instead(t("fcRecNoFixNoSince"));
+    if (followers >= 5) return note ? noted(t("fcRecNoteFollows", { n: this.formatNumber(followers) })) : fixable ? fix(t("fcRecFixFollows", { n: this.formatNumber(followers) })) : instead(t("fcRecNoFixFollows", { n: this.formatNumber(followers) }));
+    if (!since) return note ? noted(t("fcRecNoteNoSince")) : fixable ? fix(t("fcRecFixNoSince")) : instead(t("fcRecNoFixNoSince"));
     const hours = Math.max(0, (Date.now() - since) / 3600000), steps = this.outageSteps();
-    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return fixable ? fix(t("fcRecFixLong", { span: this.spanText(hours) })) : instead(t("fcRecNoFixLong", { span: this.spanText(hours) }));
+    if (hours >= (steps.find(([id]) => id === "medium") || [0, 24])[1]) return note ? noted(t("fcRecNoteLong", { span: this.spanText(hours) })) : fixable ? fix(t("fcRecFixLong", { span: this.spanText(hours) })) : instead(t("fcRecNoFixLong", { span: this.spanText(hours) }));
     if (this.oftenFor?.(f)) return { act: "later", head: t("fcRecLater"), body: t("fcRecLaterOften") };
     const next = steps.find(([, at]) => at > hours);
     return { act: "later", head: t("fcRecLater"), body: next ? t("fcRecLaterShort", { span: this.spanText(hours), level: t(`chip_${next[0]}`), next: this.spanText(next[1] - hours) }) : t("fcRecLaterOften") };
