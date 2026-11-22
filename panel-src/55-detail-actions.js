@@ -93,8 +93,8 @@ class DetailActionsMixin {
     if (group.length <= own) return [];
     const id = `og:${key}`, at = `data-form-at="${this.esc(key)}"`, n = group.length;
     (this._findGroups ||= {})[id] = group.map(f => f.key);
-    const rows = [this.actRow(this.t(n === 1 ? "fselStatus" : "actDecide"), this.t(n === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(n) }), `<button class="btn" data-group-state="status" data-group-id="${this.esc(id)}" ${at}>${this.t("actOpen")}</button>`)];
-    if (this.excTargetOf(item)) rows.push(this.actRow(this.t("excCreate"), this.t("actRuleSub1"), `<button class="btn" data-exc-for="${this.esc(key)}" ${at}>${this.t("actOpen")}</button>`));
+    const rows = [this.actRowNamed(this.t(n === 1 ? "fselStatus" : "actDecide"), this.t(n === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(n) }), `data-group-state="status" data-group-id="${this.esc(id)}" ${at}`)];
+    if (this.excTargetOf(item)) rows.push(this.actRowNamed(this.t("excCreate"), this.t("actRuleSub1"), `data-exc-for="${this.esc(key)}" ${at}`));
     return rows;
   }
 
@@ -106,7 +106,7 @@ class DetailActionsMixin {
     const recommended = [], tools = [];
     if (findings) recommended.push(`<div class="actblock">${findings}</div>`);
     // A step that answers a finding stands in that finding's row (findingRows); only one without a row of its own is listed here.
-    for (const it of items.filter(it => typeof it.finding !== "string")) (it.finding ? recommended : tools).push(this.actRow(it.label, this.t(it.hint), `<button class="btn${it.finding ? " primary" : ""}" ${it.attr}>${this.t("actOpen")}</button>`));
+    for (const it of items.filter(it => typeof it.finding !== "string")) (it.finding ? recommended : tools).push(this.actRowNamed(it.label, this.t(it.hint), it.attr, it.finding ? " primary" : ""));
     if (broken) recommended.push(`<div class="actblock"><small class="factnote">${this.t("actEditInHa")}</small></div>`);
     const labelControls = broken ? null : this.labelParts(item, true);
     const name = [...this.detailEditRows(item), labelControls ? this.actRow(this.t("actLabelTitle"), this.t("actLabelHint"), labelControls) : ""];
@@ -126,7 +126,7 @@ class DetailActionsMixin {
     const onlyMark = notes.length && ![recommended, tools, name, record, hide].some(rows => rows.filter(Boolean).length);
     // The logbook is always possible, but alone it does not make a tab.
     const other = [recommended, hide, tools, name, record, notes].some(rows => rows.filter(Boolean).length);
-    const logbook = other ? [this.actRow(this.t("findingNote"), "", `<button class="btn" data-object-note="${this.esc(key)}">${this.t("actOpen")}</button>`)] : [];
+    const logbook = other ? [this.actRowNamed(this.t("findingNote"), "", `data-object-note="${this.esc(key)}"`)] : [];
     // A form opened from here (deciding, an exception rule) stands at the top of the tab, only on the object it was opened for.
     const forms = this._formAt === key ? `${this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : ""}${this.bulkForm()}` : "";
     const body = (forms ? `<div class="actblock">${forms}</div>` : "") + [group("actGroupRecommended", recommended, items.some(it => it.finding) ? preview : ""), group("actGroupHide", hide), group("actGroupNotes", [...notes, ...logbook]), fold("act_tools", "moreActions", tools, preview), fold("act_name", "actGroupName", name), fold("act_record", "actGroupRecord", record)].join("") + (onlyMark ? `<div class="pad"><p class="factnote">${this.t("actOnlyNotes")}</p></div>` : "");
@@ -161,6 +161,12 @@ class DetailActionsMixin {
 
   // One row of the tab "Actions": the name with its explanation, and the control.
   // Long explanations are cut at two lines; "More" opens the rest.
+  // The same row for an action: the name is the button, the explanation stands beside it (no second title).
+  actRowNamed(name, hint, attr, cls = "") {
+    const long = hint && String(hint).length > 150;
+    return `<div class="actrow"><span class="acttext">${hint ? `<span class="acthint${long ? " clamp" : ""}">${hint}</span>` : ""}${long ? `<button type="button" class="linkbtn morebtn" data-act-more aria-expanded="false">${this.t("actMore")}</button>` : ""}</span><span class="actctl"><button type="button" class="btn${cls}" ${attr}>${name}</button></span></div>`;
+  }
+
   actRow(title, hint, control) {
     const long = hint && String(hint).length > 150;
     return `<div class="actrow"><span class="acttext"><strong>${title}</strong>${hint ? `<small${long ? ' class="clamp"' : ""}>${hint}</small>` : ""}${long ? `<button type="button" class="linkbtn morebtn" data-act-more aria-expanded="false">${this.t("actMore")}</button>` : ""}</span>${control ? `<span class="actctl">${control}</span>` : ""}</div>`;

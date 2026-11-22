@@ -7955,7 +7955,7 @@ test("the ways of an unused automation stay in view, deleting is the last and so
   assert.ok(!html.includes("Other ways"));
   assert.ok(html.indexOf("data-act-disable-auto") < html.indexOf("data-auto-delete") && html.includes("btn dangersoft\" data-auto-delete"));
   assert.ok(html.includes("fixroundlink") && html.includes("data-fix-round") && !html.includes("fixWay_cleanup_round"));
-  assert.ok(html.includes("</ha-icon>Disable</button>") && html.includes("</ha-icon>Delete</button>") && html.includes("Or hide it, do not fix it") && html.includes("Not triggered for 112 days") && html.includes("fixhead"));
+  assert.ok(html.includes("</ha-icon>Disable the automation</button>") && html.includes("</ha-icon>Delete the automation</button>") && !html.includes("<strong>Disable the automation") && html.includes("Or hide it, do not fix it") && html.includes("Not triggered for 112 days") && html.includes("fixhead"));
 });
 
 test("an entity that is down can be removed by a plan as well as disabled, a device cannot be removed from the selection", () => {

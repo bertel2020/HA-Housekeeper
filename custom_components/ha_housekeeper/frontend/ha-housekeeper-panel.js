@@ -1861,7 +1861,7 @@ class StylesMixin {
       .kngrp{padding:9px 16px 4px;border-top:1px solid var(--hk-border);background:var(--hk-soft);color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:700;letter-spacing:.05em;text-transform:uppercase}.kngrp:first-child{border-top:0}.knline{display:grid;grid-template-columns:20px minmax(110px,170px) minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:9px 16px;border-top:1px solid var(--hk-border)}.kngrp+.knline{border-top:0}.knline .kk{color:var(--hk-muted)}.knline .kval{min-width:0;overflow-wrap:anywhere}.knline .kval small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.knline .ksrc{padding:1px 6px;border:1px solid var(--hk-border);border-radius:6px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));white-space:nowrap}.kdot{font-weight:700;text-align:center}.k-ok{color:var(--hk-green)}.k-warn{color:var(--hk-amber)}.k-red{color:var(--hk-red)}.k-mute{color:var(--hk-muted)}@media(max-width:640px){.knline{grid-template-columns:20px minmax(0,1fr)}.knline .kval{grid-column:2}.knline .ksrc{display:none}}
       .nextstep{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:12px 16px;background:color-mix(in srgb,var(--hk-blue) 9%,transparent)}.nextstep small{display:block;margin-top:2px;color:var(--hk-muted)}.nextstep .dbtns{display:flex;gap:8px;margin-left:auto}.actgrp{margin:6px 0 -4px;color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1));font-weight:700;letter-spacing:.05em;text-transform:uppercase}
       .actpanel .actsec{padding:9px 16px 4px;border-top:1px solid var(--hk-border);background:var(--hk-soft);color:var(--hk-muted);font-size:calc(11.5px*var(--hk-fs,1));font-weight:700;letter-spacing:.05em;text-transform:uppercase}.actpanel .actsec:first-child{border-top:0}.actrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 16px;border-top:1px solid var(--hk-border)}.actsec+.actrow{border-top:0}.actrow .acttext small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1))}.actctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.actctl form{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;margin:0}.actctl .deform{display:flex;padding:0;border:0}.actblock{padding:10px 16px;border-top:1px solid var(--hk-border)}.actsec+.actblock{border-top:0}@media(max-width:640px){.actrow{grid-template-columns:1fr}.actctl,.actctl form{justify-content:flex-start}}
-      .actpanel .actsec small{display:block;margin-top:2px;text-transform:none;letter-spacing:0;font-weight:400;font-size:calc(12.5px*var(--hk-fs,1))}.actrow .acttext small.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.actrow .acttext small.clamp.open{display:block;overflow:visible}.actrow .morebtn{margin-top:2px;font-size:calc(12.5px*var(--hk-fs,1));color:var(--hk-blue-text)}.unitfield{display:flex;align-items:center;flex:1;min-width:7rem;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);overflow:hidden}.unitfield input{flex:1;min-width:0;width:4rem;border:0;outline:0;background:transparent;color:inherit;font:inherit;padding:0 4px 0 10px;min-height:38px}.unitfield span{padding:0 10px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.unitfield:focus-within{border-color:var(--hk-blue)}
+      .actpanel .actsec small{display:block;margin-top:2px;text-transform:none;letter-spacing:0;font-weight:400;font-size:calc(12.5px*var(--hk-fs,1))}.actrow .acttext .acthint{display:block;color:var(--hk-text)}.acttext .acthint.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.acttext .acthint.clamp.open{display:block;overflow:visible}.fcwayhint{color:var(--hk-text)}.fixway .fixwayhint{color:var(--hk-text)}.acttext small.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.actrow .acttext small.clamp.open{display:block;overflow:visible}.actrow .morebtn{margin-top:2px;font-size:calc(12.5px*var(--hk-fs,1));color:var(--hk-blue-text)}.unitfield{display:flex;align-items:center;flex:1;min-width:7rem;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);overflow:hidden}.unitfield input{flex:1;min-width:0;width:4rem;border:0;outline:0;background:transparent;color:inherit;font:inherit;padding:0 4px 0 10px;min-height:38px}.unitfield span{padding:0 10px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.unitfield:focus-within{border-color:var(--hk-blue)}
       .propgrid{align-items:start}.propcol{display:grid;gap:16px;align-content:start;min-width:0}.propgrid .pad{padding:0}.propgrid .kv{grid-template-columns:11rem minmax(0,1fr);gap:0;font-size:calc(14px*var(--hk-fs,1))}.propgrid .kv dt{padding:10px 0 10px 18px}.propgrid .kv dd{padding:10px 18px 10px 14px}.propgrid .kv dt:not(:first-of-type),.propgrid .kv dt:not(:first-of-type)+dd{border-top:1px solid var(--hk-border)}.propgrid .kv dd .rel{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));white-space:nowrap}.propgrid .kv .chip{padding:1px 10px;font-size:calc(13px*var(--hk-fs,1))}
       .row .recown{display:grid;gap:2px;justify-items:end;justify-self:end}.row .recown small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.row .recown.lock{color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));max-width:16rem;text-align:right}.row .recown .trimseg button{padding:5px 10px;font-size:calc(13px*var(--hk-fs,1))}.recsum{display:flex;flex-wrap:wrap;gap:6px}
       .hkdialog .dhead h2{font-size:calc(18px*var(--hk-fs,1))}.hkdialog .dbody label{font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.hkdialog .dbody textarea{font:inherit;font-size:calc(14px*var(--hk-fs,1));padding:9px 11px;border:1px solid var(--hk-border);border-radius:10px;background:var(--hk-surface);color:inherit;line-height:1.4;resize:vertical}.hkdialog .dbody input[type=text],.hkdialog .dbody input[type=datetime-local]{min-height:38px;padding:0 11px;border-radius:10px}.hkdialog .notechips .chip{padding:3px 10px;font-size:calc(12px*var(--hk-fs,1))}.hkdialog .notemeta{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;align-self:end;padding-bottom:9px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1))}.hkdialog .notemeta strong{color:var(--hk-text);font-weight:600}.hkdialog .notehint2{margin:0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}
@@ -14312,8 +14312,8 @@ class DetailActionsMixin {
     if (group.length <= own) return [];
     const id = `og:${key}`, at = `data-form-at="${this.esc(key)}"`, n = group.length;
     (this._findGroups ||= {})[id] = group.map(f => f.key);
-    const rows = [this.actRow(this.t(n === 1 ? "fselStatus" : "actDecide"), this.t(n === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(n) }), `<button class="btn" data-group-state="status" data-group-id="${this.esc(id)}" ${at}>${this.t("actOpen")}</button>`)];
-    if (this.excTargetOf(item)) rows.push(this.actRow(this.t("excCreate"), this.t("actRuleSub1"), `<button class="btn" data-exc-for="${this.esc(key)}" ${at}>${this.t("actOpen")}</button>`));
+    const rows = [this.actRowNamed(this.t(n === 1 ? "fselStatus" : "actDecide"), this.t(n === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(n) }), `data-group-state="status" data-group-id="${this.esc(id)}" ${at}`)];
+    if (this.excTargetOf(item)) rows.push(this.actRowNamed(this.t("excCreate"), this.t("actRuleSub1"), `data-exc-for="${this.esc(key)}" ${at}`));
     return rows;
   }
 
@@ -14325,7 +14325,7 @@ class DetailActionsMixin {
     const recommended = [], tools = [];
     if (findings) recommended.push(`<div class="actblock">${findings}</div>`);
     // A step that answers a finding stands in that finding's row (findingRows); only one without a row of its own is listed here.
-    for (const it of items.filter(it => typeof it.finding !== "string")) (it.finding ? recommended : tools).push(this.actRow(it.label, this.t(it.hint), `<button class="btn${it.finding ? " primary" : ""}" ${it.attr}>${this.t("actOpen")}</button>`));
+    for (const it of items.filter(it => typeof it.finding !== "string")) (it.finding ? recommended : tools).push(this.actRowNamed(it.label, this.t(it.hint), it.attr, it.finding ? " primary" : ""));
     if (broken) recommended.push(`<div class="actblock"><small class="factnote">${this.t("actEditInHa")}</small></div>`);
     const labelControls = broken ? null : this.labelParts(item, true);
     const name = [...this.detailEditRows(item), labelControls ? this.actRow(this.t("actLabelTitle"), this.t("actLabelHint"), labelControls) : ""];
@@ -14345,7 +14345,7 @@ class DetailActionsMixin {
     const onlyMark = notes.length && ![recommended, tools, name, record, hide].some(rows => rows.filter(Boolean).length);
     // The logbook is always possible, but alone it does not make a tab.
     const other = [recommended, hide, tools, name, record, notes].some(rows => rows.filter(Boolean).length);
-    const logbook = other ? [this.actRow(this.t("findingNote"), "", `<button class="btn" data-object-note="${this.esc(key)}">${this.t("actOpen")}</button>`)] : [];
+    const logbook = other ? [this.actRowNamed(this.t("findingNote"), "", `data-object-note="${this.esc(key)}"`)] : [];
     // A form opened from here (deciding, an exception rule) stands at the top of the tab, only on the object it was opened for.
     const forms = this._formAt === key ? `${this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : ""}${this.bulkForm()}` : "";
     const body = (forms ? `<div class="actblock">${forms}</div>` : "") + [group("actGroupRecommended", recommended, items.some(it => it.finding) ? preview : ""), group("actGroupHide", hide), group("actGroupNotes", [...notes, ...logbook]), fold("act_tools", "moreActions", tools, preview), fold("act_name", "actGroupName", name), fold("act_record", "actGroupRecord", record)].join("") + (onlyMark ? `<div class="pad"><p class="factnote">${this.t("actOnlyNotes")}</p></div>` : "");
@@ -14380,6 +14380,12 @@ class DetailActionsMixin {
 
   // One row of the tab "Actions": the name with its explanation, and the control.
   // Long explanations are cut at two lines; "More" opens the rest.
+  // The same row for an action: the name is the button, the explanation stands beside it (no second title).
+  actRowNamed(name, hint, attr, cls = "") {
+    const long = hint && String(hint).length > 150;
+    return `<div class="actrow"><span class="acttext">${hint ? `<span class="acthint${long ? " clamp" : ""}">${hint}</span>` : ""}${long ? `<button type="button" class="linkbtn morebtn" data-act-more aria-expanded="false">${this.t("actMore")}</button>` : ""}</span><span class="actctl"><button type="button" class="btn${cls}" ${attr}>${name}</button></span></div>`;
+  }
+
   actRow(title, hint, control) {
     const long = hint && String(hint).length > 150;
     return `<div class="actrow"><span class="acttext"><strong>${title}</strong>${hint ? `<small${long ? ' class="clamp"' : ""}>${hint}</small>` : ""}${long ? `<button type="button" class="linkbtn morebtn" data-act-more aria-expanded="false">${this.t("actMore")}</button>` : ""}</span>${control ? `<span class="actctl">${control}</span>` : ""}</div>`;
@@ -21709,32 +21715,36 @@ class FixMixin {
   fixWayCard(w, f) {
     const key = this.findingKey(f), object = this.findObject(key);
     let action = "";
-    if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
+    const name = this.t(`fixWay_${w.way}`);
+    if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${name}</button>`;
     else if (w.way === "catch_error") {
       const step = this.fixFailure?.failure?.step;
       action = !step ? `<small class="factnote">${this.t("fixCatchNoStep")}</small>` : w.enabled
-        ? `<button type="button" class="btn" data-fix-catch="${this.esc(step)}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("fixCatchStart")}</button>`
+        ? `<button type="button" class="btn" data-fix-catch="${this.esc(step)}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${name}</button>`
         : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     } else if (w.way === "fix_cause") {
       const cause = f.cause_id ? this.causeById(f.cause_id) : null;
-      if (cause?.finding_key) action = `<button type="button" class="btn" data-fix-open="${this.esc(cause.finding_key)}"><ha-icon icon="mdi:arrow-right"></ha-icon>${this.t("fixToFinding")}</button>`;
-    } else if (w.way === "cleanup_round") action = `<button type="button" class="btn" data-fix-round><ha-icon icon="mdi:broom"></ha-icon>${this.t("fixRoundStart")}</button>`;
+      if (cause?.finding_key) action = `<button type="button" class="btn" data-fix-open="${this.esc(cause.finding_key)}"><ha-icon icon="mdi:arrow-right"></ha-icon>${name}</button>`;
+    } else if (w.way === "cleanup_round") action = `<button type="button" class="btn" data-fix-round><ha-icon icon="mdi:broom"></ha-icon>${name}</button>`;
     else if (w.way === "replace_target" && w.target_kind) {
       const options = (this.data?.objects || []).filter(o => o.object_type === w.target_kind && o.object_id !== w.target);
-      action = options.length ? `<span class="setrow"><select data-fix-id-new aria-label="${this.esc(this.t("fixReplaceWith"))}">${options.map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name || o.object_id)}</option>`).join("")}</select><button type="button" class="btn" data-fix-id-replace="${this.esc(w.target)}" data-fix-id-kind="${this.esc(w.target_kind)}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button></span>` : `<small class="factnote">${this.t("fixReplaceNone")}</small>`;
-    } else if (w.way === "replace_target") action = `<button type="button" class="btn" data-fix-replace="${this.esc(w.target)}" data-fix-new="${this.esc(w.suggestion || "")}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button>`;
+      action = options.length ? `<span class="setrow"><select data-fix-id-new aria-label="${this.esc(this.t("fixReplaceWith"))}">${options.map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name || o.object_id)}</option>`).join("")}</select><button type="button" class="btn" data-fix-id-replace="${this.esc(w.target)}" data-fix-id-kind="${this.esc(w.target_kind)}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${name}</button></span>` : `<small class="factnote">${this.t("fixReplaceNone")}</small>`;
+    } else if (w.way === "replace_target") action = `<button type="button" class="btn" data-fix-replace="${this.esc(w.target)}" data-fix-new="${this.esc(w.suggestion || "")}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${name}</button>`;
     else if (w.way === "remove_reference" && this.fixAll) action = w.enabled
       ? `<button type="button" class="btn" data-fix-remove-all="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.tCount("fixRemoveAll", this.fixAllFindings().filter(x => x.rule_id.startsWith("automation.")).length)}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "remove_reference") action = w.enabled
-      ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveStart")}</button>`
+      ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${name}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
-    else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
-    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${this.t("fixBtn_disable_automation")}</button>`;
-    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("fixBtn_delete_automation")}</button>`;
-    else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("fixBtn_mark")}</button>`;
-    else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixBtn_object_actions")}</button>`;
-    return `<div class="row fixway"><span class="row-text"><strong>${this.esc(this.t(`fixWay_${w.way}`))}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span>${action}</div>`;
+    else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${name}</button>`;
+    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${name}</button>`;
+    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${name}</button>`;
+    else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${name}</button>`;
+    else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${name}</button>`;
+    // A way with a button says what it does once, on the button; the explanation stands beside it. One without (wait, restart) keeps its name as the title.
+    const pill = w.recommended ? `<span class="pill ok">${this.t("fixRecommended")}</span> ` : "";
+    const text = action ? `${pill}<span class="fixwayhint">${this.esc(this.t(`fixWayHint_${w.way}`))}</span>` : `<strong>${this.esc(name)}${pill ? ` ${pill.trim()}` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small>`;
+    return `<div class="row fixway"><span class="row-text">${text}</span>${action}</div>`;
   }
 
   // The plans of the object itself (disable, remove, replace the twin), each with its preview here; the rest is one button to the object.
@@ -23781,9 +23791,9 @@ class FcRecommendMixin {
   // The row for fcInfoHtml.
   fcRecRow(rec) { return { id: "rec", rec: true, label: this.t("fcRecLabel"), head: rec.head, text: rec.body, empty: false, tab: "" }; }
 
-  // One way of an object as a row: its name, what it does, and the preview of its plan (or the old "Open").
+  // One way of an object as a row: what it does, and the button that carries its name (it opens the preview of its plan or the page).
   fcWayRow(it, key) {
-    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t(FC_PLAN_VERBS[it.plan.kind] || "fcPlanPreview")}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${this.t(it.btn || "actOpen")}</button>`}</div>`;
+    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><span class="fcwayhint">${this.t(it.hint)}</span></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${it.label}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${it.label}</button>`}</div>`;
   }
 
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it.

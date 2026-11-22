@@ -128,32 +128,36 @@ class FixMixin {
   fixWayCard(w, f) {
     const key = this.findingKey(f), object = this.findObject(key);
     let action = "";
-    if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
+    const name = this.t(`fixWay_${w.way}`);
+    if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${name}</button>`;
     else if (w.way === "catch_error") {
       const step = this.fixFailure?.failure?.step;
       action = !step ? `<small class="factnote">${this.t("fixCatchNoStep")}</small>` : w.enabled
-        ? `<button type="button" class="btn" data-fix-catch="${this.esc(step)}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${this.t("fixCatchStart")}</button>`
+        ? `<button type="button" class="btn" data-fix-catch="${this.esc(step)}"><ha-icon icon="mdi:shield-check-outline"></ha-icon>${name}</button>`
         : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     } else if (w.way === "fix_cause") {
       const cause = f.cause_id ? this.causeById(f.cause_id) : null;
-      if (cause?.finding_key) action = `<button type="button" class="btn" data-fix-open="${this.esc(cause.finding_key)}"><ha-icon icon="mdi:arrow-right"></ha-icon>${this.t("fixToFinding")}</button>`;
-    } else if (w.way === "cleanup_round") action = `<button type="button" class="btn" data-fix-round><ha-icon icon="mdi:broom"></ha-icon>${this.t("fixRoundStart")}</button>`;
+      if (cause?.finding_key) action = `<button type="button" class="btn" data-fix-open="${this.esc(cause.finding_key)}"><ha-icon icon="mdi:arrow-right"></ha-icon>${name}</button>`;
+    } else if (w.way === "cleanup_round") action = `<button type="button" class="btn" data-fix-round><ha-icon icon="mdi:broom"></ha-icon>${name}</button>`;
     else if (w.way === "replace_target" && w.target_kind) {
       const options = (this.data?.objects || []).filter(o => o.object_type === w.target_kind && o.object_id !== w.target);
-      action = options.length ? `<span class="setrow"><select data-fix-id-new aria-label="${this.esc(this.t("fixReplaceWith"))}">${options.map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name || o.object_id)}</option>`).join("")}</select><button type="button" class="btn" data-fix-id-replace="${this.esc(w.target)}" data-fix-id-kind="${this.esc(w.target_kind)}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button></span>` : `<small class="factnote">${this.t("fixReplaceNone")}</small>`;
-    } else if (w.way === "replace_target") action = `<button type="button" class="btn" data-fix-replace="${this.esc(w.target)}" data-fix-new="${this.esc(w.suggestion || "")}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${this.t("fixReplaceStart")}</button>`;
+      action = options.length ? `<span class="setrow"><select data-fix-id-new aria-label="${this.esc(this.t("fixReplaceWith"))}">${options.map(o => `<option value="${this.esc(o.object_id)}">${this.esc(o.name || o.object_id)}</option>`).join("")}</select><button type="button" class="btn" data-fix-id-replace="${this.esc(w.target)}" data-fix-id-kind="${this.esc(w.target_kind)}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${name}</button></span>` : `<small class="factnote">${this.t("fixReplaceNone")}</small>`;
+    } else if (w.way === "replace_target") action = `<button type="button" class="btn" data-fix-replace="${this.esc(w.target)}" data-fix-new="${this.esc(w.suggestion || "")}"><ha-icon icon="mdi:swap-horizontal"></ha-icon>${name}</button>`;
     else if (w.way === "remove_reference" && this.fixAll) action = w.enabled
       ? `<button type="button" class="btn" data-fix-remove-all="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.tCount("fixRemoveAll", this.fixAllFindings().filter(x => x.rule_id.startsWith("automation.")).length)}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "remove_reference") action = w.enabled
-      ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveStart")}</button>`
+      ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${name}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
-    else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
-    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${this.t("fixBtn_disable_automation")}</button>`;
-    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("fixBtn_delete_automation")}</button>`;
-    else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("fixBtn_mark")}</button>`;
-    else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixBtn_object_actions")}</button>`;
-    return `<div class="row fixway"><span class="row-text"><strong>${this.esc(this.t(`fixWay_${w.way}`))}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span>${action}</div>`;
+    else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${name}</button>`;
+    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${name}</button>`;
+    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${name}</button>`;
+    else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${name}</button>`;
+    else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${name}</button>`;
+    // A way with a button says what it does once, on the button; the explanation stands beside it. One without (wait, restart) keeps its name as the title.
+    const pill = w.recommended ? `<span class="pill ok">${this.t("fixRecommended")}</span> ` : "";
+    const text = action ? `${pill}<span class="fixwayhint">${this.esc(this.t(`fixWayHint_${w.way}`))}</span>` : `<strong>${this.esc(name)}${pill ? ` ${pill.trim()}` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small>`;
+    return `<div class="row fixway"><span class="row-text">${text}</span>${action}</div>`;
   }
 
   // The plans of the object itself (disable, remove, replace the twin), each with its preview here; the rest is one button to the object.

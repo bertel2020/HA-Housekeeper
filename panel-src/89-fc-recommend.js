@@ -116,9 +116,9 @@ class FcRecommendMixin {
   // The row for fcInfoHtml.
   fcRecRow(rec) { return { id: "rec", rec: true, label: this.t("fcRecLabel"), head: rec.head, text: rec.body, empty: false, tab: "" }; }
 
-  // One way of an object as a row: its name, what it does, and the preview of its plan (or the old "Open").
+  // One way of an object as a row: what it does, and the button that carries its name (it opens the preview of its plan or the page).
   fcWayRow(it, key) {
-    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t(FC_PLAN_VERBS[it.plan.kind] || "fcPlanPreview")}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${this.t(it.btn || "actOpen")}</button>`}</div>`;
+    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><span class="fcwayhint">${this.t(it.hint)}</span></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${it.label}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${it.label}</button>`}</div>`;
   }
 
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it.
