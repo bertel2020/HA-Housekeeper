@@ -7966,6 +7966,14 @@ test("an entity that is down can be removed by a plan as well as disabled, a dev
   assert.equal(el.findingSteps({ key: "k2", rule_id: "device.down", object_id: "d1", topic: "down" }, { object_type: "device" }).remove, false);
 });
 
+test("the line under the name of a cleanup card links the area and the integration, and keeps a name that is the object itself out", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [{ object_type: "area", object_id: "wash", name: "Laundry" }, { object_type: "config_entry", object_id: "e1", name: "zha", domain: "zha" }, { object_type: "entity", object_id: "sensor.t", name: "Temp", area_id: "wash", config_entry_id: "e1" }, { object_type: "config_entry", object_id: "e2", name: "Hue", domain: "hue" }] };
+  const line = el.fcObjectLine(el.findObject("entity:sensor.t"));
+  assert.ok(line.includes('data-object="area:wash"') && line.includes(">Laundry<") && line.includes('data-object="config_entry:e1"'));
+  assert.ok(!el.fcObjectLine(el.findObject("config_entry:e2")).includes("Hue"));
+});
+
 test("a row of the cleanup card with nothing to say is not shown, the recommendation always is", () => {
   const { el } = panel("en");
   const html = el.fcInfoHtml([{ id: "duration", label: "Duration", text: "for 1 min", empty: false }, { id: "state", label: "State", text: "No information", empty: true }, { rec: true, label: "Recommendation", head: "Later.", text: "It comes back." }], "entity:x");

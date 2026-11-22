@@ -6405,8 +6405,6 @@
 "fcInfoHides": "对象备注隐藏了 {n} 个发现项",
 "fcInfoHides1": "对象备注隐藏了 1 个发现项",
 "fcInfoHidesNone": "对象备注没有隐藏任何发现项",
-"fcInfoType": "类型",
-"fcInfoAssign": "归属于",
 "fcInfoNone": "无信息",
 "fcInfoNothing": "没有任何内容依赖它",
 "fcInfoUsedBy": "被 {n} 个对象使用",

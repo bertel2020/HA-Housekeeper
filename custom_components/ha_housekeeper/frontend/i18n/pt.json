@@ -6405,8 +6405,6 @@
 "fcInfoHides": "A nota de objeto oculta {n} ocorrências",
 "fcInfoHides1": "A nota de objeto oculta 1 ocorrência",
 "fcInfoHidesNone": "A nota de objeto não oculta nenhuma ocorrência",
-"fcInfoType": "Tipo",
-"fcInfoAssign": "Pertence a",
 "fcInfoNone": "Sem informação",
 "fcInfoNothing": "Nada depende disto",
 "fcInfoUsedBy": "Usado por {n} objetos",

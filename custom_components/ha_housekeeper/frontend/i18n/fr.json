@@ -6405,8 +6405,6 @@
 "fcInfoHides": "La note d’objet masque {n} constats",
 "fcInfoHides1": "La note d’objet masque 1 constat",
 "fcInfoHidesNone": "La note d’objet ne masque aucun constat",
-"fcInfoType": "Type",
-"fcInfoAssign": "Appartient à",
 "fcInfoNone": "Aucune information",
 "fcInfoNothing": "Rien n’en dépend",
 "fcInfoUsedBy": "Utilisé par {n} objets",

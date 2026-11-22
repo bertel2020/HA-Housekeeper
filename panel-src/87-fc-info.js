@@ -44,20 +44,17 @@ class FcInfoMixin {
     return [kind, sub].filter(Boolean).join(" · ");
   }
 
-  fcObjectPlace(obj) {
+  // The line under the name of a card: what the object is, then the area and the integration it belongs to, each a link to its own page.
+  // A part that is the object itself or has no page of its own stays plain text.
+  fcObjectLine(obj) {
     if (!obj) return "";
+    const link = (id, text) => this.findObject(id) ? `<button type="button" class="linkbtn" data-object="${this.esc(id)}">${this.esc(text)}</button>` : this.esc(text);
     const device = obj.object_type === "device" ? obj : obj.device_id ? this.findObject(`device:${obj.device_id}`) : null;
-    const entries = obj.object_type === "config_entry" ? [obj] : [obj.config_entry_id, ...(device?.config_entry_ids || [])].filter(Boolean).map(id => this.findObject(`config_entry:${id}`)).filter(Boolean);
-    const names = [...new Set(entries.map(e => e.integration_name || e.name || e.domain).filter(Boolean))];
-    const integration = names.length ? names.slice(0, 2).join(", ") : obj.object_type === "entity" ? obj.platform || "" : "";
-    return [obj.object_type === "area" ? "" : this.areaName(obj), integration].filter(Boolean).join(" · ");
-  }
-
-  fcObjectBlock(key, obj) {
-    if (!obj) return "";
-    const none = this.t("fcInfoNone"), tab = this.fcTabFor(obj, key, ["overview"]);
-    const row = (id, label, text) => ({ id, label: this.t(label), text: text || none, empty: !text, tab: text ? tab : "" });
-    return this.fcInfoHtml([row("type", "fcInfoType", this.fcObjectKind(obj)), row("assign", "fcInfoAssign", this.fcObjectPlace(obj))], key).replace('class="fcinfo', 'class="fcinfo fcobj');
+    const areaId = obj.object_type === "area" ? "" : obj.area_id || device?.area_id, area = areaId ? this.findObject(`area:${areaId}`) : null;
+    const entryIds = obj.object_type === "config_entry" ? [] : [...new Set([obj.config_entry_id, ...(device?.config_entry_ids || [])].filter(Boolean))].slice(0, 2);
+    const entries = entryIds.map(id => [id, this.findObject(`config_entry:${id}`)]).filter(([, e]) => e).map(([id, e]) => link(`config_entry:${id}`, e.integration_name || e.name || e.domain));
+    const platform = !entries.length && obj.object_type === "entity" && obj.platform ? [this.esc(obj.platform)] : [];
+    return [this.esc(this.fcObjectKind(obj)), area && area.name !== obj.name ? link(`area:${areaId}`, area.name) : "", ...entries, ...platform].filter(Boolean).join(" · ");
   }
 
   fcInfoBlock(f, key, obj, rec) { return this.fcInfoHtml([...this.fcInfoRows(f, key, obj), ...(rec ? [this.fcRecRow(rec)] : [])], key); }
@@ -102,11 +99,11 @@ Object.assign(TEXT.de, {
   fcInfoTitle: "Warum steht das hier?", fcInfoDuration: "Dauer", fcInfoState: "Zustand", fcInfoLinks: "Daran hängt", fcInfoImpact: "Wirkung",
   fcInfoPattern: "Muster", fcInfoOften: "Häufigkeit", fcInfoMean_: "Dauer", fcInfoEpisodes: "{n} Ausfälle in {days} Tagen", fcInfoMean: "Im Schnitt {span} pro Ausfall",
   fcInfoHides: "Die Objekt-Notiz blendet {n} Befunde aus", fcInfoHides1: "Die Objekt-Notiz blendet 1 Befund aus", fcInfoHidesNone: "Die Objekt-Notiz blendet keinen Befund aus",
-  fcInfoType: "Typ", fcInfoAssign: "Zuordnung", fcInfoNone: "Keine Angabe", fcInfoNothing: "Nichts hängt daran", fcInfoUsedBy: "Von {n} Objekten verwendet", fcInfoUsedBy1: "Von 1 Objekt verwendet",
+  fcInfoNone: "Keine Angabe", fcInfoNothing: "Nichts hängt daran", fcInfoUsedBy: "Von {n} Objekten verwendet", fcInfoUsedBy1: "Von 1 Objekt verwendet",
 });
 Object.assign(TEXT.en, {
   fcInfoTitle: "Why is this here?", fcInfoDuration: "Duration", fcInfoState: "State", fcInfoLinks: "Depends on it", fcInfoImpact: "Impact",
   fcInfoPattern: "Pattern", fcInfoOften: "Frequency", fcInfoMean_: "Duration", fcInfoEpisodes: "{n} outages in {days} days", fcInfoMean: "{span} per outage on average",
   fcInfoHides: "The object note hides {n} findings", fcInfoHides1: "The object note hides 1 finding", fcInfoHidesNone: "The object note hides no finding",
-  fcInfoType: "Type", fcInfoAssign: "Belongs to", fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
+  fcInfoNone: "No information", fcInfoNothing: "Nothing depends on it", fcInfoUsedBy: "Used by {n} objects", fcInfoUsedBy1: "Used by 1 object",
 });

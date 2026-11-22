@@ -6588,8 +6588,6 @@
 "fcInfoHides": "La nota sull'oggetto nasconde {n} rilevamenti",
 "fcInfoHides1": "La nota sull'oggetto nasconde 1 rilevamento",
 "fcInfoHidesNone": "La nota sull'oggetto non nasconde nessun rilevamento",
-"fcInfoType": "Tipo",
-"fcInfoAssign": "Appartiene a",
 "fcInfoNone": "Nessuna informazione",
 "fcInfoNothing": "Nulla ne dipende",
 "fcInfoUsedBy": "Usato da {n} oggetti",

@@ -7655,8 +7655,6 @@
 },
 "fcInfoHides1": "Пометка об объекте скрывает 1 находку",
 "fcInfoHidesNone": "Пометка об объекте не скрывает ни одной находки",
-"fcInfoType": "Тип",
-"fcInfoAssign": "Относится к",
 "fcInfoNone": "Нет сведений",
 "fcInfoNothing": "Ничто от этого не зависит",
 "fcInfoUsedBy": {
