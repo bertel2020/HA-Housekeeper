@@ -32,6 +32,8 @@ Das Ziel ist keine aggressive automatische Bereinigung. Housekeeper hilft zunäc
 
 > Housekeeper liest und analysiert zunächst. Änderungen gibt es ausschließlich nach ausdrücklicher Bestätigung eines Plans. Pläne umfassen Quarantäne und Entfernen, das Neuladen einer Integration, Reparaturen, das Ersetzen von Verweisen, das Umbenennen von Entitäten, das Zuweisen von Bereichen, das Löschen ungenutzter Automationen, das Kürzen des Recorder-Verlaufs und weitere Wartungsaufgaben. Je nach Aktion verlangt Housekeeper eine Quarantänezeit, eine zusätzliche Bestätigung und ein erfolgreiches Backup. Umkehrbare Änderungen lassen sich zurücksetzen, solange ihre Ziele unverändert sind; endgültige Recorder- und Backup-Löschungen werden deutlich gekennzeichnet. Integrationen und Hubs werden nie umkonfiguriert (das Neuladen einer Integration ist ein bestätigter Plan wie jeder andere), und Housekeeper ändert nur, was ein bestätigter Plan nennt.
 
+> **Neu in 2.2:** eine ruhigere Beheben-Seite, Aufräumkarten, die sagen, was sie ändern würden, ein Name pro Aktion, verwaiste Statistiken, die sich auf einen Nachfolger übertragen lassen, und Batterien in Volt. Die Einzelheiten stehen im [Changelog](CHANGELOG.md).
+
 > **Neu in 2.0:** Befunde nach Themen mit einer eigenen Seite, „Beheben“, ein geführter Rundgang beim Aufräumen, die Ansicht „Einfach“ oder „Vollständig“, neue Namen für die Ausgänge und weitere Sprachen. Die Einzelheiten stehen im [Changelog](CHANGELOG.md); mach vor dem Update von 1.x ein Backup.
 
 ## Einblicke
