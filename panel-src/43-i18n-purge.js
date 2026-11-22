@@ -8,7 +8,7 @@ Object.assign(TEXT.en, {
   purgeEntry: "{removed} deleted, {skipped} skipped", purgeWithStates: "with states", purgeBackup: "backup {job}", purgeNoBackup: "no backup", purgeByYou: "by you", purgeByOther: "by another user", purgeError: "error: {error}", purgeNothing: "nothing deleted", purgeNotDeleted: "Nothing deleted: {reason}", purgeChunk: "{n} selected. A plan takes at most {max}: this round takes the first {max}, the other {rest} stay selected.", purgeOpenCount: "Delete statistics: preview ({n})", planObjects: "Objects ({n})", purgeStatesOn: "On (recommended): the statistics and {n} stored states are deleted.", purgeStatesOff: "Off: only the statistics are deleted. The states stay in the history and can let the statistics reappear.",
 });
 Object.assign(TEXT.de, {
-  purgePreview: "Vorschau erstellen", purgePlanHint: "Daraus wird ein Plan unter Bereinigen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
+  purgePlanHint: "Daraus wird ein Plan unter Bereinigen: Vorschau, Bestätigung je ID, Backup, Nachprüfung.",
   purgeOldHint: "Die alten Statistiken ({n}) sind noch da. Sie lassen sich jetzt löschen; das ist ein eigener Plan, der noch einmal fragt.", purgeOldGo: "Alte Statistiken löschen ({n})",
   xferNothing: "Nichts zu kopieren: Die Statistik des Ziels beginnt früher als die alte.", xferOverlap: "Überlappung: nur Werte vor dem Beginn des Ziels werden kopiert.", xferGap: "Lücke von {hours} Std. zwischen alter und neuer Statistik.", xferNewEmpty: "Das Ziel hat noch keine Statistik: alles wird kopiert, die Summe lässt sich nicht fortführen.",
   xferEnergy: "Energie-Dashboard mit umstellen", xferEnergyOn: "Im Energie-Dashboard stehen: {n}. Es zeigt danach auf die neue Entität. Die Vorschau zeigt die Änderung; rückgängig machen lässt sie sich, die kopierte Statistik nur per Backup.", xferEnergyOff: "Nur die Statistik wird kopiert. Das Energie-Dashboard zeigt weiter auf die alte ID und muss von Hand umgestellt werden.",
@@ -20,7 +20,7 @@ xferPurge: "Danach die alten Statistiken löschen", xferPurgeOn: "Ist das Versch
   abort_recorder_busy: "Der Recorder war 30 Sekunden lang mit einer Abfrage belegt; nichts wurde gelöscht.", abort_still_there: "Die Statistik war nach dem Löschen noch da.", abort_states_left: "Nach dem Löschen gab es noch gespeicherte Zustände.",
 });
 Object.assign(TEXT.en, {
-  purgePreview: "Create preview", purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
+  purgePlanHint: "This becomes a plan under Cleanup: preview, confirmation per ID, backup, verification.",
   purgeOldHint: "The old statistics ({n}) are still there. They can be deleted now; that is a plan of its own, which asks again.", purgeOldGo: "Delete the old statistics ({n})",
   xferNothing: "Nothing to copy: the target's statistics start earlier than the old ones.", xferOverlap: "Overlap: only values before the target's start are copied.", xferGap: "Gap of {hours} h between the old and the new statistics.", xferNewEmpty: "The target has no statistics yet: everything is copied, the sum cannot be continued.",
   xferEnergy: "Switch the Energy dashboard too", xferEnergyOn: "In the Energy dashboard: {n}. It then points to the new entity. The preview shows the change; it can be undone, the copied statistics only from the backup.", xferEnergyOff: "Only the statistics are copied. The Energy dashboard keeps pointing to the old ID and has to be switched by hand.",

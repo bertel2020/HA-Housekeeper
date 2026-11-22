@@ -20,7 +20,7 @@ Object.assign(TEXT.de, {
   fcRecPickAllText: "Nichts verweist darauf. Es läuft erst am Ende als ein Plan mit Vorschau und Backup.",
   fcRecRestText: "{n} Befunde mit niedriger Wirkung oder Info, nichts ist zu tun und an Home Assistant ändert sich nichts. Sie kommen nach {days} Tagen zurück.",
   fcFixWaysHead: "Wege zum Beheben",
-  fcPlanDisable: "Deaktivieren", fcPlanReload: "Integration neu laden", fcPlanRemove: "Entfernen", fcPlanReplace: "Entität ersetzen", fcPlanPreview: "Vorschau", fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
+  fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
   fcCheck: "Prüfen", fcCheckHint: "Strom, Netz und Hersteller ansehen, dann prüft Housekeeper, ob es wieder meldet.", fcCheckHead: "Das Gerät prüfen",
   fcCheck1: "Strom und Netzwerk des Geräts prüfen: ist es eingeschaltet und im WLAN?", fcCheck2: "Beim Hersteller oder in dessen App nachsehen, ob eine Störung gemeldet ist.", fcCheck3: "Hängt das Gerät an einer Integration, kann ein Neuladen helfen: Einstellungen → Geräte & Dienste.", fcCheckThen: "Danach schaut Housekeeper noch einmal nach. Den Befund schließt erst der nächste Scan.",
   fcRecNoFixFollows: "{n} Folgen hängen daran. Housekeeper kann hier nichts reparieren; ist es absichtlich aus, stellt eine Objekt-Notiz den Ausfall samt Folgen still.",
@@ -47,7 +47,7 @@ Object.assign(TEXT.en, {
   fcRecPickAllText: "Nothing refers to them. It only runs at the end as one plan with preview and backup.",
   fcRecRestText: "{n} findings with low impact or info, nothing to do and nothing changes in Home Assistant. They come back after {days} days.",
   fcFixWaysHead: "Ways to fix it",
-  fcPlanDisable: "Disable", fcPlanReload: "Reload the integration", fcPlanRemove: "Remove", fcPlanReplace: "Replace the entity", fcPlanPreview: "Preview", fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
+  fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
   fcCheck: "Check", fcCheckHint: "Look at power, network and the maker, then Housekeeper checks whether it reports again.", fcCheckHead: "Check the device",
   fcCheck1: "Check the power and network of the device: is it on and on the Wi-Fi?", fcCheck2: "Look at the maker or its app for a reported fault.", fcCheck3: "If the device belongs to an integration, reloading it can help: Settings → Devices & services.", fcCheckThen: "Afterwards Housekeeper looks once more. Only the next scan closes the finding.",
   fcRecNoFixFollows: "{n} findings hang on it. Housekeeper cannot repair anything here; if it is off on purpose, an object note silences the outage with everything that follows.",
@@ -57,8 +57,6 @@ Object.assign(TEXT.en, {
   fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
 });
 
-// The button of a way says what it does; the preview is the next step.
-const FC_PLAN_VERBS = { disable_entity: "fcPlanDisable", reload_integration: "fcPlanReload", remove_entity: "fcPlanRemove", replace_references: "fcPlanReplace" };
 class FcRecommendMixin {
   // A card of stage 1 or 3: a finding with its object. Returns { act, head, body }; `act` names the answer that is recommended.
   fcRecCard(f, key) {

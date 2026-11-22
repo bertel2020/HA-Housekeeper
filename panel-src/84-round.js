@@ -100,7 +100,7 @@ Object.assign(TEXT.de, {
   roundRemove: "Entfernen", roundDelete: "Löschen", roundDisable: "Deaktivieren", roundMerge: "Zusammenführen", roundKeep: "Behalten", roundPickAll: "Alle wählen",
   roundFirstStep: "erst deaktivieren (Quarantäne)", roundDuplicateOf: "mögliches Duplikat von {name}",
   roundPlan: "Plan anlegen ({n})", roundPlanHint: "Der Plan zeigt jede Änderung zur Vorschau; nichts läuft ohne deine Bestätigung. Backup und Zurücknehmen wie sonst.",
-  roundEmpty: "Nichts Überflüssiges offen.", roundKeepReason: "In der Aufräum-Runde behalten", fixWay_cleanup_round: "Aufräum-Runde", fixWayHint_cleanup_round: "Alles Überflüssige durchgehen: sicher Entfernbares gesammelt, den Rest einzeln, jeweils mit Behalten.", fixRoundStart: "Aufräum-Runde",
+  roundEmpty: "Nichts Überflüssiges offen.", roundKeepReason: "In der Aufräum-Runde behalten", fixWay_cleanup_round: "Aufräum-Runde", fixWayHint_cleanup_round: "Alles Überflüssige durchgehen: sicher Entfernbares gesammelt, den Rest einzeln, jeweils mit Behalten.", 
 });
 Object.assign(TEXT.en, {
   roundLimited: "{total} objects are unneeded; the round shows the first ones. The rest comes once these are done.",
@@ -111,5 +111,5 @@ Object.assign(TEXT.en, {
   roundRemove: "Remove", roundDelete: "Delete", roundDisable: "Disable", roundMerge: "Merge", roundKeep: "Keep", roundPickAll: "Pick all",
   roundFirstStep: "disable first (quarantine)", roundDuplicateOf: "possible duplicate of {name}",
   roundPlan: "Create plan ({n})", roundPlanHint: "The plan shows every change as a preview; nothing runs without your confirmation. Backup and undo as usual.",
-  roundEmpty: "Nothing unneeded is open.", roundKeepReason: "Kept in the cleanup round", fixWay_cleanup_round: "Cleanup round", fixWayHint_cleanup_round: "Go through everything unneeded: what is safe to remove together, the rest one by one, each with Keep.", fixRoundStart: "Cleanup round",
+  roundEmpty: "Nothing unneeded is open.", roundKeepReason: "Kept in the cleanup round", fixWay_cleanup_round: "Cleanup round", fixWayHint_cleanup_round: "Go through everything unneeded: what is safe to remove together, the rest one by one, each with Keep.", 
 });

@@ -7976,13 +7976,11 @@ test("the line under the name of a cleanup card links the area and the integrati
 
 test("an action has one name wherever it stands: menus, rows and buttons say the same", () => {
   const groups = [
-    ["actRemove", "fcPlanRemove"], ["actDisable", "fcPlanDisable"],
     ["actDisableAuto", "fixWay_disable_automation"], ["autoDelete", "fixWay_delete_automation"],
-    ["actReload", "fixWay_reload", "fcPlanReload"],
-    ["actReplaceThis", "actReplaceTwin", "actReplaceMany", "fixWay_replace_entity", "fcPlanReplace"],
+    ["actReload", "fixWay_reload"],
+    ["actReplaceThis", "actReplaceTwin", "actReplaceMany", "fixWay_replace_entity"],
     ["actMark", "markSet", "fixWay_mark"], ["excCreate", "actRule"], ["actExchange", "fixWay_exchange"],
-    ["fixWay_object_actions", "fixOpenActions"], ["fixRoundStart", "fixWay_cleanup_round"],
-    ["fixReplaceStart", "fixWay_replace_target"], ["fixRemoveStart", "fixWay_remove_reference"], ["fixCatchStart", "fixWay_catch_error"],
+    ["fixWay_object_actions", "fixOpenActions"],
   ];
   for (const lang of ["de", "en"]) {
     const { el } = panel(lang);
