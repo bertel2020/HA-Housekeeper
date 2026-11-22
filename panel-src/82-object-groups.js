@@ -134,7 +134,7 @@ class ObjectGroupsMixin {
     return (n._facts = { list, own, one, impact, topic: topics.size === 1 ? [...topics][0] : null, conf: list.length || own ? conf : [null, null], since: [times[0] || null, times[times.length - 1] || null] });
   }
 
-  nodeName(n) { return n.cause ? n.cause.name : this.findObject(n.key)?.name || n.key.slice(n.key.indexOf(":") + 1); }
+  groupNodeName(n) { return n.cause ? n.cause.name : this.findObject(n.key)?.name || n.key.slice(n.key.indexOf(":") + 1); }
 
   // The line below the head: the cause and what it explains, or what the object has, by kind; a filter and a mark say so.
   nodeSub(n) {
@@ -184,7 +184,7 @@ class ObjectGroupsMixin {
     const value = n => {
       const f = this.nodeFacts(n);
       switch (st.sort) {
-        case "name": return this.nodeName(n);
+        case "name": return this.groupNodeName(n);
         case "id": return n.key;
         case "since": return f.since[desc ? 1 : 0];
         case "certainty": return f.conf[desc ? 1 : 0];
@@ -211,13 +211,13 @@ class ObjectGroupsMixin {
     const f = this.nodeFacts(n), id = `og:${n.key}`, open = this.foldOpen(id, false), object = this.findObject(n.key);
     const keys = f.list.map(x => x.key);
     (this._findGroups ||= {})[id] = keys;
-    const title = n.cause ? this.causeTitle(n.cause) : this.nodeName(n);
+    const title = n.cause ? this.causeTitle(n.cause) : this.groupNodeName(n);
     const tone = n.cause ? "red" : this.tone(f.list[0]?.classification);
     const type = n.cause ? n.cause.object_type : n.key.split(":")[0];
     // The head of an outage selects only its own finding, never the follow-ups below it. The head of an object
     // selects all findings of the object, those of its entities too, and is ticked while all of them are.
-    const pick = n.cause ? this.causeBox(n.cause) : keys.length ? `<input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(this.t("selectObjectFindings", { name: this.nodeName(n) }))}">` : "";
-    const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: this.nodeName(n) }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
+    const pick = n.cause ? this.causeBox(n.cause) : keys.length ? `<input type="checkbox" class="selbox" data-fsel-group="${this.esc(id)}" ${keys.every(k => this.findSel.has(k)) ? "checked" : ""} aria-label="${this.esc(this.t("selectObjectFindings", { name: this.groupNodeName(n) }))}">` : "";
+    const fold = `<button type="button" class="finding-fold" data-fold="${this.esc(id)}" aria-expanded="${open}" aria-label="${this.esc(this.t(open ? "foldGroupClose" : "foldGroupOpen", { name: this.groupNodeName(n) }))}"><ha-icon class="foldarrow" icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon></button>`;
     const total = n.cause ? this.causeTotal(n.cause) : 0;
     const label = `${this.tile(type, tone)}<span class="finding-name"><strong>${this.esc(title)}</strong><small>${this.esc(this.nodeSub(n))}</small></span>${total ? `<span class="pill red">${this.esc(this.tCount("causeFollowers", total))}</span>` : ""}`;
     const link = object ? `<button type="button" class="finding-link" data-object="${this.esc(n.key)}">${label}</button>` : `<button type="button" class="finding-link" data-fold="${this.esc(id)}">${label}</button>`;
