@@ -7109,6 +7109,7 @@ test("every finding stands below its object: a device gathers all kinds of its e
   assert.ok(html.includes("Audi</strong><small>Lock: "), "a single finding is named in the head");
   assert.ok(html.indexOf("Receiver") < html.indexOf("Audi"), "the worst impact first");
   assert.ok(html.includes('data-group-state="status"') && html.includes('data-group-state="label"'), "the head of a group offers deciding and the label for all its findings");
+  assert.ok(html.includes('<td class="tech" data-label="Certainty">'), "the certainty of a head hides in the simple view like the rows");
   el.lv.findings.f.type = "entity"; el.lv.findings.q = "select.old";
   assert.ok(el.findingsView().includes("1 of 3 findings of the group matches the filter"));
 });
@@ -8855,6 +8856,7 @@ test("the row menu and the page of an object decide the plans of an entity that 
   const stateOf = (reason, status) => { el.data = { ...DATA, objects: DATA.objects.map(o => o.object_id === "sensor.a" ? { ...o, reason, status } : o), findings: [f] }; return el.rowMenu(f); };
   const gone = stateOf("state_missing", "orphaned");
   assert.ok(gone.includes("data-find-disable=") && gone.includes("data-act-replace="), "down: disable and replace, as on the page");
+  assert.ok(gone.includes("Protects from cleanup") && !gone.includes("Keeps outages quiet"), "the note says what it does for this finding");
   assert.ok(!stateOf("not_provided", "orphaned").includes("data-find-disable=") && stateOf("not_provided", "orphaned").includes("data-find-remove="), "not provided: removed, not disabled");
   assert.ok(!stateOf("state_missing", "disabled").includes("data-find-disable="), "already disabled: not offered again");
 });

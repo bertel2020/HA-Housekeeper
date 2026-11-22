@@ -409,7 +409,7 @@ class FindingsMixin {
         facts.objects.size === 1 ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
       ],
     ].map(g => g.filter(Boolean).join("")).filter(Boolean).join('<hr class="menusep">');
-    const menu = groups ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups}${n > 1 ? `<small class="menunote">${this.t("actSingleOnly")}</small>` : ""}</div></details>` : "";
+    const menu = groups ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups}</div></details>` : "";
     return `<div class="toolbar selhead">${tools}<span class="toolgap"></span><div class="fbtns">${menu || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
   }
 
@@ -613,7 +613,7 @@ class FindingsMixin {
     // the same groups as the menu of the row. The label has its own control on this page, and a step shown as a button is not repeated.
     const groupsOf = f => {
       const hasStep = fixes.some(it => it.finding === f.key);
-      const groups = this.findingActionGroups(f).map((g, i) => g.filter(a => a.label !== "fselLabel" && !(hasStep && a.attr.match(/data-(find-remove|find-disable|act-replace|auto-delete)=/))));
+      const groups = this.findingActionGroups(f).map((g, i) => g.filter(a => a.label !== "fselLabel" && a.label !== "actMark" && !(hasStep && a.attr.match(/data-(find-remove|find-disable|act-replace|auto-delete)=/))));
       const dup = f.rule_id === "entity.possible_duplicate" ? { icon: "mdi:check-circle-outline", label: "notDuplicate", attr: `data-notdup="${this.esc(f.key)}"`, sub: "" } : null;
       if (dup) { const at = groups.findIndex(g => g.some(a => a.label === "fselStatus")); if (at >= 0) groups[at].push(dup); else groups.unshift([dup]); }
       return groups.filter(g => g.length);

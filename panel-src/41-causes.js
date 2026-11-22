@@ -202,6 +202,12 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && f.classification === "broken_reference" && f.rule_id.endsWith("_entity") && String(f.affected_object || "").includes(".");
   }
 
+  // What an object note does for a finding: it keeps an outage quiet (the kinds of finding marks.py hides), and for any other
+  // finding it only protects the object from the cleanup ("do not delete").
+  markQuiet(f) { return ["config_entry.not_loaded", "config_entry.reauth", "device.down", "app.stopped_in_use"].includes(f.rule_id) || ["unavailable", "unknown", "stale"].includes(f.classification); }
+
+  markEffect(findings) { return this.t([].concat(findings).some(f => this.markQuiet(f)) ? "markEffectQuiet" : "markEffectKeep"); }
+
   // The groups of the actions on a finding, in one fixed order for the row menu, the selection bar and the page of the object:
   // solve (a plan), decide, the object (note, rule), Home Assistant (label), write down, go to. Each entry is {icon, label, attr, sub};
   // a group without an entry is left out, and the groups are told apart by a separator.
@@ -229,7 +235,7 @@ class CausesMixin {
       : f.ignored_by === "label" ? [e("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)]
       : [e("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`), e(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)];
     const about = [
-      object && MARK_TYPES.includes(object.object_type) && !object.mark ? e(FSEL_ICONS.mark, "actMark", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : null,
+      object && MARK_TYPES.includes(object.object_type) && !object.mark ? e(FSEL_ICONS.mark, "actMark", `data-watch-mark="${this.esc(objectKey)}"`, [this.markEffect(f), object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : ""].filter(Boolean).join(" · ")) : null,
       object && this.excTargetOf(object) ? e(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, this.t("actRuleSub1")) : null,
     ];
     const ha = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? [e(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))] : [];
@@ -288,8 +294,8 @@ class CausesMixin {
     const labels = list.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length;
     const pick = kind => `data-group-state="${kind}" data-group-id="${this.esc(group?.id || "")}"`;
     const groups = [
-      list.length ? [item(FSEL_ICONS.status, "actDecide", pick("status"), this.t(list.length === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(list.length) }))] : [],
-      [canMark ? item(FSEL_ICONS.mark, "actMark", `data-watch-mark="${k}"`) : "", object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`, this.t("actRuleSub1")) : ""],
+      list.length ? [item(FSEL_ICONS.status, list.length === 1 ? "fselStatus" : "actDecide", pick("status"), this.t(list.length === 1 ? "actDecideSub1" : "actDecideSub", { n: this.formatNumber(list.length) }))] : [],
+      [canMark ? item(FSEL_ICONS.mark, "actMark", `data-watch-mark="${k}"`, list.length ? this.markEffect(list) : "") : "", object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${k}"`, this.t("actRuleSub1")) : ""],
       labels ? [item(FSEL_ICONS.label, "fselLabel", pick("label"), this.t("changesHa"))] : [],
       [item("mdi:notebook-edit-outline", "findingNote", `data-object-note="${k}"`)],
       open && object ? [item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${k}"`)] : [],

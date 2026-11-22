@@ -34,6 +34,8 @@
   - Jeder Eintrag sagt, was er erreicht („Nur dieser Befund“, „Dieses Objekt · auch künftige Befunde“); „Vorschau erstellen“ bei einer Automation heißt jetzt „Automation löschen …“.
   - Die Objektseite bietet auch Beheben, Ausnahme-Regel und Logbuch-Eintrag an; der einfache Modus blendet im Zeilenmenü nichts mehr aus.
   - „Label ergänzen“ aus einer Zeile behält die Auswahl; „1 von 39 Befunden der Gruppe passt zum Filter“ und weitere Einzahlformen.
+  - Die Objekt-Notiz sagt, was sie für den Befund tut („Hält Ausfälle still“ oder „Schützt vor dem Aufräumen“), die Ausnahme-Regel sagt, dass sie auch für künftige Befunde gilt, und die langen Hinweise, die den Titel wiederholten, entfallen. Die Objektseite bietet die Notiz nicht mehr doppelt an.
+  - In der Einfach-Ansicht blendet die Kopfzeile einer Gruppe Gewissheit und Regel-ID aus wie die Zeilen. Ein Text im Erstaufräumen sagte, eine Entscheidung lasse den Befund stehen; sie blendet ihn aus. Der Grund „trägt das Label housekeeper_ignore“ nennt auch Ausnahme-Regeln.
   - Die Kopfzeile eines Objekts mit mehreren Befunden hat dieselben Gruppen; Entscheiden und Label gelten dort für alle Befunde der Gruppe.
   - Eine ausgefallene Entität wird überall gleich behandelt: eine verwaiste lässt sich auch im Zeilenmenü deaktivieren oder ersetzen, eine, die ihre Integration nicht mehr liefert, wird entfernt statt deaktiviert, und eine schon deaktivierte wird nicht noch einmal angeboten.
 - **Verwaiste Statistiken:** Der Hilfetext nennt die Wartemarke und die Übertragung.
