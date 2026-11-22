@@ -945,7 +945,7 @@ class CleanupMixin {
 
   // After a move of orphaned statistics: the old ones are still there and can be deleted at once, as one more plan that asks again.
   purgeOldIds(plan) {
-    if (plan.status !== "verified" || !this.data.meta.recorder_available) return [];
+    if (plan.status !== "verified" || !this.data?.meta?.recorder_available) return [];
     const orphans = new Map((this.data.orphaned_statistics || []).map(o => [o.statistic_id, o]));
     return plan.actions.filter(a => a.kind === "migrate_meter" && a.result?.state === "done" && a.result.statistics?.verified && orphans.has(a.object_id) && (a.mode === "replace_statistics" || !orphans.get(a.object_id).in_energy)).map(a => a.object_id).slice(0, MAX_PLAN_ACTIONS);
   }

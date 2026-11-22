@@ -9133,9 +9133,12 @@ test("after a way that is only advice the check of the Fix page stays reachable"
 test("undoing a plan from the card asks first, in red, and runs only after the yes", () => {
   const { el } = panel("en");
   let click;
-  const root = { querySelectorAll: () => [], querySelector: sel => (sel === "[data-fc-plan-undo]" ? { addEventListener: (_, fn) => { click = fn; } } : null) };
+  const button = {};
+  const root = { querySelectorAll: sel => (sel === "[data-fc-plan-undo]" ? [button] : []), querySelector: () => null };
   el.plan = { plan_id: "p", actions: [] };
   el.bindFcPlan(root);
+  el.bindFcPlan(root);
+  click = button.onclick;
   let undone = 0;
   el.undoPlan = async () => { undone++; };
   el.render = () => {};
@@ -9198,4 +9201,10 @@ test("the head of a group picks only its own findings, and a Fix page does not t
   el.render = () => {};
   el.openFix("k2");
   assert.equal(el.findSel.size, 0, "going from one Fix page to another starts without picks");
+});
+
+test("the caption of the action box follows the recommended button even when a group before it is empty", () => {
+  const { el } = panel("en");
+  const html = el.fcActBox([{ label: "fcGroupFinding", items: [] }, { label: "fcGroupObject", items: [{ attr: "data-a", label: "A", icon: "mdi:check", hint: "says A", rec: true }] }]);
+  assert.ok(html.includes("fccap") && html.includes("says A") && !html.includes("aria-live"), "the line is drawn, and it is not a live region");
 });

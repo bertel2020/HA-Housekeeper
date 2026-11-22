@@ -394,9 +394,9 @@ class FirstCleanupMixin {
   fcActBox(groups) {
     const all = groups.flatMap(g => g.items), shown = all.find(i => i.sel) || all.find(i => i.rec) || all.find(i => i.primary);
     const btn = i => `<button type="button" class="fcbtn${i.rec || i.primary ? " rec" : ""}${i.sel ? " sel" : ""}"${i.sel === undefined ? "" : ` aria-pressed="${i.sel}"`} data-fc-hint="${this.esc(i.hint)}" title="${this.esc(i.hint)}" ${i.attr}><ha-icon icon="${i.icon}"></ha-icon>${i.label}${i.rec ? ` <em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}</button>`;
-    const at = Math.max(0, groups.findIndex(g => g.items.includes(shown)));
-    const caption = `<p class="fccap" data-fc-cap="${this.esc(shown?.hint || "")}" aria-live="polite">${this.esc(shown?.hint || "")}</p>`;
-    const rows = groups.filter(g => g.items.length).map((g, n) => `<div class="fcgrp">${g.label ? `<div class="fcgl">${this.t(g.label)}</div>` : ""}<div class="fcbtns">${g.items.map(btn).join("")}</div></div>${n === at ? caption : ""}`).join("");
+    const visible = groups.filter(g => g.items.length), at = Math.max(0, visible.findIndex(g => g.items.includes(shown)));
+    const caption = `<p class="fccap" data-fc-cap="${this.esc(shown?.hint || "")}">${this.esc(shown?.hint || "")}</p>`;
+    const rows = visible.map((g, n) => `<div class="fcgrp">${g.label ? `<div class="fcgl">${this.t(g.label)}</div>` : ""}<div class="fcbtns">${g.items.map(btn).join("")}</div></div>${n === at ? caption : ""}`).join("");
     return `<div class="fcactions">${rows}</div>`;
   }
 
@@ -645,6 +645,7 @@ class FirstCleanupMixin {
     // The line under the buttons says what the button under the pointer, in focus or touched last does; it falls back to the recommended one.
     root.querySelectorAll(".fcactions").forEach(box => {
       const cap = box.querySelector(".fccap");
+      if (!cap) return;
       const say = text => { cap.textContent = text; };
       box.querySelectorAll("[data-fc-hint]").forEach(b => { for (const ev of ["mouseenter", "focus", "touchstart"]) b.addEventListener(ev, () => say(b.dataset.fcHint)); });
       box.addEventListener("mouseleave", () => say(cap.dataset.fcCap));

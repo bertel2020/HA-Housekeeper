@@ -5395,7 +5395,7 @@ class CleanupMixin {
 
   // After a move of orphaned statistics: the old ones are still there and can be deleted at once, as one more plan that asks again.
   purgeOldIds(plan) {
-    if (plan.status !== "verified" || !this.data.meta.recorder_available) return [];
+    if (plan.status !== "verified" || !this.data?.meta?.recorder_available) return [];
     const orphans = new Map((this.data.orphaned_statistics || []).map(o => [o.statistic_id, o]));
     return plan.actions.filter(a => a.kind === "migrate_meter" && a.result?.state === "done" && a.result.statistics?.verified && orphans.has(a.object_id) && (a.mode === "replace_statistics" || !orphans.get(a.object_id).in_energy)).map(a => a.object_id).slice(0, MAX_PLAN_ACTIONS);
   }
@@ -22949,9 +22949,9 @@ class FirstCleanupMixin {
   fcActBox(groups) {
     const all = groups.flatMap(g => g.items), shown = all.find(i => i.sel) || all.find(i => i.rec) || all.find(i => i.primary);
     const btn = i => `<button type="button" class="fcbtn${i.rec || i.primary ? " rec" : ""}${i.sel ? " sel" : ""}"${i.sel === undefined ? "" : ` aria-pressed="${i.sel}"`} data-fc-hint="${this.esc(i.hint)}" title="${this.esc(i.hint)}" ${i.attr}><ha-icon icon="${i.icon}"></ha-icon>${i.label}${i.rec ? ` <em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}</button>`;
-    const at = Math.max(0, groups.findIndex(g => g.items.includes(shown)));
-    const caption = `<p class="fccap" data-fc-cap="${this.esc(shown?.hint || "")}" aria-live="polite">${this.esc(shown?.hint || "")}</p>`;
-    const rows = groups.filter(g => g.items.length).map((g, n) => `<div class="fcgrp">${g.label ? `<div class="fcgl">${this.t(g.label)}</div>` : ""}<div class="fcbtns">${g.items.map(btn).join("")}</div></div>${n === at ? caption : ""}`).join("");
+    const visible = groups.filter(g => g.items.length), at = Math.max(0, visible.findIndex(g => g.items.includes(shown)));
+    const caption = `<p class="fccap" data-fc-cap="${this.esc(shown?.hint || "")}">${this.esc(shown?.hint || "")}</p>`;
+    const rows = visible.map((g, n) => `<div class="fcgrp">${g.label ? `<div class="fcgl">${this.t(g.label)}</div>` : ""}<div class="fcbtns">${g.items.map(btn).join("")}</div></div>${n === at ? caption : ""}`).join("");
     return `<div class="fcactions">${rows}</div>`;
   }
 
@@ -23200,6 +23200,7 @@ class FirstCleanupMixin {
     // The line under the buttons says what the button under the pointer, in focus or touched last does; it falls back to the recommended one.
     root.querySelectorAll(".fcactions").forEach(box => {
       const cap = box.querySelector(".fccap");
+      if (!cap) return;
       const say = text => { cap.textContent = text; };
       box.querySelectorAll("[data-fc-hint]").forEach(b => { for (const ev of ["mouseenter", "focus", "touchstart"]) b.addEventListener(ev, () => say(b.dataset.fcHint)); });
       box.addEventListener("mouseleave", () => say(cap.dataset.fcCap));
@@ -23949,10 +23950,11 @@ class FcRecommendMixin {
 
   bindFcPlan(root) {
     root.querySelectorAll("[data-fc-plan]").forEach(el => el.onclick = () => this.fcPlanStart(el.dataset.key, JSON.parse(el.dataset.fcPlan)));
-    root.querySelector("[data-fc-plan-run]")?.addEventListener("click", () => this.fcPlanRun());
+    // onclick, not addEventListener: this is bound from two places on the same page and must run once.
+    root.querySelectorAll("[data-fc-plan-run]").forEach(el => el.onclick = () => this.fcPlanRun());
     root.querySelectorAll("[data-fc-plan-drop]").forEach(el => el.onclick = () => this.fcPlanDrop());
     // The same question as on the plan page: undoing runs only after a yes.
-    root.querySelector("[data-fc-plan-undo]")?.addEventListener("click", () => this.confirmAsk(this.t(this.statsStayOnUndo(this.plan) ? "undoAllKeepsStats" : "undoAskAllHint"), () => this.undoPlan(), { title: this.t("undoAskAll"), yes: this.t("undoYes"), danger: true }));
+    root.querySelectorAll("[data-fc-plan-undo]").forEach(el => el.onclick = () => this.confirmAsk(this.t(this.statsStayOnUndo(this.plan) ? "undoAllKeepsStats" : "undoAskAllHint"), () => this.undoPlan(), { title: this.t("undoAskAll"), yes: this.t("undoYes"), danger: true }));
   }
 }
 
@@ -25283,7 +25285,7 @@ class HAHousekeeperPanel extends HTMLElement {
     };
     root.querySelectorAll("tr[data-object], g[data-graph]").forEach(openByKey);
     root.querySelectorAll("div.startint[data-object]").forEach(openByKey);
-    root.querySelectorAll("tr[data-plan-open], tr[data-rem-row], tr[data-note-edit], tr[data-inc-row], tr[data-bh-row]").forEach(openByKey);
+    root.querySelectorAll("tr[data-plan-open], tr[data-rem-row], tr[data-note-edit], tr[data-inc-row], tr[data-bh-row], tr[data-mcp-row], tr[data-space-toggle], tr[data-space-ent]").forEach(openByKey);
     root.querySelectorAll("g[data-graph-group]").forEach(openByKey);
     root.querySelectorAll("[data-graph-depth]").forEach(el => el.onclick = () => { this.graphDepth = Number(el.dataset.graphDepth); this.graphLimit = GRAPH_NODE_STEP; this.render(); });
     root.querySelector("[data-graph-impact]")?.addEventListener("click", () => { this.graphImpact = !this.graphImpact; this.render(); });
