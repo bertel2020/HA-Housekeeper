@@ -469,7 +469,8 @@ class CleanupMixin {
     try {
       const res = await this._hass.callWS({ type: "ha_housekeeper/plan_undo", plan_id: this.plan.plan_id, ...(objectIds ? { object_ids: objectIds } : {}) });
       const kindOf = id => this.plan?.actions.find(a => a.object_id === id)?.kind;
-      this.undoMessage = res.results.map(r => `${r.object_id}: ${this.t(r.outcome === "undone" && REMOVAL_KINDS.includes(kindOf(r.object_id)) ? "undo_restored" : r.outcome === "undone" && kindOf(r.object_id) === "add_label" ? "undo_unlabelled" : `undo_${r.outcome}`)}`).join(" · ");
+      const nameOf = id => this.plan?.actions.find(a => a.object_id === id)?.name || id;
+      this.undoMessage = res.results.map(r => `${nameOf(r.object_id)}: ${this.t(r.outcome === "undone" && REMOVAL_KINDS.includes(kindOf(r.object_id)) ? "undo_restored" : r.outcome === "undone" && kindOf(r.object_id) === "add_label" ? "undo_unlabelled" : `undo_${r.outcome}`)}`).join(" · ");
       const status = await this._hass.callWS({ type: "ha_housekeeper/plan_status", plan_id: this.plan.plan_id });
       this.adoptPlan(status.plan);
       if (this.data) this.load(false);

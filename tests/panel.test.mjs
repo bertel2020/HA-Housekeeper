@@ -2641,7 +2641,7 @@ test("the whole confirmation flow works end to end against a scripted backend", 
   await el.undoPlan();
   assert.equal(el.undoAsk, null);
   assert.equal(el.plan.status, "undone");
-  assert.ok(el.undoMessage.includes("sensor.old: restored"));
+  assert.ok(el.undoMessage.includes("Old: restored"));
   assert.ok(!el.cleanupRunning());
 });
 
@@ -9128,4 +9128,19 @@ test("after a way that is only advice the check of the Fix page stays reachable"
   assert.ok(el.fixDecide(f).includes("data-fix-self-done"), "waiting for the integration still leads to the check");
   el.fixWays = [{ way: "reload", kind: "panel", recommended: true }];
   assert.ok(!el.fixDecide(f).includes("data-fix-self-done"), "a way with a button of its own sets the mark when it is used");
+});
+
+test("undoing a plan from the card asks first, in red, and runs only after the yes", () => {
+  const { el } = panel("en");
+  let click;
+  const root = { querySelectorAll: () => [], querySelector: sel => (sel === "[data-fc-plan-undo]" ? { addEventListener: (_, fn) => { click = fn; } } : null) };
+  el.bindFcPlan(root);
+  let undone = 0;
+  el.undoPlan = async () => { undone++; };
+  el.render = () => {};
+  click();
+  assert.equal(undone, 0, "the click only asks");
+  assert.ok(el.confirmState.danger && el.confirmState.yes === "Yes, undo", "the question is red with the same words as the plan page");
+  el.confirmState.run();
+  assert.equal(undone, 1, "the yes undoes");
 });

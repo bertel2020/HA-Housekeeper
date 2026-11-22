@@ -216,6 +216,7 @@ class FcRecommendMixin {
     root.querySelectorAll("[data-fc-plan]").forEach(el => el.onclick = () => this.fcPlanStart(el.dataset.key, JSON.parse(el.dataset.fcPlan)));
     root.querySelector("[data-fc-plan-run]")?.addEventListener("click", () => this.fcPlanRun());
     root.querySelectorAll("[data-fc-plan-drop]").forEach(el => el.onclick = () => this.fcPlanDrop());
-    root.querySelector("[data-fc-plan-undo]")?.addEventListener("click", () => this.undoPlan());
+    // The same question as on the plan page: undoing runs only after a yes.
+    root.querySelector("[data-fc-plan-undo]")?.addEventListener("click", () => this.confirmAsk(this.t("undoAskAllHint"), () => this.undoPlan(), { title: this.t("undoAskAll"), yes: this.t("undoYes"), danger: true }));
   }
 }
