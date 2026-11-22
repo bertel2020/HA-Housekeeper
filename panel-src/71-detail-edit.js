@@ -1,11 +1,11 @@
 // Renaming one entity and giving an entity or device an area, from its detail page. Both end in a plan
 // like the bulk forms of the policy list. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  deTitle: "Umbenennen und Bereich", deNewId: "Neue ID", deBadId: "Erlaubt sind a–z, 0–9 und _.", deRename: "Vorschau erstellen", deAssign: "Bereich zuweisen", deRenameShort: "Vorbereiten", deAssignShort: "Zuweisen",
+  deTitle: "Umbenennen und Bereich", deNewId: "Neue ID", deBadId: "Erlaubt sind a–z, 0–9 und _.", deRename: "Umbenennen: Vorschau", deAssign: "Bereich zuweisen", deRenameShort: "Vorbereiten", deAssignShort: "Zuweisen",
   deArea: "Bereich", deNoArea: "Kein Bereich", deAreaNow: "Heute: {area}", deRenameNote: "Verweise in Automationen, Skripten und Szenen schreibt Housekeeper mit um.",
 });
 Object.assign(TEXT.en, {
-  deTitle: "Rename and area", deNewId: "New ID", deBadId: "Only a–z, 0–9 and _ are allowed.", deRename: "Create preview", deAssign: "Assign area", deRenameShort: "Prepare", deAssignShort: "Assign",
+  deTitle: "Rename and area", deNewId: "New ID", deBadId: "Only a–z, 0–9 and _ are allowed.", deRename: "Rename: preview", deAssign: "Assign area", deRenameShort: "Prepare", deAssignShort: "Assign",
   deArea: "Area", deNoArea: "No area", deAreaNow: "Now: {area}", deRenameNote: "Housekeeper rewrites references in automations, scripts and scenes as well.",
 });
 

@@ -31,7 +31,7 @@ Object.assign(TEXT.de, {
   rwErrDuplicate: "Ziel schon für {name} vergeben", rwWarnGone: "Ziel läuft nicht", rwWarnUnit: "Einheit weicht ab ({old} → {new})",
   rwMenuHow: "Art ändern …", rwMenuSuggest: "Vorschlag übernehmen", rwMenuSkip: "Zeile überspringen",
  
-  rwChosen: "{count} Paare bestätigt", rwCreate: "Vorschau erstellen ({count})", rwFixFirst: "Behebe zuerst die Fehler in den Zeilen.", rwManyPairs: "Ab 50 Paaren wird die Vorschau langsam; mehrere Läufe sind übersichtlicher.",
+  rwChosen: "{count} Paare bestätigt", rwCreate: "Ersetzen: Vorschau ({count})", rwFixFirst: "Behebe zuerst die Fehler in den Zeilen.", rwManyPairs: "Ab 50 Paaren wird die Vorschau langsam; mehrere Läufe sind übersichtlicher.",
   reason_target_duplicate: "Dieselbe neue Entität ist für mehrere alte gewählt.", reason_target_replaced: "Die neue Entität wird selbst ersetzt (oder ersetzt eine andere).",
 });
 Object.assign(TEXT.en, {
@@ -66,7 +66,7 @@ Object.assign(TEXT.en, {
   rwErrDuplicate: "Target already taken for {name}", rwWarnGone: "Target is not working", rwWarnUnit: "Unit differs ({old} → {new})",
   rwMenuHow: "Change kind …", rwMenuSuggest: "Take the proposal", rwMenuSkip: "Skip this row",
  
-  rwChosen: "{count} pairs confirmed", rwCreate: "Create preview ({count})", rwFixFirst: "Fix the errors in the rows first.", rwManyPairs: "From 50 pairs on the preview gets slow; several runs are easier to read.",
+  rwChosen: "{count} pairs confirmed", rwCreate: "Replace: preview ({count})", rwFixFirst: "Fix the errors in the rows first.", rwManyPairs: "From 50 pairs on the preview gets slow; several runs are easier to read.",
   reason_target_duplicate: "The same new entity is chosen for several old ones.", reason_target_replaced: "The new entity is replaced itself (or replaces another one).",
 });
 

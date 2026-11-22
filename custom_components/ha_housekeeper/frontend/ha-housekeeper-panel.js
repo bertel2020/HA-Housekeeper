@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"eea63cc439"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"6057811001"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b8cf9314f5"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d4acc5346e"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"95c72dc565"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"4eb166122a"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"760d267a99"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"8ce24e2bb0"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"3fcc2598ba"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"fc8e14b621"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"a017ac850f"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"d178753ccb"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"fd552a2671"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"f708ac5294"}];
 
 const TEXT = {
   de: {
@@ -688,7 +688,7 @@ Object.assign(TEXT.de, {
   quarantineHint: "Entitäten und Geräte, die Housekeeper deaktiviert hat. Entfernen ist frühestens nach {days} Tagen möglich. Mit „Aus Quarantäne holen“ aktivierst du ein Objekt wieder.",
   deviceCandidatesHint: "Geräte ohne funktionierende Entitäten. Deaktivieren schickt sie in Quarantäne.", removalDeviceHint: "Geräte in Quarantäne. Entfernen ist erst nach {days} Tagen möglich.", deviceEntities: "{count} Entitäten", deviceNoEntities: "Keine Entitäten", sortEntities: "Entitäten",
   replaceTitle: "Verweise ersetzen", replaceHint: "Ersetzt die alte Entität überall dort, wo sie exakt eingetragen ist: Automationen, Skripte, Szenen, Dashboards im Speichermodus und das Energie-Dashboard. Templates und YAML-Dashboards zeigt Housekeeper nur an. Die alte Entität bleibt unverändert; danach kannst du sie in Quarantäne schicken.",
-  replaceOld: "Alte Entität (wird ersetzt)", replaceNew: "Neue Entität", replacePreview: "Vorschau erstellen", replaceChanges: "{count} Änderungen", replaceManual: "von Hand prüfen: {count} Templates", replaceNoSources: "Keine Verweise gefunden", replaceSummary: "{count} Änderungen in {sources} Quellen", replaceMoreChanges: "… und {count} weitere Änderungen in dieser Quelle", replaceMoreSources: "{count} weitere Quellen", replaceByHand: "Von Hand zu erledigen ({count})", srcTrigger: "Auslöser", srcCondition: "Bedingung", srcAction: "Aktion", energyDashboard: "Energie-Dashboard", replaceSources: "Quellen",
+  replaceOld: "Alte Entität (wird ersetzt)", replaceNew: "Neue Entität", replacePreview: "Ersetzen: Vorschau", replaceChanges: "{count} Änderungen", replaceManual: "von Hand prüfen: {count} Templates", replaceNoSources: "Keine Verweise gefunden", replaceSummary: "{count} Änderungen in {sources} Quellen", replaceMoreChanges: "… und {count} weitere Änderungen in dieser Quelle", replaceMoreSources: "{count} weitere Quellen", replaceByHand: "Von Hand zu erledigen ({count})", srcTrigger: "Auslöser", srcCondition: "Bedingung", srcAction: "Aktion", energyDashboard: "Energie-Dashboard", replaceSources: "Quellen",
   recurringTitle: "Wiederkehrende Geräte", recurringHint: "Diese Geräte hat Housekeeper vergessen, doch die Integration hat sie wieder angelegt. Deaktivieren ist hier meist sinnvoller; oft muss das Gerät am Quellsystem (Hub, App, Cloud) entfernt werden.", recurringSince: "vergessen am {date} · Integration: {domains}",
 });
 Object.assign(TEXT.en, {
@@ -721,7 +721,7 @@ Object.assign(TEXT.en, {
   quarantineHint: "Entities and devices Housekeeper has disabled. Removal is possible no earlier than after {days} days. “Take out of quarantine” enables an object again.",
   deviceCandidatesHint: "Devices without working entities. Disabling sends them to quarantine.", removalDeviceHint: "Devices in quarantine. Removal is possible only after {days} days.", deviceEntities: "{count} entities", deviceNoEntities: "No entities", sortEntities: "Entities",
   replaceTitle: "Replace references", replaceHint: "Replaces the old entity wherever it is entered exactly: automations, scripts, scenes, storage-mode dashboards and the Energy dashboard. Housekeeper only lists templates and YAML dashboards. The old entity stays as it is; afterwards you can send it to quarantine.",
-  replaceOld: "Old entity (to be replaced)", replaceNew: "New entity", replacePreview: "Create preview", replaceChanges: "{count} changes", replaceManual: "check by hand: {count} templates", replaceNoSources: "No references found", replaceSummary: "{count} changes in {sources} sources", replaceMoreChanges: "… and {count} more changes in this source", replaceMoreSources: "{count} more sources", replaceByHand: "To do by hand ({count})", srcTrigger: "Trigger", srcCondition: "Condition", srcAction: "Action", energyDashboard: "Energy dashboard", replaceSources: "Sources",
+  replaceOld: "Old entity (to be replaced)", replaceNew: "New entity", replacePreview: "Replace: preview", replaceChanges: "{count} changes", replaceManual: "check by hand: {count} templates", replaceNoSources: "No references found", replaceSummary: "{count} changes in {sources} sources", replaceMoreChanges: "… and {count} more changes in this source", replaceMoreSources: "{count} more sources", replaceByHand: "To do by hand ({count})", srcTrigger: "Trigger", srcCondition: "Condition", srcAction: "Action", energyDashboard: "Energy dashboard", replaceSources: "Sources",
   recurringTitle: "Returning devices", recurringHint: "Housekeeper made Home Assistant forget these devices, but the integration created them again. Disabling usually makes more sense here; often the device has to be removed at the source (hub, app, cloud).", recurringSince: "forgotten on {date} · integration: {domains}",
 });
 
@@ -11903,7 +11903,7 @@ Object.assign(TEXT.de, {
   exOld: "Altes Gerät", exNew: "Neues Gerät", exPick: "Gerät wählen", exLoad: "Vorschläge laden", exLoading: "Lade …", exFailed: "Keine Vorschläge: {reason}",
   exNoPairs: "Das alte Gerät hat keine Entitäten.", exNoTarget: "Kein Ersatz", exSuggested: "Vorschlag", exUsed: "{count} Verwendungen", exUnused: "Nichts zu ersetzen",
   exHow: "Art", exHow_replace: "Referenzen ersetzen", exHow_both: "Statistik übernehmen (Verlauf und ID)", exHow_statistics: "Statistik übernehmen (nur Verlauf)", exHow_id: "Statistik übernehmen (nur ID)",
-  exChosen: "{count} Paare bestätigt", exCreate: "Vorschau erstellen ({count})", exUnmatched: "Ohne Gegenstück am alten Gerät: {list}",
+  exChosen: "{count} Paare bestätigt", exCreate: "Austauschen: Vorschau ({count})", exUnmatched: "Ohne Gegenstück am alten Gerät: {list}",
   exDisableOld: "Altes Gerät deaktivieren …", exDisableHint: "Erst nach dem Austausch. Das geht nur, wenn am alten Gerät nichts mehr funktioniert und nichts mehr darauf verweist.",
   exReason_same_class: "gleiche Geräteklasse", exReason_same_unit: "gleiche Einheit", exReason_same_state_class: "gleiche Zustandsklasse", exReason_same_area: "gleicher Bereich", exReason_similar_name: "ähnlicher Name", exReason_same_id_tail: "gleiche ID-Endung",
   exSumPairs: "{count} Paare", exSumSuggest: "{count} mit Vorschlag", exSumNone: "{count} ohne Verwendung", exSumUses: "{count} Verwendungen insgesamt",
@@ -11926,7 +11926,7 @@ Object.assign(TEXT.en, {
   exOld: "Old device", exNew: "New device", exPick: "Pick a device", exLoad: "Load proposals", exLoading: "Loading …", exFailed: "No proposals: {reason}",
   exNoPairs: "The old device has no entities.", exNoTarget: "No replacement", exSuggested: "suggested", exUsed: "{count} uses", exUnused: "Nothing to replace",
   exHow: "Kind", exHow_replace: "Replace references", exHow_both: "Take over statistics (history and ID)", exHow_statistics: "Take over statistics (history only)", exHow_id: "Take over statistics (ID only)",
-  exChosen: "{count} pairs confirmed", exCreate: "Create preview ({count})", exUnmatched: "Without a counterpart on the old device: {list}",
+  exChosen: "{count} pairs confirmed", exCreate: "Exchange: preview ({count})", exUnmatched: "Without a counterpart on the old device: {list}",
   exDisableOld: "Disable old device …", exDisableHint: "Only after the exchange. It works only when nothing on the old device works any more and nothing refers to it.",
   exReason_same_class: "same device class", exReason_same_unit: "same unit", exReason_same_state_class: "same state class", exReason_same_area: "same area", exReason_similar_name: "similar name", exReason_same_id_tail: "same ID ending",
   exSumPairs: "{count} pairs", exSumSuggest: "{count} with a proposal", exSumNone: "{count} unused", exSumUses: "{count} uses in total",
@@ -13481,7 +13481,7 @@ Object.assign(TEXT.de, {
   counterSumMeasure: "{count} Ausreißer, bis {extreme} {unit} statt etwa {good} {unit} ({from} bis {to})",
   counterLine: "{when}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", spikeLine: "{when}: Wert {low} {unit} statt etwa {good} {unit}",
   counterMore: "{count} weitere", counterCycles: "{count} Zähler fallen planmäßig auf null zurück (zum Beispiel Tageszähler) und wurden nicht als Fehler gewertet.",
-  counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Vorschau erstellen", counterFix: "Diesen Fund bereinigen", rangePreview: "Zeitraum bereinigen",
+  counterNone: "Keine Ausreißer gefunden.", counterChecked: "{count} Sensoren geprüft.", counterPreview: "Bereinigen: Vorschau", counterFix: "Diesen Fund bereinigen", rangePreview: "Zeitraum bereinigen",
   counterFound: "{range}: niedrigster Wert {low} {unit} statt etwa {good} {unit}", counterFinding: "Fehlerhafte Werte {range}: zwischen {low} und {high} {unit}. Gute Werte davor {before} und danach {after} {unit}.",
   counterRows: "Geändert werden {states} Verlaufswerte, {short} 5-Minuten-Werte und {long} Stundenwerte; die Summe wird in {tail} späteren Statistikzeilen berichtigt.",
   counterSkipped: "{table}: {count} Fund(e) nicht reparierbar (keine guten Werte davor oder danach).", counterTable_states: "Verlaufswerte", counterTable_short_term: "5-Minuten-Werte", counterTable_long_term: "Stundenwerte",
@@ -13506,7 +13506,7 @@ Object.assign(TEXT.en, {
   counterSumMeasure: "{count} outliers, up to {extreme} {unit} instead of about {good} {unit} ({from} to {to})",
   counterLine: "{when}: lowest value {low} {unit} instead of about {good} {unit}", spikeLine: "{when}: value {low} {unit} instead of about {good} {unit}",
   counterMore: "{count} more", counterCycles: "{count} counters fall back to zero on schedule (a daily meter, for example) and were not counted as errors.",
-  counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Create preview", counterFix: "Clean up this finding", rangePreview: "Clean up this range",
+  counterNone: "No outliers found.", counterChecked: "{count} sensors checked.", counterPreview: "Clean up: preview", counterFix: "Clean up this finding", rangePreview: "Clean up this range",
   counterFound: "{range}: lowest value {low} {unit} instead of about {good} {unit}", counterFinding: "Faulty values {range}: between {low} and {high} {unit}. Good values before {before} and after {after} {unit}.",
   counterRows: "{states} history values, {short} 5-minute rows and {long} hourly rows change; the sum is corrected in {tail} later statistics rows.",
   counterSkipped: "{table}: {count} finding(s) cannot be repaired (no good values before or after).", counterTable_states: "History values", counterTable_short_term: "5-minute rows", counterTable_long_term: "Hourly rows",
@@ -14889,7 +14889,7 @@ Object.assign(TEXT.de, {
   etGone: "Wird gelöscht", etGoneSub: "Gewählte Daten älter als {days} Tage", etStaySub: "die letzten {days} Tage", etStay: "Bleibt", etBefore: "davor", etAfter: "danach",
   etWarnEnergy: "Das verändert Auswertungen. Diese Entität steht im Energie-Dashboard. Fehlen die ältesten Stunden, beginnen Diagramme und Summen später. Die Summen danach bleiben richtig. Es gibt keinen Weg zurück außer dem Backup.",
   etWarnLong: "Das verändert Auswertungen. Fehlen die ältesten Stunden der Langzeitstatistik, beginnen Diagramme und Summen später. Die Summen danach bleiben richtig. Es gibt keinen Weg zurück außer dem Backup.",
-  etFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Die Zahl der Zeilen steht erst in der Vorschau fest.", etPreview: "Vorschau erstellen", etBusy: "Plan wird erstellt …",
+  etFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Die Zahl der Zeilen steht erst in der Vorschau fest.", etPreview: "Kürzen: Vorschau", etBusy: "Plan wird erstellt …",
   etSubTables: "{tables}", etSubOlder: "älter als {days} Tage: {rows} Zeilen", etSubRange: "{from} bis {to}: {rows} Zeilen",
   reason_trim_statistics: "Die Langzeitstatistik wird gekürzt: Diagramme und Summen beginnen später.", reason_bad_tables: "Die Auswahl der Daten ist ungültig.", reason_range_states_only: "Ein Zeitraum gilt nur für Zustände, nicht für Statistiken.",
 });
@@ -14905,7 +14905,7 @@ Object.assign(TEXT.en, {
   etGone: "Will be deleted", etGoneSub: "Chosen data older than {days} days", etStaySub: "the last {days} days", etStay: "Stays", etBefore: "before", etAfter: "after",
   etWarnEnergy: "This changes what is shown. This entity is in the Energy dashboard. Without the oldest hours, charts and sums begin later. The sums after that stay right. The only way back is the backup.",
   etWarnLong: "This changes what is shown. Without the oldest hours of the long-term statistics, charts and sums begin later. The sums after that stay right. The only way back is the backup.",
-  etFoot: "Before deleting, Housekeeper makes a Home Assistant backup with the database. The number of rows is only known in the preview.", etPreview: "Create preview", etBusy: "Creating the plan …",
+  etFoot: "Before deleting, Housekeeper makes a Home Assistant backup with the database. The number of rows is only known in the preview.", etPreview: "Trim: preview", etBusy: "Creating the plan …",
   etSubTables: "{tables}", etSubOlder: "older than {days} days: {rows} rows", etSubRange: "{from} to {to}: {rows} rows",
   reason_trim_statistics: "The long-term statistics are trimmed: charts and sums begin later.", reason_bad_tables: "The choice of data is not valid.", reason_range_states_only: "A period applies to states only, not to statistics.",
 });
@@ -15726,7 +15726,7 @@ Object.assign(TEXT.de, {
   trimTitle: "Alten Verlauf kürzen", trimHint: "Der Ausschluss gilt nur für neue Daten. Schon gespeicherte Zustände bleiben, bis du sie hier löschst.", trimChosen: "{count} Entitäten ausgewählt", trimChosenOne: "1 Entität ausgewählt",
   trimKeep: "Zustände behalten, die jünger sind als", trimDays: "{days} Tage", trimGone: "Wird gelöscht", trimGoneSub: "Zustände älter als {days} Tage", trimStay: "Bleibt", trimStaySub: "die letzten {days} Tage", trimEarlier: "früher", trimAgo: "vor {days} Tagen", trimToday: "heute",
   trimFactStats: "Statistiken bleiben", trimFactStatsSub: "Energie-Dashboard und Langzeitdiagramme ändern sich nicht.", trimFactRows: "Zeilenzahl erst in der Vorschau", trimFactRowsSub: "Du siehst pro Entität, wie viele Zeilen wegfallen, bevor etwas passiert.",
-  trimFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Zurücknehmen geht nur mit diesem Backup.", trimPreview: "Vorschau erstellen ({count})", trimPreviewOne: "Vorschau erstellen (1)", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
+  trimFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Zurücknehmen geht nur mit diesem Backup.", trimPreview: "Kürzen: Vorschau ({count})", trimPreviewOne: "Kürzen: Vorschau (1)", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   trimSub: "älter als {days} Tage: {rows} Zeilen", reason_bad_keep_days: "Die Zeit zum Behalten ist ungültig.", reason_not_counted: "Die Zeilen ließen sich nicht zählen.", reason_nothing_to_trim: "Nichts zu löschen: Es gibt keine so alten Zustände.",
   check_history_trimmed: "Alter Verlauf ist gelöscht", abort_trim_unverified: "Gelöscht, aber die übrigen Zeilen ließen sich nicht zählen.", abort_trim_left: "Nach dem Löschen gab es noch ältere Zeilen.",
   confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Das Backup enthält die Datenbank. Das lässt sich nur mit dem Backup zurücknehmen.",
@@ -15741,7 +15741,7 @@ Object.assign(TEXT.en, {
   trimTitle: "Trim the old history", trimHint: "The exclusion only applies to new data. States already stored stay until you delete them here.", trimChosen: "{count} entities selected", trimChosenOne: "1 entity selected",
   trimKeep: "Keep states that are younger than", trimDays: "{days} days", trimGone: "Will be deleted", trimGoneSub: "States older than {days} days", trimStay: "Stays", trimStaySub: "the last {days} days", trimEarlier: "earlier", trimAgo: "{days} days ago", trimToday: "today",
   trimFactStats: "Statistics stay", trimFactStatsSub: "The Energy dashboard and long-term charts do not change.", trimFactRows: "Row count comes with the preview", trimFactRowsSub: "You see per entity how many rows go before anything happens.",
-  trimFoot: "Before deleting, Housekeeper creates a Home Assistant backup including the database. It can only be undone with that backup.", trimPreview: "Create preview ({count})", trimPreviewOne: "Create preview (1)", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
+  trimFoot: "Before deleting, Housekeeper creates a Home Assistant backup including the database. It can only be undone with that backup.", trimPreview: "Trim: preview ({count})", trimPreviewOne: "Trim: preview (1)", trimBusy: "Creating the plan …", trimFailed: "The plan could not be created: {detail}",
   trimSub: "older than {days} days: {rows} rows", reason_bad_keep_days: "The time to keep is not valid.", reason_not_counted: "The rows could not be counted.", reason_nothing_to_trim: "Nothing to delete: there are no states that old.",
   check_history_trimmed: "Old history is deleted", abort_trim_unverified: "Deleted, but the rows left could not be counted.", abort_trim_left: "Older rows were still there after deleting.",
   confirmedSummaryTrim: "The old history of {count} entities will be deleted. The backup includes the database. It can only be taken back with that backup.",
@@ -17870,7 +17870,7 @@ Object.assign(TEXT.de, {
   bkcCount: "Housekeeper-Backups", bkcBytes: "belegt", bkcSuggested: "zum Löschen vorgeschlagen", bkcRule: "Was behalten wird", bkcKeepLast: "Die letzten", bkcKeepDays: "Backups und alle aus den letzten", bkcDays: "Tagen.", bkcReset: "Auf Vorschlag zurücksetzen",
   bkcProtectNote: "Ältere Backups sind zum Löschen vorausgewählt; du kannst die Auswahl unten ändern. Nie auswählbar sind Backups von Plänen, die noch beobachtet werden, und das jüngste Backup eines Plans, der sich noch rückgängig machen lässt.", bkcSelSum: "{count} ausgewählt · {bytes}",
   bkcProtected_watching: "geschützt: Beobachtung läuft", bkcProtected_undo: "geschützt: Rückgängig möglich", bkcAge: "{days} Tage alt", bkcToday: "von heute", bkcDb: "mit Datenbank", bkcNoDb: "ohne Datenbank", bkcNoPlan: "Plan nicht mehr im Journal",
-  bkcOnlyReturn: "Dieses Backup ist die einzige Möglichkeit, gelöschte oder zusammengeführte Daten dieses Plans zurückzuholen.", bkcPlan: "Vorschau erstellen ({count})", bkcFinal: "Löschen ist endgültig. Es gibt kein Rückgängig.",
+  bkcOnlyReturn: "Dieses Backup ist die einzige Möglichkeit, gelöschte oder zusammengeführte Daten dieses Plans zurückzuholen.", bkcPlan: "Backups löschen: Vorschau ({count})", bkcFinal: "Löschen ist endgültig. Es gibt kein Rückgängig.",
   bkcNone: "Es gibt keine Housekeeper-Backups.", bkcUnavailable: "Die Backups ließen sich nicht lesen.", bkcLoading: "Backups werden gelesen …", bkcFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   reason_backup_missing: "Das Backup gibt es nicht mehr.", reason_not_housekeeper_backup: "Das ist kein Backup von Housekeeper.", reason_backup_protected: "Geschützt: Der Plan wird noch beobachtet oder das Backup erlaubt noch ein Rückgängig.", reason_only_return: "Einzige Möglichkeit, Daten dieses Plans zurückzuholen.",
   check_backup_deleted: "Backup ist gelöscht", confirmedSummaryBackups: "{count} Backups werden gelöscht. Das ist endgültig; es wird kein neues Backup angelegt.", undoFinal: "endgültig",
@@ -17889,7 +17889,7 @@ Object.assign(TEXT.en, {
   bkcCount: "Housekeeper backups", bkcBytes: "used", bkcSuggested: "suggested for deleting", bkcRule: "What is kept", bkcKeepLast: "The last", bkcKeepDays: "backups and all from the last", bkcDays: "days.", bkcReset: "Reset to the suggestion",
   bkcProtectNote: "Older backups are preselected for deleting; you can change the selection below. Never selectable are backups of plans that are still watched, and the newest backup of a plan that can still be undone.", bkcSelSum: "{count} selected · {bytes}",
   bkcProtected_watching: "protected: being watched", bkcProtected_undo: "protected: undo possible", bkcAge: "{days} days old", bkcToday: "from today", bkcDb: "with database", bkcNoDb: "without database", bkcNoPlan: "plan no longer in the journal",
-  bkcOnlyReturn: "This backup is the only way to get back data this plan deleted or merged.", bkcPlan: "Create preview ({count})", bkcFinal: "Deleting is final. There is no undo.",
+  bkcOnlyReturn: "This backup is the only way to get back data this plan deleted or merged.", bkcPlan: "Delete backups: preview ({count})", bkcFinal: "Deleting is final. There is no undo.",
   bkcNone: "There are no Housekeeper backups.", bkcUnavailable: "The backups could not be read.", bkcLoading: "Reading backups …", bkcFailed: "The plan could not be created: {detail}",
   reason_backup_missing: "The backup no longer exists.", reason_not_housekeeper_backup: "This is not a Housekeeper backup.", reason_backup_protected: "Protected: the plan is still watched or the backup still allows an undo.", reason_only_return: "The only way to get back data of this plan.",
   check_backup_deleted: "Backup is deleted", confirmedSummaryBackups: "{count} backups will be deleted. This is final; no new backup is made.", undoFinal: "final",
@@ -18157,11 +18157,11 @@ Object.assign(TEXT.en, {
 // Renaming one entity and giving an entity or device an area, from its detail page. Both end in a plan
 // like the bulk forms of the policy list. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
-  deTitle: "Umbenennen und Bereich", deNewId: "Neue ID", deBadId: "Erlaubt sind a–z, 0–9 und _.", deRename: "Vorschau erstellen", deAssign: "Bereich zuweisen", deRenameShort: "Vorbereiten", deAssignShort: "Zuweisen",
+  deTitle: "Umbenennen und Bereich", deNewId: "Neue ID", deBadId: "Erlaubt sind a–z, 0–9 und _.", deRename: "Umbenennen: Vorschau", deAssign: "Bereich zuweisen", deRenameShort: "Vorbereiten", deAssignShort: "Zuweisen",
   deArea: "Bereich", deNoArea: "Kein Bereich", deAreaNow: "Heute: {area}", deRenameNote: "Verweise in Automationen, Skripten und Szenen schreibt Housekeeper mit um.",
 });
 Object.assign(TEXT.en, {
-  deTitle: "Rename and area", deNewId: "New ID", deBadId: "Only a–z, 0–9 and _ are allowed.", deRename: "Create preview", deAssign: "Assign area", deRenameShort: "Prepare", deAssignShort: "Assign",
+  deTitle: "Rename and area", deNewId: "New ID", deBadId: "Only a–z, 0–9 and _ are allowed.", deRename: "Rename: preview", deAssign: "Assign area", deRenameShort: "Prepare", deAssignShort: "Assign",
   deArea: "Area", deNoArea: "No area", deAreaNow: "Now: {area}", deRenameNote: "Housekeeper rewrites references in automations, scripts and scenes as well.",
 });
 
@@ -21972,7 +21972,7 @@ Object.assign(TEXT.de, {
   rwErrDuplicate: "Ziel schon für {name} vergeben", rwWarnGone: "Ziel läuft nicht", rwWarnUnit: "Einheit weicht ab ({old} → {new})",
   rwMenuHow: "Art ändern …", rwMenuSuggest: "Vorschlag übernehmen", rwMenuSkip: "Zeile überspringen",
  
-  rwChosen: "{count} Paare bestätigt", rwCreate: "Vorschau erstellen ({count})", rwFixFirst: "Behebe zuerst die Fehler in den Zeilen.", rwManyPairs: "Ab 50 Paaren wird die Vorschau langsam; mehrere Läufe sind übersichtlicher.",
+  rwChosen: "{count} Paare bestätigt", rwCreate: "Ersetzen: Vorschau ({count})", rwFixFirst: "Behebe zuerst die Fehler in den Zeilen.", rwManyPairs: "Ab 50 Paaren wird die Vorschau langsam; mehrere Läufe sind übersichtlicher.",
   reason_target_duplicate: "Dieselbe neue Entität ist für mehrere alte gewählt.", reason_target_replaced: "Die neue Entität wird selbst ersetzt (oder ersetzt eine andere).",
 });
 Object.assign(TEXT.en, {
@@ -22007,7 +22007,7 @@ Object.assign(TEXT.en, {
   rwErrDuplicate: "Target already taken for {name}", rwWarnGone: "Target is not working", rwWarnUnit: "Unit differs ({old} → {new})",
   rwMenuHow: "Change kind …", rwMenuSuggest: "Take the proposal", rwMenuSkip: "Skip this row",
  
-  rwChosen: "{count} pairs confirmed", rwCreate: "Create preview ({count})", rwFixFirst: "Fix the errors in the rows first.", rwManyPairs: "From 50 pairs on the preview gets slow; several runs are easier to read.",
+  rwChosen: "{count} pairs confirmed", rwCreate: "Replace: preview ({count})", rwFixFirst: "Fix the errors in the rows first.", rwManyPairs: "From 50 pairs on the preview gets slow; several runs are easier to read.",
   reason_target_duplicate: "The same new entity is chosen for several old ones.", reason_target_replaced: "The new entity is replaced itself (or replaces another one).",
 });
 

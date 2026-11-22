@@ -12,7 +12,7 @@ Object.assign(TEXT.de, {
   etGone: "Wird gelöscht", etGoneSub: "Gewählte Daten älter als {days} Tage", etStaySub: "die letzten {days} Tage", etStay: "Bleibt", etBefore: "davor", etAfter: "danach",
   etWarnEnergy: "Das verändert Auswertungen. Diese Entität steht im Energie-Dashboard. Fehlen die ältesten Stunden, beginnen Diagramme und Summen später. Die Summen danach bleiben richtig. Es gibt keinen Weg zurück außer dem Backup.",
   etWarnLong: "Das verändert Auswertungen. Fehlen die ältesten Stunden der Langzeitstatistik, beginnen Diagramme und Summen später. Die Summen danach bleiben richtig. Es gibt keinen Weg zurück außer dem Backup.",
-  etFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Die Zahl der Zeilen steht erst in der Vorschau fest.", etPreview: "Vorschau erstellen", etBusy: "Plan wird erstellt …",
+  etFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Die Zahl der Zeilen steht erst in der Vorschau fest.", etPreview: "Kürzen: Vorschau", etBusy: "Plan wird erstellt …",
   etSubTables: "{tables}", etSubOlder: "älter als {days} Tage: {rows} Zeilen", etSubRange: "{from} bis {to}: {rows} Zeilen",
   reason_trim_statistics: "Die Langzeitstatistik wird gekürzt: Diagramme und Summen beginnen später.", reason_bad_tables: "Die Auswahl der Daten ist ungültig.", reason_range_states_only: "Ein Zeitraum gilt nur für Zustände, nicht für Statistiken.",
 });
@@ -28,7 +28,7 @@ Object.assign(TEXT.en, {
   etGone: "Will be deleted", etGoneSub: "Chosen data older than {days} days", etStaySub: "the last {days} days", etStay: "Stays", etBefore: "before", etAfter: "after",
   etWarnEnergy: "This changes what is shown. This entity is in the Energy dashboard. Without the oldest hours, charts and sums begin later. The sums after that stay right. The only way back is the backup.",
   etWarnLong: "This changes what is shown. Without the oldest hours of the long-term statistics, charts and sums begin later. The sums after that stay right. The only way back is the backup.",
-  etFoot: "Before deleting, Housekeeper makes a Home Assistant backup with the database. The number of rows is only known in the preview.", etPreview: "Create preview", etBusy: "Creating the plan …",
+  etFoot: "Before deleting, Housekeeper makes a Home Assistant backup with the database. The number of rows is only known in the preview.", etPreview: "Trim: preview", etBusy: "Creating the plan …",
   etSubTables: "{tables}", etSubOlder: "older than {days} days: {rows} rows", etSubRange: "{from} to {to}: {rows} rows",
   reason_trim_statistics: "The long-term statistics are trimmed: charts and sums begin later.", reason_bad_tables: "The choice of data is not valid.", reason_range_states_only: "A period applies to states only, not to statistics.",
 });
