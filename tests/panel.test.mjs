@@ -9076,3 +9076,14 @@ test("a failed reload keeps the page and its data and offers to try again", () =
   el.render();
   assert.ok(shadow.innerHTML.includes('data-action="load-retry"') && !shadow.innerHTML.includes("data-lsort=\"inventory"), "without data only the error box shows, with a retry");
 });
+
+test("an object note set from a card counts once on the closing page", () => {
+  const { el } = panel("en");
+  el.fc = { later_days: 90, state: { started_at: "2026-10-23T08:00:00+00:00", start_count: 5, stage: 5, done: [], finished_at: null, log: [] }, stages: { 1: [], 2: [], 3: ["a"], 4: [], 5: [] } };
+  el._hass = { language: "en", callWS: async () => el.fc };
+  el.data = { ...DATA, findings: [{ key: "a", rule_id: "entity.unused", object_id: "sensor.a", classification: "unused", impact: "medium", ignored: false }], causes: [] };
+  el.fcLogAdd({ stage: 3, action: "mark", key: "entity:n", n: 1 });
+  el.fcLogAdd({ stage: 2, action: "mark", key: "entity:m", n: 3 });
+  const facts = el.fcFacts();
+  assert.equal(facts.done, 4, "one note from a card and three of stage 2 are four answers, not five");
+});

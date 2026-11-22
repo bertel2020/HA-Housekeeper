@@ -292,7 +292,9 @@ class FirstCleanupMixin {
     const left = this.fcStaged().length, start = this.fc.state.start_count || 0, findings = keep + later + sum("hidden") + cardMarks;
     const picked = new Set(log.filter(e => e.action === "pick").flatMap(e => e.keys || [e.key]));
     const pending = (this.data?.findings || []).filter(f => !f.ignored && picked.has(f.key)).length;
-    return { keep, later, marks, declined, findings, done: findings + marks + declined, left, start, pending, fresh: Math.max(0, left - (start - findings)) };
+    // The marks of the cards are already among the findings: only those of stage 2 (suggestions) come on top.
+    const stageMarks = marks - cardMarks;
+    return { keep, later, marks, declined, findings, cardMarks, done: findings + stageMarks + declined, left, start, pending, fresh: Math.max(0, left - (start - findings)) };
   }
 
   // The end: what was done, what is still open with a way to each part, what comes back, and the next visit.
@@ -309,7 +311,7 @@ class FirstCleanupMixin {
     const until = new Date(Date.now() + (this.fc.later_days || 90) * 864e5).toLocaleDateString(this.lang);
     const parts = [facts.keep ? this.t("fcSumKeep", { n: n(facts.keep) }) : "", facts.later ? this.t("fcSumLater", { n: n(facts.later) }) : "", facts.marks ? this.t("fcSumMark", { n: n(facts.marks) }) : "", facts.declined ? this.t("fcSumDeclined", { n: n(facts.declined) }) : ""].filter(Boolean).join(" · ");
     const kpi = (label, value, tone, note = "") => `<div class="fckpi ${tone}"><b>${n(value)}</b><span>${label}</span>${note ? `<small>${this.esc(note)}</small>` : ""}</div>`;
-    const sub = mode === "all" ? this.t("fcEndSubAll") : mode === "done" ? this.t("fcEndSubDone", { d: n(facts.findings + facts.marks), now: n(left) }) : this.t("fcEndSubNone", { now: n(left) });
+    const sub = mode === "all" ? this.t("fcEndSubAll") : mode === "done" ? this.t("fcEndSubDone", { d: n(facts.findings + (facts.marks - facts.cardMarks)), now: n(left) }) : this.t("fcEndSubNone", { now: n(left) });
     const rows = [1, 2, 3, 4, 5].map(stage => {
       const c = this.stageCount(stage), result = mode === "none" ? "" : this.fcStageParts(stage).join(" · ") || (c ? "" : this.t("fcSumNone"));
       const pill = c ? `<span class="pill ${stage === 1 && mode === "none" ? "warn" : "mute"}">${this.t(stage === 2 ? "fcSumSuggest" : mode === "none" ? "fcSumWaiting" : "fcSumLeft", { n: n(c) })}</span>` : `<span class="pill ok">${this.t("fcEndDone")}</span>`;
