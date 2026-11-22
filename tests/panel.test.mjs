@@ -6575,7 +6575,7 @@ test("a finding row ends in an impact chip and a menu with the status; a hidden 
   const f = { key: "k1", rule_id: "automation.stale", object_id: "automation.a", impact: "info" };
   assert.ok(el.impactChip("info").includes("Info") && el.impactChip("none") === "");
   const menu = el.rowMenu(f);
-  assert.ok(menu.includes('data-decide-open="k1"') && menu.includes('data-auto-delete="automation.a"'));
+  assert.ok(menu.includes('data-decide-open="k1"') && menu.includes('data-fix-open="k1"') && !menu.includes("data-auto-delete"), "deleting is a way of the Fix page, not a menu entry of its own");
   assert.ok(el.rowMenu({ ...f, ignored: true, ignored_by: "user" }).includes('data-ignore-value="0"'), "a finding hidden by its own status can be opened again");
   assert.equal(el.rowDecide(f), "");
   assert.ok(el.rowMenu({ key: "k2", rule_id: "entity.possible_duplicate", object_id: "sensor.a_2", affected_object: "sensor.a" }).includes('data-object="entity:sensor.a"'), "a duplicate row opens its working twin from the menu");
@@ -7137,7 +7137,7 @@ test("the way to fix an unused automation is deleting it with a preview, not a n
   const off = el.fixWayCard({ way: "disable_automation", kind: "panel", recommended: false }, f);
   assert.ok(off.includes('data-act-disable-auto="automation.c"') && off.includes("Disable the automation"));
   const menu = el.rowMenu(f);
-  assert.ok(menu.includes('data-find-disable="automation.c"') && menu.indexOf("data-find-disable") < menu.indexOf("data-auto-delete"), "disabling comes before deleting");
+  assert.ok(menu.includes('data-find-disable="automation.c"') && !menu.includes("data-auto-delete"), "disabling is offered, deleting is a way of the Fix page");
   assert.ok(!el.rowMenu({ ...f, rule_id: "automation.disabled_long" }).includes("data-find-disable"), "an automation that is off is not switched off again");
 });
 
@@ -7148,7 +7148,7 @@ test("an exception is added from the menu of a finding or the selection bar, wit
   el.data = { ...DATA, objects: [object], edges: [], findings: [finding] };
   el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] };
   const menu = el.rowMenu(finding);
-  assert.ok(["fselStatus", "actMark", "excCreate", "fselLabel"].map(k => menu.indexOf(el.t(k))).every((at, i, all) => at > (i ? all[i - 1] : -1)), "the actions in the order of the bar");
+  assert.ok(["actHide", "actMark", "fselLabel"].map(k => menu.indexOf(el.t(k))).every((at, i, all) => at > (i ? all[i - 1] : -1)), "the actions in the order of the bar");
   await el.openExceptionFor(["entity:light.a"]);
   assert.equal(el.excForm.picks.map(p => `${p.kind}:${p.id}`).join(), "entity:light.a");
   el.view = "findingsNav";
@@ -7704,6 +7704,19 @@ test("after a decision the list reads the findings again, so a device marked as 
   assert.equal(el.data.causes.length, 0, "the outages come from the server again");
 });
 
+test("hiding one finding asks for what, and a rule for the object hands over to the rule form", async () => {
+  const { el } = panel("en");
+  const finding = { rule_id: "entity.state_unavailable", classification: "unavailable", key: "entity.state_unavailable|light.a|", object_id: "light.a", confidence: 0.75, impact: "medium", ignored: false };
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" }], edges: [], findings: [finding] };
+  el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] };
+  const menu = el.rowMenu(finding);
+  assert.ok(menu.includes("Hide …") && !menu.includes("data-exc-for="), "one entry for deciding and the rule");
+  el.openDecide(finding.key);
+  assert.ok(el.decideForm(finding).includes("data-decide-scope"), "the dialog asks for what");
+  await el.openExceptionFor(["entity:light.a"]);
+  assert.ok(el.excForm?.here, "all future findings: the rule form");
+});
+
 test("a decided finding has the same row menu as an open one; only its top block offers the way back", () => {
   const { el } = panel("en");
   const device = { object_type: "device", object_id: "d1", name: "Hub", status: "active" };
@@ -7711,8 +7724,8 @@ test("a decided finding has the same row menu as an open one; only its top block
   const f = { key: "device.down|d1|", rule_id: "device.down", object_id: "d1", classification: "problem", confidence: 0.9, ignored: false };
   el.findingKey = () => "device:d1";
   const open = el.rowMenu(f), known = el.rowMenu({ ...f, ignored: true, ignored_by: "user", ignore_info: { kind: "keep" } });
-  assert.ok(open.includes("Decide on finding …") && !open.includes("Show again"));
-  assert.ok(known.includes("Show again") && known.includes("Change status …") && !known.includes("Decide on finding …"));
+  assert.ok(open.includes("Hide …") && !open.includes("Show again"));
+  assert.ok(known.includes("Show again") && known.includes("Change status …") && !known.includes("Hide …"));
   for (const part of ["data-watch-mark", "data-finding-note"]) assert.ok(open.includes(part) && known.includes(part), part);
 });
 
@@ -8871,9 +8884,9 @@ test("the menu of a finding has fixed groups: fix, decide, object, label, logboo
   const f = { rule_id: "automation.stale", object_id: "automation.a", classification: "stale", confidence: 0.6, key: "k|a", ignored: false, evidence: [] };
   el.data = { ...DATA, objects: [{ object_type: "automation", object_id: "automation.a", name: "a", status: "ok" }], findings: [f] };
   const menu = el.rowMenu(f), at = t => menu.indexOf(t);
-  const order = ["data-fix-open=", "data-auto-delete=", "data-decide-open=", "data-exc-for=", "data-row-label=", "data-finding-note="].map(at);
+  const order = ["data-fix-open=", "data-decide-open=", "data-row-label=", "data-finding-note="].map(at);
   assert.ok(order.every(i => i > 0) && order.every((i, k) => !k || i > order[k - 1]), "fixed order");
-  assert.ok(menu.includes('<hr class="menusep">') && !menu.includes("tech") && menu.includes("Delete automation …"), "groups apart, nothing hidden by the simple mode");
+  assert.ok(menu.includes('<hr class="menusep">') && !menu.includes("tech") && menu.includes("e.g. delete the automation"), "groups apart, nothing hidden by the simple mode; Fix names what it offers");
   assert.equal(el.t("actRuleSub1").includes("{n}"), false, "a singular needs no number");
 });
 

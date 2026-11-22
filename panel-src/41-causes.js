@@ -222,27 +222,25 @@ class CausesMixin {
     const plan = this.t("actPlanSub");
     const steps = this.findingSteps(f, object);
     const solve = f.ignored ? [] : [
-      e("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`),
+      e("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`, this.t(this.deletableAutomation(f) ? "fixRowSubDelete" : "fixRowSub")),
       steps.remove ? e("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`, plan) : null,
       this.brokenEntityFinding(f) ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.affected_object)}"${f.suggestions?.[0] ? ` data-repl-new="${this.esc(f.suggestions[0])}"` : ""}`, f.suggestions?.[0] ? `${f.affected_object} → ${f.suggestions[0]}` : f.affected_object) : null,
       steps.disable ? e("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`, plan) : null,
       steps.replace ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`) : null,
-      this.deletableAutomation(f) ? e("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`, plan) : null,
     ];
     // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.
     const due = f.resurfaced && f.due_info ? [f.due_info.kind === "keep" ? e("mdi:check", "dueKeepOn", `data-due-keep="${key}"`) : null, e("mdi:clock-outline", "dueLater", `data-decide-open="${key}" data-decide-preset="snooze"`)] : [];
     // The block that says where the finding stands: open, decided by the person (the way back and a change), or hidden by a mark, a rule or a label (the way to it).
-    const status = !f.ignored ? [e(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`, this.t("actDecideSub1"))]
+    const status = !f.ignored ? [e(FSEL_ICONS.status, "actHide", `data-decide-open="${key}" data-decide-preset="keep"`, this.t("actHideSub"))]
       : f.ignored_by === "mark" && owner ? [e(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`), MARK_TYPES.includes(owner.split(":")[0]) ? e("mdi:bookmark-remove-outline", "fselMarkClear", `data-mark-clear="${this.esc(owner)}"`) : null]
       : f.ignored_by === "rule" && f.ignore_rule?.id ? [e(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)]
       : f.ignored_by === "label" ? [e("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)]
       : [e("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`), e(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)];
     const about = [
       object && MARK_TYPES.includes(object.object_type) && !object.mark ? e(FSEL_ICONS.mark, "actMark", `data-watch-mark="${this.esc(objectKey)}"`, [this.markEffect(f), object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : ""].filter(Boolean).join(" · ")) : null,
-      object && this.excTargetOf(object) ? e(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, this.t("actRuleSub1")) : null,
     ];
     const ha = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? [e(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))] : [];
-    const note = [e("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)];
+    const note = [e("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`, this.t("findingNoteSub"))];
     // The row itself is one button, so the twin of a duplicate is opened from here.
     const go = [
       f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? e("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : null,

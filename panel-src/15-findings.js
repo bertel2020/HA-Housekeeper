@@ -537,9 +537,18 @@ class FindingsMixin {
     return `<div class="notice warn outagehint"><ha-icon icon="mdi:information-outline"></ha-icon><div><p>${this.esc(this.t(n === 1 ? "outageStatusHint1" : "outageStatusHint", { n: this.formatNumber(n) }))}</p>${btn}</div></div>`;
   }
 
+  // "For what": only this finding, or every finding the object gets from now on (a rule, set in its own form). Only where a rule can be made.
+  decideScope(f) {
+    if (!f?.rule_id) return "";  // a policy violation is no finding and has no object of its own
+    const object = this.findObject(this.findingKey(f));
+    if (!object || !this.excTargetOf(object)) return "";
+    const opt = (value, icon) => `<label class="statusopt${value === "finding" ? " on" : ""}"><input type="radio" name="decide-scope" value="${value}" data-decide-scope ${value === "finding" ? "checked" : ""}><i class="stico"><ha-icon icon="${icon}"></ha-icon></i><span><b>${this.t(`decideScope_${value}`)}</b><small>${this.t(`decideScopeHint_${value}`)}</small></span></label>`;
+    return `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideScope"))}">${opt("finding", "mdi:bookmark-check-outline")}${opt("object", FSEL_ICONS.exc)}</div>`;
+  }
+
   decideForm(f) {
     const d = this.decide;
-    return `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.outageStatusHint(f)}${this.statusFields(d, "decide")}
+    return `<form class="polform statusform" data-decide-form="${this.esc(f.key)}">${this.outageStatusHint(f)}${this.decideScope(f)}${this.statusFields(d, "decide")}
       <div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${this.t("cancelRun")}</button><button type="submit" class="btn primary">${this.t("saveOptions")}</button></div>
       ${d.error ? `${this.notice("err", this.t(d.error))}` : ""}</form>`;
   }
@@ -615,13 +624,13 @@ class FindingsMixin {
       const hasStep = fixes.some(it => it.finding === f.key);
       const groups = this.findingActionGroups(f).map((g, i) => g.filter(a => a.label !== "fselLabel" && a.label !== "actMark" && !(hasStep && a.attr.match(/data-(find-remove|find-disable|act-replace|auto-delete)=/))));
       const dup = f.rule_id === "entity.possible_duplicate" ? { icon: "mdi:check-circle-outline", label: "notDuplicate", attr: `data-notdup="${this.esc(f.key)}"`, sub: "" } : null;
-      if (dup) { const at = groups.findIndex(g => g.some(a => a.label === "fselStatus")); if (at >= 0) groups[at].push(dup); else groups.unshift([dup]); }
+      if (dup) { const at = groups.findIndex(g => g.some(a => a.label === "actHide")); if (at >= 0) groups[at].push(dup); else groups.unshift([dup]); }
       return groups.filter(g => g.length);
     };
     // Deciding stays a button of its own, as it is the usual next step; the rest is the menu (a single entry is a button).
     const more = f => {
       let groups = groupsOf(f);
-      const lead = groups.flat().find(a => a.label === "fselStatus");
+      const lead = groups.flat().find(a => a.label === "actHide");
       if (lead) groups = groups.map(g => g.filter(a => a !== lead)).filter(g => g.length);
       const total = groups.reduce((n, g) => n + g.length, 0), button = a => `<button class="btn" ${a.attr}><ha-icon icon="${a.icon}"></ha-icon>${this.t(a.label)}</button>`;
       const head = lead ? button(lead) : "";
