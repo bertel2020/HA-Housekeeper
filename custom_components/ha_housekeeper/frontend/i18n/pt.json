@@ -6039,6 +6039,8 @@
 "fixRecommended": "recomendado",
 "fixExits": "Ou ocultar, não corrigir",
 "fixNoWays": "Ainda não há formas guiadas para este tipo de ocorrência. Podes decidi-la ou abrir o objeto.",
+"fixWaysFailed": "Não foi possível carregar as formas.",
+"fixLiveError": "A verificação falhou. Tenta novamente.",
 "fixOpenActions": "Ações do objeto",
 "fixCollectTitle": "Corrigir em conjunto",
 "fixPickAll": "Escolher todos",

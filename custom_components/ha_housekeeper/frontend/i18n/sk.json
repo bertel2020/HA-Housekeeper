@@ -6514,6 +6514,8 @@
 "fixRecommended": "odporúčané",
 "fixExits": "Alebo skryť, neriešiť",
 "fixNoWays": "Pre tento druh nálezu zatiaľ nie sú vedené spôsoby. Môžeš o ňom rozhodnúť alebo otvoriť objekt.",
+"fixWaysFailed": "Spôsoby sa nepodarilo načítať.",
+"fixLiveError": "Kontrola zlyhala. Skús to znova.",
 "fixOpenActions": "Akcie objektu",
 "fixCollectTitle": "Opraviť spolu",
 "fixPickAll": "Vybrať všetky",

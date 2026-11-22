@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"d1d83fbac2"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"60d1aa6fae"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6430e4e931"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6e4f459f5d"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"0638812644"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"004a82ecb2"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"befce231b2"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"e6bc728e64"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"e3f2868609"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"38006bf358"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"caadc905ff"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"e607386341"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"df5d594359"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"10dda2ee1f"}];
 
 const TEXT = {
   de: {
@@ -21610,7 +21610,7 @@ class FixMixin {
     // The page decides on its own selection; the one of the list waits for the way back.
     if (this.view !== "fix") { this._findSelBack = this.findSel; this.findSel = new Set(); }
     this.fixAll = all;
-    this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
+    this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixWaysFailed = false; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
     this.fixStep = 1; this.fixMax = 1; this.fixPreselect = Boolean(all);
     this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
     this.render();
@@ -21635,8 +21635,8 @@ class FixMixin {
   async loadFixWays(key) {
     try {
       const reply = await this._hass.callWS({ type: "ha_housekeeper/fix_ways", finding_key: key });
-      if (this.fixKey === key) { this.fixWays = reply?.ways || []; if (this.fixShown()) this.render(); }
-    } catch (_) { if (this.fixKey === key) { this.fixWays = []; if (this.fixShown()) this.render(); } }
+      if (this.fixKey === key) { this.fixWays = reply?.ways || []; this.fixWaysFailed = false; if (this.fixShown()) this.render(); }
+    } catch (_) { if (this.fixKey === key) { this.fixWays = []; this.fixWaysFailed = true; if (this.fixShown()) this.render(); } }
     const finding = this.data?.findings?.find(x => x.key === key);
     if (finding?.topic !== "failing_automations") return;
     try {
@@ -21773,7 +21773,7 @@ class FixMixin {
         if (FIX_OBJECT_WAYS.includes(w.way) && object) { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
         else entries.push({ html: this.fixWayCard(w, f) });
       }
-      if (!entries.length) list = `<p class="factnote">${this.t("fixNoWays")}</p>`;
+      if (!entries.length) list = this.fixWaysFailed ? `<p class="factnote">${this.t("fixWaysFailed")}</p><button type="button" class="btn small" data-fix-ways-retry>${this.t("actRetry")}</button>` : `<p class="factnote">${this.t("fixNoWays")}</p>`;
       else {
         // Up to three ways stay in view; the folding starts with four. Deleting is always the last of them.
         const rest = entries.slice(1).map(e => e.html);
@@ -21809,7 +21809,7 @@ class FixMixin {
     const live = this.fixLive, watching = this.fixWatchUntil && Date.now() < this.fixWatchUntil;
     let verdict = "";
     if (scanned) verdict = f ? this.notice("warn", this.t("fixStillOpen")) : this.notice("info", this.t("fixDone"));
-    else if (live) verdict = live.result === "fixed" ? this.notice("info", this.t("fixLooksFixed")) : live.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: live.detail || "" })) : this.notice("info", this.t("fixLiveUnknown"));
+    else if (live) verdict = live.result === "fixed" ? this.notice("info", this.t("fixLooksFixed")) : live.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: live.detail || "" })) : live.result === "error" ? this.notice("warn", this.t("fixLiveError")) : this.notice("info", this.t("fixLiveUnknown"));
     const watch = watching ? `<p class="factnote">${this.t("fixWatching")}</p>` : "";
     return `<p class="factnote">${this.t("fixCheckHint")}</p><div class="mbtns"><button type="button" class="btn primary" data-fix-look><ha-icon icon="mdi:magnify"></ha-icon>${this.t("fixLookNow")}</button><button type="button" class="btn" data-fix-check ${this.busy ? "disabled" : ""}><ha-icon icon="mdi:magnify-scan"></ha-icon>${this.t("fixCheckNow")}</button>${f?.in_work ? `<button type="button" class="btn quiet" data-fix-work-off>${this.t("fixWorkOff")}</button>` : ""}</div>${watch}${verdict}`;
   }
@@ -21819,7 +21819,7 @@ class FixMixin {
     const key = this.fixKey;
     try {
       this.fixLive = await this._hass.callWS({ type: "ha_housekeeper/fix_check", finding_key: key });
-    } catch (_) { this.fixLive = { result: "unknown", detail: "" }; }
+    } catch (_) { this.fixLive = { result: "error", detail: "" }; }
     if (this.view === "fix" && this.fixKey === key) this.render();
   }
 
@@ -21855,6 +21855,7 @@ class FixMixin {
   bindFix(root) {
     this.bindFcPlan(root);
     root.querySelectorAll("[data-fix-step]").forEach(el => el.onclick = () => this.fixGo(Number(el.dataset.fixStep)));
+    root.querySelectorAll("[data-fix-ways-retry]").forEach(el => el.onclick = () => { this.fixWaysFailed = false; this.fixWays = null; this.render(); this.loadFixWays(this.fixKey); });
     root.querySelectorAll("[data-fix-self-done]").forEach(el => el.onclick = () => { this.fixGo(3); this.startFixWatch(); });
     root.querySelectorAll("[data-fix-open]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openFix(el.dataset.fixOpen); });
     root.querySelectorAll("[data-fix-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fixObject); if (obj) { this._pendingTab = "actions"; this.openObject(obj); } });
@@ -21897,7 +21898,7 @@ Object.assign(TEXT.de, {
   fixStepUnderstand: "Verstehen und entscheiden", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
   fixIdleDays: "Seit {n} Tagen nicht ausgelöst", fixIdleDays1: "Seit 1 Tag nicht ausgelöst", fixNeverTriggered: "Noch nie ausgelöst", fixSure: "{n} % sicher",
   fixRoundMore: "Mehr Objekte aufräumen?", fixRoundLink: "Alles Überflüssige durchgehen (Aufräum-Runde)",
-  fixWhat: "Was los ist", fixObject: "Objekt", fixFollowers: "{n} abhängige Entitäten", fixFollowers1: "1 abhängige Entität", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder ausblenden, nicht beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.",
+  fixWhat: "Was los ist", fixObject: "Objekt", fixFollowers: "{n} abhängige Entitäten", fixFollowers1: "1 abhängige Entität", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder ausblenden, nicht beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.", fixWaysFailed: "Die Wege konnten nicht geladen werden.", fixLiveError: "Die Prüfung ist fehlgeschlagen. Versuche es noch einmal.",
   fixOpenActions: "Aktionen des Objekts", fixCollectTitle: "Gesammelt beheben", fixPickAll: "Alle wählen",
   
   fixCheckHint: "Housekeeper schaut sich das Objekt jetzt an und danach 15 Minuten lang alle 30 Sekunden, solange diese Seite offen ist. Entscheiden tut erst der nächste reguläre Scan; der Befund bleibt bis dahin „In Arbeit“.", fixLookNow: "Jetzt ansehen", fixCheckNow: "Ganz neu scannen", fixLooksFixed: "Sieht behoben aus. Vorläufig: der nächste reguläre Scan entscheidet.", fixLiveOpen: "Noch nicht behoben ({detail}).", fixLiveUnknown: "Für diese Art von Befund lässt sich das nicht auf einen Blick sagen; der nächste Scan zeigt es.", fixWatching: "Schaut 15 Minuten lang nach, solange diese Seite offen ist.", fixDone: "Behoben: der Befund ist im neuen Scan nicht mehr da.", fixStillOpen: "Bleibt offen: der Befund ist im neuen Scan noch da. Prüfe, ob der gewählte Weg schon durchgelaufen ist, oder warte auf den nächsten Scan.", fixGone: "Der Befund ist nicht mehr da.",
@@ -21928,7 +21929,7 @@ Object.assign(TEXT.en, {
   fixStepUnderstand: "Understand and decide", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
   fixIdleDays: "Not triggered for {n} days", fixIdleDays1: "Not triggered for 1 day", fixNeverTriggered: "Never triggered", fixSure: "{n} % sure",
   fixRoundMore: "Clean up more objects?", fixRoundLink: "Go through everything unneeded (cleanup round)",
-  fixWhat: "What is wrong", fixObject: "Object", fixFollowers: "{n} dependent entities", fixFollowers1: "1 dependent entity", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or hide it, do not fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.",
+  fixWhat: "What is wrong", fixObject: "Object", fixFollowers: "{n} dependent entities", fixFollowers1: "1 dependent entity", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or hide it, do not fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.", fixWaysFailed: "The ways could not be loaded.", fixLiveError: "The check failed. Try again.",
   fixOpenActions: "Actions of the object", fixCollectTitle: "Fix together", fixPickAll: "Pick all",
   
   fixCheckHint: "Housekeeper looks at the object now and then every 30 seconds for 15 minutes while this page is open. Only the next regular scan decides; until then the finding stays “In work”.", fixLookNow: "Look now", fixCheckNow: "Scan everything again", fixLooksFixed: "Looks fixed. Provisional: the next regular scan decides.", fixLiveOpen: "Not fixed yet ({detail}).", fixLiveUnknown: "For this kind of finding that cannot be told at a glance; the next scan shows it.", fixWatching: "Looks for 15 minutes while this page is open.", fixDone: "Fixed: the finding is gone in the new scan.", fixStillOpen: "Still open: the finding is still there in the new scan. Check whether the chosen way has finished, or wait for the next scan.", fixGone: "The finding is gone.",
@@ -23111,7 +23112,7 @@ class FirstCleanupMixin {
     this.fcFixOpen = this.fcFixOpen === key ? "" : key;
     if (this.fcFixOpen) { this.decide = null; this.markForm = null; this.fcMarkCtx = null; }
     if (this.fcFixOpen && findingKey) {
-      this.fixKey = findingKey; this.fixAll = ""; this.fixWays = null; this.fixFailure = null;
+      this.fixKey = findingKey; this.fixAll = ""; this.fixWays = null; this.fixWaysFailed = false; this.fixFailure = null;
       this.loadFixWays(findingKey);
     }
     this.render();
@@ -23844,13 +23845,13 @@ class FcRecommendMixin {
   // What the person can do for an outage Housekeeper cannot repair: look at the device, then let Housekeeper look again.
   fcCheckBlock(finding, rows) {
     const t = k => this.t(k), seen = this.fcCheck?.key === finding.key ? this.fcCheck.result : null;
-    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: seen.detail || "" })) : this.notice("info", t("fixLiveUnknown"));
+    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: seen.detail || "" })) : seen.result === "error" ? this.notice("warn", t("fixLiveError")) : this.notice("info", t("fixLiveUnknown"));
     return `<div class="fcways"><small class="fceyebrow">${t("fcCheckHead")}</small><ol class="fcchecklist"><li>${t("fcCheck1")}</li><li>${t("fcCheck2")}</li><li>${t("fcCheck3")}</li></ol><p class="fcfacts">${t("fcCheckThen")}</p>${verdict}<div class="fcplanbtns"><button type="button" class="btn primary" data-fc-looknow="${this.esc(finding.key)}"><ha-icon icon="mdi:magnify"></ha-icon>${t("fixLookNow")}</button></div>${rows}</div>`;
   }
 
   async fcLookNow(key) {
     let result;
-    try { result = await this._hass.callWS({ type: "ha_housekeeper/fix_check", finding_key: key }); } catch (_) { result = { result: "unknown", detail: "" }; }
+    try { result = await this._hass.callWS({ type: "ha_housekeeper/fix_check", finding_key: key }); } catch (_) { result = { result: "error", detail: "" }; }
     this.fcCheck = { key, result };
     this.render();
   }

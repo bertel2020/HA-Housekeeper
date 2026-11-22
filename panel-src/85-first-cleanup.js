@@ -569,7 +569,7 @@ class FirstCleanupMixin {
     this.fcFixOpen = this.fcFixOpen === key ? "" : key;
     if (this.fcFixOpen) { this.decide = null; this.markForm = null; this.fcMarkCtx = null; }
     if (this.fcFixOpen && findingKey) {
-      this.fixKey = findingKey; this.fixAll = ""; this.fixWays = null; this.fixFailure = null;
+      this.fixKey = findingKey; this.fixAll = ""; this.fixWays = null; this.fixWaysFailed = false; this.fixFailure = null;
       this.loadFixWays(findingKey);
     }
     this.render();

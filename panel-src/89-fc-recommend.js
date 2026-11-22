@@ -134,13 +134,13 @@ class FcRecommendMixin {
   // What the person can do for an outage Housekeeper cannot repair: look at the device, then let Housekeeper look again.
   fcCheckBlock(finding, rows) {
     const t = k => this.t(k), seen = this.fcCheck?.key === finding.key ? this.fcCheck.result : null;
-    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: seen.detail || "" })) : this.notice("info", t("fixLiveUnknown"));
+    const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: seen.detail || "" })) : seen.result === "error" ? this.notice("warn", t("fixLiveError")) : this.notice("info", t("fixLiveUnknown"));
     return `<div class="fcways"><small class="fceyebrow">${t("fcCheckHead")}</small><ol class="fcchecklist"><li>${t("fcCheck1")}</li><li>${t("fcCheck2")}</li><li>${t("fcCheck3")}</li></ol><p class="fcfacts">${t("fcCheckThen")}</p>${verdict}<div class="fcplanbtns"><button type="button" class="btn primary" data-fc-looknow="${this.esc(finding.key)}"><ha-icon icon="mdi:magnify"></ha-icon>${t("fixLookNow")}</button></div>${rows}</div>`;
   }
 
   async fcLookNow(key) {
     let result;
-    try { result = await this._hass.callWS({ type: "ha_housekeeper/fix_check", finding_key: key }); } catch (_) { result = { result: "unknown", detail: "" }; }
+    try { result = await this._hass.callWS({ type: "ha_housekeeper/fix_check", finding_key: key }); } catch (_) { result = { result: "error", detail: "" }; }
     this.fcCheck = { key, result };
     this.render();
   }

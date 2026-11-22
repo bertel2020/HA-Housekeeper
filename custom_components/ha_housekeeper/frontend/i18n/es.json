@@ -6039,6 +6039,8 @@
 "fixRecommended": "recomendado",
 "fixExits": "O ocultar, no corregir",
 "fixNoWays": "Todavía no hay vías guiadas para este tipo de hallazgo. Puedes decidirlo o abrir el objeto.",
+"fixWaysFailed": "No se pudieron cargar las vías.",
+"fixLiveError": "La comprobación falló. Inténtalo de nuevo.",
 "fixOpenActions": "Acciones del objeto",
 "fixCollectTitle": "Corregir juntos",
 "fixPickAll": "Elegir todos",

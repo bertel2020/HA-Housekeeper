@@ -9101,3 +9101,20 @@ test("deleting an automation or a helper is confirmed with the red button like a
     assert.ok(shadow.innerHTML.includes(`data-risky="${kind !== "add_label"}"`), `${kind}: the red button only where something is deleted`);
   }
 });
+
+test("a failed load of the ways or of the quick look says so and offers to try again, instead of claiming nothing can be done", async () => {
+  const { el, shadow } = panel("en");
+  el._hass = { language: "en", callWS: async () => { throw new Error("offline"); } };
+  const f = { key: "k", rule_id: "entity.state_unavailable", object_id: "sensor.a", topic: "down", impact: "medium", ignored: false };
+  el.data = { ...DATA, findings: [f], objects: [], causes: [] };
+  el.render = () => {};
+  el.openFix("k");
+  await el.loadFixWays("k");
+  el.render = Object.getPrototypeOf(el).render;
+  el.render();
+  const html = shadow.innerHTML;
+  assert.ok(html.includes("The ways could not be loaded.") && html.includes("data-fix-ways-retry"), "the failure is named with a retry");
+  assert.ok(!html.includes("no guided ways"), "no claim about the kind of finding");
+  await el.fixLook();
+  assert.equal(el.fixLive.result, "error", "a failed look is an error, not 'unknown'");
+});

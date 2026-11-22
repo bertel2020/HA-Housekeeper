@@ -6039,6 +6039,8 @@
 "fixRecommended": "推荐",
 "fixExits": "或者隐藏，不去修复",
 "fixNoWays": "这类发现项目前还没有引导式的方法。你可以对其作出决定，或打开该对象。",
+"fixWaysFailed": "无法加载方法。",
+"fixLiveError": "检查失败。请重试。",
 "fixOpenActions": "对象的操作",
 "fixCollectTitle": "一并修复",
 "fixPickAll": "全选",

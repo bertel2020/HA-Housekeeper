@@ -6180,6 +6180,8 @@
 "fixRecommended": "consigliato",
 "fixExits": "O nascondi, non risolvere",
 "fixNoWays": "Per questo tipo di rilevamento non ci sono ancora vie guidate. Puoi decidere o aprire l'oggetto.",
+"fixWaysFailed": "Non è stato possibile caricare le vie.",
+"fixLiveError": "La verifica non è riuscita. Riprova.",
 "fixOpenActions": "Azioni dell'oggetto",
 "fixCollectTitle": "Correggi insieme",
 "fixPickAll": "Scegli tutti",

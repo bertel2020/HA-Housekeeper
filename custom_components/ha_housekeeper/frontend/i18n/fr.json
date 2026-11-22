@@ -6039,6 +6039,8 @@
 "fixRecommended": "recommandé",
 "fixExits": "Ou masquer, ne pas corriger",
 "fixNoWays": "Il n’y a pas encore de moyens guidés pour ce type de constat. Tu peux en décider ou ouvrir l’objet.",
+"fixWaysFailed": "Les moyens n’ont pas pu être chargés.",
+"fixLiveError": "La vérification a échoué. Réessaie.",
 "fixOpenActions": "Actions de l’objet",
 "fixCollectTitle": "Corriger ensemble",
 "fixPickAll": "Tout choisir",
