@@ -119,16 +119,21 @@ DISABLEABLE_AUTOMATION_RULES = frozenset({"automation.never_triggered", "automat
 
 
 def _unneeded_ways(finding: dict[str, Any]) -> list[dict[str, Any]]:
-    """The ways for something unneeded: the round first; the note and the actions of the object only where the object has them."""
-    ways = [_way("cleanup_round", "panel", True)]
+    """The ways for something unneeded.
+
+    An automation: the careful step first (switched off, it can be switched on again), then deleting it, and the
+    round last, a tool for many objects at once. Anything else: the round first; the note and the actions of the
+    object only where the object has them.
+    """
     rule_id = finding["rule_id"]
     if rule_id in DELETABLE_AUTOMATION_RULES:
-        if rule_id in DISABLEABLE_AUTOMATION_RULES:
-            ways.append(
-                _way("disable_automation", "panel")
-            )  # switched off, it can be switched on again
-        ways.append(_way("delete_automation", "panel"))
-    elif rule_id.partition(".")[0] in NOTE_DOMAINS:
+        disableable = rule_id in DISABLEABLE_AUTOMATION_RULES
+        ways = [_way("disable_automation", "panel", True)] if disableable else []
+        ways.append(_way("delete_automation", "panel", not disableable))
+        ways.append(_way("cleanup_round", "panel"))
+        return ways
+    ways = [_way("cleanup_round", "panel", True)]
+    if rule_id.partition(".")[0] in NOTE_DOMAINS:
         ways += [_way("mark", "panel"), _way("object_actions", "panel")]
     return ways
 

@@ -7943,6 +7943,21 @@ test("a missing target has Fix all n in its menu, and its page replaces or remov
   assert.equal(plan.requests[0].fix, "remove_reference");
 });
 
+test("the ways of an unused automation stay in view, deleting is the last and soft red, and the round is a link", async () => {
+  const { el } = panel("en");
+  const f = { key: "k2", rule_id: "automation.stale", object_id: "automation.a", topic: "unneeded", impact: "medium" };
+  el.data = { ...DATA, findings: [f], causes: [], objects: [{ object_type: "automation", object_id: "automation.a", name: "Auto A", status: "enabled" }] };
+  el._hass = { language: "en", callWS: async () => ({ ways: [{ way: "disable_automation", kind: "panel", recommended: true }, { way: "delete_automation", kind: "panel" }, { way: "cleanup_round", kind: "panel" }] }) };
+  el.render = () => {};
+  el.openFix("k2");
+  await new Promise(r => setTimeout(r, 0));
+  const html = el.fixView();
+  assert.ok(!html.includes("Other ways"));
+  assert.ok(html.indexOf("data-act-disable-auto") < html.indexOf("data-auto-delete") && html.includes("btn dangersoft\" data-auto-delete"));
+  assert.ok(html.includes("fixroundlink") && html.includes("data-fix-round") && !html.includes("fixWay_cleanup_round"));
+  assert.ok(html.includes("</ha-icon>Disable</button>") && html.includes("</ha-icon>Delete</button>") && html.includes("Or hide it, do not fix it"));
+});
+
 test("the own ways of a finding keep their cards when its object exists, and only the object's plans are grouped", async () => {
   const { el } = panel("en");
   const f = { key: "k1", rule_id: "automation.missing_entity", object_id: "automation.a", topic: "broken_references", classification: "broken_reference", affected_object: "sensor.gone", impact: "medium" };
@@ -7952,7 +7967,7 @@ test("the own ways of a finding keep their cards when its object exists, and onl
   el.openFix("k1");
   await new Promise(r => setTimeout(r, 0));
   const html = el.fixView();
-  assert.ok(html.includes("data-fix-replace") && html.includes("Actions of the object") && html.includes("Other ways (1)"));
+  assert.ok(html.includes("data-fix-replace") && html.includes("Actions of the object") && !html.includes("Other ways"));
 });
 
 test("a failed load of the exception rules is no empty list: nothing is saved over the real rules", async () => {

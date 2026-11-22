@@ -3,6 +3,7 @@
 // existing steps (plan with preview, links into Home Assistant, marks, exits); it changes nothing by itself.
 // The ways that act on the object itself: they are shown as its plans; every other way has a card of its own.
 const FIX_OBJECT_WAYS = ["reload", "exchange", "replace_entity", "object_actions"];
+const FIX_FOLD_FROM = 4; // the ways of a finding fold from this many on
 const FIX_WATCH_MS = 15 * 60 * 1000, FIX_WATCH_STEP_MS = 30 * 1000;
 class FixMixin {
   // "Fix all n": the page of a missing target; its follow-ups are the places that name it. One of them stands for the page.
@@ -125,8 +126,8 @@ class FixMixin {
       ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveStart")}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
-    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${this.t("actDisable")}</button>`;
-    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("autoDelete")}</button>`;
+    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${this.t("fixBtn_disable_automation")}</button>`;
+    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("fixBtn_delete_automation")}</button>`;
     else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>`;
     else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixOpenActions")}</button>`;
     return `<div class="row fixway"><span class="row-text"><strong>${this.esc(this.t(`fixWay_${w.way}`))}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span>${action}</div>`;
@@ -148,13 +149,20 @@ class FixMixin {
     if (shown === null) list = `<p class="factnote">${this.t("loading")}</p>`;
     else {
       const sorted = [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended));
+      // The round is a tool for many objects: where it is not the recommended way, it is a link below, not a card.
+      const roundLink = sorted.some(w => w.way === "cleanup_round" && !w.recommended);
       const entries = [];
-      for (const w of sorted) {
+      for (const w of sorted.filter(x => !(x.way === "cleanup_round" && !x.recommended))) {
         if (FIX_OBJECT_WAYS.includes(w.way) && object) { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
         else entries.push({ html: this.fixWayCard(w, f) });
       }
       if (!entries.length) list = `<p class="factnote">${this.t("fixNoWays")}</p>`;
-      else list = `<div class="fixrec">${entries[0].html}</div>${entries.length > 1 ? `<details class="fixmore"><summary>${this.t("fixOtherWays", { n: entries.length - 1 })}</summary>${entries.slice(1).map(e => e.html).join("")}</details>` : ""}`;
+      else {
+        // Up to three ways stay in view; the folding starts with four. Deleting is always the last of them.
+        const rest = entries.slice(1).map(e => e.html);
+        list = `<div class="fixrec">${entries[0].html}</div>${rest.length ? (entries.length <= FIX_FOLD_FROM - 1 ? `<div class="fixrest">${rest.join("")}</div>` : `<details class="fixmore"><summary>${this.t("fixOtherWays", { n: rest.length })}</summary>${rest.join("")}</details>`) : ""}`;
+      }
+      if (roundLink && !this.fixAll) list += `<p class="fixroundlink">${this.t("fixRoundMore")} <button type="button" class="link" data-fix-round>${this.t("fixRoundLink")}</button></p>`;
     }
     // A device that is down is not "kept" as it is: the object note says so for the device and its entities, so that one stands in its place.
     const outageNote = f.rule_id === "device.down" && object && MARK_TYPES.includes(object.object_type) && (shown || []).some(w => w.way === "mark");
@@ -270,7 +278,8 @@ Object.assign(TEXT.de, {
   fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_automation1: "1 Automation", fixAllKind_script: "{n} Skripte", fixAllKind_script1: "1 Skript", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixAllKind_dashboard1: "1 Dashboard-Stelle", fixAllPlaces1: "1 Stelle verweist darauf", fixRemoveAll1: "Aus 1 Automation entfernen", fixRemoveAll: "Aus {n} Automationen entfernen",
   fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen und entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben", fixRowSub: "Zeigt die Wege, die zu diesem Befund passen", fixRowSubDelete: "Zeigt die Wege, z. B. Automation löschen (erst Vorschau)",
   fixStepUnderstand: "Verstehen und entscheiden", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
-  fixWhat: "Was los ist", fixObject: "Objekt", fixFollowers: "{n} abhängige Entitäten", fixFollowers1: "1 abhängige Entität", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder entscheiden, nicht zu beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.",
+  fixRoundMore: "Mehr Objekte aufräumen?", fixRoundLink: "Alles Überflüssige durchgehen (Aufräum-Runde)",
+  fixWhat: "Was los ist", fixObject: "Objekt", fixFollowers: "{n} abhängige Entitäten", fixFollowers1: "1 abhängige Entität", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder ausblenden, nicht beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.",
   fixOpenHA: "In Home Assistant öffnen", fixOpenActions: "Aktionen des Objekts", fixCollectTitle: "Gesammelt beheben", fixPickAll: "Alle wählen",
   
   fixCheckHint: "Housekeeper schaut sich das Objekt jetzt an und danach 15 Minuten lang alle 30 Sekunden, solange diese Seite offen ist. Entscheiden tut erst der nächste reguläre Scan; der Befund bleibt bis dahin „In Arbeit“.", fixLookNow: "Jetzt ansehen", fixCheckNow: "Ganz neu scannen", fixLooksFixed: "Sieht behoben aus. Vorläufig: der nächste reguläre Scan entscheidet.", fixLiveOpen: "Noch nicht behoben ({detail}).", fixLiveUnknown: "Für diese Art von Befund lässt sich das nicht auf einen Blick sagen; der nächste Scan zeigt es.", fixWatching: "Schaut 15 Minuten lang nach, solange diese Seite offen ist.", fixDone: "Behoben: der Befund ist im neuen Scan nicht mehr da.", fixStillOpen: "Bleibt offen: der Befund ist im neuen Scan noch da. Prüfe, ob der gewählte Weg schon durchgelaufen ist, oder warte auf den nächsten Scan.", fixGone: "Der Befund ist nicht mehr da.",
@@ -282,7 +291,7 @@ Object.assign(TEXT.de, {
   fixWay_exchange: "Gerät austauschen", fixWayHint_exchange: "Für ein ersetztes Gerät: Automationen und Szenen auf das neue Gerät umstellen.",
   fixWay_replace_entity: "Entität ersetzen", fixWayHint_replace_entity: "Alle Stellen, die diese Entität nutzen, auf eine andere umstellen.",
   fixWay_disable_automation: "Automation deaktivieren", fixWayHint_disable_automation: "Schaltet die Automation aus; sie bleibt erhalten und lässt sich wieder einschalten. Mit Vorschau, Bestätigung und Rückgängig.",
-  fixWay_delete_automation: "Automation löschen", fixWayHint_delete_automation: "Du siehst zuerst eine Vorschau; gelöscht wird erst, wenn du bestätigst.",
+  fixWay_delete_automation: "Automation löschen", fixWayHint_delete_automation: "Entfernt die Automation. Du siehst zuerst eine Vorschau; gelöscht wird erst, wenn du bestätigst.", fixBtn_disable_automation: "Deaktivieren", fixBtn_delete_automation: "Löschen",
   fixWay_object_actions: "Deaktivieren oder entfernen", fixWayHint_object_actions: "Die Aktionen des Objekts: deaktivieren, entfernen, austauschen, jeweils mit Vorschau.",
   fixWay_replace_target: "Ziel ersetzen", fixWayHint_replace_target: "Alle Stellen, die das fehlende Ziel nennen, auf ein vorhandenes umstellen: bei einer Entität mit einem ähnlichen Vorschlag, bei Bereich, Etage und Label nach deiner Wahl (nur dort, wo der Schlüssel dafür steht). Die Vorschau zeigt jede Stelle.",
   fixWay_open_editor: "Im Editor öffnen", fixWayHint_open_editor: "Die Stelle in Home Assistant selbst anpassen.", fixReplaceStart: "Ersetzen …", fixReplaceWith: "Ersetzen durch", fixReplaceNone: "Es gibt kein anderes Ziel dieser Art, auf das sich umstellen ließe.",
@@ -299,7 +308,8 @@ Object.assign(TEXT.en, {
   fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_automation1: "1 automation", fixAllKind_script: "{n} scripts", fixAllKind_script1: "1 script", fixAllKind_dashboard: "{n} dashboard places", fixAllKind_dashboard1: "1 dashboard place", fixAllPlaces1: "1 place refers to it", fixRemoveAll1: "Remove from 1 automation", fixRemoveAll: "Remove from {n} automations",
   fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand and decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix", fixRowSub: "Shows the ways that fit this finding", fixRowSubDelete: "Shows the ways, e.g. delete the automation (preview first)",
   fixStepUnderstand: "Understand and decide", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
-  fixWhat: "What is wrong", fixObject: "Object", fixFollowers: "{n} dependent entities", fixFollowers1: "1 dependent entity", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or decide not to fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.",
+  fixRoundMore: "Clean up more objects?", fixRoundLink: "Go through everything unneeded (cleanup round)",
+  fixWhat: "What is wrong", fixObject: "Object", fixFollowers: "{n} dependent entities", fixFollowers1: "1 dependent entity", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or hide it, do not fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.",
   fixOpenHA: "Open in Home Assistant", fixOpenActions: "Actions of the object", fixCollectTitle: "Fix together", fixPickAll: "Pick all",
   
   fixCheckHint: "Housekeeper looks at the object now and then every 30 seconds for 15 minutes while this page is open. Only the next regular scan decides; until then the finding stays “In work”.", fixLookNow: "Look now", fixCheckNow: "Scan everything again", fixLooksFixed: "Looks fixed. Provisional: the next regular scan decides.", fixLiveOpen: "Not fixed yet ({detail}).", fixLiveUnknown: "For this kind of finding that cannot be told at a glance; the next scan shows it.", fixWatching: "Looks for 15 minutes while this page is open.", fixDone: "Fixed: the finding is gone in the new scan.", fixStillOpen: "Still open: the finding is still there in the new scan. Check whether the chosen way has finished, or wait for the next scan.", fixGone: "The finding is gone.",
@@ -311,7 +321,7 @@ Object.assign(TEXT.en, {
   fixWay_exchange: "Exchange the device", fixWayHint_exchange: "For a replaced device: move automations and scenes to the new device.",
   fixWay_replace_entity: "Replace the entity", fixWayHint_replace_entity: "Move every place that uses this entity to another one.",
   fixWay_disable_automation: "Disable the automation", fixWayHint_disable_automation: "Switches the automation off; it is kept and can be switched on again. With preview, confirmation and undo.",
-  fixWay_delete_automation: "Delete the automation", fixWayHint_delete_automation: "You see a preview first; nothing is deleted until you confirm.",
+  fixWay_delete_automation: "Delete the automation", fixWayHint_delete_automation: "Removes the automation. You see a preview first; nothing is deleted until you confirm.", fixBtn_disable_automation: "Disable", fixBtn_delete_automation: "Delete",
   fixWay_object_actions: "Disable or remove", fixWayHint_object_actions: "The actions of the object: disable, remove, exchange, each with a preview.",
   fixWay_replace_target: "Replace the target", fixWayHint_replace_target: "Move every place that names the missing target to an existing one: for an entity with a similar one proposed, for an area, floor or label as you choose (only where the key for it stands). The preview shows each place.",
   fixWay_open_editor: "Open in the editor", fixWayHint_open_editor: "Adjust the place in Home Assistant yourself.", fixReplaceStart: "Replace …", fixReplaceWith: "Replace with", fixReplaceNone: "There is no other target of this kind to move to.",

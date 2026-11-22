@@ -5947,7 +5947,7 @@
 "fixPattern": "4288ade7",
 "fixPatternAt": "fdc90a0c",
 "fixRecommended": "dd6d8765",
-"fixExits": "c8185717",
+"fixExits": "840391c1",
 "fixNoWays": "cbbd088b",
 "fixOpenHA": "96c8f15d",
 "fixOpenActions": "67e9ae7d",
@@ -6770,7 +6770,7 @@
 "markEffectKeep": "abfa1fe6",
 "actGroupHide": "ac20a57b",
 "fixWay_delete_automation": "408429e6",
-"fixWayHint_delete_automation": "5d73a2f5",
+"fixWayHint_delete_automation": "bd4a7d3b",
 "fixWay_disable_automation": "77d09afe",
 "fixWayHint_disable_automation": "dc740bf0",
 "fixRowSub": "9af8da99",
@@ -6782,7 +6782,11 @@
 "decideScopeHint_finding": "73a25281",
 "decideScope_object": "7b9ae63a",
 "decideScopeHint_object": "e1c24774",
-"findingNoteSub": "778ce610"
+"findingNoteSub": "778ce610",
+"fixRoundMore": "f5b7a05c",
+"fixRoundLink": "c759e077",
+"fixBtn_disable_automation": "b7e3e4aa",
+"fixBtn_delete_automation": "e2d0a549"
 },
 "setup": {
 "title": "644c2647",
