@@ -7958,6 +7958,22 @@ test("the ways of an unused automation stay in view, deleting is the last and so
   assert.ok(html.includes("</ha-icon>Disable</button>") && html.includes("</ha-icon>Delete</button>") && html.includes("Or hide it, do not fix it") && html.includes("Not triggered for 112 days") && html.includes("fixhead"));
 });
 
+test("the head of an outage and of a failing automation is the object and chips; the last failure stays a row", async () => {
+  const { el } = panel("en");
+  const down = { key: "k3", rule_id: "device.down", object_id: "d1", topic: "down", impact: "high", confidence: 0.9, confidence_level: "high", first_detected_at: new Date(Date.now() - 3 * 864e5).toISOString() };
+  el.data = { ...DATA, findings: [down], causes: [], objects: [{ object_type: "device", object_id: "d1", name: "Washer" }] };
+  el._hass = { language: "en", callWS: async () => ({ ways: [] }) };
+  el.render = () => {};
+  el.openFix("k3");
+  await new Promise(r => setTimeout(r, 0));
+  let html = el.fixView();
+  assert.ok(html.includes("fixhead") && html.includes("fixchip bad") && html.includes("90 % sure") && html.includes("Washer has been down"));
+  assert.ok(!html.includes("fcirow"));
+  el.fixFailure = { failure: { step: "3", error: "boom" } };
+  html = el.fixUnderstand(down);
+  assert.ok(html.includes("fixhead") && html.includes("fcirow") && html.includes("boom"));
+});
+
 test("the own ways of a finding keep their cards when its object exists, and only the object's plans are grouped", async () => {
   const { el } = panel("en");
   const f = { key: "k1", rule_id: "automation.missing_entity", object_id: "automation.a", topic: "broken_references", classification: "broken_reference", affected_object: "sensor.gone", impact: "medium" };

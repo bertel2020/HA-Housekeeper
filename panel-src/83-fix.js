@@ -77,34 +77,46 @@ class FixMixin {
     const [R, A, B, G, M] = ["alert-circle-outline:red", "progress-wrench:amber", "clock-outline:blue", "eye-off-outline:green", "link-variant:blue"];
     const certainty = f.confidence_level ? this.esc(this.certaintyText(f).replace(/^[^.]*\d+\s*%\.\s*/, "")) : "";
     const object = this.findObject(this.findingKey(f));
-    if (this.findingTopic(f) === "unneeded" && !allCause && object) return this.fixHead(f, object);
-    const outage = OUTAGE_RULES.includes(f.rule_id) && Boolean(since);
+    const outage = OUTAGE_RULES.includes(f.rule_id) && Boolean(since), lead = !allCause && object;
     const rows = [
       allCause || !object ? null : [this.t("fixObject"), `<button type="button" class="link strong" data-object="${this.esc(this.findingKey(f))}">${this.esc(object.name || object.object_id)}</button>${object.object_type === "config_entry" ? "" : `<small class="factnote">${this.esc(object.object_id)}</small>`}`, "puzzle-outline:blue"],
       allCause ? [this.t("fixWhat"), this.esc(this.t(`cause_${allCause.kind}`, { name: allCause.name })), R] : null,
       allCause ? [this.t("fixAffects"), this.esc(`${this.tCount("fixAllPlaces", all.length)}${kinds ? ` (${kinds})` : ""}`), M] : null,
       allCause ? null : [this.t("fixWhat"), this.esc(this.findingTitle(f)), R],
-      f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) })), A] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) })), A] : null,
+      f.in_work ? [this.t("freshInwork"), this.esc(this.t("fixWorkSince", { date: this.formatDate(f.in_work.started_at) })), A, 1] : f.work_expired ? [this.t("freshInwork"), this.esc(this.t("workExpired", { date: this.formatDate(f.work_expired.started_at) })), A, 1] : null,
       since ? [this.t("sortSince"), this.esc(outage ? `${this.formatDate(since)} · ${this.t("outageFor", { span: this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) })}` : this.formatDate(since)), B] : null,
       f.impact ? [this.t(outage ? "ratingUrgency" : "sortImpact"), `${this.esc(this.impactLine(f))}${outage ? `<small class="factnote">${this.t("sortCertainty")}: ${Math.round((f.confidence || 0) * 100)} %</small>` : ""}`, G] : null,
-      cause && !own && !allCause ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name })), M] : null,
+      cause && !own && !allCause ? [this.t("causeLabel"), this.esc(this.t(`cause_${cause.kind}`, { name: cause.name })), M, 1] : null,
       cause && own && cause.kind === "device_down" ? [this.t("fixAffects"), this.esc(this.causeDeviceLine(cause)), M] : cause && own && cause.total_followers ? [this.t("fixAffects"), this.esc(this.tCount("fixFollowers", cause.total_followers)), M] : null,
-      this.fixFailure?.failure ? [this.t("fixLastFailure"), this.esc(this.fixFailureText(this.fixFailure.failure)), A] : null,
-      this.fixFailure?.hint ? [this.t("fixFailureHint"), `${this.esc(this.t("fixFailureHintText", { entity: this.fixFailure.hint.entity_id }))} <button type="button" class="btn quiet" data-fix-open="${this.esc(this.fixFailure.hint.finding_key)}">${this.t("fixToFinding")}</button>`, "lightbulb-on-outline:blue"] : null,
-      pattern ? [this.t("fixPattern"), this.esc(this.t("fixPatternAt", { hour: pattern.hour })), "chart-timeline-variant:amber"] : null,
+      this.fixFailure?.failure ? [this.t("fixLastFailure"), this.esc(this.fixFailureText(this.fixFailure.failure)), A, 1] : null,
+      this.fixFailure?.hint ? [this.t("fixFailureHint"), `${this.esc(this.t("fixFailureHintText", { entity: this.fixFailure.hint.entity_id }))} <button type="button" class="btn quiet" data-fix-open="${this.esc(this.fixFailure.hint.finding_key)}">${this.t("fixToFinding")}</button>`, "lightbulb-on-outline:blue", 1] : null,
+      pattern ? [this.t("fixPattern"), this.esc(this.t("fixPatternAt", { hour: pattern.hour })), "chart-timeline-variant:amber", 1] : null,
       f.confidence_level && !outage ? [this.t("sortCertainty"), `<strong>${Math.round(f.confidence * 100)} %</strong>${certainty ? `<small class="factnote">${certainty}</small>` : ""}`, "shield-check-outline:green"] : null,
     ].filter(Boolean);
     const question = f.rule_id === "device.down" && object && since ? `<p class="fixquestion"><b>${this.esc(this.t("fixDownQuestion", { name: object.name || object.object_id, span: this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) }))}</b></p>` : "";
-    return `${question}<div class="fcinfo hasrec fixinfo" role="group">${rows.map(([label, value, look]) => { const [icon, tone] = look.split(":"); return `<div class="fcirow static"><span class="fcii fcii-${tone}"><ha-icon icon="mdi:${icon}"></ha-icon></span><span>${label}</span><span>${value}</span><i></i></div>`; }).join("")}</div>`;
+    // The object and one line of chips lead; only what asks for a step of its own (work in progress, the cause, the last failure, a pattern) stays a row.
+    const shown = lead ? rows.filter(r => r[3]) : rows;
+    const head = lead ? this.fixHead(f, object, this.fixChips(f, object, { since, outage, cause, own })) : "";
+    return `${question}${head}${shown.length ? `<div class="fcinfo hasrec fixinfo" role="group">${shown.map(([label, value, look]) => { const [icon, tone] = look.split(":"); return `<div class="fcirow static"><span class="fcii fcii-${tone}"><ha-icon icon="mdi:${icon}"></ha-icon></span><span>${label}</span><span>${value}</span><i></i></div>`; }).join("")}</div>` : ""}`;
   }
 
-  // Something unneeded: the object and one line of chips (how long idle, impact, how sure) instead of a row for each.
-  fixHead(f, object) {
-    const idle = f.rule_id === "automation.stale" && object.last_triggered ? this.tCount("fixIdleDays", this.daysSince(object.last_triggered))
-      : f.rule_id === "automation.never_triggered" ? this.t("fixNeverTriggered") : this.findingTitle(f);
-    const hint = f.confidence_level ? this.certaintyText(f).replace(/^[^.]*\d+\s*%\.\s*/, "") : "";
+  // The chips of the head: what is wrong (how long idle, how long down), what it affects, impact, how sure.
+  fixChips(f, object, { since, outage, cause, own }) {
     const chip = (icon, text, cls = "") => `<span class="fixchip ${cls}"><ha-icon icon="mdi:${icon}"></ha-icon>${this.esc(text)}</span>`;
-    const chips = [chip("clock-outline", idle, "warn"), f.impact ? chip("eye-off-outline", this.impactLine(f)) : "", f.confidence_level ? chip("shield-check-outline", this.t("fixSure", { n: Math.round(f.confidence * 100) })) : "", hint ? `<span class="fixchip hint">${this.esc(hint)}</span>` : ""].join("");
+    const unneeded = this.findingTopic(f) === "unneeded", span = since ? this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) : "";
+    const first = unneeded
+      ? chip("clock-outline", f.rule_id === "automation.stale" && object.last_triggered ? this.tCount("fixIdleDays", this.daysSince(object.last_triggered)) : f.rule_id === "automation.never_triggered" ? this.t("fixNeverTriggered") : this.findingTitle(f), "warn")
+      : chip("alert-circle-outline", outage ? `${this.findingTitle(f)} · ${this.t("outageFor", { span })}` : this.findingTitle(f), "bad");
+    const when = !unneeded && !outage && since ? chip("clock-outline", `${this.t("sortSince")} ${this.formatDate(since)}`) : "";
+    const affects = cause && own && cause.kind === "device_down" ? this.causeDeviceLine(cause) : cause && own && cause.total_followers ? this.tCount("fixFollowers", cause.total_followers) : "";
+    const impact = f.impact ? chip("eye-off-outline", this.impactLine(f)) : "";
+    const sure = f.confidence_level ? chip("shield-check-outline", this.t("fixSure", { n: Math.round(f.confidence * 100) })) : "";
+    const hint = f.confidence_level && !outage ? this.certaintyText(f).replace(/^[^.]*\d+\s*%\.\s*/, "") : "";
+    return [first, when, affects ? chip("link-variant", affects) : "", impact, sure, hint ? `<span class="fixchip hint">${this.esc(hint)}</span>` : ""].join("");
+  }
+
+  // The object and the chips below it, instead of a row for each fact.
+  fixHead(f, object, chips) {
     return `<div class="fixhead"><span class="fcii fcii-blue"><ha-icon icon="mdi:puzzle-outline"></ha-icon></span><span><button type="button" class="link strong" data-object="${this.esc(this.findingKey(f))}">${this.esc(object.name || object.object_id)}</button>${object.object_type === "config_entry" ? "" : `<small class="factnote">${this.esc(object.object_id)}</small>`}<span class="fixchips">${chips}</span></span></div>`;
   }
 
