@@ -8017,5 +8017,14 @@
 "planUses1": "Затронуто 1 использование",
 "replaceChanges1": "1 изменение",
 "oftenGroup1": "{device}: сущностей 1",
-"watchSamples1": "1 проверка"
+"watchSamples1": "1 проверка",
+"statRecords": "Записи",
+"statRowsShow": "Показать записи ({n})",
+"statRowsHide": "Скрыть записи",
+"statColHour": "Час",
+"statColMean": "Среднее",
+"statColMin": "Мин.",
+"statColMax": "Макс.",
+"statColState": "Состояние",
+"statColSum": "Сумма"
 }

@@ -6747,5 +6747,14 @@
 "planUses1": "1 utilizzo interessato",
 "replaceChanges1": "1 modifica",
 "oftenGroup1": "{device}: 1 entità",
-"watchSamples1": "1 controllo"
+"watchSamples1": "1 controllo",
+"statRecords": "Record",
+"statRowsShow": "Mostra i record ({n})",
+"statRowsHide": "Nascondi i record",
+"statColHour": "Ora",
+"statColMean": "Media",
+"statColMin": "Min",
+"statColMax": "Max",
+"statColState": "Stato",
+"statColSum": "Somma"
 }

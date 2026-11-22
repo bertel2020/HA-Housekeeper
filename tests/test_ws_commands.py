@@ -38,6 +38,7 @@ READS = [
     {"type": D + "db_health"},
     {"type": D + "statistics_last"},
     {"type": D + "statistic_detail", "statistic_id": "sensor.none"},
+    {"type": D + "statistic_rows", "statistic_id": "sensor.none", "page": 2, "size": 25},
     {"type": D + "database_first"},
     {"type": D + "entity_space"},
     {"type": D + "storms"},

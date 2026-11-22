@@ -193,6 +193,15 @@ class StatisticDetailResult(TypedDict):
     origin: dict[str, Any]  # kind (entity_removed, integration_removed, unknown), platform, since
 
 
+class StatisticRowsResult(TypedDict):
+    available: bool
+    busy: bool
+    total: int  # hourly rows of the statistic in all
+    page: int
+    size: int
+    rows: list[dict[str, Any]]  # start (epoch seconds), mean, min, max, sum, state; newest first
+
+
 class PolicyItem(TypedDict):
     object_type: str
     object_id: str

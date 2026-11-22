@@ -6747,5 +6747,14 @@
 "planUses1": "影响 1 处使用",
 "replaceChanges1": "1 项更改",
 "oftenGroup1": "{device}：1 个实体",
-"watchSamples1": "1 次检查"
+"watchSamples1": "1 次检查",
+"statRecords": "记录",
+"statRowsShow": "显示记录（{n}）",
+"statRowsHide": "隐藏记录",
+"statColHour": "小时",
+"statColMean": "平均值",
+"statColMin": "最小值",
+"statColMax": "最大值",
+"statColState": "状态",
+"statColSum": "总和"
 }

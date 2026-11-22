@@ -8836,3 +8836,13 @@ test("the findings list keeps its filters behind one button that counts them, an
   html = el.findingsView();
   assert.ok(html.includes('data-lf="findings|type"') && html.includes('data-lf="findings|impact"'));
 });
+
+test("the rows of an opened statistic come a page at a time, with the columns the statistic has", () => {
+  const { el } = panel("en");
+  el.loadStatRows = () => {};
+  el.statRows = { "sensor.a": { want: "1|25", rows: [{ start: 1700000000, mean: 70, min: 60, max: 80, sum: null, state: null }] } };
+  const html = el.statRowsTable("sensor.a", { meta: { unit: "%" } }, 60);
+  assert.match(html, /Mean/);
+  assert.doesNotMatch(html, /Sum/);
+  assert.match(html, /data-lpage="statrows-sensor\.a\|2"/, "60 rows are three pages of 25");
+});

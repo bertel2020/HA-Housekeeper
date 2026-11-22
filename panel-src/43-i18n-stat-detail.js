@@ -1,5 +1,6 @@
 // Texts of the opened row of an orphaned statistic: period, cause, origin and what the database holds.
 Object.assign(TEXT.de, {
+  statRecords: "Datensätze", statRowsShow: "Datensätze anzeigen ({n})", statRowsHide: "Datensätze ausblenden", statColHour: "Stunde", statColMean: "Mittelwert", statColMin: "Min", statColMax: "Max", statColState: "Stand", statColSum: "Summe",
   statPeriod: "Zeitraum und Umfang", statRowsHourly: "{n} Stundenwerte", statSpanDays: "{n} Tage Verlauf", statSpanMonths: "{n} Monate Verlauf", statLongData: "Langzeitdaten, vor dem Löschen prüfen",
   statWhy: "Warum verwaist", statWhyEntity: "Die Entität wurde aus der Registry entfernt. Integration: {platform}.", statWhyIntegration: "Die Integration {platform} wurde entfernt, ihre Entitäten damit auch.", statWhenRemoved: "Entfernt {when}.",
   statWhyUnknown: "Weder Entität noch Registry-Eintrag sind zu finden. Die Registry merkt sich entfernte Entitäten nur etwa 30 Tage, der Grund lässt sich daher nicht mehr ermitteln.",
@@ -9,6 +10,7 @@ Object.assign(TEXT.de, {
   statDbNote: "Beim Löschen verschwinden alle drei. Der Plan legt vorher eine Sicherung an.", statDetailLoading: "Wird gelesen …", statDetailBusy: "Der Recorder ist gerade beschäftigt. Öffne die Details später noch einmal.", statDetailFailed: "Die Details konnten nicht gelesen werden.",
 });
 Object.assign(TEXT.en, {
+  statRecords: "Records", statRowsShow: "Show records ({n})", statRowsHide: "Hide records", statColHour: "Hour", statColMean: "Mean", statColMin: "Min", statColMax: "Max", statColState: "State", statColSum: "Sum",
   statPeriod: "Period and volume", statRowsHourly: "{n} hourly values", statSpanDays: "{n} days of history", statSpanMonths: "{n} months of history", statLongData: "Long-term data, check before deleting",
   statWhy: "Why orphaned", statWhyEntity: "The entity was removed from the registry. Integration: {platform}.", statWhyIntegration: "The {platform} integration was removed, and its entities with it.", statWhenRemoved: "Removed {when}.",
   statWhyUnknown: "Neither an entity nor a registry entry can be found. The registry only remembers removed entities for about 30 days, so the cause can no longer be told.",

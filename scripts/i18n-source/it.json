@@ -6746,7 +6746,16 @@
 "planUses1": "f6af92a2",
 "replaceChanges1": "27b0f312",
 "oftenGroup1": "5866683d",
-"watchSamples1": "9734b369"
+"watchSamples1": "9734b369",
+"statRecords": "47a84e92",
+"statRowsShow": "27064d68",
+"statRowsHide": "8fe06903",
+"statColHour": "f0063b80",
+"statColMean": "727a7d11",
+"statColMin": "dea79332",
+"statColMax": "a1a5936d",
+"statColState": "a3b50c47",
+"statColSum": "a21d7df0"
 },
 "setup": {
 "title": "644c2647",

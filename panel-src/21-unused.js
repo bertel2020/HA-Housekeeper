@@ -129,7 +129,47 @@ class UnusedMixin {
     const origin = m ? `${this.esc(t(m.has_sum && m.has_mean ? "kindBoth" : m.has_sum ? "kindSum" : "kindMean"))}${unitClass}<br><span class="muted">${t("statSource")}: ${this.esc(m.source)}</span>${m.has_sum ? `<br><span class="muted">${t("statSumHint")}</span>` : ""}` : "–";
     const row = (key, tb) => `<span>${t(key)}</span><span class="num">${n(tb.rows)}</span>`;
     const db = `<div class="statdb">${row("statDbStatistics", info.tables.statistics)}${row("statDbShort", info.tables.short_term)}${row("statDbStates", info.tables.states)}</div><p class="factnote">${t("statDbNote")}</p>`;
-    return `${field("statPeriod", period)}${field("statWhy", `${why}${when}`)}${field("statOrigin", origin)}${field("statDb", db, "wide")}`;
+    return `${field("statPeriod", period)}${field("statWhy", `${why}${when}`)}${field("statOrigin", origin)}${field("statDb", db, "wide")}${this.statRowsField(id, info, field)}`;
+  }
+
+  // The hourly rows of an opened statistic: closed until asked for, then one page at a time from the recorder.
+  statRowsField(id, info, field) {
+    const t = (k, v) => this.t(k, v), total = info.tables.statistics.rows;
+    if (!total) return "";
+    const open = (this.statRowsOpen || []).includes(id);
+    const toggle = `<button type="button" class="linklike" data-stat-rows="${this.esc(id)}" aria-expanded="${open}"><ha-icon icon="mdi:chevron-${open ? "down" : "right"}"></ha-icon> ${t(open ? "statRowsHide" : "statRowsShow", { n: this.formatNumber(total) })}</button>`;
+    return field("statRecords", open ? `${toggle}${this.statRowsTable(id, info, total)}` : toggle, "wide");
+  }
+
+  statRowsTable(id, info, total) {
+    const t = (k, v) => this.t(k, v), key = `statrows-${id}`, own = [25, 50, 100], size = this.listSizes?.[key] || own[0];
+    const count = Math.max(1, Math.ceil(total / size)), page = Math.min(Math.max(1, this.pages[key] || 1), count), want = `${page}|${size}`;
+    this.pages[key] = page;
+    const cache = (this.statRows ||= {}), kept = cache[id];
+    if (kept?.want !== want) this.loadStatRows(id, page, size, want);
+    const now = cache[id];
+    if (now.failed) return `<p class="muted">${t("statDetailFailed")}</p>`;
+    if (now.busy) return `<p class="muted">${t("statDetailBusy")}</p>`;
+    const rows = now.rows;
+    if (!rows) return `<p class="muted">${t("statDetailLoading")}</p>`;
+    const unit = info.meta?.unit ? `\u00a0${this.esc(info.meta.unit)}` : "";
+    const columns = [["mean", "statColMean"], ["min", "statColMin"], ["max", "statColMax"], ["state", "statColState"], ["sum", "statColSum"]].filter(([f]) => rows.some(r => r[f] != null));
+    const hour = ts => new Date(ts * 1000).toLocaleString(this.lang, { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    const value = v => v == null ? "–" : `${this.formatNumber(Math.round(v * 1000) / 1000)}${unit}`;
+    const head = `<small>${t("statColHour")}</small>${columns.map(([, label]) => `<small class="num">${t(label)}</small>`).join("")}`;
+    const body = rows.map(r => `<span>${this.esc(hour(r.start))}</span>${columns.map(([f]) => `<span class="num">${value(r[f])}</span>`).join("")}`).join("");
+    const footer = total > own[0] ? this.pageFooter(key, { page, count, from: (page - 1) * size, shown: rows.length, total, size, own }) : "";
+    return `<div class="statrows${now.loading ? " loading" : ""}" style="grid-template-columns:minmax(0,1.4fr) repeat(${columns.length}, minmax(0,1fr))">${head}${body}</div>${footer}`;
+  }
+
+  // One page of the rows; the page shown stays until the next one has arrived.
+  loadStatRows(id, page, size, want) {
+    const cache = (this.statRows ||= {}), prev = cache[id];
+    cache[id] = { want, loading: true, rows: prev?.rows };
+    this._hass.callWS({ type: "ha_housekeeper/statistic_rows", statistic_id: id, page, size })
+      .then(r => { if (cache[id]?.want === want) cache[id] = r.busy || r.available === false ? { want, busy: true } : { want, rows: r.rows }; })
+      .catch(() => { if (cache[id]?.want === want) cache[id] = { want, failed: true }; })
+      .finally(() => this.render());
   }
 
   // When the statistic last received a value: read on the first visit of the list, never during a scan.

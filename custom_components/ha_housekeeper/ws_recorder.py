@@ -20,7 +20,7 @@ from .meter import recorder_ready
 from .queries import cached_query
 from .reliability import WINDOWS as RELIABILITY_WINDOWS
 from .reliability import reliability
-from .statistics_detail import statistic_detail
+from .statistics_detail import PAGE_SIZES, statistic_detail, statistic_rows
 from .statistics_last import statistics_last
 from .storms import WINDOWS as STORMS_WINDOWS
 from .storms import mark_excluded, storms
@@ -172,6 +172,32 @@ async def websocket_statistic_detail(
             result = await statistic_detail(hass, msg["statistic_id"], refresh=msg["refresh"])
     except Exception as err:
         connection.send_error(msg["id"], "statistic_detail_failed", f"{type(err).__name__}: {err}")
+        return
+    connection.send_result(msg["id"], _versioned(result))
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/statistic_rows",
+        vol.Required("statistic_id"): vol.All(str, vol.Length(max=255)),
+        vol.Optional("page", default=1): vol.All(int, vol.Range(min=1, max=100000)),
+        vol.Optional("size", default=PAGE_SIZES[0]): vol.In(PAGE_SIZES),
+        vol.Optional("refresh", default=False): bool,
+    }
+)
+@websocket_api.async_response
+async def websocket_statistic_rows(
+    hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]
+) -> None:
+    """One page of the hourly rows of a statistic, newest first. Read-only; kept for two minutes."""
+    try:
+        async with asyncio.timeout(RELIABILITY_TIMEOUT):
+            result = await statistic_rows(
+                hass, msg["statistic_id"], msg["page"], msg["size"], refresh=msg["refresh"]
+            )
+    except Exception as err:
+        connection.send_error(msg["id"], "statistic_rows_failed", f"{type(err).__name__}: {err}")
         return
     connection.send_result(msg["id"], _versioned(result))
 
@@ -413,6 +439,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_db_health)
     websocket_api.async_register_command(hass, websocket_statistics_last)
     websocket_api.async_register_command(hass, websocket_statistic_detail)
+    websocket_api.async_register_command(hass, websocket_statistic_rows)
     websocket_api.async_register_command(hass, websocket_database_first)
     websocket_api.async_register_command(hass, websocket_entity_recorder)
     websocket_api.async_register_command(hass, websocket_entity_space)

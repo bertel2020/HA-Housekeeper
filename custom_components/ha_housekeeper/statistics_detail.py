@@ -11,7 +11,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 
 from .meter import recorder_ready
-from .payloads import StatisticDetailResult
+from .payloads import StatisticDetailResult, StatisticRowsResult
 from .queries import cached_query
 
 CACHE_SECONDS = 120
@@ -21,7 +21,7 @@ def _span(session: Any, table: Any, column: Any, where: Any) -> dict[str, Any]:
     from sqlalchemy import func, select
 
     count, first, last = session.execute(
-        select(func.count(table.id), func.min(column), func.max(column)).where(where)
+        select(func.count(column), func.min(column), func.max(column)).where(where)
     ).one()
     return {
         "rows": int(count or 0),
@@ -118,4 +118,87 @@ async def statistic_detail(
         "meta": found.raw["meta"],
         "tables": found.raw["tables"],
         "origin": origin(hass, statistic_id),
+    }
+
+
+PAGE_SIZES = (25, 50, 100)
+
+
+def query_rows(hass: HomeAssistant, statistic_id: str, page: int, size: int) -> dict[str, Any]:
+    """Blocking: one page of the hourly rows, newest first, with the number of rows in all."""
+    from homeassistant.components.recorder.db_schema import Statistics, StatisticsMeta
+    from homeassistant.components.recorder.util import session_scope
+    from sqlalchemy import func, select
+
+    with session_scope(hass=hass, read_only=True) as session:
+        meta_id = session.execute(
+            select(StatisticsMeta.id).where(StatisticsMeta.statistic_id == statistic_id)
+        ).scalar_one_or_none()
+        if meta_id is None:
+            return {"total": 0, "rows": []}
+        total = session.execute(
+            select(func.count(Statistics.start_ts)).where(Statistics.metadata_id == meta_id)
+        ).scalar_one()
+        found = session.execute(
+            select(
+                Statistics.start_ts,
+                Statistics.mean,
+                Statistics.min,
+                Statistics.max,
+                Statistics.sum,
+                Statistics.state,
+            )
+            .where(Statistics.metadata_id == meta_id)
+            .order_by(Statistics.start_ts.desc())
+            .offset((page - 1) * size)
+            .limit(size)
+        ).all()
+    return {
+        "total": int(total or 0),
+        "rows": [
+            {
+                "start": float(r[0]),
+                "mean": r[1],
+                "min": r[2],
+                "max": r[3],
+                "sum": r[4],
+                "state": r[5],
+            }
+            for r in found
+            if r[0] is not None
+        ],
+    }
+
+
+async def statistic_rows(
+    hass: HomeAssistant, statistic_id: str, page: int, size: int, *, refresh: bool = False
+) -> StatisticRowsResult:
+    """One page of the hourly rows of a statistic. Read-only; kept for two minutes per page."""
+    size = size if size in PAGE_SIZES else PAGE_SIZES[0]
+    page = max(1, page)
+    if not recorder_ready(hass):
+        return {
+            "available": False,
+            "busy": False,
+            "total": 0,
+            "page": page,
+            "size": size,
+            "rows": [],
+        }
+    found = await cached_query(
+        hass,
+        f"statrows:{statistic_id}:{page}:{size}",
+        CACHE_SECONDS,
+        lambda: query_rows(hass, statistic_id, page, size),
+        refresh=refresh,
+    )
+    if found.busy:
+        return {"available": True, "busy": True, "total": 0, "page": page, "size": size, "rows": []}
+    return {
+        "available": True,
+        "busy": False,
+        "total": found.raw["total"],
+        "page": page,
+        "size": size,
+        "rows": found.raw["rows"],
     }

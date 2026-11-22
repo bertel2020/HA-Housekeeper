@@ -7277,5 +7277,14 @@
 "planUses1": "Dotknuté 1 použitie",
 "replaceChanges1": "1 zmena",
 "oftenGroup1": "{device}: 1 entít",
-"watchSamples1": "Počet kontrol: 1"
+"watchSamples1": "Počet kontrol: 1",
+"statRecords": "Záznamy",
+"statRowsShow": "Zobraziť záznamy ({n})",
+"statRowsHide": "Skryť záznamy",
+"statColHour": "Hodina",
+"statColMean": "Priemer",
+"statColMin": "Min",
+"statColMax": "Max",
+"statColState": "Stav",
+"statColSum": "Súčet"
 }

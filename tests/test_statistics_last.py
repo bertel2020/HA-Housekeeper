@@ -109,3 +109,18 @@ async def test_detail_counts_the_rows_per_table(recorder_mock, hass: HomeAssista
     assert result["tables"]["statistics"]["rows"] == 3
     assert result["tables"]["states"]["rows"] == 0
     assert result["origin"]["kind"] == "unknown"
+
+
+async def test_rows_come_in_pages_newest_first(recorder_mock, hass: HomeAssistant) -> None:
+    from custom_components.ha_housekeeper.statistics_detail import statistic_rows
+
+    top = datetime.now(UTC).replace(minute=0, second=0, microsecond=0)
+    seed(hass, "sensor.gone", [top - timedelta(hours=h) for h in range(30)])
+    await async_wait_recording_done(hass)
+
+    first = await statistic_rows(hass, "sensor.gone", 1, 25, refresh=True)
+    second = await statistic_rows(hass, "sensor.gone", 2, 25, refresh=True)
+
+    assert first["total"] == 30 and len(first["rows"]) == 25 and len(second["rows"]) == 5
+    assert first["rows"][0]["start"] == top.timestamp()
+    assert second["rows"][0]["start"] < first["rows"][-1]["start"]
