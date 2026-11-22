@@ -32,9 +32,12 @@ def _quiet_outage(finding: dict[str, Any], snapshot: dict[str, Any]) -> bool:
     if not since:
         return False
     try:
-        age = datetime.now(UTC) - datetime.fromisoformat(since)
+        began = datetime.fromisoformat(since)
     except ValueError:
         return False
+    if began.tzinfo is None:  # a stored time without a zone: Housekeeper writes UTC
+        began = began.replace(tzinfo=UTC)
+    age = datetime.now(UTC) - began
     if age.days < QUIET_OUTAGE_DAYS:
         return False
     cause = next(

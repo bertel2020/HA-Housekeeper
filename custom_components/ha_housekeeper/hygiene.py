@@ -185,7 +185,8 @@ def battery_level(item: dict[str, Any]) -> tuple[float | None, bool]:
         return None, item.get("state") == "on"
     if domain == "sensor":
         if item.get("unit") not in (None, "", "%"):
-            return None, False
+            # A sensor in volts or the like has no percent, but a word that says "low" is still a flag.
+            return None, battery_word(item) == "low"
         try:
             level = float(item["state"])
         except (TypeError, ValueError):

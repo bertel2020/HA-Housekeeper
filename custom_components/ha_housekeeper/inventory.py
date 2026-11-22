@@ -1513,7 +1513,11 @@ class InventoryScanner:
     def _low_batteries(self, entities: list[dict[str, Any]]) -> dict[str, Any]:
         """The weak batteries: by percent or flag, and those in volts the forecast calls low (the panel counts the same)."""
         by_id = {o["object_id"]: o for o in entities}
-        volts = [e for e in self._low_volt_ids if e in by_id and not battery_excluded(by_id[e])]
+        volts = [
+            e
+            for e in self._low_volt_ids
+            if e in by_id and by_id[e].get("status") == "active" and not battery_excluded(by_id[e])
+        ]
         weak = {*low_battery_ids(entities, self.low_battery_percent), *volts}
         return {"low_batteries": len(weak), "low_voltage_ids": sorted(volts)}
 

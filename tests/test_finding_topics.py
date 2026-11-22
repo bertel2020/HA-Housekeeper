@@ -471,3 +471,13 @@ def test_a_stopped_app_is_started_from_its_page_in_home_assistant() -> None:
     ways = ways_for(finding, {"objects": []})
     assert ways[0]["way"] == "start_app" and ways[0]["recommended"]
     assert ways[0]["kind"] == "link" and ways[0]["path"] == "/hassio/addon/core_mosquitto/info"
+
+
+def test_a_stored_time_without_a_zone_does_not_break_the_quiet_outage_check() -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.ha_housekeeper.fix_ways import _quiet_outage
+
+    old = (datetime.now(UTC) - timedelta(days=9)).replace(tzinfo=None).isoformat()
+    assert _quiet_outage({"first_detected_at": old, "key": "k"}, {"causes": []}) is True
+    assert _quiet_outage({"first_detected_at": "not a time", "key": "k"}, {}) is False

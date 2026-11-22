@@ -168,3 +168,18 @@ def test_orphaned_statistics_skip_existing_entities_and_external_sources() -> No
         and orphans[0]["in_energy"] is False
     )
     assert orphans[1]["in_energy"] is True
+
+
+def test_a_battery_word_with_a_unit_is_still_a_flag() -> None:
+    from custom_components.ha_housekeeper.hygiene import battery_level
+
+    word = {
+        "object_id": "sensor.b",
+        "device_class": "battery",
+        "state": "low",
+        "unit": "V",
+        "status": "active",
+    }
+    assert battery_level(word) == (None, True), "the word says low whatever the unit is"
+    volts = {**word, "state": "2.4"}
+    assert battery_level(volts) == (None, False), "a number in volts is no percent and no flag"
