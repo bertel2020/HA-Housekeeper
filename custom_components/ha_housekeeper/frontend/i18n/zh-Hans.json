@@ -6071,7 +6071,7 @@
 "fixWayHint_open_integration": "集成页面会显示错误，并在那里提供“重新加载”。",
 "fixWay_reauth": "重新登录",
 "fixWayHint_reauth": "凭据已失效。集成页面会引导你完成登录。",
-"fixWay_mark": "有意关闭，记一条备注",
+"fixWay_mark": "有意关闭",
 "fixWayHint_mark": "Housekeeper 之后不再将其报告为故障，并在稍后再次询问。也可以设置时间窗口。该备注对设备及其实体都有效。",
 "fixWay_exchange": "更换设备",
 "fixWayHint_exchange": "用于已被替换的设备：将自动化和场景迁移到新设备。",

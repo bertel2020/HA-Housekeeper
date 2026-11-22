@@ -6071,7 +6071,7 @@
 "fixWayHint_open_integration": "La página de la integración muestra el error y ofrece allí «Recargar».",
 "fixWay_reauth": "Iniciar sesión de nuevo",
 "fixWayHint_reauth": "Las credenciales ya no funcionan. La página de la integración guía en el inicio de sesión.",
-"fixWay_mark": "Apagado a propósito, anotarlo",
+"fixWay_mark": "Apagado a propósito",
 "fixWayHint_mark": "Housekeeper deja de avisar de que ha fallado y vuelve a preguntar más adelante. También con una ventana de tiempo. La nota vale para el dispositivo y sus entidades.",
 "fixWay_exchange": "Sustituir el dispositivo",
 "fixWayHint_exchange": "Para un dispositivo reemplazado: pasa automatizaciones y escenas al nuevo dispositivo.",

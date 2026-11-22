@@ -6212,7 +6212,7 @@
 "fixWayHint_open_integration": "La pagina dell'integrazione mostra l'errore e lì offre “Ricarica”.",
 "fixWay_reauth": "Accedi di nuovo",
 "fixWayHint_reauth": "Le credenziali non funzionano più. La pagina dell'integrazione guida all'accesso.",
-"fixWay_mark": "Spento di proposito, annotarlo",
+"fixWay_mark": "Spento di proposito",
 "fixWayHint_mark": "Housekeeper non lo segnala più come guasto e lo richiede più avanti. Anche con una finestra temporale. La nota vale per il dispositivo e le sue entità.",
 "fixWay_exchange": "Sostituisci il dispositivo",
 "fixWayHint_exchange": "Per un dispositivo sostituito: sposta automazioni e scene sul nuovo dispositivo.",

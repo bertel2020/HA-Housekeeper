@@ -6556,7 +6556,7 @@
 "fixWayHint_open_integration": "Stránka integrácie ukáže chybu a ponúkne tam „Znova načítať“.",
 "fixWay_reauth": "Prihlásiť sa znova",
 "fixWayHint_reauth": "Prihlasovacie údaje už nefungujú. Stránka integrácie prevedie prihlásením.",
-"fixWay_mark": "Zámerne vypnuté, zapísať poznámku",
+"fixWay_mark": "Zámerne vypnuté",
 "fixWayHint_mark": "Housekeeper to potom už nehlási ako výpadok a neskôr sa znova opýta. Aj s časovým oknom. Poznámka platí pre zariadenie a jeho entity.",
 "fixWay_exchange": "Vymeniť zariadenie",
 "fixWayHint_exchange": "Pre nahradené zariadenie: presunúť automatizácie a scény na nové zariadenie.",

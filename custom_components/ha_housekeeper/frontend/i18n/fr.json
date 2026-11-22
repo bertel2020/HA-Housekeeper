@@ -6071,7 +6071,7 @@
 "fixWayHint_open_integration": "La page de l’intégration montre l’erreur et y propose « Recharger ».",
 "fixWay_reauth": "Se reconnecter",
 "fixWayHint_reauth": "Les identifiants ne fonctionnent plus. La page de l’intégration guide la connexion.",
-"fixWay_mark": "Éteint volontairement, le noter",
+"fixWay_mark": "Éteint volontairement",
 "fixWayHint_mark": "Housekeeper ne le signale alors plus comme en panne et redemande plus tard. Aussi sur une période donnée. La note vaut pour l’appareil et ses entités.",
 "fixWay_exchange": "Échanger l’appareil",
 "fixWayHint_exchange": "Pour un appareil remplacé : déplacer les automatisations et scènes vers le nouvel appareil.",
