@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from typing import Any
+from urllib.parse import quote
 
 from .finding_topics import BROKEN_REFERENCES, DOWN, FAILING_AUTOMATIONS, UNNEEDED
 
@@ -198,7 +199,9 @@ def ways_for(
             ]
         )
     elif rule == "app.stopped_in_use":
-        ways.extend([_way("start_app", "info", True), _way("mark", "panel")])
+        # The page of the app in Home Assistant, where it is started: a way with a button, not only a sentence.
+        page = f"/hassio/addon/{quote(finding['object_id'], safe='')}/info"
+        ways.extend([_way("start_app", "link", True, path=page), _way("mark", "panel")])
     else:  # an entity without a value, or silent
         ways.extend(
             [

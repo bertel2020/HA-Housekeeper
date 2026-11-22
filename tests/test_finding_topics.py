@@ -458,3 +458,16 @@ def test_a_quiet_device_outage_is_flagged_for_the_cards() -> None:
     snapshot["causes"][0]["total_followers"] = 5
     mark_quiet_outages(snapshot)
     assert "quiet_outage" not in snapshot["findings"][0], "a flag that no longer holds is taken off"
+
+
+def test_a_stopped_app_is_started_from_its_page_in_home_assistant() -> None:
+    from custom_components.ha_housekeeper.fix_ways import ways_for
+
+    finding = {
+        "rule_id": "app.stopped_in_use",
+        "object_id": "core_mosquitto",
+        "topic": "down",
+    }
+    ways = ways_for(finding, {"objects": []})
+    assert ways[0]["way"] == "start_app" and ways[0]["recommended"]
+    assert ways[0]["kind"] == "link" and ways[0]["path"] == "/hassio/addon/core_mosquitto/info"
