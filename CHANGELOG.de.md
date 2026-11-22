@@ -7,14 +7,12 @@
 ### Neu
 
 - **Verwaiste Statistiken:**
-  - Sie erscheinen sofort; junge sind als „Wartet noch“ markiert, bis die Wartezeit vorbei ist, und ein neuer Filter trennt sie von denen, die schon zählen.
-  - Die Wartezeit ist eine Option (0 bis 90 Tage, Standard 2).
-  - „Auf Nachfolger übertragen“ überträgt den Verlauf mehrerer verwaister Statistiken in einem Zug auf andere Entitäten. Vor der Vorschau sagt jede Zeile, was die Verbindung bewirkt (Überlappung, Lücke, nichts zu kopieren).
-  - Auch Statistiken des Energie-Dashboards lassen sich übertragen, das Dashboard folgt.
-  - Nach einer geprüften Übertragung werden die alten Statistiken zum Löschen angeboten; ein Schalter öffnet diesen Schritt von selbst.
-- **Batterien:** Eine Batterie, die ein Wort meldet (low, medium, high), wird aufgeführt, und nur „low“ warnt.
-- **Batterien in Volt:** Die Klasse, die Housekeeper aus der Spannung rät (und damit die Grenze), lässt sich im Zeilenmenü ändern oder auf die Schätzung zurücksetzen; eine gewählte Klasse ist als „von dir gewählt“ markiert.
-- **Schwache Batterien:** Der Sensor „Schwache Batterien“, das Ziel und die Richtlinie „Batterie ohne Automation“ zählen auch Batterien in Volt, wie es das Panel tut.
+  - Sie erscheinen sofort; junge tragen die Marke „Wartet noch“, bis die Wartezeit (eine Option, 0 bis 90 Tage, Standard 2) abgelaufen ist, und ein Filter trennt sie von denen, die schon zählen.
+  - Die Übertragung auf einen Nachfolger verschiebt den Verlauf mehrerer verwaister Statistiken in einem Zug auf andere Entitäten, mit einem Hinweis je Zeile, was die Verbindung bewirkt. Auch Statistiken des Energie-Dashboards lassen sich übertragen, und nach einer geprüften Übertragung werden die alten zum Löschen angeboten.
+  - Die Details einer Statistik zeigen ihre Stundenzeilen seitenweise, auch in der Recorder-Karte einer Entität.
+- **Batterien:**
+  - Eine Batterie, die ein Wort meldet (low, medium, high), wird aufgeführt, und nur „low“ warnt.
+  - Bei Batterien in Volt lässt sich die Klasse, die Housekeeper aus der Spannung rät (und damit die Grenze), im Zeilenmenü ändern; der Sensor „Schwache Batterien“, das Ziel und die Richtlinie „Batterie ohne Automation“ zählen sie ebenfalls.
 - **Hausfunktionen:** Die Objekte einer Funktion lassen sich im Bearbeiten-Formular mit Pfeilen sortieren. Die Reihenfolge dient nur der Anzeige.
 - **Platz je Entität (Datenbank, Zustände):**
   - Der Name öffnet die Entität. Die Liste hat eine Auswahlspalte, ein Zeilenmenü und über der Liste die Ausschluss-Leiste; ein Abbrechen leert die Auswahl.
@@ -24,38 +22,37 @@
   - Ausgefallene Entitäten deaktivieren oder ersetzen; bei kaputten Verweisen das Ersetzen mit dem Vorschlag.
   - Quarantäne, verwaiste Statistiken, nicht verwiesene Objekte und „Bereich zuweisen“ bieten „Alle … der Liste“ an, wie schon die Befunde.
   - Ein neuer Filter „Ursache“ zeigt zum Beispiel alle Entitäten, die ihre Integration nicht mehr bereitstellt. In Listen mit drei oder mehr Filtern stehen diese jetzt hinter einem Knopf „Filter“, der zählt, wie viele gelten.
+  - Eine Automation, die lange nichts ausgelöst hat, lässt sich per Plan deaktivieren, der vorsichtige Schritt vor dem Löschen.
 - **Quarantäne:** Die Liste zeigt, wie viele Recorder-Zeilen eine Entität hält, und „Freigeben“ steht im Zeilenmenü.
 
 ### Geändert
 
-- **Wortwahl:** Dasselbe heißt überall gleich. „Später“ ist Knopf und Status; die Objekt-Notiz heißt „Soll offline sein“; „Nicht löschen“ und „Nicht melden“ gelten bei Notiz und Label gleich; „Ausnahmeregel“ steht überall, wo es neben den Regeln der Befunde vorkommt.
-- **Ausfälle:** Ein ausgefallenes Gerät nennt in Liste und Karte die Dauer und was dadurch nicht verfügbar ist („Gerät X ist seit 44 Tagen aus“). Auf der Beheben-Seite steht die Frage „Ist das so gewollt?“, und „Absichtlich aus, notieren“ ist eine eigene Karte; sie wird empfohlen, wenn das Gerät seit einer Woche aus ist und kaum etwas daran hängt.
+- **Beheben-Seite:** Ruhiger und für jedes Thema gleich.
+  - Der Kopf nennt Leerlauf oder Dauer des Ausfalls, Wirkung und Sicherheit als Chips; jeder Weg ist ein Satz und ein Knopf, der überall wie die Aktion heißt. Der vorsichtige Weg steht zuerst, selten Nötiges ist eingeklappt.
+  - Eine ungenutzte Automation bietet „Automation deaktivieren“ vor „Automation löschen“; beide laufen auf der Seite mit Vorschau, Prüfung und Rückgängig. Eine gestoppte App öffnet ihre Seite in Home Assistant.
+- **Erstaufräumen:**
+  - Die Karten aller Etappen (auch Etappe 2, die Aufräum-Runde und der ruhige Rest) zeigen ihre Aktionen in zwei Gruppen, „Für das Objekt“ und „Für diesen Befund“, mit einer Zeile, die den empfohlenen Knopf erklärt.
+  - Die Vorschau auf der Karte zeigt, was jeder Schritt ändert, welche Schritte einen Blick brauchen und das Backup; Rückgängig fragt vorher.
+  - Bei einem Gerät, das seit einer Woche aus ist und von dem fast nichts abhängt, empfiehlt die Karte die Objekt-Notiz, wie die Beheben-Seite, und bietet „Ist so gewollt“ nicht mehr an.
+- **Ausfälle:** Ein ausgefallenes Gerät nennt in Liste und Karte die Dauer und was dadurch nicht erreichbar ist („Gerät X ist seit 44 Tagen ausgefallen“). Die Beheben-Seite fragt „Ist das so gewollt?“ und empfiehlt „Objekt-Notiz setzen“, wenn das Gerät seit einer Woche aus ist und kaum etwas davon abhängt.
+- **Aktionen:** Ein Name pro Aktion in Menüs, Zeilen und Knöpfen („Entfernen“, „Deaktivieren“, „Entität ersetzen“, „Objekt-Notiz setzen“, „Zum Entfernen vormerken“), ohne „planen“ davor; ein Knopf, der eine Vorschau öffnet, sagt, was sie zeigt („Label ergänzen: Vorschau“).
+  - Zeilenmenü, Aktionen-Menü der Auswahl und die Aktionen der Objektseite haben dieselben Gruppen in derselben Reihenfolge, und jeder Eintrag sagt, was er erreicht. Die Auswahlleiste zählt Objekte, nicht Befunde.
+  - Die Seite eines Geräts oder einer Integration mit Befunden darunter bietet „Ausblenden …“ und die Ausnahmeregel für sie.
+  - „Speichern“ ist überall der Hauptknopf; Rückgängig, Abbrechen und Bericht sind schlichte Knöpfe.
+- **Wortwahl:** Ein Wort, „Wirkung“, ersetzt Schweregrad, Auswirkung und Dringlichkeit. „Später“ ist Knopf und Status, „Ausnahmeregel“ steht überall, wo Regeln für Befunde gemeint sind, und Rückgängig, Erledigt und Laden haben in allen Sprachen je ein Wort. Etappe 2 des Erstaufräumens sagt „Ablehnen“, und die Untertitel der Seiten Verlauf, Journal, Ohne Verweis und Automationen sind ein kurzer Satz.
 - **Hausfunktionen:** Die Soll-Regeln passen zum Objekt: ein Mindestwert wird nur bei Zahlen angeboten, und jede Regel zeigt den aktuellen Wert.
-- **Aktionen an Befunden:** Zeilenmenü, Aktionen-Menü der Auswahl und die Aktionen der Objektseite haben dieselben Gruppen in derselben Reihenfolge (Beheben oder Plan, Entscheiden, Objekt-Notiz und Ausnahme-Regel, Label, Logbuch-Eintrag).
-  - Jeder Eintrag sagt, was er erreicht („Nur dieser Befund“, „Dieses Objekt · auch künftige Befunde“); „Vorschau erstellen“ bei einer Automation heißt jetzt „Automation löschen …“.
-  - Die Objektseite bietet auch Beheben, Ausnahme-Regel und Logbuch-Eintrag an; der einfache Modus blendet im Zeilenmenü nichts mehr aus.
-  - „Label ergänzen“ aus einer Zeile behält die Auswahl; „1 von 39 Befunden der Gruppe passt zum Filter“ und weitere Einzahlformen.
-  - Die Objekt-Notiz sagt, was sie für den Befund tut („Hält Ausfälle still“ oder „Schützt vor dem Aufräumen“), die Ausnahme-Regel sagt, dass sie auch für künftige Befunde gilt, und die langen Hinweise, die den Titel wiederholten, entfallen. Die Objektseite bietet die Notiz nicht mehr doppelt an.
-  - In der Einfach-Ansicht blendet die Kopfzeile einer Gruppe Gewissheit und Regel-ID aus wie die Zeilen. Ein Text im Erstaufräumen sagte, eine Entscheidung lasse den Befund stehen; sie blendet ihn aus. Der Grund „trägt das Label housekeeper_ignore“ nennt auch Ausnahme-Regeln.
-  - Die Seite eines Geräts, einer Integration oder eines anderen Objekts, dessen Befunde darunter liegen, bietet „Befunde entscheiden …“ und die Ausnahme-Regel dafür in der neuen Gruppe „Ausblenden“ an, dazu einen Logbuch-Eintrag bei den Notizen.
-  - Eine Automation, die lange nichts ausgelöst hat, lässt sich per Plan deaktivieren (Menü, Auswahl, Objektseite und Beheben-Seite), der vorsichtige Schritt vor dem Löschen; sie bleibt erhalten und lässt sich wieder einschalten. Die Beheben-Seite einer ungenutzten Automation bietet „Automation löschen“ mit Vorschau an, statt einer Objekt-Notiz, die Automationen nicht tragen, und eines Knopfes „Aktionen des Objekts“, der doppelt stand. Objekte ohne Notiz bekommen diesen Weg nicht.
-  - Die Kopfzeile eines Objekts mit mehreren Befunden hat dieselben Gruppen; Entscheiden und Label gelten dort für alle Befunde der Gruppe.
-  - Eine ausgefallene Entität wird überall gleich behandelt: eine verwaiste lässt sich auch im Zeilenmenü deaktivieren oder ersetzen, eine, die ihre Integration nicht mehr liefert, wird entfernt statt deaktiviert, und eine schon deaktivierte wird nicht noch einmal angeboten.
-- **Verwaiste Statistiken:** Der Hilfetext nennt die Wartemarke und die Übertragung.
-- **Wörter:** Ein Wort, „Wirkung“, ersetzt Schweregrad, Auswirkung und Dringlichkeit (Liste, Filter, Chips, Hilfe, Beheben-Seite). Etappe 2 des Erstaufräumens sagt „Ablehnen“ statt „Später erinnern“. Die Menüs sagen „Ausnahme-Regel“, und die Knöpfe bei Backups, Backup-Automatik und Umbenennen sagen „Vorschau erstellen“ wie jeder andere Plan.
 - **Menüs und Popups:** Escape schließt nur das innerste Popup und geht nicht mehr zusätzlich zurück; ein Klick daneben schließt Zeilenmenüs und gespeicherte Ansichten. Die Zeilenaktionen der Sturm-Liste, der Entfernt-Liste, des Monitor-Verlaufs, gespeicherter Scans und des KI-Protokolls stehen im Zeilenmenü.
-- **Rückfragen:** Das Aufheben einer einzelnen Entscheidung, das Entfernen einer einzelnen Objekt-Notiz, das Zurücksetzen der Anzeige-Einstellungen, das Zurücknehmen von KI-Änderungen und das Löschen der Zähler einer Abdeckung fragen vorher.
+- **Rückfragen:** Das Aufheben einer einzelnen Entscheidung, das Entfernen einer einzelnen Objekt-Notiz, das Zurücksetzen der Anzeigeeinstellungen, das Zurücknehmen von KI-Änderungen, das Rückgängigmachen eines Plans von einer Karte und das Löschen der Zähler einer Abdeckung fragen vorher; das Löschen einer Automation oder eines Helfers wird mit dem roten Knopf bestätigt.
 - **KI-Zugriff:** Das Einschalten von „Merkliste ändern“ oder „Befunde beheben“ setzt das automatische Ausschalten auf 8 Stunden, wenn keines gewählt war.
 - **Datenschutz:** Der Export mit Platzhaltern lässt auch Attribute mit Namen weg, und user, host, serial und owner gelten als sensibel. Die Diagnosedatei kürzt Entitäts-IDs und Registry-IDs in Fehlertexten.
 - **Platz (Recorder):** Bei Entitäten, die nur zum Ausschließen angehakt sind, wartet das Kürzen des alten Verlaufs hinter einem ruhigen Knopf; bei schon ausgeschlossenen bleibt es offen.
-- **Erstaufräumen:** Bei einem Gerät, das seit einer Woche aus ist und von dem fast nichts abhängt, empfiehlt die Karte die Objekt-Notiz, wie die Beheben-Seite.
 - **Sprachen:** „1 Objekt“, „1 Entität“, „1 Befund ausgeblendet“ und weitere Einzahlformen; Pager, „Letzter Scan“ und „Zurück zu“ sind Vorlagen, damit die Wortstellung je Sprache stimmt; ein Wechsel der Home-Assistant-Sprache gilt ohne Neuladen; die Export-Köpfe „Name“ und „Entität“ folgen der Sprache.
 
 ### Behoben
 
-- **Ausfälle:** Ein Button, eine Szene oder ein Ereignis ohne Wert (Zustand „unknown“) gilt nicht mehr als ausgefallen und zählt nicht mehr gegen sein Gerät.
+- **Ausfälle:** Ein Button, eine Szene oder ein Ereignis ohne Wert (Zustand „unknown“) gilt nicht mehr als ausgefallen und hält sein Gerät nicht davon ab, als ausgefallen zu gelten, wenn alles andere daran ausgefallen ist.
+- **Verwaiste Statistiken:** Die Details einer Statistik öffnen sich wieder; sie schlugen bei einer Statistik fehl, die noch Zustände hatte.
 - **Übertragen und Ersetzen:** Einheiten, die sich nur durch Leerzeichen unterscheiden (kWh/100km und kWh/100 km), gelten als eine Einheit.
-- **Übertragen-Ansicht:** Sie passt auf ein Handy, und die Liste der Zielwahl wird nicht mehr abgeschnitten.
 - **Ausnahmeregeln und Erfolgskriterien:** Ein Ladefehler lässt beim nächsten Speichern nicht mehr die gespeicherten Regeln oder Kriterien ersetzen. Sammelaktionen der Ausnahme-Tabellen treffen nur die eigene Tabelle, und das Speichern einer Regel macht einen kurz zuvor gesetzten Schalter nicht mehr rückgängig.
 - **Beheben-Seite:**
   - Die Wege eines Befunds (Ziel ersetzen, Verweis entfernen, Fehler abfangen) erscheinen wieder, wenn sein Objekt existiert.
@@ -64,6 +61,10 @@
 - **Listen und Pläne:** Auswahlen verlieren, was ein Scan oder ein Plan entfernt hat. Ein Plan nimmt höchstens 250 Schritte, die Liste sagt es und lässt den Rest gewählt. Ein Doppelklick legt nicht mehr zwei Notizen, Logbuch-Einträge oder Erinnerungen an. Fehler bei Erinnerungen, Trace und Abdeckung werden angezeigt.
 - **Recorder:** Das Kürzen bis heute geht; die Platzmessung und die Integritätsprüfung enden und starten mit dem Panel.
 - **Einstellungen und Downloads:** Nach dem Speichern fragt das Panel wiederholt, bis die Integration wieder da ist; der Download des Prüfberichts bricht in Firefox und Safari nicht mehr ab.
+- **Ladefehler:** Ein fehlgeschlagenes Neuladen behält die Seite und ihre Daten und bietet „Erneut versuchen“ an, statt eine leere Seite zu zeigen. Ein fehlgeschlagenes Laden der Wege eines Befunds sagt das und behauptet nicht mehr, es gebe nichts zu tun.
+- **Erstaufräumen:** Eine Objekt-Notiz, die auf einer Karte gesetzt wird, zählt auf der Abschlussseite einmal.
+- **Barrierefreiheit:** Link-Knöpfe und verworfene Zeilen im Prüfprotokoll erreichen einen Kontrast von 4,5 zu 1; Tabellenzeilen mit eigenem Kontrollkästchen oder Menü werden nicht mehr als Knopf angesagt, und der Ring im Inventar ist eine Gruppe. Das Panel verdeckt die DOM-Eigenschaft `nodeName` nicht mehr, an der Werkzeuge scheiterten, die sie lesen. Ein Apostroph in den Gründen einer Ausfall-Bewertung erscheint nicht mehr als `&#39;`.
+- **Befundtabelle:** Sie passt in ein Fenster von 1024 Pixeln (Thema, Alter und Befund brechen um), und die Seite scrollt nicht mehr zur Seite.
 
 ## 2.1.4 - 2026-11-15
 

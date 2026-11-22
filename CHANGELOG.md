@@ -7,14 +7,12 @@
 ### New
 
 - **Orphaned statistics:**
-  - They show up at once; young ones are marked “Still waiting” until the waiting time has passed, and a new filter separates them from those that already count.
-  - The waiting time is an option (0 to 90 days, default 2).
-  - “Move to successor” moves the history of several orphaned statistics to other entities in one go. Before the preview, each row says what the join will do (overlap, gap, nothing to copy).
-  - Statistics of the Energy dashboard can be moved too, and the dashboard follows.
-  - After a verified move the old statistics are offered for deletion; a switch opens that step by itself.
-- **Batteries:** A battery that reports a word (low, medium, high) is listed, and only “low” warns.
-- **Batteries in volts:** The class that Housekeeper guesses from the voltage (and with it the limit) can be changed in the row menu, or set back to the guess; a chosen class is marked “chosen by you”.
-- **Weak batteries:** The sensor “low batteries”, the goal and the policy “battery without an automation” count batteries in volts too, as the panel does.
+  - They show up at once; young ones are marked “Still waiting” until the waiting time (an option, 0 to 90 days, default 2) has passed, and a filter separates them from those that already count.
+  - The move to a successor moves the history of several orphaned statistics to other entities in one go, with a note per row on what the join will do. Statistics of the Energy dashboard can be moved too, and after a verified move the old ones are offered for deletion.
+  - The details of a statistic show its hourly rows a page at a time, also in the recorder card of an entity.
+- **Batteries:**
+  - A battery that reports a word (low, medium, high) is listed, and only “low” warns.
+  - For batteries in volts the class that Housekeeper guesses from the voltage (and with it the limit) can be changed in the row menu; the sensor “low batteries”, the goal and the policy “battery without an automation” count them too.
 - **House functions:** The objects of a function can be sorted with arrows in the edit form. The order is only for display.
 - **Space per entity (database, states):**
   - The name opens the entity. The list has a pick column, a row menu and, above the list, the exclusion bar; a cancel button clears the pick.
@@ -24,38 +22,37 @@
   - Disable or replace entities that are down; for broken references, replace with the suggestion filled in.
   - Quarantine, orphaned statistics, unreferenced objects and “Assign area” offer “All … in the list”, as the findings do already.
   - A new “Cause” filter shows, for example, all entities their integration no longer provides. In lists with three or more filters, these now sit behind one “Filters” button that counts how many are on.
+  - An automation nothing has triggered for long can be disabled by a plan, the careful step before deleting it.
 - **Quarantine:** The list shows how many recorder rows an entity holds, and “Release” is an entry of the row menu.
 
 ### Changed
 
-- **Wording:** The same thing has the same name everywhere. “Later” is the button and the status; the object note is “Should be offline”; “Do not delete” and “Do not report” are the same in notes and labels; “exception rule” is used wherever it stands next to the rules of the findings.
-- **Outages:** A device that is down names the duration and what is unavailable because of it in the list and the card (“Device X has been down for 44 days”). The Fix page asks “Is that intended?” and “Off on purpose, note it” is a card of its own; it is recommended when the device has been down for a week and hardly anything depends on it.
+- **Fix page:** Calmer and the same for every topic.
+  - The head names the idle days or the duration of the outage, the impact and the certainty as chips; each way is one sentence and one button named like the action everywhere. The careful way comes first, rarely needed ones fold.
+  - An unused automation offers “Disable the automation” before “Delete the automation”; both run inside the page with preview, check and undo. A stopped app opens its page in Home Assistant.
+- **First cleanup:**
+  - The cards of all stages (also stage 2, the cleanup round and the quiet rest) show their actions in two groups, “For the object” and “For this finding”, with one line that explains the recommended button.
+  - The preview on the card shows what each step changes, which steps need a look and the backup; undoing asks first.
+  - For a device that has been off for a week with almost nothing depending on it, the card recommends the object note, like the Fix page, and no longer offers “Intended”.
+- **Outages:** A device that is down names the duration and what is unavailable because of it in the list and the card (“Device X has been down for 44 days”). The Fix page asks “Is that intended?” and recommends “Set object note” when the device has been down for a week and hardly anything depends on it.
+- **Actions:** One name per action in menus, rows and buttons (“Remove”, “Disable”, “Replace entity”, “Set object note”, “Mark for removal”), without “plan …” in front; a button that opens a preview says what it shows (“Add label: preview”).
+  - The row menu, the actions menu of a selection and the actions of the object page use the same groups in the same order, and every entry says what it reaches. The selection bar counts objects, not findings.
+  - The page of a device or integration with findings below it offers “Hide …” and the exception rule for them.
+  - “Save” is the main button everywhere; undo, cancel and report are plain buttons.
+- **Wording:** One word, “Impact”, replaces severity, effect and urgency. “Later” is the button and the status, “exception rule” stands wherever rules of findings are meant, and undo, done and loading each have one word in all languages. Stage 2 of the first cleanup says “Decline”, and the subtitles of the log, journal, unreferenced and runs pages are one short sentence.
 - **House functions:** The expected conditions fit the object: a minimum value is offered for numbers only, and each condition shows the current value.
-- **Actions on findings:** The row menu, the actions menu of a selection and the actions of the object page use the same groups in the same order (fix or plan, decide, object note and exception rule, label, logbook entry).
-  - Every entry says what it reaches (“Only this finding”, “This object · future findings too”); “Create preview” for an automation is now “Delete automation …”.
-  - The object page offers fix, exception rule and logbook entry as well; the simple mode no longer hides entries of the row menu.
-  - “Set label” from a row keeps the selection; “1 of 39 findings of the group matches the filter” and other singular forms.
-  - The object note says what it does for the finding (“Keeps outages quiet” or “Protects from cleanup”), the exception rule says it also applies to future findings, and the long hints that repeated the title are gone. The object page no longer offers the note twice.
-  - In the simple view the head of a group hides certainty and rule ID like the rows. A text in the first cleanup said a decision leaves the finding in place; it hides it. The reason “carries the label housekeeper_ignore” also names exception rules.
-  - The page of a device, integration or other object whose findings sit below it offers “Decide on findings …” and the exception rule for them in the new group “Hide”, and a logbook entry beside the notes.
-  - An automation nothing has triggered for long can be disabled by a plan (menu, selection, object page and Fix page), the careful step before deleting it; it is kept and can be switched on again. The Fix page of an unused automation offers “Delete the automation” with a preview, instead of an object note that automations cannot take and an “actions of the object” button that stood twice. Objects without a note get no such way.
-  - The head of an object with several findings has the same groups; deciding and the label there apply to all findings of the group.
-  - An entity that is down is handled the same everywhere: an orphaned one can be disabled or replaced from the row menu too, one its integration no longer provides is removed instead of disabled, and one that is already disabled is not offered again.
-- **Orphaned statistics:** The help text names the waiting mark and the move.
-- **Wording:** One word, “Impact”, replaces severity, effect and urgency (list, filter, chips, help, Fix page). Stage 2 of the first cleanup says “Decline” instead of “Remind me later”. The menus say “Exception rule”, and the backup, auto-delete and rename buttons say “Create preview” like every other plan.
 - **Menus and pop-ups:** Escape closes only the innermost pop-up and no longer also goes back; a click elsewhere closes row menus and saved views. The row actions of the storm list, the removed list, the monitor history, stored scans and the AI log are entries of the row menu.
-- **Questions before things go:** Taking back a single decision, removing a single object note, resetting the display settings, taking back AI changes and deleting the counters of a coverage ask first.
+- **Questions before things go:** Taking back a single decision, removing a single object note, resetting the display settings, taking back AI changes, undoing a plan from a card and deleting the counters of a coverage ask first; deleting an automation or a helper is confirmed with the red button.
 - **AI access:** Switching on “Change the list” or “Fix findings” sets the automatic switch-off to 8 hours when none was chosen.
 - **Privacy:** The export with placeholders also leaves out attributes that carry a name, and user, host, serial and owner count as sensitive. The diagnostics file cuts entity IDs and registry IDs out of error texts.
 - **Space (recorder):** For entities that are only picked to be excluded, trimming the old history waits behind a quiet button; for entities that are already excluded it stays open.
-- **First cleanup:** For a device that has been off for a week with almost nothing depending on it, the card recommends the object note, like the Fix page.
 - **Languages:** “1 object”, “1 entity”, “1 finding hidden” and other singular forms; the pager, “Last scan” and “Back to” are templates, so the word order fits each language; a change of the Home Assistant language applies without a reload; the export headers “Name” and “Entity” follow the language.
 
 ### Fixed
 
-- **Outages:** A button, scene or event without a value (state “unknown”) no longer counts as down and no longer counts against its device.
+- **Outages:** A button, scene or event without a value (state “unknown”) no longer counts as down, and it does not keep its device from counting as down when everything else on it is.
+- **Orphaned statistics:** The details of a statistic open again; they failed for a statistic that still had states.
 - **Moving and replacing:** Units that differ only in spaces (kWh/100km and kWh/100 km) count as one unit.
-- **Move view:** It fits a phone, and the list of the target field is no longer cut off.
 - **Exception rules and success criteria:** A failed load no longer lets the next save replace the stored rules or criteria. Bulk actions of the exception tables only touch their own table, and saving a rule no longer undoes a switch flipped a moment before.
 - **Fix page:**
   - The ways of a finding (replace the target, remove the reference, catch the error) show again when its object exists.
@@ -64,6 +61,10 @@
 - **Lists and plans:** Selections lose what a scan or a plan removed. A plan takes at most 250 steps, and the list says so and keeps the rest picked. A double click no longer creates two notes, logbook entries or reminders. Errors of reminders, the trace and the coverage show.
 - **Recorder:** Trimming up to today works; the space measurement and the integrity check stop and resume with the panel.
 - **Settings and downloads:** After saving, the panel asks again until the integration is back; the report download no longer fails in Firefox and Safari.
+- **Loading errors:** A failed reload keeps the page and its data and offers to try again, instead of showing an empty page. A failed load of the ways of a finding says so, and no longer claims that there is nothing to do.
+- **First cleanup:** An object note set from a card counts once on the closing page.
+- **Accessibility:** Link buttons and dismissed rows of the check log reach a contrast of 4.5 to 1; table rows that hold their own checkbox or menu are no longer announced as buttons, and the ring of the inventory is a group. The panel no longer hides the DOM property `nodeName`, which broke tools that read it. An apostrophe in the reasons of an outage rating no longer shows as `&#39;`.
+- **Findings table:** It fits a window of 1024 pixels (topic, age and finding wrap), and the page no longer scrolls sideways.
 
 ## 2.1.4 - 2026-11-15
 
