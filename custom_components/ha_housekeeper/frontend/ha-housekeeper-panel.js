@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"6d34787ada"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"019f64852c"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"19a67cf620"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b05385b02e"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"33c9ec3e22"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"1850bf111d"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"8f0da1589d"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"836f78b1f7"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"41f94224bd"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9c5abd2e1c"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"5938f40ee1"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"80d9befe99"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"a6887a9ce9"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"2117184edd"}];
 
 const TEXT = {
   de: {
@@ -1878,7 +1878,7 @@ class StylesMixin {
       .hamenu{display:grid;place-items:center;flex:none;width:40px;height:40px;margin:0 -10px 0 -6px;padding:0;border:0;border-radius:50%;background:none;color:inherit}.hamenu:hover{background:var(--hk-soft)}.hamenu:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.hamenu ha-icon{--mdc-icon-size:24px}.sysmeter{display:block;height:6px;margin-top:6px;border-radius:99px;background:var(--hk-soft);overflow:hidden}.sysmeter i{display:block;height:100%;border-radius:99px;background:var(--hk-green)}.sysmeter.warn i{background:var(--hk-amber)}.sysmeter.red i{background:var(--hk-red)}.sysmeter.mute i{background:var(--hk-gray)}.sysshare{display:block;width:100%;min-width:120px;height:8px;margin-top:2px;border-radius:99px;background:var(--hk-soft);overflow:hidden}.sysshare i{display:block;height:100%;border-radius:99px;background:var(--hk-green)}.tablewrap.lt.acc td{white-space:normal}@media(min-width:641px){.tablewrap.lt.rel table{table-layout:fixed;width:100%}.tablewrap.lt.rel th:nth-child(1){width:36%}.tablewrap.lt.rel th:nth-child(2){width:14%}.tablewrap.lt.rel th:nth-child(4){width:12%}.tablewrap.lt.rel td{overflow-wrap:anywhere}}.pills{display:flex;flex-wrap:wrap;gap:4px}@media(min-width:641px){.sysnav .navtiles{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(min-width:1300px){.sysnav .navtiles{grid-template-columns:repeat(6,minmax(0,1fr))}}
       .intentry{margin:4px 2px 0;font-size:15px}.syssec{margin:18px 16px 6px;font-size:15px}.syssec:first-child{margin-top:12px}
       .pill.kind{background:none;border:1px solid var(--hk-border);color:var(--hk-muted)}.rowmenu{position:relative;flex:none;margin:0 10px 0 0}.rowmenu>summary{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;list-style:none;cursor:pointer;color:var(--hk-muted)}.rowmenu>summary::-webkit-details-marker{display:none}.rowmenu>summary:hover,.rowmenu[open]>summary{background:var(--hk-soft);color:inherit}.markform .mfield.wide{flex:1 1 100%}.markform .statusopt{font-size:calc(14px*var(--hk-fs,1));font-weight:400;color:var(--hk-text)}.markform .statusopt b{font-weight:700}.markform .statusopt small{font-size:calc(12.5px*var(--hk-fs,1));font-weight:400;color:var(--hk-muted)}.markform .chips.bare{display:flex;flex-wrap:wrap;gap:8px}.markform label.chip{white-space:nowrap}label.chip{cursor:pointer}label.chip:has(:focus-visible){outline:2px solid var(--hk-blue);outline-offset:1px}.markkinds .statusopt small{display:block}@media(max-width:600px){.markkinds .statusopt small{display:none}}
-.actmenu{margin:0}.fbtns>.actmenu{display:grid}.actmenu>summary.btn{display:flex;box-sizing:border-box;width:100%;height:auto;min-height:44px;border-radius:10px;gap:6px;align-items:center;justify-content:center;padding:8px 12px;line-height:1.2;color:var(--hk-on)}.actmenu>summary.btn:not(.primary){color:var(--hk-text)}.actmenu .menupop{min-width:min(340px,86vw)}.actmenu .menuitem{white-space:normal}.menusep{height:0;margin:4px 0;border:0;border-top:1px solid var(--hk-border)}.menupop{position:absolute;right:0;top:100%;z-index:20;display:grid;min-width:260px;padding:4px 0;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.menuitem{white-space:nowrap;display:flex;gap:10px;align-items:center;padding:8px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}.menuitem:hover{background:var(--hk-soft)}.menuitem ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}
+.menunote{display:block;padding:6px 12px 8px;font-size:12px;color:var(--hk-muted);border-top:1px solid var(--hk-border);margin-top:4px}.actmenu{margin:0}.fbtns>.actmenu{display:grid}.actmenu>summary.btn{display:flex;box-sizing:border-box;width:100%;height:auto;min-height:44px;border-radius:10px;gap:6px;align-items:center;justify-content:center;padding:8px 12px;line-height:1.2;color:var(--hk-on)}.actmenu>summary.btn:not(.primary){color:var(--hk-text)}.actmenu .menupop{min-width:min(340px,86vw)}.actmenu .menuitem{white-space:normal}.menusep{height:0;margin:4px 0;border:0;border-top:1px solid var(--hk-border)}.menupop{position:absolute;right:0;top:100%;z-index:20;display:grid;min-width:260px;padding:4px 0;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.menuitem{white-space:nowrap;display:flex;gap:10px;align-items:center;padding:8px 14px;border:0;background:none;font:inherit;color:inherit;text-align:left;cursor:pointer}.menuitem:hover{background:var(--hk-soft)}.menuitem ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}
       .row[data-object]{cursor:pointer}.monitor-meta{margin-top:2px}.monitor-sec{display:flex;align-items:baseline;gap:8px;padding:16px 16px 8px;border-top:1px solid var(--hk-border);margin-top:14px}.monitor-sec h3{margin:0;font-size:calc(14px*var(--hk-fs,1));font-weight:600}.monitor-sec small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.avail-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px 16px 4px}.avail-tile{background:var(--hk-soft);border-radius:10px;padding:10px 14px}.avail-tile b{display:block;font-size:calc(22px*var(--hk-fs,1));font-weight:600;line-height:1.25}.avail-tile b.ok{color:var(--hk-green)}.avail-tile span{font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.avail-info{--mdc-icon-size:16px;color:var(--hk-muted);vertical-align:-2px;cursor:help}.monitor-axis{display:flex;justify-content:space-between;padding:6px 16px 0;font-size:calc(11px*var(--hk-fs,1));color:var(--hk-muted)}.avail-since{padding:8px 16px 0;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-days{display:flex;gap:3px;padding:14px 16px 0}.monitor-days i{flex:1;min-width:3px;height:34px;border-radius:3px;background:repeating-linear-gradient(135deg,var(--hk-soft) 0 4px,transparent 4px 8px);box-shadow:inset 0 0 0 1px var(--hk-border)}.monitor-days i.ok,.monitor-days i.problem,.monitor-days i.unverified,.monitor-days i.flapping{box-shadow:none}.monitor-days i.problem.short{background:var(--hk-amber)}.monitor-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 16px 0;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-legend span{display:inline-flex;align-items:center;gap:6px}.monitor-legend i{width:10px;height:10px;border-radius:2px;background:var(--hk-soft);box-shadow:inset 0 0 0 1px var(--hk-border)}.monitor-legend i.ok{background:var(--hk-green);box-shadow:none}.monitor-legend i.problem{background:var(--hk-red);box-shadow:none}.monitor-legend i.problem.short{background:var(--hk-amber)}.monitor-days i.ok{background:var(--hk-green)}.monitor-days i.problem{background:var(--hk-red)}.monitor-days i.unverified,.monitor-days i.flapping{background:var(--hk-amber)}.page-editor{max-width:960px;margin:0 auto}.monitor-fields{display:grid;gap:14px;padding:16px}.monitor-twocol{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}@media(max-width:560px){.monitor-twocol{grid-template-columns:1fr}}.monitor-add{display:grid;gap:10px;padding:12px 16px 16px;border-top:1px solid var(--hk-border)}.monitor-add>input[type=search]{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-suggest{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.chip{font:inherit;font-size:calc(12px*var(--hk-fs,1));padding:3px 10px;border-radius:999px;border:1px solid var(--hk-border);background:none;color:var(--hk-muted);cursor:pointer}.chip.dashed{border-style:dashed}.chip:hover{color:var(--hk-text);border-color:var(--hk-muted)}.iconbtn{border:0;background:none;color:var(--hk-muted);cursor:pointer;padding:4px;border-radius:6px}.iconbtn:hover{background:var(--hk-soft);color:var(--hk-text)}.monitor-fields label{display:grid;gap:6px;font-weight:600}.monitor-fields input,.monitor-fields textarea{width:100%;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-fields textarea{min-height:0;box-sizing:border-box;resize:none;overflow-y:hidden}.monitor-check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.monitor-check input{width:18px;height:18px}.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto auto}.monitor-member-actions{display:inline-flex;align-items:center;gap:2px}.monitor-member-actions .iconbtn:disabled{opacity:.3;cursor:default;pointer-events:none}.row.monitor-choice{grid-template-columns:auto minmax(0,1fr) auto}.monitor-choice .btn,.monitor-member .btn{justify-self:end;width:auto;white-space:nowrap}.row.monitor-notify{grid-template-columns:minmax(0,1fr) auto;cursor:pointer}.monitor-notify .policyswitch{justify-self:end}.monitor-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 14px;border-bottom:1px solid var(--hk-border)}.monitor-group h3{display:flex;gap:8px;align-items:center;margin:0;padding:10px 16px;background:var(--hk-soft);font-size:calc(12px*var(--hk-fs,1));color:var(--hk-muted)}.monitor-group h3 span{font-weight:400}.monitor-group .row{border-bottom:1px solid var(--hk-border)}.monitor-choice .btn:disabled{opacity:.65}.monitor-results{max-height:420px;overflow:auto}.monitor-search-note{padding:0 16px 18px;color:var(--hk-muted)}.page-editor .savebar{border:1px solid var(--hk-border);border-radius:12px;background:var(--hk-surface)}@media(max-width:600px){.row.monitor-member{grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;grid-auto-flow:row;gap:8px}.monitor-member .tile{grid-column:1;grid-row:1}.monitor-member .row-text{grid-column:2;grid-row:1}.monitor-member .monitor-check{grid-column:2;grid-row:2}.monitor-member .btn{grid-column:3;grid-row:1/3}.monitor-member .monitor-member-actions{grid-column:3;grid-row:1/3}}
       .note-editor{min-width:0}.note-fields{display:grid;gap:14px;padding:16px}.note-fields>div{min-width:0}.note-fields h3{margin:0;font-size:calc(15px*var(--hk-fs,1))}.note-fields label{display:block;margin-bottom:6px;color:var(--hk-muted);font-size:calc(12.5px*var(--hk-fs,1));font-weight:600}.note-fields input,.note-fields textarea{box-sizing:border-box;width:100%;min-width:0;padding:10px 12px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:var(--hk-text);font:inherit}.note-fields textarea{resize:vertical}.note-fields .picker{max-width:none}.note-fields .notetwo{grid-template-columns:repeat(2,minmax(0,1fr))}.note-fields .notetwo>div{min-width:0}.note-fields .notemeta{display:flex;align-items:center;align-self:end;gap:8px;flex-wrap:wrap;min-height:42px;color:var(--hk-muted);font-size:calc(13px*var(--hk-fs,1));overflow-wrap:anywhere}.note-fields .notemeta strong{color:var(--hk-text)}.note-fields .notehint2{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.page-editor .note-editor .note-actions,.note-editor .note-actions{border:0;border-top:1px solid var(--hk-border);border-radius:0;background:var(--hk-soft)}.note-editor .danger-t{color:var(--hk-red)}.note-editor.inline .notetwo{grid-template-columns:1fr}@media(max-width:700px){.note-fields .notetwo{grid-template-columns:1fr}}
       .monitor-member-wrap{border-bottom:1px solid var(--hk-border)}.monitor-member-wrap:last-child{border-bottom:0}.monitor-member-wrap .row{border-bottom:0}.monitor-rules{padding:0 16px 12px 62px}.monitor-rules summary{color:var(--hk-blue-text);cursor:pointer;font-size:calc(12px*var(--hk-fs,1));font-weight:600}.monitor-rules p{margin:8px 0;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.monitor-rule{display:grid;grid-template-columns:16rem 100px 5.5rem minmax(0,1fr);align-items:center;gap:8px 10px;padding:5px 0;font-size:calc(13px*var(--hk-fs,1))}.monitor-rule label{display:inline-flex;align-items:center;gap:8px;cursor:pointer}.monitor-rule-unit{color:var(--hk-muted)}.monitor-rule-now{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.monitor-rule input[type=number]{width:100px;padding:7px 9px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.monitor-rule input[type=number]:disabled{opacity:.45}.monitor-preview-body{padding:12px 16px}.monitor-preview-body>p{margin:0;color:var(--hk-muted)}.monitor-preview-body>strong{display:block;margin-bottom:4px}.monitor-preview-body>small{display:block;margin-bottom:8px;color:var(--hk-muted)}.monitor-preview-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:7px 0;border-top:1px solid var(--hk-border)}.monitor-preview-row small{grid-column:1/-1;color:var(--hk-muted)}@media(max-width:600px){.monitor-rules{padding-left:16px}.monitor-rule{grid-template-columns:90px minmax(0,1fr)}.monitor-rule label{grid-column:1/-1}.monitor-rule-now{grid-column:1/-1}.monitor-rule input[type=number]{width:90px}}
@@ -3441,27 +3441,32 @@ class FindingsMixin {
     // Every action sits in the menu, each with what it reaches; the forms behind them are unchanged.
     const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon><span>${this.t(label)}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
     const some = k => (k < n ? this.t("fselPart", { n: nf(k), m: nf(n) }) : "");
+    const plan = this.t("actPlanSub"), many = (key, k) => this.t(k === 1 ? `${key}1` : key, { n: nf(k) });
+    const sub = (...parts) => parts.filter(Boolean).join(" · ");
+    // The same groups in the same order as the menu of a row; what needs a single target (fix, logbook) is not in this menu.
     const groups = [
       [
-        decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', this.t("actDecideSub", { n: nf(decidable) })) : "",
-        marks ? item("mark", "actMark", 'data-fsel-state="mark"', this.t("actMarkSub", { n: nf(marks) })) : "",
-        labels ? item("label", "fselLabel", 'data-fsel-state="label"', some(labels)) : "",
+        removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", sub(some(removable.length), plan)) : "",
+        downs.length ? item("mdi:cancel", "actDisable", "data-fsel-disable", sub(some(downs.length), plan)) : "",
+        deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", sub(some(deletable.length), plan)) : "",
+      ],
+      [
+        decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', many("actDecideSub", decidable)) : "",
         facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
         facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
       ],
       [
-        removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", some(removable.length)) : "",
-        downs.length ? item("mdi:cancel", "actDisable", "data-fsel-disable", some(downs.length)) : "",
-        deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", some(deletable.length)) : "",
+        marks ? item("mark", "actMark", 'data-fsel-state="mark"', many("actMarkSub", marks)) : "",
+        excs ? item("exc", "actRule", "data-fsel-exc", many("actRuleSub", excs)) : "",
       ],
-      [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
+      [labels ? item("label", "fselLabel", 'data-fsel-state="label"', sub(some(labels), this.t("changesHa"))) : ""],
       [
         facts.owners.size === 1 ? item("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
         facts.rules.size === 1 ? item("exc", "hiddenRuleOpen", `data-exc-goto="${this.esc(one(facts.rules))}"`) : "",
         facts.objects.size === 1 ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
       ],
     ].map(g => g.filter(Boolean).join("")).filter(Boolean).join('<hr class="menusep">');
-    const menu = groups ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups}</div></details>` : "";
+    const menu = groups ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups}${n > 1 ? `<small class="menunote">${this.t("actSingleOnly")}</small>` : ""}</div></details>` : "";
     return `<div class="toolbar selhead">${tools}<span class="toolgap"></span><div class="fbtns">${menu || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
   }
 
@@ -3661,15 +3666,25 @@ class FindingsMixin {
     // The step that answers a finding comes first in its row, as the primary button.
     const fixes = item ? this.fixItems(item, key).items : [];
     const steps = f => fixes.filter(it => it.finding === f.key).map(it => `<button class="btn primary" ${it.attr} title="${this.esc(this.t(it.hint))}"><ha-icon icon="${it.icon}"></ha-icon>${it.shortLabel || it.label}</button>`).join("");
-    // The step that answers the finding stays a button of its own; what else can be done sits in one menu, from two actions on.
-    const others = f => [
-      ...(f.rule_id === "entity.possible_duplicate" ? [{ icon: "mdi:check-circle-outline", label: "notDuplicate", attr: `data-notdup="${this.esc(f.key)}"` }, { icon: "mdi:open-in-new", label: "openTwin", attr: `data-object="entity:${this.esc(f.affected_object)}"` }] : []),
-      { icon: FSEL_ICONS.status, label: "fselStatus", attr: `data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"` },
-    ];
+    // The step that answers the finding stays a button of its own; what else can be done sits in one menu, from two actions on:
+    // the same groups as the menu of the row. The label has its own control on this page, and a step shown as a button is not repeated.
+    const groupsOf = f => {
+      const hasStep = fixes.some(it => it.finding === f.key);
+      const groups = this.findingActionGroups(f).map((g, i) => g.filter(a => a.label !== "fselLabel" && !(hasStep && a.attr.match(/data-(find-remove|find-disable|act-replace|auto-delete)=/))));
+      const dup = f.rule_id === "entity.possible_duplicate" ? { icon: "mdi:check-circle-outline", label: "notDuplicate", attr: `data-notdup="${this.esc(f.key)}"`, sub: "" } : null;
+      if (dup) { const at = groups.findIndex(g => g.some(a => a.label === "fselStatus")); if (at >= 0) groups[at].push(dup); else groups.unshift([dup]); }
+      return groups.filter(g => g.length);
+    };
+    // Deciding stays a button of its own, as it is the usual next step; the rest is the menu (a single entry is a button).
     const more = f => {
-      const list = others(f);
-      if (list.length === 1) return `<button class="btn" ${list[0].attr}><ha-icon icon="${list[0].icon}"></ha-icon>${this.t(list[0].label)}</button>`;
-      return `<details class="rowmenu actmenu"><summary class="btn">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${list.map(o => `<button type="button" class="menuitem" ${o.attr}><ha-icon icon="${o.icon}"></ha-icon><span>${this.t(o.label)}</span></button>`).join("")}</div></details>`;
+      let groups = groupsOf(f);
+      const lead = groups.flat().find(a => a.label === "fselStatus");
+      if (lead) groups = groups.map(g => g.filter(a => a !== lead)).filter(g => g.length);
+      const total = groups.reduce((n, g) => n + g.length, 0), button = a => `<button class="btn" ${a.attr}><ha-icon icon="${a.icon}"></ha-icon>${this.t(a.label)}</button>`;
+      const head = lead ? button(lead) : "";
+      if (!total) return head;
+      if (total === 1) return head + button(groups[0][0]);
+      return `${head}<details class="rowmenu actmenu"><summary class="btn">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups.map(g => g.map(a => this.actionMenuItem(a)).join("")).join('<hr class="menusep">')}</div></details>`;
     };
     const hideButton = f => this.decide && this.decide.key === f.key ? `${this.decideTabs(f, "status")}${this.decideForm(f)}`
       : `<div class="fbtns">${steps(f)}${more(f)}</div>`;
@@ -11456,32 +11471,54 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && f.classification === "broken_reference" && f.rule_id.endsWith("_entity") && String(f.affected_object || "").includes(".");
   }
 
+  // The groups of the actions on a finding, in one fixed order for the row menu, the selection bar and the page of the object:
+  // solve (a plan), decide, the object (note, rule), Home Assistant (label), write down, go to. Each entry is {icon, label, attr, sub};
+  // a group without an entry is left out, and the groups are told apart by a separator.
+  findingActionGroups(f) {
+    const key = this.esc(f.key);
+    const e = (icon, label, attr, sub = "") => ({ icon, label, attr, sub });
+    const owner = f.ignored ? this.markOwner(f) : null;
+    const objectKey = this.findingKey(f), object = this.findObject(objectKey);
+    const plan = this.t("actPlanSub");
+    const solve = f.ignored ? [] : [
+      e("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`),
+      this.removableFinding(f) ? e("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`, plan) : null,
+      this.brokenEntityFinding(f) ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.affected_object)}"${f.suggestions?.[0] ? ` data-repl-new="${this.esc(f.suggestions[0])}"` : ""}`, f.suggestions?.[0] ? `${f.affected_object} → ${f.suggestions[0]}` : f.affected_object) : null,
+      this.downEntityFinding(f) ? e("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`, plan) : null,
+      this.downEntityFinding(f) ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`) : null,
+      this.deletableAutomation(f) ? e("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`, plan) : null,
+    ];
+    // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.
+    const due = f.resurfaced && f.due_info ? [f.due_info.kind === "keep" ? e("mdi:check", "dueKeepOn", `data-due-keep="${key}"`) : null, e("mdi:clock-outline", "dueLater", `data-decide-open="${key}" data-decide-preset="snooze"`)] : [];
+    // The block that says where the finding stands: open, decided by the person (the way back and a change), or hidden by a mark, a rule or a label (the way to it).
+    const status = !f.ignored ? [e(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`, this.t("actDecideSub1"))]
+      : f.ignored_by === "mark" && owner ? [e(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`), MARK_TYPES.includes(owner.split(":")[0]) ? e("mdi:bookmark-remove-outline", "fselMarkClear", `data-mark-clear="${this.esc(owner)}"`) : null]
+      : f.ignored_by === "rule" && f.ignore_rule?.id ? [e(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)]
+      : f.ignored_by === "label" ? [e("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)]
+      : [e("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`), e(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)];
+    const about = [
+      object && MARK_TYPES.includes(object.object_type) && !object.mark ? e(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : null,
+      object && this.excTargetOf(object) ? e(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, this.t("actRuleSub1")) : null,
+    ];
+    const ha = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? [e(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))] : [];
+    const note = [e("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)];
+    // The row itself is one button, so the twin of a duplicate is opened from here.
+    const go = [
+      f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? e("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : null,
+      f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? e("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : null,
+    ];
+    return [solve, [...due, ...status], about, ha, note, go].map(g => g.filter(Boolean)).filter(g => g.length);
+  }
+
+  // One entry of such a group as a line of a menu.
+  actionMenuItem(a) {
+    return `<button type="button" class="menuitem" ${a.attr}><ha-icon icon="${a.icon}"></ha-icon>${a.sub ? `<span>${this.t(a.label)}<small>${this.esc(a.sub)}</small></span>` : this.t(a.label)}</button>`;
+  }
+
   rowMenu(f) {
     if (!f) return "";
-    const key = this.esc(f.key);
-    const item = (icon, label, attr, sub = "", cls = "") => `<button type="button" class="menuitem${cls}" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
-    const entity = f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? item("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : "";
-    // The row itself is one button, so the twin of a duplicate is opened from here.
-    const twin = f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? item("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : "";
-    const del = ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id) ? item("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`) : "";
-    // The same actions in the same order as the selection bar: the status of the finding, then its object, then Home Assistant.
-    // The top block says where the finding stands: open, decided by the person (the way back and a change), or hidden by a
-    // mark, a rule or a label (the way to it).
-    const owner = f.ignored ? this.markOwner(f) : null;
-    // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.
-    const due = f.resurfaced && f.due_info ? `${f.due_info.kind === "keep" ? item("mdi:check", "dueKeepOn", `data-due-keep="${key}"`) : ""}${item("mdi:clock-outline", "dueLater", `data-decide-open="${key}" data-decide-preset="snooze"`)}<hr class="menusep">` : "";
-    const status = !f.ignored ? item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`)
-      : f.ignored_by === "mark" && owner ? `${item(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`)}${MARK_TYPES.includes(owner.split(":")[0]) ? item("mdi:bookmark-remove-outline", "fselMarkClear", `data-mark-clear="${this.esc(owner)}"`) : ""}`
-      : f.ignored_by === "rule" && f.ignore_rule?.id ? item(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)
-      : f.ignored_by === "label" ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)
-      : `${item("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`)}${item(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)}`;
-    const objectKey = this.findingKey(f), object = this.findObject(objectKey);
-    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "", " tech") : "";
-    const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, "", " tech") : "";
-    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep tech">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"), " tech")}` : "";
-    const about = mark + exc;
-    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}${this.removableFinding(f) ? item("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`) : ""}${this.brokenEntityFinding(f) ? item("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.affected_object)}"${f.suggestions?.[0] ? ` data-repl-new="${this.esc(f.suggestions[0])}"` : ""}`, f.suggestions?.[0] ? `${f.affected_object} → ${f.suggestions[0]}` : f.affected_object) : ""}${this.downEntityFinding(f) ? `${item("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`)}${item("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`)}` : ""}<hr class="menusep">`;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep tech">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    const groups = this.findingActionGroups(f).map(g => g.map(a => this.actionMenuItem(a)).join("")).join('<hr class="menusep">');
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${groups}</div></details>`;
   }
 
   // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.
@@ -14051,7 +14088,7 @@ class FindingStatusMixin {
     root.querySelectorAll("[data-exc-note-open]").forEach(el => el.onclick = () => { this.excForm = null; this.openMark(el.dataset.excNoteOpen); });
     root.querySelectorAll("[data-exc-for]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this.openExceptionFor([el.dataset.excFor]); });
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
-    root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
+    root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([...this.findSel, el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => { const kind = el.dataset.fselState; this.excForm = this.excForm?.here ? null : this.excForm; this.bulk = { kind, state: "keep", autoClear: kind === "mark", reason: "", days: kind === "status" ? this.defaultDays("keep") : kind === "mark" ? MARK_DAYS : 30, critical: kind === "status" && [...this.findSel].some(key => this.findingCritical(this.data.findings.find(f => f.key === key))), markKind: "", error: "" }; this.render(); this.shadowRoot?.querySelector?.("[data-bulk-reason]")?.focus?.(); });
     root.querySelectorAll("[data-notdup]").forEach(el => el.onclick = () => this.markNotDuplicate(el.dataset.notdup));
@@ -14101,7 +14138,7 @@ Object.assign(TEXT.de, {
   coverBy_user: "deine Entscheidung ({n})", coverBy_label: "das Label „Ignorieren“ ({n})", coverBy_rule: "eine Regel ({n})", coverMark: "Schon ausgeblendet durch {by}. Die Objekt-Notiz gilt daneben und schützt das Objekt vor dem Aufräumen.", coverRule: "Schon ausgeblendet durch {by}. Die Regel gilt daneben.",
   also_label: "das Label „Ignorieren“", also_rule: "eine Regel", alsoMark: "die Objekt-Notiz „{kind}“", alsoLine: "Würde auch greifen: {by}", alsoUndo: "Würde auch greifen: {by}. Ohne deine Entscheidung bliebe er trotzdem ausgeblendet",
   pickedFindings: "{n} Befunde betroffen", pickedOfObjects: "von {n} Objekten", pickedObjects: "{n} Objekte betroffen", pickedDevEnt: "{n} Geräte und Entitäten betroffen", kind_device: "Gerät", kind_entity: "Entität", pickedDrop: "{name} aus der Auswahl nehmen", pickedMore: "… und {n} weitere",
-  statusKeepHint: "Das Objekt kann beim Aufräumen trotzdem vorgeschlagen werden. Soll es nicht gelöscht werden, setze eine Objekt-Notiz „{kind}“.", actMenu: "Aktionen", actDecide: "Befunde entscheiden …", actDecideSub: "Nur diese {n} Befunde · Fehlalarm, gewollt oder später", actMark: "Objekt-Notiz setzen …", actMarkSub: "Diese {n} Objekte, auch künftig · Objekt-Notiz", actRule: "Ausnahme-Regel für diese Objekte …", actRuleSub: "Gruppe per Regel · {n} Objekte, Ausnahme",
+  statusKeepHint: "Das Objekt kann beim Aufräumen trotzdem vorgeschlagen werden. Soll es nicht gelöscht werden, setze eine Objekt-Notiz „{kind}“.", actMenu: "Aktionen", actDecide: "Befunde entscheiden …", actDecideSub: "Nur diese {n} Befunde · Fehlalarm, gewollt oder später", actDecideSub1: "Nur dieser Befund · Fehlalarm, gewollt oder später", actMark: "Objekt-Notiz setzen …", actMarkSub: "Diese {n} Objekte, auch künftig · Objekt-Notiz", actMarkSub1: "Dieses Objekt, auch künftig · Objekt-Notiz", actRule: "Ausnahme-Regel für diese Objekte …", actRuleSub: "{n} Objekte · auch künftige Befunde", actRuleSub1: "Dieses Objekt · auch künftige Befunde", actPlanSub: "Zuerst eine Vorschau, nichts passiert sofort", actSingleOnly: "Beheben und Logbuch-Eintrag gibt es nur für einzelne Befunde.",
   fselMarkClear: "Objekt-Notiz entfernen", fselMarksCleared: "{n} Objekt-Notizen entfernt", fselNothing: "Für diese Auswahl gibt es keine Sammelaktion.", hiddenMarkOpen: "Objekt-Notiz ansehen", hiddenRuleOpen: "Ausnahme-Regel öffnen", hiddenObjectOpen: "Objekt öffnen", markOnDevice: "bei ganz ausgefallenen Geräten am Gerät statt an jeder Entität", fselLabel: "Label ergänzen", state_label: "Label ergänzen", labelChoose: "Label", labelNone: "Es gibt noch kein Label. Lege in Home Assistant eines an (Einstellungen → Bereiche, Labels & Zonen → Labels).", labelNoEntities: "Unter der Auswahl sind keine Entitäten, Automationen, Skripte oder Szenen.", confirmedSummaryLabel: "{count} Entitäten bekommen ein Label (nur in Home Assistant, Rückgängig entfernt es wieder).", reason_label_missing: "Das Label gibt es nicht mehr.", reason_already_labelled: "Hat dieses Label schon.", result_labeled: "Label ergänzt", undo_unlabelled: "Label wieder entfernt",
   notDuplicate: "Ist kein Duplikat", notDuplicateReason: "Kein Duplikat (bestätigt)", openTwin: "Funktionierende Entität öffnen",
 });
@@ -14117,7 +14154,7 @@ Object.assign(TEXT.en, {
   coverBy_user: "your decision ({n})", coverBy_label: "the label “Ignore” ({n})", coverBy_rule: "a rule ({n})", coverMark: "Already hidden by {by}. The object note applies besides and keeps the object from the cleanup.", coverRule: "Already hidden by {by}. The rule applies besides.",
   also_label: "the label “Ignore”", also_rule: "a rule", alsoMark: "the object note “{kind}”", alsoLine: "Would also apply: {by}", alsoUndo: "Would also apply: {by}. Without your decision it would stay hidden anyway",
   pickedFindings: "{n} findings affected", pickedOfObjects: "of {n} objects", pickedObjects: "{n} objects affected", pickedDevEnt: "{n} devices and entities affected", kind_device: "Device", kind_entity: "Entity", pickedDrop: "Take {name} out of the selection", pickedMore: "… and {n} more",
-  statusKeepHint: "The object can still be suggested in the cleanup. To keep it from being deleted, set the object note “{kind}”.", actMenu: "Actions", actDecide: "Decide on findings …", actDecideSub: "Only these {n} findings · false alarm, intended or later", actMark: "Set object note …", actMarkSub: "These {n} objects, also in future · object note", actRule: "Exception rule for these objects …", actRuleSub: "A group by rule · {n} objects, exception",
+  statusKeepHint: "The object can still be suggested in the cleanup. To keep it from being deleted, set the object note “{kind}”.", actMenu: "Actions", actDecide: "Decide on findings …", actDecideSub: "Only these {n} findings · false alarm, intended or later", actDecideSub1: "Only this finding · false alarm, intended or later", actMark: "Set object note …", actMarkSub: "These {n} objects, also in future · object note", actMarkSub1: "This object, also in future · object note", actRule: "Exception rule for these objects …", actRuleSub: "{n} objects · future findings too", actRuleSub1: "This object · future findings too", actPlanSub: "A preview first, nothing happens right away", actSingleOnly: "Fix and logbook entry are only for single findings.",
   fselMarkClear: "Remove object note", fselMarksCleared: "{n} object notes removed", fselNothing: "No bulk action fits this selection.", hiddenMarkOpen: "View object note", hiddenRuleOpen: "Open exception rule", hiddenObjectOpen: "Open object", markOnDevice: "on devices that are down completely, on the device instead of each entity", fselLabel: "Add label", state_label: "Add label", labelChoose: "Label", labelNone: "There is no label yet. Create one in Home Assistant (Settings → Areas, labels & zones → Labels).", labelNoEntities: "The selection holds no entities, automations, scripts or scenes.", confirmedSummaryLabel: "{count} entities get a label (in Home Assistant only, undo takes it off again).", reason_label_missing: "The label no longer exists.", reason_already_labelled: "Already has this label.", result_labeled: "Label added", undo_unlabelled: "label taken off again",
   notDuplicate: "Not a duplicate", notDuplicateReason: "Not a duplicate (confirmed)", openTwin: "Open the working entity",
 });
@@ -17730,7 +17767,7 @@ Object.assign(TEXT.de, {
   abort_delete_failed: "Home Assistant konnte das Backup nicht überall löschen.", abort_not_housekeeper_backup: "Das ist kein Backup von Housekeeper; nichts wurde gelöscht.", abort_backup_unavailable: "Der Backup-Manager ist nicht erreichbar.",
   bkcAuto: "Automatisch aufräumen", bkcAutoHint: "Housekeeper löscht dann stündlich, was nach der Regel oben zum Löschen vorgeschlagen ist. Geschützte Backups und Backups, die die einzige Möglichkeit sind, Daten eines Plans zurückzuholen, bleiben liegen. Es läuft nicht, solange ein Plan läuft oder der Schutzmodus das Löschen nicht erlaubt.", bkcAutoLast: "Zuletzt automatisch gelöscht: {count} Backups ({bytes}) am {date}.",
   bkcAutoAskTitle: "Automatisch aufräumen einschalten", bkcAutoAskText: "Housekeeper löscht Backups künftig ohne Nachfrage: alle bis auf die letzten {last} und die der letzten {days} Tage. Gelöschte Backups sind endgültig weg. Ausschalten kannst du es hier jederzeit.", bkcAutoYes: "Einschalten",
-  autoDelete: "Vorschau erstellen", autoDeleteFailed: "Der Plan konnte nicht erstellt werden: {detail}",
+  autoDelete: "Automation löschen …", autoDeleteFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   reason_not_a_candidate: "Kein Befund nennt diese Automation als ungenutzt.", reason_not_in_yaml: "Nicht in der automations.yaml definiert: nicht automatisch löschbar.", reason_file_too_large: "Die Datei ist zu groß, um sie für das Rückgängig zu sichern.",
   reason_deletes_config: "Die Konfiguration wird aus der Datei entfernt, danach werden die Automationen neu geladen. Rückgängig stellt die Datei wieder her, solange sie nicht anders geändert wurde.",
   reason_used_by_mentions: "Wird noch erwähnt (Skripte, Szenen, Dashboards): nach dem Löschen laufen diese Verweise ins Leere.", check_automation_gone: "Automation ist aus der Datei entfernt", confirmedSummaryAutoDelete: "{count} Automationen werden aus der Datei entfernt. Vorher legt Housekeeper ein kleines Backup an. Rückgängig stellt die Datei wieder her.",
@@ -17749,7 +17786,7 @@ Object.assign(TEXT.en, {
   abort_delete_failed: "Home Assistant could not delete the backup everywhere.", abort_not_housekeeper_backup: "This is not a Housekeeper backup; nothing was deleted.", abort_backup_unavailable: "The backup manager is not reachable.",
   bkcAuto: "Tidy up automatically", bkcAutoHint: "Housekeeper then deletes every hour what the rule above suggests for deleting. Protected backups and backups that are the only way to get back a plan's data stay. It does not run while a plan runs or when the protection mode does not allow deleting.", bkcAutoLast: "Last deleted automatically: {count} backups ({bytes}) on {date}.",
   bkcAutoAskTitle: "Turn on automatic tidy-up", bkcAutoAskText: "From now on Housekeeper deletes backups without asking: all except the last {last} and those from the last {days} days. Deleted backups are gone for good. You can turn it off here at any time.", bkcAutoYes: "Turn on",
-  autoDelete: "Create preview", autoDeleteFailed: "The plan could not be created: {detail}",
+  autoDelete: "Delete automation …", autoDeleteFailed: "The plan could not be created: {detail}",
   reason_not_a_candidate: "No finding calls this automation unused.", reason_not_in_yaml: "Not defined in automations.yaml: cannot be deleted automatically.", reason_file_too_large: "The file is too large to be saved for the undo.",
   reason_deletes_config: "The configuration is removed from the file, then the automations are reloaded. Undo puts the file back as long as it was not changed otherwise.",
   reason_used_by_mentions: "Still mentioned (scripts, scenes, dashboards): after deleting, those references point nowhere.", check_automation_gone: "Automation is removed from the file", confirmedSummaryAutoDelete: "{count} automations will be removed from the file. Housekeeper makes a small backup first. Undo puts the file back.",
@@ -21191,13 +21228,13 @@ class MonitorMixin {
 // app › integration › device › findings. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
-  ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
+  ogMatch: "{n} von {m} Befunden passen zum Filter", ogMatch1: "{n} von {m} Befunden passt zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
   ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{m} Objekte mit {n} Befunden", ogViewCount1: "1 Objekt mit {n} Befunden", ogViewCountOne: "1 Objekt mit 1 Befund", ogViewOutages: "{o} Ausfälle mit {n} Befunden", ogViewOutage1: "1 Ausfall mit {n} Befunden", ogViewOutageOne: "1 Ausfall mit 1 Befund",
   ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", certSpanHint: "Sicherheit des unsichersten bis zum sichersten Befund dieses Objekts", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
-  ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
+  ogMatch: "{n} of {m} findings match the filter", ogMatch1: "{n} of {m} findings matches the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
   ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{m} objects with {n} findings", ogViewCount1: "1 object with {n} findings", ogViewCountOne: "1 object with 1 finding", ogViewOutages: "{o} outages with {n} findings", ogViewOutage1: "1 outage with {n} findings", ogViewOutageOne: "1 outage with 1 finding",
   ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", certSpanHint: "Certainty of the least to the most certain finding of this object", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
@@ -21337,7 +21374,7 @@ class ObjectGroupsMixin {
       parts.push(this.findingKey(x) !== n.key && name ? `${name}: ${this.findingTitle(x)}` : this.findingTitle(x));
     } else parts.push(...this.nodeKinds(n, own));
     const total = this.nodeTotal(n);
-    if (total > f.list.length) parts.push(this.t("ogMatch", { n: this.formatNumber(f.list.length), m: this.formatNumber(total) }));
+    if (total > f.list.length) parts.push(this.t(f.list.length === 1 ? "ogMatch1" : "ogMatch", { n: this.formatNumber(f.list.length), m: this.formatNumber(total) }));
     const object = this.findObject(n.key);
     if (object?.mark) {
       const hidden = this.data.findings.filter(x => x.ignored_by === "mark" && this.ownerKey(x) === n.key).length;

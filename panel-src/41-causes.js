@@ -188,32 +188,54 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && f.classification === "broken_reference" && f.rule_id.endsWith("_entity") && String(f.affected_object || "").includes(".");
   }
 
+  // The groups of the actions on a finding, in one fixed order for the row menu, the selection bar and the page of the object:
+  // solve (a plan), decide, the object (note, rule), Home Assistant (label), write down, go to. Each entry is {icon, label, attr, sub};
+  // a group without an entry is left out, and the groups are told apart by a separator.
+  findingActionGroups(f) {
+    const key = this.esc(f.key);
+    const e = (icon, label, attr, sub = "") => ({ icon, label, attr, sub });
+    const owner = f.ignored ? this.markOwner(f) : null;
+    const objectKey = this.findingKey(f), object = this.findObject(objectKey);
+    const plan = this.t("actPlanSub");
+    const solve = f.ignored ? [] : [
+      e("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`),
+      this.removableFinding(f) ? e("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`, plan) : null,
+      this.brokenEntityFinding(f) ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.affected_object)}"${f.suggestions?.[0] ? ` data-repl-new="${this.esc(f.suggestions[0])}"` : ""}`, f.suggestions?.[0] ? `${f.affected_object} → ${f.suggestions[0]}` : f.affected_object) : null,
+      this.downEntityFinding(f) ? e("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`, plan) : null,
+      this.downEntityFinding(f) ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`) : null,
+      this.deletableAutomation(f) ? e("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`, plan) : null,
+    ];
+    // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.
+    const due = f.resurfaced && f.due_info ? [f.due_info.kind === "keep" ? e("mdi:check", "dueKeepOn", `data-due-keep="${key}"`) : null, e("mdi:clock-outline", "dueLater", `data-decide-open="${key}" data-decide-preset="snooze"`)] : [];
+    // The block that says where the finding stands: open, decided by the person (the way back and a change), or hidden by a mark, a rule or a label (the way to it).
+    const status = !f.ignored ? [e(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`, this.t("actDecideSub1"))]
+      : f.ignored_by === "mark" && owner ? [e(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`), MARK_TYPES.includes(owner.split(":")[0]) ? e("mdi:bookmark-remove-outline", "fselMarkClear", `data-mark-clear="${this.esc(owner)}"`) : null]
+      : f.ignored_by === "rule" && f.ignore_rule?.id ? [e(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)]
+      : f.ignored_by === "label" ? [e("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)]
+      : [e("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`), e(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)];
+    const about = [
+      object && MARK_TYPES.includes(object.object_type) && !object.mark ? e(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "") : null,
+      object && this.excTargetOf(object) ? e(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, this.t("actRuleSub1")) : null,
+    ];
+    const ha = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? [e(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"))] : [];
+    const note = [e("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)];
+    // The row itself is one button, so the twin of a duplicate is opened from here.
+    const go = [
+      f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? e("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : null,
+      f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? e("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : null,
+    ];
+    return [solve, [...due, ...status], about, ha, note, go].map(g => g.filter(Boolean)).filter(g => g.length);
+  }
+
+  // One entry of such a group as a line of a menu.
+  actionMenuItem(a) {
+    return `<button type="button" class="menuitem" ${a.attr}><ha-icon icon="${a.icon}"></ha-icon>${a.sub ? `<span>${this.t(a.label)}<small>${this.esc(a.sub)}</small></span>` : this.t(a.label)}</button>`;
+  }
+
   rowMenu(f) {
     if (!f) return "";
-    const key = this.esc(f.key);
-    const item = (icon, label, attr, sub = "", cls = "") => `<button type="button" class="menuitem${cls}" ${attr}><ha-icon icon="${icon}"></ha-icon>${sub ? `<span>${this.t(label)}<small>${this.esc(sub)}</small></span>` : this.t(label)}</button>`;
-    const entity = f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? item("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : "";
-    // The row itself is one button, so the twin of a duplicate is opened from here.
-    const twin = f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? item("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : "";
-    const del = ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id) ? item("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`) : "";
-    // The same actions in the same order as the selection bar: the status of the finding, then its object, then Home Assistant.
-    // The top block says where the finding stands: open, decided by the person (the way back and a change), or hidden by a
-    // mark, a rule or a label (the way to it).
-    const owner = f.ignored ? this.markOwner(f) : null;
-    // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.
-    const due = f.resurfaced && f.due_info ? `${f.due_info.kind === "keep" ? item("mdi:check", "dueKeepOn", `data-due-keep="${key}"`) : ""}${item("mdi:clock-outline", "dueLater", `data-decide-open="${key}" data-decide-preset="snooze"`)}<hr class="menusep">` : "";
-    const status = !f.ignored ? item(FSEL_ICONS.status, "fselStatus", `data-decide-open="${key}" data-decide-preset="keep"`)
-      : f.ignored_by === "mark" && owner ? `${item(FSEL_ICONS.mark, "hiddenMarkOpen", `data-object="${this.esc(owner)}"`)}${MARK_TYPES.includes(owner.split(":")[0]) ? item("mdi:bookmark-remove-outline", "fselMarkClear", `data-mark-clear="${this.esc(owner)}"`) : ""}`
-      : f.ignored_by === "rule" && f.ignore_rule?.id ? item(FSEL_ICONS.exc, "hiddenRuleOpen", `data-exc-goto="${this.esc(f.ignore_rule.id)}"`)
-      : f.ignored_by === "label" ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(this.findingKey(f))}"`)
-      : `${item("mdi:eye-outline", "showFinding", `data-ignore="${key}" data-ignore-value="0"`)}${item(FSEL_ICONS.status, "fselStatusChange", `data-decide-open="${key}" data-decide-preset="${f.ignore_info?.kind || "ignore"}"`)}`;
-    const objectKey = this.findingKey(f), object = this.findObject(objectKey);
-    const mark = object && MARK_TYPES.includes(object.object_type) && !object.mark ? item(FSEL_ICONS.mark, "markSet", `data-watch-mark="${this.esc(objectKey)}"`, object.object_type === "device" ? this.t("markOnDeviceSub", { name: object.name || object.object_id }) : "", " tech") : "";
-    const exc = object && this.excTargetOf(object) ? item(FSEL_ICONS.exc, "excCreate", `data-exc-for="${this.esc(objectKey)}"`, "", " tech") : "";
-    const label = LABEL_TYPES.includes(object?.object_type) && f.classification !== "broken_reference" ? `<hr class="menusep tech">${item(FSEL_ICONS.label, "fselLabel", `data-row-label="${key}"`, this.t("changesHa"), " tech")}` : "";
-    const about = mark + exc;
-    const fix = f.ignored ? "" : `${item("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`)}${this.removableFinding(f) ? item("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`) : ""}${this.brokenEntityFinding(f) ? item("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.affected_object)}"${f.suggestions?.[0] ? ` data-repl-new="${this.esc(f.suggestions[0])}"` : ""}`, f.suggestions?.[0] ? `${f.affected_object} → ${f.suggestions[0]}` : f.affected_object) : ""}${this.downEntityFinding(f) ? `${item("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`)}${item("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`)}` : ""}<hr class="menusep">`;
-    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${fix}${entity}${twin}${entity || twin ? '<hr class="menusep">' : ""}${due}${status}${about ? `<hr class="menusep tech">${about}` : ""}${label}<hr class="menusep">${item("mdi:notebook-edit-outline", "findingNote", `data-finding-note="${key}"`)}${del}</div></details>`;
+    const groups = this.findingActionGroups(f).map(g => g.map(a => this.actionMenuItem(a)).join("")).join('<hr class="menusep">');
+    return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${groups}</div></details>`;
   }
 
   // The object a mark that hides a finding sits on: the object itself, its device or the integration above it.

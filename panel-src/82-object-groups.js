@@ -4,13 +4,13 @@
 // app › integration › device › findings. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   ogNoValue: "{n} von {m} Entitäten ohne Wert", ogNoValue1: "1 von {m} Entitäten ohne Wert", ogKind: "{label} ({n})",
-  ogMatch: "{n} von {m} Befunden passen zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
+  ogMatch: "{n} von {m} Befunden passen zum Filter", ogMatch1: "{n} von {m} Befunden passt zum Filter", ogMarkHides: "{mark} · {n} Ausfälle ausgeblendet", ogMarkHides1: "{mark} · 1 Ausfall ausgeblendet",
   ogFindings: "{n} Befunde", ogFindings1: "1 Befund", ogViewCount: "{m} Objekte mit {n} Befunden", ogViewCount1: "1 Objekt mit {n} Befunden", ogViewCountOne: "1 Objekt mit 1 Befund", ogViewOutages: "{o} Ausfälle mit {n} Befunden", ogViewOutage1: "1 Ausfall mit {n} Befunden", ogViewOutageOne: "1 Ausfall mit 1 Befund",
   ogNew: "jüngster: {age}", selectObjectFindings: "Alle Befunde von {name} auswählen", certSpanHint: "Sicherheit des unsichersten bis zum sichersten Befund dieses Objekts", ogOf: "Gerät {name}", fselPart: "{n} von {m}",
 });
 Object.assign(TEXT.en, {
   ogNoValue: "{n} of {m} entities without a value", ogNoValue1: "1 of {m} entities without a value", ogKind: "{label} ({n})",
-  ogMatch: "{n} of {m} findings match the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
+  ogMatch: "{n} of {m} findings match the filter", ogMatch1: "{n} of {m} findings matches the filter", ogMarkHides: "{mark} · {n} outages hidden", ogMarkHides1: "{mark} · 1 outage hidden",
   ogFindings: "{n} findings", ogFindings1: "1 finding", ogViewCount: "{m} objects with {n} findings", ogViewCount1: "1 object with {n} findings", ogViewCountOne: "1 object with 1 finding", ogViewOutages: "{o} outages with {n} findings", ogViewOutage1: "1 outage with {n} findings", ogViewOutageOne: "1 outage with 1 finding",
   ogNew: "latest: {age}", selectObjectFindings: "Select all findings of {name}", certSpanHint: "Certainty of the least to the most certain finding of this object", ogOf: "Device {name}", fselPart: "{n} of {m}",
 });
@@ -150,7 +150,7 @@ class ObjectGroupsMixin {
       parts.push(this.findingKey(x) !== n.key && name ? `${name}: ${this.findingTitle(x)}` : this.findingTitle(x));
     } else parts.push(...this.nodeKinds(n, own));
     const total = this.nodeTotal(n);
-    if (total > f.list.length) parts.push(this.t("ogMatch", { n: this.formatNumber(f.list.length), m: this.formatNumber(total) }));
+    if (total > f.list.length) parts.push(this.t(f.list.length === 1 ? "ogMatch1" : "ogMatch", { n: this.formatNumber(f.list.length), m: this.formatNumber(total) }));
     const object = this.findObject(n.key);
     if (object?.mark) {
       const hidden = this.data.findings.filter(x => x.ignored_by === "mark" && this.ownerKey(x) === n.key).length;

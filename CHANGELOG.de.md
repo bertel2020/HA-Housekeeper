@@ -28,6 +28,10 @@
 
 - **Ausfälle:** Ein ausgefallenes Gerät nennt in Liste und Karte die Dauer und was dadurch nicht verfügbar ist („Gerät X ist seit 44 Tagen aus“). Auf der Beheben-Seite steht die Frage „Ist das so gewollt?“, und „Absichtlich aus, notieren“ ist eine eigene Karte; sie wird empfohlen, wenn das Gerät seit einer Woche aus ist und kaum etwas daran hängt.
 - **Hausfunktionen:** Die Soll-Regeln passen zum Objekt: ein Mindestwert wird nur bei Zahlen angeboten, und jede Regel zeigt den aktuellen Wert.
+- **Aktionen an Befunden:** Zeilenmenü, Aktionen-Menü der Auswahl und die Aktionen der Objektseite haben dieselben Gruppen in derselben Reihenfolge (Beheben oder Plan, Entscheiden, Objekt-Notiz und Ausnahme-Regel, Label, Logbuch-Eintrag).
+  - Jeder Eintrag sagt, was er erreicht („Nur dieser Befund“, „Dieses Objekt · auch künftige Befunde“); „Vorschau erstellen“ bei einer Automation heißt jetzt „Automation löschen …“.
+  - Die Objektseite bietet auch Beheben, Ausnahme-Regel und Logbuch-Eintrag an; der einfache Modus blendet im Zeilenmenü nichts mehr aus.
+  - „Label ergänzen“ aus einer Zeile behält die Auswahl; „1 von 39 Befunden passt zum Filter“ und weitere Einzahlformen.
 - **Verwaiste Statistiken:** Der Hilfetext nennt die Wartemarke und die Übertragung.
 - **Wörter:** Ein Wort, „Wirkung“, ersetzt Schweregrad, Auswirkung und Dringlichkeit (Liste, Filter, Chips, Hilfe, Beheben-Seite). Etappe 2 des Erstaufräumens sagt „Ablehnen“ statt „Später erinnern“. Die Menüs sagen „Ausnahme-Regel“, und die Knöpfe bei Backups, Backup-Automatik und Umbenennen sagen „Vorschau erstellen“ wie jeder andere Plan.
 - **Menüs und Popups:** Escape schließt nur das innerste Popup und geht nicht mehr zusätzlich zurück; ein Klick daneben schließt Zeilenmenüs und gespeicherte Ansichten. Die Zeilenaktionen der Sturm-Liste, der Entfernt-Liste, des Monitor-Verlaufs, gespeicherter Scans und des KI-Protokolls stehen im Zeilenmenü.

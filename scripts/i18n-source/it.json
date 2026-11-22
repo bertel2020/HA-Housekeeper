@@ -3769,7 +3769,7 @@
 "actMark": "734176cc",
 "actMarkSub": "4458ad3e",
 "actRule": "a072850a",
-"actRuleSub": "3d7e57a2",
+"actRuleSub": "5fd5b50e",
 "fselMarkClear": "62ad777f",
 "fselMarksCleared": "54d82b0e",
 "fselNothing": "ce62dc10",
@@ -5018,7 +5018,7 @@
 "bkcAutoAskTitle": "ad34500e",
 "bkcAutoAskText": "7f0c6ac1",
 "bkcAutoYes": "5a1f096a",
-"autoDelete": "6ebaad31",
+"autoDelete": "53184cd1",
 "autoDeleteFailed": "4223b037",
 "reason_not_a_candidate": "39209d4a",
 "reason_not_in_yaml": "351e3621",
@@ -6755,7 +6755,13 @@
 "statColMin": "dea79332",
 "statColMax": "a1a5936d",
 "statColState": "a3b50c47",
-"statColSum": "a21d7df0"
+"statColSum": "a21d7df0",
+"actDecideSub1": "15a64d42",
+"actMarkSub1": "d9cfddcd",
+"actRuleSub1": "07f2f984",
+"actPlanSub": "a4f0e09a",
+"actSingleOnly": "1802454c",
+"ogMatch1": "31818794"
 },
 "setup": {
 "title": "644c2647",

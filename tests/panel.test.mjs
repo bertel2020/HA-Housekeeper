@@ -7094,7 +7094,7 @@ test("every finding stands below its object: a device gathers all kinds of its e
   assert.ok(html.includes("Audi</strong><small>Lock: "), "a single finding is named in the head");
   assert.ok(html.indexOf("Receiver") < html.indexOf("Audi"), "the worst impact first");
   el.lv.findings.f.type = "entity"; el.lv.findings.q = "select.old";
-  assert.ok(el.findingsView().includes("1 of 3 findings match the filter"));
+  assert.ok(el.findingsView().includes("1 of 3 findings matches the filter"));
 });
 
 test("an exception is added from the menu of a finding or the selection bar, with its object picked, above the findings list", async () => {
@@ -8813,13 +8813,24 @@ test("the bar of a selection: the pill shows only the picks and lets go when non
   assert.ok(bar.includes("actmenu") && ["disable", "enable", "hide", "unhide"].every(t => bar.includes(`data-inv-state="${t}"`)) && !bar.includes('class="btn" data-inv-state'), "four actions, one menu");
 });
 
-test("a possible duplicate keeps its step as a button and gathers the rest in one menu; any other finding keeps its one button", () => {
+test("a possible duplicate keeps its step as a button and gathers the rest in one menu; any other finding offers the same groups", () => {
   const { el } = panel("en");
   const f = (id, rule) => ({ rule_id: rule, object_id: id, affected_object: "sensor.twin", classification: "duplicate", confidence: 0.8, key: `k|${id}`, ignored: false, evidence: [] });
   el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "sensor.a", name: "a", status: "ok" }, { object_type: "entity", object_id: "sensor.b", name: "b", status: "ok" }], findings: [f("sensor.a", "entity.possible_duplicate"), f("sensor.b", "entity.state_unavailable")], causes: [] };
   const dup = el.findingRows("entity:sensor.a"), plain = el.findingRows("entity:sensor.b");
   assert.ok(dup.includes("actmenu") && dup.includes("data-notdup=") && dup.includes("data-decide-open="), "three actions: one menu");
-  assert.ok(!plain.includes("actmenu") && plain.includes("data-decide-open="), "one action: a button");
+  assert.ok(plain.includes("actmenu") && plain.includes("data-decide-open=") && plain.includes("data-fix-open=") && plain.includes("data-finding-note="), "any other finding: the same groups, deciding stays a button");
+});
+
+test("the menu of a finding has fixed groups: fix, decide, object, label, logbook; the counts of the selection have a singular", () => {
+  const { el } = panel("en");
+  const f = { rule_id: "automation.stale", object_id: "automation.a", classification: "stale", confidence: 0.6, key: "k|a", ignored: false, evidence: [] };
+  el.data = { ...DATA, objects: [{ object_type: "automation", object_id: "automation.a", name: "a", status: "ok" }], findings: [f] };
+  const menu = el.rowMenu(f), at = t => menu.indexOf(t);
+  const order = ["data-fix-open=", "data-auto-delete=", "data-decide-open=", "data-exc-for=", "data-row-label=", "data-finding-note="].map(at);
+  assert.ok(order.every(i => i > 0) && order.every((i, k) => !k || i > order[k - 1]), "fixed order");
+  assert.ok(menu.includes('<hr class="menusep">') && !menu.includes("tech") && menu.includes("Delete automation …"), "groups apart, nothing hidden by the simple mode");
+  assert.equal(el.t("actRuleSub1").includes("{n}"), false, "a singular needs no number");
 });
 
 test("a failed read of the details is asked for again, and removing decisions asks first", async () => {

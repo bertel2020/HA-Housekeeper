@@ -28,6 +28,10 @@
 
 - **Outages:** A device that is down names the duration and what is unavailable because of it in the list and the card (“Device X has been down for 44 days”). The Fix page asks “Is that intended?” and “Off on purpose, note it” is a card of its own; it is recommended when the device has been down for a week and hardly anything depends on it.
 - **House functions:** The expected conditions fit the object: a minimum value is offered for numbers only, and each condition shows the current value.
+- **Actions on findings:** The row menu, the actions menu of a selection and the actions of the object page use the same groups in the same order (fix or plan, decide, object note and exception rule, label, logbook entry).
+  - Every entry says what it reaches (“Only this finding”, “This object · future findings too”); “Create preview” for an automation is now “Delete automation …”.
+  - The object page offers fix, exception rule and logbook entry as well; the simple mode no longer hides entries of the row menu.
+  - “Set label” from a row keeps the selection; “1 of 39 findings matches the filter” and other singular forms.
 - **Orphaned statistics:** The help text names the waiting mark and the move.
 - **Wording:** One word, “Impact”, replaces severity, effect and urgency (list, filter, chips, help, Fix page). Stage 2 of the first cleanup says “Decline” instead of “Remind me later”. The menus say “Exception rule”, and the backup, auto-delete and rename buttons say “Create preview” like every other plan.
 - **Menus and pop-ups:** Escape closes only the innermost pop-up and no longer also goes back; a click elsewhere closes row menus and saved views. The row actions of the storm list, the removed list, the monitor history, stored scans and the AI log are entries of the row menu.

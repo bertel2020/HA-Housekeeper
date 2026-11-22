@@ -384,27 +384,32 @@ class FindingsMixin {
     // Every action sits in the menu, each with what it reaches; the forms behind them are unchanged.
     const item = (icon, label, attr, sub = "") => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${FSEL_ICONS[icon] || icon}"></ha-icon><span>${this.t(label)}${sub ? `<small>${sub}</small>` : ""}</span></button>`;
     const some = k => (k < n ? this.t("fselPart", { n: nf(k), m: nf(n) }) : "");
+    const plan = this.t("actPlanSub"), many = (key, k) => this.t(k === 1 ? `${key}1` : key, { n: nf(k) });
+    const sub = (...parts) => parts.filter(Boolean).join(" · ");
+    // The same groups in the same order as the menu of a row; what needs a single target (fix, logbook) is not in this menu.
     const groups = [
       [
-        decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', this.t("actDecideSub", { n: nf(decidable) })) : "",
-        marks ? item("mark", "actMark", 'data-fsel-state="mark"', this.t("actMarkSub", { n: nf(marks) })) : "",
-        labels ? item("label", "fselLabel", 'data-fsel-state="label"', some(labels)) : "",
+        removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", sub(some(removable.length), plan)) : "",
+        downs.length ? item("mdi:cancel", "actDisable", "data-fsel-disable", sub(some(downs.length), plan)) : "",
+        deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", sub(some(deletable.length), plan)) : "",
+      ],
+      [
+        decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', many("actDecideSub", decidable)) : "",
         facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
         facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
       ],
       [
-        removable.length ? item("mdi:delete-outline", "actRemove", "data-fsel-remove", some(removable.length)) : "",
-        downs.length ? item("mdi:cancel", "actDisable", "data-fsel-disable", some(downs.length)) : "",
-        deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", some(deletable.length)) : "",
+        marks ? item("mark", "actMark", 'data-fsel-state="mark"', many("actMarkSub", marks)) : "",
+        excs ? item("exc", "actRule", "data-fsel-exc", many("actRuleSub", excs)) : "",
       ],
-      [excs ? item("exc", "actRule", "data-fsel-exc", this.t("actRuleSub", { n: nf(excs) })) : ""],
+      [labels ? item("label", "fselLabel", 'data-fsel-state="label"', sub(some(labels), this.t("changesHa"))) : ""],
       [
         facts.owners.size === 1 ? item("mark", "hiddenMarkOpen", `data-object="${this.esc(one(facts.owners))}"`) : "",
         facts.rules.size === 1 ? item("exc", "hiddenRuleOpen", `data-exc-goto="${this.esc(one(facts.rules))}"`) : "",
         facts.objects.size === 1 ? item("mdi:open-in-new", "hiddenObjectOpen", `data-object="${this.esc(one(facts.objects))}"`) : "",
       ],
     ].map(g => g.filter(Boolean).join("")).filter(Boolean).join('<hr class="menusep">');
-    const menu = groups ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups}</div></details>` : "";
+    const menu = groups ? `<details class="rowmenu actmenu"><summary class="btn primary">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups}${n > 1 ? `<small class="menunote">${this.t("actSingleOnly")}</small>` : ""}</div></details>` : "";
     return `<div class="toolbar selhead">${tools}<span class="toolgap"></span><div class="fbtns">${menu || `<small class="muted">${this.t("fselNothing")}</small>`}</div>${total}</div>${this.bulkForm()}${exc}`;
   }
 
@@ -604,15 +609,25 @@ class FindingsMixin {
     // The step that answers a finding comes first in its row, as the primary button.
     const fixes = item ? this.fixItems(item, key).items : [];
     const steps = f => fixes.filter(it => it.finding === f.key).map(it => `<button class="btn primary" ${it.attr} title="${this.esc(this.t(it.hint))}"><ha-icon icon="${it.icon}"></ha-icon>${it.shortLabel || it.label}</button>`).join("");
-    // The step that answers the finding stays a button of its own; what else can be done sits in one menu, from two actions on.
-    const others = f => [
-      ...(f.rule_id === "entity.possible_duplicate" ? [{ icon: "mdi:check-circle-outline", label: "notDuplicate", attr: `data-notdup="${this.esc(f.key)}"` }, { icon: "mdi:open-in-new", label: "openTwin", attr: `data-object="entity:${this.esc(f.affected_object)}"` }] : []),
-      { icon: FSEL_ICONS.status, label: "fselStatus", attr: `data-decide-open="${this.esc(f.key)}" data-decide-preset="keep"` },
-    ];
+    // The step that answers the finding stays a button of its own; what else can be done sits in one menu, from two actions on:
+    // the same groups as the menu of the row. The label has its own control on this page, and a step shown as a button is not repeated.
+    const groupsOf = f => {
+      const hasStep = fixes.some(it => it.finding === f.key);
+      const groups = this.findingActionGroups(f).map((g, i) => g.filter(a => a.label !== "fselLabel" && !(hasStep && a.attr.match(/data-(find-remove|find-disable|act-replace|auto-delete)=/))));
+      const dup = f.rule_id === "entity.possible_duplicate" ? { icon: "mdi:check-circle-outline", label: "notDuplicate", attr: `data-notdup="${this.esc(f.key)}"`, sub: "" } : null;
+      if (dup) { const at = groups.findIndex(g => g.some(a => a.label === "fselStatus")); if (at >= 0) groups[at].push(dup); else groups.unshift([dup]); }
+      return groups.filter(g => g.length);
+    };
+    // Deciding stays a button of its own, as it is the usual next step; the rest is the menu (a single entry is a button).
     const more = f => {
-      const list = others(f);
-      if (list.length === 1) return `<button class="btn" ${list[0].attr}><ha-icon icon="${list[0].icon}"></ha-icon>${this.t(list[0].label)}</button>`;
-      return `<details class="rowmenu actmenu"><summary class="btn">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${list.map(o => `<button type="button" class="menuitem" ${o.attr}><ha-icon icon="${o.icon}"></ha-icon><span>${this.t(o.label)}</span></button>`).join("")}</div></details>`;
+      let groups = groupsOf(f);
+      const lead = groups.flat().find(a => a.label === "fselStatus");
+      if (lead) groups = groups.map(g => g.filter(a => a !== lead)).filter(g => g.length);
+      const total = groups.reduce((n, g) => n + g.length, 0), button = a => `<button class="btn" ${a.attr}><ha-icon icon="${a.icon}"></ha-icon>${this.t(a.label)}</button>`;
+      const head = lead ? button(lead) : "";
+      if (!total) return head;
+      if (total === 1) return head + button(groups[0][0]);
+      return `${head}<details class="rowmenu actmenu"><summary class="btn">${this.t("actMenu")}<ha-icon icon="mdi:chevron-down"></ha-icon></summary><div class="menupop">${groups.map(g => g.map(a => this.actionMenuItem(a)).join("")).join('<hr class="menusep">')}</div></details>`;
     };
     const hideButton = f => this.decide && this.decide.key === f.key ? `${this.decideTabs(f, "status")}${this.decideForm(f)}`
       : `<div class="fbtns">${steps(f)}${more(f)}</div>`;
