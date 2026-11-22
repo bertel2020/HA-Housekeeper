@@ -316,3 +316,21 @@ def test_log_facts_count_per_integration_and_never_carry_a_message():
 def test_a_hiding_mark_on_the_integration_hides_its_cause_before_any_outage_finding() -> None:
     assert apply_causes([{**ENTRY, "mark_hides": True}], [], []) == []
     assert len(apply_causes([ENTRY], [], [])) == 1
+
+
+def test_a_button_that_was_never_pressed_does_not_keep_a_device_from_being_down() -> None:
+    from custom_components.ha_housekeeper.causes import device_down_findings
+
+    entities = [
+        _entity("sensor.a", device_id="d1", status_since="2026-10-01T00:00:00+00:00"),
+        # Shown as working (a button is "unknown" until it is pressed) but silent about its device.
+        {**_entity("button.restart", device_id="d1", status="active"), "state": "unknown"},
+    ]
+    found = device_down_findings(entities, [DEVICE], [_finding("sensor.a")])
+    assert [f["object_id"] for f in found] == ["d1"], (
+        "the silent button does not count as a working entity"
+    )
+    entities[1]["state"] = "2026-10-01T10:00:00+00:00"
+    assert device_down_findings(entities, [DEVICE], [_finding("sensor.a")]) == [], (
+        "a button that was pressed works"
+    )

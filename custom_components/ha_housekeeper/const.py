@@ -137,3 +137,6 @@ SIGNAL_MONITOR_EVENT: Final = f"{DOMAIN}_monitor_event"
 # whole (byte-exact undo); one plan keeps at most MAX_PLAN_SNAPSHOTS of such copies.
 MAX_FILE_BACKUP: Final = 512 * 1024
 MAX_PLAN_SNAPSHOTS: Final = 2 * 1024 * 1024
+
+# Domains whose entities say "unknown" until something happens to them; that is no lost value.
+NO_VALUE_DOMAINS: Final = frozenset({"button", "input_button", "scene", "event", "notify"})

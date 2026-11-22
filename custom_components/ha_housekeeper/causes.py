@@ -26,6 +26,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any
 
+from .const import NO_VALUE_DOMAINS
 from .finding_topics import DOWN, topic_of
 from .impact import RANK, USAGE
 from .outage_levels import Levels, outage_level
@@ -60,7 +61,14 @@ def _counts(entity: dict[str, Any]) -> bool:
     Disabled and orphaned entities (a placeholder the integration no longer provides) say nothing,
     nor does one that is unknown and never had a value.
     """
-    if entity["status"] in ("active", "unavailable"):
+    if entity["status"] == "active":
+        # A button, scene or event shows "unknown" until it is used: it works either way, but says nothing about its device.
+        silent = (
+            entity.get("state") == "unknown"
+            and entity["object_id"].partition(".")[0] in NO_VALUE_DOMAINS
+        )
+        return not silent
+    if entity["status"] == "unavailable":
         return True
     return entity["status"] == "unknown" and bool(entity.get("had_value"))
 

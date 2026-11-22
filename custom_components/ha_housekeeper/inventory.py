@@ -72,6 +72,7 @@ from .const import (
     DEFAULT_WATCH_HOURS,
     DOMAIN,
     IGNORE_LABEL,
+    NO_VALUE_DOMAINS,
     PREFLIGHT_STORAGE_KEY,
     QUARANTINE_DAYS,
     SIGNAL_SCAN_COMPLETE,
@@ -293,10 +294,6 @@ def _registry_entries(collection: Any) -> list[Any]:
 def _device_config_entry_ids(device: Any) -> list[str]:
     """The config entry that owns a device (a device belongs to exactly one)."""
     return [device.config_entry_id] if getattr(device, "config_entry_id", None) else []
-
-
-# Domains whose entities say "unknown" until something happens to them; that is no lost value.
-NO_VALUE_DOMAINS = frozenset({"button", "input_button", "scene", "event", "notify"})
 
 
 def _entity_status(
