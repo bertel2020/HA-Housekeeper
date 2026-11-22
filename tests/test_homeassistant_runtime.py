@@ -257,6 +257,32 @@ async def test_low_battery_threshold_is_configurable(hass: HomeAssistant) -> Non
     assert snapshot["meta"]["low_batteries"] == 1
 
 
+async def test_a_weak_battery_in_volts_counts_once_the_forecast_calls_it_low(
+    hass: HomeAssistant,
+) -> None:
+    registry = er.async_get(hass)
+    entry = registry.async_get_or_create(
+        domain="sensor", platform="test", unique_id="volt-1", suggested_object_id="coin_battery"
+    )
+    hass.states.async_set(
+        entry.entity_id, "2.1", {"device_class": "battery", "unit_of_measurement": "V"}
+    )
+    scanner = InventoryScanner(hass)
+    snapshot = await scanner.async_scan()
+    assert snapshot["meta"]["low_batteries"] == 0
+    scanner.adopt_battery_forecast(
+        {
+            "available": True,
+            "busy": False,
+            "voltage": {"rows": [{"entity_id": entry.entity_id, "state": "low"}]},
+        }
+    )
+    assert scanner.snapshot["meta"]["low_batteries"] == 1
+    assert scanner.snapshot["meta"]["low_voltage_ids"] == [entry.entity_id]
+    snapshot = await scanner.async_scan()  # a later scan keeps the count
+    assert snapshot["meta"]["low_batteries"] == 1
+
+
 async def test_repairs_hints_only_cover_entity_and_reference_findings(hass: HomeAssistant) -> None:
     """A failed config entry stays a panel finding; it must not raise "unavailable entities"."""
     from homeassistant.helpers import issue_registry as ir

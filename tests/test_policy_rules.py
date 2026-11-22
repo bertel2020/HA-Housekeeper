@@ -149,6 +149,11 @@ def test_exposure_and_battery_rules() -> None:
     battery = obj("entity", "sensor.b", device_class="battery", state="5")
     assert ids(run([battery], "battery_no_automation", battery_percent=20)) == ["sensor.b"]
     assert ids(run([battery], "battery_no_automation", edges=[{"target": "entity:sensor.b"}])) == []
+    volts = obj("entity", "sensor.v", device_class="battery", unit="V", state="2.1")
+    assert ids(run([volts], "battery_no_automation")) == []
+    assert ids(run([volts], "battery_no_automation", battery_low_volts=["sensor.v"])) == [
+        "sensor.v"
+    ]
 
 
 def test_recorder_rules_wait_for_numbers_and_judge_them() -> None:

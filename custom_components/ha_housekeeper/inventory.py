@@ -44,6 +44,7 @@ from .backup_health import AttestStore, backup_health
 from .battery_care import BatteryStore
 from .battery_forecast import battery_forecast
 from .battery_kind import apply_battery_kinds
+from .battery_kind import excluded as battery_excluded
 from .blueprints import async_available, blueprint_path, missing_blueprint_findings
 from .causes import apply_causes, device_down_findings
 from .certainty import apply_certainty
@@ -1048,6 +1049,7 @@ class InventoryScanner:
         # The forecast of the batteries is read from the statistics about once a day, for the dashboard card.
         self.battery_forecast: dict[str, Any] | None = None
         self.battery_forecast_at: datetime | None = None
+        self._low_volt_ids: list[str] = []  # batteries in volts the forecast calls low
         self._battery_forecast_running = False
         self._health_seen: tuple[Any, ...] | None = None  # what the last hourly check announced
         self.mcp = McpStore(hass)
@@ -1511,6 +1513,13 @@ class InventoryScanner:
             self._battery_forecast_running = False
         self.adopt_battery_forecast(result)
 
+    def _low_batteries(self, entities: list[dict[str, Any]]) -> dict[str, Any]:
+        """The weak batteries: by percent or flag, and those in volts the forecast calls low (the panel counts the same)."""
+        by_id = {o["object_id"]: o for o in entities}
+        volts = [e for e in self._low_volt_ids if e in by_id and not battery_excluded(by_id[e])]
+        weak = {*low_battery_ids(entities, self.low_battery_percent), *volts}
+        return {"low_batteries": len(weak), "low_voltage_ids": sorted(volts)}
+
     def adopt_battery_forecast(self, result: dict[str, Any]) -> None:
         """Take a forecast that was read, by the daily run or by the panel, as the one the card shows.
 
@@ -1526,6 +1535,12 @@ class InventoryScanner:
             at = None
         self.battery_forecast = result
         self.battery_forecast_at = at if at is not None and at.tzinfo else datetime.now(UTC)
+        rows = (result.get("voltage") or {}).get("rows") or []
+        self._low_volt_ids = [r["entity_id"] for r in rows if r.get("state") == "low"]
+        snapshot = self._snapshot
+        if snapshot:  # the count of weak batteries follows the forecast
+            entities = [o for o in snapshot["objects"] if o["object_type"] == "entity"]
+            snapshot["meta"].update(self._low_batteries(entities))
         self.announce_changes()
 
     def check_battery_forecast(self) -> None:
@@ -2210,7 +2225,7 @@ class InventoryScanner:
                 "outage_scan_mode": self.outage_scan_mode,
                 "refresh_recorder_views": self.refresh_recorder_views,
                 "watch": self.watch_summary(),
-                "low_batteries": len(low_battery_ids(entities, self.low_battery_percent)),
+                **self._low_batteries(entities),
                 "object_count": len(listed_objects(objects)),
                 "status_counts": dict(Counter(item["status"] for item in listed_objects(objects))),
                 "marked_status_counts": marked_status_counts(objects),
@@ -2777,7 +2792,7 @@ class InventoryScanner:
         # The forecast was read for the sensors of the time before; the next one reads them anew.
         self.hass.data.get(DOMAIN, {}).get("query_cache", {}).pop("battery_trend", None)
         entities = [o for o in snapshot["objects"] if o["object_type"] == "entity"]
-        snapshot["meta"]["low_batteries"] = len(low_battery_ids(entities, self.low_battery_percent))
+        snapshot["meta"].update(self._low_batteries(entities))
         self.announce_changes()
 
     def _sun(self) -> tuple[bool, datetime] | None:

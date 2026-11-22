@@ -341,7 +341,7 @@ def evaluate(
         "exposure_unused": lambda: rules_more.exposure_unused(exposed, entities, used),
         "exposure_sensitive": lambda: rules_more.exposure_sensitive(exposed, entities),
         "battery_no_automation": lambda: rules_more.battery_no_automation(
-            entities, used, extra.get("battery_percent", 20)
+            entities, used, extra.get("battery_percent", 20), extra.get("battery_low_volts") or []
         ),
         "http_trusted_networks": lambda: rules_more.http_trusted_networks(extra.get("http") or {}),
         "http_external_url": lambda: rules_more.http_external_url(extra.get("http") or {}),
@@ -540,7 +540,10 @@ def _extra(
     from .exposure import exposure
     from .inventory import _registry_entries
 
-    extra: dict[str, Any] = {"battery_percent": battery_percent}
+    extra: dict[str, Any] = {
+        "battery_percent": battery_percent,
+        "battery_low_volts": snapshot["meta"].get("low_voltage_ids") or [],
+    }
     if "label_unused" in store.enabled:
         used = {label for entry in registry.entities.values() for label in entry.labels}
         used |= {

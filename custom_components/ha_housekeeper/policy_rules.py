@@ -570,8 +570,16 @@ def exposure_sensitive(exposed: dict[str, list[str]], entities: dict[str, dict[s
             yield {**item, "also": exposed[entity_id][:3]}
 
 
-def battery_no_automation(entities: dict[str, dict[str, Any]], used: set[str], threshold: int):
-    for entity_id in low_battery_ids(list(entities.values()), threshold):
+def battery_no_automation(
+    entities: dict[str, dict[str, Any]],
+    used: set[str],
+    threshold: int,
+    low_volts: list[str] | None = None,
+):
+    """A weak battery nothing reacts to; also one in volts the forecast calls low."""
+    weak = [*low_battery_ids(list(entities.values()), threshold)]
+    weak += [e for e in low_volts or [] if e in entities and e not in weak]
+    for entity_id in weak:
         if entity_id not in used:
             yield entities[entity_id]
 
