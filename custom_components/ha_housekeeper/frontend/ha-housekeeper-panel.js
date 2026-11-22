@@ -3427,9 +3427,9 @@ class FindingsMixin {
     const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
     const facts = this.selectionFacts(), picked = facts.picked;
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
-    const removable = [...new Set(picked.filter(f => this.removableFinding(f)).map(f => f.object_id))];
+    const removable = [...new Set(picked.filter(f => this.stepsOf(f).remove).map(f => f.object_id))];
     const deletable = [...new Set(picked.filter(f => this.deletableAutomation(f)).map(f => f.object_id))];
-    const downs = [...new Set(picked.filter(f => this.downEntityFinding(f)).map(f => f.object_id))];
+    const downs = [...new Set(picked.filter(f => this.stepsOf(f).disable).map(f => f.object_id))];
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
@@ -11461,9 +11461,23 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id);
   }
 
-  // An entity that reports no value (unavailable or unknown): it can be disabled by a plan or replaced by another entity.
+  // An entity that reports no value or is gone (unavailable, unknown, orphaned): it can be disabled by a plan or replaced by another entity.
+  // One definition for the menu of a row, the selection bar and the page of the object.
   downEntityFinding(f) {
-    return Boolean(f) && !f.ignored && ["entity.state_unavailable", "entity.state_unknown"].includes(f.rule_id);
+    return Boolean(f) && !f.ignored && f.rule_id.startsWith("entity.") && f.rule_id !== "entity.possible_duplicate"
+      && (["entity.state_unavailable", "entity.state_unknown"].includes(f.rule_id) || ["orphaned", "unavailable"].includes(f.classification));
+  }
+
+  // The plans that answer a finding of an entity, decided in one place for the menu of a row and the page of the object:
+  // an entity its integration no longer provides is removed straight away (disabling it changes nothing), another one that is down is disabled
+  // (unless it is already), and any of them can be replaced. `item` is the object of the finding.
+  stepsOf(f) { return this.findingSteps(f, this.findObject(this.findingKey(f))); }
+
+  findingSteps(f, item) {
+    const down = this.downEntityFinding(f), notProvided = item?.reason === "not_provided";
+    const now = down && notProvided;
+    // `now` is the step the page of the object puts first as the answer; the menu offers removing also for any unneeded entity.
+    return { now, remove: this.removableFinding(f) || now, disable: down && !notProvided && item?.status !== "disabled", replace: down };
   }
 
   // A reference to an entity that is gone: the entity can be replaced by another, with the first suggestion filled in when there is one.
@@ -11480,12 +11494,13 @@ class CausesMixin {
     const owner = f.ignored ? this.markOwner(f) : null;
     const objectKey = this.findingKey(f), object = this.findObject(objectKey);
     const plan = this.t("actPlanSub");
+    const steps = this.findingSteps(f, object);
     const solve = f.ignored ? [] : [
       e("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`),
-      this.removableFinding(f) ? e("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`, plan) : null,
+      steps.remove ? e("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`, plan) : null,
       this.brokenEntityFinding(f) ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.affected_object)}"${f.suggestions?.[0] ? ` data-repl-new="${this.esc(f.suggestions[0])}"` : ""}`, f.suggestions?.[0] ? `${f.affected_object} → ${f.suggestions[0]}` : f.affected_object) : null,
-      this.downEntityFinding(f) ? e("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`, plan) : null,
-      this.downEntityFinding(f) ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`) : null,
+      steps.disable ? e("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`, plan) : null,
+      steps.replace ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`) : null,
       this.deletableAutomation(f) ? e("mdi:delete-outline", "autoDelete", `data-auto-delete="${this.esc(f.object_id)}"`, plan) : null,
     ];
     // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.
@@ -14175,14 +14190,15 @@ class DetailActionsMixin {
     const out = this.missingEntities(key).map(id => ({ attr: `data-act-replace="${this.esc(id)}"`, icon: "mdi:swap-horizontal", label: `${this.t("actReplace")} ${this.esc(id)}`, shortLabel: this.t("actReplace").replace(/\s*[:：]\s*$/, ""), hint: "actHintReplace", finding: open.find(f => f.affected_object === id && f.classification === "broken_reference")?.key || true }));
     const broken = open.some(f => f.classification === "broken_reference");
     const dup = item.object_type === "entity" ? open.find(f => f.rule_id === "entity.possible_duplicate" && f.affected_object) : null;
-    const down = item.object_type === "entity" ? open.find(f => f.rule_id.startsWith("entity.") && ["orphaned", "unavailable"].includes(f.classification)) : null;
+    const down = item.object_type === "entity" ? open.find(f => this.downEntityFinding(f)) : null;
+    const steps = down ? this.findingSteps(down, item) : {};
     // With a working twin, replacing it is the answer to the duplicate, filled in; offered once, there.
     if (dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceTwin"), hint: "actHintReplaceTwin", finding: dup.key, ...(item.duplicate_of ? { plan: { kind: "replace_references", object_id: item.object_id, target: item.duplicate_of } } : {}) });
     if (down) {
-      if (!dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceThis"), hint: "actHintReplace", finding: down.key });
+      if (!dup && steps.replace) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceThis"), hint: "actHintReplace", finding: down.key });
       // Disabling an entity its integration no longer provides changes nothing; it is removed straight away (within its first day the plan asks to confirm).
-      if (item.reason === "not_provided") out.unshift({ attr: `data-act-remove="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemove"), hint: "actHintRemove", finding: down.key, plan: { kind: "remove_entity", object_id: item.object_id } });
-      else if (item.status !== "disabled") out.push({ attr: `data-act-disable="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisable"), hint: "actHintDisable", finding: down.key, plan: { kind: "disable_entity", object_id: item.object_id } });
+      if (steps.now) out.unshift({ attr: `data-act-remove="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemove"), hint: "actHintRemove", finding: down.key, plan: { kind: "remove_entity", object_id: item.object_id } });
+      else if (steps.disable) out.push({ attr: `data-act-disable="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisable"), hint: "actHintDisable", finding: down.key, plan: { kind: "disable_entity", object_id: item.object_id } });
     }
     const blocked = item.object_type === "automation" ? open.find(f => f.rule_id === "automation.blocked") : null;
     if (blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "actHintDisableAuto", finding: blocked.key, plan: { kind: "disable_entity", object_id: item.object_id } });
@@ -14397,9 +14413,9 @@ class DetailActionsMixin {
     });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-find-disable]").forEach(el => el.onclick = () => this.planDisable(el.dataset.findDisable));
-    root.querySelectorAll("[data-fsel-disable]").forEach(el => el.onclick = () => this.planDisableMany([...new Set(this.pickedFindings().filter(f => this.downEntityFinding(f)).map(f => f.object_id))]));
+    root.querySelectorAll("[data-fsel-disable]").forEach(el => el.onclick = () => this.planDisableMany([...new Set(this.pickedFindings().filter(f => this.stepsOf(f).disable).map(f => f.object_id))]));
     root.querySelectorAll("[data-find-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.findRemove));
-    root.querySelectorAll("[data-fsel-remove]").forEach(el => el.onclick = () => this.planRemoveMany([...new Set(this.pickedFindings().filter(f => this.removableFinding(f)).map(f => f.object_id))]));
+    root.querySelectorAll("[data-fsel-remove]").forEach(el => el.onclick = () => this.planRemoveMany([...new Set(this.pickedFindings().filter(f => this.stepsOf(f).remove).map(f => f.object_id))]));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
     root.querySelector("[data-act-label-plan]")?.addEventListener("click", e => this.planLabel(e.currentTarget.dataset.actLabelPlan, root.querySelector("[data-act-label]")?.value || this.actLabel));

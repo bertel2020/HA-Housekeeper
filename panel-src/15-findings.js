@@ -370,9 +370,9 @@ class FindingsMixin {
     const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
     const facts = this.selectionFacts(), picked = facts.picked;
     const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
-    const removable = [...new Set(picked.filter(f => this.removableFinding(f)).map(f => f.object_id))];
+    const removable = [...new Set(picked.filter(f => this.stepsOf(f).remove).map(f => f.object_id))];
     const deletable = [...new Set(picked.filter(f => this.deletableAutomation(f)).map(f => f.object_id))];
-    const downs = [...new Set(picked.filter(f => this.downEntityFinding(f)).map(f => f.object_id))];
+    const downs = [...new Set(picked.filter(f => this.stepsOf(f).disable).map(f => f.object_id))];
     const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;

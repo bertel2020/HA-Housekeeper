@@ -14,14 +14,15 @@ class DetailActionsMixin {
     const out = this.missingEntities(key).map(id => ({ attr: `data-act-replace="${this.esc(id)}"`, icon: "mdi:swap-horizontal", label: `${this.t("actReplace")} ${this.esc(id)}`, shortLabel: this.t("actReplace").replace(/\s*[:：]\s*$/, ""), hint: "actHintReplace", finding: open.find(f => f.affected_object === id && f.classification === "broken_reference")?.key || true }));
     const broken = open.some(f => f.classification === "broken_reference");
     const dup = item.object_type === "entity" ? open.find(f => f.rule_id === "entity.possible_duplicate" && f.affected_object) : null;
-    const down = item.object_type === "entity" ? open.find(f => f.rule_id.startsWith("entity.") && ["orphaned", "unavailable"].includes(f.classification)) : null;
+    const down = item.object_type === "entity" ? open.find(f => this.downEntityFinding(f)) : null;
+    const steps = down ? this.findingSteps(down, item) : {};
     // With a working twin, replacing it is the answer to the duplicate, filled in; offered once, there.
     if (dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceTwin"), hint: "actHintReplaceTwin", finding: dup.key, ...(item.duplicate_of ? { plan: { kind: "replace_references", object_id: item.object_id, target: item.duplicate_of } } : {}) });
     if (down) {
-      if (!dup) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceThis"), hint: "actHintReplace", finding: down.key });
+      if (!dup && steps.replace) out.push({ attr: `data-act-replace="${this.esc(item.object_id)}"`, icon: "mdi:swap-horizontal", label: this.t("actReplaceThis"), hint: "actHintReplace", finding: down.key });
       // Disabling an entity its integration no longer provides changes nothing; it is removed straight away (within its first day the plan asks to confirm).
-      if (item.reason === "not_provided") out.unshift({ attr: `data-act-remove="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemove"), hint: "actHintRemove", finding: down.key, plan: { kind: "remove_entity", object_id: item.object_id } });
-      else if (item.status !== "disabled") out.push({ attr: `data-act-disable="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisable"), hint: "actHintDisable", finding: down.key, plan: { kind: "disable_entity", object_id: item.object_id } });
+      if (steps.now) out.unshift({ attr: `data-act-remove="${this.esc(item.object_id)}"`, icon: "mdi:delete-outline", label: this.t("actRemove"), hint: "actHintRemove", finding: down.key, plan: { kind: "remove_entity", object_id: item.object_id } });
+      else if (steps.disable) out.push({ attr: `data-act-disable="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisable"), hint: "actHintDisable", finding: down.key, plan: { kind: "disable_entity", object_id: item.object_id } });
     }
     const blocked = item.object_type === "automation" ? open.find(f => f.rule_id === "automation.blocked") : null;
     if (blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "actHintDisableAuto", finding: blocked.key, plan: { kind: "disable_entity", object_id: item.object_id } });
@@ -236,9 +237,9 @@ class DetailActionsMixin {
     });
     root.querySelectorAll("[data-act-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.actRemove));
     root.querySelectorAll("[data-find-disable]").forEach(el => el.onclick = () => this.planDisable(el.dataset.findDisable));
-    root.querySelectorAll("[data-fsel-disable]").forEach(el => el.onclick = () => this.planDisableMany([...new Set(this.pickedFindings().filter(f => this.downEntityFinding(f)).map(f => f.object_id))]));
+    root.querySelectorAll("[data-fsel-disable]").forEach(el => el.onclick = () => this.planDisableMany([...new Set(this.pickedFindings().filter(f => this.stepsOf(f).disable).map(f => f.object_id))]));
     root.querySelectorAll("[data-find-remove]").forEach(el => el.onclick = () => this.planRemove(el.dataset.findRemove));
-    root.querySelectorAll("[data-fsel-remove]").forEach(el => el.onclick = () => this.planRemoveMany([...new Set(this.pickedFindings().filter(f => this.removableFinding(f)).map(f => f.object_id))]));
+    root.querySelectorAll("[data-fsel-remove]").forEach(el => el.onclick = () => this.planRemoveMany([...new Set(this.pickedFindings().filter(f => this.stepsOf(f).remove).map(f => f.object_id))]));
     root.querySelectorAll("[data-act-disable-auto]").forEach(el => el.onclick = () => this.planDisable(el.dataset.actDisableAuto));
     root.querySelector("[data-act-label]")?.addEventListener("change", e => { this.actLabel = e.target.value; });
     root.querySelector("[data-act-label-plan]")?.addEventListener("click", e => this.planLabel(e.currentTarget.dataset.actLabelPlan, root.querySelector("[data-act-label]")?.value || this.actLabel));

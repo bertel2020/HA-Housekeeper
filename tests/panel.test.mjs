@@ -8833,6 +8833,16 @@ test("the menu of a finding has fixed groups: fix, decide, object, label, logboo
   assert.equal(el.t("actRuleSub1").includes("{n}"), false, "a singular needs no number");
 });
 
+test("the row menu and the page of an object decide the plans of an entity that is down in one place", () => {
+  const { el } = panel("en");
+  const f = { ...DATA.findings[0], key: "k1", ignored: false };
+  const stateOf = (reason, status) => { el.data = { ...DATA, objects: DATA.objects.map(o => o.object_id === "sensor.a" ? { ...o, reason, status } : o), findings: [f] }; return el.rowMenu(f); };
+  const gone = stateOf("state_missing", "orphaned");
+  assert.ok(gone.includes("data-find-disable=") && gone.includes("data-act-replace="), "down: disable and replace, as on the page");
+  assert.ok(!stateOf("not_provided", "orphaned").includes("data-find-disable=") && stateOf("not_provided", "orphaned").includes("data-find-remove="), "not provided: removed, not disabled");
+  assert.ok(!stateOf("state_missing", "disabled").includes("data-find-disable="), "already disabled: not offered again");
+});
+
 test("a failed read of the details is asked for again, and removing decisions asks first", async () => {
   const { el } = panel("en");
   el.data = DATA;
