@@ -9134,6 +9134,7 @@ test("undoing a plan from the card asks first, in red, and runs only after the y
   const { el } = panel("en");
   let click;
   const root = { querySelectorAll: () => [], querySelector: sel => (sel === "[data-fc-plan-undo]" ? { addEventListener: (_, fn) => { click = fn; } } : null) };
+  el.plan = { plan_id: "p", actions: [] };
   el.bindFcPlan(root);
   let undone = 0;
   el.undoPlan = async () => { undone++; };
@@ -9171,4 +9172,16 @@ test("the reasons of an outage rating are escaped once, so an apostrophe stays o
   el.t = (k, p) => (k === "impactFact_critical" ? "critical: the area's label" : t(k, p));
   const html = el.ratingBlock({ object_type: "entity", object_id: "light.a" }, el.findingKey(out));
   assert.ok(html.includes("the area&#39;s label") && !html.includes("&amp;#39;"), "escaped exactly once");
+});
+
+test("the card offers undo only for a plan that can be undone", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  el.fcPlanKey = "config_entry:e1";
+  const plan = kind => ({ plan_id: "p", created_at: new Date().toISOString(), status: "executed", executed: true, verification: { ok: true, checks: [] }, summary: { total: 1, ok: 1, review: 0, blocked: 0 },
+    actions: [{ kind, object_id: "e1", name: "E", verdict: "ok", executable: true, reasons: [], used_by: [], result: { state: "done" } }] });
+  el.plan = plan("reload_integration");
+  assert.ok(!el.fcPlanBlock().includes("data-fc-plan-undo"), "a reload cannot be undone");
+  el.plan = plan("remove_entity");
+  assert.ok(el.fcPlanBlock().includes("data-fc-plan-undo"), "a removal can");
 });
