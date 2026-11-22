@@ -369,11 +369,11 @@ class FindingsMixin {
     this._findPage = pageRows.flatMap(f => (f.findings ? this.nodeFindings(f) : [f])).map(f => f.key).filter(Boolean);
     const total = `<span class="viewcount" role="status">${this.esc(count)}</span>`;
     const facts = this.selectionFacts(), picked = facts.picked;
-    const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = this.markTargets().size;
+    const labels = picked.filter(f => LABEL_TYPES.includes(this.findObject(this.findingKey(f))?.object_type) && f.classification !== "broken_reference").length, marks = new Set(this.markTargets().values()).size;
     const removable = [...new Set(picked.filter(f => this.stepsOf(f).remove).map(f => f.object_id))];
     const deletable = [...new Set(picked.filter(f => this.deletableAutomation(f)).map(f => f.object_id))];
     const downs = [...new Set(picked.filter(f => this.stepsOf(f).disable).map(f => f.object_id))];
-    const excs = picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).length;
+    const excs = new Set(picked.filter(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); }).map(f => this.findingKey(f))).size;  // objects, not findings
     const exc = this.excForm?.here && this.exc ? this.excFormHtml(this.excForm) : "";
     if (!pageRows.length && !n) return exc;
     // The page box sits in the column head; the bar has the chips, the pill of the picks and, from the first pick on, one menu.

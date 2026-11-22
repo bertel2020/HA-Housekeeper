@@ -567,7 +567,7 @@ class FindingStatusMixin {
     root.querySelectorAll("[data-exc-note-open]").forEach(el => el.onclick = () => { this.excForm = null; this.openMark(el.dataset.excNoteOpen); });
     root.querySelectorAll("[data-exc-for]").forEach(el => el.onclick = ev => { ev.stopPropagation(); el.closest("details")?.removeAttribute("open"); this._formAt = el.dataset.formAt || ""; this.openExceptionFor([el.dataset.excFor]); });
     // A label from the menu of a row: that finding alone, in the same form as the selection bar.
-    root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([...this.findSel, el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
+    root.querySelectorAll("[data-row-label]").forEach(el => el.onclick = ev => { ev.stopPropagation(); this.findSel = new Set([el.dataset.rowLabel]); this.bulk = { kind: "label", reason: "", days: 30, markKind: "", error: "" }; this.render(); });
     root.querySelectorAll("[data-fstatus]").forEach(el => el.onclick = () => { const s = el.dataset.fstatus === "open" ? "" : el.dataset.fstatus; this.findingStatus = this.findingStatus === s ? "" : s; this.pages = {}; this.render(); });
     root.querySelectorAll("[data-fsel-state]").forEach(el => el.onclick = () => this.openBulkForm(el.dataset.fselState));
     // The head of an object adds the findings of its group to the picks and opens the same form.

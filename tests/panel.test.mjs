@@ -7717,6 +7717,17 @@ test("hiding one finding asks for what, and a rule for the object hands over to 
   assert.ok(el.excForm?.here, "all future findings: the rule form");
 });
 
+test("the rule of the selection bar counts objects, not findings", () => {
+  const { el } = panel("en");
+  const f = n => ({ rule_id: "entity.state_unavailable", classification: "unavailable", key: `k${n}`, object_id: "light.a", confidence: 0.75, impact: "medium", ignored: false });
+  el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" }], edges: [], findings: [f(1), f(2)] };
+  el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] };
+  el.findSel = new Set(["k1", "k2"]);
+  const view = el.findSelBar([]);
+  assert.ok(view.includes("A lasting rule for all future findings") && !view.includes("2 objects"), "two findings of one object are one object, for the rule and for the note");
+  assert.ok(view.includes("This object · with a reason"));
+});
+
 test("a decided finding has the same row menu as an open one; only its top block offers the way back", () => {
   const { el } = panel("en");
   const device = { object_type: "device", object_id: "d1", name: "Hub", status: "active" };
