@@ -1,7 +1,7 @@
 // Texts for the automation runs view; merged into TEXT.
 Object.assign(TEXT.de, {
   runsSumRuns: "Gezählte Läufe", runsSumOf: "von {n} Automationen und Skripten", runsSumShare: "{n} % der Läufe", runsSumFlagged: "Auffällig", runsSumNeverOk: "Nie erfolgreich",
-  runs: "Automationen", runsHeading: "Automationen", runsSubtitle: "Wie oft Automationen und Skripte laufen, scheitern oder ohne Wirkung enden. Gezählt aus den Läufen, die Home Assistant kurz vorhält.",
+  runs: "Automationen", runsHeading: "Automationen", runsSubtitle: "Wie oft Automationen und Skripte laufen, scheitern oder ohne Wirkung enden.",
   
   runsSince: "Gezählt seit {date}; ältere Läufe sind in Home Assistant nicht mehr vorhanden.", 
   runsLoading: "Die Läufe werden gezählt …", runsNone: "Nichts Auffälliges in den gezählten Läufen.", runsFactNone: "Noch keine Läufe gezählt", runsAllOutcomes: "Alle Läufe", runsOnlyErrors: "Mit Fehlern", runsOnlyFlagged: "Mit Auffälligkeit", runsNoData: "Noch keine Läufe gezählt. Der Zähler liest alle 15 Minuten.",
@@ -29,7 +29,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   runsSumRuns: "Counted runs", runsSumOf: "of {n} automations and scripts", runsSumShare: "{n} % of the runs", runsSumFlagged: "Flagged", runsSumNeverOk: "Never successful",
-  runs: "Automations", runsHeading: "Automations", runsSubtitle: "How often automations and scripts run, fail or end without effect. Counted from the runs Home Assistant keeps for a short time.",
+  runs: "Automations", runsHeading: "Automations", runsSubtitle: "How often automations and scripts run, fail or end without effect.",
   
   runsSince: "Counted since {date}; older runs are no longer in Home Assistant.", 
   runsLoading: "Counting the runs …", runsNone: "Nothing stands out in the counted runs.", runsFactNone: "No runs counted yet", runsAllOutcomes: "All runs", runsOnlyErrors: "With errors", runsOnlyFlagged: "Flagged", runsNoData: "No runs counted yet. The counter reads every 15 minutes.",

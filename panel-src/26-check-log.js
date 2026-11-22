@@ -7,7 +7,7 @@ const CL_REASONS = ["backup_running", "restart", "maintenance", "test", "expecte
 const CL_AFTER_MS = 10 * 60 * 1000; // a change this soon after a restart or an update is said to follow it
 const CL_AREA_PAGE = { backup: "maintenance", database: "recorder", auto_pause: "autopause", system: "storage", services: "reliability", goals: "policies", scan: "settings" };
 Object.assign(TEXT.de, {
-  checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe gewechselt hat, mit den Zahlen dahinter, dazu Neustarts, Updates und Änderungen an Automationen. Gespeichert werden nur Zeiten, Zahlen und Kennungen, nie Texte.",
+  checklog: "Verlauf", checklogSubtitle: "Wann eine Prüfung ihre Stufe wechselte, dazu Neustarts und Updates. Es werden nie Texte gespeichert.",
   clDays_7: "7 Tage", clDays_30: "30 Tage", clDays_90: "90 Tage",
   clBackupRunSpan: "{from} bis {to} ({span})", clBackupRunning: "läuft seit {from}", clAllTimes: "Ganzer Zeitraum", clSince_hour: "Letzte Stunde", clSince_today: "Heute", clSince_start: "Seit dem letzten Neustart", clToday: "Heute", clYesterday: "Gestern", clTileRestarts: "Neustarts", clTileRestartsSub: "ohne Update", clTileUpdates: "Updates", clTileUpdatesSub: "mit und ohne Neustart", clTileChanges: "Prüfungswechsel", clTileProblems: "Probleme", clTileFlapping: "Flattern", clTileLongest: "Längstes Problem",
   clTileChangesSub: "in {days} Tagen", clTileProblemsSub: "Stufe „Problem“", clTileFlappingSub: "Prüfungen mit häufigem Wechsel", clTileLongestSub: "bis zur Rückkehr",
@@ -37,7 +37,7 @@ Object.assign(TEXT.de, {
   clRetention: "Aufbewahrt: {days} Tage, höchstens {max} Einträge.", clLoadError: "Der Verlauf konnte nicht gelesen werden.",
 });
 Object.assign(TEXT.en, {
-  checklog: "History", checklogSubtitle: "When a check changed its level, with the numbers behind it, plus restarts, updates and edits of automations. Only times, numbers and identifiers are kept, never texts.",
+  checklog: "History", checklogSubtitle: "When a check changed its level, plus restarts and updates. Texts are never stored.",
   clDays_7: "7 days", clDays_30: "30 days", clDays_90: "90 days",
   clBackupRunSpan: "{from} to {to} ({span})", clBackupRunning: "running since {from}", clAllTimes: "Whole period", clSince_hour: "Last hour", clSince_today: "Today", clSince_start: "Since the last restart", clToday: "Today", clYesterday: "Yesterday", clTileRestarts: "Restarts", clTileRestartsSub: "without an update", clTileUpdates: "Updates", clTileUpdatesSub: "with or without a restart", clTileChanges: "Check changes", clTileProblems: "Problems", clTileFlapping: "Flapping", clTileLongest: "Longest problem",
   clTileChangesSub: "in {days} days", clTileProblemsSub: "level “Problem”", clTileFlappingSub: "checks that change often", clTileLongestSub: "until it was back",
