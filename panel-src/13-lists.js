@@ -94,6 +94,12 @@ class ListsMixin {
     return ids.slice(0, max);
   }
 
+  // The findings of the objects that went into a plan leave the pick; the rest stays for the next round.
+  deselectObjects(ids) {
+    const gone = new Set(ids);
+    for (const key of [...this.findSel]) if (gone.has(this.data?.findings?.find(f => f.key === key)?.object_id)) this.findSel.delete(key);
+  }
+
   failed(err) {
     this.noteError("action", err);
     this.toast(this.t("actionFailed", { detail: this.errText(err) }), true);

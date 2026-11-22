@@ -97,7 +97,7 @@ class ExcludeMixin {
   // Trimming the old history belongs to what is already excluded. For entities that are only picked to be excluded it
   // stays behind a quiet button, so the way of the exclusion (copy the YAML) is not mistaken for a step that deletes.
   trimPart(n, trim) {
-    if (!n && !trim) return "";
+    if (!n && !trim) { this.trimOpen = false; return ""; }
     if (trim || this.trimOpen) return this.trimBlock();
     return `<div class="toolbar"><button type="button" class="btn quiet" data-trim-open>${this.t("exTrimToo")}</button></div>`;
   }
@@ -120,8 +120,11 @@ class ExcludeMixin {
       const keep_days = this.trimDays || 14;
       const chosen = [...this.excludeSel], actions = chosen.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "trim_history", object_id, keep_days }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.excludeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS));
       this.openNewPlan(plan);
+      // What went into the plan leaves the pick, unless it is still to be excluded (its YAML is not copied yet).
+      const planned = new Set(actions.map(a => a.object_id)), done = this.excludedIds();
+      this.excludeSel = new Set(chosen.filter(id => !planned.has(id) || !done.has(id)));
+      this.trimOpen = false;
     } catch (err) { this.trimError = this.errText(err); }
     this.trimBusy = false;
     this.render();

@@ -434,8 +434,10 @@ class FindingStatusMixin {
     if (!ids.length) { b.error = "labelNoEntities"; this.render(); return; }
     const label = b.label || (this.data.objects || []).find(o => o.object_type === "label")?.object_id;
     try {
-      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "add_label", object_id, target: label })))) return;
-      this.bulk = null; if (ids.length <= MAX_PLAN_ACTIONS) this.findSel.clear();
+      const now = this.capIds(ids);
+      if (!await this.newPlan(now.map(object_id => ({ kind: "add_label", object_id, target: label })))) return;
+      this.bulk = null;
+      if (ids.length > now.length) this.deselectObjects(now); else this.findSel.clear();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }

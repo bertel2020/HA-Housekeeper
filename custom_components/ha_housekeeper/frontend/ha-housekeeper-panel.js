@@ -2087,6 +2087,12 @@ class ListsMixin {
     return ids.slice(0, max);
   }
 
+  // The findings of the objects that went into a plan leave the pick; the rest stays for the next round.
+  deselectObjects(ids) {
+    const gone = new Set(ids);
+    for (const key of [...this.findSel]) if (gone.has(this.data?.findings?.find(f => f.key === key)?.object_id)) this.findSel.delete(key);
+  }
+
   failed(err) {
     this.noteError("action", err);
     this.toast(this.t("actionFailed", { detail: this.errText(err) }), true);
@@ -13918,8 +13924,10 @@ class FindingStatusMixin {
     if (!ids.length) { b.error = "labelNoEntities"; this.render(); return; }
     const label = b.label || (this.data.objects || []).find(o => o.object_type === "label")?.object_id;
     try {
-      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "add_label", object_id, target: label })))) return;
-      this.bulk = null; if (ids.length <= MAX_PLAN_ACTIONS) this.findSel.clear();
+      const now = this.capIds(ids);
+      if (!await this.newPlan(now.map(object_id => ({ kind: "add_label", object_id, target: label })))) return;
+      this.bulk = null;
+      if (ids.length > now.length) this.deselectObjects(now); else this.findSel.clear();
     } catch (err) { b.error = ""; this.failed(err); }
     this.render();
   }
@@ -14288,7 +14296,9 @@ class DetailActionsMixin {
   async planDisableMany(ids) {
     if (!ids.length) return;
     try {
-      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "disable_entity", object_id })))) return;
+      const now = this.capIds(ids);
+      if (!await this.newPlan(now.map(object_id => ({ kind: "disable_entity", object_id })))) return;
+      if (ids.length > now.length) this.deselectObjects(now);
       this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();
@@ -14298,7 +14308,9 @@ class DetailActionsMixin {
   async planRemoveMany(ids) {
     if (!ids.length) return;
     try {
-      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "remove_entity", object_id })))) return;
+      const now = this.capIds(ids);
+      if (!await this.newPlan(now.map(object_id => ({ kind: "remove_entity", object_id })))) return;
+      if (ids.length > now.length) this.deselectObjects(now);
       this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();
@@ -14847,7 +14859,7 @@ class EntityTrimMixin {
     const what = a.tables?.length ? `${a.tables.map(t => this.t(names[t])).join(", ")} · ` : "";
     if (a.range) {
       const day = ts => this.formatDay(new Date(ts * 1000).toISOString());
-      return what + this.t("etSubRange", { from: day(a.range.from), to: day(a.range.to - 86400), rows });
+      return what + this.t("etSubRange", { from: day(a.range.from), to: day(a.range.to - 1), rows });
     }
     return what + this.t("etSubOlder", { days: a.keep_days, rows });
   }
@@ -15676,7 +15688,7 @@ class ExcludeMixin {
   // Trimming the old history belongs to what is already excluded. For entities that are only picked to be excluded it
   // stays behind a quiet button, so the way of the exclusion (copy the YAML) is not mistaken for a step that deletes.
   trimPart(n, trim) {
-    if (!n && !trim) return "";
+    if (!n && !trim) { this.trimOpen = false; return ""; }
     if (trim || this.trimOpen) return this.trimBlock();
     return `<div class="toolbar"><button type="button" class="btn quiet" data-trim-open>${this.t("exTrimToo")}</button></div>`;
   }
@@ -15699,8 +15711,11 @@ class ExcludeMixin {
       const keep_days = this.trimDays || 14;
       const chosen = [...this.excludeSel], actions = chosen.slice(0, MAX_PLAN_ACTIONS).map(object_id => ({ kind: "trim_history", object_id, keep_days }));
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions });
-      this.excludeSel = new Set(chosen.slice(MAX_PLAN_ACTIONS));
       this.openNewPlan(plan);
+      // What went into the plan leaves the pick, unless it is still to be excluded (its YAML is not copied yet).
+      const planned = new Set(actions.map(a => a.object_id)), done = this.excludedIds();
+      this.excludeSel = new Set(chosen.filter(id => !planned.has(id) || !done.has(id)));
+      this.trimOpen = false;
     } catch (err) { this.trimError = this.errText(err); }
     this.trimBusy = false;
     this.render();
@@ -23734,7 +23749,7 @@ class HelperIoMixin {
   async exportHelpers(entryIds) {
     if (!entryIds.length) { this.toast(this.t("helperExportNone"), true); return; }
     try {
-      const file = await this._hass.callWS({ type: "ha_housekeeper/helper_export", entry_ids: this.capIds(entryIds, 200) });
+      const file = await this._hass.callWS({ type: "ha_housekeeper/helper_export", entry_ids: entryIds.slice(0, 200) });
       this.downloadText(`helpers-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(file, null, 2), "application/json");
     } catch (err) { this.failed(err); }
   }
@@ -24440,6 +24455,8 @@ class HAHousekeeperPanel extends HTMLElement {
   render() {
     if (!this.shadowRoot || this._gone) return;  // a timer or a late answer must not draw into a panel that was taken out
     this.trackVisit();
+    // The selection of the list comes back as soon as the page Fix is left, by whatever way (menu, link or "back").
+    if (this.view !== "fix" && this._findSelBack) { this.findSel = this._findSelBack; this._findSelBack = null; }
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();

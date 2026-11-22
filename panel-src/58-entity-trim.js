@@ -107,7 +107,7 @@ class EntityTrimMixin {
     const what = a.tables?.length ? `${a.tables.map(t => this.t(names[t])).join(", ")} · ` : "";
     if (a.range) {
       const day = ts => this.formatDay(new Date(ts * 1000).toISOString());
-      return what + this.t("etSubRange", { from: day(a.range.from), to: day(a.range.to - 86400), rows });
+      return what + this.t("etSubRange", { from: day(a.range.from), to: day(a.range.to - 1), rows });
     }
     return what + this.t("etSubOlder", { days: a.keep_days, rows });
   }

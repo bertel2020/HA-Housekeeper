@@ -7900,6 +7900,25 @@ test("a failed load of the exception rules is no empty list: nothing is saved ov
   assert.ok(!calls.includes("ha_housekeeper/exceptions_set"));
 });
 
+test("the list selection comes back when the page Fix is left by any way, and trimming keeps what is still to be excluded", async () => {
+  const { el } = panel("en");
+  const f = { key: "a", rule_id: "entity.state_unavailable", object_id: "sensor.x", classification: "unavailable", impact: "low" };
+  el.data = { ...DATA, findings: [f], causes: [] };
+  el._hass = { language: "en", callWS: async () => ({ ways: [] }) };
+  el.findSel = new Set(["a"]);
+  el.openFix("a");
+  assert.equal(el.findSel.size, 0, "the page decides on its own selection");
+  el.view = "findingsNav"; el.render();
+  assert.deepEqual([...el.findSel], ["a"], "the list gets its selection back, also without the way back");
+
+  el.excludedIds = () => new Set(["sensor.done"]);
+  el.excludeSel = new Set(["sensor.new", "sensor.done"]);
+  el._hass.callWS = async () => ({ plan_id: "p1", status: "dry_run", actions: [], summary: {} });
+  el.render = () => {};
+  await el.trimPlan();
+  assert.deepEqual([...el.excludeSel], ["sensor.new"], "the one not excluded yet stays picked, so its YAML can still be copied");
+});
+
 test("everyday counts have a singular, and a count without one keeps its plural", () => {
   const { el } = panel("en");
   assert.equal(el.tCount("polCount", 1), "1 violation");

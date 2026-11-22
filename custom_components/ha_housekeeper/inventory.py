@@ -2106,6 +2106,8 @@ class InventoryScanner:
             patterns=self._outage_patterns(),
         )
         step("decisions_certainty")
+        # The same flag as after a decision: the card of the first cleanup reads it, so a scan has to set it too.
+        mark_quiet_outages({"findings": findings, "causes": causes})
 
         lap("analysis")
         self.status.update(phase="finalizing", progress=90)

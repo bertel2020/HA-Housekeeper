@@ -172,7 +172,9 @@ class DetailActionsMixin {
   async planDisableMany(ids) {
     if (!ids.length) return;
     try {
-      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "disable_entity", object_id })))) return;
+      const now = this.capIds(ids);
+      if (!await this.newPlan(now.map(object_id => ({ kind: "disable_entity", object_id })))) return;
+      if (ids.length > now.length) this.deselectObjects(now);
       this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();
@@ -182,7 +184,9 @@ class DetailActionsMixin {
   async planRemoveMany(ids) {
     if (!ids.length) return;
     try {
-      if (!await this.newPlan(this.capIds(ids).map(object_id => ({ kind: "remove_entity", object_id })))) return;
+      const now = this.capIds(ids);
+      if (!await this.newPlan(now.map(object_id => ({ kind: "remove_entity", object_id })))) return;
+      if (ids.length > now.length) this.deselectObjects(now);
       this.selected = null;
     } catch (err) { this.failed(err); }
     this.render();

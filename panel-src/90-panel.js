@@ -686,6 +686,8 @@ class HAHousekeeperPanel extends HTMLElement {
   render() {
     if (!this.shadowRoot || this._gone) return;  // a timer or a late answer must not draw into a panel that was taken out
     this.trackVisit();
+    // The selection of the list comes back as soon as the page Fix is left, by whatever way (menu, link or "back").
+    if (this.view !== "fix" && this._findSelBack) { this.findSel = this._findSelBack; this._findSelBack = null; }
     if (this._searchTimer) { globalThis.clearTimeout?.(this._searchTimer); this._searchTimer = null; }
     const started = this._debug ? globalThis.performance?.now?.() : null;
     const focus = this.captureFocus();
