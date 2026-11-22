@@ -78,8 +78,11 @@ class FcInfoMixin {
     return `<div class="fcirow static fcirec"><span class="fcii fcii-${look[1]}"><ha-icon icon="mdi:${look[0]}"></ha-icon></span><span>${this.esc(r.label)}</span><span><strong>${this.esc(r.head)}</strong> ${this.esc(r.text)}</span><i></i></div>`;
   }
 
+  // A row with nothing to say ("No information") is not shown: it opens nothing and tells nothing.
   fcInfoHtml(list, key) {
-    const rows = list.map(r => {
+    const shown = list.filter(r => r.rec || !r.empty);
+    if (!shown.length) return "";
+    const rows = shown.map(r => {
       if (r.rec) return this.fcInfoRowHtml(r);
       const look = FC_INFO_LOOK[r.id] || FC_INFO_LOOK.duration, pill = !r.empty && (r.id === "impact" || r.id === "hides");
       const text = `<span class="fcii fcii-${look[1]}"><ha-icon icon="mdi:${look[0]}"></ha-icon></span><span>${this.esc(r.label)}</span><span class="${r.empty ? "fcino" : r.tone ? `fci${r.tone}` : ""}">${pill ? `<span class="fcipill">${this.esc(r.text)}</span>` : this.esc(r.text)}</span>`;

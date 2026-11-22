@@ -7966,6 +7966,13 @@ test("an entity that is down can be removed by a plan as well as disabled, a dev
   assert.equal(el.findingSteps({ key: "k2", rule_id: "device.down", object_id: "d1", topic: "down" }, { object_type: "device" }).remove, false);
 });
 
+test("a row of the cleanup card with nothing to say is not shown, the recommendation always is", () => {
+  const { el } = panel("en");
+  const html = el.fcInfoHtml([{ id: "duration", label: "Duration", text: "for 1 min", empty: false }, { id: "state", label: "State", text: "No information", empty: true }, { rec: true, label: "Recommendation", head: "Later.", text: "It comes back." }], "entity:x");
+  assert.ok(html.includes("for 1 min") && html.includes("Later.") && !html.includes("No information"));
+  assert.equal(el.fcInfoHtml([{ id: "state", label: "State", text: "No information", empty: true }], "entity:x"), "");
+});
+
 test("the head of an outage and of a failing automation is the object and chips; the last failure stays a row", async () => {
   const { el } = panel("en");
   const down = { key: "k3", rule_id: "device.down", object_id: "d1", topic: "down", impact: "high", confidence: 0.9, confidence_level: "high", first_detected_at: new Date(Date.now() - 3 * 864e5).toISOString() };
