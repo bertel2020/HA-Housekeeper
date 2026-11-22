@@ -162,7 +162,10 @@ class FcRecommendMixin {
   fcPlanRun() {
     if (!this.plan || this.cleanupBusy || this.modeBlocked(this.plan).length) return;
     const run = this.runActions(this.plan), risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind) || DELETE_KINDS.includes(a.kind));
-    this.confirmAsk(this.confirmSummary(this.plan, run.length), async () => {
+    // The steps that need a look are run as acknowledged: the question says how many they are and how many cannot be undone.
+    const review = run.filter(a => a.verdict === "review").length, irreversible = run.filter(a => (a.reasons || []).includes("irreversible")).length;
+    const care = [review ? `${this.t("verdict_review")}: ${review}` : "", irreversible ? `${this.t("verdictIrreversible")}: ${irreversible}` : ""].filter(Boolean).join(" · ");
+    this.confirmAsk(`${this.confirmSummary(this.plan, run.length)}${care ? ` ${care}.` : ""}`, async () => {
       await this.confirmAndRun();
       if (this.cleanupError) this.fcPlanError = this.cleanupError;
       this.render();
@@ -185,7 +188,12 @@ class FcRecommendMixin {
     const status = plan.status || "dry_run", acts = plan.actions;
     const run = acts.filter(a => a.executable), t = (k, p) => this.t(k, p);
     const reasons = a => (a.reasons || []).map(r => t(`reason_${r}`)).join(" ");
-    const rows = acts.map(a => `<li><strong>${this.esc(a.name || a.object_id)}</strong><small>${this.esc([a.kind === "replace_references" ? `${a.object_id} → ${a.target || "?"}` : "", reasons(a)].filter(Boolean).join(" · "))}</small></li>`).join("");
+    // A step that needs a look or cannot be undone says so on its row, as on the plan page.
+    const verdict = a => a.verdict === "review" ? `<span class="pill warn">${t((a.reasons || []).includes("irreversible") ? "verdictIrreversible" : "verdict_review")}</span>` : a.verdict === "blocked" && a.executable === false && !(a.reasons || []).every(r => NOTHING_REASONS.includes(r)) ? `<span class="pill red">${t("verdict_blocked")}</span>` : "";
+    const rows = acts.map(a => `<li><strong>${this.esc(a.name || a.object_id)}</strong>${verdict(a)}<small>${this.esc([a.kind === "replace_references" ? `${a.object_id} → ${a.target || "?"}` : "", reasons(a)].filter(Boolean).join(" · "))}</small></li>`).join("");
+    // What each step is about to change (the diff of an automation, the places of a replacement) and the backup, before the one button.
+    const diffs = acts.map(a => ({ a, html: this.planSources(a) })).filter(x => x.html);
+    const details = diffs.length ? `<details class="rowdetails fcplandetails"><summary>${t("planDetails")}</summary>${diffs.map(x => `<div class="fcplansrc"><strong>${this.esc(x.a.name || x.a.object_id)}</strong>${x.html}</div>`).join("")}</details>` : "";
     const used = acts.reduce((n, a) => n + (a.used_by || []).length, 0);
     const error = this.fcPlanError ? `<div class="error">${this.esc(this.fcPlanError)}</div>` : "";
     const changed = this.planChanges?.length ? `<p class="fcfacts">${t("planChangedTitle")}</p>` : "";
@@ -194,7 +202,7 @@ class FcRecommendMixin {
     const drop = (label = "confirmCancel") => `<button type="button" class="btn" data-fc-plan-drop>${t(label)}</button>`;
     if (status === "dry_run") {
       head = t("fcPlanPreviewHead");
-      body = `<ul class="fcplanrows">${rows}</ul>${used ? `<p class="fcfacts">${this.tCount("planUses", used)}</p>` : ""}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}${blocked.length ? this.modeHint(blocked) : ""}`;
+      body = `<ul class="fcplanrows">${rows}</ul>${details}${used ? `<p class="fcfacts">${this.tCount("planUses", used)}</p>` : ""}${this.planBackupCard(plan, { withControl: false })}<p class="fcfacts">${t(run.length ? "fcPlanNothingYet" : "nothingExecutable")}</p>${changed}${blocked.length ? this.modeHint(blocked) : ""}`;
       btns = `${run.length ? `<button type="button" class="btn primary" data-fc-plan-run${this.cleanupBusy || blocked.length ? " disabled" : ""}>${t("fcPlanRun")}</button>` : ""}${drop()}`;
     } else if (status === "backup" || status === "running" || (status === "executed" && !plan.verification)) {
       head = t("fcPlanRunning");

@@ -9144,3 +9144,21 @@ test("undoing a plan from the card asks first, in red, and runs only after the y
   el.confirmState.run();
   assert.equal(undone, 1, "the yes undoes");
 });
+
+test("the card shows what a step changes before its one button, names a step that needs a look, and asks with the count", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  el.fcPlanKey = "automation:automation.a";
+  el.plan = { plan_id: "p9", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 2, ok: 1, review: 1, blocked: 0 },
+    actions: [{ kind: "delete_automation", object_id: "automation.a", name: "Lights", verdict: "ok", executable: true, reasons: [], used_by: [], yaml: "alias: Lights\ntrigger: []" },
+      { kind: "remove_entity", object_id: "sensor.x", name: "X", verdict: "review", executable: true, reasons: ["irreversible"], used_by: [] }] };
+  const html = el.fcPlanBlock();
+  assert.ok(html.includes("fcplandetails") && html.includes("alias: Lights"), "the diff of the automation is one click away");
+  assert.ok(html.includes("Not reversible"), "the step that cannot be undone says so on its row");
+  assert.ok(html.indexOf("fcplandetails") < html.indexOf("data-fc-plan-run"), "it comes before the button");
+  el.cleanupBusy = false;
+  el._hass = { language: "en", callWS: async () => ({}) };
+  el.render = () => {};
+  el.fcPlanRun();
+  assert.ok(/Review: 1 · Not reversible: 1\./.test(el.confirmState.text), "the question says how many steps need a look and cannot be undone");
+});

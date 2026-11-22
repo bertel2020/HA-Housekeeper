@@ -622,7 +622,7 @@ class CleanupMixin {
       const resultPill = result ? `<span class="pill ${{ done: "ok", undone: "mute" }[result.state] || "warn"}">${this.t(`result_${result.state === "done" ? DONE_RESULTS[a.kind] || "done" : result.state}`)}</span>` : "";
       const sub0 = a.kind === "set_entity_state" ? `${a.object_id} · ${this.t(`stateTarget_${a.target}`)}` : a.kind === "set_area" ? `${a.object_id} → ${a.area_name || "?"}${a.suggested && a.area_name ? ` (${this.t("areaSuggested")})` : ""}` : a.kind === "set_exposure" || a.kind === "set_expose_new" ? this.expoPlanSub(a) : a.kind === "add_label" ? `${a.object_id} + ${a.label_name || a.target || "?"}` : a.kind === "replace_references" || a.kind === "migrate_meter" || a.kind === "rename_entity" ? `${a.object_id} → ${a.target || "?"}` : type === "device" ? `${this.tCount("deviceEntities", (a.entities || []).length)}` : a.object_id;
       const sub = [sub0 === a.name ? "" : sub0, a.delete_old ? this.t(a.delete_old === "helper" ? "planOldHelper" : "planOldDeleted") : a.disable_old ? this.t("planOldDisabled") : "", a.recorder ? this.t(`recChoice_${a.recorder}`) : "", a.kind === "delete_backup" ? [a.backup?.date ? this.formatDay(a.backup.date) : "", this.formatBytes(a.backup?.size)].filter(Boolean).join(" · ") : "", a.kind === "trim_history" ? this.trimPlanSub(a) : ""].filter(Boolean).join(" · ");
-      const sources = a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
+      const sources = this.planSources(a);
       const abort = result?.state === "not_run" ? ` · ${this.t(`abort_${result.reason}`)}` : result?.stopped ? ` · ${this.t(`abort_${result.stopped}`)}` : "" + (result?.purge?.state === "failed" ? ` · ${this.t("result_purge_failed")}` : "");
       const ack = "";
       const undo = !this.undoWorks(a) || a.kind === "reload_integration" ? "" : this.undoAsk === a.object_id
@@ -914,8 +914,13 @@ class CleanupMixin {
     return { known: true, age, old: age > BACKUP_OLD_HOURS, where: local && remote ? "both" : remote ? "remote" : local ? "local" : "" };
   }
 
+  // What a step is about to change, as the plan page and the card of the cleanup show it: the diff of an automation, the places of a replacement, the meter and the counter.
+  planSources(a) {
+    return a.kind === "delete_automation" ? this.deleteDiff(a) : a.kind === "replace_references" || a.kind === "rename_entity" ? this.sourceList(a) : a.kind === "migrate_meter" && a.mode === "replace_statistics" ? this.meterDetail(a) + this.sourceList(a) : a.kind === "refactor_automation" ? this.refactorDiff(a) : a.kind === "migrate_meter" ? this.meterDetail(a) : REPAIR_KINDS.includes(a.kind) ? this.counterDetail(a) : "";
+  }
+
   // One card for everything about the backup of a plan: what is done before it, what the person falls back on, and the choice to run without a new one.
-  planBackupCard(plan) {
+  planBackupCard(plan, { withControl = true } = {}) {
     const run = this.runActions(plan);
     if (!run.some(a => BACKUP_KINDS.includes(a.kind))) return "";
     const info = this.lastBackupInfo(), allowed = this.skipBackupAllowed(plan), on = this.skipBackupOn(plan);
@@ -924,7 +929,7 @@ class CleanupMixin {
     const title = this.t(`bkTitle${key}`, { age: info.age === undefined ? "" : this.bhAge(info.age) });
     const sub = on && info.none ? this.t("skipBackupWarn") : this.t(`bkSub${key}${on && run.some(a => a.recorder || PURGE_KINDS.includes(a.kind)) ? "Data" : ""}`, { age });
     const meta = !info.known ? "" : info.none ? `<span>${this.t("bkNoneFound")}</span>` : `<span>${this.t("bkLast", { age })}</span>${info.where ? `<span>${this.t(`bkWhere_${info.where}`)}</span>` : ""}`;
-    const control = allowed
+    const control = allowed && withControl
       ? `<label class="bkswitch"><input class="policyswitch" type="checkbox" role="switch" data-skip-backup-switch ${on ? "checked" : ""} ${this.cleanupBusy ? "disabled" : ""}><span>${this.t("bkSwitch")}</span></label>`
       : "";
     return `<div class="bkcard ${tone}"><ha-icon icon="mdi:${icon}" aria-hidden="true"></ha-icon><div><strong>${title}</strong><small>${sub}</small>${meta ? `<p class="bkmeta">${meta}</p>` : ""}${control}</div></div>`;
