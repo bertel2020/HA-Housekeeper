@@ -77,6 +77,7 @@ class FixMixin {
     const [R, A, B, G, M] = ["alert-circle-outline:red", "progress-wrench:amber", "clock-outline:blue", "eye-off-outline:green", "link-variant:blue"];
     const certainty = f.confidence_level ? this.esc(this.certaintyText(f).replace(/^[^.]*\d+\s*%\.\s*/, "")) : "";
     const object = this.findObject(this.findingKey(f));
+    if (this.findingTopic(f) === "unneeded" && !allCause && object) return this.fixHead(f, object);
     const outage = OUTAGE_RULES.includes(f.rule_id) && Boolean(since);
     const rows = [
       allCause || !object ? null : [this.t("fixObject"), `<button type="button" class="link strong" data-object="${this.esc(this.findingKey(f))}">${this.esc(object.name || object.object_id)}</button>${object.object_type === "config_entry" ? "" : `<small class="factnote">${this.esc(object.object_id)}</small>`}`, "puzzle-outline:blue"],
@@ -95,6 +96,16 @@ class FixMixin {
     ].filter(Boolean);
     const question = f.rule_id === "device.down" && object && since ? `<p class="fixquestion"><b>${this.esc(this.t("fixDownQuestion", { name: object.name || object.object_id, span: this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) }))}</b></p>` : "";
     return `${question}<div class="fcinfo hasrec fixinfo" role="group">${rows.map(([label, value, look]) => { const [icon, tone] = look.split(":"); return `<div class="fcirow static"><span class="fcii fcii-${tone}"><ha-icon icon="mdi:${icon}"></ha-icon></span><span>${label}</span><span>${value}</span><i></i></div>`; }).join("")}</div>`;
+  }
+
+  // Something unneeded: the object and one line of chips (how long idle, impact, how sure) instead of a row for each.
+  fixHead(f, object) {
+    const idle = f.rule_id === "automation.stale" && object.last_triggered ? this.tCount("fixIdleDays", this.daysSince(object.last_triggered))
+      : f.rule_id === "automation.never_triggered" ? this.t("fixNeverTriggered") : this.findingTitle(f);
+    const hint = f.confidence_level ? this.certaintyText(f).replace(/^[^.]*\d+\s*%\.\s*/, "") : "";
+    const chip = (icon, text, cls = "") => `<span class="fixchip ${cls}"><ha-icon icon="mdi:${icon}"></ha-icon>${this.esc(text)}</span>`;
+    const chips = [chip("clock-outline", idle, "warn"), f.impact ? chip("eye-off-outline", this.impactLine(f)) : "", f.confidence_level ? chip("shield-check-outline", this.t("fixSure", { n: Math.round(f.confidence * 100) })) : "", hint ? `<span class="fixchip hint">${this.esc(hint)}</span>` : ""].join("");
+    return `<div class="fixhead"><span class="fcii fcii-blue"><ha-icon icon="mdi:puzzle-outline"></ha-icon></span><span><button type="button" class="link strong" data-object="${this.esc(this.findingKey(f))}">${this.esc(object.name || object.object_id)}</button>${object.object_type === "config_entry" ? "" : `<small class="factnote">${this.esc(object.object_id)}</small>`}<span class="fixchips">${chips}</span></span></div>`;
   }
 
   fixFailureText(failure) {
@@ -278,6 +289,7 @@ Object.assign(TEXT.de, {
   fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_automation1: "1 Automation", fixAllKind_script: "{n} Skripte", fixAllKind_script1: "1 Skript", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixAllKind_dashboard1: "1 Dashboard-Stelle", fixAllPlaces1: "1 Stelle verweist darauf", fixRemoveAll1: "Aus 1 Automation entfernen", fixRemoveAll: "Aus {n} Automationen entfernen",
   fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen und entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben", fixRowSub: "Zeigt die Wege, die zu diesem Befund passen", fixRowSubDelete: "Zeigt die Wege, z. B. Automation löschen (erst Vorschau)",
   fixStepUnderstand: "Verstehen und entscheiden", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
+  fixIdleDays: "Seit {n} Tagen nicht ausgelöst", fixIdleDays1: "Seit 1 Tag nicht ausgelöst", fixNeverTriggered: "Noch nie ausgelöst", fixSure: "{n} % sicher",
   fixRoundMore: "Mehr Objekte aufräumen?", fixRoundLink: "Alles Überflüssige durchgehen (Aufräum-Runde)",
   fixWhat: "Was los ist", fixObject: "Objekt", fixFollowers: "{n} abhängige Entitäten", fixFollowers1: "1 abhängige Entität", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder ausblenden, nicht beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.",
   fixOpenHA: "In Home Assistant öffnen", fixOpenActions: "Aktionen des Objekts", fixCollectTitle: "Gesammelt beheben", fixPickAll: "Alle wählen",
@@ -308,6 +320,7 @@ Object.assign(TEXT.en, {
   fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_automation1: "1 automation", fixAllKind_script: "{n} scripts", fixAllKind_script1: "1 script", fixAllKind_dashboard: "{n} dashboard places", fixAllKind_dashboard1: "1 dashboard place", fixAllPlaces1: "1 place refers to it", fixRemoveAll1: "Remove from 1 automation", fixRemoveAll: "Remove from {n} automations",
   fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand and decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix", fixRowSub: "Shows the ways that fit this finding", fixRowSubDelete: "Shows the ways, e.g. delete the automation (preview first)",
   fixStepUnderstand: "Understand and decide", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
+  fixIdleDays: "Not triggered for {n} days", fixIdleDays1: "Not triggered for 1 day", fixNeverTriggered: "Never triggered", fixSure: "{n} % sure",
   fixRoundMore: "Clean up more objects?", fixRoundLink: "Go through everything unneeded (cleanup round)",
   fixWhat: "What is wrong", fixObject: "Object", fixFollowers: "{n} dependent entities", fixFollowers1: "1 dependent entity", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or hide it, do not fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.",
   fixOpenHA: "Open in Home Assistant", fixOpenActions: "Actions of the object", fixCollectTitle: "Fix together", fixPickAll: "Pick all",

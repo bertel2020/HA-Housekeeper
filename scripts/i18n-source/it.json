@@ -6786,7 +6786,11 @@
 "fixRoundMore": "f5b7a05c",
 "fixRoundLink": "c759e077",
 "fixBtn_disable_automation": "b7e3e4aa",
-"fixBtn_delete_automation": "e2d0a549"
+"fixBtn_delete_automation": "e2d0a549",
+"fixIdleDays": "d5061147",
+"fixIdleDays1": "89e13f8f",
+"fixNeverTriggered": "c77b3d60",
+"fixSure": "4a1cfba2"
 },
 "setup": {
 "title": "644c2647",

@@ -7946,7 +7946,7 @@ test("a missing target has Fix all n in its menu, and its page replaces or remov
 test("the ways of an unused automation stay in view, deleting is the last and soft red, and the round is a link", async () => {
   const { el } = panel("en");
   const f = { key: "k2", rule_id: "automation.stale", object_id: "automation.a", topic: "unneeded", impact: "medium" };
-  el.data = { ...DATA, findings: [f], causes: [], objects: [{ object_type: "automation", object_id: "automation.a", name: "Auto A", status: "enabled" }] };
+  el.data = { ...DATA, findings: [f], causes: [], objects: [{ object_type: "automation", object_id: "automation.a", name: "Auto A", status: "enabled", last_triggered: new Date(Date.now() - 112 * 864e5).toISOString() }] };
   el._hass = { language: "en", callWS: async () => ({ ways: [{ way: "disable_automation", kind: "panel", recommended: true }, { way: "delete_automation", kind: "panel" }, { way: "cleanup_round", kind: "panel" }] }) };
   el.render = () => {};
   el.openFix("k2");
@@ -7955,7 +7955,7 @@ test("the ways of an unused automation stay in view, deleting is the last and so
   assert.ok(!html.includes("Other ways"));
   assert.ok(html.indexOf("data-act-disable-auto") < html.indexOf("data-auto-delete") && html.includes("btn dangersoft\" data-auto-delete"));
   assert.ok(html.includes("fixroundlink") && html.includes("data-fix-round") && !html.includes("fixWay_cleanup_round"));
-  assert.ok(html.includes("</ha-icon>Disable</button>") && html.includes("</ha-icon>Delete</button>") && html.includes("Or hide it, do not fix it"));
+  assert.ok(html.includes("</ha-icon>Disable</button>") && html.includes("</ha-icon>Delete</button>") && html.includes("Or hide it, do not fix it") && html.includes("Not triggered for 112 days") && html.includes("fixhead"));
 });
 
 test("the own ways of a finding keep their cards when its object exists, and only the object's plans are grouped", async () => {
