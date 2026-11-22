@@ -8456,7 +8456,7 @@ test("an offline device has a tile Check with what to look at and a look now, an
   el.fc = { later_days: 90, state: { stage: 3, done: [], log: [], start_count: 1 }, stages: { 1: [], 2: [], 3: ["k1"], 4: [], 5: [] } };
   el.fcWiz = { step: 3, on: true };
   let html = el.fcCards(3);
-  assert.ok(html.includes("</ha-icon>Check</button>") && !html.includes("</ha-icon>Fix</button>") && html.includes('data-fc-opt="keep"'), "Check instead of Fix");
+  assert.ok(html.includes("</ha-icon>Check</button>") && !html.includes("</ha-icon>Fix</button>") && !html.includes('data-fc-opt="keep"') && html.includes('data-fc-opt="snooze"'), "Check instead of Fix; a device that is down says 'intended' by the object note, like the Fix page");
   el.fcFixToggle("device:d", "k1");
   html = el.fcCards(3);
   assert.ok(html.includes("data-fc-looknow") && html.includes("Check the device") && !html.includes("data-fc-object"));

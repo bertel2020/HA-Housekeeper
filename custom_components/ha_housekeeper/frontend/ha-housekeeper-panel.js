@@ -22954,11 +22954,13 @@ class FirstCleanupMixin {
     const hint = { fix: this.t("fcFixHint"), check: this.t("fcCheckHint"), keep: this.t("fcKeepHint"), snooze: this.t("fcLaterHint"), ignore: this.t("fcIgnoreHint"), mark: this.t("fcMarkHint") };
     const item = (id, attr, label, icon, recommended, selected) => ({ attr, label, icon, hint: hint[id], rec: recommended, sel: selected });
     const fixable = obj && this.fcFixable(f, key), check = obj && !fixable && OUTAGE_RULES.includes(f.rule_id);
+    // The same as on the page "Fix": for a device that is down, "intended" is said by the object note, which also covers what follows.
+    const outageNote = f.rule_id === "device.down" && this.fcCanMark(obj);
     const forFinding = [
-      item("keep", opt("keep"), this.t("fcKeep"), STATUS_TONES.keep.icon, false, chosen === "keep"),
+      outageNote ? null : item("keep", opt("keep"), this.t("fcKeep"), STATUS_TONES.keep.icon, false, chosen === "keep"),
       item("snooze", opt("snooze"), this.t("fcLater"), STATUS_TONES.snooze.icon, rec?.act === "later", chosen === "snooze"),
       item("ignore", opt("ignore"), this.t("decideKind_ignore"), STATUS_TONES.ignore.icon, false, chosen === "ignore"),
-    ];
+    ].filter(Boolean);
     const forObject = [
       fixable || check ? item(fixable ? "fix" : "check", `data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t(fixable ? "fcFix" : "fcCheck"), fixable ? "mdi:wrench-outline" : "mdi:clipboard-check-outline", fixable && rec?.act === "fix", chosen === "fix") : null,
       this.fcCanMark(obj) ? item("mark", `data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), FSEL_ICONS.mark, rec?.act === "mark", chosen === "mark") : null,
