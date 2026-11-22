@@ -26,6 +26,8 @@ class DetailActionsMixin {
     }
     const blocked = item.object_type === "automation" ? open.find(f => f.rule_id === "automation.blocked") : null;
     if (blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "actHintDisableAuto", finding: blocked.key, plan: { kind: "disable_entity", object_id: item.object_id } });
+    const stale = item.object_type === "automation" && item.status !== "disabled" ? open.find(f => this.staleAutomation(f)) : null;
+    if (stale && !blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "fixWayHint_disable_automation", finding: stale.key, plan: { kind: "disable_entity", object_id: item.object_id } });
     // A sensor with long-term statistics can have wrong values repaired or be swapped for a new meter.
     if (item.object_type === "entity" && item.has_statistics && item.object_id.startsWith("sensor.")) {
       out.push({ attr: `data-act-repair="${this.esc(item.object_id)}"`, icon: "mdi:chart-line", label: this.t("actRepairValues"), hint: "actHintRepair" });

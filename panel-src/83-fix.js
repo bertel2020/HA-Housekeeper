@@ -125,6 +125,7 @@ class FixMixin {
       ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveStart")}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
+    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${this.t("actDisable")}</button>`;
     else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("autoDelete")}</button>`;
     else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>`;
     else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixOpenActions")}</button>`;
@@ -280,6 +281,7 @@ Object.assign(TEXT.de, {
   fixWay_mark: "Absichtlich aus, notieren", fixWayHint_mark: "Housekeeper meldet es dann nicht mehr als ausgefallen und fragt später noch einmal nach. Auch mit Zeitfenster. Die Notiz gilt für das Gerät und seine Entitäten.", fixKeepMoved: "„Ist so gewollt“ steht bei einem Ausfall als Notiz oben: Sie deckt das Gerät und seine Entitäten ab.", fixDownQuestion: "{name} ist seit {span} aus. Ist das so gewollt?",
   fixWay_exchange: "Gerät austauschen", fixWayHint_exchange: "Für ein ersetztes Gerät: Automationen und Szenen auf das neue Gerät umstellen.",
   fixWay_replace_entity: "Entität ersetzen", fixWayHint_replace_entity: "Alle Stellen, die diese Entität nutzen, auf eine andere umstellen.",
+  fixWay_disable_automation: "Automation deaktivieren", fixWayHint_disable_automation: "Schaltet die Automation aus; sie bleibt erhalten und lässt sich wieder einschalten. Mit Vorschau, Bestätigung und Rückgängig.",
   fixWay_delete_automation: "Automation löschen", fixWayHint_delete_automation: "Du siehst zuerst eine Vorschau; gelöscht wird erst, wenn du bestätigst.",
   fixWay_object_actions: "Deaktivieren oder entfernen", fixWayHint_object_actions: "Die Aktionen des Objekts: deaktivieren, entfernen, austauschen, jeweils mit Vorschau.",
   fixWay_replace_target: "Ziel ersetzen", fixWayHint_replace_target: "Alle Stellen, die das fehlende Ziel nennen, auf ein vorhandenes umstellen: bei einer Entität mit einem ähnlichen Vorschlag, bei Bereich, Etage und Label nach deiner Wahl (nur dort, wo der Schlüssel dafür steht). Die Vorschau zeigt jede Stelle.",
@@ -308,6 +310,7 @@ Object.assign(TEXT.en, {
   fixWay_mark: "Off on purpose, note it", fixWayHint_mark: "Housekeeper then stops reporting it as down and asks again later. Also with a time window. The note covers the device and its entities.", fixKeepMoved: "“Intended” is the object note above for an outage: it covers the device and its entities.", fixDownQuestion: "{name} has been down for {span}. Is that intended?",
   fixWay_exchange: "Exchange the device", fixWayHint_exchange: "For a replaced device: move automations and scenes to the new device.",
   fixWay_replace_entity: "Replace the entity", fixWayHint_replace_entity: "Move every place that uses this entity to another one.",
+  fixWay_disable_automation: "Disable the automation", fixWayHint_disable_automation: "Switches the automation off; it is kept and can be switched on again. With preview, confirmation and undo.",
   fixWay_delete_automation: "Delete the automation", fixWayHint_delete_automation: "You see a preview first; nothing is deleted until you confirm.",
   fixWay_object_actions: "Disable or remove", fixWayHint_object_actions: "The actions of the object: disable, remove, exchange, each with a preview.",
   fixWay_replace_target: "Replace the target", fixWayHint_replace_target: "Move every place that names the missing target to an existing one: for an entity with a similar one proposed, for an area, floor or label as you choose (only where the key for it stands). The preview shows each place.",

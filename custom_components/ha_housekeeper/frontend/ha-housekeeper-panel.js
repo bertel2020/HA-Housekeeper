@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"8b77d9136b"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"ab165b2cc4"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"c890655e09"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"51af6d8806"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"d91bbcd516"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7c4ffc1dbf"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"dd520a66eb"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"5bc31d2f25"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"60797cb214"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"1c6486826a"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"81b35b4657"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"9fdd80257d"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"ad42e6706d"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"f6ee5d3733"}];
 
 const TEXT = {
   de: {
@@ -11461,6 +11461,9 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id);
   }
 
+  // An automation nothing has triggered for long: it can be switched off by a plan, the careful step before deleting it.
+  staleAutomation(f) { return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale"].includes(f.rule_id); }
+
   // An entity that reports no value or is gone (unavailable, unknown, orphaned): it can be disabled by a plan or replaced by another entity.
   // One definition for the menu of a row, the selection bar and the page of the object.
   downEntityFinding(f) {
@@ -11477,7 +11480,7 @@ class CausesMixin {
     const down = this.downEntityFinding(f), notProvided = item?.reason === "not_provided";
     const now = down && notProvided;
     // `now` is the step the page of the object puts first as the answer; the menu offers removing also for any unneeded entity.
-    return { now, remove: this.removableFinding(f) || now, disable: down && !notProvided && item?.status !== "disabled", replace: down };
+    return { now, remove: this.removableFinding(f) || now, disable: ((down && !notProvided) || this.staleAutomation(f)) && item?.status !== "disabled", replace: down };
   }
 
   // A reference to an entity that is gone: the entity can be replaced by another, with the first suggestion filled in when there is one.
@@ -14224,6 +14227,8 @@ class DetailActionsMixin {
     }
     const blocked = item.object_type === "automation" ? open.find(f => f.rule_id === "automation.blocked") : null;
     if (blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "actHintDisableAuto", finding: blocked.key, plan: { kind: "disable_entity", object_id: item.object_id } });
+    const stale = item.object_type === "automation" && item.status !== "disabled" ? open.find(f => this.staleAutomation(f)) : null;
+    if (stale && !blocked) out.push({ attr: `data-act-disable-auto="${this.esc(item.object_id)}"`, icon: "mdi:cancel", label: this.t("actDisableAuto"), hint: "fixWayHint_disable_automation", finding: stale.key, plan: { kind: "disable_entity", object_id: item.object_id } });
     // A sensor with long-term statistics can have wrong values repaired or be swapped for a new meter.
     if (item.object_type === "entity" && item.has_statistics && item.object_id.startsWith("sensor.")) {
       out.push({ attr: `data-act-repair="${this.esc(item.object_id)}"`, icon: "mdi:chart-line", label: this.t("actRepairValues"), hint: "actHintRepair" });
@@ -21683,6 +21688,7 @@ class FixMixin {
       ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${this.t("fixRemoveStart")}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
+    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${this.t("actDisable")}</button>`;
     else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("autoDelete")}</button>`;
     else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>`;
     else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixOpenActions")}</button>`;
@@ -21838,6 +21844,7 @@ Object.assign(TEXT.de, {
   fixWay_mark: "Absichtlich aus, notieren", fixWayHint_mark: "Housekeeper meldet es dann nicht mehr als ausgefallen und fragt später noch einmal nach. Auch mit Zeitfenster. Die Notiz gilt für das Gerät und seine Entitäten.", fixKeepMoved: "„Ist so gewollt“ steht bei einem Ausfall als Notiz oben: Sie deckt das Gerät und seine Entitäten ab.", fixDownQuestion: "{name} ist seit {span} aus. Ist das so gewollt?",
   fixWay_exchange: "Gerät austauschen", fixWayHint_exchange: "Für ein ersetztes Gerät: Automationen und Szenen auf das neue Gerät umstellen.",
   fixWay_replace_entity: "Entität ersetzen", fixWayHint_replace_entity: "Alle Stellen, die diese Entität nutzen, auf eine andere umstellen.",
+  fixWay_disable_automation: "Automation deaktivieren", fixWayHint_disable_automation: "Schaltet die Automation aus; sie bleibt erhalten und lässt sich wieder einschalten. Mit Vorschau, Bestätigung und Rückgängig.",
   fixWay_delete_automation: "Automation löschen", fixWayHint_delete_automation: "Du siehst zuerst eine Vorschau; gelöscht wird erst, wenn du bestätigst.",
   fixWay_object_actions: "Deaktivieren oder entfernen", fixWayHint_object_actions: "Die Aktionen des Objekts: deaktivieren, entfernen, austauschen, jeweils mit Vorschau.",
   fixWay_replace_target: "Ziel ersetzen", fixWayHint_replace_target: "Alle Stellen, die das fehlende Ziel nennen, auf ein vorhandenes umstellen: bei einer Entität mit einem ähnlichen Vorschlag, bei Bereich, Etage und Label nach deiner Wahl (nur dort, wo der Schlüssel dafür steht). Die Vorschau zeigt jede Stelle.",
@@ -21866,6 +21873,7 @@ Object.assign(TEXT.en, {
   fixWay_mark: "Off on purpose, note it", fixWayHint_mark: "Housekeeper then stops reporting it as down and asks again later. Also with a time window. The note covers the device and its entities.", fixKeepMoved: "“Intended” is the object note above for an outage: it covers the device and its entities.", fixDownQuestion: "{name} has been down for {span}. Is that intended?",
   fixWay_exchange: "Exchange the device", fixWayHint_exchange: "For a replaced device: move automations and scenes to the new device.",
   fixWay_replace_entity: "Replace the entity", fixWayHint_replace_entity: "Move every place that uses this entity to another one.",
+  fixWay_disable_automation: "Disable the automation", fixWayHint_disable_automation: "Switches the automation off; it is kept and can be switched on again. With preview, confirmation and undo.",
   fixWay_delete_automation: "Delete the automation", fixWayHint_delete_automation: "You see a preview first; nothing is deleted until you confirm.",
   fixWay_object_actions: "Disable or remove", fixWayHint_object_actions: "The actions of the object: disable, remove, exchange, each with a preview.",
   fixWay_replace_target: "Replace the target", fixWayHint_replace_target: "Move every place that names the missing target to an existing one: for an entity with a similar one proposed, for an area, floor or label as you choose (only where the key for it stands). The preview shows each place.",

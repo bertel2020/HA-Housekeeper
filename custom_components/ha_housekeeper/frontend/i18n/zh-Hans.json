@@ -6054,6 +6054,8 @@
 "fixWay_replace_entity": "替换实体",
 "fixWayHint_replace_entity": "将所有使用此实体的位置迁移到另一个实体。",
 "fixWay_object_actions": "禁用或移除",
+"fixWay_disable_automation": "停用自动化",
+"fixWayHint_disable_automation": "关闭该自动化；它会被保留，之后可以重新开启。带预览、确认和撤销。",
 "fixWay_delete_automation": "删除自动化",
 "fixWayHint_delete_automation": "先显示预览；在你确认之前不会删除任何内容。",
 "fixWayHint_object_actions": "对象的操作：禁用、移除、更换，每项都带预览。",

@@ -6195,6 +6195,8 @@
 "fixWay_replace_entity": "Sostituisci l'entità",
 "fixWayHint_replace_entity": "Sposta ogni punto che usa questa entità su un'altra.",
 "fixWay_object_actions": "Disabilita o rimuovi",
+"fixWay_disable_automation": "Disattiva l’automazione",
+"fixWayHint_disable_automation": "Spegne l’automazione; viene conservata e può essere riaccesa. Con anteprima, conferma e annulla.",
 "fixWay_delete_automation": "Elimina l’automazione",
 "fixWayHint_delete_automation": "Prima un’anteprima; nulla viene eliminato finché non confermi.",
 "fixWayHint_object_actions": "Le azioni dell'oggetto: disabilitare, rimuovere, sostituire, ciascuna con anteprima.",

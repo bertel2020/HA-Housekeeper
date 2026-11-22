@@ -6054,6 +6054,8 @@
 "fixWay_replace_entity": "Remplacer l’entité",
 "fixWayHint_replace_entity": "Déplacer chaque endroit qui utilise cette entité vers une autre.",
 "fixWay_object_actions": "Désactiver ou supprimer",
+"fixWay_disable_automation": "Désactiver l’automatisation",
+"fixWayHint_disable_automation": "Éteint l’automatisation ; elle est conservée et peut être rallumée. Avec aperçu, confirmation et annulation.",
 "fixWay_delete_automation": "Supprimer l’automatisation",
 "fixWayHint_delete_automation": "D’abord un aperçu ; rien n’est supprimé tant que tu ne confirmes pas.",
 "fixWayHint_object_actions": "Les actions de l’objet : désactiver, supprimer, échanger, chacune avec un aperçu.",

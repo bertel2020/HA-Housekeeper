@@ -1409,7 +1409,8 @@ def judge_entity_action(
     if kind == "disable_entity" and item["status"] == "disabled":
         reasons.append("already_disabled")
     elif item["status"] not in allowed and not (
-        kind == "disable_entity" and item.get("blocked_automation")
+        kind == "disable_entity"
+        and (item.get("blocked_automation") or item.get("unused_automation"))
     ):
         reasons.append("entity_working")
     if any(use["confidence"] == "certain" for use in used_by):

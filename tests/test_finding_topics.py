@@ -219,9 +219,11 @@ def test_the_ways_to_fix_an_outage_follow_the_state_of_the_integration() -> None
     stale = ways_for(
         {"rule_id": "automation.stale", "object_id": "a", "topic": "unneeded"}, snapshot
     )
-    assert [w["way"] for w in stale] == ["cleanup_round", "delete_automation"], (
-        "no note for an automation"
+    assert [w["way"] for w in stale] == ["cleanup_round", "disable_automation", "delete_automation"]
+    long_off = ways_for(
+        {"rule_id": "automation.disabled_long", "object_id": "a", "topic": "unneeded"}, snapshot
     )
+    assert [w["way"] for w in long_off] == ["cleanup_round", "delete_automation"], "already off"
     entity = ways_for(
         {"rule_id": "entity.state_missing", "object_id": "a", "topic": "unneeded"}, snapshot
     )

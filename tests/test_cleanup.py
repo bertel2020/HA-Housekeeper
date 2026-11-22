@@ -349,6 +349,15 @@ def test_a_blocked_automation_may_be_disabled_but_a_working_one_may_not() -> Non
     )
 
 
+def test_an_automation_nothing_triggers_may_be_disabled_by_a_plan() -> None:
+    unused = entity("automation.unused", "active", unused_automation=True)
+    assert "entity_working" not in verdict([unused], [], "automation.unused")["reasons"]
+    assert (
+        "entity_working"
+        in verdict([unused], [], "automation.unused", kind="remove_entity")["reasons"]
+    )
+
+
 def test_the_journal_list_counts_what_was_done_and_names_the_kinds() -> None:
     from custom_components.ha_housekeeper.cleanup import plan_summary
 

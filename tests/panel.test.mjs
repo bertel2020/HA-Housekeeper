@@ -7134,6 +7134,11 @@ test("the way to fix an unused automation is deleting it with a preview, not a n
   el.data = { ...DATA, objects: [...DATA.objects], findings: [f] };
   const card = el.fixWayCard({ way: "delete_automation", kind: "panel", recommended: false }, f);
   assert.ok(card.includes('data-auto-delete="automation.c"') && card.includes("Delete the automation") && !card.includes("data-fix-object"));
+  const off = el.fixWayCard({ way: "disable_automation", kind: "panel", recommended: false }, f);
+  assert.ok(off.includes('data-act-disable-auto="automation.c"') && off.includes("Disable the automation"));
+  const menu = el.rowMenu(f);
+  assert.ok(menu.includes('data-find-disable="automation.c"') && menu.indexOf("data-find-disable") < menu.indexOf("data-auto-delete"), "disabling comes before deleting");
+  assert.ok(!el.rowMenu({ ...f, rule_id: "automation.disabled_long" }).includes("data-find-disable"), "an automation that is off is not switched off again");
 });
 
 test("an exception is added from the menu of a finding or the selection bar, with its object picked, above the findings list", async () => {

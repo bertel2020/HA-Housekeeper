@@ -6054,6 +6054,8 @@
 "fixWay_replace_entity": "Sustituir la entidad",
 "fixWayHint_replace_entity": "Pasa todos los lugares que usan esta entidad a otra.",
 "fixWay_object_actions": "Desactivar o eliminar",
+"fixWay_disable_automation": "Desactivar la automatización",
+"fixWayHint_disable_automation": "Apaga la automatización; se conserva y se puede volver a encender. Con vista previa, confirmación y deshacer.",
 "fixWay_delete_automation": "Eliminar la automatización",
 "fixWayHint_delete_automation": "Primero una vista previa; no se elimina nada hasta que confirmes.",
 "fixWayHint_object_actions": "Las acciones del objeto: desactivar, eliminar, sustituir, cada una con vista previa.",

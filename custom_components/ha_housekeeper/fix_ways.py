@@ -115,6 +115,7 @@ NOTE_DOMAINS = frozenset({"entity", "device", "config_entry", "app"})
 DELETABLE_AUTOMATION_RULES = frozenset(
     {"automation.never_triggered", "automation.stale", "automation.disabled_long"}
 )
+DISABLEABLE_AUTOMATION_RULES = frozenset({"automation.never_triggered", "automation.stale"})
 
 
 def _unneeded_ways(finding: dict[str, Any]) -> list[dict[str, Any]]:
@@ -122,6 +123,10 @@ def _unneeded_ways(finding: dict[str, Any]) -> list[dict[str, Any]]:
     ways = [_way("cleanup_round", "panel", True)]
     rule_id = finding["rule_id"]
     if rule_id in DELETABLE_AUTOMATION_RULES:
+        if rule_id in DISABLEABLE_AUTOMATION_RULES:
+            ways.append(
+                _way("disable_automation", "panel")
+            )  # switched off, it can be switched on again
         ways.append(_way("delete_automation", "panel"))
     elif rule_id.partition(".")[0] in NOTE_DOMAINS:
         ways += [_way("mark", "panel"), _way("object_actions", "panel")]

@@ -178,6 +178,9 @@ class CausesMixin {
     return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale", "automation.disabled_long"].includes(f.rule_id);
   }
 
+  // An automation nothing has triggered for long: it can be switched off by a plan, the careful step before deleting it.
+  staleAutomation(f) { return Boolean(f) && !f.ignored && ["automation.never_triggered", "automation.stale"].includes(f.rule_id); }
+
   // An entity that reports no value or is gone (unavailable, unknown, orphaned): it can be disabled by a plan or replaced by another entity.
   // One definition for the menu of a row, the selection bar and the page of the object.
   downEntityFinding(f) {
@@ -194,7 +197,7 @@ class CausesMixin {
     const down = this.downEntityFinding(f), notProvided = item?.reason === "not_provided";
     const now = down && notProvided;
     // `now` is the step the page of the object puts first as the answer; the menu offers removing also for any unneeded entity.
-    return { now, remove: this.removableFinding(f) || now, disable: down && !notProvided && item?.status !== "disabled", replace: down };
+    return { now, remove: this.removableFinding(f) || now, disable: ((down && !notProvided) || this.staleAutomation(f)) && item?.status !== "disabled", replace: down };
   }
 
   // A reference to an entity that is gone: the entity can be replaced by another, with the first suggestion filled in when there is one.

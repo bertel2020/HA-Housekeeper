@@ -2080,9 +2080,18 @@ class InventoryScanner:
             for f in blocked
             if f["rule_id"] == "automation.blocked" and not f.get("ignored")
         }
+        # An automation nothing has triggered for long can be switched off by a plan too: the careful step before deleting it.
+        unused = {
+            f["object_id"]
+            for f in findings
+            if f["rule_id"] in ("automation.never_triggered", "automation.stale")
+            and not f.get("ignored")
+        }
         for item in entities:
             if item["object_id"] in stuck:
                 item["blocked_automation"] = True
+            if item["object_id"] in unused:
+                item["unused_automation"] = True
         step("note_seen_stuck")
         apply_battery_kinds(objects, self.batteries.kinds)
         apply_topics(findings)
