@@ -66,12 +66,12 @@ Housekeeper verbindet Registry-Daten mit der laufenden Home-Assistant-Instanz un
 ## Highlights
 
 - **Inventar und Diagnose**: Entitäten, Geräte, Integrationen, Bereiche und Automationen an einem Ort; jedes Objekt wird mit Begründung eingeordnet (aktiv, nicht verfügbar, deaktiviert, verwaist).
-- **Befunde mit Auswirkung**: defekte Verweise, verwaiste und lange nicht verfügbare Entitäten, mögliche Duplikate, ungenutzte Automationen und schwache Batterien, geordnet danach, wie viel daran hängt.
-- **Beheben nach Themen**: Befunde liegen in vier Themen (Ausgefallen, Kaputte Verweise, Fehlerhafte Automationen, Überflüssig), jeder mit eigener Seite und den Wegen zur Behebung, dazu ein geführter Rundgang beim Aufräumen und die Ansicht „Einfach“ oder „Vollständig“, je nachdem, wie viel du sehen willst.
+- **Befunde mit Wirkung**: defekte Verweise, verwaiste und lange nicht verfügbare Entitäten, mögliche Duplikate, ungenutzte Automationen und schwache Batterien, geordnet danach, wie viel daran hängt.
+- **Beheben nach Themen**: Befunde liegen in vier Themen (Ausgefallen, Kaputte Verweise, Fehlerhafte Automationen, Überflüssig), jeder mit eigener Seite und den Wegen zur Behebung (der vorsichtige zuerst, je mit einem Knopf, der wie die Aktion heißt), dazu ein geführter Rundgang beim Aufräumen, dessen Karten sagen, was sie ändern würden, und die Ansicht „Einfach“ oder „Vollständig“, je nachdem, wie viel du sehen willst.
 - **Entitäten ersetzen**: ein Assistent überträgt Verweise, Statistik und IDs von alten auf neue Entitäten, auch bei Helfern.
 - **Abhängigkeiten**: sehen, womit eine Entität, ein Gerät oder eine Automation zusammenhängt und was beim Entfernen kaputtginge.
 - **Geführtes Aufräumen**: Vorschau, ausdrückliche Bestätigung, Backup, Prüfung und Rückgängig, Schritt für Schritt. Nichts läuft von allein.
-- **Wartungsansichten**: Batterien, Zuverlässigkeit der Integrationen, Recorder-Last und Datenbank, Backup-Schutz, Automationsläufe und mehr.
+- **Wartungsansichten**: Batterien (auch in Volt), Zuverlässigkeit der Integrationen, Recorder-Last und Datenbank, verwaiste Statistiken (mit Übertragung auf einen Nachfolger), Backup-Schutz, Automationsläufe und mehr.
 - **Auto-Pause**: Eine Integration, die dauernd an der Einrichtung scheitert, wird pausiert und später wieder versucht (3 × 1 Std., 3 × 3 Std., 12 × 6 Std., dann täglich, höchstens 7 Tage), damit ein ausgefallener Dienst nicht tausendmal am Tag gefragt wird. Standardmäßig aus; einmal eingeschaltet gilt es für jeden Datenlieferanten, den du nicht ausgenommen hast, und eine Integration kannst du jederzeit von Hand hineinschicken.
 - **Hausfunktionen**: wichtige Funktionen des Hauses (Heizung, Alarm, Photovoltaik) aus eigenen Objekten zusammenstellen und im Blick behalten, mit Verlauf, Verfügbarkeit und Sensoren. Eine Objekt-Notiz wie „Absichtlich offline“ gilt auf Wunsch nur nachts oder zu festen Zeiten.
 - **Ausnahmeregeln und Urlaubsmodus**: nimm Objekte nach Bereich, Label, Integration oder Typ aus, oder nur solange eine Urlaubs-Entität oder ein Kalender Abwesenheit meldet, damit erwartete Ausfälle ruhig bleiben.

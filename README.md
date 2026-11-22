@@ -66,11 +66,11 @@ Housekeeper combines registry data and the live Home Assistant runtime to provid
 
 - **Inventory and diagnostics**: entities, devices, integrations, areas and automations in one place; every object is classified (active, unavailable, disabled, orphaned) with a reason.
 - **Findings with impact**: broken references, orphaned and long-unavailable entities, possible duplicates, unused automations and low batteries, ranked by how much depends on them.
-- **Fix by topic**: findings sit in four topics (Down, Broken references, Failing automations, Unneeded), each with a page of its own and the ways to fix it, a guided tour for cleaning up, and the view “Simple” or “Full” for how much you want to see.
+- **Fix by topic**: findings sit in four topics (Down, Broken references, Failing automations, Unneeded), each with a page of its own and the ways to fix it (the careful way first, each with one button named like the action), a guided tour for cleaning up whose cards say what they would change, and the view “Simple” or “Full” for how much you want to see.
 - **Replace entities**: one assistant moves references, statistics and IDs from old entities to new ones, helpers included.
 - **Dependencies**: see what an entity, device or automation is connected to, and what would break if you removed it.
 - **Guided cleanup**: preview, explicit confirmation, backup, verification and undo, step by step. Nothing runs on its own.
-- **Maintenance views**: batteries, reliability of integrations, recorder load and database, backup protection, automation runs, start times of Home Assistant and more.
+- **Maintenance views**: batteries (also in volts), reliability of integrations, recorder load and database, orphaned statistics (with a move to a successor), backup protection, automation runs, start times of Home Assistant and more.
 - **Auto-pause**: an integration that keeps failing to set up is paused and tried again later (3 × 1 h, 3 × 3 h, 12 × 6 h, then daily, up to 7 days), so a service that is down is not asked a thousand times a day. Off by default; once switched on it covers every data provider that is not excluded, and you can send any integration in by hand.
 - **Home functions**: put together important functions of your home (heating, alarm, photovoltaics) from your own objects and keep an eye on them, with history, availability and sensors. An object note such as “Offline on purpose” can apply only at night or at fixed times.
 - **Exception rules and vacation mode**: leave out objects by area, label, integration or type, or only while a vacation entity or calendar says you are away, so that expected outages stay quiet.
