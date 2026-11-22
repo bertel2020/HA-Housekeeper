@@ -5,9 +5,9 @@ Object.assign(TEXT.de, {
   oftenTitle: "Absichtlich?", oftenText: "{lines} Wenn das gewollt ist, hält eine Objekt-Notiz es fest, und Housekeeper meldet den Ausfall dann nicht mehr.",
   oftenSet: "Objekt-Notiz mit Zeitfenster setzen", oftenSetPlain: "Objekt-Notiz setzen", oftenSkip: "Nicht mehr fragen",
   oftenDevice: "Mehrere Entitäten dieses Geräts fallen zur selben Zeit aus.", oftenGroup: "{device}: {n} Entitäten", oftenRest: "die übrigen {n} Entitäten bleiben überwacht", oftenRest1: "die übrige Entität bleibt überwacht",
-  oftenCardTitle: "Vorschläge für Objekt-Notizen", oftenCardHint: "Fallen regelmäßig aus oder haben keinen Wert, etwa im Standby. Eine Objekt-Notiz „Absichtlich offline“ blendet ihre Befunde 90 Tage aus.",
+  oftenCardTitle: "Vorschläge für Objekt-Notizen", oftenCardHint: "Fallen regelmäßig aus oder haben keinen Wert, etwa im Standby. Eine Objekt-Notiz „Soll offline sein“ blendet ihre Befunde 90 Tage aus.",
   oftenCount: "{n} Vorschläge", oftenFindings1: "1 Befund", oftenFindings: "{n} Befunde", oftenTake: "Notieren", oftenTakeN: "Notieren ({n})", oftenColObject: "Objekt", oftenColPattern: "Muster", oftenColFindings: "Befunde", oftenNone: "Nichts ausgewählt.",
-  oftenAllTitle: "Ausgewählte Vorschläge übernehmen?", oftenAllText: "{n} Objekt-Notizen „Absichtlich offline“ werden gesetzt, mit erkanntem Zeitfenster, wo es eines gibt. Sie blenden {hides} Befunde aus und lassen sich einzeln wieder entfernen.",
+  oftenAllTitle: "Ausgewählte Vorschläge übernehmen?", oftenAllText: "{n} Objekt-Notizen „Soll offline sein“ werden gesetzt, mit erkanntem Zeitfenster, wo es eines gibt. Sie blenden {hides} Befunde aus und lassen sich einzeln wieder entfernen.",
   oftenReason: "Vorschlag: fällt regelmäßig aus",
 });
 Object.assign(TEXT.en, {
@@ -15,9 +15,9 @@ Object.assign(TEXT.en, {
   oftenTitle: "On purpose?", oftenText: "{lines} If that is intended, an object note records it and Housekeeper stops reporting the outage.",
   oftenSet: "Set an object note with a time window", oftenSetPlain: "Set an object note", oftenSkip: "Do not ask again",
   oftenDevice: "Several entities of this device fail at the same time.", oftenGroup: "{device}: {n} entities", oftenRest: "the other {n} entities stay watched", oftenRest1: "the other entity stays watched",
-  oftenCardTitle: "Suggested object notes", oftenCardHint: "They fail or lose their value regularly, in standby for instance. An object note “Offline on purpose” hides their findings for 90 days.",
+  oftenCardTitle: "Suggested object notes", oftenCardHint: "They fail or lose their value regularly, in standby for instance. An object note “Should be offline” hides their findings for 90 days.",
   oftenCount: "{n} suggestions", oftenFindings1: "1 finding", oftenFindings: "{n} findings", oftenTake: "Note", oftenTakeN: "Note ({n})", oftenColObject: "Object", oftenColPattern: "Pattern", oftenColFindings: "Findings", oftenNone: "Nothing picked.",
-  oftenAllTitle: "Note the picked suggestions?", oftenAllText: "{n} object notes “Offline on purpose” are set, with the detected time window where there is one. They hide {hides} findings and can be removed one by one.",
+  oftenAllTitle: "Note the picked suggestions?", oftenAllText: "{n} object notes “Should be offline” are set, with the detected time window where there is one. They hide {hides} findings and can be removed one by one.",
   oftenReason: "Suggested: fails regularly",
 });
 

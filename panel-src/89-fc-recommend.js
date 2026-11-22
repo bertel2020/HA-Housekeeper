@@ -4,7 +4,7 @@
 // ("Ist so gewollt") is never recommended by itself. Mixed into the panel in 99-register.js.
 Object.assign(TEXT.de, {
   fcRecLabel: "Empfehlung", fcRecTag: "Empfohlen",
-  fcRecFix: "Beheben.", fcRecLater: "Später erinnern.", fcRecTake: "Objekt-Notiz setzen.", fcRecPick: "Zum Entfernen vormerken.", fcRecPickAll: "Alle vormerken.", fcRecMerge: "Zusammenführen.", fcRecRest: "Auf „Später“ legen.",
+  fcRecFix: "Beheben.", fcRecLater: "Später.", fcRecTake: "Objekt-Notiz setzen.", fcRecPick: "Zum Entfernen vormerken.", fcRecPickAll: "Alle vormerken.", fcRecMerge: "Zusammenführen.", fcRecRest: "Auf „Später“ legen.",
   fcRecFixBroken: "Ein kaputter Verweis oder Fehler geht nicht von selbst weg.",
   fcRecFixNoSince: "Seit wann es besteht, ist nicht bekannt; lieber jetzt ansehen.",
   fcRecFixLong: "Seit {span} aus, die Wirkung ist schon Mittel oder höher.",
@@ -31,7 +31,7 @@ Object.assign(TEXT.de, {
 });
 Object.assign(TEXT.en, {
   fcRecLabel: "Recommendation", fcRecTag: "Recommended",
-  fcRecFix: "Fix.", fcRecLater: "Remind me later.", fcRecTake: "Set an object note.", fcRecPick: "Mark for removal.", fcRecPickAll: "Mark them all.", fcRecMerge: "Merge.", fcRecRest: "Put off to “Later”.",
+  fcRecFix: "Fix.", fcRecLater: "Later.", fcRecTake: "Set an object note.", fcRecPick: "Mark for removal.", fcRecPickAll: "Mark them all.", fcRecMerge: "Merge.", fcRecRest: "Put off to “Later”.",
   fcRecFixBroken: "A broken reference or a fault does not go away by itself.",
   fcRecFixNoSince: "It is not known since when this has been the case; better to look at it now.",
   fcRecFixLong: "Down for {span}, the impact is already medium or higher.",

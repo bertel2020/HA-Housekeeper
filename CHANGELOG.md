@@ -28,6 +28,7 @@
 
 ### Changed
 
+- **Wording:** The same thing has the same name everywhere. “Later” is the button and the status; the object note is “Should be offline”; “Do not delete” and “Do not report” are the same in notes and labels; “exception rule” is used wherever it stands next to the rules of the findings.
 - **Outages:** A device that is down names the duration and what is unavailable because of it in the list and the card (“Device X has been down for 44 days”). The Fix page asks “Is that intended?” and “Off on purpose, note it” is a card of its own; it is recommended when the device has been down for a week and hardly anything depends on it.
 - **House functions:** The expected conditions fit the object: a minimum value is offered for numbers only, and each condition shows the current value.
 - **Actions on findings:** The row menu, the actions menu of a selection and the actions of the object page use the same groups in the same order (fix or plan, decide, object note and exception rule, label, logbook entry).

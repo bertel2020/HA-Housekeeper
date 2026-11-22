@@ -5101,7 +5101,7 @@ test("the exceptions are a page of the group Monitoring and count what asks for 
   el.data = { ...DATA, findings: [], objects: [{ object_type: "entity", object_id: "sensor.a", mark: { kind: "spare" }, mark_due: true }] };
   assert.equal(el.exceptionsDue(), 2);
   assert.equal(el.navCountHint("exceptions", 2), "2 to review");
-  assert.equal(el.t("exceptions"), "Exceptions");
+  assert.equal(el.t("exceptions"), "Exception rules");
 });
 
 test("the reasons to pick from depend on the kind: intended and false alarm have them, later has none", () => {

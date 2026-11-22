@@ -28,6 +28,7 @@
 
 ### Geändert
 
+- **Wortwahl:** Dasselbe heißt überall gleich. „Später“ ist Knopf und Status; die Objekt-Notiz heißt „Soll offline sein“; „Nicht löschen“ und „Nicht melden“ gelten bei Notiz und Label gleich; „Ausnahmeregel“ steht überall, wo es neben den Regeln der Befunde vorkommt.
 - **Ausfälle:** Ein ausgefallenes Gerät nennt in Liste und Karte die Dauer und was dadurch nicht verfügbar ist („Gerät X ist seit 44 Tagen aus“). Auf der Beheben-Seite steht die Frage „Ist das so gewollt?“, und „Absichtlich aus, notieren“ ist eine eigene Karte; sie wird empfohlen, wenn das Gerät seit einer Woche aus ist und kaum etwas daran hängt.
 - **Hausfunktionen:** Die Soll-Regeln passen zum Objekt: ein Mindestwert wird nur bei Zahlen angeboten, und jede Regel zeigt den aktuellen Wert.
 - **Aktionen an Befunden:** Zeilenmenü, Aktionen-Menü der Auswahl und die Aktionen der Objektseite haben dieselben Gruppen in derselben Reihenfolge (Beheben oder Plan, Entscheiden, Objekt-Notiz und Ausnahme-Regel, Label, Logbuch-Eintrag).
