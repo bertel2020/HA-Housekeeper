@@ -20,7 +20,7 @@ class EntityRecorderMixin {
     const id = item.object_id, state = this.entityRec?.[id];
     let body;
     if (state?.loading) body = `<p class="factnote">${this.t("erecRunning")}</p>`;
-    else if (state?.data) body = this.entityRecorderRows(state.data, id);
+    else if (state?.data) body = this.entityRecorderRows(state.data, id, item.unit);
     else body = `${state?.message ? `<p class="factnote">${this.esc(state.message)}</p>` : ""}<div class="pad"><button class="btn" data-erec="${this.esc(id)}">${this.t("erecCount")}</button></div>`;
     return `<section class="panel"><div class="panelhead"><div><h2>${this.t("erecTitle")}</h2><p>${this.t("erecHint")}</p></div></div>${body}${this.spaceEntityPart(id)}</section>`;
   }
@@ -40,7 +40,7 @@ class EntityRecorderMixin {
     return `<div class="fact"><span>${t("knownWriteRate")}</span><b>${value}</b></div>`;
   }
 
-  entityRecorderRows(d, id = "") {
+  entityRecorderRows(d, id = "", unit = "") {
     const date = ts => this.esc(this.formatDate(new Date(ts * 1000).toISOString()));
     const row = (label, part) => `<div class="fact"><span>${this.t(label)}</span><b>${part.rows
       ? `${this.t("erecRows", { count: this.formatNumber(part.rows) })}<small>${this.t("erecFirst", { date: date(part.first) })} · ${this.t("erecLast", { date: date(part.last) })}</small>`
@@ -50,7 +50,13 @@ class EntityRecorderMixin {
       const days = Math.max(1, Math.round((Date.now() / 1000 - d.states.first) / 86400));
       keep = `<p class="factnote">${d.keep_days ? this.t("erecKeep", { days, keep: d.keep_days }) : this.t("erecKeepOff", { days })}</p>`;
     }
-    return `<div class="facts">${row("erecStates", d.states)}${row("erecShort", d.short)}${row("erecLong", d.long)}${id ? this.entityWriteRate(id) : ""}</div>${keep}`;
+    return `<div class="facts">${row("erecStates", d.states)}${row("erecShort", d.short)}${row("erecLong", d.long)}${id ? this.entityWriteRate(id) : ""}</div>${keep}${id && d.long.rows ? this.entityRecords(id, d.long.rows, unit) : ""}`;
+  }
+
+  // The hourly rows of the entity's long-term statistics: the same closed field and pager as under an orphaned statistic.
+  entityRecords(id, total, unit) {
+    const field = (label, value) => `<div class="pad"><p class="factnote">${this.t(label)}</p>${value}</div>`;
+    return this.statRowsField(id, { tables: { statistics: { rows: total } }, meta: { unit } }, field);
   }
 
   async loadEntityRecorder(entityId) {

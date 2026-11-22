@@ -8846,3 +8846,12 @@ test("the rows of an opened statistic come a page at a time, with the columns th
   assert.doesNotMatch(html, /Sum/);
   assert.match(html, /data-lpage="statrows-sensor\.a\|2"/, "60 rows are three pages of 25");
 });
+
+test("the recorder card of an entity offers its hourly rows, closed until asked for", () => {
+  const { el } = panel("en");
+  const part = { rows: 0, first: null, last: null };
+  const html = el.entityRecorderRows({ states: part, short: part, long: { rows: 60, first: 1, last: 2 } }, "sensor.power", "W");
+  assert.match(html, /data-stat-rows="sensor\.power"/);
+  assert.doesNotMatch(html, /statrows/);
+  assert.doesNotMatch(el.entityRecorderRows({ states: part, short: part, long: part }, "sensor.power"), /data-stat-rows/);
+});
