@@ -6213,6 +6213,7 @@
 "fcEndFollowSub": "归属于其原因",
 "fcEndFollowN": "{n} 个取决于故障",
 "fcEndFollowN1": "1 个取决于故障",
+"fcGroupSuggestion": "针对此建议",
 "fcGroupFinding": "针对此发现项",
 "fcGroupFindings": "针对这些发现项",
 "fcGroupObject": "针对对象",

@@ -6213,6 +6213,7 @@
 "fcEndFollowSub": "dépendent des causes",
 "fcEndFollowN": "{n} dépendent de pannes",
 "fcEndFollowN1": "1 dépend d’une panne",
+"fcGroupSuggestion": "Pour cette suggestion",
 "fcGroupFinding": "Pour ce constat",
 "fcGroupFindings": "Pour ces constats",
 "fcGroupObject": "Pour l’objet",

@@ -49,13 +49,17 @@ class FcRoundMixin {
     const finding = this.data.findings.find(f => f.key === r.finding_key), link = `${r.object_type}:${r.object_id}`, obj = this.findObject(link), kattr = `data-keys="${this.esc(JSON.stringify([r.finding_key]))}"`;
     const rec = this.fcRecRound(r);
     const first = r.kind === "merge"
-      ? this.fcAct(`data-fc-rmerge="${this.esc(r.object_id)}" data-into="${this.esc(r.duplicate_of || "")}"`, this.t("roundMerge"), this.t("fcRoundHint_merge"), false, "mdi:call-merge", "blue", rec.act === "merge")
-      : this.fcAct(`data-fc-rpick="${this.esc(r.finding_key)}" data-name="${this.esc(r.name)}"`, this.t("fcRoundPick"), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue", rec.act === "pick");
-    const acts = first
-      + this.fcAct(`data-fc-rkeep="${this.esc(r.finding_key)}" data-link="${this.esc(link)}" data-name="${this.esc(r.name)}"`, this.t("fcKeep"), this.t("fcRoundKeepHint", { days: this.defaultDays("keep") }), false, "mdi:check-circle-outline", "green")
-      + this.fcAct(`data-fc-rlater="${this.esc(r.finding_key)}"`, this.t("fcLater"), this.t("fcRoundLaterHint", { days: this.fc?.later_days || 90 }), false, "mdi:clock-outline", "amber", rec.act === "later");
+      ? { attr: `data-fc-rmerge="${this.esc(r.object_id)}" data-into="${this.esc(r.duplicate_of || "")}"`, label: this.t("roundMerge"), icon: "mdi:call-merge", hint: this.t("fcRoundHint_merge"), rec: rec.act === "merge" }
+      : { attr: `data-fc-rpick="${this.esc(r.finding_key)}" data-name="${this.esc(r.name)}"`, label: this.t("fcRoundPick"), icon: "mdi:playlist-plus", hint: this.t("fcRoundPickHint"), rec: rec.act === "pick" };
+    const acts = this.fcActBox([
+      { label: "fcGroupObject", items: [first] },
+      { label: "fcGroupFinding", items: [
+        { attr: `data-fc-rkeep="${this.esc(r.finding_key)}" data-link="${this.esc(link)}" data-name="${this.esc(r.name)}"`, label: this.t("fcKeep"), icon: "mdi:check-circle-outline", hint: this.t("fcRoundKeepHint", { days: this.defaultDays("keep") }) },
+        { attr: `data-fc-rlater="${this.esc(r.finding_key)}"`, label: this.t("fcLater"), icon: "mdi:clock-outline", hint: this.t("fcRoundLaterHint", { days: this.fc?.later_days || 90 }), rec: rec.act === "later" },
+      ] },
+    ]);
     const pill = `<span class="pill ${r.group === "safe" ? "ok" : "warn"}">${this.t(r.group === "safe" ? "fcRoundSafe" : "fcRoundLook")}</span>`;
-    return `<section class="panel fccard${this.fcAnim(`4:${r.finding_key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile(r.object_type, "mute")}<div><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(link)}">${this.esc(r.name)}</button>` : this.esc(r.name)}</h3><small class="fcid">${this.esc(r.object_id)}</small></div></div><p class="fcwhat"><strong>${this.esc(finding ? this.findingTitle(finding) : this.t("fcRoundTitle"))}</strong></p><p class="fcchips">${pill}</p>${this.fcInfoHtml([...this.fcRoundRows(r, finding), this.fcRecRow(rec)], link)}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.finding_key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`4:${r.finding_key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile(r.object_type, "mute")}<div><h3>${obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(link)}">${this.esc(r.name)}</button>` : this.esc(r.name)}</h3><small class="fcid">${this.esc(r.object_id)}</small></div></div><p class="fcwhat"><strong>${this.esc(finding ? this.findingTitle(finding) : this.t("fcRoundTitle"))}</strong></p><p class="fcchips">${pill}</p>${this.fcInfoHtml([...this.fcRoundRows(r, finding), this.fcRecRow(rec)], link)}${acts}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.finding_key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
   }
 
   // The objects nothing uses, as one card: one click marks them all, "one by one" goes through them.
@@ -68,9 +72,11 @@ class FcRoundMixin {
       { label: this.t("fcRoundSince"), text: oldest ? this.t("fcRoundOldest", { age: this.agoText(oldest) }) : "", empty: !oldest },
       { label: this.t("fcRoundUndoRow"), text: this.t("fcRoundUndoText") },
     ].map(x => ({ ...x, text: x.text || this.t("fcInfoNone"), empty: x.empty || !x.text, tone: x.tone || "", tab: "" }));
-    const acts = this.fcAct(`data-fc-rpick="${this.esc(keys[0])}" ${attr} data-name="${this.esc(this.t("fcLogSeveral", { n: safe.length }))}"`, this.t("fcRoundPickAll", { n }), this.t("fcRoundPickHint"), false, "mdi:playlist-plus", "blue", true)
-      + this.fcAct("data-fc-rsingle", this.t("fcRoundSingle"), this.t("fcRoundSingleHint"), false, "mdi:format-list-bulleted", "mute");
-    return `<section class="panel fccard${this.fcAnim("4:collect")}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile("entity", "ok")}<div><h3>${this.t("fcRoundCollectTitle", { n })}</h3><small class="fcid">${this.t("fcRoundCollectId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRoundTitle")}</strong></p><p class="fcchips"><span class="pill ok">${this.t("fcRoundSafe")}</span></p>${this.fcInfoHtml([...info, this.fcRecRow(this.fcRecSafe())], "")}<div class="fcacts">${acts}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(keys[0])}" ${attr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
+    const acts = this.fcActBox([{ items: [
+      { attr: `data-fc-rpick="${this.esc(keys[0])}" ${attr} data-name="${this.esc(this.t("fcLogSeveral", { n: safe.length }))}"`, label: this.t("fcRoundPickAll", { n }), icon: "mdi:playlist-plus", hint: this.t("fcRoundPickHint"), rec: true },
+      { attr: "data-fc-rsingle", label: this.t("fcRoundSingle"), icon: "mdi:format-list-bulleted", hint: this.t("fcRoundSingleHint") },
+    ] }]);
+    return `<section class="panel fccard${this.fcAnim("4:collect")}"><div class="pad"><small class="fceyebrow">${this.fcPosition(4, queue.length)}</small><div class="fctitle">${this.tile("entity", "ok")}<div><h3>${this.t("fcRoundCollectTitle", { n })}</h3><small class="fcid">${this.t("fcRoundCollectId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRoundTitle")}</strong></p><p class="fcchips"><span class="pill ok">${this.t("fcRoundSafe")}</span></p>${this.fcInfoHtml([...info, this.fcRecRow(this.fcRecSafe())], "")}${acts}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(keys[0])}" ${attr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div></div></section>`;
   }
 
   // Everything is answered: the marked ones go into one plan.
@@ -87,8 +93,8 @@ class FcRoundMixin {
       { label: this.t("fcRoundNotRemovable"), text: blocked ? this.t("fcRoundBlocked", { n: this.formatNumber(blocked) }) : this.t("fcRoundNoBlocked"), tone: blocked ? "" : "ok" },
       { label: this.t("fcRoundUndoRow"), text: this.t("fcRoundUndoText") },
     ].map(x => ({ ...x, empty: !x.text, tone: x.tone || "", tab: "" }));
-    const act = `<button type="button" class="fcact primary blue" data-fc-rplan ${planBusy}><span class="fcicon"><ha-icon icon="mdi:clipboard-list-outline"></ha-icon></span><span class="fctxt"><strong>${this.t("roundPlan", { n })}</strong><small>${this.t("fcRoundPlanHint")}</small></span></button>`;
-    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.t("fcRoundEndEyebrow")}</small><div class="fctitle">${this.tile("entity", "mute")}<div><h3>${this.t("fcRoundEndTitle", { n })}</h3><small class="fcid">${this.t("fcRoundEndId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRoundTitle")}</strong></p><p class="fcchips"><small>${rest > 0 ? this.t("fcRoundRest", { n: this.formatNumber(rest) }) : ""}</small></p>${this.fcInfoHtml(info, "")}<div class="fcacts">${act}</div><div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}</div></div></section>`;
+    const act = this.fcActBox([{ items: [{ attr: `data-fc-rplan ${planBusy}`, label: this.t("roundPlan", { n }), icon: "mdi:clipboard-list-outline", hint: this.t("fcRoundPlanHint"), primary: true }] }]);
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.t("fcRoundEndEyebrow")}</small><div class="fctitle">${this.tile("entity", "mute")}<div><h3>${this.t("fcRoundEndTitle", { n })}</h3><small class="fcid">${this.t("fcRoundEndId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRoundTitle")}</strong></p><p class="fcchips"><small>${rest > 0 ? this.t("fcRoundRest", { n: this.formatNumber(rest) }) : ""}</small></p>${this.fcInfoHtml(info, "")}${act}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}</div></div></section>`;
   }
 
   async fcRoundPick(keys, name) {

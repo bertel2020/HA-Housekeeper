@@ -7433,6 +7433,7 @@
 "other": "{n} зависят от сбоев"
 },
 "fcEndFollowN1": "1 зависит от сбоя",
+"fcGroupSuggestion": "Для этого предложения",
 "fcGroupFinding": "Для этой находки",
 "fcGroupFindings": "Для этих находок",
 "fcGroupObject": "Для объекта",

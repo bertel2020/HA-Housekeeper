@@ -6396,6 +6396,7 @@
 "fcEndFollowSub": "dipendono dalle cause",
 "fcEndFollowN": "{n} dipendono da interruzioni",
 "fcEndFollowN1": "1 dipende da un'interruzione",
+"fcGroupSuggestion": "Per questo suggerimento",
 "fcGroupFinding": "Per questo rilievo",
 "fcGroupFindings": "Per questi rilievi",
 "fcGroupObject": "Per l’oggetto",

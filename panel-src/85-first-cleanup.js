@@ -357,7 +357,7 @@ class FirstCleanupMixin {
       [this.t("fcInfoLinks"), followers ? this.t("causeFollowers", { n: this.formatNumber(followers) }) : this.t("fcInfoNothing"), followers ? "" : "fciok"],
     ].map(([label, text, cls = ""]) => `<div class="fcirow static"><span>${this.esc(label)}</span><span class="${cls}">${this.esc(text)}</span><i></i></div>`).join("");
     const back = `<label class="fcirow static"><span>${this.t("fcRestBack")}</span><span><select data-fc-days aria-label="${this.esc(this.t("fcRestBack"))}">${options}</select></span><i></i></label>`;
-    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.t("fcRestEyebrow")}</small><div class="fctitle">${this.tile("entity", "mute")}<div><h3>${this.t(count === 1 ? "fcRestTitle1" : "fcRestTitle", { n })}</h3><small class="fcid">${this.t("fcRestId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRestWhat")}</strong></p><p class="fcchips"><span class="pill mute">${this.t("fcRestChip")}</span><small>${this.t("fcRestNote")}</small></p><div class="fcinfo">${info}${this.fcInfoRowHtml(this.fcRecRow(this.fcRecRest(count, days)))}${back}</div><div class="fcacts">${this.fcAct("data-fc-later", this.t("fcLaterGo", { n }), this.t("fcRestLaterHint"), false, "mdi:clock-outline", "amber", true)}</div><div class="fcmore"><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></div></section>`;
+    return `<section class="panel fccard"><div class="pad"><small class="fceyebrow">${this.t("fcRestEyebrow")}</small><div class="fctitle">${this.tile("entity", "mute")}<div><h3>${this.t(count === 1 ? "fcRestTitle1" : "fcRestTitle", { n })}</h3><small class="fcid">${this.t("fcRestId")}</small></div></div><p class="fcwhat"><strong>${this.t("fcRestWhat")}</strong></p><p class="fcchips"><span class="pill mute">${this.t("fcRestChip")}</span><small>${this.t("fcRestNote")}</small></p><div class="fcinfo">${info}${this.fcInfoRowHtml(this.fcRecRow(this.fcRecRest(count, days)))}${back}</div>${this.fcActBox([{ items: [{ attr: "data-fc-later", label: this.t("fcLaterGo", { n }), icon: "mdi:clock-outline", hint: this.t("fcRestLaterHint"), rec: true }] }])}<div class="fcmore"><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></div></section>`;
   }
 
   fcEmpty() { return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcNothing")}</div></section>`; }
@@ -386,30 +386,32 @@ class FirstCleanupMixin {
     return this.t("fcCardOf", { n: this.formatNumber(total[n] - left + 1), total: this.formatNumber(total[n]) });
   }
 
-  // One action of a card: what it is called and, in a line, what it does.
-  // ``sel`` says whether a tile is chosen; a tile that does something at once has no such state and passes nothing.
-  fcAct(attr, label, hint, primary = false, icon = "", tone = "", rec = false, sel = null, scope = "") {
-    return `<button type="button" class="fcact${primary ? " primary" : ""}${rec ? " rec" : ""}${sel ? " sel" : ""}${tone ? ` ${tone}` : ""}" ${sel === null ? "" : `aria-pressed="${sel}" `}${attr}>${icon ? `<span class="fcicon"><ha-icon icon="${icon}"></ha-icon></span>` : ""}<span class="fctxt">${rec ? `<em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}<strong>${label}</strong><small>${hint}</small>${scope ? `<span class="fcscope">${scope}</span>` : ""}</span></button>`;
+  // The actions of a card as short rows of buttons, in groups that say what they apply to. One line below the group of the recommended
+  // button (or of the open one) says what it does; it follows the button under the pointer, in focus or touched last.
+  // A group is {label, items}, an item {attr, label, icon, hint, rec, sel, primary}; ``sel`` is left out for a button that does something at once.
+  fcActBox(groups) {
+    const all = groups.flatMap(g => g.items), shown = all.find(i => i.sel) || all.find(i => i.rec) || all.find(i => i.primary);
+    const btn = i => `<button type="button" class="fcbtn${i.rec || i.primary ? " rec" : ""}${i.sel ? " sel" : ""}"${i.sel === undefined ? "" : ` aria-pressed="${i.sel}"`} data-fc-hint="${this.esc(i.hint)}" title="${this.esc(i.hint)}" ${i.attr}><ha-icon icon="${i.icon}"></ha-icon>${i.label}${i.rec ? ` <em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}</button>`;
+    const at = Math.max(0, groups.findIndex(g => g.items.includes(shown)));
+    const caption = `<p class="fccap" data-fc-cap="${this.esc(shown?.hint || "")}" aria-live="polite">${this.esc(shown?.hint || "")}</p>`;
+    const rows = groups.filter(g => g.items.length).map((g, n) => `<div class="fcgrp">${g.label ? `<div class="fcgl">${this.t(g.label)}</div>` : ""}<div class="fcbtns">${g.items.map(btn).join("")}</div></div>${n === at ? caption : ""}`).join("");
+    return `<div class="fcactions">${rows}</div>`;
   }
 
-  // The actions of a card as two short rows of buttons: what applies to the finding (decide) and what to the object (fix, note).
-  // The group says what it applies to; one line below says what the recommended button does (or the one just touched).
   fcActGroups({ f, key, obj, many, rec, chosen, kattr, opt }) {
     const hint = { fix: this.t("fcFixHint"), check: this.t("fcCheckHint"), keep: this.t("fcKeepHint"), snooze: this.t("fcLaterHint"), ignore: this.t("fcIgnoreHint"), mark: this.t("fcMarkHint") };
-    const btn = (id, attr, label, icon, recommended, selected) => `<button type="button" class="fcbtn${recommended ? " rec" : ""}${selected ? " sel" : ""}" aria-pressed="${selected}" data-fc-hint="${this.esc(hint[id])}" title="${this.esc(hint[id])}" ${attr}><ha-icon icon="${icon}"></ha-icon>${label}${recommended ? ` <em class="fcrectag">${this.t("fcRecTag")}</em>` : ""}</button>`;
+    const item = (id, attr, label, icon, recommended, selected) => ({ attr, label, icon, hint: hint[id], rec: recommended, sel: selected });
     const fixable = obj && this.fcFixable(f, key), check = obj && !fixable && OUTAGE_RULES.includes(f.rule_id);
     const forFinding = [
-      btn("keep", opt("keep"), this.t("fcKeep"), STATUS_TONES.keep.icon, false, chosen === "keep"),
-      btn("snooze", opt("snooze"), this.t("fcLater"), STATUS_TONES.snooze.icon, rec?.act === "later", chosen === "snooze"),
-      btn("ignore", opt("ignore"), this.t("decideKind_ignore"), STATUS_TONES.ignore.icon, false, chosen === "ignore"),
-    ].join("");
+      item("keep", opt("keep"), this.t("fcKeep"), STATUS_TONES.keep.icon, false, chosen === "keep"),
+      item("snooze", opt("snooze"), this.t("fcLater"), STATUS_TONES.snooze.icon, rec?.act === "later", chosen === "snooze"),
+      item("ignore", opt("ignore"), this.t("decideKind_ignore"), STATUS_TONES.ignore.icon, false, chosen === "ignore"),
+    ];
     const forObject = [
-      fixable || check ? btn(fixable ? "fix" : "check", `data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t(fixable ? "fcFix" : "fcCheck"), fixable ? "mdi:wrench-outline" : "mdi:clipboard-check-outline", fixable && rec?.act === "fix", chosen === "fix") : "",
-      this.fcCanMark(obj) ? btn("mark", `data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), FSEL_ICONS.mark, rec?.act === "mark", chosen === "mark") : "",
-    ].join("");
-    const shown = { fix: "fix", later: "snooze", mark: "mark" }[rec?.act] || "", open = chosen === "fix" ? (fixable ? "fix" : "check") : chosen, first = open || shown;
-    const group = (label, buttons) => buttons ? `<div class="fcgrp"><div class="fcgl">${this.t(label)}</div><div class="fcbtns">${buttons}</div></div>` : "";
-    return `<div class="fcactions">${group(many ? "fcGroupFindings" : "fcGroupFinding", forFinding)}<p class="fccap" data-fc-cap="${this.esc(first ? hint[first] : "")}" aria-live="polite">${this.esc(first ? hint[first] : "")}</p>${group("fcGroupObject", forObject)}</div>`;
+      fixable || check ? item(fixable ? "fix" : "check", `data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t(fixable ? "fcFix" : "fcCheck"), fixable ? "mdi:wrench-outline" : "mdi:clipboard-check-outline", fixable && rec?.act === "fix", chosen === "fix") : null,
+      this.fcCanMark(obj) ? item("mark", `data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), FSEL_ICONS.mark, rec?.act === "mark", chosen === "mark") : null,
+    ].filter(Boolean);
+    return this.fcActBox([{ label: many ? "fcGroupFindings" : "fcGroupFinding", items: forFinding }, { label: "fcGroupObject", items: forObject }]);
   }
 
   // A card shows with a short slide-in when it is a new one; renders of the same card within the moment keep it running.
@@ -486,8 +488,11 @@ class FirstCleanupMixin {
     if (!items.length) return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("fcCardsLeft", { n: this.formatNumber(all.length) })}</div><div class="pad fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button><button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button></div></section>`;
     const first = (this.fcFocus && items.find(x => x.key === this.fcFocus)) || items[0], r = this.oftenRowOf(first), listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const takeAll = all.length > 1 ? `<button type="button" class="btn quiet" data-fc-takeall>${this.t("fcTakeAll", { n: this.formatNumber(all.length) })}</button>` : "";
-    const acts = this.fcAct(`data-fc-take="${this.esc(r.key)}"`, this.t("fcTake"), this.t("fcTakeHint"), false, "mdi:bookmark-plus-outline", "blue", true) + this.fcAct(`data-fc-oskip="${this.esc(r.key)}"`, this.t("fcNoThanks"), this.t("fcNoThanksHint"), false, "mdi:close-circle-outline", "mute");
-    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}${this.fcOftenInfo(first, r, this.fcRecOften(first))}<div class="fcacts">${acts}</div><div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
+    const acts = this.fcActBox([{ label: "fcGroupSuggestion", items: [
+      { attr: `data-fc-take="${this.esc(r.key)}"`, label: this.t("fcTake"), icon: "mdi:bookmark-plus-outline", hint: this.t("fcTakeHint"), rec: true },
+      { attr: `data-fc-oskip="${this.esc(r.key)}"`, label: this.t("fcNoThanks"), icon: "mdi:close-circle-outline", hint: this.t("fcNoThanksHint") },
+    ] }]);
+    return `<section class="panel fccard${this.fcAnim(`2:${r.key}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(2, items.length)}</small><h3>${this.findObject(r.link) ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(r.link)}">${this.esc(r.title)}</button>` : this.esc(r.title)}</h3><small class="fcid">${this.esc(r.id)}</small><p class="fcwhat"><strong>${this.esc(r.pattern)}</strong> · ${this.oftenFindings(r.hides)}</p>${r.note ? `<p class="fcfacts">${this.esc(r.note)}</p>` : ""}${this.fcOftenInfo(first, r, this.fcRecOften(first))}${acts}<div class="fcmore">${this.fcPrevButton(2)}<button type="button" class="btn" data-fc-skipcard="${this.esc(r.key)}" data-keys="${this.esc(JSON.stringify([r.key]))}">${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${takeAll}${listBtn}</div></div></section>`;
   }
 
   fcTake(keys) { return this.onlyOnce("fcTake", () => this.fcTakeRun(keys)); }
@@ -699,7 +704,7 @@ Object.assign(TEXT.de, {
   fcEndSubAll: "Es ist nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcEndSubDone: "Du hast {d} bearbeitet. {now} Befunde sind noch offen.", fcEndSubNone: "{now} Befunde warten. Etappe 1 ist der beste Einstieg.", fcSumWaiting: "{n}",
   fcEndLaterBack: "kommen ab {date} zurück", fcEndStartOnly: "{start} zu Beginn", fcEndStartFresh: "{start} zu Beginn, {fresh} neu dazugekommen", fcEndBar: "{p} % der {start} Befunde bearbeitet",
   fcEndFollow: "Folgebefunde", fcEndFollowSub: "gehören zu den Ursachen", fcEndFollowN: "{n} hängen an Ausfällen", fcEndFollowN1: "1 hängt an einem Ausfall", 
-  fcGroupFinding: "Für diesen Befund", fcGroupFindings: "Für diese Befunde", fcGroupObject: "Für das Objekt",
+  fcGroupSuggestion: "Für diesen Vorschlag", fcGroupFinding: "Für diesen Befund", fcGroupFindings: "Für diese Befunde", fcGroupObject: "Für das Objekt",
   fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Zeigt die Wege, die zu diesem Objekt passen.",
   fcKeep: "Ist so gewollt", fcKeepHint: "Der Befund wird nicht mehr gezeigt. Du sagst kurz, warum und für wie lange.", fcLater: "Später", fcLaterHint: "Der Befund verschwindet bis zur gewählten Frist und kommt dann wieder.",
   fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel liegt hier falsch. Der Befund wird ausgeblendet.", fcMarkHint: "Merkt sich, warum das Objekt so ist, auch mit Zeitfenster. Gilt auch für künftige Ausfälle.", fcLogHidden: "Fehlalarm", fcSumHidden: "{n} als Fehlalarm", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
@@ -738,7 +743,7 @@ Object.assign(TEXT.en, {
   fcEndSubAll: "Nothing is open any more. New findings show up under “New”.", fcEndSubDone: "You handled {d}. {now} findings are still open.", fcEndSubNone: "{now} findings are waiting. Stage 1 is the best place to start.", fcSumWaiting: "{n}",
   fcEndLaterBack: "come back from {date}", fcEndStartOnly: "{start} at the start", fcEndStartFresh: "{start} at the start, {fresh} new since", fcEndBar: "{p} % of the {start} findings handled",
   fcEndFollow: "Follow-up findings", fcEndFollowSub: "belong to the causes", fcEndFollowN: "{n} hang on outages", fcEndFollowN1: "1 hangs on an outage", 
-  fcGroupFinding: "For this finding", fcGroupFindings: "For these findings", fcGroupObject: "For the object",
+  fcGroupSuggestion: "For this suggestion", fcGroupFinding: "For this finding", fcGroupFindings: "For these findings", fcGroupObject: "For the object",
   fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Shows the ways that fit this object.",
   fcKeep: "Intended", fcKeepHint: "The finding is no longer shown. You say briefly why and for how long.", fcLater: "Later", fcLaterHint: "The finding disappears until the time you choose and then comes back.",
   fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply and continue", fcIgnoreHint: "The rule is wrong here. The finding is hidden.", fcMarkHint: "Records why the object is as it is, also with a time window. Also covers future outages.", fcLogHidden: "False alarm", fcSumHidden: "{n} as false alarm", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",

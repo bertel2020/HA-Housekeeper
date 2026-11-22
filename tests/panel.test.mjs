@@ -6350,8 +6350,8 @@ test("the steps have names, and a tile that acts at once is not a toggle", () =>
   el.fc = { state: { done: [1] }, stages: {} };
   const steps = el.fcStepper(3);
   assert.ok(/aria-label="Stage 1 · [^"]+"/.test(steps) || /aria-label="[^"]*1[^"]*"/.test(steps), "a step button has a name, not only a digit");
-  assert.ok(!el.fcAct('data-x="1"', "Take", "hint").includes("aria-pressed"), "no state for a tile that acts at once");
-  assert.ok(el.fcAct('data-x="1"', "Keep", "hint", false, "", "", false, false).includes('aria-pressed="false"'), "a tile that is chosen or not says so");
+  assert.ok(!el.fcActBox([{ items: [{ attr: 'data-x="1"', label: "Take", icon: "mdi:x", hint: "hint" }] }]).includes("aria-pressed"), "no state for a button that acts at once");
+  assert.ok(el.fcActBox([{ items: [{ attr: 'data-x="1"', label: "Keep", icon: "mdi:x", hint: "hint", sel: false }] }]).includes('aria-pressed="false"'), "a button that is chosen or not says so");
 });
 
 test("a typed text is quoted the way the language of the panel does", () => {
@@ -7995,6 +7995,19 @@ test("a row of the cleanup card with nothing to say is not shown, the recommenda
   assert.equal(el.fcInfoHtml([{ id: "state", label: "State", text: "No information", empty: true }], "entity:x"), "");
 });
 
+test("the cleanup round and the suggestions of stage 2 use the same buttons, with one line for the recommended one", () => {
+  const { el } = panel("en");
+  el.render = () => {};
+  const row = key => ({ finding_key: key, object_type: "entity", object_id: `sensor.${key}`, name: key, kind: "remove_entity", group: "safe", reasons: [] });
+  el.data = { ...DATA, findings: [], objects: [] };
+  el.round = { rows: [row("a"), row("b")], picked: new Set(["a"]), error: "" };
+  const end = el.fcRoundEnd([row("a")], "", "");
+  assert.ok(end.includes("fcactions") && end.includes("data-fc-rplan") && end.includes("Shows every change as a preview") && !/class="fcact[ "]/.test(end));
+  const collect = el.fcRoundCollect([row("a"), row("b")], [row("a")], "", "");
+  assert.ok(collect.includes("Mark all 2 for removal") && collect.includes("data-fc-rsingle") && collect.includes('class="fccap"'));
+  assert.equal(el.t("fcTake"), "Set object note");
+});
+
 test("the head of an outage and of a failing automation is the object and chips; the last failure stays a row", async () => {
   const { el } = panel("en");
   const down = { key: "k3", rule_id: "device.down", object_id: "d1", topic: "down", impact: "high", confidence: 0.9, confidence_level: "high", first_detected_at: new Date(Date.now() - 3 * 864e5).toISOString() };
@@ -8117,7 +8130,7 @@ test("a card of the cleanup recommends one answer from its facts, never keeping,
   assert.ok(short.body.includes("9 hr") || short.body.includes("9 h"), "the reason names how long it is down");
   const html = el.fcInfoHtml([el.fcRecRow(short)], "device:d");
   assert.ok(html.includes("fcirec") && html.includes("Recommendation") && html.includes(short.head));
-  assert.ok(el.fcAct("data-x", "A", "b", false, "", "blue", true).includes("Recommended"));
+  assert.ok(el.fcActBox([{ items: [{ attr: "data-x", label: "A", icon: "mdi:x", hint: "b", rec: true }] }]).includes("Recommended"));
   el.fcFixOpen = "";
   assert.equal(el.fcFixWays("device:d", el.findObject("device:d")), "");
   el.fcFixOpen = "device:d";
