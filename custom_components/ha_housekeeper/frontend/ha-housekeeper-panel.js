@@ -11488,8 +11488,9 @@ class CausesMixin {
   findingSteps(f, item) {
     const down = this.downEntityFinding(f), notProvided = item?.reason === "not_provided";
     const now = down && notProvided;
-    // `now` is the step the page of the object puts first as the answer; the menu offers removing also for any unneeded entity.
-    return { now, remove: this.removableFinding(f) || now, disable: ((down && !notProvided) || this.staleAutomation(f)) && item?.status !== "disabled", replace: down };
+    // `now` is the step the page of the object puts first as the answer; the menu offers removing also for any unneeded entity
+    // and for one that is down: the plan judges it (used, critical, noted as to keep) and blocks what must stay.
+    return { now, remove: this.removableFinding(f) || down, disable: ((down && !notProvided) || this.staleAutomation(f)) && item?.status !== "disabled", replace: down };
   }
 
   // A reference to an entity that is gone: the entity can be replaced by another, with the first suggestion filled in when there is one.

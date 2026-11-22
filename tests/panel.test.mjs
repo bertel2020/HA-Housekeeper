@@ -7958,6 +7958,14 @@ test("the ways of an unused automation stay in view, deleting is the last and so
   assert.ok(html.includes("</ha-icon>Disable</button>") && html.includes("</ha-icon>Delete</button>") && html.includes("Or hide it, do not fix it") && html.includes("Not triggered for 112 days") && html.includes("fixhead"));
 });
 
+test("an entity that is down can be removed by a plan as well as disabled, a device cannot be removed from the selection", () => {
+  const { el } = panel("en");
+  const down = { key: "k1", rule_id: "entity.state_unavailable", object_id: "sensor.a", topic: "down", classification: "unavailable" };
+  const item = { object_type: "entity", object_id: "sensor.a", status: "unavailable" };
+  assert.deepEqual([el.findingSteps(down, item).remove, el.findingSteps(down, item).disable], [true, true]);
+  assert.equal(el.findingSteps({ key: "k2", rule_id: "device.down", object_id: "d1", topic: "down" }, { object_type: "device" }).remove, false);
+});
+
 test("the head of an outage and of a failing automation is the object and chips; the last failure stays a row", async () => {
   const { el } = panel("en");
   const down = { key: "k3", rule_id: "device.down", object_id: "d1", topic: "down", impact: "high", confidence: 0.9, confidence_level: "high", first_detected_at: new Date(Date.now() - 3 * 864e5).toISOString() };
