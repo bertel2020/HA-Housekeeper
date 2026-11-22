@@ -151,8 +151,8 @@ class FixMixin {
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
     else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${this.t("fixBtn_disable_automation")}</button>`;
     else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("fixBtn_delete_automation")}</button>`;
-    else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>`;
-    else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixOpenActions")}</button>`;
+    else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("fixBtn_mark")}</button>`;
+    else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixBtn_object_actions")}</button>`;
     return `<div class="row fixway"><span class="row-text"><strong>${this.esc(this.t(`fixWay_${w.way}`))}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span>${action}</div>`;
   }
 
@@ -315,7 +315,7 @@ Object.assign(TEXT.de, {
   fixWay_exchange: "Gerät austauschen", fixWayHint_exchange: "Für ein ersetztes Gerät: Automationen und Szenen auf das neue Gerät umstellen.",
   fixWay_replace_entity: "Entität ersetzen", fixWayHint_replace_entity: "Alle Stellen, die diese Entität nutzen, auf eine andere umstellen.",
   fixWay_disable_automation: "Automation deaktivieren", fixWayHint_disable_automation: "Schaltet die Automation aus; sie bleibt erhalten und lässt sich wieder einschalten. Mit Vorschau, Bestätigung und Rückgängig.",
-  fixWay_delete_automation: "Automation löschen", fixWayHint_delete_automation: "Entfernt die Automation. Du siehst zuerst eine Vorschau; gelöscht wird erst, wenn du bestätigst.", fixBtn_disable_automation: "Deaktivieren", fixBtn_delete_automation: "Löschen",
+  fixWay_delete_automation: "Automation löschen", fixWayHint_delete_automation: "Entfernt die Automation. Du siehst zuerst eine Vorschau; gelöscht wird erst, wenn du bestätigst.", fixBtn_disable_automation: "Deaktivieren", fixBtn_delete_automation: "Löschen", fixBtn_mark: "Notiz setzen", fixBtn_object_actions: "Aktionen öffnen",
   fixWay_object_actions: "Deaktivieren oder entfernen", fixWayHint_object_actions: "Die Aktionen des Objekts: deaktivieren, entfernen, austauschen, jeweils mit Vorschau.",
   fixWay_replace_target: "Ziel ersetzen", fixWayHint_replace_target: "Alle Stellen, die das fehlende Ziel nennen, auf ein vorhandenes umstellen: bei einer Entität mit einem ähnlichen Vorschlag, bei Bereich, Etage und Label nach deiner Wahl (nur dort, wo der Schlüssel dafür steht). Die Vorschau zeigt jede Stelle.",
   fixWay_open_editor: "Im Editor öffnen", fixWayHint_open_editor: "Die Stelle in Home Assistant selbst anpassen.", fixReplaceStart: "Ersetzen …", fixReplaceWith: "Ersetzen durch", fixReplaceNone: "Es gibt kein anderes Ziel dieser Art, auf das sich umstellen ließe.",
@@ -346,7 +346,7 @@ Object.assign(TEXT.en, {
   fixWay_exchange: "Exchange the device", fixWayHint_exchange: "For a replaced device: move automations and scenes to the new device.",
   fixWay_replace_entity: "Replace the entity", fixWayHint_replace_entity: "Move every place that uses this entity to another one.",
   fixWay_disable_automation: "Disable the automation", fixWayHint_disable_automation: "Switches the automation off; it is kept and can be switched on again. With preview, confirmation and undo.",
-  fixWay_delete_automation: "Delete the automation", fixWayHint_delete_automation: "Removes the automation. You see a preview first; nothing is deleted until you confirm.", fixBtn_disable_automation: "Disable", fixBtn_delete_automation: "Delete",
+  fixWay_delete_automation: "Delete the automation", fixWayHint_delete_automation: "Removes the automation. You see a preview first; nothing is deleted until you confirm.", fixBtn_disable_automation: "Disable", fixBtn_delete_automation: "Delete", fixBtn_mark: "Set a note", fixBtn_object_actions: "Open actions",
   fixWay_object_actions: "Disable or remove", fixWayHint_object_actions: "The actions of the object: disable, remove, exchange, each with a preview.",
   fixWay_replace_target: "Replace the target", fixWayHint_replace_target: "Move every place that names the missing target to an existing one: for an entity with a similar one proposed, for an area, floor or label as you choose (only where the key for it stands). The preview shows each place.",
   fixWay_open_editor: "Open in the editor", fixWayHint_open_editor: "Adjust the place in Home Assistant yourself.", fixReplaceStart: "Replace …", fixReplaceWith: "Replace with", fixReplaceNone: "There is no other target of this kind to move to.",

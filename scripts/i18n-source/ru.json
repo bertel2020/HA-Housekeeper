@@ -6790,7 +6790,13 @@
 "fixIdleDays": "d5061147",
 "fixIdleDays1": "89e13f8f",
 "fixNeverTriggered": "c77b3d60",
-"fixSure": "4a1cfba2"
+"fixSure": "4a1cfba2",
+"fixBtn_mark": "425ae582",
+"fixBtn_object_actions": "f7139c7b",
+"fcPlanDisable": "b7e3e4aa",
+"fcPlanReload": "bdc090ec",
+"fcPlanRemove": "c3812fc4",
+"fcPlanReplace": "95e15439"
 },
 "setup": {
 "title": "644c2647",

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"0003405621"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"c393315674"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"0731529462"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"9c4efe5aab"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"f31d1eecce"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"3df3e51db0"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"0739aff6bb"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"0f762c69a1"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"195a128748"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"7ae0a53dfd"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"492b95d77c"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"ce7c716b08"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"7d99edfa53"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"829444ace2"}];
 
 const TEXT = {
   de: {
@@ -21731,8 +21731,8 @@ class FixMixin {
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${this.t("fixOpenHA")}</button>`;
     else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${this.t("fixBtn_disable_automation")}</button>`;
     else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${this.t("fixBtn_delete_automation")}</button>`;
-    else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("markSet")}</button>`;
-    else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixOpenActions")}</button>`;
+    else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${this.t("fixBtn_mark")}</button>`;
+    else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${this.t("fixBtn_object_actions")}</button>`;
     return `<div class="row fixway"><span class="row-text"><strong>${this.esc(this.t(`fixWay_${w.way}`))}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span>${action}</div>`;
   }
 
@@ -21895,7 +21895,7 @@ Object.assign(TEXT.de, {
   fixWay_exchange: "Gerät austauschen", fixWayHint_exchange: "Für ein ersetztes Gerät: Automationen und Szenen auf das neue Gerät umstellen.",
   fixWay_replace_entity: "Entität ersetzen", fixWayHint_replace_entity: "Alle Stellen, die diese Entität nutzen, auf eine andere umstellen.",
   fixWay_disable_automation: "Automation deaktivieren", fixWayHint_disable_automation: "Schaltet die Automation aus; sie bleibt erhalten und lässt sich wieder einschalten. Mit Vorschau, Bestätigung und Rückgängig.",
-  fixWay_delete_automation: "Automation löschen", fixWayHint_delete_automation: "Entfernt die Automation. Du siehst zuerst eine Vorschau; gelöscht wird erst, wenn du bestätigst.", fixBtn_disable_automation: "Deaktivieren", fixBtn_delete_automation: "Löschen",
+  fixWay_delete_automation: "Automation löschen", fixWayHint_delete_automation: "Entfernt die Automation. Du siehst zuerst eine Vorschau; gelöscht wird erst, wenn du bestätigst.", fixBtn_disable_automation: "Deaktivieren", fixBtn_delete_automation: "Löschen", fixBtn_mark: "Notiz setzen", fixBtn_object_actions: "Aktionen öffnen",
   fixWay_object_actions: "Deaktivieren oder entfernen", fixWayHint_object_actions: "Die Aktionen des Objekts: deaktivieren, entfernen, austauschen, jeweils mit Vorschau.",
   fixWay_replace_target: "Ziel ersetzen", fixWayHint_replace_target: "Alle Stellen, die das fehlende Ziel nennen, auf ein vorhandenes umstellen: bei einer Entität mit einem ähnlichen Vorschlag, bei Bereich, Etage und Label nach deiner Wahl (nur dort, wo der Schlüssel dafür steht). Die Vorschau zeigt jede Stelle.",
   fixWay_open_editor: "Im Editor öffnen", fixWayHint_open_editor: "Die Stelle in Home Assistant selbst anpassen.", fixReplaceStart: "Ersetzen …", fixReplaceWith: "Ersetzen durch", fixReplaceNone: "Es gibt kein anderes Ziel dieser Art, auf das sich umstellen ließe.",
@@ -21926,7 +21926,7 @@ Object.assign(TEXT.en, {
   fixWay_exchange: "Exchange the device", fixWayHint_exchange: "For a replaced device: move automations and scenes to the new device.",
   fixWay_replace_entity: "Replace the entity", fixWayHint_replace_entity: "Move every place that uses this entity to another one.",
   fixWay_disable_automation: "Disable the automation", fixWayHint_disable_automation: "Switches the automation off; it is kept and can be switched on again. With preview, confirmation and undo.",
-  fixWay_delete_automation: "Delete the automation", fixWayHint_delete_automation: "Removes the automation. You see a preview first; nothing is deleted until you confirm.", fixBtn_disable_automation: "Disable", fixBtn_delete_automation: "Delete",
+  fixWay_delete_automation: "Delete the automation", fixWayHint_delete_automation: "Removes the automation. You see a preview first; nothing is deleted until you confirm.", fixBtn_disable_automation: "Disable", fixBtn_delete_automation: "Delete", fixBtn_mark: "Set a note", fixBtn_object_actions: "Open actions",
   fixWay_object_actions: "Disable or remove", fixWayHint_object_actions: "The actions of the object: disable, remove, exchange, each with a preview.",
   fixWay_replace_target: "Replace the target", fixWayHint_replace_target: "Move every place that names the missing target to an existing one: for an entity with a similar one proposed, for an area, floor or label as you choose (only where the key for it stands). The preview shows each place.",
   fixWay_open_editor: "Open in the editor", fixWayHint_open_editor: "Adjust the place in Home Assistant yourself.", fixReplaceStart: "Replace …", fixReplaceWith: "Replace with", fixReplaceNone: "There is no other target of this kind to move to.",
@@ -23684,7 +23684,7 @@ Object.assign(TEXT.de, {
   fcRecPickAllText: "Nichts verweist darauf. Es läuft erst am Ende als ein Plan mit Vorschau und Backup.",
   fcRecRestText: "{n} Befunde mit niedriger Wirkung oder Info, nichts ist zu tun und an Home Assistant ändert sich nichts. Sie kommen nach {days} Tagen zurück.",
   fcFixWaysHead: "Wege zum Beheben",
-  fcPlanPreview: "Vorschau", fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
+  fcPlanDisable: "Deaktivieren", fcPlanReload: "Neu laden", fcPlanRemove: "Entfernen", fcPlanReplace: "Ersetzen", fcPlanPreview: "Vorschau", fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
   fcCheck: "Prüfen", fcCheckHint: "Strom, Netz und Hersteller ansehen, dann prüft Housekeeper, ob es wieder meldet.", fcCheckHead: "Das Gerät prüfen",
   fcCheck1: "Strom und Netzwerk des Geräts prüfen: ist es eingeschaltet und im WLAN?", fcCheck2: "Beim Hersteller oder in dessen App nachsehen, ob eine Störung gemeldet ist.", fcCheck3: "Hängt das Gerät an einer Integration, kann ein Neuladen helfen: Einstellungen → Geräte & Dienste.", fcCheckThen: "Danach schaut Housekeeper noch einmal nach. Den Befund schließt erst der nächste Scan.",
   fcRecNoFixFollows: "{n} Folgen hängen daran. Housekeeper kann hier nichts reparieren; ist es absichtlich aus, stellt eine Objekt-Notiz den Ausfall samt Folgen still.",
@@ -23711,7 +23711,7 @@ Object.assign(TEXT.en, {
   fcRecPickAllText: "Nothing refers to them. It only runs at the end as one plan with preview and backup.",
   fcRecRestText: "{n} findings with low impact or info, nothing to do and nothing changes in Home Assistant. They come back after {days} days.",
   fcFixWaysHead: "Ways to fix it",
-  fcPlanPreview: "Preview", fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
+  fcPlanDisable: "Disable", fcPlanReload: "Reload", fcPlanRemove: "Remove", fcPlanReplace: "Replace", fcPlanPreview: "Preview", fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
   fcCheck: "Check", fcCheckHint: "Look at power, network and the maker, then Housekeeper checks whether it reports again.", fcCheckHead: "Check the device",
   fcCheck1: "Check the power and network of the device: is it on and on the Wi-Fi?", fcCheck2: "Look at the maker or its app for a reported fault.", fcCheck3: "If the device belongs to an integration, reloading it can help: Settings → Devices & services.", fcCheckThen: "Afterwards Housekeeper looks once more. Only the next scan closes the finding.",
   fcRecNoFixFollows: "{n} findings hang on it. Housekeeper cannot repair anything here; if it is off on purpose, an object note silences the outage with everything that follows.",
@@ -23721,6 +23721,8 @@ Object.assign(TEXT.en, {
   fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
 });
 
+// The button of a way says what it does; the preview is the next step.
+const FC_PLAN_VERBS = { disable_entity: "fcPlanDisable", reload_integration: "fcPlanReload", remove_entity: "fcPlanRemove", replace_references: "fcPlanReplace" };
 class FcRecommendMixin {
   // A card of stage 1 or 3: a finding with its object. Returns { act, head, body }; `act` names the answer that is recommended.
   fcRecCard(f, key) {
@@ -23780,7 +23782,7 @@ class FcRecommendMixin {
 
   // One way of an object as a row: its name, what it does, and the preview of its plan (or the old "Open").
   fcWayRow(it, key) {
-    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t("fcPlanPreview")}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${this.t(it.btn || "actOpen")}</button>`}</div>`;
+    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><strong>${it.label}</strong><small>${this.t(it.hint)}</small></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${this.t(FC_PLAN_VERBS[it.plan.kind] || "fcPlanPreview")}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${this.t(it.btn || "actOpen")}</button>`}</div>`;
   }
 
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it.
