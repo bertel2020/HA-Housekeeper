@@ -18,7 +18,9 @@ class FixMixin {
   openFix(key, all = "") {
     this.noteJump("fix");
     // The page decides on its own selection; the one of the list waits for the way back.
-    if (this.view !== "fix") { this._findSelBack = this.findSel; this.findSel = new Set(); }
+    // The picks of the list wait until the page is left; the picks of one Fix page do not ride along to the next.
+    if (this.view !== "fix") this._findSelBack = this.findSel;
+    this.findSel = new Set();
     this.fixAll = all;
     this.view = "fix"; this.fixKey = key; this.fixWays = null; this.fixWaysFailed = false; this.fixFailure = null; this.fixCheckedFrom = null; this.fixLive = null; this.fixWatchUntil = 0; this.stopFixWatch(); this.selected = null; this.pages = {};
     this.fixStep = 1; this.fixMax = 1; this.fixPreselect = Boolean(all);

@@ -9185,3 +9185,17 @@ test("the card offers undo only for a plan that can be undone", () => {
   el.plan = plan("remove_entity");
   assert.ok(el.fcPlanBlock().includes("data-fc-plan-undo"), "a removal can");
 });
+
+test("the head of a group picks only its own findings, and a Fix page does not take over the picks of the page before", () => {
+  const { el } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], causes: [] };
+  el.findSel = new Set(["x", "y"]);
+  el._findGroups = { g1: ["a", "b"] };
+  el.pickGroup("g1");
+  assert.deepEqual([...el.findSel].sort(), ["a", "b"], "the earlier picks do not ride along with 'Decide all 2'");
+  el.findSel = new Set(["p"]);
+  el.view = "fix";
+  el.render = () => {};
+  el.openFix("k2");
+  assert.equal(el.findSel.size, 0, "going from one Fix page to another starts without picks");
+});
