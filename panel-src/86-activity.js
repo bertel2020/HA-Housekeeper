@@ -105,9 +105,9 @@ Object.assign(TEXT.de, {
   actEmpty: "Noch nichts zu zeigen.", actEmptyNext: "Hier erscheint, was entschieden, vermerkt oder ausgeführt wird.",
   actFilter_all: "Alle", actFilter_decision: "Entscheidungen", actFilter_mark: "Objekt-Notizen", actFilter_plan: "Pläne", actFilter_note: "Logbuch", actFilter_auto: "Automatisch",
   actSource_cleanup: "Aufräumen", actSource_list: "Befundliste", actSource_plan: "Plan", actSource_mcp: "Dienst", actSource_system: "Housekeeper",
-  act_decision: "Entscheidung", act_decision_ignore: "Als Fehlalarm festgehalten", act_decision_keep: "Als so gewollt festgehalten", act_decision_snooze: "Auf „Später“ gestellt", act_decision_unignore: "Wieder eingeblendet", act_decision_nothanks: "Vorschlag abgelehnt („Nein danke“)", act_decision_undo: "Entscheidung zurückgenommen",
-  act_mark: "Objekt-Notiz", act_mark_expected_offline: "Notiert: soll offline sein", act_mark_seasonal: "Notiert: saisonal", act_mark_spare: "Notiert: Reserve", act_mark_keep: "Notiert: nicht löschen", act_mark_replaced: "Notiert: ersetzt", act_mark_clear: "Objekt-Notiz entfernt", act_mark_undo: "Objekt-Notiz zurückgenommen",
-  act_plan: "Plan ausgeführt", act_plan_undo: "Plan zurückgenommen", act_note: "Logbuch", act_note_save: "Logbuch-Eintrag", act_note_delete: "Logbuch-Eintrag gelöscht", act_auto: "Von selbst", act_auto_lifted: "Von selbst zurück, weil es schlimmer wurde:",
+  act_decision: "Entscheidung", act_decision_ignore: "Als Fehlalarm festgehalten", act_decision_keep: "Als so gewollt festgehalten", act_decision_snooze: "Auf „Später“ gestellt", act_decision_unignore: "Wieder eingeblendet", act_decision_nothanks: "Vorschlag abgelehnt („Nein danke“)", act_decision_undo: "Entscheidung rückgängig gemacht",
+  act_mark: "Objekt-Notiz", act_mark_expected_offline: "Notiert: soll offline sein", act_mark_seasonal: "Notiert: saisonal", act_mark_spare: "Notiert: Reserve", act_mark_keep: "Notiert: nicht löschen", act_mark_replaced: "Notiert: ersetzt", act_mark_clear: "Objekt-Notiz entfernt", act_mark_undo: "Objekt-Notiz rückgängig gemacht",
+  act_plan: "Plan ausgeführt", act_plan_undo: "Plan rückgängig gemacht", act_note: "Logbuch", act_note_save: "Logbuch-Eintrag", act_note_delete: "Logbuch-Eintrag gelöscht", act_auto: "Von selbst", act_auto_lifted: "Von selbst zurück, weil es schlimmer wurde:",
 });
 Object.assign(TEXT.en, {
   actTab: "Activity", actTabHint: "What was done in Housekeeper: decisions, object notes, plans, logbook.",

@@ -99,7 +99,7 @@ Object.assign(TEXT.de, {
   roundBlocked: "Jetzt nicht entfernbar", roundBlockedHint: "Der Plan würde es sperren. Du kannst es behalten.",
   roundRemove: "Entfernen", roundDelete: "Löschen", roundDisable: "Deaktivieren", roundMerge: "Zusammenführen", roundKeep: "Behalten", roundPickAll: "Alle wählen",
   roundFirstStep: "erst deaktivieren (Quarantäne)", roundDuplicateOf: "mögliches Duplikat von {name}",
-  roundPlan: "Plan anlegen ({n})", roundPlanHint: "Der Plan zeigt jede Änderung zur Vorschau; nichts läuft ohne deine Bestätigung. Backup und Zurücknehmen wie sonst.",
+  roundPlan: "Plan anlegen ({n})", roundPlanHint: "Der Plan zeigt jede Änderung zur Vorschau; nichts läuft ohne deine Bestätigung. Backup und Rückgängig wie sonst.",
   roundEmpty: "Nichts Überflüssiges offen.", roundKeepReason: "In der Aufräum-Runde behalten", fixWay_cleanup_round: "Aufräum-Runde", fixWayHint_cleanup_round: "Alles Überflüssige durchgehen: sicher Entfernbares gesammelt, den Rest einzeln, jeweils mit Behalten.", 
 });
 Object.assign(TEXT.en, {

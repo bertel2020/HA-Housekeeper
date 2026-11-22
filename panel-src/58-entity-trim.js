@@ -1,7 +1,7 @@
 // "Trim history" on the page of one entity: states, short-term and long-term statistics, older than X days or a stretch of
 // states; mixed into the panel in 99-register.js. It makes the same plan action as the recorder's trim block (trim_history).
 Object.assign(TEXT.de, {
-  etTitle: "Verlauf kürzen", etHint: "Löscht gespeicherte Daten dieser Entität. Vorher siehst du, wie viele Zeilen wegfallen. Zurücknehmen geht nur mit dem Backup, das Housekeeper davor anlegt.",
+  etTitle: "Verlauf kürzen", etHint: "Löscht gespeicherte Daten dieser Entität. Vorher siehst du, wie viele Zeilen wegfallen. Rückgängig machen geht nur mit dem Backup, das Housekeeper davor anlegt.",
   etCount: "Erst zählen, dann siehst du, wie viele Zeilen gespeichert sind und was du kürzen kannst.", etNone: "Nichts gespeichert",
   etStates: "Zustände", etStatesHint: "Jede Änderung der Entität, wie sie im Verlauf und im Logbuch steht. Das ist der größte Teil der Datenbank.",
   etShort: "Kurzzeitstatistik", etShortHint: "Werte im 5-Minuten-Takt. Home Assistant hebt sie nur etwa 10 Tage auf und räumt sie selbst auf.",

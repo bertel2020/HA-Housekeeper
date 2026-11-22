@@ -10,10 +10,10 @@ Object.assign(TEXT.de, {
   trimTitle: "Alten Verlauf kürzen", trimHint: "Der Ausschluss gilt nur für neue Daten. Schon gespeicherte Zustände bleiben, bis du sie hier löschst.", trimChosen: "{count} Entitäten ausgewählt", trimChosenOne: "1 Entität ausgewählt",
   trimKeep: "Zustände behalten, die jünger sind als", trimDays: "{days} Tage", trimGone: "Wird gelöscht", trimGoneSub: "Zustände älter als {days} Tage", trimStay: "Bleibt", trimStaySub: "die letzten {days} Tage", trimEarlier: "früher", trimAgo: "vor {days} Tagen", trimToday: "heute",
   trimFactStats: "Statistiken bleiben", trimFactStatsSub: "Energie-Dashboard und Langzeitdiagramme ändern sich nicht.", trimFactRows: "Zeilenzahl erst in der Vorschau", trimFactRowsSub: "Du siehst pro Entität, wie viele Zeilen wegfallen, bevor etwas passiert.",
-  trimFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Zurücknehmen geht nur mit diesem Backup.", trimPreview: "Kürzen: Vorschau ({count})", trimPreviewOne: "Kürzen: Vorschau (1)", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
+  trimFoot: "Vor dem Löschen legt Housekeeper ein Home-Assistant-Backup mit Datenbank an. Rückgängig machen geht nur mit diesem Backup.", trimPreview: "Kürzen: Vorschau ({count})", trimPreviewOne: "Kürzen: Vorschau (1)", trimBusy: "Plan wird erstellt …", trimFailed: "Der Plan konnte nicht erstellt werden: {detail}",
   trimSub: "älter als {days} Tage: {rows} Zeilen", reason_bad_keep_days: "Die Zeit zum Behalten ist ungültig.", reason_not_counted: "Die Zeilen ließen sich nicht zählen.", reason_nothing_to_trim: "Nichts zu löschen: Es gibt keine so alten Zustände.",
   check_history_trimmed: "Alter Verlauf ist gelöscht", abort_trim_unverified: "Gelöscht, aber die übrigen Zeilen ließen sich nicht zählen.", abort_trim_left: "Nach dem Löschen gab es noch ältere Zeilen.",
-  confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Das Backup enthält die Datenbank. Das lässt sich nur mit dem Backup zurücknehmen.",
+  confirmedSummaryTrim: "Der alte Verlauf von {count} Entitäten wird gelöscht. Das Backup enthält die Datenbank. Das lässt sich nur mit dem Backup rückgängig machen.",
 });
 Object.assign(TEXT.en, {
   exclHint: "This changes nothing in Home Assistant, it is only text to paste. Excluded entities have no history afterwards.",

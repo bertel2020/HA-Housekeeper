@@ -85,7 +85,7 @@ class SafetyMixin {
 }
 Object.assign(TEXT.de, {
   safeLabel: "Sicherheitsstatus", safeBackup: "Letztes Backup: vor {age}", safeNoBackup: "Kein Backup gefunden",
-  safeLast: "Letzter Plan: {when}", safeUndo: "rückgängig möglich", safeNoUndo: "endgültig", safeUndoTip: "Mit dem Backup lässt sich der Plan zurücknehmen. Klick öffnet das Journal.", safeNoUndoTip: "Nicht mehr rückgängig: das Backup dazu ist weg oder zu alt. Klick öffnet das Journal.", safeView: "Ansicht: {view}", safeAi: "KI-Zugriff: {mode}",
+  safeLast: "Letzter Plan: {when}", safeUndo: "rückgängig möglich", safeNoUndo: "endgültig", safeUndoTip: "Mit dem Backup lässt sich der Plan rückgängig machen. Klick öffnet das Journal.", safeNoUndoTip: "Nicht mehr rückgängig: das Backup dazu ist weg oder zu alt. Klick öffnet das Journal.", safeView: "Ansicht: {view}", safeAi: "KI-Zugriff: {mode}",
   safeRunning: "Ein Plan läuft", safeBackupRunning: "Backup für einen Plan läuft", safeWatching: "{n} Pläne werden nachbeobachtet", safeWatching1: "1 Plan wird nachbeobachtet", safeWatchingTip: "Bis 24 Stunden nach der Ausführung prüft Housekeeper bei jedem Scan, ob neue Befunde dazugekommen sind.", safeRegression: "{n} Rückfall nach Änderung",
   healthScore: "{percent} / 100 gesund", healthAffected: "{affected} von {base} bewerteten Objekten betroffen",
   healthWord_ok: "In Ordnung", healthWord_warn: "Prüfen nötig", healthWord_red: "Handlungsbedarf",

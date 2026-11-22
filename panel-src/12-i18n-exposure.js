@@ -13,9 +13,9 @@ Object.assign(TEXT.de, {
   expoText_stale_exposed: "{n} Entitäten sind freigegeben, obwohl sie deaktiviert oder verwaist sind.",
   expoText_alias_duplicate: "„{alias}“ heißt bei {assistant} {n} Entitäten. Der Assistent kann sie nicht auseinanderhalten.",
   expoText_webhook_orphan: "{n} Webhooks gehören zu „{domain}“, einer Integration, die nicht mehr eingerichtet ist. Die IDs zeigt Housekeeper bewusst nicht an.",
-  expoAdvice_diagnostic_exposed: "Freigabe zurücknehmen. Der Knopf macht daraus einen Plan mit Vorschau.",
+  expoAdvice_diagnostic_exposed: "Freigabe entziehen. Der Knopf macht daraus einen Plan mit Vorschau.",
   expoAdvice_sensitive_exposed: "Nur zur Kenntnis, bis du es willst: Housekeeper ändert nichts von selbst. Der Knopf oder das Zeilenmenü nimmt die Freigabe mit Vorschau zurück.",
-  expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe zurücknehmen. Der Knopf macht daraus einen Plan mit Vorschau.",
+  expoAdvice_stale_exposed: "Entität aufräumen oder die Freigabe entziehen. Der Knopf macht daraus einen Plan mit Vorschau.",
   expoAdvice_alias_duplicate: "Einen der Namen ändern, damit die Sprachbefehle eindeutig sind.",
   expoAdvice_webhook_orphan: "Die Integration neu einrichten oder die Reste entfernen, falls sie nicht mehr gebraucht werden.",
   expoKind_google_without_pin: "Google öffnet ohne PIN", expoKind_auto_expose: "Neue Entitäten werden automatisch freigegeben",
@@ -64,13 +64,13 @@ Object.assign(TEXT.en, {
 Object.assign(TEXT.de, {
   expoActRemove: "Freigaben entfernen …", expoActPin: "PIN wieder verlangen …", expoActNewOff: "Neue nicht mehr automatisch freigeben …",
   expoActRemoveOne: "Freigabe entfernen …", expoActRemoveFrom: "Aus {name} entfernen …", expoOpenNames: "Sprachnamen in Home Assistant öffnen", expoPlanNewOff: "neue Entitäten nicht mehr automatisch freigeben",
-  confirmedSummaryExposeNew: "Neue Entitäten werden bei {count} Assistenten nicht mehr automatisch freigegeben. Was schon freigegeben ist, bleibt freigegeben. Das lässt sich zurücknehmen.",
+  confirmedSummaryExposeNew: "Neue Entitäten werden bei {count} Assistenten nicht mehr automatisch freigegeben. Was schon freigegeben ist, bleibt freigegeben. Das lässt sich rückgängig machen.",
   expoPlanRemove: "aus {list} nehmen", expoPlanPin: "Google fragt wieder nach der PIN",
   reason_filtered_by_yaml: "Ein Filter in der YAML-Konfiguration von Nabu Casa legt die Freigabe fest. Hier lässt sie sich nicht ändern.",
   abort_integration_reload_failed: "Das Neuladen der Integration ist fehlgeschlagen. Sieh im Protokoll nach, was die Integration meldet.", abort_integration_reload_timeout: "Die Integration lädt noch. Das Ergebnis steht in der Prüfung, sobald sie fertig ist (oder ist nicht eingetreten).",
   reason_filter_unknown: "Ob ein Filter in der YAML-Konfiguration von Nabu Casa die Freigabe festlegt, ließ sich nicht lesen. Wenn ja, bleibt die Entität trotzdem freigegeben.",
   check_exposure_set: "Freigabe ist geändert", result_exposure: "Freigabe geändert", actKind_set_exposure: "Freigabe geändert",
-  confirmedSummaryExposure: "{count} Entitäten werden bei Assistenten abgewählt oder verlangen bei Google wieder die PIN. Alexa und Google synchronisieren sofort: Alexa-Routinen mit diesen Geräten können ausfallen, und ein Rückgängig stellt sie in der Alexa-App nicht wieder her. Die Freigabe selbst lässt sich zurücknehmen.",
+  confirmedSummaryExposure: "{count} Entitäten werden bei Assistenten abgewählt oder verlangen bei Google wieder die PIN. Alexa und Google synchronisieren sofort: Alexa-Routinen mit diesen Geräten können ausfallen, und ein Rückgängig stellt sie in der Alexa-App nicht wieder her. Die Freigabe selbst lässt sich rückgängig machen.",
   sim_exposure_set: "{count} Entitäten ändern ihre Freigabe",
 });
 Object.assign(TEXT.en, {

@@ -37,7 +37,7 @@ Object.assign(TEXT.de, {
   err_busy_starting: "Home Assistant startet noch, oder ein Plan oder eine Änderung läuft.", err_busy_change: "Es läuft bereits eine andere Änderung.",
   err_nothing_to_change: "Es gibt nichts zu ändern.", err_out_of_order: "Nicht angenommen: falsche Reihenfolge.", err_plan_not_run: "Nicht angenommen: der Plan ist nicht gelaufen.", err_invalid_window: "Das Zeitfenster ist ungültig.",
   err_date_invalid: "Dieses Datum gibt es nicht.", err_date_future: "Das Datum liegt in der Zukunft.",
-  err_activity_changed: "Danach wurde etwas daran geändert. Es wurde nichts zurückgenommen.",
+  err_activity_changed: "Danach wurde etwas daran geändert. Es wurde nichts rückgängig gemacht.",
   err_not_loaded: "HA Housekeeper ist nicht geladen.", err_panel_only: "Das geht nur im Panel, nicht über Programme, Apps oder langlebige Zugriffstoken.", err_days_required: "„Später“ braucht eine Frist in Tagen.", err_days_required_critical: "Dieses Objekt ist kritisch: „Ist so gewollt“ braucht eine Frist in Tagen.", err_reason_required: "„Ist so gewollt“ braucht einen Grund.",
   err_invalid_limit: "Der Grenzwert liegt außerhalb des erlaubten Bereichs.", err_no_recorder: "Der Recorder ist nicht verfügbar.", err_nothing_to_merge: "Nach den Konflikten bleibt nichts übrig.",
   err_invalid_format: "Eine Angabe ist nicht gültig. Prüfe die Eingaben und versuche es noch einmal.", err_rules_too_many: "Zu viele Regeln.", err_rules_invalid: "Die Regel ist nicht gültig.", err_invalid: "Die Eingabe ist nicht gültig.",
