@@ -9118,3 +9118,14 @@ test("a failed load of the ways or of the quick look says so and offers to try a
   await el.fixLook();
   assert.equal(el.fixLive.result, "error", "a failed look is an error, not 'unknown'");
 });
+
+test("after a way that is only advice the check of the Fix page stays reachable", () => {
+  const { el } = panel("en");
+  const f = { key: "k", rule_id: "config_entry.not_loaded", object_id: "e1", topic: "down", impact: "medium", ignored: false };
+  el.data = { ...DATA, findings: [f], objects: [], causes: [] };
+  el.fixKey = "k";
+  el.fixWays = [{ way: "wait", kind: "info", recommended: true }];
+  assert.ok(el.fixDecide(f).includes("data-fix-self-done"), "waiting for the integration still leads to the check");
+  el.fixWays = [{ way: "reload", kind: "panel", recommended: true }];
+  assert.ok(!el.fixDecide(f).includes("data-fix-self-done"), "a way with a button of its own sets the mark when it is used");
+});

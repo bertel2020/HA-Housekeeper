@@ -21786,7 +21786,8 @@ class FixMixin {
     const exit = (kind, icon) => `<button type="button" class="btn" data-decide-open="${this.esc(f.key)}" data-decide-preset="${kind}" title="${this.esc(this.t(`decideKindHint_${kind}`))}"><ha-icon icon="${icon}"></ha-icon>${this.t(`decideKind_${kind}`)}</button>`;
     // The exits decide one finding; for a missing target the selection below decides several.
     if (this.fixAll) return `${error}${list}`;
-    const self = f.in_work ? `<button type="button" class="btn" data-fix-self-done><ha-icon icon="mdi:check"></ha-icon>${this.t("fixSelfDone")}</button>` : "";
+    // A way that is only advice (wait, restart, start the app) sets no "in work" mark: the check after it stays reachable all the same.
+    const self = f.in_work || (ways || []).some(w => w.kind === "info") ? `<button type="button" class="btn" data-fix-self-done><ha-icon icon="mdi:check"></ha-icon>${this.t("fixSelfDone")}</button>` : "";
     return `${error}${list}<div class="fixexits"><small class="fceyebrow">${this.t("fixExits")}</small><div class="mbtns">${outageNote ? "" : exit("keep", "mdi:check")}${exit("snooze", "mdi:clock-outline")}${exit("ignore", "mdi:bell-off-outline")}${self}</div>${outageNote ? `<small class="factnote">${this.t("fixKeepMoved")}</small>` : ""}</div>${this.rowDecide(f)}`;
   }
 
