@@ -640,7 +640,7 @@ class CleanupMixin {
     else if (open && !conf) {
       const run = this.runActions(plan);
       const blocked = this.modeBlocked(plan);
-      const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
+      const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind) || DELETE_KINDS.includes(a.kind));
       control = `<div class="setrow planfoot planfootcol"><div><div class="planready"><ha-icon icon="mdi:play-circle-outline" aria-hidden="true"></ha-icon><div><strong class="plansum">${this.t("planReadyTitle")}</strong>${run.length ? `<p class="plantext">${this.confirmSummary(plan, run.length)}</p>` : ""}<small>${this.t("cleanupDryRun")}</small></div></div>${this.largeRemovalNote(plan)}${this.purgeStatesSwitch(plan)}${this.planBackupCard(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn planback" data-plan-close><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("wzBack")}</button><button class="btn" data-plan-discard>${this.t("planDiscard")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "skipBackup" : "runNow")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {

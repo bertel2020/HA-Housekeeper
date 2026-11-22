@@ -14,6 +14,8 @@ const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replac
 // Kinds that write into the recorder database: their backup cannot be skipped.
 const DATABASE_KINDS = ["repair_counter", "repair_range", "purge_statistics", "trim_history", "migrate_meter"];
 const PURGE_KINDS = ["purge_statistics", "trim_history", "delete_backup"];
+// What the plan cannot bring back as it was (an automation or helper is created anew from its copy): the final button is red.
+const DELETE_KINDS = ["delete_automation", "remove_helper"];
 // Reasons that mean "all is well, there is nothing to do" and not "Housekeeper may not".
 const NOTHING_REASONS = ["nothing_found", "nothing_to_do"];
 // A plan removing this share of all entities or devices (or more) gets a warning before it is confirmed.

@@ -161,7 +161,7 @@ class FcRecommendMixin {
   // The same question as on the plan page: what runs, the warning for a large removal, and a red button for what cannot come back.
   fcPlanRun() {
     if (!this.plan || this.cleanupBusy || this.modeBlocked(this.plan).length) return;
-    const run = this.runActions(this.plan), risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
+    const run = this.runActions(this.plan), risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind) || DELETE_KINDS.includes(a.kind));
     this.confirmAsk(this.confirmSummary(this.plan, run.length), async () => {
       await this.confirmAndRun();
       if (this.cleanupError) this.fcPlanError = this.cleanupError;

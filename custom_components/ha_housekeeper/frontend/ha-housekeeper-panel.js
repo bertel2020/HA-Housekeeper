@@ -391,6 +391,8 @@ const BACKUP_KINDS = ["remove_entity", "remove_device", "forget_device", "replac
 // Kinds that write into the recorder database: their backup cannot be skipped.
 const DATABASE_KINDS = ["repair_counter", "repair_range", "purge_statistics", "trim_history", "migrate_meter"];
 const PURGE_KINDS = ["purge_statistics", "trim_history", "delete_backup"];
+// What the plan cannot bring back as it was (an automation or helper is created anew from its copy): the final button is red.
+const DELETE_KINDS = ["delete_automation", "remove_helper"];
 // Reasons that mean "all is well, there is nothing to do" and not "Housekeeper may not".
 const NOTHING_REASONS = ["nothing_found", "nothing_to_do"];
 // A plan removing this share of all entities or devices (or more) gets a warning before it is confirmed.
@@ -5088,7 +5090,7 @@ class CleanupMixin {
     else if (open && !conf) {
       const run = this.runActions(plan);
       const blocked = this.modeBlocked(plan);
-      const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
+      const risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind) || DELETE_KINDS.includes(a.kind));
       control = `<div class="setrow planfoot planfootcol"><div><div class="planready"><ha-icon icon="mdi:play-circle-outline" aria-hidden="true"></ha-icon><div><strong class="plansum">${this.t("planReadyTitle")}</strong>${run.length ? `<p class="plantext">${this.confirmSummary(plan, run.length)}</p>` : ""}<small>${this.t("cleanupDryRun")}</small></div></div>${this.largeRemovalNote(plan)}${this.purgeStatesSwitch(plan)}${this.planBackupCard(plan)}${blocked.length ? this.modeHint(blocked) : ""}${run.length ? "" : `<small class="dim7">${this.t("nothingToRun")}</small>`}</div><span class="planfootbtns"><button class="btn planback" data-plan-close><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("wzBack")}</button><button class="btn" data-plan-discard>${this.t("planDiscard")}</button><button class="btn ${risky || this.skipBackupOn(plan) ? "danger" : "primary"}" data-plan-confirm data-risky="${risky}" data-count="${run.length}" ${blocked.length || !run.length ? `disabled title="${this.esc(blocked.length ? this.t("modeBlockTitle", { mode: this.modeName() }) : this.t("nothingToRun"))}"` : ""}>${this.t(this.skipBackupOn(plan) ? "skipBackup" : "runNow")}</button></span></div>`;
     }
     else if (plan.status === "aborted") {
@@ -23869,7 +23871,7 @@ class FcRecommendMixin {
   // The same question as on the plan page: what runs, the warning for a large removal, and a red button for what cannot come back.
   fcPlanRun() {
     if (!this.plan || this.cleanupBusy || this.modeBlocked(this.plan).length) return;
-    const run = this.runActions(this.plan), risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind));
+    const run = this.runActions(this.plan), risky = run.some(a => REMOVAL_KINDS.includes(a.kind) || PURGE_KINDS.includes(a.kind) || DELETE_KINDS.includes(a.kind));
     this.confirmAsk(this.confirmSummary(this.plan, run.length), async () => {
       await this.confirmAndRun();
       if (this.cleanupError) this.fcPlanError = this.cleanupError;

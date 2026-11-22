@@ -9087,3 +9087,17 @@ test("an object note set from a card counts once on the closing page", () => {
   const facts = el.fcFacts();
   assert.equal(facts.done, 4, "one note from a card and three of stage 2 are four answers, not five");
 });
+
+test("deleting an automation or a helper is confirmed with the red button like a removal", () => {
+  const { el, shadow } = panel("en");
+  el.data = { ...DATA, objects: [], edges: [], findings: [], quarantine: [] };
+  el.view = "plan";
+  el.journal = [];
+  el._hass = { language: "en", callWS: async () => ({ plan_id: "p3", token: "t", expires_at: "x", execute: ["automation.a"], removals: [], needs_acknowledgement: [], skipped: [] }) };
+  for (const kind of ["delete_automation", "remove_helper", "add_label"]) {
+    el.plan = { plan_id: "p3", created_at: new Date().toISOString(), status: "dry_run", executed: false, summary: { total: 1, ok: 1, review: 0, blocked: 0 },
+      actions: [{ kind, object_id: "automation.a", name: "A", verdict: "ok", executable: true, reasons: [], used_by: [] }] };
+    el.render();
+    assert.ok(shadow.innerHTML.includes(`data-risky="${kind !== "add_label"}"`), `${kind}: the red button only where something is deleted`);
+  }
+});
