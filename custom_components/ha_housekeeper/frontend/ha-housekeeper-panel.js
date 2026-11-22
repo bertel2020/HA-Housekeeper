@@ -21746,8 +21746,8 @@ class FixMixin {
       ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${name}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${name}</button>`;
-    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-act-disable-auto="${this.esc(object.object_id)}"><ha-icon icon="mdi:cancel"></ha-icon>${name}</button>`;
-    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-auto-delete="${this.esc(object.object_id)}"><ha-icon icon="mdi:delete-outline"></ha-icon>${name}</button>`;
+    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-fc-plan="${this.esc(JSON.stringify({ kind: "disable_entity", object_id: object.object_id }))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}><ha-icon icon="mdi:cancel"></ha-icon>${name}</button>`;
+    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-fc-plan="${this.esc(JSON.stringify({ kind: "delete_automation", object_id: object.object_id }))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${name}</button>`;
     else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${name}</button>`;
     else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${name}</button>`;
     // A way with a button says what it does once, on the button; the explanation stands beside it. One without (wait, restart) keeps its name as the title.
@@ -21892,7 +21892,7 @@ class FixMixin {
     root.querySelectorAll("[data-fix-pick]").forEach(el => el.onchange = () => { if (el.checked) this.findSel.add(el.dataset.fixPick); else this.findSel.delete(el.dataset.fixPick); this.render(); });
     root.querySelectorAll("[data-fix-pick-all]").forEach(el => el.onclick = () => { JSON.parse(el.dataset.fixPickAll).forEach(k => this.findSel.add(k)); this.render(); });
     root.querySelectorAll("[data-fix-work-off]").forEach(el => el.onclick = () => this.fixWork(false));
-    root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-remove-all],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-look],[data-fix-check]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
+    root.querySelectorAll("[data-ha-path],[data-fix-replace],[data-fix-id-replace],[data-fix-remove],[data-fix-remove-all],[data-fix-catch],[data-fix-object],[data-fix-round],[data-fix-look],[data-fix-check],[data-fc-plan]").forEach(el => { if (this.view === "fix") el.addEventListener("click", () => this.fixWork(true)); });
     root.querySelectorAll("[data-fix-look]").forEach(el => el.onclick = () => this.startFixWatch());
     root.querySelectorAll("[data-fix-check]").forEach(el => el.onclick = () => { this.fixCheckedFrom = this.data?.meta?.scanned_at || ""; this.load(true); });
   }

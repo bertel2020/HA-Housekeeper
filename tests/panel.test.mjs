@@ -7133,9 +7133,9 @@ test("the way to fix an unused automation is deleting it with a preview, not a n
   const f = { rule_id: "automation.stale", object_id: "automation.c", classification: "stale", key: "k", ignored: false, evidence: [] };
   el.data = { ...DATA, objects: [...DATA.objects], findings: [f] };
   const card = el.fixWayCard({ way: "delete_automation", kind: "panel", recommended: false }, f);
-  assert.ok(card.includes('data-auto-delete="automation.c"') && card.includes("Delete the automation") && !card.includes("data-fix-object"));
+  assert.ok(card.includes('&quot;kind&quot;:&quot;delete_automation&quot;,&quot;object_id&quot;:&quot;automation.c&quot;') && card.includes("Delete the automation") && !card.includes("data-fix-object"));
   const off = el.fixWayCard({ way: "disable_automation", kind: "panel", recommended: false }, f);
-  assert.ok(off.includes('data-act-disable-auto="automation.c"') && off.includes("Disable the automation"));
+  assert.ok(off.includes('&quot;kind&quot;:&quot;disable_entity&quot;,&quot;object_id&quot;:&quot;automation.c&quot;') && off.includes("Disable the automation"));
   const menu = el.rowMenu(f);
   assert.ok(menu.includes('data-find-disable="automation.c"') && !menu.includes("data-auto-delete"), "disabling is offered, deleting is a way of the Fix page");
   assert.ok(!el.rowMenu({ ...f, rule_id: "automation.disabled_long" }).includes("data-find-disable"), "an automation that is off is not switched off again");
@@ -7953,7 +7953,7 @@ test("the ways of an unused automation stay in view, deleting is the last and so
   await new Promise(r => setTimeout(r, 0));
   const html = el.fixView();
   assert.ok(!html.includes("Other ways"));
-  assert.ok(html.indexOf("data-act-disable-auto") < html.indexOf("data-auto-delete") && html.includes("btn dangersoft\" data-auto-delete"));
+  assert.ok(html.indexOf("disable_entity") < html.indexOf("delete_automation") && html.includes("btn dangersoft\" data-fc-plan"), "disabling first, deleting last and soft red; both start their plan in the page");
   assert.ok(html.includes("fixroundlink") && html.includes("data-fix-round") && !html.includes("fixWay_cleanup_round"));
   assert.ok(html.includes("</ha-icon>Disable the automation</button>") && html.includes("</ha-icon>Delete the automation</button>") && !html.includes("<strong>Disable the automation") && html.includes("Or hide it, do not fix it") && html.includes("Not triggered for 112 days") && html.includes("fixhead"));
 });
