@@ -6020,7 +6020,7 @@
 "decideScope_object": "Todos los hallazgos futuros de este objeto",
 "decideScopeHint_object": "Una regla duradera; la ajustas en el paso siguiente.",
 "fixStepUnderstand": "Entender y decidir",
-"fixStepDecide": "Decidir",
+"fixStepDecide": "¿Qué hacer?",
 "fixStepRun": "Ejecutar",
 "fixStepCheck": "Comprobar",
 "fixRoundMore": "¿Limpiar más objetos?",

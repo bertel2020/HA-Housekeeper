@@ -3,7 +3,8 @@
 // existing steps (plan with preview, links into Home Assistant, marks, exits); it changes nothing by itself.
 // The ways that act on the object itself: they are shown as its plans; every other way has a card of its own.
 const FIX_OBJECT_WAYS = ["reload", "exchange", "replace_entity", "object_actions"];
-const FIX_FOLD_FROM = 4; // the ways of a finding fold from this many on
+const FIX_FOLD_FROM = 7; // the ways of a finding fold from this many on
+const FIX_WAY_ICONS = { replace_target: "mdi:swap-horizontal", remove_reference: "mdi:link-variant-minus", open_editor: "mdi:open-in-new", catch_error: "mdi:shield-check-outline", fix_cause: "mdi:arrow-right", cleanup_round: "mdi:broom", disable_automation: "mdi:cancel", delete_automation: "mdi:delete-outline", object_actions: "mdi:tools" };
 const FIX_WATCH_MS = 15 * 60 * 1000, FIX_WATCH_STEP_MS = 30 * 1000;
 class FixMixin {
   // "Fix all n": the page of a missing target; its follow-ups are the places that name it. One of them stands for the page.
@@ -104,7 +105,7 @@ class FixMixin {
 
   // The chips of the head: what is wrong (how long idle, how long down), what it affects, impact, how sure.
   fixChips(f, object, { since, outage, cause, own }) {
-    const chip = (icon, text, cls = "") => `<span class="fixchip ${cls}"><ha-icon icon="mdi:${icon}"></ha-icon>${this.esc(text)}</span>`;
+    const chip = (icon, text, cls = "", title = "") => `<span class="fixchip ${cls}"${title ? ` title="${this.esc(title)}"` : ""}><ha-icon icon="mdi:${icon}"></ha-icon>${this.esc(text)}</span>`;
     const unneeded = this.findingTopic(f) === "unneeded", span = since ? this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) : "";
     const first = unneeded
       ? chip("clock-outline", f.rule_id === "automation.stale" && object.last_triggered ? this.tCount("fixIdleDays", this.daysSince(object.last_triggered)) : f.rule_id === "automation.never_triggered" ? this.t("fixNeverTriggered") : this.findingTitle(f), "warn")
@@ -112,9 +113,10 @@ class FixMixin {
     const when = !unneeded && !outage && since ? chip("clock-outline", `${this.t("sortSince")} ${this.formatDate(since)}`) : "";
     const affects = cause && own && cause.kind === "device_down" ? this.causeDeviceLine(cause) : cause && own && cause.total_followers ? this.tCount("fixFollowers", cause.total_followers) : "";
     const impact = f.impact ? chip("eye-off-outline", this.impactLine(f)) : "";
-    const sure = f.confidence_level ? chip("shield-check-outline", this.t("fixSure", { n: Math.round(f.confidence * 100) })) : "";
+    // How the certainty comes about is a hint on the chip, not a chip of its own.
     const hint = f.confidence_level && !outage ? this.certaintyText(f).replace(/^[^.]*\d+\s*%\.\s*/, "") : "";
-    return [first, when, affects ? chip("link-variant", affects) : "", impact, sure, hint ? `<span class="fixchip hint">${this.esc(hint)}</span>` : ""].join("");
+    const sure = f.confidence_level ? chip("shield-check-outline", this.t("fixSure", { n: Math.round(f.confidence * 100) }), "", hint) : "";
+    return [first, when, affects ? chip("link-variant", affects) : "", impact, sure].join("");
   }
 
   // The object and the chips below it, instead of a row for each fact.
@@ -127,7 +129,7 @@ class FixMixin {
   }
 
   // One way as a card: its name, what it does, and the button that starts it; the recommended one is marked.
-  fixWayCard(w, f) {
+  fixWayCard(w, f, list = false) {
     const key = this.findingKey(f), object = this.findObject(key);
     let action = "";
     const name = this.t(`fixWay_${w.way}`);
@@ -157,16 +159,29 @@ class FixMixin {
     else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${name}</button>`;
     else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${name}</button>`;
     // A way with a button says what it does once, on the button; the explanation stands beside it. One without (wait, restart) keeps its name as the title.
+    // On the page Fix every way is one row: icon, what it does, and the button; only the recommended button is filled.
+    if (list) {
+      if (!action) return `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:information-outline"></ha-icon></span><span class="fctxt"><strong>${this.esc(name)}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span></div>`;
+      const icon = w.way === "mark" ? FSEL_ICONS.mark : FIX_WAY_ICONS[w.way] || "mdi:wrench-outline";
+      return this.fixRow(icon, this.t(`fixWayHint_${w.way}`), action.replace('class="btn', w.recommended ? 'class="btn primary' : 'class="btn'), w.recommended);
+    }
     const pill = w.recommended ? `<span class="pill ok">${this.t("fixRecommended")}</span> ` : "";
     const text = action ? `${pill}<span class="fixwayhint">${this.esc(this.t(`fixWayHint_${w.way}`))}</span>` : `<strong>${this.esc(name)}${pill ? ` ${pill.trim()}` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small>`;
     return `<div class="row fixway"><span class="row-text">${text}</span>${action}</div>`;
   }
 
-  // The plans of the object itself (disable, remove, replace the twin), each with its preview here; the rest is one button to the object.
-  fixObjectWays(object, key) {
+  // One way as a row of the list: icon, the sentence that says what it does (with the badge when it is the recommended one), the button.
+  fixRow(icon, hint, button, recommended) {
+    return `<div class="fcway"><span class="fcii fcii-${recommended ? "blue" : "mute"}"><ha-icon icon="${this.esc(icon)}"></ha-icon></span><span class="fctxt"><span class="fcwayhint">${recommended ? `<span class="pill ok">${this.t("fixRecommended")}</span> ` : ""}${this.esc(hint)}</span></span>${button}</div>`;
+  }
+
+  // The plans of the object itself (disable, remove, replace the twin) as rows, each with its preview here, and one row to the rest of the object's actions.
+  fixObjectRows(object, key, rec) {
     const items = this.fixItems(object, key).items, own = items.filter(it => it.plan);
     const more = items.length > own.length || !items.length;
-    return `<div class="fcways fixobjways"><small class="fceyebrow">${this.t("fixObjectWays")}</small>${own.map(it => this.fcWayRow(it, key)).join("")}${more ? `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:tools"></ha-icon></span><span class="fctxt"><strong>${this.t("fixOpenActions")}</strong><small>${this.t("fixMoreActionsHint")}</small></span><button type="button" class="btn quiet" data-fix-object="${this.esc(key)}">${this.t("actOpen")}</button></div>` : ""}</div>`;
+    const rows = own.map((it, i) => ({ rec: rec === it, html: this.fixRow(it.icon, this.t(it.hint), `<button type="button" class="btn${rec === it ? " primary" : ""}" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${it.label}</button>`, rec === it) }));
+    const rest = more ? { rec: false, html: `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:tools"></ha-icon></span><span class="fctxt"><strong>${this.t("fixOpenActions")}</strong><small>${this.t("fixMoreActionsHint")}</small></span><button type="button" class="btn" data-fix-object="${this.esc(key)}">${this.t("actOpen")}</button></div>` } : null;
+    return { rows, rest, own };
   }
 
   // Step 2: the recommended way first and large, the others folded, and the three exits as one line.
@@ -174,22 +189,29 @@ class FixMixin {
     const ways = this.fixWays, key = this.findingKey(f), object = this.findObject(key);
     const shown = ways && this.fixAll ? ways.filter(w => ["replace_target", "remove_reference"].includes(w.way)) : ways;
     const error = this.fcPlanError && !this.fcPlanKey ? `<div class="error">${this.esc(this.fcPlanError)}</div>` : "";
+    const sorted0 = ws => [...ws].sort((a, b) => Number(b.recommended) - Number(a.recommended));
     let list;
     if (shown === null) list = `<p class="factnote">${this.t("loading")}</p>`;
     else {
-      const sorted = [...shown].sort((a, b) => Number(b.recommended) - Number(a.recommended));
-      // The round is a tool for many objects: where it is not the recommended way, it is a link below, not a card.
-      const roundLink = sorted.some(w => w.way === "cleanup_round" && !w.recommended);
-      const entries = [];
-      for (const w of sorted.filter(x => !(x.way === "cleanup_round" && !x.recommended))) {
-        if (FIX_OBJECT_WAYS.includes(w.way) && object) { if (!entries.some(e => e.panel)) entries.push({ panel: true, html: this.fixObjectWays(object, key) }); }
-        else entries.push({ html: this.fixWayCard(w, f) });
+      // The round is a tool for many objects: next to an automation's own steps it is a link below, not a row.
+      const roundLink = f.topic === "unneeded" && sorted0(shown).some(w => ["disable_automation", "delete_automation"].includes(w.way)) && sorted0(shown).some(w => w.way === "cleanup_round");
+      const ways = sorted0(shown).filter(w => !(roundLink && w.way === "cleanup_round"));
+      const group = object ? this.fixObjectRows(object, key, null) : null;
+      // A possible duplicate with a working twin: replacing it is the answer, ahead of the general round.
+      const twin = group?.own.find(it => it.plan?.kind === "replace_references") && f.rule_id === "entity.possible_duplicate" ? group.own.find(it => it.plan?.kind === "replace_references") : null;
+      const objectRec = twin || (ways.some(w => FIX_OBJECT_WAYS.includes(w.way) && w.recommended) ? group?.own[0] : null) || null;
+      const objectRows = object ? this.fixObjectRows(object, key, objectRec) : { rows: [], rest: null };
+      const entries = [...objectRows.rows];
+      for (const w of ways) {
+        if (FIX_OBJECT_WAYS.includes(w.way) && object) continue;
+        entries.push({ rec: Boolean(w.recommended) && !twin, html: this.fixWayCard(w, f, true) });
       }
+      if (objectRows.rest) entries.push(objectRows.rest);
+      entries.sort((a, b) => Number(b.rec) - Number(a.rec));
       if (!entries.length) list = this.fixWaysFailed ? `<p class="factnote">${this.t("fixWaysFailed")}</p><button type="button" class="btn small" data-fix-ways-retry>${this.t("actRetry")}</button>` : `<p class="factnote">${this.t("fixNoWays")}</p>`;
       else {
-        // Up to three ways stay in view; the folding starts with four. Deleting is always the last of them.
-        const rest = entries.slice(1).map(e => e.html);
-        list = `<div class="fixrec">${entries[0].html}</div>${rest.length ? (entries.length <= FIX_FOLD_FROM - 1 ? `<div class="fixrest">${rest.join("")}</div>` : `<details class="fixmore"><summary>${this.t("fixOtherWays", { n: rest.length })}</summary>${rest.join("")}</details>`) : ""}`;
+        // Up to six ways stay in view; the folding starts with seven.
+        list = entries.length < FIX_FOLD_FROM ? `<div class="fixlist">${entries.map(e => e.html).join("")}</div>` : `<div class="fixlist">${entries[0].html}</div><details class="fixmore"><summary>${this.t("fixOtherWays", { n: entries.length - 1 })}</summary><div class="fixlist">${entries.slice(1).map(e => e.html).join("")}</div></details>`;
       }
       if (roundLink && !this.fixAll) list += `<p class="fixroundlink">${this.t("fixRoundMore")} <button type="button" class="link" data-fix-round>${this.t("fixRoundLink")}</button></p>`;
     }
@@ -308,7 +330,7 @@ Object.assign(TEXT.de, {
   fixNext: "Weiter", fixStepOf: "Schritt {n} von 3", fixObjectWays: "Am Objekt", fixMoreActionsHint: "Weitere Aktionen dieses Objekts, etwa austauschen oder Werte reparieren.", fixOtherWays: "Andere Wege ({n})", fixSelfDone: "Selbst erledigt: nachprüfen", fixRunNone: "Hier läuft noch nichts. Wähle bei „Entscheiden“ einen Weg: was Housekeeper selbst ausführen kann, zeigt sich zuerst als Vorschau, und erst dein Klick ändert etwas.", fixPickCount: "{picked} von {total} gewählt, dann ein Weg für alle.", fixPickNone: "Wähle mindestens eine Stelle, dann ein Weg für alle.",
   fixAllOpen: "Alle {n} beheben", fixAllPlaces: "{n} Stellen verweisen darauf", fixAllKind_automation: "{n} Automationen", fixAllKind_automation1: "1 Automation", fixAllKind_script: "{n} Skripte", fixAllKind_script1: "1 Skript", fixAllKind_dashboard: "{n} Dashboard-Stellen", fixAllKind_dashboard1: "1 Dashboard-Stelle", fixAllPlaces1: "1 Stelle verweist darauf", fixRemoveAll1: "Aus 1 Automation entfernen", fixRemoveAll: "Aus {n} Automationen entfernen",
   fix: "Beheben", fixTitle: "Beheben", fixSubtitle: "Verstehen und entscheiden, ausführen, nachprüfen.", fixBack: "Zurück", fixRowOpen: "Beheben", fixRowSub: "Zeigt die Wege, die zu diesem Befund passen", fixRowSubDelete: "Zeigt die Wege, z. B. Automation löschen (erst Vorschau)",
-  fixStepUnderstand: "Verstehen und entscheiden", fixStepDecide: "Entscheiden", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
+  fixStepUnderstand: "Verstehen und entscheiden", fixStepDecide: "Was tun?", fixStepRun: "Ausführen", fixStepCheck: "Nachprüfen",
   fixIdleDays: "Seit {n} Tagen nicht ausgelöst", fixIdleDays1: "Seit 1 Tag nicht ausgelöst", fixNeverTriggered: "Noch nie ausgelöst", fixSure: "{n} % sicher",
   fixRoundMore: "Mehr Objekte aufräumen?", fixRoundLink: "Alles Überflüssige durchgehen (Aufräum-Runde)",
   fixWhat: "Was los ist", fixObject: "Objekt", fixFollowers: "{n} abhängige Entitäten", fixFollowers1: "1 abhängige Entität", fixAffects: "Betroffen", fixPattern: "Muster", fixPatternAt: "Fällt immer gegen {hour} Uhr aus", fixRecommended: "empfohlen", fixExits: "Oder ausblenden, nicht beheben", fixNoWays: "Für diese Art von Befund gibt es noch keine geführten Wege. Du kannst ihn entscheiden oder das Objekt öffnen.", fixWaysFailed: "Die Wege konnten nicht geladen werden.", fixLiveError: "Die Prüfung ist fehlgeschlagen. Versuche es noch einmal.",
@@ -339,7 +361,7 @@ Object.assign(TEXT.en, {
   fixNext: "Next", fixStepOf: "Step {n} of 3", fixObjectWays: "On the object", fixMoreActionsHint: "More actions of this object, such as exchanging it or repairing values.", fixOtherWays: "Other ways ({n})", fixSelfDone: "Did it myself: check", fixRunNone: "Nothing runs here yet. Choose a way under “Decide”: what Housekeeper can run itself shows as a preview first, and only your click changes anything.", fixPickCount: "{picked} of {total} chosen, then one way for all.", fixPickNone: "Choose at least one place, then one way for all.",
   fixAllOpen: "Fix all {n}", fixAllPlaces: "{n} places refer to it", fixAllKind_automation: "{n} automations", fixAllKind_automation1: "1 automation", fixAllKind_script: "{n} scripts", fixAllKind_script1: "1 script", fixAllKind_dashboard: "{n} dashboard places", fixAllKind_dashboard1: "1 dashboard place", fixAllPlaces1: "1 place refers to it", fixRemoveAll1: "Remove from 1 automation", fixRemoveAll: "Remove from {n} automations",
   fix: "Fix", fixTitle: "Fix", fixSubtitle: "Understand and decide, carry out, check.", fixBack: "Back", fixRowOpen: "Fix", fixRowSub: "Shows the ways that fit this finding", fixRowSubDelete: "Shows the ways, e.g. delete the automation (preview first)",
-  fixStepUnderstand: "Understand and decide", fixStepDecide: "Decide", fixStepRun: "Carry out", fixStepCheck: "Check",
+  fixStepUnderstand: "Understand and decide", fixStepDecide: "What to do?", fixStepRun: "Carry out", fixStepCheck: "Check",
   fixIdleDays: "Not triggered for {n} days", fixIdleDays1: "Not triggered for 1 day", fixNeverTriggered: "Never triggered", fixSure: "{n} % sure",
   fixRoundMore: "Clean up more objects?", fixRoundLink: "Go through everything unneeded (cleanup round)",
   fixWhat: "What is wrong", fixObject: "Object", fixFollowers: "{n} dependent entities", fixFollowers1: "1 dependent entity", fixAffects: "Affects", fixPattern: "Pattern", fixPatternAt: "Always fails around {hour}:00", fixRecommended: "recommended", fixExits: "Or hide it, do not fix it", fixNoWays: "There are no guided ways for this kind of finding yet. You can decide it or open the object.", fixWaysFailed: "The ways could not be loaded.", fixLiveError: "The check failed. Try again.",

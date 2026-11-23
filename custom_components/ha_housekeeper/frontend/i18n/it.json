@@ -6161,7 +6161,7 @@
 "decideScope_object": "Tutti i rilievi futuri di questo oggetto",
 "decideScopeHint_object": "Una regola duratura; la imposti nel passo successivo.",
 "fixStepUnderstand": "Capisci e decidi",
-"fixStepDecide": "Decidi",
+"fixStepDecide": "Cosa fare?",
 "fixStepRun": "Esegui",
 "fixStepCheck": "Verifica",
 "fixRoundMore": "Pulire altri oggetti?",

@@ -6495,7 +6495,7 @@
 "decideScope_object": "Všetky budúce nálezy tohto objektu",
 "decideScopeHint_object": "Trvalé pravidlo; nastavíš ho v ďalšom kroku.",
 "fixStepUnderstand": "Pochopiť a rozhodnúť",
-"fixStepDecide": "Rozhodnúť",
+"fixStepDecide": "Čo robiť?",
 "fixStepRun": "Vykonať",
 "fixStepCheck": "Skontrolovať",
 "fixRoundMore": "Upratať viac objektov?",

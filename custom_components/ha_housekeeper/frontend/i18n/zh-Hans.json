@@ -6020,7 +6020,7 @@
 "decideScope_object": "此对象今后的所有发现项",
 "decideScopeHint_object": "长期规则；你在下一步中设置。",
 "fixStepUnderstand": "了解并决定",
-"fixStepDecide": "决定",
+"fixStepDecide": "怎么办？",
 "fixStepRun": "执行",
 "fixStepCheck": "检查",
 "fixRoundMore": "还要清理更多对象？",

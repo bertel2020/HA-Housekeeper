@@ -7235,7 +7235,7 @@
 "decideScope_object": "Все будущие находки этого объекта",
 "decideScopeHint_object": "Постоянное правило; ты настроишь его на следующем шаге.",
 "fixStepUnderstand": "Понять и решить",
-"fixStepDecide": "Решить",
+"fixStepDecide": "Что делать?",
 "fixStepRun": "Выполнить",
 "fixStepCheck": "Проверить",
 "fixRoundMore": "Убрать ещё объекты?",
