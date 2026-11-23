@@ -92,6 +92,12 @@ async def test_the_history_of_the_tour_is_kept_for_the_house_and_cleared_with_it
     other._state = store.state()
     other.log_remove("a1")
     assert other.state()["log"] == [] and store.state()["log"][0]["keys"] == ["k1", "k2"]
+    marked = {"id": "p1", "stage": 1, "action": "pick", "key": "k1", "object": "config_entry:e"}
+    store.log_add({**marked, "plan": {"kind": "reload_integration", "object_id": "e", "x": [1]}})
+    store.log_add({**marked, "id": "p2", "plan": {"object_id": "e"}})
+    kept = {e["id"]: e.get("plan") for e in store.state()["log"]}
+    assert kept["p1"] == {"kind": "reload_integration", "object_id": "e"}, "a marked plan is kept"
+    assert kept["p2"] is None, "a plan without a kind is dropped"
     for i in range(400):
         store.log_add({"id": f"e{i}", "stage": 1, "action": "later", "key": f"k{i}"})
     assert len(store.state()["log"]) == 300 and store.state()["log"][-1]["id"] == "e399", (

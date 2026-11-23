@@ -22720,7 +22720,7 @@ class FirstCleanupMixin {
   // A new pass after the end: the record begins again, and the history of the last one goes with it.
   fcNewRound() {
     this.confirmAsk(this.t("fcNewRoundAsk"), async () => {
-      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set();
+      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
       await this.firstCleanupSet({ action: "begin" });
       this.openFirstCleanup();
     }, { title: this.t("fcNewRound"), yes: this.t("fcBegin"), danger: false });
@@ -22730,7 +22730,7 @@ class FirstCleanupMixin {
   fcReset() {
     this.confirmAsk(this.t("fcResetAsk"), async () => {
       await this.firstCleanupSet({ action: "reset" });
-      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set();
+      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
       this.fcWizSet(0);
       this.render();
     }, { title: this.t("fcResetTitle"), yes: this.t("fcResetYes"), danger: true });
@@ -22837,10 +22837,7 @@ class FirstCleanupMixin {
       if (["keep", "later", "hidden"].includes(entry.action)) {
         await this.fcLift(entry.keys || [entry.key]);
         if (entry.stage === 4) await this.fcClearMarks(entry.targets);
-      } else if (entry.action === "pick") {
-        (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
-        this.fcMarked = (this.fcMarked || []).filter(q => q.id !== id);
-      }
+      } else if (entry.action === "pick") (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
       else if (entry.action === "mark") await this.fcClearMarks(entry.targets);
       else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
@@ -22868,8 +22865,7 @@ class FirstCleanupMixin {
 
   // The cards of a stage that are out of the queue: skipped, or marked for the plan of the stage (stage 1 and 3 keep that plan in the card, until it ran).
   fcSkipped(n) {
-    const held = new Set([...(this.fcMarked || []).map(q => q.id), ...(this._fcQueueDone || [])]);
-    return new Set(this.fcLogGet().filter(e => e.stage === n && (e.action === "skip" || (e.action === "pick" && held.has(e.id)))).flatMap(e => e.keys || [e.key]));
+    return new Set(this.fcLogGet().filter(e => e.stage === n && (e.action === "skip" || (e.action === "pick" && [1, 3].includes(n)))).flatMap(e => e.keys || [e.key]));
   }
 
   // What was answered: not the skips, and not what is only marked for the plan (nothing happened to it yet).
@@ -23211,7 +23207,7 @@ class FirstCleanupMixin {
     // The next card shows from its top, also when the one before was long and answered at its foot.
     if (this._fcScroll) { this._fcScroll = false; root.querySelector?.(".fccard")?.scrollIntoView?.({ block: "start" }); }
     root.querySelector("[data-fc-retry]")?.addEventListener("click", () => { this.fcLoadError = ""; this._fcFor = null; this.ensureFirstCleanup(); this.render(); });
-    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set(); await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
+    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
     root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
     root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
     root.querySelectorAll("[data-fc-goto]").forEach(el => el.onclick = () => this.fcWizGo(Number(el.dataset.fcGoto), Number(el.dataset.fcGoto) >= 1 && Number(el.dataset.fcGoto) <= 5));
@@ -23769,7 +23765,10 @@ Object.assign(TEXT.en, {
 });
 
 class FcQueueMixin {
-  fcQueued(n) { return (this.fcMarked || []).filter(q => q.stage === n); }
+  // The plans marked on the cards of a stage, from the history (it is kept on the server, so they survive a reload); one that ran loses its plan.
+  fcQueued(n) {
+    return this.fcLogGet().filter(e => e.stage === n && e.action === "pick" && e.plan && e.object).map(e => ({ id: e.id, stage: n, key: e.object, keys: e.keys || [e.key], req: e.plan, name: e.name || "", label: e.label || "" }));
+  }
 
   // The buttons of the plans on the cards of stage 1 and 3 mark; on every other page they open the preview at once.
   fcQueuing() { return Boolean(this.fcWizOn() && [1, 3].includes(this.fcWiz?.step) && !this.fcWiz.look && this.fcCardCtx?.n === this.fcWiz.step); }
@@ -23782,10 +23781,9 @@ class FcQueueMixin {
 
   // A plan of the card is marked: the card is answered, the next one shows, and the plan waits in the queue of the stage.
   fcQueueAdd(key, req, label) {
-    const ctx = this.fcCardCtx, name = this.findObject(key)?.name || ctx.f.object_id, queue = (this.fcMarked ||= []);
-    if (queue.some(q => q.stage === ctx.n && q.key === key && JSON.stringify(q.req) === JSON.stringify(req))) return;
-    const entry = this.fcLogAdd({ stage: ctx.n, key: ctx.keys[0], keys: ctx.keys, n: ctx.keys.length, action: "pick", name });
-    queue.push({ id: entry.id, stage: ctx.n, key, keys: ctx.keys, req, name, label });
+    const ctx = this.fcCardCtx, name = this.findObject(key)?.name || ctx.f.object_id;
+    if (this.fcQueued(ctx.n).some(q => q.key === key && JSON.stringify(q.req) === JSON.stringify(req))) return;
+    this.fcLogAdd({ stage: ctx.n, key: ctx.keys[0], keys: ctx.keys, n: ctx.keys.length, action: "pick", name, object: key, label, plan: req });
     this.decide = null; this.markForm = null; this.fcMarkCtx = null;
     if (ctx.keys.includes(this.fcFocus)) this.fcFocus = "";
     this.render();
@@ -23804,10 +23802,16 @@ class FcQueueMixin {
     return this.fcPlanStart(queued[0].key, reqs, queued.map(q => q.id));
   }
 
-  // The plan ran: its cards stay out of the queue of the stage (a finding that is still open does not come back as a card).
+  // The plan ran: the entry stays in the history without its plan, so its cards stay out of the stage (a finding that is still open does not come back as a card).
   fcQueueDone(ids) {
-    this._fcQueueDone = new Set([...(this._fcQueueDone || []), ...ids]);
-    this.fcMarked = (this.fcMarked || []).filter(q => !ids.includes(q.id));
+    const log = this.fcLogGet();
+    for (const id of ids) {
+      const i = log.findIndex(e => e.id === id);
+      if (i < 0) continue;
+      const { id: _id, at: _at, plan: _plan, object: _object, ...rest } = log[i];
+      log.splice(i, 1); this.fcLogCall({ action: "log_remove", entry_id: id });
+      this.fcLogAdd(rest);
+    }
   }
 
   // All cards of the stage are through and some plans are marked: the one card left lists them.

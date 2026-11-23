@@ -65,6 +65,18 @@ def _text(value: Any, limit: int) -> str | None:
     return value[:limit] if isinstance(value, str) and value else None
 
 
+def _plan(value: Any) -> dict[str, Any] | None:
+    """The request of a plan a card marked (a few short fields such as kind and object_id); anything else is dropped."""
+    if not isinstance(value, dict):
+        return None
+    plan = {
+        str(k)[:40]: v[:400] if isinstance(v, str) else v
+        for k, v in list(value.items())[:10]
+        if isinstance(v, str | bool | int)
+    }
+    return plan if isinstance(plan.get("kind"), str) else None
+
+
 def clean_entry(value: Any) -> dict[str, Any] | None:
     """One entry of the history of the tour (what was decided on a card); anything of an unknown shape is dropped."""
     if not isinstance(value, dict):
@@ -78,9 +90,11 @@ def clean_entry(value: Any) -> dict[str, Any] | None:
         "stage": stage,
         "action": action,
     }
-    for field in ("key", "name"):
+    for field in ("key", "name", "object", "label"):
         if text := _text(value.get(field), 400):
             entry[field] = text
+    if plan := _plan(value.get("plan")):
+        entry["plan"] = plan
     for field, limit in (("keys", BULK_LIMIT), ("targets", 200)):
         items = value.get(field)
         if isinstance(items, list):

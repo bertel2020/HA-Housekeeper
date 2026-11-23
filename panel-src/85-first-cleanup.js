@@ -135,7 +135,7 @@ class FirstCleanupMixin {
   // A new pass after the end: the record begins again, and the history of the last one goes with it.
   fcNewRound() {
     this.confirmAsk(this.t("fcNewRoundAsk"), async () => {
-      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set();
+      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
       await this.firstCleanupSet({ action: "begin" });
       this.openFirstCleanup();
     }, { title: this.t("fcNewRound"), yes: this.t("fcBegin"), danger: false });
@@ -145,7 +145,7 @@ class FirstCleanupMixin {
   fcReset() {
     this.confirmAsk(this.t("fcResetAsk"), async () => {
       await this.firstCleanupSet({ action: "reset" });
-      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set();
+      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
       this.fcWizSet(0);
       this.render();
     }, { title: this.t("fcResetTitle"), yes: this.t("fcResetYes"), danger: true });
@@ -252,10 +252,7 @@ class FirstCleanupMixin {
       if (["keep", "later", "hidden"].includes(entry.action)) {
         await this.fcLift(entry.keys || [entry.key]);
         if (entry.stage === 4) await this.fcClearMarks(entry.targets);
-      } else if (entry.action === "pick") {
-        (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
-        this.fcMarked = (this.fcMarked || []).filter(q => q.id !== id);
-      }
+      } else if (entry.action === "pick") (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
       else if (entry.action === "mark") await this.fcClearMarks(entry.targets);
       else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
@@ -283,8 +280,7 @@ class FirstCleanupMixin {
 
   // The cards of a stage that are out of the queue: skipped, or marked for the plan of the stage (stage 1 and 3 keep that plan in the card, until it ran).
   fcSkipped(n) {
-    const held = new Set([...(this.fcMarked || []).map(q => q.id), ...(this._fcQueueDone || [])]);
-    return new Set(this.fcLogGet().filter(e => e.stage === n && (e.action === "skip" || (e.action === "pick" && held.has(e.id)))).flatMap(e => e.keys || [e.key]));
+    return new Set(this.fcLogGet().filter(e => e.stage === n && (e.action === "skip" || (e.action === "pick" && [1, 3].includes(n)))).flatMap(e => e.keys || [e.key]));
   }
 
   // What was answered: not the skips, and not what is only marked for the plan (nothing happened to it yet).
@@ -626,7 +622,7 @@ class FirstCleanupMixin {
     // The next card shows from its top, also when the one before was long and answered at its foot.
     if (this._fcScroll) { this._fcScroll = false; root.querySelector?.(".fccard")?.scrollIntoView?.({ block: "start" }); }
     root.querySelector("[data-fc-retry]")?.addEventListener("click", () => { this.fcLoadError = ""; this._fcFor = null; this.ensureFirstCleanup(); this.render(); });
-    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set(); await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
+    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
     root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
     root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
     root.querySelectorAll("[data-fc-goto]").forEach(el => el.onclick = () => this.fcWizGo(Number(el.dataset.fcGoto), Number(el.dataset.fcGoto) >= 1 && Number(el.dataset.fcGoto) <= 5));
