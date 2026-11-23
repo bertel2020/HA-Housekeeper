@@ -19,9 +19,9 @@ Object.assign(TEXT.de, {
   fcRecMergeText: "Es ist ein Duplikat von {name}; Zusammenführen räumt es sauber auf.",
   fcRecPickAllText: "Nichts verweist darauf. Es läuft erst am Ende als ein Plan mit Vorschau und Backup.",
   fcRecRestText: "{n} Befunde mit niedriger Wirkung oder Info, nichts ist zu tun und an Home Assistant ändert sich nichts. Sie kommen nach {days} Tagen zurück.",
-  fcFixWaysHead: "Wege zum Beheben",
+ 
   fcPlanPreviewHead: "Das wird geändert", fcPlanNothingYet: "Noch ist nichts geändert. Erst „Ausführen“ ändert etwas; vorher wird ein Backup gemacht, und du kannst es danach rückgängig machen.", fcPlanRun: "Ausführen", fcPlanRunning: "Läuft …", fcPlanRunningText: "Housekeeper führt es aus und prüft danach nach.", fcPlanDone: "Erledigt und nachgeprüft", fcPlanCheckFailed: "Ausgeführt, aber die Nachprüfung meldet eine Abweichung", fcPlanAborted: "Nichts geändert", fcPlanUndone: "Rückgängig gemacht", fcPlanOk: "Weiter",
-  fcCheck: "Prüfen", fcCheckHint: "Strom, Netz und Hersteller ansehen, dann prüft Housekeeper, ob es wieder meldet.", fcCheckHead: "Das Gerät prüfen",
+  fcCheckHead: "Das Gerät prüfen",
   fcCheck1: "Strom und Netzwerk des Geräts prüfen: ist es eingeschaltet und im WLAN?", fcCheck2: "Beim Hersteller oder in dessen App nachsehen, ob eine Störung gemeldet ist.", fcCheck3: "Hängt das Gerät an einer Integration, kann ein Neuladen helfen: Einstellungen → Geräte & Dienste.", fcCheckThen: "Danach schaut Housekeeper noch einmal nach. Den Befund schließt erst der nächste Scan.",
   fcRecNoFixFollows: "{n} Folgen hängen daran. Housekeeper kann hier nichts reparieren; ist es absichtlich aus, stellt eine Objekt-Notiz den Ausfall samt Folgen still.",
   fcRecNoFixLong: "Seit {span} aus, und Housekeeper kann hier nichts reparieren. Ist es absichtlich aus, passt eine Objekt-Notiz; sonst sieh nach dem Gerät.",
@@ -30,7 +30,7 @@ Object.assign(TEXT.de, {
   fcRecNoteLong: "Seit {span} aus. Ist es absichtlich aus, passt eine Objekt-Notiz; sonst ersetze oder entferne es.",
   fcRecNoteNoSince: "Seit wann es besteht, ist nicht bekannt. Ist es absichtlich aus, passt eine Objekt-Notiz; sonst ersetze oder entferne es.",
   fcRecPause: "Auto-Pause.", fcRecPauseText: "Die Integration lässt sich immer wieder nicht einrichten. Auto-Pause schaltet sie ab und versucht es nach 1, 3 und 6 Stunden und dann täglich wieder, höchstens 7 Tage lang.",
-  fcFixNone: "Für diesen Befund führt Housekeeper keinen Schritt aus; die Seite des Objekts zeigt, was du in Home Assistant tun kannst.",
+ 
 });
 Object.assign(TEXT.en, {
   fcRecLabel: "Recommendation", fcRecTag: "Recommended",
@@ -49,9 +49,9 @@ Object.assign(TEXT.en, {
   fcRecMergeText: "It is a duplicate of {name}; merging tidies it up cleanly.",
   fcRecPickAllText: "Nothing refers to them. It only runs at the end as one plan with preview and backup.",
   fcRecRestText: "{n} findings with low impact or info, nothing to do and nothing changes in Home Assistant. They come back after {days} days.",
-  fcFixWaysHead: "Ways to fix it",
+ 
   fcPlanPreviewHead: "This will be changed", fcPlanNothingYet: "Nothing is changed yet. Only “Run” changes something; a backup is made first, and you can undo it afterwards.", fcPlanRun: "Run", fcPlanRunning: "Running …", fcPlanRunningText: "Housekeeper is running it and checks afterwards.", fcPlanDone: "Done and checked", fcPlanCheckFailed: "Run, but the check afterwards reports a difference", fcPlanAborted: "Nothing changed", fcPlanUndone: "Undone", fcPlanOk: "Continue",
-  fcCheck: "Check", fcCheckHint: "Look at power, network and the maker, then Housekeeper checks whether it reports again.", fcCheckHead: "Check the device",
+  fcCheckHead: "Check the device",
   fcCheck1: "Check the power and network of the device: is it on and on the Wi-Fi?", fcCheck2: "Look at the maker or its app for a reported fault.", fcCheck3: "If the device belongs to an integration, reloading it can help: Settings → Devices & services.", fcCheckThen: "Afterwards Housekeeper looks once more. Only the next scan closes the finding.",
   fcRecNoFixFollows: "{n} findings hang on it. Housekeeper cannot repair anything here; if it is off on purpose, an object note silences the outage with everything that follows.",
   fcRecNoFixLong: "Down for {span}, and Housekeeper cannot repair anything here. If it is off on purpose, an object note fits; otherwise look at the device.",
@@ -60,7 +60,7 @@ Object.assign(TEXT.en, {
   fcRecNoteLong: "Down for {span}. If it is off on purpose, an object note fits; otherwise replace or remove it.",
   fcRecNoteNoSince: "It is not known since when this has been the case. If it is off on purpose, an object note fits; otherwise replace or remove it.",
   fcRecPause: "Auto-pause.", fcRecPauseText: "The integration keeps failing to set up. Auto-pause switches it off and tries again after 1, 3 and 6 hours and then daily, for up to 7 days.",
-  fcFixNone: "Housekeeper runs no step for this finding; the page of the object shows what you can do in Home Assistant.",
+ 
 });
 
 class FcRecommendMixin {
@@ -124,33 +124,37 @@ class FcRecommendMixin {
   fcRecRow(rec) { return { id: "rec", rec: true, label: this.t("fcRecLabel"), head: rec.head, text: rec.body, empty: false, tab: "" }; }
 
   // One way of an object as a row: what it does, and the button that carries its name (it opens the preview of its plan or the page).
-  // Only the recommended one has a filled button and the badge.
-  fcWayRow(it, key, rec = false) {
+  // ``rec`` is the one way the card recommends: its button is filled. In the cleanup (``opts.queue``) the button of a plan marks it for the end of the stage.
+  fcWayRow(it, key, rec = false, opts = {}) {
     const cls = rec ? "btn primary" : "btn";
-    return this.fixRow(it.icon, this.t(it.hint), it.plan ? `<button type="button" class="${cls}" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${it.label}</button>` : `<button type="button" class="${cls}" ${it.attr}>${it.label}</button>`, rec);
+    const button = it.plan
+      ? `<button type="button" class="${cls}" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}" data-label="${this.esc(it.label)}"${this.planBusy ? " disabled" : ""}>${opts.queue ? this.t("fcQueueBtn", { label: it.label }) : it.label}</button>`
+      : `<button type="button" class="${cls}" ${it.attr}>${it.label}</button>`;
+    return this.fixRow(it.icon, this.t(it.hint), button, rec, opts.badge ?? rec);
   }
 
-  // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it.
-  fcFixWays(key, obj) {
-    if (!obj || this.fcFixOpen !== key || this.fcPlanKey) return "";
+  // The ways of "Fix" for one object as entries of the card: what Housekeeper can do for it, and the ways of the finding itself
+  // (replace the target, remove the reference, catch the error), as on the page Fix. ``wantRec`` names the one that is recommended.
+  fcWayEntries(f, key, obj, wantRec) {
     const items = this.fixItems(obj, key).items;
-    // The ways of the finding itself (replace the target, remove the reference, catch the error), as on the page Fix.
-    const finding = this.data?.findings?.find(x => x.key === this.fixKey && (this.findingKey(x) === key || this.ownerKey(x) === key));
-    // The same rule as on the page Fix: a possible duplicate with a working twin recommends replacing it; else the recommended way of the finding, else the first plan that answers it.
+    const finding = this.findingKey(f) === key || this.ownerKey(f) === key ? f : null;
+    const list = finding && this.fixKey === f.key && this.fixWays ? this.fixWays.filter(w => !FIX_OBJECT_WAYS.includes(w.way) && w.way !== "mark") : [];
+    // The same rule as on the page Fix: a possible duplicate with a working twin recommends replacing it; else the recommended way of the finding, else the first plan.
     const twin = finding?.rule_id === "entity.possible_duplicate" ? items.find(it => it.plan?.kind === "replace_references") : null;
-    const ways = finding && this.fixWays ? this.fixWays.filter(w => !FIX_OBJECT_WAYS.includes(w.way) && w.way !== "mark").map(w => ({ ...w, recommended: Boolean(w.recommended) && !twin })) : [];
-    const rec = twin || (ways.some(w => w.recommended) ? null : items.find(it => it.plan && it.finding)) || null;
-    const entries = [...items.map(it => ({ rec: it === rec, html: this.fcWayRow(it, key, it === rec) })), ...ways.map(w => ({ rec: w.recommended, html: this.fixWayCard(w, finding, true) }))].sort((a, b) => Number(b.rec) - Number(a.rec));
-    const rows = entries.map(e => e.html).join("");
-    if (finding && !this.fcFixable(finding, key)) return this.fcCheckBlock(finding, rows);
-    return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${rows ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
+    const recWay = wantRec && !twin ? list.find(w => w.recommended) : null;
+    const recItem = wantRec ? twin || (recWay ? null : items.find(it => it.plan && it.finding) || items.find(it => it.plan)) || null : null;
+    const entries = [
+      ...items.map(it => ({ id: "way", rec: it === recItem, html: this.fcWayRow(it, key, it === recItem, { queue: true, badge: false }) })),
+      ...list.map(w => ({ id: "way", rec: w === recWay, html: this.fixWayCard({ ...w, recommended: w === recWay }, finding, true, { queue: true, badge: false }) })),
+    ];
+    return { entries, finding };
   }
 
   // What the person can do for an outage Housekeeper cannot repair: look at the device, then let Housekeeper look again.
   fcCheckBlock(finding, rows) {
     const t = k => this.t(k), seen = this.fcCheck?.key === finding.key ? this.fcCheck.result : null;
     const verdict = !seen ? "" : seen.result === "fixed" ? this.notice("info", t("fixLooksFixed")) : seen.result === "open" ? this.notice("warn", this.t("fixLiveOpen", { detail: seen.detail || "" })) : seen.result === "error" ? this.notice("warn", t("fixLiveError")) : this.notice("info", t("fixLiveUnknown"));
-    return `<div class="fcways"><small class="fceyebrow">${t("fcCheckHead")}</small><ol class="fcchecklist"><li>${t("fcCheck1")}</li><li>${t("fcCheck2")}</li><li>${t("fcCheck3")}</li></ol><p class="fcfacts">${t("fcCheckThen")}</p>${verdict}<div class="fcplanbtns"><button type="button" class="btn primary" data-fc-looknow="${this.esc(finding.key)}"><ha-icon icon="mdi:magnify"></ha-icon>${t("fixLookNow")}</button></div>${rows}</div>`;
+    return `<div class="fcways"><small class="fceyebrow">${t("fcCheckHead")}</small><ol class="fcchecklist"><li>${t("fcCheck1")}</li><li>${t("fcCheck2")}</li><li>${t("fcCheck3")}</li></ol><p class="fcfacts">${t("fcCheckThen")}</p>${verdict}<div class="fcplanbtns"><button type="button" class="btn" data-fc-looknow="${this.esc(finding.key)}"><ha-icon icon="mdi:magnify"></ha-icon>${t("fixLookNow")}</button></div>${rows}</div>`;
   }
 
   async fcLookNow(key) {
@@ -161,8 +165,10 @@ class FcRecommendMixin {
   }
 
   // A way that Housekeeper can run on its own is judged in the card: the preview, one click to run it, the check afterwards.
-  async fcPlanStart(key, req) {
+  // ``queued``: the ids of the cleanup's marked actions this plan carries out (the plan of a stage), else null.
+  async fcPlanStart(key, req, queued = null) {
     if (this.planBusy) return;
+    this.fcQueueRun = queued;
     this.planBusy = true; this.fcPlanError = ""; this.render();
     try {
       const plan = await this._hass.callWS({ type: "ha_housekeeper/plan_create", actions: Array.isArray(req) ? req : [req] });
@@ -188,8 +194,9 @@ class FcRecommendMixin {
   }
 
   async fcPlanDrop() {
-    const open = this.plan && this.isOpenPreview(this.plan);
-    this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = "";
+    const open = this.plan && this.isOpenPreview(this.plan), ran = !open && this.fcQueueRun;
+    this.fcPlanKey = ""; this.fcPlanReq = null; this.fcPlanError = ""; this.fcQueueRun = null;
+    if (ran) this.fcQueueDone(ran);
     if (this.view === "fix") { if (open) this.fixGo(1); else { this.fixGo(3); this.startFixWatch(); } }
     if (open) await this.discardPlan(); else { this.plan = null; this.render(); }
   }
@@ -199,7 +206,7 @@ class FcRecommendMixin {
     const plan = this.plan, key = this.fcPlanKey;
     if (!key) return this.fcPlanError ? `<section class="panel fcplan"><div class="pad"><div class="error">${this.esc(this.fcPlanError)}</div></div></section>` : "";
     if (!plan) return "";
-    const obj = this.findObject(key), name = this.esc(obj?.name || plan.actions[0]?.name || key);
+    const obj = this.findObject(key), name = this.esc(this.fcQueueRun ? this.t("fcQueueRunHead") : obj?.name || plan.actions[0]?.name || key);
     const status = plan.status || "dry_run", acts = plan.actions;
     const run = acts.filter(a => a.executable), t = (k, p) => this.t(k, p);
     const reasons = a => (a.reasons || []).map(r => t(`reason_${r}`)).join(" ");
@@ -238,7 +245,7 @@ class FcRecommendMixin {
   }
 
   bindFcPlan(root) {
-    root.querySelectorAll("[data-fc-plan]").forEach(el => el.onclick = () => this.fcPlanStart(el.dataset.key, JSON.parse(el.dataset.fcPlan)));
+    root.querySelectorAll("[data-fc-plan]").forEach(el => el.onclick = () => this.fcPlanClick(el));
     // onclick, not addEventListener: this is bound from two places on the same page and must run once.
     root.querySelectorAll("[data-fc-plan-run]").forEach(el => el.onclick = () => this.fcPlanRun());
     root.querySelectorAll("[data-fc-plan-drop]").forEach(el => el.onclick = () => this.fcPlanDrop());

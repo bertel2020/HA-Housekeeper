@@ -43,7 +43,7 @@ class FixMixin {
   }
 
   // The ways of a finding show on the page "Fix" and on the card of the cleanup, whose stages 1 and 3 stay on the list.
-  fixShown() { return ["fix", "firstcleanup"].includes(this.view) || Boolean(this.fcFixOpen && this.fcWizOn()); }
+  fixShown() { return ["fix", "firstcleanup"].includes(this.view) || this.fcWizOn(); }
 
   async loadFixWays(key) {
     try {
@@ -129,10 +129,12 @@ class FixMixin {
   }
 
   // One way as a card: its name, what it does, and the button that starts it; the recommended one is marked.
-  fixWayCard(w, f, list = false) {
+  // ``opts.queue``: the plans of the way are marked for the end of the stage (the cleanup); ``opts.badge`` false leaves the "recommended" badge out.
+  fixWayCard(w, f, list = false, opts = {}) {
     const key = this.findingKey(f), object = this.findObject(key);
     let action = "";
-    const name = this.t(`fixWay_${w.way}`);
+    const name = this.t(`fixWay_${w.way}`), planName = opts.queue ? this.t("fcQueueBtn", { label: name }) : name;
+    const badge = opts.badge ?? w.recommended;
     if (w.kind === "link") action = `<button type="button" class="btn" data-ha-path="${this.esc(w.path)}"><ha-icon icon="mdi:open-in-new"></ha-icon>${name}</button>`;
     else if (w.way === "catch_error") {
       const step = this.fixFailure?.failure?.step;
@@ -154,16 +156,16 @@ class FixMixin {
       ? `<button type="button" class="btn" data-fix-remove="${this.esc(w.target)}"><ha-icon icon="mdi:link-variant-minus"></ha-icon>${name}</button>`
       : `<button type="button" class="btn" data-fix-refactor-on><ha-icon icon="mdi:toggle-switch-outline"></ha-icon>${this.t("fixRefactorOn")}</button>`;
     else if (w.way === "open_editor" && object && this.haPath(object)) action = `<button type="button" class="btn" data-ha-path="${this.esc(this.haPath(object))}"><ha-icon icon="mdi:open-in-new"></ha-icon>${name}</button>`;
-    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-fc-plan="${this.esc(JSON.stringify({ kind: "disable_entity", object_id: object.object_id }))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}><ha-icon icon="mdi:cancel"></ha-icon>${name}</button>`;
-    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-fc-plan="${this.esc(JSON.stringify({ kind: "delete_automation", object_id: object.object_id }))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${name}</button>`;
+    else if (w.way === "disable_automation" && object) action = `<button type="button" class="btn" data-fc-plan="${this.esc(JSON.stringify({ kind: "disable_entity", object_id: object.object_id }))}" data-key="${this.esc(key)}" data-label="${this.esc(name)}"${this.planBusy ? " disabled" : ""}><ha-icon icon="mdi:cancel"></ha-icon>${planName}</button>`;
+    else if (w.way === "delete_automation" && object) action = `<button type="button" class="btn dangersoft" data-fc-plan="${this.esc(JSON.stringify({ kind: "delete_automation", object_id: object.object_id }))}" data-key="${this.esc(key)}" data-label="${this.esc(name)}"${this.planBusy ? " disabled" : ""}><ha-icon icon="mdi:delete-outline"></ha-icon>${planName}</button>`;
     else if (w.way === "mark" && object && MARK_TYPES.includes(object.object_type)) action = `<button type="button" class="btn" data-watch-mark="${this.esc(key)}"><ha-icon icon="${FSEL_ICONS.mark}"></ha-icon>${name}</button>`;
     else if (w.kind === "panel" && object) action = `<button type="button" class="btn" data-fix-object="${this.esc(key)}"><ha-icon icon="mdi:tools"></ha-icon>${name}</button>`;
     // A way with a button says what it does once, on the button; the explanation stands beside it. One without (wait, restart) keeps its name as the title.
     // On the page Fix every way is one row: icon, what it does, and the button; only the recommended button is filled.
     if (list) {
-      if (!action) return `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:information-outline"></ha-icon></span><span class="fctxt"><strong>${this.esc(name)}${w.recommended ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span></div>`;
+      if (!action) return `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:information-outline"></ha-icon></span><span class="fctxt"><strong>${this.esc(name)}${badge ? ` <span class="pill ok">${this.t("fixRecommended")}</span>` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small></span></div>`;
       const icon = w.way === "mark" ? FSEL_ICONS.mark : FIX_WAY_ICONS[w.way] || "mdi:wrench-outline";
-      return this.fixRow(icon, this.t(`fixWayHint_${w.way}`), action.replace('class="btn', w.recommended ? 'class="btn primary' : 'class="btn'), w.recommended);
+      return this.fixRow(icon, this.t(`fixWayHint_${w.way}`), action.replace('class="btn', w.recommended ? 'class="btn primary' : 'class="btn'), w.recommended, badge);
     }
     const pill = w.recommended ? `<span class="pill ok">${this.t("fixRecommended")}</span> ` : "";
     const text = action ? `${pill}<span class="fixwayhint">${this.esc(this.t(`fixWayHint_${w.way}`))}</span>` : `<strong>${this.esc(name)}${pill ? ` ${pill.trim()}` : ""}</strong><small>${this.esc(this.t(`fixWayHint_${w.way}`))}</small>`;
@@ -171,8 +173,8 @@ class FixMixin {
   }
 
   // One way as a row of the list: icon, the sentence that says what it does (with the badge when it is the recommended one), the button.
-  fixRow(icon, hint, button, recommended) {
-    return `<div class="fcway"><span class="fcii fcii-${recommended ? "blue" : "mute"}"><ha-icon icon="${this.esc(icon)}"></ha-icon></span><span class="fctxt"><span class="fcwayhint">${recommended ? `<span class="pill ok">${this.t("fixRecommended")}</span> ` : ""}${this.esc(hint)}</span></span>${button}</div>`;
+  fixRow(icon, hint, button, recommended, badge = recommended) {
+    return `<div class="fcway"><span class="fcii fcii-${recommended ? "blue" : "mute"}"><ha-icon icon="${this.esc(icon)}"></ha-icon></span><span class="fctxt"><span class="fcwayhint">${badge ? `<span class="pill ok">${this.t("fixRecommended")}</span> ` : ""}${this.esc(hint)}</span></span>${button}</div>`;
   }
 
   // The plans of the object itself (disable, remove, replace the twin) as rows, each with its preview here, and one row to the rest of the object's actions.

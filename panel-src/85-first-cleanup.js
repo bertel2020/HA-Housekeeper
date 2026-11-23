@@ -122,19 +122,20 @@ class FirstCleanupMixin {
 
   // "Next" marks the stage done and goes on; with findings left that were not looked at it asks first.
   fcWizNext() {
-    const n = this.fcWiz.step, left = this.fcSeen(n) ? 0 : this.stageCount(n);
+    const n = this.fcWiz.step, left = this.fcSeen(n) ? 0 : this.stageCount(n), queued = this.fcQueued(n).length;
     const run = async () => {
       await this.firstCleanupSet({ action: "stage", stage: n, done: true });
       if (n === 5) this.fcWizGo(6, false); else this.fcWizGo(n + 1);
     };
-    if (left) this.confirmAsk(this.t("fcSkipAsk", { n: this.formatNumber(left) }), run, { title: this.t("fcSkipTitle"), yes: this.t("fcSkipYes"), danger: false });
+    if (queued) this.confirmAsk(this.t("fcQueueAsk", { n: this.formatNumber(queued) }), run, { title: this.t("fcSkipTitle"), yes: this.t("fcSkipYes"), danger: false });
+    else if (left) this.confirmAsk(this.t("fcSkipAsk", { n: this.formatNumber(left) }), run, { title: this.t("fcSkipTitle"), yes: this.t("fcSkipYes"), danger: false });
     else run();
   }
 
   // A new pass after the end: the record begins again, and the history of the last one goes with it.
   fcNewRound() {
     this.confirmAsk(this.t("fcNewRoundAsk"), async () => {
-      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
+      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set();
       await this.firstCleanupSet({ action: "begin" });
       this.openFirstCleanup();
     }, { title: this.t("fcNewRound"), yes: this.t("fcBegin"), danger: false });
@@ -144,7 +145,7 @@ class FirstCleanupMixin {
   fcReset() {
     this.confirmAsk(this.t("fcResetAsk"), async () => {
       await this.firstCleanupSet({ action: "reset" });
-      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null;
+      this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set();
       this.fcWizSet(0);
       this.render();
     }, { title: this.t("fcResetTitle"), yes: this.t("fcResetYes"), danger: true });
@@ -251,7 +252,10 @@ class FirstCleanupMixin {
       if (["keep", "later", "hidden"].includes(entry.action)) {
         await this.fcLift(entry.keys || [entry.key]);
         if (entry.stage === 4) await this.fcClearMarks(entry.targets);
-      } else if (entry.action === "pick") (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
+      } else if (entry.action === "pick") {
+        (entry.keys || [entry.key]).forEach(k => this.round?.picked.delete(k));
+        this.fcMarked = (this.fcMarked || []).filter(q => q.id !== id);
+      }
       else if (entry.action === "later_all") await this.fcLift(entry.keys || []);
       else if (entry.action === "mark") await this.fcClearMarks(entry.targets);
       else if (entry.action === "nothanks") this.fcUnskipOften(entry.key, entry.keys);
@@ -277,7 +281,11 @@ class FirstCleanupMixin {
     return [el.dataset.fcKeep || el.dataset.fcSnooze || el.dataset.fcSkipcard];
   }
 
-  fcSkipped(n) { return new Set(this.fcLogGet().filter(e => e.stage === n && e.action === "skip").flatMap(e => e.keys || [e.key])); }
+  // The cards of a stage that are out of the queue: skipped, or marked for the plan of the stage (stage 1 and 3 keep that plan in the card, until it ran).
+  fcSkipped(n) {
+    const held = new Set([...(this.fcMarked || []).map(q => q.id), ...(this._fcQueueDone || [])]);
+    return new Set(this.fcLogGet().filter(e => e.stage === n && (e.action === "skip" || (e.action === "pick" && held.has(e.id)))).flatMap(e => e.keys || [e.key]));
+  }
 
   // What was answered: not the skips, and not what is only marked for the plan (nothing happened to it yet).
   fcDecided() { return this.fcLogGet().filter(e => !["skip", "pick"].includes(e.action)).reduce((c, e) => c + (e.n || 1), 0); }
@@ -290,7 +298,7 @@ class FirstCleanupMixin {
     // Answers of the cards that hide a finding, and the marks set from a card (they stand for findings, not for suggestions of stage 2).
     const cardMarks = log.filter(e => e.action === "mark" && e.stage !== 2).reduce((c, e) => c + (e.n || 1), 0);
     const left = this.fcStaged().length, start = this.fc.state.start_count || 0, findings = keep + later + sum("hidden") + cardMarks;
-    const picked = new Set(log.filter(e => e.action === "pick").flatMap(e => e.keys || [e.key]));
+    const picked = new Set(log.filter(e => e.action === "pick" && e.stage === 4).flatMap(e => e.keys || [e.key]));
     const pending = (this.data?.findings || []).filter(f => !f.ignored && picked.has(f.key)).length;
     // The marks of the cards are already among the findings: only those of stage 2 (suggestions) come on top.
     const stageMarks = marks - cardMarks;
@@ -400,28 +408,10 @@ class FirstCleanupMixin {
     return `<div class="fcactions">${rows}</div>`;
   }
 
-  fcActGroups({ f, key, obj, many, rec, chosen, kattr, opt }) {
-    const hint = { fix: this.t("fcFixHint"), check: this.t("fcCheckHint"), keep: this.t("fcKeepHint"), snooze: this.t("fcLaterHint"), ignore: this.t("fcIgnoreHint"), mark: this.t("fcMarkHint") };
-    const item = (id, attr, label, icon, recommended, selected) => ({ attr, label, icon, hint: hint[id], rec: recommended, sel: selected });
-    const fixable = obj && this.fcFixable(f, key), check = obj && !fixable && OUTAGE_RULES.includes(f.rule_id);
-    // The same as on the page "Fix": for a device that is down, "intended" is said by the object note, which also covers what follows.
-    const outageNote = f.rule_id === "device.down" && this.fcCanMark(obj);
-    const forFinding = [
-      outageNote ? null : item("keep", opt("keep"), this.t("fcKeep"), STATUS_TONES.keep.icon, false, chosen === "keep"),
-      item("snooze", opt("snooze"), this.t("fcLater"), STATUS_TONES.snooze.icon, rec?.act === "later", chosen === "snooze"),
-      item("ignore", opt("ignore"), this.t("decideKind_ignore"), STATUS_TONES.ignore.icon, false, chosen === "ignore"),
-    ].filter(Boolean);
-    const forObject = [
-      fixable || check ? item(fixable ? "fix" : "check", `data-fc-fix="${this.esc(key)}" data-fc-fixf="${this.esc(f.key)}"`, this.t(fixable ? "fcFix" : "fcCheck"), fixable ? "mdi:wrench-outline" : "mdi:clipboard-check-outline", fixable && rec?.act === "fix", chosen === "fix") : null,
-      this.fcCanMark(obj) ? item("mark", `data-fc-markopen="${this.esc(key)}" ${kattr}`, this.t("markSet"), FSEL_ICONS.mark, rec?.act === "mark", chosen === "mark") : null,
-    ].filter(Boolean);
-    return this.fcActBox([{ label: many ? "fcGroupFindings" : "fcGroupFinding", items: forFinding }, { label: "fcGroupObject", items: forObject }]);
-  }
-
   // A card shows with a short slide-in when it is a new one; renders of the same card within the moment keep it running.
   fcAnim(id) {
     const now = Date.now();
-    if (this._fcAnim?.id !== id) this._fcAnim = { id, at: now };
+    if (this._fcAnim?.id !== id) { this._fcScroll = Boolean(this._fcAnim); this._fcAnim = { id, at: now }; }
     return now - this._fcAnim.at < 400 ? " fcin" : "";
   }
 
@@ -429,6 +419,9 @@ class FirstCleanupMixin {
   fcCards(n) {
     const units = this.fcUnits(n), queue = units, listBtn = `<button type="button" class="btn quiet" data-fc-look="1">${this.t("fcAsList")}</button>`;
     const prevBtn = this.fcPrevButton(n);
+    // The vorgemerkte plan runs in the place of the card; when all cards are through, the queued actions are the one card left.
+    if (this.fcQueueRun && this.fcPlanKey) return "";
+    if (!queue.length && this.fcQueued(n).length) return this.fcQueueCard(n, prevBtn);
     if (!queue.length) {
       const rest = this.stageCount(n);
       return `<section class="panel fcpanel"><div class="emptymsg"><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t(rest ? "fcCardsLeft" : "fcCardsDone", { n: this.formatNumber(rest) })}</div><div class="pad fcmore">${prevBtn}${rest ? `<button type="button" class="btn" data-fc-again>${this.t("fcCardsAgain")}</button>${listBtn}` : ""}</div></section>`;
@@ -440,12 +433,14 @@ class FirstCleanupMixin {
     // What is open on the card is what is marked: one tile at a time, none at first. A tile that is open closes again when clicked.
     if (this.decide?.fc && !keys.includes(this.decide.key)) this.decide = null;
     if (this.fcMarkCtx && (this.markForm?.key !== key || this.fcMarkCtx.keys.join() !== keys.join())) { this.fcMarkCtx = null; if (this.markForm?.key === key) this.markForm = null; }
-    const chosen = this.decide?.fc ? this.decide.kind : this.markForm && this.fcMarkCtx ? "mark" : this.fcFixOpen === key ? "fix" : "";
+    const chosen = this.decide?.fc ? this.decide.kind : this.markForm && this.fcMarkCtx ? "mark" : "";
     const opt = k => `data-fc-opt="${k}" ${kattr}`;
-    const groups = this.fcActGroups({ f, key, obj, many, rec, chosen, kattr, opt });
+    this.fcCardCtx = { n, keys, f, key };
+    this.fcEnsureWays(f, key, obj);
+    const options = this.fcOptions({ f, keys, key, obj, many, rec, chosen, kattr, opt });
     const chips = `<p class="fcchips">${this.impactChip(f.impact)}${follows ? `<span class="pill red">${this.t(follows === 1 ? "fcFollowsChip1" : "fcFollowsChip", { n: this.formatNumber(follows) })}</span>` : ""}</p>`;
     const title = obj ? `<button type="button" class="linkbtn fclink" data-object="${this.esc(key)}">${this.esc(obj.name)}</button>` : this.esc(f.object_id);
-    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid"${many ? "" : ` title="${this.esc(f.object_id)}"`}>${many ? this.esc(key.slice(key.indexOf(":") + 1)) : this.fcObjectLine(obj) || this.esc(f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, rec)}${groups}${this.fcOptBlock(f, keys, key, obj)}${this.fcFixWays(key, obj)}<div class="fcmore">${prevBtn}<button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button>${listBtn}</div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
+    return `<section class="panel fccard${this.fcAnim(`${n}:${keys.join()}`)}"><div class="pad"><small class="fceyebrow">${this.fcPosition(n, queue.length)}</small><div class="fctitle">${this.tile(ownerType, this.tone(f.classification))}<div><h3>${title}</h3><small class="fcid"${many ? "" : ` title="${this.esc(f.object_id)}"`}>${many ? this.esc(key.slice(key.indexOf(":") + 1)) : this.fcObjectLine(obj) || this.esc(f.object_id)}</small></div></div><p class="fcwhat"><strong>${many ? this.t("fcGroupHead", { n: this.formatNumber(unit.length) }) : this.esc(this.findingTitle(f))}</strong></p>${chips}${this.fcInfoBlock(f, key, obj, null)}${options}<div class="fcmore fcnav"><span class="fcnavl">${prevBtn}${this.fcQueuedPill(n)}</span><button type="button" class="btn" data-fc-skipcard="${this.esc(f.key)}" ${kattr}>${this.t("fcSkipCard")}<ha-icon icon="mdi:arrow-right"></ha-icon></button></div>${many ? this.fcGroupList(unit) : ""}${this.fcFollowList(f, follows)}</div></section>`;
   }
 
   // The findings of one object on a card: each with its title, and a note that the answer covers all of them.
@@ -467,7 +462,7 @@ class FirstCleanupMixin {
 
   // One card back: the last skip or decision of the stage is taken back, and the card shows once more.
   // The actions of a stage that "Previous" can take back: the answers of the cards, or in stage 2 the marks and refusals.
-  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : n === 4 ? ["keep", "later", "skip", "pick"] : ["keep", "later", "hidden", "mark", "skip"]; }
+  fcPrevActions(n) { return n === 2 ? ["mark", "nothanks", "skip"] : n === 4 ? ["keep", "later", "skip", "pick"] : ["keep", "later", "hidden", "mark", "skip", "pick"]; }
 
   fcPrevButton(n) {
     const some = this.fcLogGet().some(e => e.stage === n && this.fcPrevActions(n).includes(e.action));
@@ -533,7 +528,7 @@ class FirstCleanupMixin {
     const list = keys.map(k => this.data.findings.find(x => x.key === k)).filter(Boolean);
     if (!list.length) return;
     const same = this.decide?.fc && this.decide.key === list[0].key && this.decide.kind === kind;
-    this.markForm = null; this.fcMarkCtx = null; this.fcFixOpen = "";
+    this.markForm = null; this.fcMarkCtx = null;
     if (same) { this.decide = null; this.render(); return; }
     this.decide = { key: list[0].key, keys: list.map(x => x.key), fc: true, kind, days: this.fcStatusDays(kind), critical: this.findingCritical(list[0]), reason: this.fcReason(kind), error: "" };
     this.render();
@@ -550,7 +545,7 @@ class FirstCleanupMixin {
     const obj = this.findObject(key);
     if (!obj) return;
     if (this.fcMarkCtx && this.markForm?.key === key) { this.markForm = null; this.fcMarkCtx = null; this.render(); return; }
-    this.decide = null; this.fcFixOpen = "";
+    this.decide = null;
     this.fcMarkCtx = { keys, stage: this.fcWiz?.step, name: obj.name || obj.object_id };
     this.openMark(key);
   }
@@ -564,17 +559,6 @@ class FirstCleanupMixin {
     const set = [...new Set([...(d.kind === "snooze" || (d.kind === "keep" && d.critical) ? [] : [0]), 7, 30, 90, 365, Number(d.days)])].sort((x, y) => x - y);
     const days = set.map(n => `<option value="${n}" ${Number(d.days) === n ? "selected" : ""}>${n ? this.t("decideDays", { n }) : t("decideForever")}</option>`).join("");
     return `<div class="fcopt"><form class="polform statusform" data-decide-form="${this.esc(f.key)}"><div class="statusrow"><input data-decide-reason maxlength="200" autocomplete="off" value="${this.esc(d.reason)}" aria-label="${this.esc(t("decideReason"))}" placeholder="${this.esc(t(d.kind === "keep" ? "decideReasonNeeded" : "decideReason"))}"><select data-decide-days aria-label="${this.esc(t("decideHow"))}">${days}</select></div>${this.reasonChips(d.kind)}${d.kind === "keep" && d.critical ? `<small class="factnote">${t("statusCriticalHint")}</small>` : ""}<small class="factnote">${t("statusScopeHint")}</small>${d.error ? this.notice("err", t(d.error)) : ""}<div class="mbtns"><button type="button" class="btn quiet" data-decide-cancel>${t("cancelRun")}</button><button type="submit" class="btn primary">${t("fcOptSave")}</button></div></form></div>`;
-  }
-
-  // Open the ways of "Fix": what Housekeeper runs for the object, and the ways of this finding (replace, remove, catch the error).
-  fcFixToggle(key, findingKey) {
-    this.fcFixOpen = this.fcFixOpen === key ? "" : key;
-    if (this.fcFixOpen) { this.decide = null; this.markForm = null; this.fcMarkCtx = null; }
-    if (this.fcFixOpen && findingKey) {
-      this.fixKey = findingKey; this.fixAll = ""; this.fixWays = null; this.fixWaysFailed = false; this.fixFailure = null;
-      this.loadFixWays(findingKey);
-    }
-    this.render();
   }
 
   // Kept for the callers that decide with the defaults (nothing in the cards any more).
@@ -623,23 +607,31 @@ class FirstCleanupMixin {
     else if (n === 5) body = look ? this.findingsView() : this.fcLaterCard(count);
     else body = look ? this.findingsView() : this.fcPlanBlock() + this.fcCards(n);
     const lookOff = look ? `<button type="button" class="btn quiet" data-fc-look="0">${this.t(n === 5 ? "fcLookOff" : n === 4 ? "fcToRound" : "fcToCards")}</button>` : "";
-    const seen = this.fcSeen(n);
-    const next = count && !seen
-      ? `<button type="button" class="btn" data-fc-next>${this.t("fcSkip")}</button>`
-      : `<button type="button" class="btn primary" data-fc-next>${this.t(n === 5 ? "fcFinish" : "fcNextStage", { n: n + 1 })}</button>`;
-    const menu = `<details class="rowmenu fcmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop"><button type="button" class="menuitem" data-fc-history="1"><ha-icon icon="mdi:history"></ha-icon>${this.t("fcHistory")}</button><button type="button" class="menuitem" data-jump="journal" data-jump-tab="activity"><ha-icon icon="mdi:history"></ha-icon>${this.t("fcAllActivity")}</button><button type="button" class="menuitem" data-fc-exit><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("fcExit")}</button><button type="button" class="menuitem" data-fc-reset><ha-icon icon="mdi:restart"></ha-icon>${this.t("fcReset")}</button></div></details>`;
+    const seen = this.fcSeen(n), queued = this.fcQueued(n).length;
+    // While the cards of a stage are being gone through, leaving it is one item of the menu; the card has its own "Skip".
+    const inCards = [1, 3].includes(n) && !look && count && !seen;
+    const next = inCards ? ""
+      : count && !seen || queued
+        ? `<button type="button" class="btn" data-fc-next>${this.t(count && !seen ? "fcSkip" : "fcNextStage", { n: n + 1 })}</button>`
+        : `<button type="button" class="btn primary" data-fc-next>${this.t(n === 5 ? "fcFinish" : "fcNextStage", { n: n + 1 })}</button>`;
+    const menuStage = inCards ? `<button type="button" class="menuitem" data-fc-next><ha-icon icon="mdi:skip-next-outline"></ha-icon>${this.t("fcSkip")}</button>` : "";
+    const menuList = [1, 3].includes(n) && !look ? `<button type="button" class="menuitem" data-fc-look="1"><ha-icon icon="mdi:format-list-bulleted"></ha-icon>${this.t("fcAsList")}</button>` : "";
+    const menu = `<details class="rowmenu fcmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${menuList}${menuStage}<button type="button" class="menuitem" data-fc-history="1"><ha-icon icon="mdi:history"></ha-icon>${this.t("fcHistory")}</button><button type="button" class="menuitem" data-jump="journal" data-jump-tab="activity"><ha-icon icon="mdi:history"></ha-icon>${this.t("fcAllActivity")}</button><button type="button" class="menuitem" data-fc-exit><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("fcExit")}</button><button type="button" class="menuitem" data-fc-reset><ha-icon icon="mdi:restart"></ha-icon>${this.t("fcReset")}</button></div></details>`;
     const foot = `<div class="panel fcfoot"><button type="button" class="btn" data-fc-goto="${n - 1}" ${n === 1 ? "disabled" : ""}><ha-icon icon="mdi:arrow-left"></ha-icon>${this.t("fcBack")}</button><span class="fcprogress">${count ? this.t("fcLeftNow", { n: this.formatNumber(count) }) : this.t("fcStageClear")}</span>${lookOff}${next}${menu}</div>`;
     const toast = this.fcToast ? `<div class="fctoast" role="status"><span>✓ ${this.esc(this.fcToast.text)}</span><button type="button" class="btn" data-fc-undo="${this.esc(this.fcToast.id)}">${this.t("fcUndo")}</button></div>` : "";
     return `<div class="stack">${error}${top}${head}${body}${toast}${foot}</div>`;
   }
 
   bindFirstCleanup(root) {
+    // The next card shows from its top, also when the one before was long and answered at its foot.
+    if (this._fcScroll) { this._fcScroll = false; root.querySelector?.(".fccard")?.scrollIntoView?.({ block: "start" }); }
     root.querySelector("[data-fc-retry]")?.addEventListener("click", () => { this.fcLoadError = ""; this._fcFor = null; this.ensureFirstCleanup(); this.render(); });
-    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
+    root.querySelectorAll("[data-fc-begin]").forEach(el => el.onclick = async () => { this.fcFocus = ""; this.fcTotal = {}; this.fcToast = null; this.fcMarked = []; this._fcQueueDone = new Set(); await this.firstCleanupSet({ action: "begin" }); this.openFirstCleanup(); });
     root.querySelector("[data-fc-dismiss]")?.addEventListener("click", () => this.firstCleanupSet({ action: "dismiss" }));
     root.querySelectorAll("[data-fc-open]").forEach(el => el.onclick = () => this.openFirstCleanup());
     root.querySelectorAll("[data-fc-goto]").forEach(el => el.onclick = () => this.fcWizGo(Number(el.dataset.fcGoto), Number(el.dataset.fcGoto) >= 1 && Number(el.dataset.fcGoto) <= 5));
-    root.querySelector("[data-fc-next]")?.addEventListener("click", () => this.fcWizNext());
+    root.querySelectorAll("[data-fc-next]").forEach(el => el.onclick = () => this.fcWizNext());
+    root.querySelectorAll("[data-fc-queue-run]").forEach(el => el.onclick = () => this.fcQueueRunStart(Number(el.dataset.fcQueueRun)));
     root.querySelectorAll("[data-fc-exit]").forEach(el => el.onclick = () => this.fcWizExit());
     root.querySelectorAll("[data-fc-look]").forEach(el => el.onclick = () => this.fcLook(el.dataset.fcLook === "1"));
     // The line under the buttons says what the button under the pointer, in focus or touched last does; it falls back to the recommended one.
@@ -655,13 +647,12 @@ class FirstCleanupMixin {
     root.querySelectorAll("[data-fc-markopen]").forEach(el => el.onclick = () => this.fcMarkOpen(el.dataset.fcMarkopen, this.fcKeysOf(el)));
     this.bindFcInfo(root);
     this.bindFcRound(root);
-    root.querySelectorAll("[data-fc-fix]").forEach(el => el.onclick = () => this.fcFixToggle(el.dataset.fcFix, el.dataset.fcFixf));
     this.bindFcPlan(root);
     root.querySelectorAll("[data-fc-object]").forEach(el => el.onclick = () => { const obj = this.findObject(el.dataset.fcObject); if (obj) this.openObject(obj); });
     root.querySelectorAll("[data-fc-skipcard]").forEach(el => el.onclick = () => {
       const keys = this.fcKeysOf(el);
       this.fcLogAdd({ stage: this.fcWiz.step, key: keys[0], keys, action: "skip" });
-      this.decide = null; this.markForm = null; this.fcMarkCtx = null; this.fcFixOpen = "";
+      this.decide = null; this.markForm = null; this.fcMarkCtx = null;
       if (keys.includes(this.fcFocus)) this.fcFocus = "";
       this.render();
     });
@@ -709,8 +700,8 @@ Object.assign(TEXT.de, {
   fcEndSubAll: "Es ist nichts mehr offen. Neue Befunde erscheinen unter „Neu“.", fcEndSubDone: "Du hast {d} bearbeitet. {now} Befunde sind noch offen.", fcEndSubNone: "{now} Befunde warten. Etappe 1 ist der beste Einstieg.", fcSumWaiting: "{n}",
   fcEndLaterBack: "kommen ab {date} zurück", fcEndStartOnly: "{start} zu Beginn", fcEndStartFresh: "{start} zu Beginn, {fresh} neu dazugekommen", fcEndBar: "{p} % der {start} Befunde bearbeitet",
   fcEndFollow: "Folgebefunde", fcEndFollowSub: "gehören zu den Ursachen", fcEndFollowN: "{n} hängen an Ausfällen", fcEndFollowN1: "1 hängt an einem Ausfall", 
-  fcGroupSuggestion: "Für diesen Vorschlag", fcGroupFinding: "Für diesen Befund", fcGroupFindings: "Für diese Befunde", fcGroupObject: "Für das Objekt",
-  fcCardOf: "{n} von {total}", fcFix: "Beheben", fcFixHint: "Zeigt die Wege, die zu diesem Objekt passen.",
+  fcGroupSuggestion: "Für diesen Vorschlag", fcGroupFinding: "Für diesen Befund", fcGroupObject: "Für das Objekt",
+  fcCardOf: "{n} von {total}",
   fcKeep: "Ist so gewollt", fcKeepHint: "Der Befund wird nicht mehr gezeigt. Du sagst kurz, warum und für wie lange.", fcLater: "Später", fcLaterHint: "Der Befund verschwindet bis zur gewählten Frist und kommt dann wieder.",
   fcKeepReason: "Beim Aufräumen als gewollt bestätigt", fcOptSave: "Übernehmen und weiter", fcIgnoreHint: "Die Regel liegt hier falsch. Der Befund wird ausgeblendet.", fcMarkHint: "Merkt sich, warum das Objekt so ist, auch mit Zeitfenster. Gilt auch für künftige Ausfälle.", fcLogHidden: "Fehlalarm", fcSumHidden: "{n} als Fehlalarm", fcLaterOneReason: "Beim Aufräumen zurückgestellt", fcSkipCard: "Überspringen", fcGroupHead: "{n} Befunde an diesem Objekt", fcGroupNote: "Deine Antwort gilt für alle diese Befunde.", fcLogN: "{n} Befunde", fcAsList: "Als Liste ansehen", fcToCards: "Zurück zu den Karten",
   fcSince: "erkannt {age}", fcFollows: "{n} weitere Befunde hängen daran", fcFollows1: "1 weiterer Befund hängt daran",
@@ -748,8 +739,8 @@ Object.assign(TEXT.en, {
   fcEndSubAll: "Nothing is open any more. New findings show up under “New”.", fcEndSubDone: "You handled {d}. {now} findings are still open.", fcEndSubNone: "{now} findings are waiting. Stage 1 is the best place to start.", fcSumWaiting: "{n}",
   fcEndLaterBack: "come back from {date}", fcEndStartOnly: "{start} at the start", fcEndStartFresh: "{start} at the start, {fresh} new since", fcEndBar: "{p} % of the {start} findings handled",
   fcEndFollow: "Follow-up findings", fcEndFollowSub: "belong to the causes", fcEndFollowN: "{n} hang on outages", fcEndFollowN1: "1 hangs on an outage", 
-  fcGroupSuggestion: "For this suggestion", fcGroupFinding: "For this finding", fcGroupFindings: "For these findings", fcGroupObject: "For the object",
-  fcCardOf: "{n} of {total}", fcFix: "Fix", fcFixHint: "Shows the ways that fit this object.",
+  fcGroupSuggestion: "For this suggestion", fcGroupFinding: "For this finding", fcGroupObject: "For the object",
+  fcCardOf: "{n} of {total}",
   fcKeep: "Intended", fcKeepHint: "The finding is no longer shown. You say briefly why and for how long.", fcLater: "Later", fcLaterHint: "The finding disappears until the time you choose and then comes back.",
   fcKeepReason: "Confirmed as intended in the cleanup", fcOptSave: "Apply and continue", fcIgnoreHint: "The rule is wrong here. The finding is hidden.", fcMarkHint: "Records why the object is as it is, also with a time window. Also covers future outages.", fcLogHidden: "False alarm", fcSumHidden: "{n} as false alarm", fcLaterOneReason: "Put off in the cleanup", fcSkipCard: "Skip", fcGroupHead: "{n} findings on this object", fcGroupNote: "Your answer applies to all of these findings.", fcLogN: "{n} findings", fcAsList: "View as list", fcToCards: "Back to the cards",
   fcSince: "found {age}", fcFollows: "{n} more findings hang on it", fcFollows1: "1 more finding hangs on it",

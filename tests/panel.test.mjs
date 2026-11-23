@@ -6153,7 +6153,7 @@ test("the ways of a finding show on the card of the cleanup in the stages that s
   el.view = "findingsNav"; el.fixKey = "k"; el.fixWays = null;
   await el.loadFixWays("k");
   assert.equal(renders, 0, "on the plain list nothing is open");
-  el.fcWiz = { step: 1, on: true }; el.fcFixOpen = "entity:sensor.a";
+  el.fcWiz = { step: 1, on: true };
   await el.loadFixWays("k");
   assert.equal(renders, 1, "on the card of stage 1 the ways appear at once");
 });
@@ -8145,11 +8145,9 @@ test("a card of the cleanup recommends one answer from its facts, never keeping,
   const html = el.fcInfoHtml([el.fcRecRow(short)], "device:d");
   assert.ok(html.includes("fcirec") && html.includes("Recommendation") && html.includes(short.head));
   assert.ok(el.fcActBox([{ items: [{ attr: "data-x", label: "A", icon: "mdi:x", hint: "b", rec: true }] }]).includes("Recommended"));
-  el.fcFixOpen = "";
-  assert.equal(el.fcFixWays("device:d", el.findObject("device:d")), "");
-  el.fcFixOpen = "device:d";
-  assert.ok(!el.fcFixWays("device:d", el.findObject("device:d")).includes("data-fc-object"), "the page of the object is no way of fixing");
-  assert.ok(!el.fcCards(3).includes("data-fc-fix"), "no tile Fix where Housekeeper has no way");
+  const card = el.fcOptions({ f: f("b", "device.down", "unavailable", 30), keys: ["b"], key: "device:d", obj: el.findObject("device:d"), many: false, rec: long, chosen: "", kattr: "", opt: k => `data-fc-opt="${k}"` });
+  assert.ok(card.includes("fcrecbox") && card.includes("data-fc-markopen") && card.includes("data-fc-opt=\"snooze\""), "the recommended answer stands in its box, the others in the list");
+  assert.ok(!card.includes("data-fc-object") && !card.includes("data-fc-fix"), "the page of the object is no way of fixing");
 });
 
 test("a way of Fix that Housekeeper runs itself is judged in the card: preview, one click, result with undo", async () => {
@@ -8159,18 +8157,27 @@ test("a way of Fix that Housekeeper runs itself is judged in the card: preview, 
   el.data = { ...DATA, objects: [obj], causes: [], findings: [finding] };
   const ways = el.fixItems(obj, "entity:sensor.gone").items;
   assert.equal(JSON.stringify(ways.find(w => w.plan)?.plan), JSON.stringify({ kind: "remove_entity", object_id: "sensor.gone" }));
-  el.fcFixOpen = "entity:sensor.gone";
-  assert.ok(el.fcFixWays("entity:sensor.gone", obj).includes("data-fc-plan="), "the way offers a preview in the card");
+  assert.ok(el.fcWayEntries(finding, "entity:sensor.gone", obj, true).entries.map(e => e.html).join("").includes("data-fc-plan="), "the way offers a preview in the card");
   const plan = { plan_id: "p", status: "dry_run", created_at: new Date().toISOString(), actions: [{ kind: "remove_entity", object_id: "sensor.gone", name: "Gone", executable: true, verdict: "ok", reasons: [] }] };
   el._hass = { language: "en", callWS: async () => plan };
   el.render = () => {};
   await el.fcPlanStart("entity:sensor.gone", ways.find(w => w.plan).plan);
   let html = el.fcPlanBlock();
   assert.ok(html.includes("data-fc-plan-run") && html.includes("Gone") && html.includes("data-fc-plan-drop"));
-  assert.equal(el.fcFixWays("entity:sensor.gone", obj), "", "the ways make room for the plan");
+  // On a card of the stage a plan is only added; the card is answered and the plans of the stage run together.
+  el.fcWiz = { step: 1, on: true }; el.view = "findingsNav";
+  el.fcCardCtx = { n: 1, keys: ["k"], f: finding, key: "entity:sensor.gone" };
+  el.fcLogAdd = e => { const full = { id: "x1", ...e }; el.fcLogGet().push(full); return full; };
+  el.fcQueueAdd("entity:sensor.gone", ways.find(w => w.plan).plan, "Remove");
+  assert.equal(JSON.stringify([el.fcQueued(1).map(q => q.id), el.fcSkipped(1).has("k")]), '[["x1"],true]', "an added plan answers its card");
+  el.plan = null; el.fcPlanKey = ""; el.discardPlan = async () => {};
+  await el.fcQueueRunStart(1);
+  assert.ok(el.fcPlanBlock().includes("Actions in the plan") && el.fcCards(1) === "", "the plan of the stage stands in the place of the cards");
   el.plan = { ...plan, status: "verified", verification: { ok: true, checks: [] }, actions: [{ ...plan.actions[0], result: { state: "done" } }] };
   html = el.fcPlanBlock();
   assert.ok(html.includes("Done and checked") && html.includes("data-fc-plan-undo"), "a finished plan can be undone from the card");
+  await el.fcPlanDrop();
+  assert.equal(JSON.stringify([el.fcQueued(1).length, el.fcSkipped(1).has("k")]), "[0,true]", "after the run the card stays out of the stage");
 });
 
 test("the texts say Marketplace instead of HACS only when the store is the Marketplace", () => {
@@ -8424,7 +8431,8 @@ test("the cards of the cleanup open the answers with their reason and days, for 
   const f = key => ({ key, rule_id: "entity.unused", object_id: `sensor.${key}`, classification: "unused", impact: "low", ignored: false });
   el.data = { ...DATA, findings: [f("a"), f("b")] };
   el.fcOpen(["a", "b"], "keep");
-  assert.ok(/class="fcbtn sel"[^>]*aria-pressed="true"[^>]*data-fc-opt="keep"|class="fcbtn sel" aria-pressed="true"[^>]*data-fc-opt="keep"/.test(el.fcCards(3)), "the open button is the pressed one");
+  const open = el.fcCards(3);
+  assert.ok(open.indexOf('data-fc-opt="keep"') < open.indexOf("data-decide-form") && open.indexOf("data-decide-form") < open.indexOf('data-fc-opt="ignore"'), "the form of the open answer stands right under its row");
   el.fcOpen(["a", "b"], "keep");
   assert.equal(el.decide, null, "a tile that is open closes when clicked again");
   el.fcOpen(["a", "b"], "keep");
@@ -8444,7 +8452,7 @@ test("the cards of the cleanup open the answers with their reason and days, for 
   assert.equal(JSON.stringify([log[0].action, log[0].n, log[0].keys]), JSON.stringify(["keep", 2, ["a", "b"]]));
 });
 
-test("the actions of a cleanup card are two groups of buttons, one line says what the recommended one does, and a card of several findings says so", () => {
+test("a cleanup card has one recommended answer in its box and the others in one list, and a card of several findings says so", () => {
   const { el } = panel("en");
   el._hass = { language: "en", callWS: async () => ({}) };
   el.render = () => {};
@@ -8453,14 +8461,14 @@ test("the actions of a cleanup card are two groups of buttons, one line says wha
   el.fc = { later_days: 90, state: { stage: 3, done: [], log: [], start_count: 1 }, stages: { 1: [], 2: [], 3: ["k1"], 4: [], 5: [] } };
   el.fcWiz = { step: 3, on: true };
   const html = el.fcCards(3);
-  assert.ok(html.includes("For this finding") && html.includes("For the object") && html.indexOf("For this finding") < html.indexOf("For the object"));
-  assert.ok(html.includes('class="fccap"') && (html.match(/data-fc-hint=/g) || []).length >= 4 && !/class="fcact[ "]/.test(html));
+  assert.ok(html.includes("fcrecbox") && html.includes("Other options") && html.indexOf("fcrecbox") < html.indexOf("Other options"));
+  assert.ok((html.match(/class="btn primary"/g) || []).length === 1 && html.includes('data-fc-opt="snooze"') && !html.includes("data-fc-fix"), "one filled button, no tile Fix");
   el.data = { ...el.data, findings: [f("k1"), f("k2")] };
   el.fc.stages[3] = ["k1", "k2"];
-  assert.ok(el.fcCards(3).includes("For these findings"));
+  assert.ok(el.fcCards(3).includes("2 findings on this object"));
 });
 
-test("an offline device has a tile Check with what to look at and a look now, and no tile Fix", async () => {
+test("an offline device lists what to look at and a look now, and no way of Fix", async () => {
   const { el } = panel("en");
   const calls = [];
   el._hass = { language: "en", callWS: async msg => { calls.push(msg); return msg.type.endsWith("/fix_check") ? { result: "open", detail: "unavailable" } : {}; } };
@@ -8470,9 +8478,7 @@ test("an offline device has a tile Check with what to look at and a look now, an
   el.fc = { later_days: 90, state: { stage: 3, done: [], log: [], start_count: 1 }, stages: { 1: [], 2: [], 3: ["k1"], 4: [], 5: [] } };
   el.fcWiz = { step: 3, on: true };
   let html = el.fcCards(3);
-  assert.ok(html.includes("</ha-icon>Check</button>") && !html.includes("</ha-icon>Fix</button>") && !html.includes('data-fc-opt="keep"') && html.includes('data-fc-opt="snooze"'), "Check instead of Fix; a device that is down says 'intended' by the object note, like the Fix page");
-  el.fcFixToggle("device:d", "k1");
-  html = el.fcCards(3);
+  assert.ok(!html.includes('data-fc-opt="keep"') && html.includes('data-fc-opt="snooze"'), "a device that is down says 'intended' by the object note, like the Fix page");
   assert.ok(html.includes("data-fc-looknow") && html.includes("Check the device") && !html.includes("data-fc-object"));
   await el.fcLookNow("k1");
   assert.ok(calls.some(c => c.type === "ha_housekeeper/fix_check" && c.finding_key === "k1"));
