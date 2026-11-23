@@ -5986,7 +5986,6 @@
 "fixRefactorOnYes": "开启",
 "fixNext": "下一步",
 "fixStepOf": "第 {n} 步，共 3 步",
-"fixObjectWays": "针对对象",
 "fixMoreActionsHint": "此对象的更多操作，例如更换它或修复数值。",
 "fixOtherWays": "其他方法（{n}）",
 "fixSelfDone": "我已自己处理：检查",

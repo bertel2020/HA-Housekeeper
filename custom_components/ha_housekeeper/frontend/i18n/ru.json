@@ -7201,7 +7201,6 @@
 "fixRefactorOnYes": "Включить",
 "fixNext": "Далее",
 "fixStepOf": "Шаг {n} из 3",
-"fixObjectWays": "На объекте",
 "fixMoreActionsHint": "Другие действия с этим объектом, например замена или исправление значений.",
 "fixOtherWays": "Другие способы ({n})",
 "fixSelfDone": "Сделал сам: проверить",
