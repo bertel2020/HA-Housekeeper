@@ -3772,7 +3772,7 @@
 "tabActions": "Ações",
 "nextStep": "Próximo passo",
 "moreActions": "Mais ações",
-"actGroupRecommended": "Recomendado",
+"actGroupRecommended": "Na ocorrência",
 "actGroupName": "Nomear e classificar",
 "actGroupNotes": "Notas",
 "actOnlyNotes": "Aqui indica o que é normal para este objeto, por exemplo “offline à noite”. O Housekeeper deixa então de o assinalar como “indisponível”.",

@@ -615,9 +615,9 @@ class FindingsMixin {
   findingRows(key, item = this.findObject(key)) {
     const list = this.data.findings.filter(f => this.findingKey(f) === key);
     if (!list.length) return "";
-    // The step that answers a finding comes first in its row, as the primary button.
+    // The step that answers a finding comes first in its row, as the primary button; further steps are plain buttons.
     const fixes = item ? this.fixItems(item, key).items : [];
-    const steps = f => fixes.filter(it => it.finding === f.key).map(it => `<button class="btn primary" ${it.attr} title="${this.esc(this.t(it.hint))}"><ha-icon icon="${it.icon}"></ha-icon>${it.shortLabel || it.label}</button>`).join("");
+    const steps = f => fixes.filter(it => it.finding === f.key).map((it, i) => `<button class="btn${i ? "" : " primary"}" ${it.attr} title="${this.esc(this.t(it.hint))}"><ha-icon icon="${it.icon}"></ha-icon>${it.shortLabel || it.label}</button>`).join("");
     // The step that answers the finding stays a button of its own; what else can be done sits in one menu, from two actions on:
     // the same groups as the menu of the row. The label has its own control on this page, and a step shown as a button is not repeated.
     const groupsOf = f => {

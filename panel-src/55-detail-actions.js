@@ -106,7 +106,11 @@ class DetailActionsMixin {
     const recommended = [], tools = [];
     if (findings) recommended.push(`<div class="actblock">${findings}</div>`);
     // A step that answers a finding stands in that finding's row (findingRows); only one without a row of its own is listed here.
-    for (const it of items.filter(it => typeof it.finding !== "string")) (it.finding ? recommended : tools).push(this.actRowNamed(it.label, this.t(it.hint), it.attr, it.finding ? " primary" : ""));
+    // Only one button is filled: the first step here, unless the rows of the findings above carry theirs.
+    for (const it of items.filter(it => typeof it.finding !== "string")) {
+      const lead = Boolean(it.finding) && !findings && !recommended.length;
+      (it.finding ? recommended : tools).push(this.actRowNamed(it.label, this.t(it.hint), it.attr, lead ? " primary" : "", it.icon, lead));
+    }
     if (broken) recommended.push(`<div class="actblock"><small class="factnote">${this.t("actEditInHa")}</small></div>`);
     const labelControls = broken ? null : this.labelParts(item, true);
     const name = [...this.detailEditRows(item), labelControls ? this.actRow(this.t("actLabelTitle"), this.t("actLabelHint"), labelControls) : ""];
@@ -162,9 +166,10 @@ class DetailActionsMixin {
   // One row of the tab "Actions": the name with its explanation, and the control.
   // Long explanations are cut at two lines; "More" opens the rest.
   // The same row for an action: the name is the button, the explanation stands beside it (no second title).
-  actRowNamed(name, hint, attr, cls = "") {
+  actRowNamed(name, hint, attr, cls = "", icon = "", badge = false) {
     const long = hint && String(hint).length > 150;
-    return `<div class="actrow"><span class="acttext">${hint ? `<span class="acthint${long ? " clamp" : ""}">${hint}</span>` : ""}${long ? `<button type="button" class="linkbtn morebtn" data-act-more aria-expanded="false">${this.t("actMore")}</button>` : ""}</span><span class="actctl"><button type="button" class="btn${cls}" ${attr}>${name}</button></span></div>`;
+    const text = `${hint ? `<span class="acthint${long ? " clamp" : ""}">${badge ? `<span class="pill ok">${this.t("fixRecommended")}</span> ` : ""}${hint}</span>` : ""}${long ? `<button type="button" class="linkbtn morebtn" data-act-more aria-expanded="false">${this.t("actMore")}</button>` : ""}`;
+    return `<div class="actrow"><span class="acttext${icon ? " withicon" : ""}">${icon ? `<span class="fcii fcii-${badge ? "blue" : "mute"}"><ha-icon icon="${this.esc(icon)}"></ha-icon></span><span class="acttxt">${text}</span>` : text}</span><span class="actctl"><button type="button" class="btn${cls}" ${attr}>${name}</button></span></div>`;
   }
 
   actRow(title, hint, control) {
@@ -281,14 +286,14 @@ class DetailActionsMixin {
   }
 }
 Object.assign(TEXT.de, {
-  actOpen: "Öffnen", actGroupHide: "Ausblenden", tabActions: "Aktionen", nextStep: "Nächster Schritt", moreActions: "Weitere Aktionen", actGroupRecommended: "Empfohlen", actGroupName: "Benennen und einordnen", actGroupNotes: "Notizen", actOnlyNotes: "Hier legst du fest, was bei diesem Objekt normal ist, zum Beispiel „nachts offline“. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“.", actMore: "Mehr", actLess: "Weniger", actLabelPreviewShort: "Vorschau", actGroupRecord: "Aufzeichnung und Überwachung", actNone: "Hier gibt es nichts zu tun.",
+  actOpen: "Öffnen", actGroupHide: "Ausblenden", tabActions: "Aktionen", nextStep: "Nächster Schritt", moreActions: "Weitere Aktionen", actGroupRecommended: "Am Befund", actGroupName: "Benennen und einordnen", actGroupNotes: "Notizen", actOnlyNotes: "Hier legst du fest, was bei diesem Objekt normal ist, zum Beispiel „nachts offline“. Housekeeper meldet es dann nicht mehr als „nicht verfügbar“.", actMore: "Mehr", actLess: "Weniger", actLabelPreviewShort: "Vorschau", actGroupRecord: "Aufzeichnung und Überwachung", actNone: "Hier gibt es nichts zu tun.",
   actionsTitle: "Was möchtest du tun?", actReplace: "Ersetzen:", actReplaceThis: "Entität ersetzen", actDisable: "Deaktivieren", actRemove: "Entfernen", actReplaceTwin: "Entität ersetzen", actHintReplaceTwin: "Überall durch die funktionierende Entität ersetzen; sie ist schon eingetragen.", actHintRemove: "Die Integration stellt sie nicht mehr bereit, darum ohne Quarantäne: mit Vorschau, Backup und Wiederherstellen.", actDisableAuto: "Automation deaktivieren", actHintDisableAuto: "Keiner ihrer Auslöser kann feuern. Der Plan schaltet sie aus, mit Vorschau, Bestätigung und Rückgängig.",
   actLabelTitle: "Label ergänzen", actLabelHint: "Fügt ein vorhandenes Label hinzu, zum Beispiel zum Filtern. Du siehst zuerst eine Vorschau.", actLabelPreview: "Label ergänzen: Vorschau",
   actPreviewOnly: "Hier startest du nur eine Vorschau. Geändert wird erst, wenn du sie bestätigst.",
   actEditInHa: "Eine einzelne Referenz entfernt Housekeeper nicht selbst. Öffne die Automation in Home Assistant und bearbeite sie dort.",
 });
 Object.assign(TEXT.en, {
-  actOpen: "Open", actGroupHide: "Hide", tabActions: "Actions", nextStep: "Next step", moreActions: "More actions", actGroupRecommended: "Recommended", actGroupName: "Name and classify", actGroupNotes: "Notes", actOnlyNotes: "Here you say what is normal for this object, for example “offline at night”. Housekeeper then stops reporting it as “not available”.", actMore: "More", actLess: "Less", actLabelPreviewShort: "Preview", actGroupRecord: "Recording and monitoring", actNone: "There is nothing to do here.",
+  actOpen: "Open", actGroupHide: "Hide", tabActions: "Actions", nextStep: "Next step", moreActions: "More actions", actGroupRecommended: "On the finding", actGroupName: "Name and classify", actGroupNotes: "Notes", actOnlyNotes: "Here you say what is normal for this object, for example “offline at night”. Housekeeper then stops reporting it as “not available”.", actMore: "More", actLess: "Less", actLabelPreviewShort: "Preview", actGroupRecord: "Recording and monitoring", actNone: "There is nothing to do here.",
   actionsTitle: "What would you like to do?", actReplace: "Replace:", actReplaceThis: "Replace the entity", actDisable: "Disable", actRemove: "Remove", actReplaceTwin: "Replace the entity", actHintReplaceTwin: "Replace it everywhere by the working entity; it is already filled in.", actHintRemove: "Its integration no longer provides it, so no quarantine: with preview, backup and restore.", actDisableAuto: "Disable the automation", actHintDisableAuto: "None of its triggers can fire. The plan switches it off, with preview, confirmation and undo.",
   actLabelTitle: "Add a label", actLabelHint: "Adds an existing label, for example for filtering. You see a preview first.", actLabelPreview: "Add label: preview",
   actPreviewOnly: "This only starts a preview. Nothing changes until you confirm it.",

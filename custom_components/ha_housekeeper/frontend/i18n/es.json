@@ -3772,7 +3772,7 @@
 "tabActions": "Acciones",
 "nextStep": "Siguiente paso",
 "moreActions": "Más acciones",
-"actGroupRecommended": "Recomendado",
+"actGroupRecommended": "En el hallazgo",
 "actGroupName": "Nombrar y clasificar",
 "actGroupNotes": "Notas",
 "actOnlyNotes": "Aquí indicas qué es normal para este objeto, por ejemplo “sin conexión por la noche”. Housekeeper deja entonces de notificarlo como “no disponible”.",

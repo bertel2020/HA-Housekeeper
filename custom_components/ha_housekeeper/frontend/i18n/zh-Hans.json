@@ -3772,7 +3772,7 @@
 "tabActions": "操作",
 "nextStep": "下一步",
 "moreActions": "更多操作",
-"actGroupRecommended": "推荐",
+"actGroupRecommended": "针对发现项",
 "actGroupName": "命名与分类",
 "actGroupNotes": "备注",
 "actOnlyNotes": "在这里说明此对象的正常状态，例如「夜间离线」。之后 Housekeeper 就不再把它报告为「不可用」。",

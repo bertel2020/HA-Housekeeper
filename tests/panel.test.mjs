@@ -4994,10 +4994,10 @@ test("an entity has an Actions tab that holds what changes something; the overvi
   const overview = el.detailPanel("overview", ghost, key);
   assert.ok(overview.includes("Next step") && !overview.includes("data-de-rename") && !overview.includes("data-stale-form"), "no forms on the overview");
   const folded = el.detailPanel("actions", ghost, key);
-  assert.ok(folded.includes("Recommended") && folded.includes("Name and classify") && !folded.includes("data-de-rename"), "what always exists is folded while a finding has its answer");
+  assert.ok(folded.includes("On the finding") && folded.includes("Name and classify") && !folded.includes("data-de-rename"), "what always exists is folded while a finding has its answer");
   el.folds = { act_name: true };
   const actions = el.detailPanel("actions", ghost, key);
-  assert.ok(actions.includes("Recommended") && actions.includes("Name and classify") && actions.includes("data-de-rename"));
+  assert.ok(actions.includes("On the finding") && actions.includes("Name and classify") && actions.includes("data-de-rename"));
   assert.ok(actions.includes('class="actrow"') && (actions.match(/<section class="panel/g) || []).length === 1, "the forms are rows of one card");
   assert.ok(/<div class="fbtns"><button class="btn primary" data-act-replace="sensor.ghost"/.test(actions) && (actions.match(/data-act-replace="/g) || []).length === 1, "the step that answers the finding leads its row, and is not offered twice");
   assert.ok(actions.includes("data-de-id") && !actions.includes('class="deform" data-de-rename><label'), "the controls sit on the right, the label is the row title");
@@ -8034,6 +8034,20 @@ test("the own ways of a finding keep their cards when its object exists, and onl
   await new Promise(r => setTimeout(r, 0));
   const html = el.fixView();
   assert.ok(html.includes("data-fix-replace") && html.includes("Actions of the object") && !html.includes("Other ways"));
+});
+
+test("a possible duplicate with a working twin recommends replacing it, and the round loses its badge", async () => {
+  const { el } = panel("en");
+  const f = { key: "entity:sensor.a", rule_id: "entity.possible_duplicate", object_id: "sensor.a", topic: "unneeded", classification: "orphaned", affected_object: "sensor.b" };
+  el.data = { ...DATA, findings: [f], causes: [], objects: [{ object_type: "entity", object_id: "sensor.a", name: "A", duplicate_of: "sensor.b" }, { object_type: "entity", object_id: "sensor.b", name: "B" }] };
+  el._hass = { language: "en", callWS: async () => ({ ways: [{ way: "cleanup_round", kind: "panel", recommended: true }] }) };
+  el.render = () => {};
+  el.openFix("entity:sensor.a");
+  await new Promise(r => setTimeout(r, 0));
+  const html = el.fixView();
+  assert.equal((html.match(/pill ok/g) || []).length, 1);
+  assert.equal((html.match(/btn primary/g) || []).filter(x => x).length, 1);
+  assert.ok(html.indexOf("data-fc-plan") < html.indexOf("data-fix-round"));
 });
 
 test("a failed load of the exception rules is no empty list: nothing is saved over the real rules", async () => {

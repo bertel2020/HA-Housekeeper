@@ -52,7 +52,7 @@ const VIEWS = {
   overview: "view=overview", findings: "view=findingsNav", firstcleanup: "view=firstcleanup", inventory: "view=inventory", changes: "view=changes", monitor_editor: "view=monitor&editor=1",
   graph: "view=graph&graph=1&gobj=automation%3Aautomation.a1", detail: "object=entity%3Asensor.beispiel_7&tab=overview",
   attributes: "object=entity%3Asensor.beispiel_7&tab=technical", cleanup: "view=cleanup&plan=running", plan: "view=cleanup&plan=preview", repair: "view=repair", maintenance: "view=maintenance", reliability: "view=reliability", autopause: "view=autopause", checklog: "view=checklog", runs: "view=runs", recorder: "view=recorder", exposure: "view=exposure", policies: "view=policies", storage: "view=storage", dataflow: "view=dataflow", secrets: "view=secrets", settings: "view=settings", decisions: "view=settings&tab=exceptions", batteries: "view=batteries", unreferenced: "view=unreferenced",
-  settings_look: "view=settings&settings=look",
+  fix: "fix=1", actions_tab: "object=entity%3Asensor.beispiel_7&tab=actions", settings_look: "view=settings&settings=look",
   settings_scan: "view=settings&settings=scan",
   stats: "view=unreferenced&unref=statistics", xfer: "view=unreferenced&unref=statistics&xfer=1",
   bulk_bat: "view=batteries&bulk=bat", bulk_unref: "view=unreferenced&bulk=unref", bulk_marks_review: "view=exceptions&bulk=marks-review", bulk_marks_kind: "view=exceptions&bulk=marks-kind",
@@ -258,6 +258,7 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
         open.forEach((f, i) => stages[i % 5 + 1].push(f.key));
         return { state: { ...fcs, done: [...fcs.done] }, offered: !fcs.started_at, open: open.length, later_days: 90, stages, put_off: stages[5].length };
       }
+      if (t.endsWith("/fix_ways")) return { ways: [{ way: "cleanup_round", kind: "panel", recommended: true }, { way: "mark", kind: "panel", recommended: false }, { way: "object_actions", kind: "panel", recommended: false }] };
       return {}; } };
   for (let i = 0; i < 50 && !el.data; i++) await wait(100);
   const plan = q.get("plan");
@@ -296,6 +297,13 @@ const PAGE = `<!doctype html><html lang="${language}"><head><meta charset="utf-8
     if (kind === "bat") { for (const o of el.data.objects) if (ids.includes(o.object_id)) { o.device_class = "battery"; o.status = "active"; o.state = "55"; o.unit = "%"; } el.batteryTrend = { available: true, rows: [], types: {}, custom_types: [] }; el.batSel = new Set(ids); el.batBulk = { type: "" }; }
     else if (kind === "unref") { el.unrefSel = new Set(ids); el.unrefBulk = { days: 365, reason: "", markKind: "" }; }
     else { el.viewTab = { ...(el.viewTab || {}), exceptions: "objects" }; el.markSel = new Set(el.data.objects.filter(o => o.mark).map(o => o.object_type + ":" + o.object_id)); el.markBulk = { kind: kind === "marks-kind" ? "kind" : "review", days: 365 }; }
+  }
+  if (q.get("fix")) {
+    // The page Fix of a possible duplicate with a working twin: an entity finding turned into one.
+    const f = el.data.findings.find(x => x.rule_id.startsWith("entity.") && !x.ignored), twin = el.data.objects.find(o => o.object_type === "entity" && o.object_id !== f.object_id);
+    Object.assign(f, { rule_id: "entity.possible_duplicate", affected_object: twin.object_id, topic: "unneeded", confidence_level: "likely", confidence: 0.7 });
+    el.findObject("entity:" + f.object_id).duplicate_of = twin.object_id;
+    await el.openFix(f.key);
   }
   if (q.get("graph")) { el.graphSelected = el.findObject(q.get("gobj")); el.graphDepth = 3; el.view = "graph"; }
   else if (q.get("object")) { await el.openObject(el.findObject(q.get("object"))); el.detailTab = q.get("tab") || "overview"; }

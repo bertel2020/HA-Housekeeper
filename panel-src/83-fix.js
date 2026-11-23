@@ -179,7 +179,7 @@ class FixMixin {
   fixObjectRows(object, key, rec) {
     const items = this.fixItems(object, key).items, own = items.filter(it => it.plan);
     const more = items.length > own.length || !items.length;
-    const rows = own.map((it, i) => ({ rec: rec === it, html: this.fixRow(it.icon, this.t(it.hint), `<button type="button" class="btn${rec === it ? " primary" : ""}" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${it.label}</button>`, rec === it) }));
+    const rows = own.map((it, i) => ({ rec: rec?.attr === it.attr, html: this.fixRow(it.icon, this.t(it.hint), `<button type="button" class="btn${rec?.attr === it.attr ? " primary" : ""}" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${it.label}</button>`, rec?.attr === it.attr) }));
     const rest = more ? { rec: false, html: `<div class="fcway"><span class="fcii fcii-mute"><ha-icon icon="mdi:tools"></ha-icon></span><span class="fctxt"><strong>${this.t("fixOpenActions")}</strong><small>${this.t("fixMoreActionsHint")}</small></span><button type="button" class="btn" data-fix-object="${this.esc(key)}">${this.t("actOpen")}</button></div>` } : null;
     return { rows, rest, own };
   }
@@ -204,7 +204,8 @@ class FixMixin {
       const entries = [...objectRows.rows];
       for (const w of ways) {
         if (FIX_OBJECT_WAYS.includes(w.way) && object) continue;
-        entries.push({ rec: Boolean(w.recommended) && !twin, html: this.fixWayCard(w, f, true) });
+        const way = { ...w, recommended: Boolean(w.recommended) && !twin };
+        entries.push({ rec: way.recommended, html: this.fixWayCard(way, f, true) });
       }
       if (objectRows.rest) entries.push(objectRows.rest);
       entries.sort((a, b) => Number(b.rec) - Number(a.rec));
