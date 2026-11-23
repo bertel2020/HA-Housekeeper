@@ -31,7 +31,7 @@
   - The head names the idle days or the duration of the outage, the impact and the certainty as chips; each way is one sentence and one button named like the action everywhere. The careful way comes first, rarely needed ones fold.
   - An unused automation offers “Disable the automation” before “Delete the automation”; both run inside the page with preview, check and undo. A stopped app opens its page in Home Assistant.
 - **First cleanup:**
-  - The cards of all stages (also stage 2, the cleanup round and the quiet rest) show their actions in two groups, “For the object” and “For this finding”, with one line that explains the recommended button.
+  - The cards of stages 1 and 3 name one recommended answer with its reason and list the others below it. What changes something is only added to the plan and runs together at the end of the stage, with a preview and a backup. The cards of the other stages (stage 2, the cleanup round and the quiet rest) show their actions in two groups, “For the object” and “For this finding”.
   - The preview on the card shows what each step changes, which steps need a look and the backup; undoing asks first.
   - For a device that has been off for a week with almost nothing depending on it, the card recommends the object note, like the Fix page, and no longer offers “Intended”.
 - **Outages:** A device that is down names the duration and what is unavailable because of it in the list and the card (“Device X has been down for 44 days”). The Fix page asks “Is that intended?” and recommends “Set object note” when the device has been down for a week and hardly anything depends on it.

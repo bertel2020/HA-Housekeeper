@@ -31,7 +31,7 @@
   - Der Kopf nennt Leerlauf oder Dauer des Ausfalls, Wirkung und Sicherheit als Chips; jeder Weg ist ein Satz und ein Knopf, der überall wie die Aktion heißt. Der vorsichtige Weg steht zuerst, selten Nötiges ist eingeklappt.
   - Eine ungenutzte Automation bietet „Automation deaktivieren“ vor „Automation löschen“; beide laufen auf der Seite mit Vorschau, Prüfung und Rückgängig. Eine gestoppte App öffnet ihre Seite in Home Assistant.
 - **Erstaufräumen:**
-  - Die Karten aller Etappen (auch Etappe 2, die Aufräum-Runde und der ruhige Rest) zeigen ihre Aktionen in zwei Gruppen, „Für das Objekt“ und „Für diesen Befund“, mit einer Zeile, die den empfohlenen Knopf erklärt.
+  - Die Karten der Etappen 1 und 3 nennen eine empfohlene Antwort mit ihrem Grund und listen die anderen darunter. Was etwas ändert, wird nur dem Plan hinzugefügt und läuft am Ende der Etappe zusammen, mit Vorschau und Backup. Die Karten der übrigen Etappen (Etappe 2, die Aufräum-Runde und der ruhige Rest) zeigen ihre Aktionen in zwei Gruppen, „Für das Objekt“ und „Für diesen Befund“.
   - Die Vorschau auf der Karte zeigt, was jeder Schritt ändert, welche Schritte einen Blick brauchen und das Backup; Rückgängig fragt vorher.
   - Bei einem Gerät, das seit einer Woche aus ist und von dem fast nichts abhängt, empfiehlt die Karte die Objekt-Notiz, wie die Beheben-Seite, und bietet „Ist so gewollt“ nicht mehr an.
 - **Ausfälle:** Ein ausgefallenes Gerät nennt in Liste und Karte die Dauer und was dadurch nicht erreichbar ist („Gerät X ist seit 44 Tagen ausgefallen“). Die Beheben-Seite fragt „Ist das so gewollt?“ und empfiehlt „Objekt-Notiz setzen“, wenn das Gerät seit einer Woche aus ist und kaum etwas davon abhängt.
