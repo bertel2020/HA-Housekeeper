@@ -23872,8 +23872,10 @@ class FcRecommendMixin {
   fcRecRow(rec) { return { id: "rec", rec: true, label: this.t("fcRecLabel"), head: rec.head, text: rec.body, empty: false, tab: "" }; }
 
   // One way of an object as a row: what it does, and the button that carries its name (it opens the preview of its plan or the page).
-  fcWayRow(it, key) {
-    return `<div class="fcway"><span class="fcii fcii-blue"><ha-icon icon="${this.esc(it.icon)}"></ha-icon></span><span class="fctxt"><span class="fcwayhint">${this.t(it.hint)}</span></span>${it.plan ? `<button type="button" class="btn primary" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${it.label}</button>` : `<button type="button" class="btn${it.ap ? " primary" : ""}" ${it.attr}>${it.label}</button>`}</div>`;
+  // Only the recommended one has a filled button and the badge.
+  fcWayRow(it, key, rec = false) {
+    const cls = rec ? "btn primary" : "btn";
+    return this.fixRow(it.icon, this.t(it.hint), it.plan ? `<button type="button" class="${cls}" data-fc-plan="${this.esc(JSON.stringify(it.plan))}" data-key="${this.esc(key)}"${this.planBusy ? " disabled" : ""}>${it.label}</button>` : `<button type="button" class="${cls}" ${it.attr}>${it.label}</button>`, rec);
   }
 
   // The ways of "Fix" for one object, unfolded in the card: what Housekeeper can do for it.
@@ -23882,8 +23884,12 @@ class FcRecommendMixin {
     const items = this.fixItems(obj, key).items;
     // The ways of the finding itself (replace the target, remove the reference, catch the error), as on the page Fix.
     const finding = this.data?.findings?.find(x => x.key === this.fixKey && (this.findingKey(x) === key || this.ownerKey(x) === key));
-    const own = finding && this.fixWays ? this.fixWays.filter(w => !FIX_OBJECT_WAYS.includes(w.way) && w.way !== "mark").map(w => this.fixWayCard(w, finding)).join("") : "";
-    const rows = items.map(it => this.fcWayRow(it, key)).join("") + own;
+    // The same rule as on the page Fix: a possible duplicate with a working twin recommends replacing it; else the recommended way of the finding, else the first plan that answers it.
+    const twin = finding?.rule_id === "entity.possible_duplicate" ? items.find(it => it.plan?.kind === "replace_references") : null;
+    const ways = finding && this.fixWays ? this.fixWays.filter(w => !FIX_OBJECT_WAYS.includes(w.way) && w.way !== "mark").map(w => ({ ...w, recommended: Boolean(w.recommended) && !twin })) : [];
+    const rec = twin || (ways.some(w => w.recommended) ? null : items.find(it => it.plan && it.finding)) || null;
+    const entries = [...items.map(it => ({ rec: it === rec, html: this.fcWayRow(it, key, it === rec) })), ...ways.map(w => ({ rec: w.recommended, html: this.fixWayCard(w, finding, true) }))].sort((a, b) => Number(b.rec) - Number(a.rec));
+    const rows = entries.map(e => e.html).join("");
     if (finding && !this.fcFixable(finding, key)) return this.fcCheckBlock(finding, rows);
     return `<div class="fcways"><small class="fceyebrow">${this.t("fcFixWaysHead")}</small>${rows}${rows ? "" : `<p class="fcfacts">${this.t("fcFixNone")}</p>`}</div>`;
   }
