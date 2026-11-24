@@ -5435,7 +5435,7 @@ test("the Fix page names the ways, keeps the exits, collects what hangs on a cau
   const own = f("config_entry.not_loaded|e1|", "config_entry.not_loaded", { cause_id: "integration_down:e1" });
   const a = f("entity.state_unavailable|s1|", "entity.state_unavailable", { cause_id: "integration_down:e1" }), b = f("entity.state_unavailable|s2|", "entity.state_unavailable", { cause_id: "integration_down:e1" });
   const cause = { id: "integration_down:e1", kind: "integration_down", object_type: "config_entry", object_id: "e1", name: "Hue", finding_key: own.key, follower_count: 2, total_followers: 2, child_ids: [], consumers: {}, impact: "high", parent_id: null };
-  el.data = { ...DATA, objects: [{ object_type: "config_entry", object_id: "e1", name: "Hue" }], edges: [], causes: [cause], findings: [own, a, b] };
+  el.data = { ...DATA, objects: [{ object_type: "config_entry", object_id: "e1", name: "Hue" }, { object_type: "entity", object_id: "s1", name: "S1" }], edges: [], causes: [cause], findings: [own, a, b] };
   el.view = "findingsNav"; el.openFix(own.key);
   assert.equal(el.view, "fix"); assert.equal(calls[0].type, "ha_housekeeper/fix_ways");
   await new Promise(resolve => setTimeout(resolve, 0));
@@ -5445,6 +5445,7 @@ test("the Fix page names the ways, keeps the exits, collects what hangs on a cau
   assert.ok(html.includes('data-ha-path="/config/integrations/integration/hue"') && html.indexOf("Look at the integration") < html.indexOf("Wait"), "the recommended way comes first");
   assert.ok(html.includes('data-decide-preset="keep"') && html.includes('data-decide-preset="snooze"') && html.includes('data-decide-preset="ignore"'), "the three exits are always there");
   assert.ok(html.includes('data-fix-pick="entity.state_unavailable|s1|"') && html.includes("Fix together"), "what hangs on the cause can be picked");
+  assert.ok(/<strong class="objlink" data-obj-link="entity:[^"]+"[^>]*>[^<]*<\/strong><small>/.test(html), "the name of a pickable finding opens its object");
   assert.ok(!html.includes("Fixed:") && !html.includes("Still open"), "no verdict before a check");
   el.fixGo(3);
   el.fixCheckedFrom = "old"; el.data.meta = { ...el.data.meta, scanned_at: "new" };
