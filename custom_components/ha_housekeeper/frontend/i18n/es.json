@@ -6806,5 +6806,7 @@
 "rwCsvR_off": "La entidad nueva está desactivada.",
 "rwCsvR_domain": "La antigua y la nueva son de distinto tipo de entidad (dominio).",
 "rwCsvR_howfit": "El modo «{how}» no encaja con esta entidad.",
-"rwCsvR_nopair": "No hay ninguna propuesta que asignar para la entidad antigua."
+"rwCsvR_nopair": "No hay ninguna propuesta que asignar para la entidad antigua.",
+"copyId": "Copiar ID",
+"idCopied": "ID copiado"
 }

@@ -7321,5 +7321,7 @@
 "rwCsvR_off": "Nová entita je vypnutá.",
 "rwCsvR_domain": "Stará a nová sú rôzne druhy entít (doména).",
 "rwCsvR_howfit": "Druh „{how}“ sa k tejto entite nehodí.",
-"rwCsvR_nopair": "Pre starú entitu nie je žiadny návrh na priradenie."
+"rwCsvR_nopair": "Pre starú entitu nie je žiadny návrh na priradenie.",
+"copyId": "Kopírovať ID",
+"idCopied": "ID skopírované"
 }

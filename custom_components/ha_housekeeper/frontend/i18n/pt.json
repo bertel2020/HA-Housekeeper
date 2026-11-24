@@ -6806,5 +6806,7 @@
 "rwCsvR_off": "A entidade nova está desativada.",
 "rwCsvR_domain": "A antiga e a nova são de tipos de entidade diferentes (domínio).",
 "rwCsvR_howfit": "O género «{how}» não serve para esta entidade.",
-"rwCsvR_nopair": "Não há nenhuma sugestão para atribuir à entidade antiga."
+"rwCsvR_nopair": "Não há nenhuma sugestão para atribuir à entidade antiga.",
+"copyId": "Copiar ID",
+"idCopied": "ID copiado"
 }

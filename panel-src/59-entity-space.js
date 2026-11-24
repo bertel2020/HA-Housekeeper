@@ -131,6 +131,7 @@ class EntitySpaceMixin {
     return this.rowMenuHtml([
       page ? ["mdi:open-in-new", "polOpenObject", `data-space-open="${this.esc(id)}"`] : null,
       this.canMoreInfo(id) ? ["mdi:information-outline", "openEntity", `data-more-info="${this.esc(id)}"`] : null,
+      ["mdi:content-copy", "copyId", `data-copy-id="${this.esc(id)}"`],
       ["mdi:format-list-bulleted-square", "spaceAttrsOpen", `data-space-show="${this.esc(id)}"`],
       null,
       ["mdi:database-off-outline", marked ? "spaceExOn" : "spaceExAdd", `data-space-ex="${this.esc(id)}"`],

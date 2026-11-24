@@ -27,7 +27,7 @@ class CleanupMixin {
       return `<span class="qconfirm" role="group" aria-label="${this.esc(this.t("releaseQuestion"))}"><span>${this.t("releaseQuestion")}</span><button class="btn" data-release-yes="${this.esc(key)}">${this.t("yes")}</button><button class="btn" data-release-no>${this.t("cancelRun")}</button></span>`;
     }
     if (this.cleanupRunning()) return "";
-    return this.rowMenuHtml([["mdi:lock-open-variant-outline", "releaseAction", `data-release="${this.esc(key)}"`], (q.object_type || "entity") === "entity" && this.canMoreInfo(q.object_id) ? ["mdi:information-outline", "openEntity", `data-more-info="${this.esc(q.object_id)}"`] : null]);
+    return this.rowMenuHtml([["mdi:lock-open-variant-outline", "releaseAction", `data-release="${this.esc(key)}"`], (q.object_type || "entity") === "entity" && this.canMoreInfo(q.object_id) ? ["mdi:information-outline", "openEntity", `data-more-info="${this.esc(q.object_id)}"`] : null, ["mdi:content-copy", "copyId", `data-copy-id="${this.esc(q.object_id)}"`]]);
   }
 
   async releaseQuarantine(key) {

@@ -14,6 +14,7 @@
   - The card “Show technical details” in the settings is calmer: no duplicate list and no highlighted frame.
   - The sensor “Database size” shows gigabytes by default when newly created.
   - Names and IDs in the lists open the detail page of their object.
+  - “Copy ID” in the row menu and next to the ID on the detail page.
 
 ### Fixed
 

@@ -6806,5 +6806,7 @@
 "rwCsvR_off": "新实体已停用。",
 "rwCsvR_domain": "旧实体和新实体的类型不同（域）。",
 "rwCsvR_howfit": "“{how}”这种方式不适用于该实体。",
-"rwCsvR_nopair": "旧实体没有可分配的建议。"
+"rwCsvR_nopair": "旧实体没有可分配的建议。",
+"copyId": "复制 ID",
+"idCopied": "已复制 ID"
 }

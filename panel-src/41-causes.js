@@ -245,6 +245,7 @@ class CausesMixin {
     // The row itself is one button, so the twin of a duplicate is opened from here.
     const go = [
       f.rule_id.startsWith("entity.") && this.canMoreInfo(f.object_id) ? e("mdi:information-outline", "openEntity", `data-more-info="${this.esc(f.object_id)}"`) : null,
+      e("mdi:content-copy", "copyId", `data-copy-id="${this.esc(f.object_id)}"`),
       f.rule_id === "entity.possible_duplicate" && f.affected_object && this.findObject(`entity:${f.affected_object}`) ? e("mdi:open-in-new", "openTwin", `data-object="entity:${this.esc(f.affected_object)}"`) : null,
     ];
     return [solve, [...due, ...status], about, ha, note, go].map(g => g.filter(Boolean)).filter(g => g.length);

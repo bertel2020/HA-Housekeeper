@@ -5488,6 +5488,7 @@ test("an entity row shows the id in mono under the name and the extra facts in a
   assert.equal(el.rowId("sensor.zzz"), '<span class="id">sensor.zzz</span>');
   // an id the inventory knows opens the detail page of its object, in names and in id lines alike
   assert.equal(el.idLink("sensor.zzz<"), "sensor.zzz&lt;");
+  assert.ok(el.spaceRowMenu("sensor.a").includes('data-copy-id="sensor.a"'), "the row menu copies the id");
   assert.ok(el.textWithIdLink("Refers to sensor.a (gone)", "sensor.a").includes('>sensor.a</span> (gone)') && el.textWithIdLink("Refers to x<", "").includes("x&lt;"), "an id inside a sentence is a link, the rest stays text");
   el._hass = { ...el._hass, states: { "sensor.only_state": { state: "1" } } };
   assert.ok(el.rowId("sensor.only_state").includes('data-obj-link="info:sensor.only_state"'), "an entity without a page opens HA's dialog");
