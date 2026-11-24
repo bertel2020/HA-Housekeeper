@@ -6814,5 +6814,13 @@
 "findingWaitingTitle": "L’indication figure dans la liste mais ne compte qu’à partir du {date} : l’entité est observée jusque-là.",
 "fixAttrSeen": "Observé",
 "fixAttrSeenNote": "L’entité {entity} a affiché jusqu’ici ces attributs (en rouge : celui qui est lu et n’est jamais venu). Observée depuis le {since}.",
-"fixAttrWaiting": "L’indication ne compte qu’à partir du {date}."
+"fixAttrWaiting": "L’indication ne compte qu’à partir du {date}.",
+"viaMcpReason": "Raison de l’agent, texte non vérifié",
+"todoAiPlans_1": "1 proposition de l’IA t’attend",
+"todoAiPlans_n": "{n} propositions de l’IA t’attendent",
+"todoAiPlansHint": "Plans qu’un agent a créés via l’accès IA. Ils ne s’exécutent que lorsque tu les confirmes dans le journal.",
+"journalAllOrigin": "Toutes les origines",
+"journalOriginAiOpen": "IA, en attente de toi",
+"journalOriginAi": "De l’IA",
+"journalOriginPanel": "Du panneau"
 }

@@ -715,12 +715,23 @@ async def test_a_plan_for_a_change_pairs_entities_and_stays_a_preview(hass: Home
     ]
     with patch("custom_components.ha_housekeeper.websocket_api._plan_from_requests", fake_plan):
         answer = await mcp_api.run(
-            hass, scanner, "replacement_plan", {"pairs": pairs, "disable_old": True}, None
+            hass,
+            scanner,
+            "replacement_plan",
+            {
+                "pairs": pairs,
+                "disable_old": True,
+                "reason": "Old one is gone,\nnew one is there " + "x" * 400,
+            },
+            None,
         )
     assert [r["target"] for r in seen["requests"]] == ["sensor.a_new", "sensor.b_new"]
     assert all(r["disable_old"] and r["kind"] == "replace_references" for r in seen["requests"])
     assert answer["plan_id"] == "p2" and answer["total"] == 2 and "Not run" in answer["next"]
     assert scanner.journal.added == [plan] and plan["via"] == "mcp"
+    assert (
+        plan["via_reason"].startswith("Old one is gone, new one") and len(plan["via_reason"]) == 300
+    )
 
     for bad, reason in (
         ([{"old": "sensor.a_old", "new": "sensor.a_old"}], "same_entity"),

@@ -6814,5 +6814,13 @@
 "findingWaitingTitle": "Il suggerimento è nell’elenco, ma conta solo dal {date}: fino ad allora l’entità viene osservata.",
 "fixAttrSeen": "Visto",
 "fixAttrSeenNote": "L’entità {entity} ha mostrato finora questi attributi (in rosso: quello che viene letto e non è mai arrivato). Osservata dal {since}.",
-"fixAttrWaiting": "Il suggerimento conta solo dal {date}."
+"fixAttrWaiting": "Il suggerimento conta solo dal {date}.",
+"viaMcpReason": "Motivo dell’agente, testo non verificato",
+"todoAiPlans_1": "1 proposta dell’IA ti aspetta",
+"todoAiPlans_n": "{n} proposte dell’IA ti aspettano",
+"todoAiPlansHint": "Piani che un agente ha creato tramite l’accesso IA. Vengono eseguiti solo quando li confermi nel diario.",
+"journalAllOrigin": "Tutte le origini",
+"journalOriginAiOpen": "IA, in attesa di te",
+"journalOriginAi": "Dall’IA",
+"journalOriginPanel": "Dal pannello"
 }

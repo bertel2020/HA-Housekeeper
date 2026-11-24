@@ -39,6 +39,9 @@ RANK = {"none": 0, "info": 1, "low": 2, "medium": 3, "high": 4}
 LIMIT_DEFAULT = 20
 LIMIT_MAX = 50
 TEXT_LIMIT = 80
+REASON_LIMIT = (
+    300  # the reason an agent gives for a plan; shown to the administrator, never acted on
+)
 REASON_SHOWN = 120
 DECISIONS = ("hide", "include", "only")
 VIA = "mcp"
@@ -123,6 +126,7 @@ FIX_PLAN_SCHEMA = vol.Schema(
             ("replace_target", "remove_reference", "catch_error", "cleanup_round")
         ),
         vol.Optional("target"): vol.All(str, vol.Length(min=1, max=255)),
+        vol.Optional("reason"): vol.All(str, vol.Length(max=REASON_LIMIT * 4)),
     }
 )
 FIX_OPTIONS_SCHEMA = vol.Schema({vol.Required("key"): vol.All(str, vol.Length(min=1, max=300))})
@@ -146,6 +150,7 @@ REPLACEMENT_PLAN_SCHEMA = vol.Schema(
             vol.Length(min=1, max=REPLACEMENT_PAIRS_MAX),
         ),
         vol.Optional("disable_old", default=False): bool,
+        vol.Optional("reason"): vol.All(str, vol.Length(max=REASON_LIMIT * 4)),
     }
 )
 MARK_SCHEMA = vol.Schema(
@@ -687,6 +692,8 @@ async def finding_fix_plan(
     if not any(a.get("executable") for a in actions):
         raise McpError("plan_blocked", ", ".join(actions[0].get("reasons", [])[:4]))
     plan["via"] = VIA
+    if reason := clean_text(data.get("reason", ""), REASON_LIMIT):
+        plan["via_reason"] = reason
     scanner.journal.add(plan)
     return {
         "schema": API_SCHEMA,
@@ -812,6 +819,8 @@ async def replacement_plan(
         reasons: list[str] = next((a.get("reasons") for a in actions if a.get("reasons")), [])
         raise McpError("plan_blocked", ", ".join(reasons[:4]))
     plan["via"] = VIA
+    if reason := clean_text(data.get("reason", ""), REASON_LIMIT):
+        plan["via_reason"] = reason
     scanner.journal.add(plan)
     return {
         "schema": API_SCHEMA,

@@ -689,7 +689,7 @@ class CleanupMixin {
       : stage === 2 ? `${this.planOutcome(plan)}${control}`
       : `${this.planOutcome(plan)}${this.purgeOldCard(plan)}${this.logSuggestCard(plan)}${summary}${rows}${this.simulationBlock(plan)}${checks}${this.followupLine(plan)}${control}`;
     return `<section class="panel" data-plan-card><div class="panelhead"><div><h2>${this.t(plan.status === "dry_run" ? "planResult" : "planResultDone")} · <span class="pill ${plan.status === "verified" ? "ok" : plan.status === "dry_run" ? "mute" : "warn"}">${this.t(`plan_status_${plan.status}`)}</span>${this.planStale(plan) ? ` <span class="pill warn">${this.t("planStale")}</span>` : ""}${plan.via === "mcp" ? ` <span class="pill mute">${this.t("viaMcp")}</span>` : ""}</h2><p>${this.esc(this.formatDate(plan.created_at))}</p></div>${footClose ? "" : `<button class="btn" data-plan-close>${this.t("planClose")}</button>`}</div>
-      ${plan.via === "mcp" && plan.status === "dry_run" ? `<div class="outcome warn" role="note"><ha-icon icon="mdi:robot-outline"></ha-icon><span><strong>${this.t("viaMcpHint")}</strong></span></div>` : ""}${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
+      ${plan.via === "mcp" && plan.status === "dry_run" ? `<div class="outcome warn" role="note"><ha-icon icon="mdi:robot-outline"></ha-icon><span><strong>${this.t("viaMcpHint")}</strong></span></div>` : ""}${plan.via === "mcp" ? this.aiReasonBlock(plan) : ""}${this.planTrack(plan, stage, Boolean(conf))}${body}${this.reportBlock(plan)}</section>`;
   }
 
   kindSelect() {
@@ -1033,8 +1033,9 @@ class CleanupMixin {
       filters: [
         { name: "status", all: this.t("journalAllStatus"), options: statuses.map(x => [x, this.t(`plan_status_${x}`)]) },
         ...(follows.length ? [{ name: "follow", all: this.t("journalAllFollow"), options: follows.map(x => [x, this.t(`fu_${x}`)]) }] : []),
+        ...(plans.some(p => p.via === "mcp") ? [{ name: "origin", all: this.t("journalAllOrigin"), options: [["ai_open", this.t("journalOriginAiOpen")], ["ai", this.t("journalOriginAi")], ["panel", this.t("journalOriginPanel")]] }] : []),
       ],
-      filterFns: { status: (p, v) => statusOf(p) === v, follow: (p, v) => fuState(p) === v },
+      filterFns: { status: (p, v) => statusOf(p) === v, follow: (p, v) => fuState(p) === v, origin: (p, v) => (v === "panel" ? p.via !== "mcp" : v === "ai" ? p.via === "mcp" : this.aiProposal(p)) },
       text: p => `${this.formatDate(p.created_at)} ${this.t(`plan_status_${statusOf(p)}`)}`, tie: p => p.created_at,
     }) : `<div class="emptymsg mute"><ha-icon icon="mdi:clipboard-text-outline"></ha-icon><strong>${this.t("journalEmpty")}</strong>${this.t("journalEmptyNext")}<button class="btn" data-jump="repair">${this.t("repair")}</button></div>`;
     const picked = this.mergeSel?.size || 0;

@@ -7329,5 +7329,18 @@
 "findingWaitingTitle": "Upozornenie je v zozname, ale počíta sa až od {date}: dovtedy sa entita sleduje.",
 "fixAttrSeen": "Videné",
 "fixAttrSeenNote": "Entita {entity} zatiaľ zobrazila tieto atribúty (červený: ten, ktorý sa číta a nikdy neprišiel). Sleduje sa od {since}.",
-"fixAttrWaiting": "Upozornenie sa počíta až od {date}."
+"fixAttrWaiting": "Upozornenie sa počíta až od {date}.",
+"viaMcpReason": "Dôvod agenta, text nie je overený",
+"todoAiPlans_1": "Čaká na teba 1 návrh od AI",
+"todoAiPlans_n": {
+"one": "Čaká na teba 1 návrh od AI",
+"few": "Čakajú na teba {n} návrhy od AI",
+"many": "Čaká na teba {n} návrhov od AI",
+"other": "Čaká na teba {n} návrhov od AI"
+},
+"todoAiPlansHint": "Plány, ktoré agent vytvoril cez Prístup AI. Spustia sa, až keď ich potvrdíš v denníku.",
+"journalAllOrigin": "Všetky pôvody",
+"journalOriginAiOpen": "AI, čaká na teba",
+"journalOriginAi": "Od AI",
+"journalOriginPanel": "Z panela"
 }

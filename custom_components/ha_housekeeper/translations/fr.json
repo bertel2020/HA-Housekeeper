@@ -483,6 +483,10 @@
         "target": {
           "name": "Nouvelle cible",
           "description": "Pour replace_target : l’entité, la zone, l’étage ou l’étiquette qui prend la place de celle qui manque."
+        },
+        "reason": {
+          "name": "Raison",
+          "description": "Pourquoi l’agent le propose, 300 caractères au maximum, affichée à l’administrateur sur la page du plan comme texte de l’agent. Elle n’est jamais exécutée."
         }
       }
     },
@@ -519,6 +523,10 @@
         "disable_old": {
           "name": "Désactiver les anciennes entités",
           "description": "Désactive les anciennes entités après le remplacement. Elles ne sont jamais supprimées."
+        },
+        "reason": {
+          "name": "Raison",
+          "description": "Pourquoi l’agent le propose, 300 caractères au maximum, affichée à l’administrateur sur la page du plan comme texte de l’agent. Elle n’est jamais exécutée."
         }
       }
     }

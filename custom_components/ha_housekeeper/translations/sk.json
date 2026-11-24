@@ -483,6 +483,10 @@
         "target": {
           "name": "Nový cieľ",
           "description": "Pre replace_target: entita, oblasť, poschodie alebo štítok, ktorý nahradí chýbajúci."
+        },
+        "reason": {
+          "name": "Dôvod",
+          "description": "Prečo to agent navrhuje, najviac 300 znakov; administrátor ho vidí na stránke plánu ako text agenta. Nikdy sa nevykoná."
         }
       }
     },
@@ -519,6 +523,10 @@
         "disable_old": {
           "name": "Vypnúť staré entity",
           "description": "Vypne staré entity po nahradení. Nikdy sa nemažú."
+        },
+        "reason": {
+          "name": "Dôvod",
+          "description": "Prečo to agent navrhuje, najviac 300 znakov; administrátor ho vidí na stránke plánu ako text agenta. Nikdy sa nevykoná."
         }
       }
     }

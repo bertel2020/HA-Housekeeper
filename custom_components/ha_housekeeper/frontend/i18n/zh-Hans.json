@@ -6814,5 +6814,13 @@
 "findingWaitingTitle": "该提示已在列表中，但要到 {date} 才开始计数：在此之前会继续观察该实体。",
 "fixAttrSeen": "已见",
 "fixAttrSeenNote": "实体 {entity} 到目前为止出现过这些属性（红色：被读取却从未出现的那个）。自 {since} 起观察。",
-"fixAttrWaiting": "该提示要到 {date} 才开始计数。"
+"fixAttrWaiting": "该提示要到 {date} 才开始计数。",
+"viaMcpReason": "代理给出的理由，文字未经核实",
+"todoAiPlans_1": "1 条 AI 建议在等你",
+"todoAiPlans_n": "{n} 条 AI 建议在等你",
+"todoAiPlansHint": "代理通过 AI 访问创建的计划。只有你在日志中确认后才会运行。",
+"journalAllOrigin": "所有来源",
+"journalOriginAiOpen": "AI，等你处理",
+"journalOriginAi": "来自 AI",
+"journalOriginPanel": "来自面板"
 }
