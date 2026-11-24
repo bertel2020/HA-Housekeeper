@@ -226,7 +226,7 @@ class CausesMixin {
       e("mdi:wrench-outline", "fixRowOpen", `data-fix-open="${key}"`, this.t(this.deletableAutomation(f) ? "fixRowSubDelete" : "fixRowSub")),
       steps.remove ? e("mdi:delete-outline", "actRemove", `data-find-remove="${this.esc(f.object_id)}"`, plan) : null,
       this.brokenEntityFinding(f) ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.affected_object)}"${f.suggestions?.[0] ? ` data-repl-new="${this.esc(f.suggestions[0])}"` : ""}`, f.suggestions?.[0] ? `${f.affected_object} → ${f.suggestions[0]}` : f.affected_object) : null,
-      steps.disable ? e("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`, plan) : null,
+      steps.disable && !this.staleAutomation(f) ? e("mdi:cancel", "actDisable", `data-find-disable="${this.esc(f.object_id)}"`, plan) : null,
       steps.replace ? e("mdi:swap-horizontal", "actReplaceThis", `data-act-replace="${this.esc(f.object_id)}"`) : null,
     ];
     // Due again: keep it so (for what was meant to be so) or push it out once more, before the usual status.

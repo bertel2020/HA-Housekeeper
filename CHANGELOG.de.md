@@ -18,6 +18,7 @@
   - Der Sensor „Größe der Datenbank“ zeigt neu angelegt standardmäßig Gigabyte.
   - Namen und IDs in den Listen öffnen die Detailseite ihres Objekts.
   - Ein Knopf neben jeder ID kopiert sie.
+  - Im Menü einer ungenutzten Automation führt „Beheben“ zu Deaktivieren und Löschen; „Deaktivieren“ steht dort nicht mehr einzeln.
 
 ### Behoben
 

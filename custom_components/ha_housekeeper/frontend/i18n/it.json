@@ -6144,7 +6144,7 @@
 "fixRowOpen": "Correggi",
 "fixRowSub": "Mostra le vie adatte a questo rilievo",
 "findingNoteSub": "Solo una nota, non cambia nulla",
-"fixRowSubDelete": "Mostra le vie, ad es. eliminare l’automazione (prima un’anteprima)",
+"fixRowSubDelete": "Mostra le vie, ad es. disattivare o eliminare l’automazione (prima un’anteprima)",
 "actHide": "Nascondi …",
 "actHideSub": "Non elimina nulla, nasconde soltanto",
 "decideScope": "Per cosa?",

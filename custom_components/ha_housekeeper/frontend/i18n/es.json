@@ -6003,7 +6003,7 @@
 "fixRowOpen": "Corregir",
 "fixRowSub": "Muestra las vías que encajan con este hallazgo",
 "findingNoteSub": "Solo una nota, no cambia nada",
-"fixRowSubDelete": "Muestra las vías, p. ej. eliminar la automatización (primero una vista previa)",
+"fixRowSubDelete": "Muestra las vías, p. ej. desactivar o eliminar la automatización (primero una vista previa)",
 "actHide": "Ocultar …",
 "actHideSub": "No elimina nada, solo oculta",
 "decideScope": "¿Para qué?",

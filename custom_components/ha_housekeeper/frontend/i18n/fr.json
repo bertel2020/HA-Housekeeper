@@ -6003,7 +6003,7 @@
 "fixRowOpen": "Corriger",
 "fixRowSub": "Montre les moyens adaptés à ce constat",
 "findingNoteSub": "Seulement une note, ne change rien",
-"fixRowSubDelete": "Montre les moyens, p. ex. supprimer l’automatisation (d’abord un aperçu)",
+"fixRowSubDelete": "Montre les moyens, p. ex. désactiver ou supprimer l’automatisation (d’abord un aperçu)",
 "actHide": "Masquer …",
 "actHideSub": "Ne supprime rien, masque seulement",
 "decideScope": "Pour quoi ?",

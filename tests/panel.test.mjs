@@ -7172,7 +7172,7 @@ test("the way to fix an unused automation is deleting it with a preview, not a n
   const off = el.fixWayCard({ way: "disable_automation", kind: "panel", recommended: false }, f);
   assert.ok(off.includes('&quot;kind&quot;:&quot;disable_entity&quot;,&quot;object_id&quot;:&quot;automation.c&quot;') && off.includes("Disable the automation"));
   const menu = el.rowMenu(f);
-  assert.ok(menu.includes('data-find-disable="automation.c"') && !menu.includes("data-auto-delete"), "disabling is offered, deleting is a way of the Fix page");
+  assert.ok(!menu.includes("data-find-disable") && !menu.includes("data-auto-delete") && menu.includes("data-fix-open="), "disabling and deleting are ways of the Fix page; the menu has \"Fix\" only");
   assert.ok(!el.rowMenu({ ...f, rule_id: "automation.disabled_long" }).includes("data-find-disable"), "an automation that is off is not switched off again");
 });
 
@@ -9049,7 +9049,7 @@ test("the menu of a finding has fixed groups: fix, decide, object, label, logboo
   const menu = el.rowMenu(f), at = t => menu.indexOf(t);
   const order = ["data-fix-open=", "data-decide-open=", "data-row-label=", "data-finding-note="].map(at);
   assert.ok(order.every(i => i > 0) && order.every((i, k) => !k || i > order[k - 1]), "fixed order");
-  assert.ok(menu.includes('<hr class="menusep">') && !menu.includes("tech") && menu.includes("e.g. delete the automation"), "groups apart, nothing hidden by the simple mode; Fix names what it offers");
+  assert.ok(menu.includes('<hr class="menusep">') && !menu.includes("tech") && menu.includes("e.g. disable or delete"), "groups apart, nothing hidden by the simple mode; Fix names what it offers");
   assert.equal(el.t("actRuleSub1").includes("{n}"), false, "a singular needs no number");
 });
 

@@ -6003,7 +6003,7 @@
 "fixRowOpen": "Corrigir",
 "fixRowSub": "Mostra as formas que se adequam a esta ocorrência",
 "findingNoteSub": "Só uma nota, não altera nada",
-"fixRowSubDelete": "Mostra as formas, p. ex. eliminar a automação (primeiro uma pré-visualização)",
+"fixRowSubDelete": "Mostra as formas, p. ex. desativar ou eliminar a automação (primeiro uma pré-visualização)",
 "actHide": "Ocultar …",
 "actHideSub": "Não elimina nada, só oculta",
 "decideScope": "Para quê?",

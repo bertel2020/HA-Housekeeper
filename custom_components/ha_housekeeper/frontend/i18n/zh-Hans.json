@@ -6003,7 +6003,7 @@
 "fixRowOpen": "修复",
 "fixRowSub": "显示适合此发现项的方法",
 "findingNoteSub": "仅是一条备注，不改变任何内容",
-"fixRowSubDelete": "显示各种方法，例如删除自动化（先预览）",
+"fixRowSubDelete": "显示各种方法，例如停用或删除自动化（先预览）",
 "actHide": "隐藏 …",
 "actHideSub": "不会删除任何内容，只是隐藏",
 "decideScope": "适用范围？",

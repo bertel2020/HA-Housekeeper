@@ -6478,7 +6478,7 @@
 "fixRowOpen": "Opraviť",
 "fixRowSub": "Ukáže spôsoby, ktoré sa hodia na tento nález",
 "findingNoteSub": "Len poznámka, nič nemení",
-"fixRowSubDelete": "Ukáže spôsoby, napr. odstrániť automatizáciu (najprv náhľad)",
+"fixRowSubDelete": "Ukáže spôsoby, napr. vypnúť alebo odstrániť automatizáciu (najprv náhľad)",
 "actHide": "Skryť …",
 "actHideSub": "Nič neodstráni, iba skryje",
 "decideScope": "Pre čo?",

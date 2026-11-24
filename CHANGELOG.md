@@ -18,6 +18,7 @@
   - The sensor “Database size” shows gigabytes by default when newly created.
   - Names and IDs in the lists open the detail page of their object.
   - A button next to every ID copies it.
+  - In the menu of an unused automation, “Fix” leads to disabling and deleting; “Disable” is no longer a separate entry there.
 
 ### Fixed
 
