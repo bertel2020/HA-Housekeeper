@@ -4138,6 +4138,8 @@ test("a plan shows its follow-up, expected end state and audit report; a regress
     simulation: { removed: 3, removed_devices: 1, disabled: 0, disabled_devices: 0, replaced: 4, replaced_by_source: [{ name: "Light", type: "automation", count: 4 }], meters: 0, remaining_certain: 1, remaining_uncertain: 2, statistics_orphaned_count: 1, blocked: 0 } };
   const follow = el.followupLine(plan);
   assert.ok(follow.includes("Regression") && follow.includes("2 new findings") && follow.includes("broken reference: automation.x"));
+  const kinds = el.simulationBlock({ ...plan, simulation: { ...plan.simulation, kinds: { disabled: { automation: 1, script: 2 }, hidden: { scene: 1 } } } });
+  assert.ok(kinds.includes("1 automation disabled") && kinds.includes("2 scripts disabled") && kinds.includes("1 scene are hidden"), "each kind is named as what it is");
   const sim = el.simulationBlock(plan);
   assert.ok(sim.includes("3 entities removed (1 device)") && sim.includes("4 references replaced (Light: 4)") && sim.includes("1 certain uses remain") && sim.includes("2 uncertain or manual uses remain") && sim.includes("1 statistics likely orphaned") && sim.includes("Limits:"));
   const counted = el.simulationBlock({ ...plan, simulation: { ...plan.simulation, rows_counted: true, purge_rows: 1234, history_rows_kept: 56 } });

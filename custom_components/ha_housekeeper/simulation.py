@@ -25,6 +25,15 @@ OTHER_KINDS = {
     "refactor_automation": "refactored",
 }
 STATE_KEYS = {"enable": "enabled", "hide": "hidden", "unhide": "unhidden"}
+# What a person calls these is not "an entity": they are counted by kind and named as such.
+KINDS = ("automation", "script", "scene")
+
+
+def _kind(object_id: str) -> str:
+    domain = object_id.split(".", 1)[0]
+    return domain if domain in KINDS else ""
+
+
 OTHER_KEYS = (*OTHER_KINDS.values(), *STATE_KEYS.values())
 
 
@@ -46,7 +55,8 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
     uncertain: set[tuple[str, str]] = set()
     statistics: set[str] = set()
     manual = 0
-    other = dict.fromkeys((*OTHER_KEYS, "enabled_automations"), 0)
+    other = dict.fromkeys(OTHER_KEYS, 0)
+    kinds: dict[str, dict[str, int]] = {}
     purge_rows = kept_rows = purge_stat_rows = purge_states_rows = 0
     kept_states = kept_stats = 0
     counted = False
@@ -74,9 +84,13 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
         if kind in OTHER_KINDS:
             other[OTHER_KINDS[kind]] += 1
         elif kind == "set_entity_state" and action.get("target") in STATE_KEYS:
-            # An automation is not "an entity" to the person reading the summary.
-            is_auto = action.get("target") == "enable" and object_id.startswith("automation.")
-            other["enabled_automations" if is_auto else STATE_KEYS[action["target"]]] += 1
+            state_key, kind_name = STATE_KEYS[action["target"]], _kind(object_id)
+            if kind_name:
+                kinds.setdefault(state_key, {})[kind_name] = (
+                    kinds.get(state_key, {}).get(kind_name, 0) + 1
+                )
+            else:
+                other[state_key] += 1
         if (
             (kind in REMOVING or (deletes_old and kind == "replace_references"))
             and action.get("has_statistics")
@@ -135,11 +149,15 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
                 (certain if use["confidence"] == "certain" else uncertain).add(
                     (use["source"], object_id)
                 )
+    for verb, ids in (("removed", removed), ("disabled", disabled)):
+        for object_id in ids:
+            if kind_name := _kind(object_id):
+                kinds.setdefault(verb, {})[kind_name] = kinds.get(verb, {}).get(kind_name, 0) + 1
     return {
-        "removed": len(removed),
+        "kinds": kinds,
+        "removed": len([i for i in removed if not _kind(i)]),
         "removed_devices": devices["removed"],
-        "disabled": len([i for i in disabled if not i.startswith("automation.")]),
-        "disabled_automations": len([i for i in disabled if i.startswith("automation.")]),
+        "disabled": len([i for i in disabled if not _kind(i)]),
         "disabled_devices": devices["disabled"],
         "replaced": sum(changed.values()),
         "replaced_by_source": [

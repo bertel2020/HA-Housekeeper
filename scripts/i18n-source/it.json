@@ -6826,9 +6826,17 @@
 "impactFact_blueprint_shared": "9081f1d7",
 "bulkScope_finding": "65c1ebc4",
 "bulkScope_object": "4ada5436",
-"simDisabledAuto": "822af32f",
-"simDisabledAutoOne": "08a609d8",
-"sim_enabled_automations": "60ff8ecb"
+"simKind_removed": "a5eab14b",
+"simKind_disabled": "ac9037a0",
+"simKind_enabled": "72b3f079",
+"simKind_hidden": "2606db65",
+"simKind_unhidden": "af47fc9e",
+"simNoun_automation": "238ae7bb",
+"simNounOne_automation": "6d65ed5c",
+"simNoun_script": "8c5967fd",
+"simNounOne_script": "21a0270b",
+"simNoun_scene": "6dd792f8",
+"simNounOne_scene": "4f48f720"
 },
 "setup": {
 "title": "644c2647",

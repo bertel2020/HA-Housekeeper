@@ -23,7 +23,7 @@
 
 ### Fixed
 
-- The expected end state of a plan names an automation as an automation (“1 automation disabled”), not as an entity.
+- The expected end state of a plan names automations, scripts and scenes as what they are (“1 automation disabled”), not as entities.
 - The template policies (“Template without protection against missing values”, “Template reads an attribute that does not exist”) found nothing on a real installation, because the options of a template helper were not read.
 - “Configure” on the integration page opens the options dialog again ([#46](https://github.com/bertel2020/HA-Housekeeper/issues/46)).
 
