@@ -9,6 +9,7 @@ list of Housekeeper (the key is ``policy.<rule>|<object id>|``).
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Any
 
@@ -594,7 +595,9 @@ def _template_strings(value: Any) -> list[str]:
     """Every string of the options of a template helper that holds a template."""
     if isinstance(value, str):
         return [value] if "{{" in value or "{%" in value else []
-    if isinstance(value, dict):
+    if isinstance(
+        value, Mapping
+    ):  # the options of a config entry are a read-only mapping, not a dict
         value = list(value.values())
     if isinstance(value, list):
         return [text for part in value for text in _template_strings(part)]

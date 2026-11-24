@@ -6,6 +6,7 @@
 
 ### New
 
+- **Findings:** A template helper that reads an attribute its entity has never shown (watched for a week) is listed as a hint, only in the list of findings.
 - **Replace entities:** The assignment can be loaded from a CSV file (old, new, optional how) and saved as CSV again; rows that were left out are listed with the reason.
 
 ### Changed
@@ -17,6 +18,7 @@
 
 ### Fixed
 
+- The template policies (“Template without protection against missing values”, “Template reads an attribute that does not exist”) found nothing on a real installation, because the options of a template helper were not read.
 - “Configure” on the integration page opens the options dialog again ([#46](https://github.com/bertel2020/HA-Housekeeper/issues/46)).
 
 ## 2.2.0 - 2026-11-23

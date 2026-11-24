@@ -6,6 +6,7 @@
 
 ### Neu
 
+- **Befunde:** Ein Template-Helfer, der ein Attribut liest, das seine Entität nie gezeigt hat (eine Woche beobachtet), steht als Hinweis in der Liste der Befunde, nur dort.
 - **Entitäten ersetzen:** Die Zuordnung lässt sich aus einer CSV-Datei laden (alt, neu, freiwillig art) und wieder als CSV sichern; übersprungene Zeilen werden mit Grund aufgelistet.
 
 ### Geändert
@@ -17,6 +18,7 @@
 
 ### Behoben
 
+- Die Richtlinien für Templates („Template ohne Schutz vor fehlenden Werten“, „Template liest ein Attribut, das es nicht gibt“) fanden in einer echten Installation nichts, weil die Optionen eines Template-Helfers nicht gelesen wurden.
 - „Konfigurieren“ auf der Integrationsseite öffnet wieder den Optionen-Dialog ([#46](https://github.com/bertel2020/HA-Housekeeper/issues/46)).
 
 ## 2.2.0 - 2026-11-23

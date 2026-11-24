@@ -23,6 +23,7 @@ _RULES: Final[dict[str, str]] = {
     "entity.stale": DOWN,
     "app.stopped_in_use": DOWN,
     "entity.missing_member": BROKEN_REFERENCES,
+    "config_entry.missing_attribute": BROKEN_REFERENCES,
     "automation.blocked": FAILING_AUTOMATIONS,
     "automation.goal_missed": FAILING_AUTOMATIONS,
     "automation.run_failing": FAILING_AUTOMATIONS,

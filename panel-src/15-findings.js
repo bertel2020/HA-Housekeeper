@@ -446,6 +446,7 @@ class FindingsMixin {
 
   findingTitle(f) {
     const sub = f.rule_id.split(".")[1] || f.rule_id;
+    if (f.rule_id === "config_entry.missing_attribute") return this.t("findingMissingAttr", { attr: ((f.evidence || [])[0]?.attributes || []).join(", "), target: f.affected_object });
     // A reference that leads nowhere: "Refers to entity sensor.x".
     if (sub.startsWith("missing_")) return this.t("refersTo", { kind: languageInfo(this.lang).lowerKind ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
     if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;

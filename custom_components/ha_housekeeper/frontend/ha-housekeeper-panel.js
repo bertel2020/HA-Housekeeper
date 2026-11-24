@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"19f88bee4e"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"d018775c0b"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"ac91031790"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b357c460e2"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"66a7dcf3da"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"ced12348b9"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"588c09b7c2"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"15e4931393"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"042b7e517f"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d012bd0068"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"e51c28c9a4"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"1ae97bf981"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"6e801fa57d"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"87034b7cf2"}];
 
 const TEXT = {
   de: {
@@ -3533,6 +3533,7 @@ class FindingsMixin {
 
   findingTitle(f) {
     const sub = f.rule_id.split(".")[1] || f.rule_id;
+    if (f.rule_id === "config_entry.missing_attribute") return this.t("findingMissingAttr", { attr: ((f.evidence || [])[0]?.attributes || []).join(", "), target: f.affected_object });
     // A reference that leads nowhere: "Refers to entity sensor.x".
     if (sub.startsWith("missing_")) return this.t("refersTo", { kind: languageInfo(this.lang).lowerKind ? this.t(sub).toLowerCase() : this.t(sub), target: f.affected_object });
     if (f.rule_id === "entity.possible_duplicate") return `${this.t("duplicateOf")} ${f.affected_object}`;
@@ -15739,6 +15740,16 @@ class ScanPointsMixin {
     if (this._pinFocus && root.querySelector("[data-pin-form]")) { this._pinFocus = false; root.querySelector("[data-pin-name]")?.focus(); }
   }
 }
+
+// The finding "a template helper reads an attribute its entity has never shown" (config_entry.missing_attribute).
+Object.assign(TEXT.de, {
+  missing_attribute: "Attribut",
+  findingMissingAttr: "Liest das Attribut „{attr}“ von {target}, das die Entität nie gezeigt hat",
+});
+Object.assign(TEXT.en, {
+  missing_attribute: "Attribute",
+  findingMissingAttr: "Reads the attribute “{attr}” of {target}, which the entity has never shown",
+});
 
 // Texts for the choice to run a plan without the safety backup.
 Object.assign(TEXT.de, {

@@ -9274,3 +9274,9 @@ test("for an entity that is down the card recommends the object note when the ou
   el.data = { ...el.data, objects: [...DATA.objects, { object_type: "entity", object_id: "sensor.a", name: "A", mark: { kind: "expected_offline" } }] };
   assert.notEqual(el.fcRecCard(f("o", 240), "entity:sensor.a").act, "mark", "an entity that already has a note does not get the same advice again");
 });
+
+test("a finding of a template that reads an attribute the entity never showed names both", () => {
+  const { el } = panel("en");
+  const f = { rule_id: "config_entry.missing_attribute", object_id: "e1", affected_object: "sensor.z", evidence: [{ attributes: ["power_w", "x"] }] };
+  assert.equal(el.findingTitle(f), "Reads the attribute “power_w, x” of sensor.z, which the entity has never shown");
+});

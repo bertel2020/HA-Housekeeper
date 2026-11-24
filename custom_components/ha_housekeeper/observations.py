@@ -13,7 +13,10 @@ from .const import STORAGE_KEY, STORAGE_VERSION
 SAVE_DELAY = 10  # seconds; coalesces writes and is flushed when Home Assistant stops
 # Keys of groups that are followed on their own (see ``async_track_group``): the update of the
 # classifications leaves them alone.
-GROUP_PREFIXES = ("orphan_stat:",)
+GROUP_PREFIXES = ("orphan_stat:", "attrs:")
+ATTRS_KEY = (
+    "attrs:"  # per entity a template helper reads an attribute of: the names it has shown so far
+)
 
 
 class ObservationStore:
@@ -75,6 +78,45 @@ class ObservationStore:
             changed = True
         if changed:
             self._store.async_delay_save(lambda: {"items": self._items}, SAVE_DELAY)
+
+    async def async_remember_attributes(
+        self, referenced: set[str], live: dict[str, set[str]], observed_at: datetime
+    ) -> None:
+        """Keep, per referenced entity, every attribute name it has shown and since when it is watched.
+
+        ``live`` holds the names of the entities that can be read now. The names only grow, so an
+        attribute that was there once is never "missing"; an entity no template names any more is
+        forgotten.
+        """
+        timestamp = observed_at.isoformat()
+        changed = False
+        for entity_id, names in live.items():
+            if entity_id not in referenced:
+                continue
+            item = self._items.get(f"{ATTRS_KEY}{entity_id}")
+            if item is None:
+                self._items[f"{ATTRS_KEY}{entity_id}"] = {
+                    "classification": "seen",
+                    "since": timestamp,
+                    "names": sorted(names),
+                }
+                changed = True
+            elif not names <= set(item.get("names") or []):
+                item["names"] = sorted(names | set(item.get("names") or []))
+                changed = True
+        for key in [k for k in self._items if k.startswith(ATTRS_KEY)]:
+            if key[len(ATTRS_KEY) :] not in referenced:
+                del self._items[key]
+                changed = True
+        if changed:
+            self._store.async_delay_save(lambda: {"items": self._items}, SAVE_DELAY)
+
+    def attributes_seen(self, entity_id: str) -> tuple[set[str], str | None]:
+        """The attribute names the entity has shown, and since when it is watched (None: not yet)."""
+        item = self._items.get(f"{ATTRS_KEY}{entity_id}")
+        if not item:
+            return set(), None
+        return set(item.get("names") or []), item.get("since")
 
     def had_value(self, object_id: str) -> bool:
         """Whether the object had a value before it lost it; false for one never seen working."""
