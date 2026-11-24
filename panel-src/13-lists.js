@@ -389,6 +389,19 @@ class ListsMixin {
     return link ? `class="${cls ? `${cls} ` : ""}objlink" data-obj-link="${this.esc(link)}" tabindex="0" role="link"` : (cls ? `class="${cls}"` : "");
   }
 
+  // An id inside a sentence or a line: a link to its object when there is a page to open, else the plain escaped text.
+  idLink(id, key = "") {
+    const link = this.objLinkKey(id, key);
+    return link ? `<span ${this.objLinkAttrs(link)}>${this.esc(id)}</span>` : this.esc(id);
+  }
+
+  // A text with an id in it (a reference that leads nowhere, "duplicate of ..."): escaped, with that id as a link.
+  textWithIdLink(text, id) {
+    if (!id || !text.includes(id)) return this.esc(text);
+    const [head, ...rest] = text.split(id);
+    return `${this.esc(head)}${this.idLink(id)}${this.esc(rest.join(id))}`;
+  }
+
   // Name and id of a row. Both open the detail page of the object when there is one; ``key`` names the object when the id alone does not.
   nameCell(name, id, tag = "div", tipSub = null, key = "") {
     const sub = id || "", link = this.objLinkKey(sub, key) || this.objLinkKey(name, key);

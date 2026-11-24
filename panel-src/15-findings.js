@@ -75,9 +75,9 @@ class FindingsMixin {
     const key = this.findingKey(finding), object = this.findObject(key);
     const title = object?.name || finding.object_id;
     const subtitle = finding.rule_id === "entity.possible_duplicate"
-      ? `${this.t("duplicateOf")} ${this.esc(finding.affected_object)}`
+      ? `${this.t("duplicateOf")} ${this.idLink(finding.affected_object)}`
       : ["automation.blocked", "automation.dead_actions", "script.dead_actions", "automation.dead_condition"].includes(finding.rule_id)
-        ? this.esc((finding.evidence?.[0]?.entities || []).slice(0, 3).join(", ") + ((finding.evidence?.[0]?.total || 0) > 3 ? " …" : ""))
+        ? (finding.evidence?.[0]?.entities || []).slice(0, 3).map(id => this.idLink(id)).join(", ") + ((finding.evidence?.[0]?.total || 0) > 3 ? " …" : "")
       : finding.rule_id === "automation.goal_missed"
         ? this.esc(this.goalLine(finding))
       : /\.(run_failing|never_ok)$/.test(finding.rule_id)
@@ -85,7 +85,7 @@ class FindingsMixin {
         : finding.rule_id === "entity.stale"
         ? this.esc(this.staleLine(finding))
         : finding.affected_object
-          ? [this.esc(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
+          ? [this.idLink(finding.affected_object), this.esc(this.placeText(finding, inGroup)), this.esc(this.suggestText(finding))].filter(Boolean).join(" · ")
           : this.esc(object?.reason ? this.t(object.reason) : this.findingTitle(finding));
     return { key, object, title, subtitle: `${subtitle}${finding.ignored ? ` · ${this.hiddenWhy(finding)}` : ""}${finding.resurfaced ? ` · ${this.esc(this.dueLine(finding))}` : ""}${finding.work_expired ? ` · ${this.esc(this.t("workExpired", { date: this.formatDate(finding.work_expired.started_at) }))}` : ""}${finding.mark_outside_window ? ` · ${this.t("markOutside")}` : ""}<span class="fextra">${this.statusTags(finding)}${this.followOf(finding)}${this.ownerNote(finding)}${this.oftenChip(finding)}</span>` };
   }
@@ -640,7 +640,7 @@ class FindingsMixin {
     };
     const hideButton = f => this.decide && this.decide.key === f.key ? `${this.decideTabs(f, "status")}${this.decideForm(f)}`
       : `<div class="fbtns">${steps(f)}${more(f)}</div>`;
-    const rows = list.map(f => `<div class="finding"><div><strong>${this.esc(this.findingTitle(f))}</strong><small class="fmeta">${this.pill(f.classification)}${f.confidence === null || f.confidence === undefined ? "" : `<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>`}${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${f.evidence?.[0]?.location ? `<small class="fspot">${this.esc(this.sourceSpot(f.evidence[0].location))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}${f.ignore_rule ? `<small>${this.esc(this.findingRuleLine(f))}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
+    const rows = list.map(f => `<div class="finding"><div><strong>${this.textWithIdLink(this.findingTitle(f), f.affected_object)}</strong><small class="fmeta">${this.pill(f.classification)}${f.confidence === null || f.confidence === undefined ? "" : `<span class="nw">${this.t("certainty")}: ${Math.round(f.confidence * 100)} %</span>`}${f.ignored ? ` · ${this.esc(f.mark ? this.markLine(f.mark) : this.decisionLabel(f))}` : ""}${f.resurfaced ? ` · ${this.t("dueLabel")}` : ""}</small>${f.impact ? `<small>${this.esc(this.impactLine(f))}</small>` : ""}${f.evidence?.[0]?.location ? `<small class="fspot">${this.esc(this.sourceSpot(f.evidence[0].location))}</small>` : ""}${this.corrLine(f.key) ? `<small>${this.corrLine(f.key)}</small>` : ""}${f.ignored_by === "label" ? `<small>${this.t("ignoredByLabel")}</small>` : ""}${f.ignore_rule ? `<small>${this.esc(this.findingRuleLine(f))}</small>` : ""}</div>${f.ignored_by === "label" || f.ignored_by === "mark" || f.ignored_by === "rule" ? "" : f.ignored ? `<button class="btn" data-ignore="${this.esc(f.key)}" data-ignore-value="0"><ha-icon icon="mdi:eye-outline"></ha-icon>${this.t("showFinding")}</button>` : hideButton(f)}</div>`).join("");
     return rows;
   }
 }
