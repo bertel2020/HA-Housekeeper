@@ -195,7 +195,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: HousekeeperConfigEntry) 
             sidebar_icon="mdi:broom" if show_sidebar else None,
             require_admin=True,
             config={"entry_id": entry.entry_id},
-            config_panel_domain=DOMAIN,
         )
 
     # A gap that a new scan may close (Lovelace not ready, a dashboard being saved) is tried again
