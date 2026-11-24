@@ -82,5 +82,8 @@ async def test_the_sensor_follows_what_the_scan_reads(hass) -> None:
     async_dispatcher_send(hass, SIGNAL_SCAN_COMPLETE)
     await hass.async_block_till_done()
     state = hass.states.get("sensor.ha_housekeeper_database_size")
-    assert state is not None and float(state.state) > 3 * 1024**3, "the state is in bytes"
+    assert state is not None and state.attributes["unit_of_measurement"] == "GB", (
+        "shown in gigabytes by default"
+    )
+    assert 3 < float(state.state) < 4
     assert len(state.attributes["history"]) == 31 and state.attributes["growing_fast"] is False

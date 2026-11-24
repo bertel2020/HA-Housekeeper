@@ -167,6 +167,8 @@ DATABASE_SIZE_DESCRIPTION = SensorEntityDescription(
     translation_key="database_size",
     device_class=SensorDeviceClass.DATA_SIZE,
     native_unit_of_measurement=UnitOfInformation.BYTES,
+    suggested_unit_of_measurement=UnitOfInformation.GIGABYTES,
+    suggested_display_precision=2,
 )
 
 
