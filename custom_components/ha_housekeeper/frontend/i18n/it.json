@@ -6808,5 +6808,7 @@
 "rwCsvR_howfit": "Il tipo «{how}» non va bene per questa entità.",
 "rwCsvR_nopair": "Per la vecchia entità non c’è nessun suggerimento da assegnare.",
 "copyId": "Copia ID",
-"idCopied": "ID copiato"
+"idCopied": "ID copiato",
+"missing_attribute": "Attributo",
+"findingMissingAttr": "Legge l’attributo «{attr}» di {target}, che l’entità non ha mai mostrato"
 }

@@ -47,7 +47,7 @@ from .battery_kind import apply_battery_kinds
 from .battery_kind import excluded as battery_excluded
 from .blueprints import async_available, blueprint_path, missing_blueprint_findings
 from .causes import apply_causes, device_down_findings
-from .certainty import apply_certainty
+from .certainty import DEFAULT_WAIT, apply_certainty
 from .cleanup import (
     JournalStore,
     device_support,
@@ -153,7 +153,8 @@ from .often import OftenStore
 from .outage_levels import DIRECT_ENTRY_STATES, Levels, outage_level
 from .outage_scan import OutageScans, outage_start
 from .policies import KEY_PREFIX as POLICY_KEY_PREFIX
-from .policies import PolicyStore
+from .policies import PolicyStore, _template_strings
+from .policy_rules import ATTRIBUTE_GUARDS, ATTRIBUTE_SKIP_DOMAINS, attribute_refs
 from .protection import ProtectionStore, protection_rules
 from .queries import ReplyStore, kept_reply
 from .refactor import RefactorStore
@@ -1865,6 +1866,8 @@ class InventoryScanner:
         lap("dashboards")
         step("read_sources")
         helper_edges, helper_findings = self._helper_inventory(existing_objects)
+        if not preliminary:
+            helper_findings.extend(await self._template_attribute_findings())
         group_edges, group_findings = self._group_inventory(existing_objects)
         step("helpers_groups")
         known_automation_ids = {item["object_id"] for item in automations}
@@ -3160,6 +3163,69 @@ class InventoryScanner:
                 )
             )
         return edges, findings
+
+    async def _template_attribute_findings(self) -> list[dict[str, Any]]:
+        """A template helper reads an attribute its entity has never shown (a hint, never a proof).
+
+        The names each entity has shown are kept from scan to scan, so an attribute that comes and goes
+        (a weather forecast, a light that is off) is never "missing", and a finding needs the entity to be
+        watched for a week. A template that guards the read (``is defined``, ``default`` ...) is left alone.
+        """
+        reads: list[tuple[Any, str, list[tuple[str, str]]]] = []
+        referenced: set[str] = set()
+        for entry in self.hass.config_entries.async_entries("template"):
+            text = "\n".join(_template_strings(entry.options))
+            pairs = [
+                pair
+                for pair in attribute_refs(text)
+                if pair[0].split(".", 1)[0] not in ATTRIBUTE_SKIP_DOMAINS
+            ]
+            referenced.update(entity_id for entity_id, _ in pairs)
+            if pairs and not any(word in text for word in ATTRIBUTE_GUARDS):
+                reads.append((entry, text, pairs))
+        live: dict[str, set[str]] = {}
+        for entity_id in referenced:
+            state = self.hass.states.get(entity_id)
+            if state is None or state.state in ("off", "unavailable", "unknown"):
+                continue
+            names = set(state.attributes) - {"friendly_name"}
+            if names:
+                live[entity_id] = names
+        now = datetime.now(UTC)
+        await self.observations.async_remember_attributes(referenced, live, now)
+        findings: list[dict[str, Any]] = []
+        for entry, _text, pairs in reads:
+            missing: dict[str, list[str]] = {}
+            for entity_id, attribute in pairs:
+                seen, since = self.observations.attributes_seen(entity_id)
+                if since is None or not seen or attribute in seen:
+                    continue
+                if now - datetime.fromisoformat(since) < DEFAULT_WAIT:
+                    continue  # watched for less than a week: no finding yet
+                missing.setdefault(entity_id, []).append(attribute)
+            for entity_id, attributes in missing.items():
+                seen, since = self.observations.attributes_seen(entity_id)
+                findings.append(
+                    {
+                        "rule_id": "config_entry.missing_attribute",
+                        "object_id": entry.entry_id,
+                        "classification": "problem",
+                        "confidence": 0.6,
+                        "first_detected_at": since,
+                        "affected_object": entity_id,
+                        "evidence": [
+                            {
+                                "kind": "missing_attribute",
+                                "source": "template_helper",
+                                "location": "template",
+                                "attributes": attributes[:5],
+                                "seen": sorted(seen)[:20],
+                                "since": since,
+                            }
+                        ],
+                    }
+                )
+        return findings
 
     def _group_inventory(
         self, existing: dict[str, set[str]]

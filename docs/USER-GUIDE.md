@@ -110,6 +110,8 @@ This section explains how Housekeeper thinks and counts. Once you know it, every
 | **Incident** | A temporal link: findings that began at the same time as an update or restart are shown together on one row. It is a hint, not proof of the cause. |
 | **Watch** | After an update of Home Assistant, the operating system or the Supervisor, Housekeeper scans additionally for a day (after 30 minutes, 2 and 6 hours and at the end) and compares with the state before the restart. When the update begins, Housekeeper scans at once and keeps that state; if that does not work, the last scan before it counts. The result is a verdict on what has failed since, was briefly disturbed or runs again. |
 
+**A template reads an attribute that does not exist:** Housekeeper remembers which attributes an entity has shown that a template helper reads (`state_attr`, `states.x.attributes.y`). If it never shows the attribute that is read, after a week of watching, a hint appears (“Guessed”, low impact) in the list of findings and on the Fix page, but not in notifications and sensors. It goes away when the attribute shows up later. Templates with a guard (`is defined`, `default` …) and `media_player` are left out; YAML templates are not read.
+
 **Watch versus finding:** A finding rates the state of an object at one point in time ("this is a problem now, at this level"). A watch is a before-and-after comparison over a period ("what changed since the update?"). It adds nothing to the state; it only explains whether and when findings began with an update. A finding can exist without a watch; a watch is only a look at findings that are already there.
 
 ### How an outage becomes a finding

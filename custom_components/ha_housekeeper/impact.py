@@ -110,6 +110,8 @@ def _judge(
     controls: dict[str, list[str]],
     critical: dict[str, str],
 ) -> tuple[str, list[dict[str, Any]]]:
+    if finding["rule_id"] == "config_entry.missing_attribute":
+        return "low", []  # an observation, not a proof: never more than a hint
     kind = finding["rule_id"].split(".", 1)[0]
     key = f"{kind}:{finding['object_id']}"
     item = by_key.get(key)

@@ -40,6 +40,7 @@ _RULES: Final[dict[str, str]] = {
     "config_entry.reauth": REPORTED,
     "device.down": REPORTED,
     "entity.missing_member": REPORTED,
+    "config_entry.missing_attribute": GUESSED,
     "automation.never_ok": REPORTED,
     "script.never_ok": REPORTED,
     "entity.state_unavailable": DERIVED,

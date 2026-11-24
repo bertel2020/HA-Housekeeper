@@ -6808,5 +6808,7 @@
 "rwCsvR_howfit": "O género «{how}» não serve para esta entidade.",
 "rwCsvR_nopair": "Não há nenhuma sugestão para atribuir à entidade antiga.",
 "copyId": "Copiar ID",
-"idCopied": "ID copiado"
+"idCopied": "ID copiado",
+"missing_attribute": "Atributo",
+"findingMissingAttr": "Lê o atributo «{attr}» de {target}, que a entidade nunca mostrou"
 }

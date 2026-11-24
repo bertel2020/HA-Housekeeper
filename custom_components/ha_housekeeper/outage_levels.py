@@ -118,8 +118,11 @@ OUTAGE_RULES = frozenset(
     }
 )
 QUIET_IMPACTS = frozenset({"info", "low"})
+# A finding that is only a hint of what the entity has shown so far: quiet from the start, like a young outage.
+HINT_RULES = frozenset({"config_entry.missing_attribute"})
 
 
 def is_quiet(finding: Mapping[str, Any]) -> bool:
     """Whether the finding is an outage that is only info or low so far."""
-    return finding.get("rule_id") in OUTAGE_RULES and finding.get("impact") in QUIET_IMPACTS
+    rule = finding.get("rule_id")
+    return (rule in OUTAGE_RULES or rule in HINT_RULES) and finding.get("impact") in QUIET_IMPACTS

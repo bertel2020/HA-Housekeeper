@@ -6808,5 +6808,7 @@
 "rwCsvR_howfit": "“{how}”这种方式不适用于该实体。",
 "rwCsvR_nopair": "旧实体没有可分配的建议。",
 "copyId": "复制 ID",
-"idCopied": "已复制 ID"
+"idCopied": "已复制 ID",
+"missing_attribute": "属性",
+"findingMissingAttr": "读取 {target} 的属性“{attr}”，该实体从未出现过这个属性"
 }

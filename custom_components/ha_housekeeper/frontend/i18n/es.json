@@ -6808,5 +6808,7 @@
 "rwCsvR_howfit": "El modo «{how}» no encaja con esta entidad.",
 "rwCsvR_nopair": "No hay ninguna propuesta que asignar para la entidad antigua.",
 "copyId": "Copiar ID",
-"idCopied": "ID copiado"
+"idCopied": "ID copiado",
+"missing_attribute": "Atributo",
+"findingMissingAttr": "Lee el atributo «{attr}» de {target}, que la entidad nunca ha mostrado"
 }

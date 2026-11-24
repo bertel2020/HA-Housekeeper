@@ -6808,5 +6808,7 @@
 "rwCsvR_howfit": "Le genre « {how} » ne convient pas à cette entité.",
 "rwCsvR_nopair": "Aucune suggestion à attribuer pour l’ancienne entité.",
 "copyId": "Copier l’ID",
-"idCopied": "ID copié"
+"idCopied": "ID copié",
+"missing_attribute": "Attribut",
+"findingMissingAttr": "Lit l’attribut « {attr} » de {target}, que l’entité n’a jamais affiché"
 }
