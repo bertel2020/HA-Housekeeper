@@ -402,15 +402,34 @@ class ListsMixin {
     return `${this.esc(head)}${this.idLink(id)}${this.esc(rest.join(id))}`;
   }
 
+  // The small button next to an id that copies it; only for ids of objects (entity-like), never for other lines of text.
+  idCopyButton(id) {
+    if (!/^[a-z0-9_]+\.[a-z0-9_]+$/.test(id || "")) return "";
+    const label = this.esc(this.t("copyId"));
+    return `<button type="button" class="idcp" data-copy-id="${this.esc(id)}" title="${label}" aria-label="${label}"><ha-icon icon="mdi:content-copy"></ha-icon></button>`;
+  }
+
+  // An id with its copy button beside it (the button stays out of the part that is cut short).
+  idLine(idHtml, copyId) {
+    const copy = this.idCopyButton(copyId);
+    return copy ? `<span class="idline">${idHtml}${copy}</span>` : idHtml;
+  }
+
+  // The id a name cell copies: the id line itself, else the id of the object it links to.
+  copyIdOf(sub, key) {
+    return /^[a-z0-9_]+\.[a-z0-9_]+$/.test(sub || "") ? sub : /^(entity|automation|script|scene):/.test(key || "") ? key.slice(key.indexOf(":") + 1) : "";
+  }
+
   // Name and id of a row. Both open the detail page of the object when there is one; ``key`` names the object when the id alone does not.
   nameCell(name, id, tag = "div", tipSub = null, key = "") {
     const sub = id || "", link = this.objLinkKey(sub, key) || this.objLinkKey(name, key);
-    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(tipSub ?? sub)}"><strong ${this.objLinkAttrs(link, "cut")}>${this.esc(name)}</strong>${sub ? `<span ${this.objLinkAttrs(link, "id cut")}>${this.esc(sub)}</span>` : ""}</${tag}>`;
+    const idHtml = sub ? this.idLine(`<span ${this.objLinkAttrs(link, "id cut")}>${this.esc(sub)}</span>`, this.copyIdOf(sub, key)) : "";
+    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(tipSub ?? sub)}"><strong ${this.objLinkAttrs(link, "cut")}>${this.esc(name)}</strong>${idHtml}</${tag}>`;
   }
 
   // The id line of a list row: the id in mono under the name, extra facts in a line of their own below it.
   rowId(id, extra = "", key = "") {
-    return `<span ${this.objLinkAttrs(this.objLinkKey(id, key), "id")}>${this.esc(id)}</span>${extra ? `<small>${this.esc(extra)}</small>` : ""}`;
+    return `${this.idLine(`<span ${this.objLinkAttrs(this.objLinkKey(id, key), "id")}>${this.esc(id)}</span>`, this.copyIdOf(id, key))}${extra ? `<small>${this.esc(extra)}</small>` : ""}`;
   }
 
   // The date of a table cell: how long ago with the exact time in small type below (hidden in compact rows) and as a tooltip; empty when unknown.

@@ -5208,7 +5208,7 @@ test("batteries are named by their device: the tile, the rows and the search", (
   el.batteryVoltRows = () => [];
   const html = el.batteriesView();
   assert.ok(html.includes("Lowest level") && html.includes("Kitchen window sensor · Kitchen") && html.includes('data-object="entity:sensor.kitchen_window_battery"'), "the tile names the device and opens the sensor");
-  assert.ok(/<strong class="cut[^"]*"[^>]*>Kitchen window sensor<\/strong><span class="id cut[^"]*"[^>]*>sensor\.kitchen_window_battery/.test(html), "the row titles the device and shows the entity id below");
+  assert.ok(/<strong class="cut[^"]*"[^>]*>Kitchen window sensor<\/strong>(?:<span class="idline">)?<span class="id cut[^"]*"[^>]*>sensor\.kitchen_window_battery/.test(html), "the row titles the device and shows the entity id below");
   assert.equal(el.batteryName(battery).title, "Kitchen window sensor"); assert.equal(el.batteryName(battery).entity, "Battery");
   assert.equal(el.batteryName({ ...battery, device_id: "" }).title, "Battery");
 });
@@ -5485,10 +5485,10 @@ test("the topic tiles carry a sparkline for the total and each topic, the status
 test("an entity row shows the id in mono under the name and the extra facts in a line of their own", () => {
   const { el } = panel("en");
   assert.equal(el.rowId("sensor.a<b", "3 · x"), '<span class="id">sensor.a&lt;b</span><small>3 · x</small>');
-  assert.equal(el.rowId("sensor.zzz"), '<span class="id">sensor.zzz</span>');
+  assert.ok(el.rowId("sensor.zzz").startsWith('<span class="idline"><span class="id">sensor.zzz</span><button type="button" class="idcp" data-copy-id="sensor.zzz"'), "an object id comes with its copy button, in a line that keeps the button out of the cut part");
   // an id the inventory knows opens the detail page of its object, in names and in id lines alike
   assert.equal(el.idLink("sensor.zzz<"), "sensor.zzz&lt;");
-  assert.ok(el.spaceRowMenu("sensor.a").includes('data-copy-id="sensor.a"'), "the row menu copies the id");
+  assert.ok(el.nameCell("A", "sensor.a").includes('data-copy-id="sensor.a"') && !el.nameCell("Hue", "hue · 3 entities").includes("data-copy-id") && el.nameCell("N", "x · y", "div", null, "entity:sensor.a").includes('data-copy-id="sensor.a"'), "ids of objects can be copied, other lines of text cannot");
   assert.ok(el.textWithIdLink("Refers to sensor.a (gone)", "sensor.a").includes('>sensor.a</span> (gone)') && el.textWithIdLink("Refers to x<", "").includes("x&lt;"), "an id inside a sentence is a link, the rest stays text");
   el._hass = { ...el._hass, states: { "sensor.only_state": { state: "1" } } };
   assert.ok(el.rowId("sensor.only_state").includes('data-obj-link="info:sensor.only_state"'), "an entity without a page opens HA's dialog");
