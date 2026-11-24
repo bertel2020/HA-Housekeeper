@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### New
+
+- **Replace entities:** The assignment can be loaded from a CSV file (old, new, optional how) and saved as CSV again; rows that were left out are listed with the reason.
+
 ### Changed
 
 - **Interface in general:**

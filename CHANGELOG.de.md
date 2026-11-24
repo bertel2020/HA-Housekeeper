@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### Neu
+
+- **Entitäten ersetzen:** Die Zuordnung lässt sich aus einer CSV-Datei laden (alt, neu, freiwillig art) und wieder als CSV sichern; übersprungene Zeilen werden mit Grund aufgelistet.
+
 ### Geändert
 
 - **Oberfläche allgemein:**
