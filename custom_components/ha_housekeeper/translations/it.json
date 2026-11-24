@@ -485,6 +485,10 @@
         "target": {
           "name": "Nuova destinazione",
           "description": "Per replace_target: l'entità, area, piano o etichetta che prende il posto di quella mancante."
+        },
+        "reason": {
+          "name": "Motivo",
+          "description": "Perché l’agente lo propone, al massimo 300 caratteri; l’amministratore la vede nella pagina del piano come testo dell’agente. Non viene mai eseguito."
         }
       }
     },
@@ -521,6 +525,10 @@
         "disable_old": {
           "name": "Disattiva le entità vecchie",
           "description": "Disattiva le entità vecchie dopo la sostituzione. Non vengono mai eliminate."
+        },
+        "reason": {
+          "name": "Motivo",
+          "description": "Perché l’agente lo propone, al massimo 300 caratteri; l’amministratore la vede nella pagina del piano come testo dell’agente. Non viene mai eseguito."
         }
       }
     }

@@ -9290,3 +9290,20 @@ test("a hint that still waits carries the mark, stays out of the tiles and the F
   const html = el.fixAttrSeen(f);
   assert.ok(html.includes("unit_of_measurement") && html.includes("power_w") && html.includes("counts only from"));
 });
+
+test("a proposal of the AI waits in the overview until it is confirmed or expires, and its reason is shown as plain text", () => {
+  const { el } = panel("en");
+  const fresh = new Date().toISOString(), old = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+  el.journal = [
+    { plan_id: "a", via: "mcp", status: "dry_run", created_at: fresh, via_reason: "<b>Old one is gone</b>" },
+    { plan_id: "b", via: "mcp", status: "dry_run", created_at: old },
+    { plan_id: "c", status: "dry_run", created_at: fresh },
+  ];
+  const item = el.aiProposalsTodo();
+  assert.equal(item.text, "1 proposal of the AI is waiting for you");
+  assert.ok(item.jump.includes('data-jump-journal="ai_open"'));
+  assert.ok(el.aiReasonBlock(el.journal[0]).includes("&lt;b&gt;Old one is gone&lt;/b&gt;"), "text of an agent is never markup");
+  assert.equal(el.aiReasonBlock(el.journal[2]), "");
+  el.journal = [el.journal[1], el.journal[2]];
+  assert.equal(el.aiProposalsTodo(), null, "an expired proposal and a plan of the panel are no proposal");
+});

@@ -1108,6 +1108,7 @@ class HAHousekeeperPanel extends HTMLElement {
       this.findingOutages = el.dataset.jumpOutages !== undefined ? el.dataset.jumpOutages || true : false;
       if (el.dataset.jumpCause) this.findingCause = el.dataset.jumpCause;
       if (el.dataset.jumpCl) { this.clCheck = el.dataset.jumpCl; const st = this.lv?.checklog; if (st) { st.q = ""; st.f = {}; this.persistLv("checklog"); } else (this._lfPending ||= {}).checklog = {}; } // the history, only the check the row speaks of
+      if (el.dataset.jumpJournal) this.setListFilter("journal", "origin", el.dataset.jumpJournal); // e.g. "ai_open": the proposals of the AI that wait
       if (el.dataset.jumpTab) (this.viewTab ||= {})[this.view] = el.dataset.jumpTab;
       if (this.view === "settings" && el.dataset.jumpTab) this.settingsTab = el.dataset.jumpTab;
       // A list the jump counts starts without the search and filters kept from before; its own filter comes after.

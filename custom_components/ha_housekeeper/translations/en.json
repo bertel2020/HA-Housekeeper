@@ -485,6 +485,10 @@
         "target": {
           "name": "New target",
           "description": "For replace_target: the entity, area, floor or label that takes the place of the missing one."
+        },
+        "reason": {
+          "name": "Reason",
+          "description": "Why the agent proposes this, at most 300 characters, shown to the administrator on the plan page as text of the agent. It is never acted on."
         }
       }
     },
@@ -521,6 +525,10 @@
         "disable_old": {
           "name": "Switch off the old entities",
           "description": "Switch the old entities off after the replacement. They are never deleted."
+        },
+        "reason": {
+          "name": "Reason",
+          "description": "Why the agent proposes this, at most 300 characters, shown to the administrator on the plan page as text of the agent. It is never acted on."
         }
       }
     }

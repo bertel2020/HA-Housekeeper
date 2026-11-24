@@ -114,6 +114,11 @@ finding_fix_plan:
       required: false
       selector:
         text:
+    reason:
+      required: false
+      selector:
+        text:
+          multiline: true
 
 finding_decide:
   fields:
@@ -244,3 +249,8 @@ replacement_plan:
       required: false
       selector:
         boolean:
+    reason:
+      required: false
+      selector:
+        text:
+          multiline: true

@@ -6814,7 +6814,15 @@
 "findingWaitingTitle": "e75d9456",
 "fixAttrSeen": "8894cf30",
 "fixAttrSeenNote": "0a84b53c",
-"fixAttrWaiting": "1e087a6c"
+"fixAttrWaiting": "1e087a6c",
+"viaMcpReason": "b4db6f85",
+"todoAiPlans_1": "6d5a5de7",
+"todoAiPlans_n": "724e03fc",
+"todoAiPlansHint": "3ee2b075",
+"journalAllOrigin": "2159dc90",
+"journalOriginAiOpen": "c7bd7b11",
+"journalOriginAi": "30840735",
+"journalOriginPanel": "a0794a02"
 },
 "setup": {
 "title": "644c2647",

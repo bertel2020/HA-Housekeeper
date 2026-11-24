@@ -483,6 +483,10 @@
         "target": {
           "name": "Novo destino",
           "description": "Para replace_target: a entidade, área, piso ou etiqueta que ocupa o lugar da que está em falta."
+        },
+        "reason": {
+          "name": "Motivo",
+          "description": "Porque o agente o propõe, no máximo 300 caracteres; o administrador vê-o na página do plano como texto do agente. Nunca é executado."
         }
       }
     },
@@ -519,6 +523,10 @@
         "disable_old": {
           "name": "Desligar as entidades antigas",
           "description": "Desliga as entidades antigas depois da substituição. Nunca são apagadas."
+        },
+        "reason": {
+          "name": "Motivo",
+          "description": "Porque o agente o propõe, no máximo 300 caracteres; o administrador vê-o na página do plano como texto do agente. Nunca é executado."
         }
       }
     }

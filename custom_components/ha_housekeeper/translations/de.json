@@ -485,6 +485,10 @@
         "target": {
           "name": "Neues Ziel",
           "description": "Für replace_target: die Entität, der Bereich, die Etage oder das Label, das an die Stelle des fehlenden tritt."
+        },
+        "reason": {
+          "name": "Begründung",
+          "description": "Warum der Agent das vorschlägt, höchstens 300 Zeichen. Der Administrator sieht sie auf der Planseite als Text des Agenten; ausgeführt wird sie nie."
         }
       }
     },
@@ -521,6 +525,10 @@
         "disable_old": {
           "name": "Alte Entitäten abschalten",
           "description": "Schaltet die alten Entitäten nach dem Ersetzen ab. Sie werden nie gelöscht."
+        },
+        "reason": {
+          "name": "Begründung",
+          "description": "Warum der Agent das vorschlägt, höchstens 300 Zeichen. Der Administrator sieht sie auf der Planseite als Text des Agenten; ausgeführt wird sie nie."
         }
       }
     }
