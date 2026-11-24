@@ -2974,6 +2974,7 @@
 "impactFact_used_by_active": "používa sa v {n} aktívnych automatizáciách alebo skriptoch",
 "impactFact_on_dashboards": "na {n} dashboardoch",
 "impactFact_many_dependents": "Závislé objekty: {n}",
+"impactFact_blueprint_shared": "Rovnaký blueprint používa ďalších: {n}",
 "impactFact_runs_active": "aktívne sa spúšťa",
 "impactFact_runs_inactive": "je vypnuté",
 "reason_critical_object": "Kritický objekt (zámok, alarm, vodný alebo dymový senzor, štítok housekeeper_critical): vyžaduje samostatné potvrdenie.",

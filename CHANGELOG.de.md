@@ -12,6 +12,7 @@
 
 ### Geändert
 
+- **Befunde:** Ein fehlender Blueprint wiegt schwerer, wenn weitere aktive Automationen oder Skripte ihn nutzen (ab einer weiteren mindestens „mittel“, ab fünf „hoch“).
 - **Oberfläche allgemein:**
   - Die Karte „Technische Details anzeigen“ in den Einstellungen ist ruhiger: ohne doppelte Liste und ohne hervorgehobenen Rahmen.
   - Der Sensor „Größe der Datenbank“ zeigt neu angelegt standardmäßig Gigabyte.

@@ -3325,6 +3325,12 @@
 "many": "{n} зависимых объектов",
 "other": "{n} зависимого объекта"
 },
+"impactFact_blueprint_shared": {
+"one": "ещё {n} использует тот же blueprint",
+"few": "ещё {n} используют тот же blueprint",
+"many": "ещё {n} используют тот же blueprint",
+"other": "ещё {n} используют тот же blueprint"
+},
 "impactFact_runs_active": "активно выполняется",
 "impactFact_runs_inactive": "отключено",
 "reason_critical_object": "Критичный объект (замок, охрана, датчик протечки или дыма, метка housekeeper_critical): подтверждай только индивидуально.",

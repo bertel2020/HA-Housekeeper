@@ -2760,6 +2760,7 @@
 "impactFact_used_by_active": "usato da {n} automazioni o script attivi",
 "impactFact_on_dashboards": "in {n} dashboard",
 "impactFact_many_dependents": "{n} dipendenti",
+"impactFact_blueprint_shared": "altri {n} usano lo stesso blueprint",
 "impactFact_runs_active": "è in esecuzione",
 "impactFact_runs_inactive": "è disattivato",
 "reason_critical_object": "Oggetto critico (serratura, allarme, sensore d'acqua o di fumo, etichetta housekeeper_critical): confermalo singolarmente.",

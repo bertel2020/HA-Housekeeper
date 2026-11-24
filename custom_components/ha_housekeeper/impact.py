@@ -80,8 +80,21 @@ def apply_impact(
         users.setdefault(edge["target"], []).append(edge["source"])
         if edge["relation"] == "TARGETS":
             controls.setdefault(edge["source"], []).append(edge["target"])
+    sharing: dict[tuple[str, str], int] = {}
+    for o in objects:  # active users of one blueprint file
+        path = o.get("blueprint")
+        if (
+            o["object_type"] in CONSUMERS
+            and isinstance(path, str)
+            and path
+            and o.get("status") == "active"
+        ):
+            key = (o["object_type"], path)
+            sharing[key] = sharing.get(key, 0) + 1
     for finding in findings:
         level, facts = _judge(finding, by_key, users, controls, critical)
+        if finding["rule_id"].endswith(".missing_blueprint"):
+            level = _blueprint_shared(finding, by_key, sharing, level, facts)
         steady = level  # what it is without the age of an outage: only age made it grow, no change of the finding
         if finding["rule_id"] == OUTAGE_RULE or "outage_level" in finding:
             # the longer something stays down, the more it matters
@@ -101,6 +114,24 @@ def apply_impact(
         finding["impact"], finding["impact_facts"] = level, facts[:FACT_LIMIT]
         # A "later" is lifted when a finding gets worse, not when an outage merely lasts longer.
         finding["impact_steady"] = steady
+
+
+def _blueprint_shared(
+    finding: dict[str, Any],
+    by_key: dict[str, dict[str, Any]],
+    sharing: dict[tuple[str, str], int],
+    level: str,
+    facts: list[dict[str, Any]],
+) -> str:
+    """A gone blueprint hits every automation or script that uses it: the others raise the level."""
+    kind = finding["rule_id"].split(".", 1)[0]
+    item = by_key.get(f"{kind}:{finding['object_id']}") or {}
+    own = 1 if item.get("status") == "active" else 0
+    others = sharing.get((kind, item.get("blueprint") or ""), 0) - own
+    if others < 1:
+        return level
+    facts.append({"fact": "blueprint_shared", "n": others})
+    return max(level, "high" if others >= MANY else "medium", key=RANK.__getitem__)
 
 
 def _judge(

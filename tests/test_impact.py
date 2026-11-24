@@ -135,3 +135,19 @@ def test_the_age_of_an_outage_is_not_a_change_of_the_finding_for_a_later() -> No
     findings = [{"rule_id": "config_entry.not_loaded", "object_id": "e1", "outage_level": "high"}]
     apply_impact([], [], findings)
     assert findings[0]["impact"] == "high" and findings[0]["impact_steady"] == "info"
+
+
+def test_a_gone_blueprint_ranks_higher_when_others_share_it() -> None:
+    def user(i, status="active"):
+        return {**_auto(i, status), "blueprint": "a/b.yaml"}
+
+    def finding(i):
+        return {"rule_id": "automation.missing_blueprint", "object_id": i}
+
+    alone = [user("a1", "off")]
+    assert _impact(alone, [], finding("a1"))[1] == ["runs_inactive"]
+    objects = [user("a1", "off")] + [user(f"a{n}") for n in range(2, 5)]
+    assert _impact(objects, [], finding("a1"))[0] == "medium"
+    objects = [user(f"a{n}") for n in range(1, 8)]
+    level, facts = _impact(objects, [], finding("a1"))
+    assert level == "high" and "blueprint_shared" in facts

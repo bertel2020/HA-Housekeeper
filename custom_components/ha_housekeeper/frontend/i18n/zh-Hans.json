@@ -2715,6 +2715,7 @@
 "impactFact_used_by_active": "被 {n} 个活动自动化或脚本使用",
 "impactFact_on_dashboards": "出现在 {n} 个仪表板上",
 "impactFact_many_dependents": "{n} 个依赖项",
+"impactFact_blueprint_shared": "另有 {n} 个使用同一蓝图",
 "impactFact_runs_active": "处于活动运行状态",
 "impactFact_runs_inactive": "已禁用",
 "reason_critical_object": "关键对象（门锁、报警器、水浸或烟雾传感器、标签 housekeeper_critical）：需单独确认。",

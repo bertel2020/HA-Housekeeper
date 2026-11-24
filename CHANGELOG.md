@@ -12,6 +12,7 @@
 
 ### Changed
 
+- **Findings:** A missing blueprint weighs more when other active automations or scripts use it (at least "medium" with one more, "high" with five).
 - **Interface in general:**
   - The card “Show technical details” in the settings is calmer: no duplicate list and no highlighted frame.
   - The sensor “Database size” shows gigabytes by default when newly created.
