@@ -23,6 +23,7 @@
 
 ### Behoben
 
+- Der erwartete Endzustand eines Plans nennt eine Automation Automation („1 Automation deaktiviert“), nicht Entität.
 - Die Richtlinien für Templates („Template ohne Schutz vor fehlenden Werten“, „Template liest ein Attribut, das es nicht gibt“) fanden in einer echten Installation nichts, weil die Optionen eines Template-Helfers nicht gelesen wurden.
 - „Konfigurieren“ auf der Integrationsseite öffnet wieder den Optionen-Dialog ([#46](https://github.com/bertel2020/HA-Housekeeper/issues/46)).
 

@@ -3746,6 +3746,9 @@
 "simRemovedOne": "Удалена 1 сущность",
 "simDisabled": "Сущностей отключено: {count}",
 "simDisabledOne": "Отключена 1 сущность",
+"simDisabledAuto": "Автоматизаций отключено: {count}",
+"simDisabledAutoOne": "Отключена 1 автоматизация",
+"sim_enabled_automations": "Автоматизаций будет включено: {count}",
 "simDevices": " (устройств: {devices})",
 "simDevicesOne": " (1 устройство)",
 "simReplaced": {

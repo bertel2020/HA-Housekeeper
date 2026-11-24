@@ -46,7 +46,7 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
     uncertain: set[tuple[str, str]] = set()
     statistics: set[str] = set()
     manual = 0
-    other = dict.fromkeys(OTHER_KEYS, 0)
+    other = dict.fromkeys((*OTHER_KEYS, "enabled_automations"), 0)
     purge_rows = kept_rows = purge_stat_rows = purge_states_rows = 0
     kept_states = kept_stats = 0
     counted = False
@@ -74,7 +74,9 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
         if kind in OTHER_KINDS:
             other[OTHER_KINDS[kind]] += 1
         elif kind == "set_entity_state" and action.get("target") in STATE_KEYS:
-            other[STATE_KEYS[action["target"]]] += 1
+            # An automation is not "an entity" to the person reading the summary.
+            is_auto = action.get("target") == "enable" and object_id.startswith("automation.")
+            other["enabled_automations" if is_auto else STATE_KEYS[action["target"]]] += 1
         if (
             (kind in REMOVING or (deletes_old and kind == "replace_references"))
             and action.get("has_statistics")
@@ -136,7 +138,8 @@ def simulate(actions: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "removed": len(removed),
         "removed_devices": devices["removed"],
-        "disabled": len(disabled),
+        "disabled": len([i for i in disabled if not i.startswith("automation.")]),
+        "disabled_automations": len([i for i in disabled if i.startswith("automation.")]),
         "disabled_devices": devices["disabled"],
         "replaced": sum(changed.values()),
         "replaced_by_source": [

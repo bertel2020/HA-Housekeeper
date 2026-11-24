@@ -276,3 +276,27 @@ def test_simulation_counts_actions_without_other_effects():
         ]
     )
     assert (sim["reloaded"], sim["hidden"], sim["removed"]) == (1, 1, 0)
+
+
+def test_simulation_names_an_automation_apart_from_entities():
+    def state(object_id, target):
+        return {
+            "kind": "set_entity_state",
+            "object_id": object_id,
+            "target": target,
+            "executable": True,
+        }
+
+    sim = simulate(
+        [
+            state("automation.a", "disable"),
+            state("light.x", "disable"),
+            state("automation.b", "enable"),
+        ]
+    )
+    assert (
+        sim["disabled"],
+        sim["disabled_automations"],
+        sim["enabled"],
+        sim["enabled_automations"],
+    ) == (1, 1, 0, 1)
