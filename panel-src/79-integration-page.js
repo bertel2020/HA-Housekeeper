@@ -142,7 +142,7 @@ class IntegrationPageMixin {
       text: o => `${o.name} ${o.object_id}`, tie: o => this.objectKey(o), empty: "intNoMembers",
       rowAttrs: o => `data-object="${this.esc(this.objectKey(o))}" tabindex="0" role="button" aria-label="${this.esc(o.name || o.object_id)}"`,
       columns: [
-        { key: "name", label: "intColName", cell: o => this.nameCell(o.name || o.object_id, o.object_id) },
+        { key: "name", label: "intColName", cell: o => this.nameCell(o.name || o.object_id, o.object_id, "div", null, this.objectKey(o)) },
         { key: "type", label: "intColType", cell: o => this.esc(this.t(o.object_type)) },
         { key: "status", label: "intColStatus", cell: o => this.pill(o.status) },
       ],

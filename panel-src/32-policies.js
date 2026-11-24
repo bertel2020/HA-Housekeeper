@@ -135,7 +135,7 @@ class PoliciesMixin {
       { key: "sel", label: "selectPage", narrow: true, sortable: false, allBox: () => this.polHeadBox(), cell: item => this.polSelBox(item) },
       { key: "name", label: "sortName", dir: "asc", cell: item => {
         const { open } = this.polItemParts(item);
-        const name = this.nameCell(item.name, item.object_id, "span");
+        const name = this.nameCell(item.name, item.object_id, "span", null, item.object_type ? this.objectKey(item) : "");
         const link = ["recorder", "system", "user"].includes(item.object_type) ? name : `<button class="linklike" data-object="${this.esc(`${item.object_type}:${item.object_id}`)}">${name}</button>`;
         return `<div class="statcell">${this.expandBtn("data-pol-open", item.key, open, this.t(open ? "polCloseRow" : "polOpenRow"))}<div>${link}</div></div>`;
       } },

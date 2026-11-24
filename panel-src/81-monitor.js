@@ -173,7 +173,7 @@ class MonitorMixin {
       text: r => [titleOf(r), r.member.object_key, this.monitorReason(r.member.reason), rulesOf(r)].join(" "),
       rowAttrs: r => (r.object ? `data-object="${this.esc(r.member.object_key)}" tabindex="0" role="button" aria-label="${this.esc(titleOf(r))}"` : 'class="static"'),
       columns: [
-        { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${this.tile(r.member.object_key.split(":")[0], "")}<div>${this.nameCell(titleOf(r), r.member.object_key)}</div></div>` },
+        { key: "name", label: "sortName", dir: "asc", cell: r => `<div class="statcell">${this.tile(r.member.object_key.split(":")[0], "")}<div>${this.nameCell(titleOf(r), r.member.object_key, "div", null, r.member.object_key)}</div></div>` },
         { key: "role", label: "monitorColRole", dir: "asc", cell: r => this.t(r.member.required ? "monitorRequired" : "monitorAdditional") },
         { key: "state", label: "sysColState", dir: "asc", cell: r => `<span class="pill ${toneOf(r)}">${stateText(r)}</span>` },
         { key: "reason", label: "monitorColReason", sortable: false, cell: r => this.esc(this.monitorReason(r.member.reason) || "—") },

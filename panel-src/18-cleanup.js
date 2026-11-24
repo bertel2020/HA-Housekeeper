@@ -824,7 +824,7 @@ class CleanupMixin {
         cell: r => `<input type="checkbox" class="selbox" data-sel="${this.esc(r.item.object_id)}" ${this.cleanupSel.has(r.item.object_id) ? "checked" : ""} ${r.quarantine && limit - this.daysSince(r.quarantine.since) > 0 ? "disabled" : ""} aria-label="${this.esc(r.item.name)}">` },
       { key: "name", label: "sortName", dir: "asc", sortKeys: ["id"],
         headSuffix: () => `<button type="button" class="thbtn th-alt" data-lsort="cleanup|id|asc">${this.t("sortId")}${this.lv.cleanup.sort === "id" ? ` <span aria-hidden="true">${this.lv.cleanup.dir === "desc" ? "↓" : "↑"}</span>` : ""}</button>`,
-        cell: r => `<div class="statcell">${this.tile(r.item.object_type, "")}<div>${this.nameCell(r.item.name, r.item.object_type === "device" ? [r.item.manufacturer, r.item.model].filter(Boolean).join(" ") || r.item.object_id : r.item.object_id)}</div></div>` },
+        cell: r => `<div class="statcell">${this.tile(r.item.object_type, "")}<div>${this.nameCell(r.item.name, r.item.object_type === "device" ? [r.item.manufacturer, r.item.model].filter(Boolean).join(" ") || r.item.object_id : r.item.object_id, "div", null, this.objectKey(r.item))}</div></div>` },
       // Entities and devices show the reason of their finding, as the findings page names it; the quarantine its state.
       { key: "status", label: open === "quarantine" ? "sortStatus" : "cleanupColReason", dir: "asc", cell: badge },
       // Since when, as on the findings page: how long ago, the date below. In the quarantine it is the day it went in.

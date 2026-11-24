@@ -920,7 +920,7 @@ test("batteries and unreferenced lists filter by area and sort", () => {
     ent("sensor.a", "Zeta", "kitchen", { state: "40" }), ent("sensor.b", "Alpha", "hall", { state: "90" }), ent("sensor.c", "Mid", "kitchen", { state: "10" }),
   ], edges: [] };
   el.view = "batteries"; el.batteryFilter = "all"; el.render();
-  const read = () => { el.render(); return el.shadowRoot.innerHTML.match(/<strong class="cut">(Zeta|Alpha|Mid)<\/strong>/g).map(m => m.replace(/<[^>]+>/g, "")).join(","); };
+  const read = () => { el.render(); return el.shadowRoot.innerHTML.match(/<strong class="cut[^"]*"[^>]*>(Zeta|Alpha|Mid)<\/strong>/g).map(m => m.replace(/<[^>]+>/g, "")).join(","); };
   assert.equal(read(), "Mid,Zeta,Alpha"); // lowest level first
   el.lv.batteries.dir = "desc";
   assert.equal(read(), "Alpha,Zeta,Mid");
@@ -1167,7 +1167,7 @@ test("unused entities are a table with columns that sort and filters for domain,
   assert.ok(html.includes('class="sortgroup table-sort"') && html.includes('data-lsort="unreferenced|id|asc"'), "the mobile sort control keeps ID sorting available in the desktop table header");
   assert.ok(html.includes("data-lsort=\"unreferenced|changed|desc\"") && html.includes('aria-sort="ascending"'));
   assert.ok(html.includes("3 days ago") && html.includes("30 days ago") && html.includes("Kitchen"));
-  const order = () => [...shadow.innerHTML.matchAll(/<span class="id cut"[^>]*>([a-z_.]+)<\/span>/g)].map(m => m[1]);
+  const order = () => [...shadow.innerHTML.matchAll(/<span class="id cut[^"]*"[^>]*>([a-z_.]+)<\/span>/g)].map(m => m[1]);
   assert.equal(JSON.stringify(order()), JSON.stringify(["light.a", "sensor.b", "switch.c"]));
   el.lv.unreferenced.sort = "changed"; el.lv.unreferenced.dir = "desc"; el.render();
   assert.equal(JSON.stringify(order()), JSON.stringify(["light.a", "sensor.b", "switch.c"]), "newest first, unknown last");
@@ -5181,7 +5181,7 @@ test("batteries are named by their device: the tile, the rows and the search", (
   el.batteryVoltRows = () => [];
   const html = el.batteriesView();
   assert.ok(html.includes("Lowest level") && html.includes("Kitchen window sensor · Kitchen") && html.includes('data-object="entity:sensor.kitchen_window_battery"'), "the tile names the device and opens the sensor");
-  assert.ok(/<strong class="cut">Kitchen window sensor<\/strong><span class="id cut">sensor\.kitchen_window_battery/.test(html), "the row titles the device and shows the entity id below");
+  assert.ok(/<strong class="cut[^"]*"[^>]*>Kitchen window sensor<\/strong><span class="id cut[^"]*"[^>]*>sensor\.kitchen_window_battery/.test(html), "the row titles the device and shows the entity id below");
   assert.equal(el.batteryName(battery).title, "Kitchen window sensor"); assert.equal(el.batteryName(battery).entity, "Battery");
   assert.equal(el.batteryName({ ...battery, device_id: "" }).title, "Battery");
 });
@@ -5457,7 +5457,9 @@ test("the topic tiles carry a sparkline for the total and each topic, the status
 test("an entity row shows the id in mono under the name and the extra facts in a line of their own", () => {
   const { el } = panel("en");
   assert.equal(el.rowId("sensor.a<b", "3 · x"), '<span class="id">sensor.a&lt;b</span><small>3 · x</small>');
-  assert.equal(el.rowId("sensor.a"), '<span class="id">sensor.a</span>');
+  assert.equal(el.rowId("sensor.zzz"), '<span class="id">sensor.zzz</span>');
+  // an id the inventory knows opens the detail page of its object, in names and in id lines alike
+  assert.ok(el.rowId("sensor.a").includes('data-obj-link="entity:sensor.a"') && el.nameCell("A", "sensor.a").includes('<strong class="cut objlink" data-obj-link="entity:sensor.a"'));
 });
 
 test("the detail page offers a rename and an area for one entity and sends one action each", async () => {

@@ -376,14 +376,27 @@ class ListsMixin {
     return `<button type="button" class="btn dangersoft delbtn${small ? " small" : ""}" ${why ? "disabled" : attr} title="${text}" aria-label="${this.esc(label)}"><ha-icon icon="mdi:delete-outline"></ha-icon></button>`;
   }
 
-  nameCell(name, id, tag = "div", tipSub = null) {
-    const sub = id || "";
-    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(tipSub ?? sub)}"><strong class="cut">${this.esc(name)}</strong>${sub ? `<span class="id cut">${this.esc(sub)}</span>` : ""}</${tag}>`;
+  // The inventory object a name or id stands for, as the key of its detail page: the given key, else the id itself when it is an entity-like id the inventory knows. Empty when there is no page to open.
+  objLinkKey(id, key = "") {
+    if (key) return this.findObject(key) ? key : "";
+    if (!/^[a-z0-9_]+\.[a-z0-9_]+$/.test(id || "")) return "";
+    return ["entity", "automation", "script", "scene"].map(type => `${type}:${id}`).find(k => this.findObject(k)) || "";
+  }
+
+  // The class and, when there is a page to open, the attributes that make a name or an id a link to the detail page of its object (one handler serves all of them).
+  objLinkAttrs(link, cls = "") {
+    return link ? `class="${cls ? `${cls} ` : ""}objlink" data-obj-link="${this.esc(link)}" tabindex="0" role="link"` : (cls ? `class="${cls}"` : "");
+  }
+
+  // Name and id of a row. Both open the detail page of the object when there is one; ``key`` names the object when the id alone does not.
+  nameCell(name, id, tag = "div", tipSub = null, key = "") {
+    const sub = id || "", link = this.objLinkKey(sub, key) || this.objLinkKey(name, key);
+    return `<${tag} class="namecell" data-tip="${this.esc(name)}" data-tip-sub="${this.esc(tipSub ?? sub)}"><strong ${this.objLinkAttrs(link, "cut")}>${this.esc(name)}</strong>${sub ? `<span ${this.objLinkAttrs(link, "id cut")}>${this.esc(sub)}</span>` : ""}</${tag}>`;
   }
 
   // The id line of a list row: the id in mono under the name, extra facts in a line of their own below it.
-  rowId(id, extra = "") {
-    return `<span class="id">${this.esc(id)}</span>${extra ? `<small>${this.esc(extra)}</small>` : ""}`;
+  rowId(id, extra = "", key = "") {
+    return `<span ${this.objLinkAttrs(this.objLinkKey(id, key), "id")}>${this.esc(id)}</span>${extra ? `<small>${this.esc(extra)}</small>` : ""}`;
   }
 
   // The date of a table cell: how long ago with the exact time in small type below (hidden in compact rows) and as a tooltip; empty when unknown.

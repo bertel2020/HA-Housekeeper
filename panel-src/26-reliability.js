@@ -287,7 +287,7 @@ class ReliabilityMixin {
       text: item => [item.name, item.entity_id, item.entry_title].join(" "), tie: item => item.entity_id, empty: "relUnstableNone",
       rowAttrs: item => `data-object="entity:${this.esc(item.entity_id)}" tabindex="0" role="button" aria-label="${this.esc(item.name)}"`,
       columns: [
-        { key: "name", label: "utName", cell: item => this.nameCell(item.name, `${item.entity_id}${item.entry_title ? ` · ${item.entry_title}` : ""}`) },
+        { key: "name", label: "utName", cell: item => this.nameCell(item.name, `${item.entity_id}${item.entry_title ? ` · ${item.entry_title}` : ""}`, "div", null, `entity:${item.entity_id}`) },
         { key: "level", label: "relColLevel", sortable: false, cell: item => `<span class="pill ${tone(item)}">${this.t(item.level === "flapping" ? "relFlapping" : "relUnstable")}</span>` },
         { key: "episodes", label: "relSortEpisodes", dir: "desc", cell: item => this.esc(this.formatNumber(item.episodes)) },
         { key: "rate", label: "relSortRate", dir: "desc", cell: item => this.esc(this.formatNumber(item.per_day)) },

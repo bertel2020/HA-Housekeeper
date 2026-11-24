@@ -9,6 +9,7 @@
 - **Oberfläche allgemein:**
   - Die Karte „Technische Details anzeigen“ in den Einstellungen ist ruhiger: ohne doppelte Liste und ohne hervorgehobenen Rahmen.
   - Der Sensor „Größe der Datenbank“ zeigt neu angelegt standardmäßig Gigabyte.
+  - Namen und IDs in den Listen öffnen die Detailseite ihres Objekts.
 
 ### Behoben
 
