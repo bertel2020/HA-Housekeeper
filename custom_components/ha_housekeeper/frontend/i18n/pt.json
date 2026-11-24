@@ -6010,6 +6010,8 @@
 "decideScope_finding": "Só esta ocorrência",
 "decideScopeHint_finding": "Volta quando o prazo acabar; uma nova ocorrência no objeto continua a ser comunicada.",
 "decideScope_object": "Todas as ocorrências futuras deste objeto",
+"bulkScope_finding": "Apenas estes achados",
+"bulkScope_object": "Todos os achados futuros destes objetos",
 "decideScopeHint_object": "Uma regra duradoura; defines-a no passo seguinte.",
 "fixStepUnderstand": "Compreender e decidir",
 "fixStepDecide": "O que fazer?",

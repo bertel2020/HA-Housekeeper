@@ -6010,6 +6010,8 @@
 "decideScope_finding": "仅此发现项",
 "decideScopeHint_finding": "期限到后会再次出现；对象上的新发现项仍会报告。",
 "decideScope_object": "此对象今后的所有发现项",
+"bulkScope_finding": "仅这些发现",
+"bulkScope_object": "这些对象的所有未来发现",
 "decideScopeHint_object": "长期规则；你在下一步中设置。",
 "fixStepUnderstand": "了解并决定",
 "fixStepDecide": "怎么办？",

@@ -6010,6 +6010,8 @@
 "decideScope_finding": "Seulement ce constat",
 "decideScopeHint_finding": "Revient à l’échéance ; un nouveau constat sur l’objet est quand même signalé.",
 "decideScope_object": "Tous les constats futurs de cet objet",
+"bulkScope_finding": "Seulement ces constats",
+"bulkScope_object": "Tous les constats futurs de ces objets",
 "decideScopeHint_object": "Une règle durable ; tu la règles à l’étape suivante.",
 "fixStepUnderstand": "Comprendre et décider",
 "fixStepDecide": "Que faire ?",

@@ -6010,6 +6010,8 @@
 "decideScope_finding": "Solo este hallazgo",
 "decideScopeHint_finding": "Vuelve al terminar el plazo; un hallazgo nuevo en el objeto se sigue notificando.",
 "decideScope_object": "Todos los hallazgos futuros de este objeto",
+"bulkScope_finding": "Solo estos hallazgos",
+"bulkScope_object": "Todos los hallazgos futuros de estos objetos",
 "decideScopeHint_object": "Una regla duradera; la ajustas en el paso siguiente.",
 "fixStepUnderstand": "Entender y decidir",
 "fixStepDecide": "¿Qué hacer?",

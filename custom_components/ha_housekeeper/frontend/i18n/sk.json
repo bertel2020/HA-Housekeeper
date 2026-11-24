@@ -6485,6 +6485,8 @@
 "decideScope_finding": "Len tento nález",
 "decideScopeHint_finding": "Po uplynutí lehoty sa vráti; nový nález na objekte sa napriek tomu ohlási.",
 "decideScope_object": "Všetky budúce nálezy tohto objektu",
+"bulkScope_finding": "Iba tieto zistenia",
+"bulkScope_object": "Všetky budúce zistenia týchto objektov",
 "decideScopeHint_object": "Trvalé pravidlo; nastavíš ho v ďalšom kroku.",
 "fixStepUnderstand": "Pochopiť a rozhodnúť",
 "fixStepDecide": "Čo robiť?",

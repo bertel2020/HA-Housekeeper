@@ -19,6 +19,7 @@
   - Names and IDs in the lists open the detail page of their object.
   - A button next to every ID copies it.
   - In the menu of an unused automation, “Fix” leads to disabling and deleting; “Disable” is no longer a separate entry there.
+  - In the selection bar, “Hide …” is the one entry for hiding: its dialog has the tabs “Status” and “Object note” and the scope “Only these findings” or “All future findings of these objects”.
 
 ### Fixed
 

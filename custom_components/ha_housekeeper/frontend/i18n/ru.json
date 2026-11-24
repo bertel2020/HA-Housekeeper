@@ -7230,6 +7230,8 @@
 "decideScope_finding": "Только эта находка",
 "decideScopeHint_finding": "Вернётся по истечении срока; новая находка на объекте всё равно будет сообщена.",
 "decideScope_object": "Все будущие находки этого объекта",
+"bulkScope_finding": "Только эти находки",
+"bulkScope_object": "Все будущие находки этих объектов",
 "decideScopeHint_object": "Постоянное правило; ты настроишь его на следующем шаге.",
 "fixStepUnderstand": "Понять и решить",
 "fixStepDecide": "Что делать?",

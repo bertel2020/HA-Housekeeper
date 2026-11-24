@@ -394,13 +394,9 @@ class FindingsMixin {
         deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", sub(some(deletable.length), plan)) : "",
       ],
       [
-        decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', many("actDecideSub", decidable)) : "",
+        decidable || marks || excs ? item("status", decidable && !facts.open.length ? "fselStatusChange" : "actDecide", decidable ? 'data-fsel-state="status"' : marks ? 'data-fsel-state="mark"' : "data-fsel-exc", decidable ? many("actDecideSub", decidable) : marks ? many("actMarkSub", marks) : many("actRuleSub", excs)) : "",
         facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
         facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
-      ],
-      [
-        marks ? item("mark", "actMark", 'data-fsel-state="mark"', many("actMarkSub", marks)) : "",
-        excs ? item("exc", "actRule", "data-fsel-exc", many("actRuleSub", excs)) : "",
       ],
       [labels ? item("label", "fselLabel", 'data-fsel-state="label"', sub(some(labels), this.t("changesHa"))) : ""],
       [

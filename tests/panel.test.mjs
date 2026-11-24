@@ -3949,7 +3949,9 @@ test("the selection bar sets a mark on every picked object that can carry one", 
   el.data = { ...DATA, objects: [obj("entity", "sensor.a"), obj("automation", "automation.x"), obj("config_entry", "e1")], findings: [f("entity.state_unavailable", "sensor.a"), f("automation.stale", "automation.x"), f("config_entry.not_loaded", "e1")], causes: [] };
   el.findSel = new Set(["entity.state_unavailable|sensor.a", "automation.stale|automation.x"]);
   assert.equal([...el.markTargets().values()].join(), "entity:sensor.a", "an automation cannot be marked");
-  assert.ok(el.findSelBar([]).includes('data-fsel-state="mark"'));
+  assert.ok(!el.findSelBar([]).includes('data-fsel-state="mark"'), "one entry hides; the note is a tab of its dialog");
+  el.bulk = { kind: "status", state: "keep", reason: "", days: 30, error: "" };
+  assert.ok(el.bulkForm().includes('data-bulk-tab="mark"'));
   el.findSel.add("config_entry.not_loaded|e1");
   assert.equal(el.markKindsFor(el.markTargets()).join(), "expected_offline,seasonal,spare", "an integration takes fewer kinds");
   el._hass = { language: "en", callWS: async msg => { calls.push(JSON.stringify(msg)); return msg.type === "ha_housekeeper/inventory" ? { ...DATA, findings: [], causes: [] } : {}; } };
@@ -7758,9 +7760,10 @@ test("the rule of the selection bar counts objects, not findings", () => {
   el.data = { ...DATA, objects: [{ object_type: "entity", object_id: "light.a", name: "Hall lamp", status: "unavailable" }], edges: [], findings: [f(1), f(2)] };
   el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] };
   el.findSel = new Set(["k1", "k2"]);
-  const view = el.findSelBar([]);
-  assert.ok(view.includes("A lasting rule for all future findings") && !view.includes("2 objects"), "two findings of one object are one object, for the rule and for the note");
-  assert.ok(view.includes("This object · with a reason"));
+  assert.ok(!el.findSelBar([]).includes("data-fsel-exc"), "the rule is a scope of the hide dialog, not an entry");
+  el.bulk = { kind: "status", state: "keep", reason: "", days: 30, error: "" };
+  const form = el.bulkForm();
+  assert.ok(form.includes("data-bulk-scope") && form.includes("All future findings of these objects") && form.includes("Only these findings"));
 });
 
 test("a decided finding has the same row menu as an open one; only its top block offers the way back", () => {

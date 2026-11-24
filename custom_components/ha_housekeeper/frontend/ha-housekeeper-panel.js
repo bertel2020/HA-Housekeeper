@@ -3502,13 +3502,9 @@ class FindingsMixin {
         deletable.length ? item("mdi:delete-outline", "autoDelete", "data-fsel-delete-auto", sub(some(deletable.length), plan)) : "",
       ],
       [
-        decidable ? item("status", facts.open.length ? "actDecide" : "fselStatusChange", 'data-fsel-state="status"', many("actDecideSub", decidable)) : "",
+        decidable || marks || excs ? item("status", decidable && !facts.open.length ? "fselStatusChange" : "actDecide", decidable ? 'data-fsel-state="status"' : marks ? 'data-fsel-state="mark"' : "data-fsel-exc", decidable ? many("actDecideSub", decidable) : marks ? many("actMarkSub", marks) : many("actRuleSub", excs)) : "",
         facts.user.length ? item("mdi:eye-outline", "findUnhide", "data-fsel-unhide", some(facts.user.length)) : "",
         facts.mark.length ? item("mdi:bookmark-remove-outline", "fselMarkClear", "data-fsel-markclear", some(facts.mark.length)) : "",
-      ],
-      [
-        marks ? item("mark", "actMark", 'data-fsel-state="mark"', many("actMarkSub", marks)) : "",
-        excs ? item("exc", "actRule", "data-fsel-exc", many("actRuleSub", excs)) : "",
       ],
       [labels ? item("label", "fselLabel", 'data-fsel-state="label"', sub(some(labels), this.t("changesHa"))) : ""],
       [
@@ -14012,6 +14008,12 @@ class FindingStatusMixin {
     const cancel = "data-bulk-cancel", err = b.error ? this.notice("err", this.t(b.error)) : "";
     const form = (title, body, submit) => `<form class="actionarea" data-bulk-form>${this.actionHead(title, cancel)}${body}${err}${this.actionFoot(cancel, submit)}</form>`;
     const save = `<button type="submit" class="btn primary">${this.t("saveOptions")}</button>`;
+    // One way to hide: the tabs lead from the status of the findings to a note on their objects, the scope to a rule for the objects.
+    const sf = this.selectionFacts(), canStatus = sf.open.length + sf.user.length > 0, canMark = this.markTargets().size > 0;
+    const canRule = sf.picked.some(f => { const o = this.findObject(this.findingKey(f)); return o && this.excTargetOf(o); });
+    const tab = (on, kind, label) => `<button type="button" role="tab" aria-selected="${on === kind}" class="${on === kind ? "on" : ""}" data-bulk-tab="${kind}">${this.t(label)}</button>`;
+    const tabs = on => canStatus && canMark ? `<div class="dtabs" role="tablist">${tab(on, "status", "decideTabStatus")}${tab(on, "mark", "decideTabMark")}</div>` : "";
+    const scope = canRule ? `<div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("decideScope"))}">${["finding", "object"].map(v => `<label class="statusopt${v === "finding" ? " on" : ""}"><input type="radio" name="bulk-scope" value="${v}" data-bulk-scope ${v === "finding" ? "checked" : ""}><i class="stico"><ha-icon icon="${v === "finding" ? "mdi:bookmark-check-outline" : FSEL_ICONS.exc}"></ha-icon></i><span><b>${this.t(`bulkScope_${v}`)}</b><small>${this.t(`decideScopeHint_${v}`)}</small></span></label>`).join("")}</div>` : "";
     if (b.kind === "mark") {
       const targets = this.markTargets(b.onDevice), kinds = this.markKindsFor(targets), devices = this.markDeviceCount();
       const objects = new Set(targets.values()).size;
@@ -14019,13 +14021,13 @@ class FindingStatusMixin {
       const when = this.markWhen({ ...b, kind: b.markKind || kinds[0] }, "bulk");
       const onDevice = devices ? `<label class="nw"><input type="checkbox" data-bulk-ondevice ${b.onDevice ? "checked" : ""}> ${this.esc(this.t("markOnDevice"))}</label>` : "";
       const names = [...new Set(targets.values())].map(k => ({ key: k, name: this.findObject(k)?.name || k.split(":").slice(1).join(":"), sub: "" }));
-      return form(this.tCount("markBulkTitle", objects), `${this.pickedBlock(names, "pickedObjects", "data-bulk-dropobj")}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="markform"><div class="mrow">${when.window}</div></div><div class="statusrow">
+      return form(this.tCount("markBulkTitle", objects), `${tabs("mark")}${this.pickedBlock(names, "pickedObjects", "data-bulk-dropobj")}${onDevice}${this.markKindTiles(kinds, b.markKind || kinds[0], "data-bulk-markkind", "bulk-markkind")}<div class="markform"><div class="mrow">${when.window}</div></div><div class="statusrow">
         <input data-bulk-reason maxlength="200" autocomplete="off" value="${this.esc(b.reason)}" aria-label="${this.esc(this.t("markReason"))}" placeholder="${this.esc(this.t("markReason"))}">
         <select data-bulk-days aria-label="${this.esc(this.t("markReview"))}" title="${this.esc(this.t("markReview"))}">${days}</select>
         </div><div class="markform">${when.autoBox}${when.graceBack}${when.hints}</div>${this.coverHint(this.selectionFacts().picked, ["user", "label", "rule"])}${this.markEffectLine({ ...b, kind: b.markKind || kinds[0] }, true)}`, save);
     }
     if (b.kind === "area") return this.areaForm();
-    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), `${this.pickedBlock(this.pickedFindingRows(this.statusKeys()), "pickedFindings", "data-bulk-drop", this.t("pickedOfObjects", { n: this.formatNumber(new Set(this.pickedFindingRows(this.statusKeys()).map(r => r.name)).size) }))}${this.statusFields(b, "bulk", b.state)}`, save);
+    if (b.kind === "status") return form(this.t("statusTitle", { n: this.formatNumber(this.statusKeys().length) }), `${tabs("status")}${this.pickedBlock(this.pickedFindingRows(this.statusKeys()), "pickedFindings", "data-bulk-drop", this.t("pickedOfObjects", { n: this.formatNumber(new Set(this.pickedFindingRows(this.statusKeys()).map(r => r.name)).size) }))}${scope}${this.statusFields(b, "bulk", b.state)}`, save);
     if (b.kind === "label") {
       const labels = (this.data.objects || []).filter(o => o.object_type === "label").sort((x, y) => String(x.name).localeCompare(String(y.name)));
       if (!labels.length) return `<div class="actionarea">${this.actionHead(this.t("state_label"), cancel)}<small>${this.t("labelNone")}</small></div>`;
@@ -14219,8 +14221,15 @@ class FindingStatusMixin {
       this.render();
     });
     root.querySelectorAll("[data-bulk-cancel]").forEach(el => el.onclick = () => { this.bulk = null; this.render(); });
+    root.querySelectorAll("[data-bulk-tab]").forEach(el => el.onclick = () => this.openBulkForm(el.dataset.bulkTab));
     const form = root.querySelector("[data-bulk-form]");
     if (form) {
+      form.querySelectorAll("[data-bulk-scope]").forEach(el => el.onchange = async ev => {
+        if (ev.target.value !== "object") return;
+        this.bulk = null;
+        await this.openExceptionFor([...this.findSel].map(key => this.data.findings.find(f => f.key === key)).filter(Boolean).map(f => this.findingKey(f)));
+        this.render();
+      });
       form.onsubmit = ev => { ev.preventDefault(); this.commitBulk(); };
       const reason = form.querySelector("[data-bulk-reason]");
       if (reason) reason.oninput = ev => { this.bulk.reason = ev.target.value; };
@@ -14246,12 +14255,12 @@ class FindingStatusMixin {
 Object.assign(TEXT.de, {
   actHide: "Ausblenden …", actHideSub: "Löscht nichts, blendet nur aus", decideScope: "Für was?",
   decideScope_finding: "Nur dieser Befund", decideScopeHint_finding: "Kommt nach der Frist wieder; ein neuer Befund am Objekt meldet sich trotzdem.",
-  decideScope_object: "Alle künftigen Befunde dieses Objekts", decideScopeHint_object: "Eine dauerhafte Regel; du stellst sie im nächsten Schritt ein.",
+  bulkScope_finding: "Nur diese Befunde", bulkScope_object: "Alle künftigen Befunde dieser Objekte", decideScope_object: "Alle künftigen Befunde dieses Objekts", decideScopeHint_object: "Eine dauerhafte Regel; du stellst sie im nächsten Schritt ein.",
 });
 Object.assign(TEXT.en, {
   actHide: "Hide …", actHideSub: "Deletes nothing, only hides", decideScope: "For what?",
   decideScope_finding: "Only this finding", decideScopeHint_finding: "Comes back after the time is up; a new finding on the object is still reported.",
-  decideScope_object: "All future findings of this object", decideScopeHint_object: "A lasting rule; you set it in the next step.",
+  bulkScope_finding: "Only these findings", bulkScope_object: "All future findings of these objects", decideScope_object: "All future findings of this object", decideScopeHint_object: "A lasting rule; you set it in the next step.",
 });
 Object.assign(TEXT.de, {
   workExpired: "angefangen am {date}", stateOpen: "Offen", freshNew: "Neu seit letztem Besuch", stateWorse: "Schlechter geworden", visitNothing: "Nichts Neues seit {date}.", visitSummary: "{fresh} neu · {worse} schlechter geworden seit {date}.", stateDue: "Fällig", freshInwork: "In Arbeit", state_fixed: "Erledigt", stateNew: "Neu", stateInwork: "In Arbeit", state_new: "Neu", state_inwork: "In Arbeit", state_known: "Ist so gewollt", state_snoozed: "Später", state_hidden: "Nicht gezeigt",

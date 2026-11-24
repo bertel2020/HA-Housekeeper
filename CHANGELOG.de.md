@@ -19,6 +19,7 @@
   - Namen und IDs in den Listen öffnen die Detailseite ihres Objekts.
   - Ein Knopf neben jeder ID kopiert sie.
   - Im Menü einer ungenutzten Automation führt „Beheben“ zu Deaktivieren und Löschen; „Deaktivieren“ steht dort nicht mehr einzeln.
+  - In der Auswahlleiste ist „Ausblenden …“ der eine Eintrag zum Ausblenden: sein Dialog hat die Reiter „Status“ und „Objekt-Notiz“ und den Bereich „Nur diese Befunde“ oder „Alle künftigen Befunde dieser Objekte“.
 
 ### Behoben
 

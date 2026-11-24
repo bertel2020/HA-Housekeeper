@@ -6823,7 +6823,9 @@
 "journalOriginAiOpen": "c7bd7b11",
 "journalOriginAi": "30840735",
 "journalOriginPanel": "a0794a02",
-"impactFact_blueprint_shared": "9081f1d7"
+"impactFact_blueprint_shared": "9081f1d7",
+"bulkScope_finding": "65c1ebc4",
+"bulkScope_object": "4ada5436"
 },
 "setup": {
 "title": "644c2647",

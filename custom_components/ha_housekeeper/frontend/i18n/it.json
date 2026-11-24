@@ -6151,6 +6151,8 @@
 "decideScope_finding": "Solo questo rilievo",
 "decideScopeHint_finding": "Torna dopo la scadenza; un nuovo rilievo sull’oggetto viene comunque segnalato.",
 "decideScope_object": "Tutti i rilievi futuri di questo oggetto",
+"bulkScope_finding": "Solo questi rilevamenti",
+"bulkScope_object": "Tutti i rilevamenti futuri di questi oggetti",
 "decideScopeHint_object": "Una regola duratura; la imposti nel passo successivo.",
 "fixStepUnderstand": "Capisci e decidi",
 "fixStepDecide": "Cosa fare?",
