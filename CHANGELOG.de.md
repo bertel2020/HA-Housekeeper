@@ -2,6 +2,18 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
+## Unreleased
+
+### Geändert
+
+- **Oberfläche allgemein:**
+  - Die Karte „Technische Details anzeigen“ in den Einstellungen ist ruhiger: ohne doppelte Liste und ohne hervorgehobenen Rahmen.
+  - Der Sensor „Größe der Datenbank“ zeigt neu angelegt standardmäßig Gigabyte.
+
+### Behoben
+
+- „Konfigurieren“ auf der Integrationsseite öffnet wieder den Optionen-Dialog ([#46](https://github.com/bertel2020/HA-Housekeeper/issues/46)).
+
 ## 2.2.0 - 2026-11-23
 
 ### Neu

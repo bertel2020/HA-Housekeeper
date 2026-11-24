@@ -2,6 +2,18 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
+## Unreleased
+
+### Changed
+
+- **Interface in general:**
+  - The card “Show technical details” in the settings is calmer: no duplicate list and no highlighted frame.
+  - The sensor “Database size” shows gigabytes by default when newly created.
+
+### Fixed
+
+- “Configure” on the integration page opens the options dialog again ([#46](https://github.com/bertel2020/HA-Housekeeper/issues/46)).
+
 ## 2.2.0 - 2026-11-23
 
 ### New
