@@ -237,7 +237,7 @@ class ReplaceWizardMixin {
     const n = rw.sel.size;
     const allBtn = list.length && list.length <= 500 && list.some(r => !rw.sel.has(r.item.object_id)) ? `<button class="btn quiet" data-rw-all>${this.t("rwSelectFiltered", { count: list.length })}</button>` : "";
     return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 1 })}</small><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
-      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("rwpick", n, "data-rw-clear")}${allBtn}<span class="toolgap"></span>
+      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("rwpick", n, "data-rw-clear")}${allBtn}${this.rwCsvMenu(true)}<span class="toolgap"></span>
       <button class="btn primary" data-rw-next ${n ? "" : "disabled"}>${this.t("rwNext", { count: n })}</button></div>
       ${bar}${table}${pg.footer}</div>`;
   }
@@ -262,8 +262,8 @@ class ReplaceWizardMixin {
   rwTargetCell(pair) {
     const choice = this.rwState().choices[pair.object_id] || {};
     const reasons = (pair.candidates.find(c => c.object_id === choice.target)?.reasons || []).map(r => `<span class="tag">${this.esc(this.t(`exReason_${r}`))}</span>`);
-    const tags = [...reasons, ...this.rwProblems(pair).map(p => `<span class="pill ${p.tone}">${this.esc(p.text)}</span>`)];
-    return `${this.pickerBox(`rwt:${pair.object_id}`, this.t("rwNoTarget"))}${tags.length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
+    const tags = [this.rwCsvMark(pair.object_id), ...reasons, ...this.rwProblems(pair).map(p => `<span class="pill ${p.tone}">${this.esc(p.text)}</span>`)];
+    return `${this.pickerBox(`rwt:${pair.object_id}`, this.t("rwNoTarget"))}${tags.filter(Boolean).length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
   }
 
   rwHowCell(pair) {
@@ -372,7 +372,7 @@ class ReplaceWizardMixin {
     const rw = this.rwState(), pairs = rw.result?.pairs || [];
     const chosen = this.rwActions().length, errors = this.rwErrorCount();
     const platforms = [...new Set(this.data.objects.filter(o => o.object_type === "entity" && o.status === "active" && o.platform && !rw.sel.has(o.object_id)).map(o => o.platform))].sort();
-    const scope = `<div class="setrow"><div><label>${this.t("rwScope")}</label></div><select data-rw-scope><option value="">${this.t("rwScopeAll")}</option>${platforms.map(p => `<option value="${this.esc(p)}" ${rw.scope === p ? "selected" : ""}>${this.esc(p)}</option>`).join("")}</select></div>`;
+    const scope = `<div class="setrow"><div><label>${this.t("rwScope")}</label></div><select data-rw-scope><option value="">${this.t("rwScopeAll")}</option>${platforms.map(p => `<option value="${this.esc(p)}" ${rw.scope === p ? "selected" : ""}>${this.esc(p)}</option>`).join("")}</select>${this.rwCsvMenu()}</div>`;
     const suggestable = pairs.filter(p => p.candidates[0]?.score > 0 && !rw.choices[p.object_id] && (p.used || p.has_statistics)).length;
     const sum = pairs.length ? `<div class="exsum"><strong>${this.t("rwSumPairs", { count: pairs.length })}</strong><span class="pill ok">${this.t("rwSumChosen", { count: chosen })}</span>${errors ? `<span class="pill red">${this.t("rwSumErrors", { count: errors })}</span>` : ""}<span class="pill">${this.t("rwSumSuggest", { count: pairs.filter(p => p.candidates[0]?.score > 0).length })}</span><span class="pill">${this.t("rwSumNone", { count: pairs.filter(p => !p.used && !p.has_statistics).length })}</span><span class="toolgap"></span><button class="btn small" data-rw-take ${suggestable ? "" : "disabled"}>${this.t("rwTakeAll", { count: suggestable })}</button></div>` : "";
     const unknown = rw.result?.unknown?.length ? `<p class="factnote">${this.t("rwUnknown", { list: this.esc(rw.result.unknown.slice(0, 10).join(", ")) })}</p>` : "";
@@ -381,7 +381,7 @@ class ReplaceWizardMixin {
     const foot = `<div class="setrow planfoot"><small class="u-m0">${this.t("rwChosen", { count: chosen })} · ${this.t("repairDryRun")}${errors ? ` · ${this.t("rwFixFirst")}` : ""}</small><span class="rwfoot"><button class="btn" data-rw-back>${this.t("rwBack")}</button> <button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-rw-create ${chosen && !errors && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("rwCreate", { count: chosen })}</button></span></div>`;
     return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 2 })}</small><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
       ${scope}<div class="setrow planfoot"><small class="u-m0">${this.esc(rw.error)}</small><button class="btn" data-rw-load ${rw.loading ? "disabled" : ""}>${rw.loading ? this.t("rwLoading") : this.t("rwLoad")}</button></div>
-      ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${this.rwDisableSwitch(Object.values(this.rwState().choices).filter(c => c.target).map(c => c.how || "replace"))}${foot}</div>`;
+      ${this.rwCsvBanner()}${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${this.rwDisableSwitch(Object.values(this.rwState().choices).filter(c => c.target).map(c => c.how || "replace"))}${foot}</div>`;
   }
 
   // The kinds as cards for one pair, opened from its menu; picking one closes them.
@@ -466,6 +466,7 @@ class ReplaceWizardMixin {
     root.querySelectorAll("[data-rw-how-pick]").forEach(el => el.onclick = () => { const c = rw().choices[rw().howOpen]; if (c) c.how = el.dataset.rwHowPick; rw().howOpen = ""; this.render(); });
     root.querySelectorAll("[data-rw-mode]").forEach(el => el.onclick = () => { rw().single = el.dataset.rwMode === "one"; this.render(); });
     root.querySelectorAll("[data-rw-one-how]").forEach(el => el.onclick = () => { if (el.hasAttribute("data-off")) return; this.replHow = el.dataset.rwOneHow; this.render(); });
+    this.bindReplaceCsv(root);
     root.querySelectorAll("[data-act-replace-many]").forEach(el => el.onclick = () => this.rwStart([el.dataset.actReplaceMany]));
   }
 }

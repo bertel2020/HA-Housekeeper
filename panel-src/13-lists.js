@@ -376,11 +376,12 @@ class ListsMixin {
     return `<button type="button" class="btn dangersoft delbtn${small ? " small" : ""}" ${why ? "disabled" : attr} title="${text}" aria-label="${this.esc(label)}"><ha-icon icon="mdi:delete-outline"></ha-icon></button>`;
   }
 
-  // The inventory object a name or id stands for, as the key of its detail page: the given key, else the id itself when it is an entity-like id the inventory knows. Empty when there is no page to open.
+  // The inventory object a name or id stands for, as the key of its detail page: the given key, else the id itself when it is an entity-like id the inventory knows (or, failing that, HA's own dialog for an entity with a state, as ``info:<id>``). Empty when there is no page to open.
   objLinkKey(id, key = "") {
     if (key) return this.findObject(key) ? key : "";
     if (!/^[a-z0-9_]+\.[a-z0-9_]+$/.test(id || "")) return "";
-    return ["entity", "automation", "script", "scene"].map(type => `${type}:${id}`).find(k => this.findObject(k)) || "";
+    const page = ["entity", "automation", "script", "scene"].map(type => `${type}:${id}`).find(k => this.findObject(k));
+    return page || (this.canMoreInfo(id) ? `info:${id}` : ""); // no page of its own: HA's dialog of the entity
   }
 
   // The class and, when there is a page to open, the attributes that make a name or an id a link to the detail page of its object (one handler serves all of them).

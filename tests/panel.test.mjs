@@ -4073,6 +4073,33 @@ test("the replace assistant takes proposals only on request, defaults the kind b
   assert.equal(el.plan.plan_id, "p1");
 });
 
+test("a CSV file of pairs is read with any delimiter, header and quotes, and bad rows are named", () => {
+  const { el } = panel("en");
+  const text = "\ufeffalt;neu;art\r\n# note\r\nlight.a;light.n;\r\n\"SENSOR.B\";sensor.n;both\r\nlight.a;light.m;\r\nlight.x;light.x;\r\nnot an id;light.y;\r\nlight.c;light.y;weird\r\nlight.d;;\r\n";
+  const got = JSON.parse(JSON.stringify(el.rwParseCsv(text)));
+  assert.deepEqual(got.rows.map(r => [r.old, r.target, r.how]), [["light.a", "light.n", ""], ["sensor.b", "sensor.n", "both"], ["light.d", "", ""]]);
+  assert.deepEqual(got.skipped.map(r => [r.line, r.key]), [[5, "dup"], [6, "same"], [7, "badid"], [8, "how"]]);
+  assert.equal(got.total, 7);
+  assert.deepEqual(JSON.parse(JSON.stringify(el.rwParseCsv("old,new\nlight.a,light.n").rows)), [{ line: 2, old: "light.a", target: "light.n", how: "" }]);
+});
+
+test("a CSV file chooses the old entities and fills in the new ones, the file wins and what it cannot do is listed", async () => {
+  const { el } = panel("en", { setTimeout: () => 0 });
+  const ent = (id, status = "active") => ({ object_type: "entity", object_id: id, name: id, status });
+  el.data = { objects: [ent("light.a", "unavailable"), ent("sensor.b", "unavailable"), ent("light.n"), ent("sensor.n"), ent("light.off", "disabled"), ent("light.keep", "unavailable")], edges: [], findings: [], meta: {} };
+  const cand = id => ({ object_id: id, name: id, score: 5, reasons: [], status: "active", unit: null });
+  el._hass = { language: "en", callWS: async msg => ({ unknown: [], pairs: msg.old_entity_ids.map(id => ({ object_id: id, name: id, used: 1, has_statistics: id === "sensor.b", meter: id === "sensor.b", unit: null, candidates: [cand("light.n")] })) }) };
+  el.rwState().single = false;
+  el.rwState().sel = new Set(["light.keep"]);
+  const parsed = el.rwParseCsv("alt;neu;art\nlight.a;light.n;\nsensor.b;sensor.n;both\nlight.gone;light.n;\nlight.keep;light.off;\nlight.a;sensor.n;id\nsensor.b;sensor.n;statistics\n");
+  const done = await el.rwCsvApply(parsed, "x.csv");
+  assert.equal(done.applied, 2);
+  assert.deepEqual(JSON.parse(JSON.stringify(done.skipped.map(s => s.key).sort())), ["dup", "dup", "off", "old"]);
+  assert.ok(el.rwState().sel.has("light.keep"), "the rest of the choice stays");
+  assert.deepEqual(JSON.parse(JSON.stringify(el.rwActions())), [{ kind: "replace_references", object_id: "light.a", target: "light.n" }, { kind: "migrate_meter", object_id: "sensor.b", target: "sensor.n", mode: "both" }]);
+  assert.equal(el.rwState().step, 2);
+});
+
 test("the exchange assistant preselects nothing and turns only confirmed pairs into actions", async () => {
   const calls = [];
   const { el } = panel("en", { setTimeout: () => 0 });
@@ -5459,6 +5486,8 @@ test("an entity row shows the id in mono under the name and the extra facts in a
   assert.equal(el.rowId("sensor.a<b", "3 · x"), '<span class="id">sensor.a&lt;b</span><small>3 · x</small>');
   assert.equal(el.rowId("sensor.zzz"), '<span class="id">sensor.zzz</span>');
   // an id the inventory knows opens the detail page of its object, in names and in id lines alike
+  el._hass = { ...el._hass, states: { "sensor.only_state": { state: "1" } } };
+  assert.ok(el.rowId("sensor.only_state").includes('data-obj-link="info:sensor.only_state"'), "an entity without a page opens HA's dialog");
   assert.ok(el.rowId("sensor.a").includes('data-obj-link="entity:sensor.a"') && el.nameCell("A", "sensor.a").includes('<strong class="cut objlink" data-obj-link="entity:sensor.a"'));
 });
 

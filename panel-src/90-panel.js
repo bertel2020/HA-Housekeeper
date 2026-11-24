@@ -1253,7 +1253,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label, summary, .menupop"); if (inner && inner !== el && el.contains(inner)) return; const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
     // A name or an id in a list opens the detail page of its object; in a label row it must not tick the box as well.
     root.querySelectorAll("[data-obj-link]").forEach(el => {
-      const open = ev => { ev.preventDefault(); ev.stopPropagation(); const obj = this.findObject(el.dataset.objLink); if (obj) this.openObject(obj); };
+      const open = ev => { ev.preventDefault(); ev.stopPropagation(); const key = el.dataset.objLink, obj = this.findObject(key); if (obj) this.openObject(obj); else if (key.startsWith("info:")) this.moreInfo(key.slice(5)); };
       el.onclick = open;
       el.onkeydown = ev => { if (ev.key === "Enter") open(ev); };
     });

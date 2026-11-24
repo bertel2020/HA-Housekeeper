@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"8c443c87e7"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"7e2ed4393e"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"da272d2890"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b981c70a26"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"7234015b71"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"a28959237f"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"c0299f5dc6"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"19f88bee4e"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"d018775c0b"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"ac91031790"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b357c460e2"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"66a7dcf3da"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"ced12348b9"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"588c09b7c2"}];
 
 const TEXT = {
   de: {
@@ -1699,7 +1699,7 @@ class StylesMixin {
       .types{display:grid}.type{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:10px 16px;border:0;border-top:1px solid var(--hk-border);background:transparent;text-align:left;font-size:calc(13px*var(--hk-fs,1))}.type:hover{background:var(--hk-soft)}.type .tile{width:30px;height:30px}.type b{font-weight:600}
       .mobsort,.msince{display:none}
       .rowwrap .row.politem{padding-left:12px}.row.politem{padding-left:44px;background:color-mix(in srgb,var(--hk-soft) 45%,transparent)}.row.politem .tile{width:28px;height:28px}.tablewrap.lt td:not(:first-child){white-space:nowrap}.tablewrap.lt tr.static{cursor:default}.searchpanel{margin-bottom:14px;overflow:visible}.link-label.flat{margin:0;border:0;padding:0 0 4px}.depcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}.depcol{min-width:0}.depcol+.depcol{border-left:1px solid var(--hk-border)}.dephead{display:flex;align-items:center;gap:8px;padding:12px 16px 6px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:600;letter-spacing:.06em;text-transform:uppercase}.dephead span{margin-left:auto;font-weight:400}.deprow{display:flex;align-items:center;gap:12px;padding:9px 16px;border-top:1px solid var(--hk-border);cursor:pointer}.deprow.static{cursor:default}.deprow:hover:not(.static){background:color-mix(in srgb,var(--hk-blue) 6%,var(--hk-soft))}.deprow .tile{width:30px;height:30px;flex:none}.deptext{min-width:0;display:grid;gap:1px}.deptext strong{font-size:calc(13px*var(--hk-fs,1));font-weight:600;overflow-wrap:anywhere}.deptext span{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.deppath{color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));overflow-wrap:anywhere}.depchip{margin-left:6px;padding:1px 6px;border-radius:6px;background:var(--hk-soft);color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-weight:400}.deprow{position:relative}.deprow.ind1{padding-left:44px}.deprow.ind2{padding-left:72px}.deprow.ind3{padding-left:100px}.deprow.ind1:before,.deprow.ind2:before,.deprow.ind3:before{content:"";position:absolute;top:-9px;height:calc(50% + 9px);width:13px;border-left:2px solid var(--hk-border);border-bottom:2px solid var(--hk-border);border-bottom-left-radius:6px;box-sizing:border-box}.deprow.ind1:before{left:29px}.deprow.ind2:before{left:57px}.deprow.ind3:before{left:85px}.dephead.sub{margin-top:6px;border-top:1px solid var(--hk-border);padding-top:12px}.depcol .deprow.ind1,.depcol .deprow.ind2,.depcol .deprow.ind3{border-top-color:transparent}.depdot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--hk-green);flex:none;display:inline-block}.depdot.prob{background:transparent;border:1.5px dashed var(--hk-amber);box-sizing:border-box}.deplegend{display:flex;gap:16px;padding:8px 16px;border-top:1px solid var(--hk-border);color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.deplegend span{display:inline-flex;align-items:center;gap:6px}.deplegend .depdot{margin-left:0}.deplink{position:relative;min-height:30px;padding:4px 0 4px 48px;display:flex;align-items:center;gap:6px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.deplink:before{content:"";position:absolute;left:30px;top:0;bottom:0;border-left:2px solid var(--hk-border)}.deplink.label{font-weight:600;letter-spacing:.06em;text-transform:uppercase}.deptree{margin:0 0 0 30px;display:grid;gap:8px}.depbranch{position:relative;padding-left:22px}.depbranch:before{content:"";position:absolute;left:0;top:50%;width:22px;border-top:2px solid var(--hk-border)}.depbranch:after{content:"";position:absolute;left:0;top:-8px;bottom:-8px;border-left:2px solid var(--hk-border)}.depbranch:first-child:after{top:0}.depbranch:last-child:after{bottom:50%}.depplace{display:flex;align-items:center;gap:6px;margin-top:4px;color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.depplace .linkbtn{font-size:inherit}.node .sent{display:block;color:var(--hk-text);font-size:calc(12px*var(--hk-fs,1))}.emptyrel{padding:6px 16px;color:var(--hk-muted)}.emptyrel.sm{font-size:calc(12px*var(--hk-fs,1))}.chips.bare{padding:0;border:0}.propicon{--mdc-icon-size:18px;vertical-align:-3px;margin-right:6px;color:var(--hk-muted)}.w460{max-width:460px}.dim7{display:block;opacity:.7}.refactext{width:100%;max-width:520px}.errpad{padding:6px 16px;display:block}.bar.mt4{margin-top:4px}.evtable{width:100%;border-collapse:collapse}.evtable td{padding:9px 16px;border-top:1px solid var(--hk-border)}.evtable code{white-space:nowrap}.evtable .evcopy{width:1%;text-align:right}.evtable th:first-child,.evtable td:first-child{width:1%;white-space:nowrap}.tablewrap.lt tr[data-plan-open],.tablewrap.lt tr[data-rem-row],.tablewrap.lt tr[data-note-edit]{cursor:pointer}.tablewrap.lt .jsum{display:block;white-space:normal;min-width:180px;max-width:300px}.selhead{padding:6px 16px;min-height:44px}.selhead .actmenu>summary.btn{min-height:32px;padding:4px 14px;border-radius:8px}.selclear{color:var(--hk-muted);font-weight:400}.selall{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--hk-muted);cursor:pointer}.tablewrap.lt th.selcol,.tablewrap.lt td.selcol,.tablewrap.lt td.selcol:first-child{box-sizing:border-box;width:44px;min-width:44px;max-width:44px;padding-left:12px;padding-right:0;text-align:center}.lt th.selcol ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.tablewrap.lt tr.static:hover{background:transparent}.tablewrap.lt td .objlink{cursor:pointer}.objlink:hover,.objlink:focus-visible{text-decoration:underline;outline:none}.id{display:block;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1));font-family:var(--hk-mono,monospace);margin-top:2px}.tablewrap.lt td small{display:block;margin-top:2px;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.tablewrap.lt td:first-child{min-width:220px}.tip{position:fixed;z-index:50;display:grid;width:max-content;gap:2px;max-width:min(520px,calc(100vw - 16px));padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18);font-size:calc(12px*var(--hk-fs,1));pointer-events:none;overflow-wrap:anywhere}.tip[hidden]{display:none}.tip strong{font-weight:700}.tip span{font-family:ui-monospace,SFMono-Regular,monospace;color:var(--hk-muted)}.tip em{font-style:normal;line-height:1.4}.infotip{display:inline-flex;align-items:center;justify-content:center;line-height:0;width:24px;height:24px;margin:-4px 0 -4px 6px;padding:0;border:0;border-radius:50%;background:none;color:var(--hk-muted);vertical-align:middle;cursor:help}.infotip.warn{color:color-mix(in srgb,var(--hk-amber) 75%,var(--hk-text))}.infotip:hover,.infotip:focus-visible{background:var(--hk-soft);color:inherit}.infotip ha-icon{--mdc-icon-size:18px;display:flex}.fflow{padding:6px 14px 12px}.fstep{margin:6px 0;padding:8px 10px;border:1px solid var(--hk-border);border-left:3px solid var(--hk-blue);border-radius:8px;background:var(--hk-surface)}.fstep.broken{border-left-color:var(--hk-red,#b3261e);background:color-mix(in srgb,var(--hk-red,#b3261e) 6%,var(--hk-surface))}.fstep>summary{cursor:pointer;list-style-position:inside}.fhead{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 8px;max-width:calc(100% - 20px);vertical-align:middle}.fhead ha-icon{--mdc-icon-size:18px;color:var(--hk-muted)}.ffacts{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.fpath{margin-left:auto;color:var(--hk-muted);font-size:calc(11px*var(--hk-fs,1))}.fkids{margin:8px 0 2px 14px;padding-left:10px;border-left:1px dashed var(--hk-border)}.fgroup>small{display:block;margin:6px 0 2px;color:var(--hk-muted);text-transform:uppercase;letter-spacing:.05em;font-size:calc(10px*var(--hk-fs,1))}.fbranch{margin:6px 0}.chip.flowref{cursor:pointer;padding:2px 8px;font-size:calc(12px*var(--hk-fs,1))}.chip.flowref.missing{border-color:var(--hk-red,#b3261e);color:var(--hk-red,#b3261e);cursor:default}.listtools{display:flex;gap:8px;justify-content:flex-end;align-items:stretch;padding:10px 14px}.listtools .btn,.listtools .dirbtn{height:40px;min-height:40px;box-sizing:border-box;border:1px solid var(--hk-border);border-radius:8px;box-shadow:none}.listtools .btn:hover{border-color:var(--hk-blue)}.listtools .colwrap{display:flex}.colwrap{position:relative;display:inline-flex}.colpop{position:absolute;right:0;top:calc(100% + 4px);z-index:20;display:grid;justify-items:stretch;gap:2px;min-width:180px;max-width:calc(100vw - 32px);width:max-content;box-sizing:border-box;padding:6px;text-align:left;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);box-shadow:0 6px 20px rgba(0,0,0,.18)}.colpop label{display:flex;gap:16px;align-items:center;justify-content:space-between;text-align:left;min-height:36px;padding:0 10px;border-radius:6px;white-space:nowrap;font-size:calc(13px*var(--hk-fs,1));cursor:pointer}.colpop label:hover,.colpop label:focus-within{background:var(--hk-soft)}.colpop label input{flex:0 0 auto;width:16px;min-width:0;max-width:none;margin:0}.dirbtn.on{border-color:var(--hk-blue);color:var(--hk-blue)}.namecell{display:block;min-width:0;max-width:280px}.namecell .cut{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:860px){.namecell{max-width:none}.namecell .cut{white-space:normal;overflow:visible}}@media(min-width:861px){}.tablewrap.dense-list td{padding-top:4px;padding-bottom:4px}.tablewrap.dense-list .namecell .id,.dense-list .statsucc,.dense-list .agestamp{display:none}.tablewrap.lt .muted{color:var(--hk-muted)}.polform{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.polform input{flex:1 1 140px;min-width:0;padding:8px 10px;border:1px solid var(--hk-border);border-radius:8px;background:var(--hk-surface);color:inherit;font:inherit}.policyswitch{appearance:none;-webkit-appearance:none;position:relative;width:38px;height:22px;margin:0;border:1px solid var(--hk-border);border-radius:11px;background:var(--hk-soft);flex:none;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}.policyswitch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--hk-muted);transition:transform .15s ease,background-color .15s ease}.policyswitch:checked{border-color:var(--hk-blue);background:var(--hk-blue)}.policyswitch:checked::after{background:#fff;transform:translateX(16px)}.policyswitch:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-      .exppop{min-width:280px;max-width:calc(100vw - 32px)}.expitem{display:grid;gap:2px;justify-items:start;width:100%;padding:8px 10px;border:0;border-radius:6px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}.expitem small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.expitem:hover,.expitem:focus-visible{background:var(--hk-soft)}.listbar-actions .expbtn{height:40px;min-height:40px;gap:6px;white-space:nowrap}.expbtn.on{border-color:var(--hk-blue)}
+      .exppop{min-width:280px;max-width:calc(100vw - 32px)}.popleft .colpop{right:auto;left:0}.expitem{display:grid;gap:2px;justify-items:start;width:100%;padding:8px 10px;border:0;border-radius:6px;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}.expitem small{color:var(--hk-muted);font-size:calc(12px*var(--hk-fs,1))}.expitem:hover,.expitem:focus-visible{background:var(--hk-soft)}.listbar-actions .expbtn{height:40px;min-height:40px;gap:6px;white-space:nowrap}.expbtn.on{border-color:var(--hk-blue)}
       .markform{display:grid;gap:12px}.markform .mrow{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}.markform .mfield{display:grid;gap:4px;min-width:150px;flex:0 1 190px;font-size:calc(12px*var(--hk-fs,1));font-weight:600;color:var(--hk-muted)}.markform .mfield.grow{flex:1 1 260px}.markform .mfield select,.markform .mfield input:not([type=radio]):not([type=checkbox]){width:100%;min-height:40px;font-weight:400;color:var(--hk-text)}.markform .mfield:focus-within>span{color:var(--hk-blue-text)}.markform .mbtns{display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid var(--hk-border)}.markform .factnote{display:block}
       @media(max-width:600px){.markform .mfield,.markform .mfield.grow{flex:1 1 100%}.markform .mbtns .btn{flex:1}}
       button:focus-visible,[data-object]:focus-visible,tr[data-object]:focus-visible,th[data-sort]:focus-visible,.nav:focus-visible,.chip:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--hk-blue);outline-offset:2px}
@@ -2369,11 +2369,12 @@ class ListsMixin {
     return `<button type="button" class="btn dangersoft delbtn${small ? " small" : ""}" ${why ? "disabled" : attr} title="${text}" aria-label="${this.esc(label)}"><ha-icon icon="mdi:delete-outline"></ha-icon></button>`;
   }
 
-  // The inventory object a name or id stands for, as the key of its detail page: the given key, else the id itself when it is an entity-like id the inventory knows. Empty when there is no page to open.
+  // The inventory object a name or id stands for, as the key of its detail page: the given key, else the id itself when it is an entity-like id the inventory knows (or, failing that, HA's own dialog for an entity with a state, as ``info:<id>``). Empty when there is no page to open.
   objLinkKey(id, key = "") {
     if (key) return this.findObject(key) ? key : "";
     if (!/^[a-z0-9_]+\.[a-z0-9_]+$/.test(id || "")) return "";
-    return ["entity", "automation", "script", "scene"].map(type => `${type}:${id}`).find(k => this.findObject(k)) || "";
+    const page = ["entity", "automation", "script", "scene"].map(type => `${type}:${id}`).find(k => this.findObject(k));
+    return page || (this.canMoreInfo(id) ? `info:${id}` : ""); // no page of its own: HA's dialog of the entity
   }
 
   // The class and, when there is a page to open, the attributes that make a name or an id a link to the detail page of its object (one handler serves all of them).
@@ -22245,7 +22246,7 @@ class ReplaceWizardMixin {
     const n = rw.sel.size;
     const allBtn = list.length && list.length <= 500 && list.some(r => !rw.sel.has(r.item.object_id)) ? `<button class="btn quiet" data-rw-all>${this.t("rwSelectFiltered", { count: list.length })}</button>` : "";
     return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 1 })}</small><h2>${this.t("rwPickTitle")}</h2><p>${this.t("rwPickHint")}</p></div><div class="actions">${this.rwSeg()}</div></div>
-      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("rwpick", n, "data-rw-clear")}${allBtn}<span class="toolgap"></span>
+      <div class="toolbar${n ? "" : " nosel"}">${this.selTools("rwpick", n, "data-rw-clear")}${allBtn}${this.rwCsvMenu(true)}<span class="toolgap"></span>
       <button class="btn primary" data-rw-next ${n ? "" : "disabled"}>${this.t("rwNext", { count: n })}</button></div>
       ${bar}${table}${pg.footer}</div>`;
   }
@@ -22270,8 +22271,8 @@ class ReplaceWizardMixin {
   rwTargetCell(pair) {
     const choice = this.rwState().choices[pair.object_id] || {};
     const reasons = (pair.candidates.find(c => c.object_id === choice.target)?.reasons || []).map(r => `<span class="tag">${this.esc(this.t(`exReason_${r}`))}</span>`);
-    const tags = [...reasons, ...this.rwProblems(pair).map(p => `<span class="pill ${p.tone}">${this.esc(p.text)}</span>`)];
-    return `${this.pickerBox(`rwt:${pair.object_id}`, this.t("rwNoTarget"))}${tags.length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
+    const tags = [this.rwCsvMark(pair.object_id), ...reasons, ...this.rwProblems(pair).map(p => `<span class="pill ${p.tone}">${this.esc(p.text)}</span>`)];
+    return `${this.pickerBox(`rwt:${pair.object_id}`, this.t("rwNoTarget"))}${tags.filter(Boolean).length ? `<span class="exptags">${tags.join("")}</span>` : ""}`;
   }
 
   rwHowCell(pair) {
@@ -22380,7 +22381,7 @@ class ReplaceWizardMixin {
     const rw = this.rwState(), pairs = rw.result?.pairs || [];
     const chosen = this.rwActions().length, errors = this.rwErrorCount();
     const platforms = [...new Set(this.data.objects.filter(o => o.object_type === "entity" && o.status === "active" && o.platform && !rw.sel.has(o.object_id)).map(o => o.platform))].sort();
-    const scope = `<div class="setrow"><div><label>${this.t("rwScope")}</label></div><select data-rw-scope><option value="">${this.t("rwScopeAll")}</option>${platforms.map(p => `<option value="${this.esc(p)}" ${rw.scope === p ? "selected" : ""}>${this.esc(p)}</option>`).join("")}</select></div>`;
+    const scope = `<div class="setrow"><div><label>${this.t("rwScope")}</label></div><select data-rw-scope><option value="">${this.t("rwScopeAll")}</option>${platforms.map(p => `<option value="${this.esc(p)}" ${rw.scope === p ? "selected" : ""}>${this.esc(p)}</option>`).join("")}</select>${this.rwCsvMenu()}</div>`;
     const suggestable = pairs.filter(p => p.candidates[0]?.score > 0 && !rw.choices[p.object_id] && (p.used || p.has_statistics)).length;
     const sum = pairs.length ? `<div class="exsum"><strong>${this.t("rwSumPairs", { count: pairs.length })}</strong><span class="pill ok">${this.t("rwSumChosen", { count: chosen })}</span>${errors ? `<span class="pill red">${this.t("rwSumErrors", { count: errors })}</span>` : ""}<span class="pill">${this.t("rwSumSuggest", { count: pairs.filter(p => p.candidates[0]?.score > 0).length })}</span><span class="pill">${this.t("rwSumNone", { count: pairs.filter(p => !p.used && !p.has_statistics).length })}</span><span class="toolgap"></span><button class="btn small" data-rw-take ${suggestable ? "" : "disabled"}>${this.t("rwTakeAll", { count: suggestable })}</button></div>` : "";
     const unknown = rw.result?.unknown?.length ? `<p class="factnote">${this.t("rwUnknown", { list: this.esc(rw.result.unknown.slice(0, 10).join(", ")) })}</p>` : "";
@@ -22389,7 +22390,7 @@ class ReplaceWizardMixin {
     const foot = `<div class="setrow planfoot"><small class="u-m0">${this.t("rwChosen", { count: chosen })} · ${this.t("repairDryRun")}${errors ? ` · ${this.t("rwFixFirst")}` : ""}</small><span class="rwfoot"><button class="btn" data-rw-back>${this.t("rwBack")}</button> <button class="btn" data-rw-cancel>${this.t("confirmCancel")}</button> <button class="btn primary" data-rw-create ${chosen && !errors && !this.cleanupBusy ? "" : "disabled"}>${this.cleanupBusy ? this.t("planCreating") : this.t("rwCreate", { count: chosen })}</button></span></div>`;
     return `<div class="panel ovvis"><div class="panelhead"><div><small class="fceyebrow">${this.t("rwPart", { n: 2 })}</small><h2>${this.t("rwSetupTitle")}</h2><p>${this.t("rwSetupHint")}</p></div></div>
       ${scope}<div class="setrow planfoot"><small class="u-m0">${this.esc(rw.error)}</small><button class="btn" data-rw-load ${rw.loading ? "disabled" : ""}>${rw.loading ? this.t("rwLoading") : this.t("rwLoad")}</button></div>
-      ${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${this.rwDisableSwitch(Object.values(this.rwState().choices).filter(c => c.target).map(c => c.how || "replace"))}${foot}</div>`;
+      ${this.rwCsvBanner()}${sum}${rw.result ? (pairs.length ? this.rwPairsList(pairs) : `<div class="emptymsg">${this.t("exNoPairs")}</div>`) : ""}${how}${unknown}${many}${this.rwDisableSwitch(Object.values(this.rwState().choices).filter(c => c.target).map(c => c.how || "replace"))}${foot}</div>`;
   }
 
   // The kinds as cards for one pair, opened from its menu; picking one closes them.
@@ -22474,7 +22475,201 @@ class ReplaceWizardMixin {
     root.querySelectorAll("[data-rw-how-pick]").forEach(el => el.onclick = () => { const c = rw().choices[rw().howOpen]; if (c) c.how = el.dataset.rwHowPick; rw().howOpen = ""; this.render(); });
     root.querySelectorAll("[data-rw-mode]").forEach(el => el.onclick = () => { rw().single = el.dataset.rwMode === "one"; this.render(); });
     root.querySelectorAll("[data-rw-one-how]").forEach(el => el.onclick = () => { if (el.hasAttribute("data-off")) return; this.replHow = el.dataset.rwOneHow; this.render(); });
+    this.bindReplaceCsv(root);
     root.querySelectorAll("[data-act-replace-many]").forEach(el => el.onclick = () => this.rwStart([el.dataset.actReplaceMany]));
+  }
+}
+
+// The assistant "Replace entities" from a CSV file: the file chooses the old entities and fills in the new ones (and, if it says so, the kind); everything after that is the assistant as it is (83-replace-wizard.js).
+// Nothing is written by the file: the preview of the plan has to be confirmed, like for a pair set by hand.
+Object.assign(TEXT.de, {
+  rwCsvButton: "CSV", rwCsvLoad: "Zuordnung aus Datei laden …", rwCsvLoadHint: "Spalten alt und neu, freiwillig art; füllt Auswahl und Zuordnung vor.",
+  rwCsvTemplate: "Vorlage herunterladen", rwCsvTemplateHint: "Mit der gewählten Auswahl in der Spalte alt.",
+  rwCsvSave: "Zuordnung als CSV sichern", rwCsvSaveHint: "Dieselbe Datei aus dem aktuellen Stand, zum Bearbeiten und erneuten Laden.",
+  rwCsvTooBig: "Die Datei ist größer als 1 MB.", rwCsvNone: "In der Datei steht keine Zeile mit einer alten Entität.", rwCsvReadFailed: "Die Datei lässt sich nicht lesen.",
+  rwCsvFrom: "Aus „{file}“: {total} gelesen", rwCsvApplied: "{count} übernommen", rwCsvSkipped: "{count} übersprungen", rwCsvOver: "Nur die ersten 200 Zeilen wurden gelesen.",
+  rwCsvList: "Übersprungene Zeilen anzeigen", rwCsvLine: "Zeile {line}", rwCsvSaveSkipped: "Übersprungene als CSV sichern", rwCsvFromFile: "aus Datei",
+  rwCsvR_badid: "Das ist keine Entitäts-ID.", rwCsvR_same: "Alt und neu sind gleich.", rwCsvR_dup: "Die alte Entität steht schon in einer früheren Zeile.", rwCsvR_how: "Die Art „{how}“ gibt es nicht.",
+  rwCsvR_old: "Die alte Entität gibt es nicht.", rwCsvR_new: "Die neue Entität gibt es nicht.", rwCsvR_off: "Die neue Entität ist deaktiviert.", rwCsvR_domain: "Alt und neu sind verschiedene Arten von Entitäten (Domain).",
+  rwCsvR_howfit: "Die Art „{how}“ passt nicht zu dieser Entität.", rwCsvR_nopair: "Für die alte Entität gibt es keinen Vorschlag zum Zuordnen.",
+});
+Object.assign(TEXT.en, {
+  rwCsvButton: "CSV", rwCsvLoad: "Load assignment from file …", rwCsvLoadHint: "Columns old and new, optional how; fills in the choice and the assignment.",
+  rwCsvTemplate: "Download template", rwCsvTemplateHint: "With the current choice in the column old.",
+  rwCsvSave: "Save assignment as CSV", rwCsvSaveHint: "The same file from the current state, to edit and load again.",
+  rwCsvTooBig: "The file is larger than 1 MB.", rwCsvNone: "The file has no row with an old entity.", rwCsvReadFailed: "The file cannot be read.",
+  rwCsvFrom: "From “{file}”: {total} read", rwCsvApplied: "{count} taken", rwCsvSkipped: "{count} skipped", rwCsvOver: "Only the first 200 rows were read.",
+  rwCsvList: "Show skipped rows", rwCsvLine: "Row {line}", rwCsvSaveSkipped: "Save skipped rows as CSV", rwCsvFromFile: "from file",
+  rwCsvR_badid: "This is not an entity ID.", rwCsvR_same: "Old and new are the same.", rwCsvR_dup: "The old entity is already in an earlier row.", rwCsvR_how: "There is no kind “{how}”.",
+  rwCsvR_old: "The old entity does not exist.", rwCsvR_new: "The new entity does not exist.", rwCsvR_off: "The new entity is disabled.", rwCsvR_domain: "Old and new are different kinds of entity (domain).",
+  rwCsvR_howfit: "The kind “{how}” does not fit this entity.", rwCsvR_nopair: "There is no proposal to assign for the old entity.",
+});
+
+const RW_CSV_MAX_ROWS = 200, RW_CSV_MAX_BYTES = 1024 * 1024, RW_CSV_ID = /^[a-z0-9_]+\.[a-z0-9_]+$/;
+// The names of the three columns in the languages of the panel; a file may use either.
+const RW_CSV_COLUMNS = { old: ["alt", "old"], target: ["neu", "new"], how: ["art", "how"] };
+
+class ReplaceCsvMixin {
+  // One line of the file as cells: the delimiter outside quotes splits, "" inside quotes is one quote.
+  rwCsvSplit(line, delimiter) {
+    const cells = [];
+    let cell = "", quoted = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (quoted) {
+        if (ch === '"' && line[i + 1] === '"') { cell += '"'; i++; } else if (ch === '"') quoted = false; else cell += ch;
+      } else if (ch === '"') quoted = true;
+      else if (ch === delimiter) { cells.push(cell); cell = ""; } else cell += ch;
+    }
+    cells.push(cell);
+    return cells.map(c => c.trim());
+  }
+
+  // The delimiter of the file: the one that occurs most in its first line with content (a spreadsheet in German writes ";").
+  rwCsvDelimiter(lines) {
+    const first = lines.find(l => l.trim() && !l.trim().startsWith("#")) || "";
+    const unquoted = first.replace(/"[^"]*"/g, "");
+    const best = [";", ",", "\t"].map(d => [d, unquoted.split(d).length - 1]).sort((a, b) => b[1] - a[1])[0];
+    return best[1] ? best[0] : ";";
+  }
+
+  // The text of a file as rows {line, old, target, how} and the lines that cannot be used ({line, old, target, how, key, vars}).
+  // Only what the text itself says is checked here; whether an entity exists is checked when the rows are applied.
+  rwParseCsv(text) {
+    const lines = String(text || "").replace(/^﻿/, "").split(/\r\n|\n|\r/);
+    const delimiter = this.rwCsvDelimiter(lines);
+    const pos = { old: 0, target: 1, how: 2 };
+    const rows = [], skipped = [], seen = new Map();
+    let total = 0, over = 0, header = true;
+    lines.forEach((raw, index) => {
+      const cells = this.rwCsvSplit(raw, delimiter);
+      if (cells.every(c => !c) || cells[0].startsWith("#")) return;
+      const names = cells.map(c => c.toLowerCase());
+      if (header) {
+        header = false;
+        if (RW_CSV_COLUMNS.old.includes(names[0]) || names.some(n => RW_CSV_COLUMNS.target.includes(n))) {
+          for (const [key, list] of Object.entries(RW_CSV_COLUMNS)) { const at = names.findIndex(n => list.includes(n)); if (at >= 0) pos[key] = at; }
+          return;
+        }
+      }
+      total += 1;
+      if (rows.length + skipped.length >= RW_CSV_MAX_ROWS) { over += 1; return; }
+      const line = index + 1, old = (cells[pos.old] || "").toLowerCase(), target = (cells[pos.target] || "").toLowerCase(), how = (cells[pos.how] || "").toLowerCase();
+      const skip = (key, vars = {}) => skipped.push({ line, old: cells[pos.old] || "", target: cells[pos.target] || "", how: cells[pos.how] || "", key, vars });
+      if (!RW_CSV_ID.test(old) || (target && !RW_CSV_ID.test(target))) return skip("badid");
+      if (old === target) return skip("same");
+      if (seen.has(old)) return skip("dup");
+      if (how && !RW_HOWS.includes(how)) return skip("how", { how });
+      seen.set(old, line);
+      rows.push({ line, old, target, how });
+    });
+    return { rows, skipped, total, over };
+  }
+
+  // The rows of a file into the assistant: the old entities are chosen, then the suggestions are loaded (the assistant needs them for each pair), then the new entities are set.
+  // A row of the file wins over what is chosen already for the same old entity; everything else stays as it is.
+  async rwCsvApply(parsed, file) {
+    const rw = this.rwState(), skipped = [...parsed.skipped], good = [];
+    const known = id => this.findObject(`entity:${id}`);
+    for (const row of parsed.rows) {
+      const old = known(row.old), target = row.target ? known(row.target) : null;
+      const reason = !old ? ["old"] : row.target && !target ? ["new"] : target && target.status === "disabled" ? ["off"] : target && !this.sameDomain(target, row.old) ? ["domain"] : null;
+      if (reason) skipped.push({ ...row, key: reason[0], vars: {} }); else good.push(row);
+    }
+    if (!good.length) return { applied: 0, skipped, parsed };
+    rw.single = false;
+    good.forEach(row => rw.sel.add(row.old));
+    rw.step = 2;
+    await this.rwLoadPairs();
+    const pairs = rw.result?.pairs || [], fromFile = new Map();
+    let applied = 0;
+    for (const row of good) {
+      const pair = pairs.find(p => p.object_id === row.old);
+      if (!pair) { skipped.push({ ...row, key: "nopair", vars: {} }); continue; }
+      if (row.how && !this.rwHowsOf(pair).includes(row.how)) { skipped.push({ ...row, key: "howfit", vars: { how: row.how } }); continue; }
+      this.rwChoose(row.old, row.target);
+      if (row.target) { rw.choices[row.old].how = row.how || this.rwDefaultHow(pair); fromFile.set(row.old, row.target); }
+      applied += 1;
+    }
+    rw.fromFile = new Map([...(rw.fromFile || []), ...fromFile]);
+    return { applied, skipped, parsed };
+  }
+
+  async rwCsvLoadFile(file) {
+    if (!file) return;
+    if (file.size > RW_CSV_MAX_BYTES) { this.toast(this.t("rwCsvTooBig"), true); return; }
+    let text;
+    try { text = await file.text(); } catch { this.toast(this.t("rwCsvReadFailed"), true); return; }
+    const parsed = this.rwParseCsv(text);
+    if (!parsed.rows.length && !parsed.skipped.length) { this.toast(this.t("rwCsvNone"), true); return; }
+    const done = await this.rwCsvApply(parsed, file.name);
+    this.rwState().csv = { file: file.name, total: parsed.total, applied: done.applied, skipped: done.skipped.sort((a, b) => a.line - b.line), over: parsed.over };
+    this._expOpen = "";
+    this.render();
+  }
+
+  // The file as lines: ";" between the columns, a leading byte-order mark so a spreadsheet reads umlauts right.
+  rwCsvText(rows, extra = []) {
+    const head = this.lang === "de" ? ["alt", "neu", "art"] : ["old", "new", "how"];
+    return `﻿${[[...head, ...extra.map(e => e[0])], ...rows].map(r => r.map(csvCell).join(";")).join("\r\n")}`;
+  }
+
+  rwCsvTemplate() {
+    const rw = this.rwState(), ids = [...rw.sel];
+    const rows = ids.length ? ids.map(id => [id, "", ""]) : [["# light.wohnzimmer_alt;light.wohnzimmer_neu;"]];
+    this.downloadText("replace-template.csv", this.rwCsvText(rows), "text/csv");
+  }
+
+  // The assignment as it stands: a pair without a new entity has an empty column; the kind only where it differs from the usual one.
+  rwCsvSave() {
+    const rw = this.rwState();
+    const rows = (rw.result?.pairs || []).map(p => {
+      const c = rw.choices[p.object_id];
+      return [p.object_id, c?.target || "", c && c.how !== this.rwDefaultHow(p) ? c.how : ""];
+    });
+    this.downloadText("replace-pairs.csv", this.rwCsvText(rows), "text/csv");
+  }
+
+  rwCsvSaveSkipped() {
+    const csv = this.rwState().csv;
+    if (!csv?.skipped.length) return;
+    const rows = csv.skipped.map(s => [s.old, s.target, s.how, this.t(`rwCsvR_${s.key}`, s.vars)]);
+    this.downloadText("replace-skipped.csv", this.rwCsvText(rows, [["reason"]]), "text/csv");
+  }
+
+  // The button "CSV" and its menu, in the tool bar of both steps; the menu is the one the export menus use.
+  rwCsvMenu(left = false) {
+    const open = this._expOpen === "rwcsv", rw = this.rwState();
+    const item = (attr, label, hint) => `<button type="button" class="expitem" role="menuitem" ${attr}><strong>${this.t(label)}</strong><small>${this.t(hint)}</small></button>`;
+    const menu = open ? `<span class="colpop exppop" role="menu">${item("data-rw-csv-load", "rwCsvLoad", "rwCsvLoadHint")}${item("data-rw-csv-template", "rwCsvTemplate", "rwCsvTemplateHint")}${rw.step === 2 && rw.result?.pairs?.length ? item("data-rw-csv-save", "rwCsvSave", "rwCsvSaveHint") : ""}</span>` : "";
+    return `<span class="colwrap${left ? " popleft" : ""}"><button type="button" class="btn expbtn ${open ? "on" : ""}" data-exp-menu="rwcsv" aria-haspopup="menu" aria-expanded="${open}"><ha-icon icon="mdi:file-delimited-outline"></ha-icon>${this.t("rwCsvButton")}<ha-icon icon="mdi:chevron-down"></ha-icon></button>${menu}</span>`;
+  }
+
+  // What the file did, above the list of the pairs: the counts, and behind a fold each row that was left out and why.
+  rwCsvBanner() {
+    const csv = this.rwState().csv;
+    if (!csv) return "";
+    const list = csv.skipped.map(s => `<li><strong>${this.t("rwCsvLine", { line: s.line })}</strong> <code>${this.esc([s.old, s.target].filter(Boolean).join(" → "))}</code> · ${this.esc(this.t(`rwCsvR_${s.key}`, s.vars))}</li>`).join("");
+    const fold = csv.skipped.length ? `<details class="howto"><summary>${this.t("rwCsvList")}</summary><ul class="factnote">${list}</ul><button class="btn quiet" data-rw-csv-skipped>${this.t("rwCsvSaveSkipped")}</button></details>` : "";
+    return `<div class="hintbox"><ha-icon icon="mdi:file-delimited-outline"></ha-icon><div><p><strong>${this.t("rwCsvFrom", { file: `<span style="text-transform:none">${this.esc(csv.file)}</span>`, total: csv.total })}</strong> <span class="pill ok">${this.t("rwCsvApplied", { count: csv.applied })}</span>${csv.skipped.length ? ` <span class="pill warn">${this.t("rwCsvSkipped", { count: csv.skipped.length })}</span>` : ""}</p>${csv.over ? `<p>${this.t("rwCsvOver")}</p>` : ""}${fold}</div></div>`;
+  }
+
+  // The mark on a row whose new entity is still the one the file named.
+  rwCsvMark(id) {
+    const rw = this.rwState();
+    return rw.fromFile?.get(id) && rw.choices[id]?.target === rw.fromFile.get(id) ? `<span class="tag">${this.t("rwCsvFromFile")}</span>` : "";
+  }
+
+  bindReplaceCsv(root) {
+    root.querySelector("[data-rw-csv-load]")?.addEventListener("click", () => {
+      const input = (this._rwCsvInput = document.createElement("input"));
+      input.type = "file"; input.accept = ".csv,.txt,text/csv,text/plain";
+      input.onchange = () => { const file = input.files?.[0]; this._rwCsvInput = null; this.rwCsvLoadFile(file); };
+      input.click();
+    });
+    root.querySelector("[data-rw-csv-template]")?.addEventListener("click", () => { this._expOpen = ""; this.rwCsvTemplate(); this.render(); });
+    root.querySelector("[data-rw-csv-save]")?.addEventListener("click", () => { this._expOpen = ""; this.rwCsvSave(); this.render(); });
+    root.querySelector("[data-rw-csv-skipped]")?.addEventListener("click", () => this.rwCsvSaveSkipped());
   }
 }
 
@@ -25448,7 +25643,7 @@ class HAHousekeeperPanel extends HTMLElement {
     root.querySelectorAll("[data-object]").forEach(el => el.onclick = ev => { const inner = ev?.target?.closest?.("button, select, input, a, label, summary, .menupop"); if (inner && inner !== el && el.contains(inner)) return; const obj = this.findObject(el.dataset.object); if (obj) this.openObject(obj); });
     // A name or an id in a list opens the detail page of its object; in a label row it must not tick the box as well.
     root.querySelectorAll("[data-obj-link]").forEach(el => {
-      const open = ev => { ev.preventDefault(); ev.stopPropagation(); const obj = this.findObject(el.dataset.objLink); if (obj) this.openObject(obj); };
+      const open = ev => { ev.preventDefault(); ev.stopPropagation(); const key = el.dataset.objLink, obj = this.findObject(key); if (obj) this.openObject(obj); else if (key.startsWith("info:")) this.moreInfo(key.slice(5)); };
       el.onclick = open;
       el.onkeydown = ev => { if (ev.key === "Enter") open(ev); };
     });
@@ -25767,7 +25962,7 @@ class HAHousekeeperPanel extends HTMLElement {
 }
 
 // Mix the grouped methods into the panel element and register it.
-for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, ReplaceWizardMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, HelperIoMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, StartsMixin, AutoPauseMixin, CheckLogMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FcRecommendMixin, FcQueueMixin, FcRoundMixin, FirstCleanupMixin]) {
+for (const mixin of [ThemeMixin, StylesMixin, ListsMixin, OverviewMixin, FindingsMixin, ChangesMixin, SettingsMixin, CleanupMixin, InventoryMixin, GraphMixin, UnusedMixin, DiagnosisMixin, PropertiesMixin, MaintenanceMixin, BackupMixin, ReliabilityMixin, RunsMixin, StormsMixin, DbHealthMixin, ExposureMixin, PoliciesMixin, SearchMixin, SearchPagesMixin, LayoutMixin, FlowMixin, CorrelationMixin, WatchMixin, LifecycleMixin, BlueprintsMixin, MarksMixin, ExceptionsMixin, McpMixin, OftenMixin, CausesMixin, GoalsMixin, ExchangeMixin, ReplaceWizardMixin, ReplaceCsvMixin, DiagnosticsMixin, TraceDiagMixin, DryRunMixin, RefactorMixin, SafetyMixin, BatteryCareMixin, BatteryTypeMixin, BatteryKindMixin, BatteryTableMixin, PolicyRowMixin, HistoryTabMixin, ConfirmMixin, CriteriaHistoryMixin, BackupCleanupMixin, AreaAssignMixin, EntityStateMixin, HelperIoMixin, DetailEditMixin, FindingStatusMixin, DetailActionsMixin, CounterMixin, PickerMixin, StaleMixin, EntityRecorderMixin, EntitySpaceMixin, EntityTrimMixin, ExcludeMixin, PlanWizardMixin, ExportMixin, NotesMixin, KnownMixin, ScanPointsMixin, ScanCoverageMixin, ScanTimingMixin, SparklineMixin, BrokenCardsMixin, SystemMixin, StartsMixin, AutoPauseMixin, CheckLogMixin, ComponentsMixin, IntegrationPageMixin, MonitorMixin, ObjectGroupsMixin, FixMixin, RoundMixin, ActivityMixin, FcInfoMixin, FcRecommendMixin, FcQueueMixin, FcRoundMixin, FirstCleanupMixin]) {
   for (const name of Object.getOwnPropertyNames(mixin.prototype)) {
     if (name !== "constructor") Object.defineProperty(HAHousekeeperPanel.prototype, name, Object.getOwnPropertyDescriptor(mixin.prototype, name));
   }
