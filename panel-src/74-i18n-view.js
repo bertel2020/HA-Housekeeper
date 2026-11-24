@@ -61,11 +61,9 @@ Object.assign(TEXT.en, {
 });
 Object.assign(TEXT.de, {
   viewShows: "Zeigt", viewHidden: "Ausgeblendet", viewReach: "Alles Ausgeblendete bleibt erreichbar: über die Suche, „Beheben“ und die Hinweise der Übersicht.",
-  detailsFor: "Betrifft", detRule: "Regel-ID", detObject: "Objekt-ID", detCertainty: "Gewissheit", detRelations: "Beziehungen", detRaw: "Rohdaten", detJson: "JSON-Export", detMenu: "Menü: Ausnahmeregel, Label, Graph",
   viewFoot: "Eine neue Installation beginnt in „Einfach“ und fragt nach dem ersten Scan, ob es mehr sein soll. Eine geöffnete Seite bleibt in der Leiste, auch wenn Einfach sie sonst ausblendet; die Suche findet jede Seite.",
 });
 Object.assign(TEXT.en, {
   viewShows: "Shows", viewHidden: "Hidden", viewReach: "Everything hidden stays reachable: through the search, \"Fix\" and the notes of the overview.",
-  detailsFor: "Applies to", detRule: "Rule ID", detObject: "Object ID", detCertainty: "Certainty", detRelations: "Relations", detRaw: "Raw data", detJson: "JSON export", detMenu: "Menu: exception rule, label, graph",
   viewFoot: "A new installation starts in \"Simple\" and asks after the first scan whether it should be more. An open page stays in the bar even if Simple would hide it; the search finds every page.",
 });

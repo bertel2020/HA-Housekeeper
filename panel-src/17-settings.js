@@ -73,7 +73,7 @@ class SettingsMixin {
     return `<section class="panel modepanel"><div class="panelhead"><div><h2>${this.t("viewTitle")}</h2><p>${this.t("viewHint")}</p></div><span class="pill mute">${this.t(`view_${this.prefs.view}`)}</span></div>
       <div class="modeopts" role="radiogroup" aria-label="${this.esc(this.t("viewLabel"))}">${options}</div>
       <p class="sect">${this.t("detailsSect")}</p>
-      <label class="optswitch viewdet"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small><span class="modelbl">${this.t("detailsFor")}</span>${chips(["detRule", "detObject", "detCertainty", "detRelations", "detRaw", "detJson", "detMenu"], "")}</span></label>
+      <label class="optswitch viewdet"><input class="policyswitch" type="checkbox" role="switch" data-pref-switch="details" ${this.prefs.details ? "checked" : ""}><span><strong>${this.t("detailsTitle")}</strong><small>${this.t("detailsHint")}</small></span></label>
       <p class="sect">${this.t("viewCmpTitle")}</p>
       <div class="tablewrap lt viewcmp"><table><thead><tr><th scope="col"></th><th scope="col">${this.t("view_simple")}</th><th scope="col">${this.t("view_full")}</th></tr></thead><tbody>${["bar", "overview", "findings", "menu", "detail"].map(row).join("")}</tbody></table></div>
       <p class="modefoot"><ha-icon icon="mdi:information-outline"></ha-icon><span>${this.t("viewFoot")}</span></p></section>`;
