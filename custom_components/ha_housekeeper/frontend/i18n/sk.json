@@ -7325,5 +7325,9 @@
 "copyId": "Kopírovať ID",
 "idCopied": "ID skopírované",
 "missing_attribute": "Atribút",
-"findingMissingAttr": "Číta atribút „{attr}“ z {target}, ktorý entita nikdy nezobrazila"
+"findingMissingAttr": "Číta atribút „{attr}“ z {target}, ktorý entita nikdy nezobrazila",
+"findingWaitingTitle": "Upozornenie je v zozname, ale počíta sa až od {date}: dovtedy sa entita sleduje.",
+"fixAttrSeen": "Videné",
+"fixAttrSeenNote": "Entita {entity} zatiaľ zobrazila tieto atribúty (červený: ten, ktorý sa číta a nikdy neprišiel). Sleduje sa od {since}.",
+"fixAttrWaiting": "Upozornenie sa počíta až od {date}."
 }

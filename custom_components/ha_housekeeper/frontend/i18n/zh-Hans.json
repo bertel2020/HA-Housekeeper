@@ -6810,5 +6810,9 @@
 "copyId": "复制 ID",
 "idCopied": "已复制 ID",
 "missing_attribute": "属性",
-"findingMissingAttr": "读取 {target} 的属性“{attr}”，该实体从未出现过这个属性"
+"findingMissingAttr": "读取 {target} 的属性“{attr}”，该实体从未出现过这个属性",
+"findingWaitingTitle": "该提示已在列表中，但要到 {date} 才开始计数：在此之前会继续观察该实体。",
+"fixAttrSeen": "已见",
+"fixAttrSeenNote": "实体 {entity} 到目前为止出现过这些属性（红色：被读取却从未出现的那个）。自 {since} 起观察。",
+"fixAttrWaiting": "该提示要到 {date} 才开始计数。"
 }

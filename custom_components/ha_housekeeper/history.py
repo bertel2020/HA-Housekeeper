@@ -142,7 +142,10 @@ def make_checkpoint(snapshot: dict[str, Any]) -> dict[str, Any]:
     objects: dict[str, dict[str, str]] = {}
     for item in snapshot["objects"]:
         objects.setdefault(item["object_type"], {})[item["object_id"]] = item["status"]
-    open_findings = [f for f in snapshot["findings"] if not f.get("ignored")]
+    # A finding that still waits (a hint watched for less than its time) is listed but not counted.
+    open_findings = [
+        f for f in snapshot["findings"] if not f.get("ignored") and not f.get("waiting")
+    ]
     classes: dict[str, int] = {}
     for finding in open_findings:
         name = str(finding.get("classification") or "")

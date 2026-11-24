@@ -9281,3 +9281,12 @@ test("a finding of a template that reads an attribute the entity never showed na
   const f = { rule_id: "config_entry.missing_attribute", object_id: "e1", affected_object: "sensor.z", evidence: [{ attributes: ["power_w", "x"] }] };
   assert.equal(el.findingTitle(f), "Reads the attribute “power_w, x” of sensor.z, which the entity has never shown");
 });
+
+test("a hint that still waits carries the mark, stays out of the tiles and the Fix page names what the entity showed", () => {
+  const { el } = panel("en");
+  const f = { rule_id: "config_entry.missing_attribute", object_id: "e1", affected_object: "sensor.z", waiting: true, evidence: [{ attributes: ["power_w"], seen: ["unit_of_measurement"], since: "2026-11-20T10:00:00+00:00", counts_from: "2026-11-27T10:00:00+00:00" }] };
+  assert.ok(el.findingWaitingPill(f).includes("Still waiting"), "the mark of the orphaned statistics is the same");
+  assert.equal(el.findingWaitingPill({ ...f, waiting: false }), "");
+  const html = el.fixAttrSeen(f);
+  assert.ok(html.includes("unit_of_measurement") && html.includes("power_w") && html.includes("counts only from"));
+});

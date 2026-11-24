@@ -6810,7 +6810,11 @@
 "copyId": "72ac0d58",
 "idCopied": "8fe6adc5",
 "missing_attribute": "1d289028",
-"findingMissingAttr": "97e29f22"
+"findingMissingAttr": "97e29f22",
+"findingWaitingTitle": "e75d9456",
+"fixAttrSeen": "8894cf30",
+"fixAttrSeenNote": "0a84b53c",
+"fixAttrWaiting": "1e087a6c"
 },
 "setup": {
 "title": "644c2647",

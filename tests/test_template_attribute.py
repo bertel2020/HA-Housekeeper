@@ -48,12 +48,19 @@ async def test_a_template_that_reads_an_attribute_never_shown_is_a_finding_after
     async def findings() -> list:
         return await InventoryScanner._template_attribute_findings(scanner)
 
-    assert await findings() == [], "watched for the first time: no finding yet"
+    young = await findings()
+    assert [f["waiting"] for f in young] == [True], (
+        "watched for the first time: listed, but it waits"
+    )
     # A week later the attribute was never there.
     start = datetime.now(UTC) - timedelta(days=8)
     store._items["attrs:sensor.z"]["since"] = start.isoformat()
     found = await findings()
-    assert len(found) == 1 and found[0]["affected_object"] == "sensor.z"
+    assert (
+        len(found) == 1
+        and found[0]["affected_object"] == "sensor.z"
+        and found[0]["waiting"] is False
+    )
     assert found[0]["evidence"][0]["attributes"] == ["power_w"]
     assert found[0]["classification"] == "problem" and found[0]["object_id"] == entry.entry_id
     assert is_quiet({**found[0], "impact": "low"}), (
