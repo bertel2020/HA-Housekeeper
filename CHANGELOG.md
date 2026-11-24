@@ -7,6 +7,7 @@
 ### New
 
 - **Findings:** A template helper that reads an attribute its entity has never shown is listed as a hint (“Still waiting” for the first week of watching, then it counts), only in the list of findings; the Fix page shows which attributes the entity has shown.
+- **AI access:** An agent can give a reason with its plan; it is shown on the plan page as text of the agent. Plans that wait for you are listed in the overview, and the journal can be filtered by origin.
 - **Replace entities:** The assignment can be loaded from a CSV file (old, new, optional how) and saved as CSV again; rows that were left out are listed with the reason.
 
 ### Changed

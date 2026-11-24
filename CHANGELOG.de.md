@@ -7,6 +7,7 @@
 ### Neu
 
 - **Befunde:** Ein Template-Helfer, der ein Attribut liest, das seine Entität nie gezeigt hat, steht als Hinweis in der Liste der Befunde („Wartet noch“ in der ersten Woche der Beobachtung, danach zählt er), nur dort; die Beheben-Seite zeigt, welche Attribute die Entität gezeigt hat.
+- **KI-Zugriff:** Ein Agent kann seinem Plan eine Begründung mitgeben; sie steht auf der Planseite als Text des Agenten. Pläne, die auf dich warten, stehen in der Übersicht, und das Journal lässt sich nach Herkunft filtern.
 - **Entitäten ersetzen:** Die Zuordnung lässt sich aus einer CSV-Datei laden (alt, neu, freiwillig art) und wieder als CSV sichern; übersprungene Zeilen werden mit Grund aufgelistet.
 
 ### Geändert
