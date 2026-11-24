@@ -32,7 +32,7 @@ The goal is not aggressive automatic cleanup. Housekeeper helps you understand w
 
 > Housekeeper reads and analyzes first. It changes something only after you explicitly confirm a plan. Plans cover quarantine and removal, loading an integration anew, repairs, replacing references, renaming entities, assigning areas, deleting unused automations, trimming recorder history and other maintenance tasks. Depending on the action, Housekeeper requires a quarantine period, an additional confirmation and a successful backup. Reversible changes can be undone while their targets remain unchanged; irreversible recorder and backup deletions are clearly marked. Integrations and hubs are never reconfigured (loading an integration anew is a confirmed plan like any other), and Housekeeper changes only what a confirmed plan names.
 
-> **New in 2.2:** a calmer Fix page, cleanup cards with one recommended answer, where changes are added to a plan and run together at the end of the stage, one name per action, orphaned statistics that can move to a successor, and batteries in volts. See the [changelog](CHANGELOG.md).
+> **New in 2.3:** proposals of an AI agent wait in the overview with their reason, one "Hide …" dialog in the selection bar, a missing blueprint weighs more when others share it, the assignment of replaced entities can be loaded from a CSV, and plans name automations, scripts and scenes as what they are. See the [changelog](CHANGELOG.md).
 
 > **New in 2.0:** findings by topic with a page of their own, "Fix", a guided tour for cleaning up, the view "Simple" or "Full", new names for the outcomes and more languages. See the [changelog](CHANGELOG.md) for details and make a backup before you update from 1.x.
 
