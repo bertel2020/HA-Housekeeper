@@ -6810,5 +6810,9 @@
 "copyId": "Copia ID",
 "idCopied": "ID copiato",
 "missing_attribute": "Attributo",
-"findingMissingAttr": "Legge l’attributo «{attr}» di {target}, che l’entità non ha mai mostrato"
+"findingMissingAttr": "Legge l’attributo «{attr}» di {target}, che l’entità non ha mai mostrato",
+"findingWaitingTitle": "Il suggerimento è nell’elenco, ma conta solo dal {date}: fino ad allora l’entità viene osservata.",
+"fixAttrSeen": "Visto",
+"fixAttrSeenNote": "L’entità {entity} ha mostrato finora questi attributi (in rosso: quello che viene letto e non è mai arrivato). Osservata dal {since}.",
+"fixAttrWaiting": "Il suggerimento conta solo dal {date}."
 }

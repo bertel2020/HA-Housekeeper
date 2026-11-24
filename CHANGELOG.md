@@ -6,7 +6,7 @@
 
 ### New
 
-- **Findings:** A template helper that reads an attribute its entity has never shown (watched for a week) is listed as a hint, only in the list of findings.
+- **Findings:** A template helper that reads an attribute its entity has never shown is listed as a hint (“Still waiting” for the first week of watching, then it counts), only in the list of findings; the Fix page shows which attributes the entity has shown.
 - **Replace entities:** The assignment can be loaded from a CSV file (old, new, optional how) and saved as CSV again; rows that were left out are listed with the reason.
 
 ### Changed

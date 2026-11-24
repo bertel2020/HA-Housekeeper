@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"f3cf4499b5"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"4a62392eb8"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"b18468e119"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"740ab0e7c2"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"06e54bfdfa"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"a5f2c752d4"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"8f02810874"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"d0eee519a9"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"ee9c626266"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6b3b751b49"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"6bac13ee19"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"f7f3a36a77"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"b9839e3eab"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"2678d180b7"}];
 
 const TEXT = {
   de: {
@@ -3201,7 +3201,7 @@ class FindingsMixin {
   findingTableRow(f, depth = 0, inGroup = false, gap = false) {
     const { key, object, title, subtitle } = this.findingRowContent(f, inGroup);
     const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
-    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id tech">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
+    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong>${this.findingWaitingPill(f)}<span class="id tech">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
     const name = depth || gap ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
     const detail = this.rowDecide(f);
     return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td class="tech" data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `<span title="${this.esc(this.certaintyText(f))}">${Math.round(f.confidence * 100)} %</span>`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule tech">${this.esc(f.rule_id).replace(/([._])/g, "$1<wbr>")}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="8">${detail}</td></tr>` : ""}`;
@@ -3368,7 +3368,7 @@ class FindingsMixin {
     const afterFollows = afterAll.filter(isFollower).length, afterCount = afterAll.length;
     // The tiles are fixed: they count the open findings whatever status the list shows, every finding of a reason with
     // the follow-ups, and every reason keeps its place; one without open findings stays as a quiet 0 that filters nothing.
-    const openAll = this.data.findings.filter(f => !f.ignored);
+    const openAll = this.data.findings.filter(f => !f.ignored && !f.waiting);
     const topicTile = name => {
       const figures = this.topicFigures(name, openAll), mine = figures.mine, label = this.t(`topic_${name}`);
       if (!mine.length) return { label, value: "0", tone: "zero", hint: this.t(`topicHint_${name}`), spark: spark(`objtopic:${name}`, "bad") };
@@ -3529,6 +3529,13 @@ class FindingsMixin {
     });
     this.render();
     if (keys.length) await this.reloadAfterDecision();
+  }
+
+  // A hint that is listed but does not count yet: the mark says so, its title says from when it counts.
+  findingWaitingPill(f) {
+    if (!f.waiting) return "";
+    const from = ((f.evidence || [])[0] || {}).counts_from;
+    return `<span class="pill mute" title="${this.esc(this.t("findingWaitingTitle", { date: from ? this.formatDate(from) : "" }))}">${this.t("statWaiting")}</span>`;
   }
 
   findingTitle(f) {
@@ -15747,10 +15754,18 @@ class ScanPointsMixin {
 Object.assign(TEXT.de, {
   missing_attribute: "Attribut",
   findingMissingAttr: "Liest das Attribut „{attr}“ von {target}, das die Entität nie gezeigt hat",
+  findingWaitingTitle: "Der Hinweis steht in der Liste, zählt aber erst ab {date}: so lange wird die Entität beobachtet.",
+  fixAttrSeen: "Gesehen",
+  fixAttrSeenNote: "Die Entität {entity} zeigt bisher diese Attribute (rot: das gesuchte, das nie dabei war). Beobachtet seit {since}.",
+  fixAttrWaiting: "Der Hinweis zählt erst ab {date}.",
 });
 Object.assign(TEXT.en, {
   missing_attribute: "Attribute",
   findingMissingAttr: "Reads the attribute “{attr}” of {target}, which the entity has never shown",
+  findingWaitingTitle: "The hint is in the list but counts only from {date}: the entity is watched until then.",
+  fixAttrSeen: "Seen",
+  fixAttrSeenNote: "The entity {entity} has shown these attributes so far (red: the one that is read and never came). Watched since {since}.",
+  fixAttrWaiting: "The hint counts only from {date}.",
 });
 
 // Texts for the choice to run a plan without the safety backup.
@@ -21736,6 +21751,7 @@ class FixMixin {
       this.fixFailure?.failure ? [this.t("fixLastFailure"), this.esc(this.fixFailureText(this.fixFailure.failure)), A, 1] : null,
       this.fixFailure?.hint ? [this.t("fixFailureHint"), `${this.esc(this.t("fixFailureHintText", { entity: this.fixFailure.hint.entity_id }))} <button type="button" class="btn quiet" data-fix-open="${this.esc(this.fixFailure.hint.finding_key)}">${this.t("fixToFinding")}</button>`, "lightbulb-on-outline:blue", 1] : null,
       pattern ? [this.t("fixPattern"), this.esc(this.t("fixPatternAt", { hour: pattern.hour })), "chart-timeline-variant:amber", 1] : null,
+      f.rule_id === "config_entry.missing_attribute" ? [this.t("fixAttrSeen"), this.fixAttrSeen(f), "eye-outline:blue"] : null,
       f.confidence_level && !outage ? [this.t("sortCertainty"), `<strong>${Math.round(f.confidence * 100)} %</strong>${certainty ? `<small class="factnote">${certainty}</small>` : ""}`, "shield-check-outline:green"] : null,
     ].filter(Boolean);
     const question = f.rule_id === "device.down" && object && since ? `<p class="fixquestion"><b>${this.esc(this.t("fixDownQuestion", { name: object.name || object.object_id, span: this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) }))}</b></p>` : "";
@@ -21743,6 +21759,16 @@ class FixMixin {
     const shown = lead ? rows.filter(r => r[3]) : rows;
     const head = lead ? this.fixHead(f, object, this.fixChips(f, object, { since, outage, cause, own })) : "";
     return `${question}${head}${shown.length ? `<div class="fcinfo hasrec fixinfo" role="group">${shown.map(([label, value, look]) => { const [icon, tone] = look.split(":"); return `<div class="fcirow static"><span class="fcii fcii-${tone}"><ha-icon icon="mdi:${icon}"></ha-icon></span><span>${label}</span><span>${value}</span><i></i></div>`; }).join("")}</div>` : ""}`;
+  }
+
+  // What the entity of a template has shown so far, and the attribute that never came; says when the hint starts to count.
+  fixAttrSeen(f) {
+    const ev = (f.evidence || [])[0] || {};
+    const seen = (ev.seen || []).map(name => `<span class="tag">${this.esc(name)}</span>`).join("");
+    const missing = (ev.attributes || []).map(name => `<span class="pill red">${this.esc(name)}</span>`).join("");
+    const note = this.t("fixAttrSeenNote", { entity: f.affected_object, since: ev.since ? this.formatDate(ev.since) : "" });
+    const wait = f.waiting && ev.counts_from ? ` ${this.t("fixAttrWaiting", { date: this.formatDate(ev.counts_from) })}` : "";
+    return `<span class="exptags">${seen}${missing}</span><small class="factnote">${this.esc(note + wait)}</small>`;
   }
 
   // The chips of the head: what is wrong (how long idle, how long down), what it affects, impact, how sure.

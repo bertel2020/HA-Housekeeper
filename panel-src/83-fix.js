@@ -94,6 +94,7 @@ class FixMixin {
       this.fixFailure?.failure ? [this.t("fixLastFailure"), this.esc(this.fixFailureText(this.fixFailure.failure)), A, 1] : null,
       this.fixFailure?.hint ? [this.t("fixFailureHint"), `${this.esc(this.t("fixFailureHintText", { entity: this.fixFailure.hint.entity_id }))} <button type="button" class="btn quiet" data-fix-open="${this.esc(this.fixFailure.hint.finding_key)}">${this.t("fixToFinding")}</button>`, "lightbulb-on-outline:blue", 1] : null,
       pattern ? [this.t("fixPattern"), this.esc(this.t("fixPatternAt", { hour: pattern.hour })), "chart-timeline-variant:amber", 1] : null,
+      f.rule_id === "config_entry.missing_attribute" ? [this.t("fixAttrSeen"), this.fixAttrSeen(f), "eye-outline:blue"] : null,
       f.confidence_level && !outage ? [this.t("sortCertainty"), `<strong>${Math.round(f.confidence * 100)} %</strong>${certainty ? `<small class="factnote">${certainty}</small>` : ""}`, "shield-check-outline:green"] : null,
     ].filter(Boolean);
     const question = f.rule_id === "device.down" && object && since ? `<p class="fixquestion"><b>${this.esc(this.t("fixDownQuestion", { name: object.name || object.object_id, span: this.spanText(Math.max(0, (Date.now() - Date.parse(since)) / 3600000)) }))}</b></p>` : "";
@@ -101,6 +102,16 @@ class FixMixin {
     const shown = lead ? rows.filter(r => r[3]) : rows;
     const head = lead ? this.fixHead(f, object, this.fixChips(f, object, { since, outage, cause, own })) : "";
     return `${question}${head}${shown.length ? `<div class="fcinfo hasrec fixinfo" role="group">${shown.map(([label, value, look]) => { const [icon, tone] = look.split(":"); return `<div class="fcirow static"><span class="fcii fcii-${tone}"><ha-icon icon="mdi:${icon}"></ha-icon></span><span>${label}</span><span>${value}</span><i></i></div>`; }).join("")}</div>` : ""}`;
+  }
+
+  // What the entity of a template has shown so far, and the attribute that never came; says when the hint starts to count.
+  fixAttrSeen(f) {
+    const ev = (f.evidence || [])[0] || {};
+    const seen = (ev.seen || []).map(name => `<span class="tag">${this.esc(name)}</span>`).join("");
+    const missing = (ev.attributes || []).map(name => `<span class="pill red">${this.esc(name)}</span>`).join("");
+    const note = this.t("fixAttrSeenNote", { entity: f.affected_object, since: ev.since ? this.formatDate(ev.since) : "" });
+    const wait = f.waiting && ev.counts_from ? ` ${this.t("fixAttrWaiting", { date: this.formatDate(ev.counts_from) })}` : "";
+    return `<span class="exptags">${seen}${missing}</span><small class="factnote">${this.esc(note + wait)}</small>`;
   }
 
   // The chips of the head: what is wrong (how long idle, how long down), what it affects, impact, how sure.

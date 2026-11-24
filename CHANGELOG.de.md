@@ -6,7 +6,7 @@
 
 ### Neu
 
-- **Befunde:** Ein Template-Helfer, der ein Attribut liest, das seine Entität nie gezeigt hat (eine Woche beobachtet), steht als Hinweis in der Liste der Befunde, nur dort.
+- **Befunde:** Ein Template-Helfer, der ein Attribut liest, das seine Entität nie gezeigt hat, steht als Hinweis in der Liste der Befunde („Wartet noch“ in der ersten Woche der Beobachtung, danach zählt er), nur dort; die Beheben-Seite zeigt, welche Attribute die Entität gezeigt hat.
 - **Entitäten ersetzen:** Die Zuordnung lässt sich aus einer CSV-Datei laden (alt, neu, freiwillig art) und wieder als CSV sichern; übersprungene Zeilen werden mit Grund aufgelistet.
 
 ### Geändert

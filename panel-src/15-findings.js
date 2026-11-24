@@ -114,7 +114,7 @@ class FindingsMixin {
   findingTableRow(f, depth = 0, inGroup = false, gap = false) {
     const { key, object, title, subtitle } = this.findingRowContent(f, inGroup);
     const pick = `<input type="checkbox" class="selbox" data-fsel="${this.esc(f.key)}" ${this.findSel.has(f.key) ? "checked" : ""} aria-label="${this.esc(title)}">`;
-    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong><span class="id tech">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
+    const link = `<button type="button" class="finding-link" data-object="${this.esc(key)}">${this.tile(object?.object_type || "entity", this.tone(f.classification))}<span class="finding-name"><strong>${this.esc(title)}</strong>${this.findingWaitingPill(f)}<span class="id tech">${this.esc(f.object_id)}</span><small>${subtitle}</small></span></button>`;
     const name = depth || gap ? `<div class="finding-link-group"><span class="finding-fold-gap" aria-hidden="true"></span>${link}</div>` : link;
     const detail = this.rowDecide(f);
     return `<tr class="finding-data${f.ignored ? " dim" : ""}${depth ? ` og lvl${Math.min(depth, 3)}` : ""}"><td class="selcol">${pick}</td><td>${name}</td><td data-label="${this.t("sortTopic")}">${this.esc(this.t(`topic_${this.findingTopic(f)}`))}</td><td data-label="${this.t("sortImpact")}">${this.impactChip(f.impact) || `<span class="muted">–</span>`}</td><td class="tech" data-label="${this.t("sortCertainty")}">${f.confidence == null ? "–" : `<span title="${this.esc(this.certaintyText(f))}">${Math.round(f.confidence * 100)} %</span>`}</td><td data-label="${this.t("sortSince")}">${this.ageCell(f.first_detected_at)}</td><td data-label="${this.t("sortRule")}"><span class="finding-label">${this.esc(this.reasonLabel(this.findingReason(f)))}</span><small class="finding-rule tech">${this.esc(f.rule_id).replace(/([._])/g, "$1<wbr>")}</small></td><td class="finding-action">${this.rowMenu(f)}</td></tr>${detail ? `<tr class="finding-detail"><td colspan="8">${detail}</td></tr>` : ""}`;
@@ -281,7 +281,7 @@ class FindingsMixin {
     const afterFollows = afterAll.filter(isFollower).length, afterCount = afterAll.length;
     // The tiles are fixed: they count the open findings whatever status the list shows, every finding of a reason with
     // the follow-ups, and every reason keeps its place; one without open findings stays as a quiet 0 that filters nothing.
-    const openAll = this.data.findings.filter(f => !f.ignored);
+    const openAll = this.data.findings.filter(f => !f.ignored && !f.waiting);
     const topicTile = name => {
       const figures = this.topicFigures(name, openAll), mine = figures.mine, label = this.t(`topic_${name}`);
       if (!mine.length) return { label, value: "0", tone: "zero", hint: this.t(`topicHint_${name}`), spark: spark(`objtopic:${name}`, "bad") };
@@ -442,6 +442,13 @@ class FindingsMixin {
     });
     this.render();
     if (keys.length) await this.reloadAfterDecision();
+  }
+
+  // A hint that is listed but does not count yet: the mark says so, its title says from when it counts.
+  findingWaitingPill(f) {
+    if (!f.waiting) return "";
+    const from = ((f.evidence || [])[0] || {}).counts_from;
+    return `<span class="pill mute" title="${this.esc(this.t("findingWaitingTitle", { date: from ? this.formatDate(from) : "" }))}">${this.t("statWaiting")}</span>`;
   }
 
   findingTitle(f) {

@@ -398,3 +398,18 @@ def test_a_clean_house_does_not_get_its_hidden_findings_counted_back_into_the_to
     history.record(snapshot)
     point = history.series()["points"][0]
     assert point["open"] == 0 and not point["topics"]
+
+
+def test_a_finding_that_still_waits_is_listed_but_not_counted() -> None:
+    waiting = {
+        **FINDING,
+        "rule_id": "config_entry.missing_attribute",
+        "object_id": "e1",
+        "waiting": True,
+    }
+    point = make_checkpoint(
+        _snapshot(
+            "2026-11-24T10:00:00+00:00", [("entity", "sensor.b", "active")], [FINDING, waiting]
+        )
+    )
+    assert point["classes"] == {"orphaned": 1}

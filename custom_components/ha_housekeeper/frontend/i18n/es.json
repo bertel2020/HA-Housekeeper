@@ -6810,5 +6810,9 @@
 "copyId": "Copiar ID",
 "idCopied": "ID copiado",
 "missing_attribute": "Atributo",
-"findingMissingAttr": "Lee el atributo «{attr}» de {target}, que la entidad nunca ha mostrado"
+"findingMissingAttr": "Lee el atributo «{attr}» de {target}, que la entidad nunca ha mostrado",
+"findingWaitingTitle": "La indicación está en la lista, pero solo cuenta desde el {date}: hasta entonces se observa la entidad.",
+"fixAttrSeen": "Visto",
+"fixAttrSeenNote": "La entidad {entity} ha mostrado hasta ahora estos atributos (en rojo: el que se lee y nunca llegó). Observada desde el {since}.",
+"fixAttrWaiting": "La indicación solo cuenta desde el {date}."
 }

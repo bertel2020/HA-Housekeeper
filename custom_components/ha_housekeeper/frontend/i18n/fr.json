@@ -6810,5 +6810,9 @@
 "copyId": "Copier l’ID",
 "idCopied": "ID copié",
 "missing_attribute": "Attribut",
-"findingMissingAttr": "Lit l’attribut « {attr} » de {target}, que l’entité n’a jamais affiché"
+"findingMissingAttr": "Lit l’attribut « {attr} » de {target}, que l’entité n’a jamais affiché",
+"findingWaitingTitle": "L’indication figure dans la liste mais ne compte qu’à partir du {date} : l’entité est observée jusque-là.",
+"fixAttrSeen": "Observé",
+"fixAttrSeenNote": "L’entité {entity} a affiché jusqu’ici ces attributs (en rouge : celui qui est lu et n’est jamais venu). Observée depuis le {since}.",
+"fixAttrWaiting": "L’indication ne compte qu’à partir du {date}."
 }

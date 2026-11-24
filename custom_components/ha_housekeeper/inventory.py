@@ -3169,7 +3169,8 @@ class InventoryScanner:
 
         The names each entity has shown are kept from scan to scan, so an attribute that comes and goes
         (a weather forecast, a light that is off) is never "missing", and a finding needs the entity to be
-        watched for a week. A template that guards the read (``is defined``, ``default`` ...) is left alone.
+        watched for a week to count (until then it is listed as waiting). A template that guards the read
+        (``is defined``, ``default`` ...) is left alone.
         """
         reads: list[tuple[Any, str, list[tuple[str, str]]]] = []
         referenced: set[str] = set()
@@ -3200,11 +3201,11 @@ class InventoryScanner:
                 seen, since = self.observations.attributes_seen(entity_id)
                 if since is None or not seen or attribute in seen:
                     continue
-                if now - datetime.fromisoformat(since) < DEFAULT_WAIT:
-                    continue  # watched for less than a week: no finding yet
                 missing.setdefault(entity_id, []).append(attribute)
             for entity_id, attributes in missing.items():
                 seen, since = self.observations.attributes_seen(entity_id)
+                # Listed at once, but it only counts once the entity has been watched for a week.
+                counts_from = datetime.fromisoformat(since or now.isoformat()) + DEFAULT_WAIT
                 findings.append(
                     {
                         "rule_id": "config_entry.missing_attribute",
@@ -3213,9 +3214,11 @@ class InventoryScanner:
                         "confidence": 0.6,
                         "first_detected_at": since,
                         "affected_object": entity_id,
+                        "waiting": now < counts_from,
                         "evidence": [
                             {
                                 "kind": "missing_attribute",
+                                "counts_from": counts_from.isoformat(),
                                 "source": "template_helper",
                                 "location": "template",
                                 "attributes": attributes[:5],
