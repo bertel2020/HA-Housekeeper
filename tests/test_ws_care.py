@@ -92,3 +92,44 @@ async def test_the_care_commands_answer(hass: HomeAssistant, hass_ws_client) -> 
                 (message["type"], reply["error"]["code"], reply["error"]["message"][:100])
             )
     assert not rejected, rejected
+
+
+async def test_the_exception_choices_name_integrations_without_entities(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """An integration of a config entry is offered for a rule by name, even if no entity names it."""
+    scanner, client = await _ws_setup(hass, hass_ws_client)
+    await scanner.async_scan()
+    await client.send_json_auto_id({"type": D + "exceptions"})
+    reply = await client.receive_json()
+    own = [i for i in reply["result"]["integrations"] if i["id"] == "ha_housekeeper"]
+    assert own and own[0]["name"].endswith("(ha_housekeeper)"), reply["result"]["integrations"]
+
+
+async def test_the_preview_of_a_rule_counts_a_config_entry_that_is_not_loaded(
+    hass: HomeAssistant,
+) -> None:
+    """A rule for an integration also holds the finding of a config entry that did not load; the reach is counted too."""
+    from datetime import UTC, datetime
+
+    from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+    from custom_components.ha_housekeeper.exceptions import clean_rule, preview
+
+    entry = MockConfigEntry(domain="browser_mod", title="Browser Mod")
+    entry.add_to_hass(hass)
+    rule = clean_rule({"kind": "integration", "targets": ["browser_mod"]})
+    assert rule is not None
+    snapshot = {
+        "objects": [],
+        "findings": [
+            {
+                "object_id": entry.entry_id,
+                "rule_id": "config_entry.not_loaded",
+                "first_detected_at": datetime.now(UTC).isoformat(),
+            }
+        ],
+    }
+    result = preview(hass, rule, snapshot, datetime.now(UTC))
+    assert result["hide"] == 1 and result["objects"] == 1
+    assert result["of"] == 0  # no device or entity in this snapshot

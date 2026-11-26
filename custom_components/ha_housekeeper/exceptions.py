@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import datetime, timedelta
+from fnmatch import fnmatchcase
 from typing import Any, NamedTuple, cast
 
 from homeassistant.core import HomeAssistant
@@ -35,7 +36,12 @@ from homeassistant.helpers.storage import Store
 from .const import EXCEPTIONS_STORAGE_KEY, STORAGE_VERSION
 
 SAVE_DELAY = 5
-KINDS = ("area", "label", "integration", "domain", "device", "entity")
+KINDS = ("area", "label", "integration", "domain", "device", "entity", "pattern")
+PATTERN_ON = (
+    "device",
+    "entity",
+    "both",
+)  # what a pattern is held against: the name of the device, the id of the entity, or either
 ACTIONS = ("hide", "delay")
 SCOPES = ("always", "vacation")
 ITEM_LIMIT = 100
@@ -65,6 +71,7 @@ class Traits(NamedTuple):
     domain: str | None = None
     device_id: str | None = None
     entity_id: str | None = None
+    device_name: str | None = None  # the name the user gave the device, else the one it came with
 
 
 class Vacation(NamedTuple):
@@ -86,10 +93,18 @@ def clean_rule(raw: Any, now: datetime | None = None) -> dict[str, Any] | None:
     targets = raw.get("targets")
     if not isinstance(targets, list):
         return None
+    pattern = raw["kind"] == "pattern"
     clean = list(
-        dict.fromkeys(t for t in targets if isinstance(t, str) and 0 < len(t) <= TARGET_LENGTH)
+        dict.fromkeys(
+            t.strip() if pattern else t
+            for t in targets
+            if isinstance(t, str) and 0 < len(t.strip() if pattern else t) <= TARGET_LENGTH
+        )
     )
     if not clean or len(clean) > TARGET_LIMIT:
+        return None
+    # A pattern knows ``*`` and ``?`` only; the brackets of a character set are not offered, so they are refused.
+    if pattern and any("[" in t or "]" in t for t in clean):
         return None
     scope = raw.get("scope") if raw.get("scope") in SCOPES else "always"
     # A vacation rule only keeps quiet: how long to wait is for the rules that always apply.
@@ -117,6 +132,7 @@ def clean_rule(raw: Any, now: datetime | None = None) -> dict[str, Any] | None:
         if isinstance(rule_id, str) and 0 < len(rule_id) <= 40
         else secrets.token_hex(4),
         "kind": raw["kind"],
+        "on": (raw.get("on") if raw.get("on") in PATTERN_ON else "device") if pattern else None,
         "targets": clean,
         "action": action,
         "days": days if action == "delay" else None,
@@ -166,6 +182,7 @@ def traits(hass: HomeAssistant, object_type: str, object_id: str) -> Traits | No
             None,
             device.id,
             None,
+            device.name_by_user or device.name,
         )
     if object_type != "entity":
         return None
@@ -181,6 +198,7 @@ def traits(hass: HomeAssistant, object_type: str, object_id: str) -> Traits | No
         entry.entity_id.partition(".")[0],
         entry.device_id,
         entry.entity_id,
+        (device.name_by_user or device.name) if device is not None else None,
     )
 
 
@@ -207,7 +225,19 @@ def matches(rule: dict[str, Any], found: Traits) -> bool:
         return found.device_id is not None and found.device_id in targets
     if kind == "entity":
         return found.entity_id is not None and found.entity_id in targets
+    if kind == "pattern":
+        return _pattern_hit(rule.get("on") or "device", targets, found)
     return not found.labels.isdisjoint(targets)
+
+
+def _pattern_hit(on: str, patterns: list[str], found: Traits) -> bool:
+    """Whether a pattern (``*`` any characters, ``?`` one, case ignored) fits the device name or the entity id."""
+    values = []
+    if on in ("device", "both") and found.device_name:
+        values.append(found.device_name.casefold())
+    if on in ("entity", "both") and found.entity_id:
+        values.append(found.entity_id.casefold())
+    return any(fnmatchcase(value, pattern.casefold()) for value in values for pattern in patterns)
 
 
 def _since(finding: dict[str, Any]) -> datetime | None:
@@ -279,7 +309,7 @@ def _result(
     if phase is None and rule is not None and rule["scope"] == "vacation" and vacation.active:
         phase = "vacation"
     brief = (
-        {k: rule[k] for k in ("id", "kind", "targets", "action", "days", "scope")}
+        {k: rule[k] for k in ("id", "kind", "on", "targets", "action", "days", "scope")}
         if rule is not None
         else {
             "id": None,
@@ -296,6 +326,20 @@ def _result(
         "until": until.isoformat() if until else None,
         "phase": phase,
     }
+
+
+def _reach(
+    hass: HomeAssistant, rules: list[dict[str, Any]], snapshot: dict[str, Any]
+) -> tuple[int, int]:
+    """How many of all devices and entities the rules cover, and how many there are: a rule that covers most of them is too broad."""
+    covered = total = 0
+    for item in snapshot.get("objects", []):
+        if item.get("object_type") not in ("device", "entity"):
+            continue
+        total += 1
+        found = traits(hass, item["object_type"], item["object_id"])
+        covered += found is not None and any(matches(rule, found) for rule in rules)
+    return covered, total
 
 
 def preview(
@@ -325,7 +369,11 @@ def preview(
     covered = 0
     for finding in snapshot.get("findings", []):
         object_id = finding["object_id"]
-        found = traits(hass, "entity" if "." in object_id else "device", object_id)
+        found = (
+            entry_traits(hass, object_id)  # a config entry has only its integration
+            if finding["rule_id"] == "config_entry.not_loaded"
+            else traits(hass, "entity" if "." in object_id else "device", object_id)
+        )
         result = verdict(drafts, found, finding, now, on) if found is not None else None
         if result is None or found is None:
             continue
@@ -337,6 +385,7 @@ def preview(
         overlap.update(r["id"] for r in others or [] if r["id"] not in own and matches(r, found))
         if result["state"] != "due" and finding.get("impact") == "high" and len(important) < 5:
             important.append({"object_id": object_id, "name": names.get(object_id, object_id)})
+    reach, of = _reach(hass, drafts, snapshot)
     hits = [
         {"object_id": object_id, "name": names.get(object_id, object_id), "findings": n}
         for object_id, n in sorted(
@@ -348,6 +397,8 @@ def preview(
         "objects": len(objects),
         "hits": hits[:PREVIEW_HITS_MAX],
         "covered": covered,
+        "reach": reach,
+        "of": of,
         "important": important,
         "overlap": sorted(overlap),
     }

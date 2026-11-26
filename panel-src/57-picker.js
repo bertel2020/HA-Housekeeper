@@ -104,7 +104,12 @@ class PickerMixin {
     const list = open ? `<ul class="quicklist" id="picker-${name}" role="listbox" aria-label="${this.esc(this.t("quickLabel"))}">${results.length
       ? results.map((o, i) => `<li role="option" id="picker-${name}-${i}" aria-selected="${i === active}" data-picker-item="${this.esc(this.objectKey(o))}" data-picker-name="${name}" class="${i === active ? "on" : ""}">${this.tile(o.object_type)}<span class="row-text"><strong>${this.esc(o.name)}</strong><small>${this.esc(sub(o))}</small></span></li>`).join("")
       : `<li class="none">${this.t("quickNone")}</li>`}</ul>` : "";
-    return `<div class="picker"><input type="text" data-picker="${name}" ${attrs} value="${this.esc(value)}" placeholder="${this.esc(placeholder)}" autocomplete="off" role="combobox" aria-expanded="${Boolean(open)}" aria-controls="picker-${name}" aria-autocomplete="list" ${open && results.length ? `aria-activedescendant="picker-${name}-${active}"` : ""}>${list}</div>`;
+    return `<div class="picker"><input type="text" data-picker="${name}" ${attrs} value="${this.esc(value)}" placeholder="${this.esc(placeholder)}" autocomplete="off" role="combobox" aria-expanded="${Boolean(open)}" aria-controls="picker-${name}" aria-autocomplete="list" ${open && results.length ? `aria-activedescendant="picker-${name}-${active}"` : ""}>${this.searchClearButton(String(value).length ? `data-picker-clear="${name}"` : "")}${list}</div>`;
+  }
+
+  // The small cross in a search field that empties it; nothing while the field is empty.
+  searchClearButton(attr) {
+    return attr ? `<button type="button" class="searchclear" ${attr} aria-label="${this.esc(this.t("searchClear"))}" title="${this.esc(this.t("searchClear"))}"><ha-icon icon="mdi:close"></ha-icon></button>` : "";
   }
 
   pickerPick(name, key) {
@@ -132,6 +137,13 @@ class PickerMixin {
           ev.stopPropagation();
           this._picker.open = false; this.render();
         }
+      };
+    });
+    root.querySelectorAll("[data-picker-clear]").forEach(el => {
+      el.onclick = () => {
+        const name = el.dataset.pickerClear;
+        this.pickerDef(name).set(""); this._picker = { name, open: false, index: 0 }; this.render();
+        this.shadowRoot?.querySelector?.(`[data-picker="${name}"]`)?.focus();
       };
     });
     root.querySelectorAll("[data-picker-item]").forEach(el => { el.onclick = () => this.pickerPick(el.dataset.pickerName, el.dataset.pickerItem); });

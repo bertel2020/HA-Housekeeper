@@ -23,6 +23,7 @@ from .exceptions import GRACE_MAX as VACATION_GRACE_MAX
 from .exceptions import KEYWORD_MAX as VACATION_KEYWORD_MAX
 from .exceptions import KINDS as EXCEPTION_KINDS
 from .exceptions import NOTE_MAX as EXCEPTION_NOTE_MAX
+from .exceptions import PATTERN_ON as EXCEPTION_PATTERN_ON
 from .exceptions import REVIEW_CHOICES as EXCEPTION_REVIEW_CHOICES
 from .exceptions import SCOPES as EXCEPTION_SCOPES
 from .exceptions import clean_rule, preview
@@ -822,6 +823,18 @@ async def websocket_exceptions(
         }
         return [{"id": v, "name": v} for v in sorted(v for v in values if v)]
 
+    def integrations() -> list[dict[str, str]]:
+        """Every integration an entity or a config entry belongs to, with its name where one is known."""
+        names: dict[str, str] = {}
+        for item in snapshot.get("objects", []):
+            if item["object_type"] == "config_entry" and item.get("domain"):
+                names.setdefault(item["domain"], item.get("integration_name") or item["name"] or "")
+        ids = {i["platform"] for i in entities if i.get("platform")} | set(names)
+        return [
+            {"id": i, "name": f"{names[i]} ({i})" if names.get(i) and names[i] != i else i}
+            for i in sorted(ids, key=str.casefold)
+        ]
+
     store = scanner.exceptions
     connection.send_result(
         msg["id"],
@@ -849,7 +862,7 @@ async def websocket_exceptions(
             ],
             "areas": pick("area"),
             "labels": pick("label"),
-            "integrations": distinct("platform"),
+            "integrations": integrations(),
             "domains": distinct("domain"),
             "days_max": EXCEPTION_DAYS_MAX,
         },
@@ -859,6 +872,7 @@ async def websocket_exceptions(
 _RULE_SCHEMA = {
     vol.Optional("id"): str,
     vol.Required("kind"): vol.In(EXCEPTION_KINDS),
+    vol.Optional("on"): vol.Any(None, vol.In(EXCEPTION_PATTERN_ON)),
     vol.Optional("targets", default=list): [str],
     vol.Optional("action", default="hide"): vol.In(EXCEPTION_ACTIONS),
     vol.Optional("days"): vol.Any(None, vol.All(int, vol.Range(min=1, max=EXCEPTION_DAYS_MAX))),

@@ -108,6 +108,24 @@ def test_device_and_entity_rules_match_by_id() -> None:
     assert not matches(_rule("entity", ["media_player.other"]), found)
 
 
+def test_a_pattern_rule_holds_the_name_of_the_device_or_the_id_of_the_entity() -> None:
+    entity = Traits(
+        None, frozenset(), frozenset(), "sensor", "d1", "sensor.tablet_k_batterie", "Tablet Küche"
+    )
+    device = Traits(None, frozenset(), frozenset(), None, "d1", None, "Tablet Küche")
+    by_name = clean_rule({"kind": "pattern", "on": "device", "targets": ["tablet *"]})
+    by_id = clean_rule({"kind": "pattern", "on": "entity", "targets": ["sensor.*_batterie"]})
+    assert by_name and by_id
+    assert matches(by_name, device) and matches(
+        by_name, entity
+    )  # an entity has the name of its device
+    assert not matches(
+        by_name, Traits(None, frozenset(), frozenset(), None, "d2", None, "mein tablet 1")
+    )
+    assert matches(by_id, entity) and not matches(by_id, device)
+    assert clean_rule({"kind": "pattern", "targets": ["[abc"]}) is None
+
+
 def test_a_vacation_rule_works_only_while_the_vacation_is_on() -> None:
     found = Traits("keller", frozenset())
     rules = [_rule("area", ["keller"], scope="vacation")]

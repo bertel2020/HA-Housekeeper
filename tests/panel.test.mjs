@@ -4731,6 +4731,8 @@ test("the sensor field lists matching sensors with statistics while typing and t
   assert.equal(el.pickerResults("counter").map(o => o.object_id).join(), "sensor.water_meter,sensor.water_temp");
   const html = el.pickerBox("counter", "sensor.x", "data-counter-id");
   assert.ok(html.includes('data-picker-item="entity:sensor.water_meter"') && !html.includes("water_off") && !html.includes("light.water"));
+  assert.ok(html.includes('data-picker-clear="counter"'));  // the cross empties the field, and is not there while it is empty
+  el.counterId = ""; assert.ok(!el.pickerBox("counter", "sensor.x").includes("data-picker-clear")); el.counterId = "water";
   el.pickerPick("counter", "entity:sensor.water_temp");
   assert.equal(el.counterId, "sensor.water_temp"); assert.equal(el._picker.open, false);
   // the dependency path uses the same search for every kind of object and opens the picked one
@@ -4739,6 +4741,14 @@ test("the sensor field lists matching sensors with statistics while typing and t
   assert.equal(el.pickerResults("graph").map(o => o.object_id).join(), "d1");
   el.noteGraphStep = () => {}; el.pickerPick("graph", "device:d1");
   assert.equal(el.graphSelected.object_id, "d1"); assert.equal(el.graphQuery, "");
+});
+test("a pattern for similar devices is suggested only for a name with an id, and a pattern rule is named by its patterns", () => {
+  const { el } = panel("en");
+  const picks = names => el.excSimilarPicks(names, n => ({ name: n }));
+  assert.equal(picks(["browser_mod_6c369938_e3db584b"]).map(p => p.id).join(), "browser_mod_*");
+  assert.equal(picks(["Hue Lamp"]).length, 0);
+  assert.equal(picks(["browser_mod_6c369938_a", "tablet_9ebb98d1_b"]).length, 0);
+  assert.equal(el.excRuleName({ kind: "pattern", on: "device", targets: ["browser_mod_*", "Tablet *"] }), "Device name browser_mod_*, Tablet *");
 });
 const TEXT_DE_SETTINGS = "Einstellungen";
 test("batteries in volts are not read as percent and sit in the same list with the guessed type", () => {
@@ -7381,6 +7391,30 @@ test("the vacation bar shows exactly the findings it holds back, not every findi
   assert.equal(`${el.view}|${el.findingStatus}|${el.lv.findings.q}`, "findingsNav|hidden|");
   assert.equal(el.visibleFindings().map(x => x.key).join(), "held");
   assert.ok(el.findingsView().includes("Held back for the vacation (1)"));
+});
+
+test("a bulk action of the exception rules reaches the save, and a save from a row keeps an open form", async () => {
+  const { el, shadow } = panel("en");
+  const rule = id => ({ id, kind: "area", targets: ["x"], action: "hide", scope: "always", enabled: true, note: "" });
+  el.exc = { rules: [rule("a"), rule("b")] };
+  el.excSel = new Set(["a"]);
+  let saved;
+  const real = el.saveExceptions.bind(el);
+  el.saveExceptions = fn => { saved = fn(el.excRules()); return Promise.resolve(true); };
+  const off = { dataset: { excBulk: "off", excScope: "always" } };
+  shadow.querySelectorAll = s => (s === "[data-exc-bulk]" || s === "[data-exc-scope]" ? [off] : []);
+  el.bindExceptions(shadow);
+  off.onclick();
+  assert.equal(saved.map(r => `${r.id}:${r.enabled}`).join(), "a:false,b:true", "the button is not overwritten by a second handler");
+  el.saveExceptions = real;
+  el._hass = { language: "en", callWS: async () => el.exc };
+  el.refreshData = async () => {};
+  const form = { id: "", kind: "area", targets: [], picks: [], action: "hide", scope: "always", note: "" };
+  el.excForm = form;
+  await el.saveExceptions(all => all, null);
+  assert.equal(el.excForm, form, "a switch in a row leaves the form as it is");
+  await el.saveExceptions(all => all, form);
+  assert.equal(el.excForm, null, "saving the form closes it");
 });
 
 test("a row of since the last scan opens its own section against the last scan", () => {
