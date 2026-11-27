@@ -6853,7 +6853,9 @@
 "excRulePattern_entity": "632ac699",
 "excRulePattern_both": "1e9d92b5",
 "excFor_similar": "f56ef616",
-"excForSub_similar": "96f4035c"
+"excForSub_similar": "96f4035c",
+"excEffectOff": "183c899d",
+"excEffectVac": "b8d98505"
 },
 "setup": {
 "title": "644c2647",

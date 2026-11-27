@@ -4408,6 +4408,8 @@
 "excEffectHide": "{objects} objetos, {n} hallazgos ocultos",
 "excEffectDelay": "{hold} hallazgos retenidos, {due} vencidos",
 "excEffectNone": "No coincide con nada ahora mismo",
+"excEffectOff": "Desactivada",
+"excEffectVac": "En vacaciones: {effect}",
 "excPreview": "Vista previa",
 "excHitDrop": "Quitar {name} de la regla",
 "excHitsMore": "… y {n} objetos más",

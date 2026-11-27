@@ -4408,6 +4408,8 @@
 "excEffectHide": "{objects} 个对象，已隐藏 {n} 个发现项",
 "excEffectDelay": "已暂缓 {hold} 个发现项，{due} 个已到期",
 "excEffectNone": "当前未匹配任何内容",
+"excEffectOff": "已关闭",
+"excEffectVac": "度假期间：{effect}",
 "excPreview": "预览",
 "excHitDrop": "将 {name} 从规则中移除",
 "excHitsMore": "… 以及另外 {n} 个对象",

@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Edit panel-src/*.js and run: node scripts/build_panel.mjs
 
-const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"8e6780bcea"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"fc791a06fb"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"d98c5df0b2"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"4e3f6bfb77"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"019ac53311"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"959c98ea36"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"4d240147ee"}];
+const LANGUAGES = [{"code":"de","name":"Deutsch","patterns":["de"],"quotes":["„","“"],"lowerKind":false},{"code":"en","name":"English","patterns":["en"],"quotes":["“","”"],"lowerKind":true},{"code":"fr","name":"Français","patterns":["fr"],"quotes":["« "," »"],"lowerKind":true,"status":"community","v":"55fbe2a230"},{"code":"es","name":"Español","patterns":["es"],"quotes":["“","”"],"lowerKind":true,"status":"community","v":"31ef19909a"},{"code":"pt","name":"Português","patterns":["pt","pt-pt","pt-br"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"299208b018"},{"code":"it","name":"Italiano","patterns":["it"],"quotes":["«","»"],"lowerKind":true,"status":"community","v":"95dfdfaa1f"},{"code":"sk","name":"Slovenčina","patterns":["sk"],"quotes":["„","“"],"lowerKind":false,"status":"community","v":"90054b17ee"},{"code":"ru","name":"Русский","patterns":["ru"],"quotes":["«","»"],"lowerKind":false,"status":"community","v":"3a58db3f55"},{"code":"zh-Hans","name":"简体中文","patterns":["zh-hans","zh-cn","zh-sg"],"quotes":["“","”"],"lowerKind":false,"status":"community","v":"411326e5ea"}];
 
 const TEXT = {
   de: {
@@ -16093,7 +16093,7 @@ Object.assign(TEXT.de, {
   excDelayHint: "Hält nur „nicht verfügbar“, „unbekannt“ und „veraltet“ zurück. Alle anderen Befunde dieser Objekte (leere Batterie, defekter Verweis) erscheinen weiter normal; wer alles unterdrücken will, wählt „Nicht melden“. Nach Ablauf der Frist erscheint der Befund mit der Stufe seiner Ausfalldauer. Gemessen ab dem Ausfallbeginn, soweit bekannt; nach einem Neustart kann die Meldung später kommen, nie früher.",
   excWinner: "Passen mehrere Regeln, schlägt „Nicht melden“ die Fristen; bei mehreren Fristen gilt die längste.",
   excRuleArea: "Bereich {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Erst melden nach {n} Tagen", excRuleHideLine: "Nicht melden",
-  excEffectHide: "{objects} Objekte, {n} Befunde ausgeblendet", excEffectDelay: "{hold} Befunde zurückgehalten, {due} fällig", excEffectNone: "Trifft gerade nichts",
+  excEffectHide: "{objects} Objekte, {n} Befunde ausgeblendet", excEffectDelay: "{hold} Befunde zurückgehalten, {due} fällig", excEffectNone: "Trifft gerade nichts", excEffectOff: "Ausgeschaltet", excEffectVac: "Im Urlaub: {effect}",
   excPreview: "Vorschau", excHitDrop: "{name} aus der Regel nehmen", excHitsMore: "… und {n} weitere Objekte", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
@@ -16139,7 +16139,7 @@ Object.assign(TEXT.en, {
   excDelayHint: "Holds back only “not available”, “unknown” and “stale”. All other findings of these objects (empty battery, broken reference) still show as usual; to suppress everything choose “Do not report”. When the time has passed the finding shows with the level of its outage. Counted from the start of the outage as far as known; after a restart the report can come later, never earlier.",
   excWinner: "Where several rules match, “Do not report” beats the delays; of several delays the longest counts.",
   excRuleArea: "Area {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Report only after {n} days", excRuleHideLine: "Do not report",
-  excEffectHide: "{objects} objects, {n} findings hidden", excEffectDelay: "{hold} findings held back, {due} due", excEffectNone: "Matches nothing right now",
+  excEffectHide: "{objects} objects, {n} findings hidden", excEffectDelay: "{hold} findings held back, {due} due", excEffectNone: "Matches nothing right now", excEffectOff: "Switched off", excEffectVac: "In the vacation: {effect}",
   excPreview: "Preview", excHitDrop: "Remove {name} from the rule", excHitsMore: "… and {n} more objects", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
@@ -16215,6 +16215,9 @@ class ExceptionsMixin {
 
   excEffect(rule) {
     const e = rule.effect || {};
+    // The effect is counted as if the rule were on, and a vacation rule as if the vacation were: say so instead of showing it as true.
+    if (!rule.enabled) return this.t("excEffectOff");
+    if ((rule.scope || "always") === "vacation" && this.exc?.vacation?.state !== "on") return this.t("excEffectVac", { effect: this.excEffect({ ...rule, scope: "always" }) });
     if (rule.action === "delay") return e.hold || e.due ? this.t("excEffectDelay", { hold: e.hold, due: e.due }) : this.t("excEffectNone");
     return e.hide ? this.t("excEffectHide", { objects: e.objects, n: e.hide }) : this.t("excEffectNone");
   }
@@ -16548,9 +16551,11 @@ class ExceptionsMixin {
       if (seq !== this._excSeq || this.excForm !== f) return;
       f.preview = preview;
     } catch (_) { f.preview = null; }
-    const area = this.shadowRoot?.activeElement?.matches?.("[data-exc-pattern],[data-exc-similar]") ? this.shadowRoot.activeElement : null, at = area ? [area.selectionStart, area.selectionEnd] : null;
+    // The form is drawn again with the answer: the field being typed in keeps its focus and its cursor.
+    const fields = "[data-exc-pattern],[data-exc-similar],[data-exc-note],[data-exc-days]", area = this.shadowRoot?.activeElement?.matches?.(fields) ? this.shadowRoot.activeElement : null;
+    const attr = area && [...area.attributes].find(a => a.name.startsWith("data-exc-"))?.name, at = area ? [area.selectionStart, area.selectionEnd] : null;
     this.render();
-    if (area) { const next = this.shadowRoot.querySelector(area.hasAttribute("data-exc-similar") ? "[data-exc-similar]" : "[data-exc-pattern]"); next?.focus(); next?.setSelectionRange?.(...at); }
+    if (attr) { const next = this.shadowRoot.querySelector(`[${attr}]`); next?.focus(); try { next?.setSelectionRange?.(...at); } catch (_) { /* a number field has no cursor */ } }
   }
 
   // Saves the rules. Saves run one after the other, and a function is applied to the rules as they are when its turn

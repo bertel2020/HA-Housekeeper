@@ -4836,6 +4836,8 @@
 "excEffectHide": "{objects} objektov, {n} skrytých nálezov",
 "excEffectDelay": "{hold} odložených nálezov, {due} po termíne",
 "excEffectNone": "Momentálne sa nezhoduje so žiadnym objektom",
+"excEffectOff": "Vypnuté",
+"excEffectVac": "Počas dovolenky: {effect}",
 "excPreview": "Náhľad",
 "excHitDrop": "Odstrániť {name} z pravidla",
 "excHitsMore": "… a ďalšie objekty: {n}",

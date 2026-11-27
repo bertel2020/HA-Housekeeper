@@ -4761,6 +4761,16 @@ test("two loads of the rules share one answer, and an integration entry is offer
   await el.openExceptionFor(["config_entry:e1"]);
   assert.equal(el.excForm.scopes.map(s => s.id).join(), "integrations");
 });
+test("the effect of a rule that is off or only for the vacation says so", async () => {
+  const { el } = panel("en");
+  el.exc = { vacation: { state: "off" } };
+  const hide = { action: "hide", enabled: true, scope: "always", effect: { hide: 2, objects: 1 } };
+  assert.equal(el.excEffect({ ...hide, enabled: false }), "Switched off");
+  assert.ok(el.excEffect({ ...hide, scope: "vacation" }).startsWith("In the vacation: "));
+  el.exc.vacation.state = "on";
+  assert.ok(!el.excEffect({ ...hide, scope: "vacation" }).startsWith("In the vacation"));
+  assert.ok(el.excEffect(hide).includes("2"));
+});
 const TEXT_DE_SETTINGS = "Einstellungen";
 test("batteries in volts are not read as percent and sit in the same list with the guessed type", () => {
   const { el } = panel("en");

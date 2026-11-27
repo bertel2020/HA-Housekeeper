@@ -4408,6 +4408,8 @@
 "excEffectHide": "{objects} objets, {n} constats masqués",
 "excEffectDelay": "{hold} constats retenus, {due} échus",
 "excEffectNone": "Ne correspond à rien pour l’instant",
+"excEffectOff": "Désactivée",
+"excEffectVac": "Pendant les vacances : {effect}",
 "excPreview": "Aperçu",
 "excHitDrop": "Retirer {name} de la règle",
 "excHitsMore": "… et {n} autres objets",

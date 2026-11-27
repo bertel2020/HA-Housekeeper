@@ -4543,6 +4543,8 @@
 "excEffectHide": "{objects} oggetti, {n} rilevamenti nascosti",
 "excEffectDelay": "{hold} rilevamenti trattenuti, {due} scaduti",
 "excEffectNone": "Al momento non corrisponde a nulla",
+"excEffectOff": "Disattivata",
+"excEffectVac": "In vacanza: {effect}",
 "excPreview": "Anteprima",
 "excHitDrop": "Rimuovi {name} dalla regola",
 "excHitsMore": "… e altri {n} oggetti",

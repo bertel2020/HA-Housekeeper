@@ -5478,6 +5478,8 @@
 "excEffectHide": "Объектов: {objects}, скрыто находок: {n}",
 "excEffectDelay": "Отложено находок: {hold}, наступил срок: {due}",
 "excEffectNone": "Сейчас ничему не соответствует",
+"excEffectOff": "Выключено",
+"excEffectVac": "В отпуске: {effect}",
 "excPreview": "Предпросмотр",
 "excHitDrop": "Убрать {name} из правила",
 "excHitsMore": "… и ещё объектов: {n}",
