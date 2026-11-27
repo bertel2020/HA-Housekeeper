@@ -4750,6 +4750,17 @@ test("a pattern for similar devices is suggested only for a name with an id, and
   assert.equal(picks(["browser_mod_6c369938_a", "tablet_9ebb98d1_b"]).length, 0);
   assert.equal(el.excRuleName({ kind: "pattern", on: "device", targets: ["browser_mod_*", "Tablet *"] }), "Device name browser_mod_*, Tablet *");
 });
+test("two loads of the rules share one answer, and an integration entry is offered as its integration, not as an object", async () => {
+  const { el } = panel("en");
+  let calls = 0;
+  el._hass = { callWS: async msg => { if (msg.type === "ha_housekeeper/exceptions") calls++; return { rules: [], areas: [], labels: [], integrations: [{ id: "hue", name: "Hue (hue)" }], domains: [], devices: [], entities: [] }; } };
+  await Promise.all([el.loadExceptions(), el.loadExceptions()]);
+  assert.equal(calls, 1);
+  assert.ok(el.exc);
+  el.data = { ...DATA, objects: [{ object_type: "config_entry", object_id: "e1", name: "My Hue", domain: "hue", status: "active" }] };
+  await el.openExceptionFor(["config_entry:e1"]);
+  assert.equal(el.excForm.scopes.map(s => s.id).join(), "integrations");
+});
 const TEXT_DE_SETTINGS = "Einstellungen";
 test("batteries in volts are not read as percent and sit in the same list with the guessed type", () => {
   const { el } = panel("en");

@@ -243,3 +243,16 @@ def test_a_device_names_its_entries_by_the_new_field_and_only_old_versions_use_t
     assert device_entry_ids(Deprecated(config_entry_id="a")) == ("a",)
     assert device_entry_ids(Deprecated(config_entry_id=None)) == ()
     assert device_entry_ids(NS(config_entries={"b"})) == ("b",)
+
+
+def test_a_rule_of_an_unknown_kind_is_written_back_unchanged() -> None:
+    """A newer version may know a kind this one does not; saving here must not erase its rules."""
+    store = _store({})
+    future = {"kind": "regex", "targets": ["a.*"], "action": "hide"}
+    store._store.async_load = AsyncMock(
+        return_value={"rules": [{"kind": "entity", "targets": ["sensor.a"]}, future]}
+    )
+    asyncio.run(store.async_load())
+    assert [r["kind"] for r in store.rules] == ["entity"]
+    assert store.set_rules([{"kind": "entity", "targets": ["sensor.b"]}]) is None
+    assert future in store._data()["rules"] and len(store._data()["rules"]) == 2

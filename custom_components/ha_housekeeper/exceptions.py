@@ -411,6 +411,9 @@ class ExceptionStore:
         self.hass = hass
         self._store: Store[dict[str, Any]] = Store(hass, STORAGE_VERSION, EXCEPTIONS_STORAGE_KEY)
         self.rules: list[dict[str, Any]] = []
+        # Rules of a kind this version does not know (saved by a newer one): kept as they are and written
+        # back, so a visit with an older version does not erase them.
+        self._foreign: list[dict[str, Any]] = []
         self._entity: str | None = None
         self._chosen = False  # whether the switch was chosen (or left empty) by the user
         self.keyword = ""  # for a calendar: the word an event title must contain
@@ -426,6 +429,17 @@ class ExceptionStore:
         items = data.get("rules")
         cleaned = (clean_rule(item) for item in items) if isinstance(items, list) else ()
         self.rules = [rule for rule in cleaned if rule is not None][:ITEM_LIMIT]
+        self._foreign = (
+            [
+                item
+                for item in items
+                if isinstance(item, dict)
+                and isinstance(item.get("kind"), str)
+                and item["kind"] not in KINDS
+            ][:ITEM_LIMIT]
+            if isinstance(items, list)
+            else []
+        )
         vac = data.get("vacation")
         if isinstance(vac, dict):
             self._entity = vac["entity"] if isinstance(vac.get("entity"), str) else None
@@ -450,7 +464,7 @@ class ExceptionStore:
 
     def _data(self) -> dict[str, Any]:
         return {
-            "rules": self.rules,
+            "rules": [*self.rules, *self._foreign],
             "vacation": {
                 "entity": self._entity,
                 "chosen": self._chosen,

@@ -136,6 +136,8 @@ class MarksMixin {
   async refreshData() {
     const key = this.selected ? this.objectKey(this.selected) : null;
     const data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    // The effect of each rule ("effect now") comes from the last scan; a loaded list is renewed with it.
+    if (this.exc) { try { this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" }); } catch (_) { /* keeps the list on screen */ } }
     if (!Array.isArray(data?.findings)) return; // an answer without a scan keeps what is on screen
     this.data = data;
     this._rev++;

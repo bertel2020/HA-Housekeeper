@@ -244,6 +244,8 @@ class HAHousekeeperPanel extends HTMLElement {
       const openKey = this.selected ? this.objectKey(this.selected) : null;
       const trailKeys = this.trail.map(item => this.objectKey(item));
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
+      // The effect of each rule is from the last scan: a loaded list is renewed with the new one.
+      if (this.exc && this.data?.meta?.scanned_at !== scannedBefore) this._hass.callWS({ type: "ha_housekeeper/exceptions" }).then(exc => { this.exc = exc; this.render(); }, () => {});
       this.firstContact();
       this.pruneSelections();
       if (this.data?.meta?.scanned_at !== scannedBefore) this.forgetScanViews();

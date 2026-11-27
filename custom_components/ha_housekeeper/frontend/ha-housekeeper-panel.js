@@ -10940,6 +10940,8 @@ class MarksMixin {
   async refreshData() {
     const key = this.selected ? this.objectKey(this.selected) : null;
     const data = await this._hass.callWS({ type: "ha_housekeeper/inventory" });
+    // The effect of each rule ("effect now") comes from the last scan; a loaded list is renewed with it.
+    if (this.exc) { try { this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" }); } catch (_) { /* keeps the list on screen */ } }
     if (!Array.isArray(data?.findings)) return; // an answer without a scan keeps what is on screen
     this.data = data;
     this._rev++;
@@ -16200,12 +16202,15 @@ class ExceptionsMixin {
   }
 
   async loadExceptions() {
-    if (this._excLoading) return;
-    this._excLoading = true;
+    // A second call waits for the load that runs, so a caller that awaits it finds the rules there afterwards.
+    if (this._excLoading) return this._excLoading;
     // A failed load leaves no rules behind: an empty list would be saved over the real ones with the next rule.
-    try { this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" }); this._excLoadError = null; } catch (err) { this.failed(err); this._excLoadError = this.errText(err); }
-    this._excLoading = false;
-    this.render();
+    this._excLoading = (async () => {
+      try { this.exc = await this._hass.callWS({ type: "ha_housekeeper/exceptions" }); this._excLoadError = null; } catch (err) { this.failed(err); this._excLoadError = this.errText(err); }
+      this._excLoading = null;
+      this.render();
+    })();
+    return this._excLoading;
   }
 
   excEffect(rule) {
@@ -16489,7 +16494,7 @@ class ExceptionsMixin {
     const domains = o => (o.object_type === "entity" ? [o.platform] : o.object_type === "config_entry" ? [o.domain] : (device(o)?.config_entry_ids || []).map(e => this.findObject(`config_entry:${e}`)?.domain));
     const uniq = picks => picks.filter((p, i) => p && picks.findIndex(q => q && q.kind === p.kind && q.id === p.id) === i);
     const scopes = [
-      ["objects", uniq(objects.map(o => { const t = this.excTargetOf(o); return t && { ...t, name: o.name || t.id }; }))],
+      ["objects", uniq(objects.filter(o => o.object_type !== "config_entry").map(o => { const t = this.excTargetOf(o); return t && { ...t, name: o.name || t.id }; }))],
       ["devices", uniq(objects.map(device).filter(Boolean).map(d => ({ kind: "device", id: d.object_id, name: d.name || d.object_id })))],
       ["similar", this.excSimilarPicks(objects, device)],
       ["areas", uniq(objects.map(o => o.area_id || device(o)?.area_id).filter(Boolean).map(id => ({ kind: "area", id, name: named(this.exc?.areas, id) })))],
@@ -16536,9 +16541,8 @@ class ExceptionsMixin {
   }
 
   async excPreview() {
-    const f = this.excForm;
+    const f = this.excForm, seq = (this._excSeq = (this._excSeq || 0) + 1);  // an answer still on its way must not bring back what was emptied
     if (!f || !(f.kind === "any" ? f.picks.length : f.targets.length)) { if (f) { f.preview = null; this.render(); } return; }
-    const seq = (this._excSeq = (this._excSeq || 0) + 1);
     try {
       const preview = await this._hass.callWS({ type: "ha_housekeeper/exceptions_preview", rules: this.excDrafts(f) });
       if (seq !== this._excSeq || this.excForm !== f) return;
@@ -24813,6 +24817,8 @@ class HAHousekeeperPanel extends HTMLElement {
       const openKey = this.selected ? this.objectKey(this.selected) : null;
       const trailKeys = this.trail.map(item => this.objectKey(item));
       this.data = await this._hass.callWS({ type: fresh ? "ha_housekeeper/scan" : "ha_housekeeper/inventory" });
+      // The effect of each rule is from the last scan: a loaded list is renewed with the new one.
+      if (this.exc && this.data?.meta?.scanned_at !== scannedBefore) this._hass.callWS({ type: "ha_housekeeper/exceptions" }).then(exc => { this.exc = exc; this.render(); }, () => {});
       this.firstContact();
       this.pruneSelections();
       if (this.data?.meta?.scanned_at !== scannedBefore) this.forgetScanViews();
