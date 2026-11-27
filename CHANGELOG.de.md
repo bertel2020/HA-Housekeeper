@@ -2,7 +2,7 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
-## Unreleased
+## 2.4.0 - 2026-11-27
 
 ### Neu
 
