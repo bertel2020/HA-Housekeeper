@@ -4410,6 +4410,7 @@
 "excEffectNone": "当前未匹配任何内容",
 "excEffectOff": "已关闭",
 "excEffectVac": "度假期间：{effect}",
+"excHits": "查看命中项",
 "excPreview": "预览",
 "excHitDrop": "将 {name} 从规则中移除",
 "excHitsMore": "… 以及另外 {n} 个对象",

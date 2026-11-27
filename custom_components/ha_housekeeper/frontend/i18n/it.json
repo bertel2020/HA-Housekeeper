@@ -4545,6 +4545,7 @@
 "excEffectNone": "Al momento non corrisponde a nulla",
 "excEffectOff": "Disattivata",
 "excEffectVac": "In vacanza: {effect}",
+"excHits": "Vedi corrispondenze",
 "excPreview": "Anteprima",
 "excHitDrop": "Rimuovi {name} dalla regola",
 "excHitsMore": "… e altri {n} oggetti",

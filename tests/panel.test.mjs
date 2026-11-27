@@ -4788,6 +4788,13 @@ test("the vacation tile is warm only for vacation rules without a switch or a sw
   assert.equal(tone([], { entity: "input_boolean.v", state: "unavailable" }), "warn");
   assert.equal(tone([], { entity: "input_boolean.v", state: "off" }), "calm");
 });
+test("the row menu of a rule that hits objects offers its hits, and the hits open their pages", () => {
+  const { el } = panel("en");
+  const rule = { id: "r1", kind: "area", targets: ["kitchen"], action: "hide", scope: "always", enabled: true, effect: { hide: 2, objects: 1 } };
+  const menu = r => el.excRuleCells(r).find(c => c.key === "acts").cell();
+  assert.ok(menu(rule).includes('data-exc-hits="r1"') && menu(rule).includes("Show hits"));
+  assert.ok(!menu({ ...rule, effect: { hide: 0, objects: 0 } }).includes("data-exc-hits"));
+});
 const TEXT_DE_SETTINGS = "Einstellungen";
 test("batteries in volts are not read as percent and sit in the same list with the guessed type", () => {
   const { el } = panel("en");

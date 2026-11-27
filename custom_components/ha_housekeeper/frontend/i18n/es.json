@@ -4410,6 +4410,7 @@
 "excEffectNone": "No coincide con nada ahora mismo",
 "excEffectOff": "Desactivada",
 "excEffectVac": "En vacaciones: {effect}",
+"excHits": "Ver coincidencias",
 "excPreview": "Vista previa",
 "excHitDrop": "Quitar {name} de la regla",
 "excHitsMore": "… y {n} objetos más",

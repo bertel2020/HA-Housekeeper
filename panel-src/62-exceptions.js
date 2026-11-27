@@ -18,7 +18,7 @@ Object.assign(TEXT.de, {
   excDelayHint: "Hält nur „nicht verfügbar“, „unbekannt“ und „veraltet“ zurück. Alle anderen Befunde dieser Objekte (leere Batterie, defekter Verweis) erscheinen weiter normal; wer alles unterdrücken will, wählt „Nicht melden“. Nach Ablauf der Frist erscheint der Befund mit der Stufe seiner Ausfalldauer. Gemessen ab dem Ausfallbeginn, soweit bekannt; nach einem Neustart kann die Meldung später kommen, nie früher.",
   excWinner: "Passen mehrere Regeln, schlägt „Nicht melden“ die Fristen; bei mehreren Fristen gilt die längste.",
   excRuleArea: "Bereich {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Erst melden nach {n} Tagen", excRuleHideLine: "Nicht melden",
-  excEffectHide: "{objects} Objekte, {n} Befunde ausgeblendet", excEffectDelay: "{hold} Befunde zurückgehalten, {due} fällig", excEffectNone: "Trifft gerade nichts", excEffectOff: "Ausgeschaltet", excEffectVac: "Im Urlaub: {effect}",
+  excEffectHide: "{objects} Objekte, {n} Befunde ausgeblendet", excEffectDelay: "{hold} Befunde zurückgehalten, {due} fällig", excEffectNone: "Trifft gerade nichts", excEffectOff: "Ausgeschaltet", excHits: "Treffer ansehen", excEffectVac: "Im Urlaub: {effect}",
   excPreview: "Vorschau", excHitDrop: "{name} aus der Regel nehmen", excHitsMore: "… und {n} weitere Objekte", excPreviewHide: "{objects} Objekte, {n} Befunde würden ausgeblendet", excPreviewDelay: "{hold} Befunde würden zurückgehalten, {due} wären sofort fällig (schon länger ausgefallen)",
   excImportant: "Dabei sind Befunde mit hoher Wirkung: {names}. Prüfe, ob sie wirklich ausgenommen sein sollen.",
   excSave: "Regel speichern", excCancel: "Abbrechen", excNeedTarget: "Wähle mindestens einen Eintrag.", excDaysInvalid: "Die Frist muss eine ganze Zahl von 1 bis {max} Tagen sein.", excFailed: "Nicht gespeichert: {reason}",
@@ -64,7 +64,7 @@ Object.assign(TEXT.en, {
   excDelayHint: "Holds back only “not available”, “unknown” and “stale”. All other findings of these objects (empty battery, broken reference) still show as usual; to suppress everything choose “Do not report”. When the time has passed the finding shows with the level of its outage. Counted from the start of the outage as far as known; after a restart the report can come later, never earlier.",
   excWinner: "Where several rules match, “Do not report” beats the delays; of several delays the longest counts.",
   excRuleArea: "Area {names}", excRuleLabel: "Label {names}", excRuleIntegration: "Integration {names}", excRuleDomain: "Domain {names}", excRuleDelayLine: "Report only after {n} days", excRuleHideLine: "Do not report",
-  excEffectHide: "{objects} objects, {n} findings hidden", excEffectDelay: "{hold} findings held back, {due} due", excEffectNone: "Matches nothing right now", excEffectOff: "Switched off", excEffectVac: "In the vacation: {effect}",
+  excEffectHide: "{objects} objects, {n} findings hidden", excEffectDelay: "{hold} findings held back, {due} due", excEffectNone: "Matches nothing right now", excEffectOff: "Switched off", excHits: "Show hits", excEffectVac: "In the vacation: {effect}",
   excPreview: "Preview", excHitDrop: "Remove {name} from the rule", excHitsMore: "… and {n} more objects", excPreviewHide: "{objects} objects, {n} findings would be hidden", excPreviewDelay: "{hold} findings would be held back, {due} would be due at once (down for longer already)",
   excImportant: "Findings with a high impact are among them: {names}. Check that they should really be left out.",
   excSave: "Save rule", excCancel: "Cancel", excNeedTarget: "Choose at least one entry.", excDaysInvalid: "The delay must be a whole number from 1 to {max} days.", excFailed: "Not saved: {reason}",
@@ -159,7 +159,7 @@ class ExceptionsMixin {
       { key: "acts", label: "excColActions", narrow: true, cell: () => {
         const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
         const renew = rule.action === "hide" && (rule.scope || "always") === "always" && rule.review_at ? item("mdi:calendar-refresh-outline", "excRenew", `data-exc-renew="${id}"`) : "";
-        return `<details class="rowmenu"><summary aria-label="${this.esc(`${this.t("rowMenu")}: ${this.excRuleName(rule)}`)}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${item("mdi:pencil-outline", "excEdit", `data-exc-edit="${id}"`)}${renew}<hr class="menusep">${item("mdi:delete-outline", "excDelete", `data-exc-delete="${id}"`)}</div></details>`;
+        return `<details class="rowmenu"><summary aria-label="${this.esc(`${this.t("rowMenu")}: ${this.excRuleName(rule)}`)}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${rule.effect?.objects ? item("mdi:format-list-bulleted", "excHits", `data-exc-hits="${id}"`) : ""}${item("mdi:pencil-outline", "excEdit", `data-exc-edit="${id}"`)}${renew}<hr class="menusep">${item("mdi:delete-outline", "excDelete", `data-exc-delete="${id}"`)}</div></details>`;
       } },
     ];
   }
@@ -338,7 +338,8 @@ class ExceptionsMixin {
     const canDrop = f.scopeSel === "objects" && f.picks.length > 1;
     const hits = (pv?.hits || []).map(h => {
       const pick = canDrop && f.picks.find(p => p.id === h.object_id);
-      return `<span class="chip hit" title="${this.esc(h.object_id)}">${this.esc(h.name)} ${h.findings > 1 ? `<em>${h.findings}</em>` : ""}${pick ? `<button type="button" class="hitx" data-exc-pick="${this.esc(`${pick.kind}:${pick.id}`)}" aria-label="${this.esc(this.t("excHitDrop", { name: h.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`;
+      const key = ["entity", "device", "config_entry", "automation", "script", "scene"].map(t => `${t}:${h.object_id}`).find(k => this.findObject(k));
+      return `<span class="chip hit" title="${this.esc(h.object_id)}">${key ? `<span ${this.objLinkAttrs(key)}>${this.esc(h.name)}</span>` : this.esc(h.name)} ${h.findings > 1 ? `<em>${h.findings}</em>` : ""}${pick ? `<button type="button" class="hitx" data-exc-pick="${this.esc(`${pick.kind}:${pick.id}`)}" aria-label="${this.esc(this.t("excHitDrop", { name: h.name }))}"><ha-icon icon="mdi:close"></ha-icon></button>` : ""}</span>`;
     }).join("");
     const hitsMore = pv && pv.objects > (pv.hits || []).length ? `<small class="factnote">${this.t("excHitsMore", { n: pv.objects - pv.hits.length })}</small>` : "";
     const preview = pv ? `<details class="excprev" data-exc-prev role="status"${f.prevOpen ?? (pv.hits || []).length <= 5 ? " open" : ""}><summary>${sum}</summary>${hits ? `<div class="hits chips bare">${hits}</div>${hitsMore}` : ""}
@@ -482,6 +483,7 @@ class ExceptionsMixin {
     const fields = "[data-exc-pattern],[data-exc-similar],[data-exc-note],[data-exc-days]", area = this.shadowRoot?.activeElement?.matches?.(fields) ? this.shadowRoot.activeElement : null;
     const attr = area && [...area.attributes].find(a => a.name.startsWith("data-exc-"))?.name, at = area ? [area.selectionStart, area.selectionEnd] : null;
     this.render();
+    if (f.showHits && f.preview) { f.showHits = false; this.shadowRoot?.querySelector?.("[data-exc-prev]")?.scrollIntoView?.({ block: "center" }); }
     if (attr) { const next = this.shadowRoot.querySelector(`[${attr}]`); next?.focus(); try { next?.setSelectionRange?.(...at); } catch (_) { /* a number field has no cursor */ } }
   }
 
@@ -559,6 +561,7 @@ class ExceptionsMixin {
       if (mode === "delete") this.confirmAsk(this.t("confirmExcRules", { count: ids.size }), run); else run();
     });
     root.querySelectorAll("[data-exc-renew]").forEach(el => el.onclick = () => this.saveExceptions(all => all.map(r => (r.id === el.dataset.excRenew ? { ...r, review_at: null } : r)), null));
+    root.querySelectorAll("[data-exc-hits]").forEach(el => el.onclick = () => { this.openException(el.dataset.excHits); if (this.excForm) { this.excForm.prevOpen = true; this.excForm.showHits = true; } });
     root.querySelectorAll("[data-exc-edit]").forEach(el => el.onclick = () => this.openException(el.dataset.excEdit, el.dataset.excNew));
     root.querySelectorAll("[data-exc-delete]").forEach(el => el.onclick = () => this.confirmAsk(this.t("confirmExcRule"), () => this.saveExceptions(all => all.filter(r => r.id !== el.dataset.excDelete), null)));
     root.querySelectorAll("[data-exc-toggle]").forEach(el => el.onchange = () => { const enabled = el.checked; this.saveExceptions(all => all.map(r => (r.id === el.dataset.excToggle ? { ...r, enabled } : r)), null); });
