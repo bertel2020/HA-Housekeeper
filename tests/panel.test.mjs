@@ -4780,6 +4780,14 @@ test("the groups of choices in the rule form are named for a screen reader, and 
   const cells = el.excRuleCells({ id: "r1", kind: "area", targets: ["kitchen"], action: "hide", scope: "always", enabled: true });
   assert.ok(cells.find(c => c.key === "on").cell().includes("aria-label=\"Rule active: "));
 });
+test("the vacation tile is warm only for vacation rules without a switch or a switch that reports nothing", () => {
+  const { el } = panel("en");
+  const tone = (rules, vacation) => { el.exc = { rules, vacation, areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [] }; return el.exceptionsView().includes("pill warn") ? "warn" : "calm"; };
+  assert.equal(tone([], {}), "calm");
+  assert.equal(tone([{ id: "a", scope: "vacation", kind: "area", targets: ["x"], action: "hide", enabled: true }], {}), "warn");
+  assert.equal(tone([], { entity: "input_boolean.v", state: "unavailable" }), "warn");
+  assert.equal(tone([], { entity: "input_boolean.v", state: "off" }), "calm");
+});
 const TEXT_DE_SETTINGS = "Einstellungen";
 test("batteries in volts are not read as percent and sit in the same list with the guessed type", () => {
   const { el } = panel("en");

@@ -240,7 +240,9 @@ class ExceptionsMixin {
     if (!this.exc) { this.loadExceptions(); return `<section class="panel"><div class="panelhead"><div><h2>${this.t("exceptions")}</h2><p>${this.t("excHint")}</p></div></div><div class="pad"><p class="factnote">${this.t("excLoading")}</p></div></section>`; }
     const v = this.exc.vacation || {};
     const state = !v.entity ? "vacStateNone" : v.state === "on" ? "vacStateOn" : v.state && v.state !== "unavailable" && v.state !== "unknown" ? "vacStateOff" : "vacStateMissing";
-    const vacTone = !v.entity ? "warn" : v.state === "on" ? "ok" : "mute";
+    // Warm only for what needs a look: rules for the vacation without a switch (they never apply) or a switch that reports nothing. An unused mode is quiet.
+    const vacRules = this.exc.rules.some(rule => rule.scope === "vacation");
+    const vacTone = state === "vacStateMissing" || (state === "vacStateNone" && vacRules) ? "warn" : v.state === "on" ? "ok" : "mute";
     const pill = ` <span class="pill ${vacTone}">${this.t(state)}</span>`;
     const statusDue = (this.data?.findings || []).filter(f => f.resurfaced && !f.ignored).length, marksDue = (this.data?.objects || []).filter(o => o.mark_due).length;
     const rulesDue = this.exc.rules.filter(rule => rule.enabled && this.excReviewDue(rule)).length;
