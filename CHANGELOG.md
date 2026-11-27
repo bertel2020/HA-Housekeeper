@@ -17,6 +17,7 @@
   - Texts and terms are clearer; the page notes that excluded objects are also left out of cleanup plans.
 - **Interface in general:**
   - Search fields in the rule form have a ✕ to empty them.
+  - On the label cards, “Show” is a plain link instead of a large button.
   - Screen readers hear the groups of choices in the rule form and which rule a switch or menu belongs to.
   - The tile “Vacation mode” is only highlighted when something needs a look (vacation rules without a switch, or a switch that reports nothing).
 

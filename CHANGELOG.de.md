@@ -17,6 +17,7 @@
   - Texte und Begriffe sind klarer; die Seite weist darauf hin, dass ausgenommene Objekte auch in Bereinigungsplänen fehlen.
 - **Oberfläche allgemein:**
   - Suchfelder im Regelformular haben ein ✕ zum Leeren.
+  - Bei den Label-Karten ist „Anzeigen“ ein schlichter Link statt eines großen Knopfes.
   - Screenreader lesen die Auswahlgruppen im Regelformular vor und nennen, zu welcher Regel ein Schalter oder Menü gehört.
   - Die Kachel „Urlaubsmodus“ ist nur noch hervorgehoben, wenn etwas zu prüfen ist (Urlaubsregeln ohne Schalter oder ein Schalter ohne Zustand).
 
