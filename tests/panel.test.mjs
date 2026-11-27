@@ -4771,6 +4771,15 @@ test("the effect of a rule that is off or only for the vacation says so", async 
   assert.ok(!el.excEffect({ ...hide, scope: "vacation" }).startsWith("In the vacation"));
   assert.ok(el.excEffect(hide).includes("2"));
 });
+test("the groups of choices in the rule form are named for a screen reader, and each switch names its rule", () => {
+  const { el } = panel("en");
+  el.exc = { rules: [], areas: [], labels: [], integrations: [], domains: [], devices: [], entities: [], vacation: {} };
+  el.excForm = { id: "", kind: "any", on: "device", patternText: "", targets: [], picks: [], action: "hide", scope: "always", search: "", days: 7, enabled: true, note: "", error: "", preview: null };
+  const html = el.excFormHtml(el.excForm);
+  for (const name of ["Kind", "Action"]) assert.ok(html.includes(`role="group" aria-label="${name}"`), name);
+  const cells = el.excRuleCells({ id: "r1", kind: "area", targets: ["kitchen"], action: "hide", scope: "always", enabled: true });
+  assert.ok(cells.find(c => c.key === "on").cell().includes("aria-label=\"Rule active: "));
+});
 const TEXT_DE_SETTINGS = "Einstellungen";
 test("batteries in volts are not read as percent and sit in the same list with the guessed type", () => {
   const { el } = panel("en");

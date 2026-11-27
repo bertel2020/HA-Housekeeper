@@ -155,11 +155,11 @@ class ExceptionsMixin {
       { key: "target", label: "excColRule", cell: () => `<div class="statcell"><span class="tile ${tone}"><ha-icon icon="${icons[rule.kind]}"></ha-icon></span><div><strong>${this.esc(this.excRuleName(rule))}</strong>${rule.note ? `<small>${this.esc(rule.note)}</small>` : ""}${this.excReviewLine(rule, due)}</div></div>` },
       { key: "action", label: "excColAction", cell: () => this.esc(this.excRuleLine(rule)) },
       { key: "effect", label: "excColEffect", cell: () => this.esc(this.excEffect(rule)) },
-      { key: "on", label: "excColOn", cell: () => `<input type="checkbox" class="policyswitch" data-exc-toggle="${id}" ${rule.enabled ? "checked" : ""} aria-label="${this.esc(this.t("excOn"))}">` },
+      { key: "on", label: "excColOn", cell: () => `<input type="checkbox" class="policyswitch" data-exc-toggle="${id}" ${rule.enabled ? "checked" : ""} aria-label="${this.esc(`${this.t("excOn")}: ${this.excRuleName(rule)}`)}">` },
       { key: "acts", label: "excColActions", narrow: true, cell: () => {
         const item = (icon, label, attr) => `<button type="button" class="menuitem" ${attr}><ha-icon icon="${icon}"></ha-icon>${this.t(label)}</button>`;
         const renew = rule.action === "hide" && (rule.scope || "always") === "always" && rule.review_at ? item("mdi:calendar-refresh-outline", "excRenew", `data-exc-renew="${id}"`) : "";
-        return `<details class="rowmenu"><summary aria-label="${this.esc(this.t("rowMenu"))}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${item("mdi:pencil-outline", "excEdit", `data-exc-edit="${id}"`)}${renew}<hr class="menusep">${item("mdi:delete-outline", "excDelete", `data-exc-delete="${id}"`)}</div></details>`;
+        return `<details class="rowmenu"><summary aria-label="${this.esc(`${this.t("rowMenu")}: ${this.excRuleName(rule)}`)}"><ha-icon icon="mdi:dots-vertical"></ha-icon></summary><div class="menupop">${item("mdi:pencil-outline", "excEdit", `data-exc-edit="${id}"`)}${renew}<hr class="menusep">${item("mdi:delete-outline", "excDelete", `data-exc-delete="${id}"`)}</div></details>`;
       } },
     ];
   }
@@ -325,7 +325,7 @@ class ExceptionsMixin {
     const chip = (id, on, extra = "") => `<button type="button" class="chip${on ? " active" : ""}" data-exc-target="${this.esc(id)}" aria-pressed="${on}">${this.esc(nameOf(id))}${extra}</button>`;
     const needle = (f.search || "").trim().toLowerCase();
     const shown = needle ? all.filter(x => `${x.name} ${x.id}`.toLowerCase().includes(needle)) : all;
-    const search = !lookup && all.length > 12 ? `<div class="picker"><input type="text" data-exc-search placeholder="${this.esc(this.t("excSearch"))}" autocomplete="off" value="${this.esc(f.search || "")}">${this.searchClearButton(f.search ? "data-exc-search-clear" : "")}</div>` : "";
+    const search = !lookup && all.length > 12 ? `<div class="picker"><input type="text" data-exc-search placeholder="${this.esc(this.t("excSearch"))}" aria-label="${this.esc(this.t("excSearch"))}" autocomplete="off" value="${this.esc(f.search || "")}">${this.searchClearButton(f.search ? "data-exc-search-clear" : "")}</div>` : "";
     const picked = any ? f.picks.map(p => `<button type="button" class="chip active" data-exc-pick="${this.esc(`${p.kind}:${p.id}`)}" aria-pressed="true">${this.esc(p.name)} · ${this.t(`excKind_${p.kind}`)} <ha-icon icon="mdi:close"></ha-icon></button>`).join("") : f.targets.map(id => chip(id, true, ` <ha-icon icon="mdi:close"></ha-icon>`)).join("");
     const count = any ? f.picks.length : f.targets.length;
     const choices = lookup ? `${picked ? `<div class="chips bare">${picked}</div>` : ""}${this.pickerBox("exc", this.t("excSearch"))}`
@@ -343,14 +343,14 @@ class ExceptionsMixin {
         ${pv.overlap?.length ? `<small class="factnote">${this.esc(this.t("excOverlap", { rules: pv.overlap.map(id => { const r = this.exc.rules.find(x => x.id === id); return r ? this.excRuleName(r) : id; }).join(", ") }))}</small>` : ""}</details>` : "";
     const important = pv?.important?.length ? this.notice("warn", this.t("excImportant", { names: pv.important.map(x => x.name).join(", ") })) : "";
     const action = f.scope === "vacation" ? `<small class="factnote">${this.t("excScopeHint")}</small>`
-      : `<div class="mfield"><span>${this.t("excAction")}</span><div class="excact"><button type="button" class="chip${f.action === "hide" ? " active" : ""}" data-exc-action="hide" aria-pressed="${f.action === "hide"}">${this.t("excAction_hide")}</button><button type="button" class="chip${f.action === "delay" ? " active" : ""}" data-exc-action="delay" aria-pressed="${f.action === "delay"}">${this.t("excAction_delay")}</button>
+      : `<div class="mfield"><span>${this.t("excAction")}</span><div class="excact" role="group" aria-label="${this.esc(this.t("excAction"))}"><button type="button" class="chip${f.action === "hide" ? " active" : ""}" data-exc-action="hide" aria-pressed="${f.action === "hide"}">${this.t("excAction_hide")}</button><button type="button" class="chip${f.action === "delay" ? " active" : ""}" data-exc-action="delay" aria-pressed="${f.action === "delay"}">${this.t("excAction_delay")}</button>
         ${f.action === "delay" ? `<input type="number" min="1" max="${this.exc.days_max || 365}" data-exc-days value="${this.esc(f.days)}" aria-label="${this.esc(this.t("excDays"))}"> <span>${this.t("excDays")}</span>` : ""}</div>
         ${f.action === "delay" ? `<small class="factnote">${this.t("excDelayHint")}</small>` : ""}</div>`;
-    const scopeChips = `<div class="mfield"><span>${this.t("excScope")}</span><div class="chips bare">${["always", "vacation"].map(s => `<button type="button" class="chip${(f.scope || "always") === s ? " active" : ""}" data-exc-scope-set="${s}" aria-pressed="${(f.scope || "always") === s}">${this.t(`excScope_${s}`)}</button>`).join("")}</div></div>`;
+    const scopeChips = `<div class="mfield"><span>${this.t("excScope")}</span><div class="chips bare" role="group" aria-label="${this.esc(this.t("excScope"))}">${["always", "vacation"].map(s => `<button type="button" class="chip${(f.scope || "always") === s ? " active" : ""}" data-exc-scope-set="${s}" aria-pressed="${(f.scope || "always") === s}">${this.t(`excScope_${s}`)}</button>`).join("")}</div></div>`;
     const warn = `${important}${this.excPatternBroad(f) ? this.notice("warn", this.t("excPatternBroad")) : ""}${pv?.covered ? this.notice("warn", this.t("coverRulePrev", { n: this.formatNumber(pv.covered) })) : ""}`;
     const what = f.scopes ? `${preview}${this.excScopeCards(f)}${scopeChips}`
-      : f.kind === "pattern" ? `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>${this.excPatternFields(f)}`
-      : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare">${kinds}</div></div>
+      : f.kind === "pattern" ? `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare" role="group" aria-label="${this.esc(this.t("excKind"))}">${kinds}</div></div>${this.excPatternFields(f)}`
+      : `<div class="mfield"><span>${this.t("excKind")}</span><div class="chips bare" role="group" aria-label="${this.esc(this.t("excKind"))}">${kinds}</div></div>
       <div class="mfield"><span>${this.t("excTargets")}${count ? ` (${this.t("excChosen", { n: count })})` : ""}</span>${choices}<small class="factnote">${any ? this.t("excAnyHint", { n: new Set(f.picks.map(p => p.kind)).size || 1 }) : this.t("excInherit")}</small></div>`;
     // The note it points to is the one of the object this rule was opened for, not of whatever is ticked in the list.
     const noteKey = f.here && f.objectKeys?.length === 1 && MARK_TYPES.includes(f.objectKeys[0].split(":")[0]) && !this.findObject(f.objectKeys[0])?.mark ? f.objectKeys[0] : "";
@@ -371,7 +371,7 @@ class ExceptionsMixin {
   // A pattern rule: what the pattern is held against, and the patterns, one per line.
   excPatternFields(f) {
     const on = ["device", "entity", "both"].map(o => `<button type="button" class="chip${(f.on || "device") === o ? " active" : ""}" data-exc-on="${o}" aria-pressed="${(f.on || "device") === o}">${this.t(`excPatternOn_${o}`)}</button>`).join("");
-    return `<div class="mfield"><span>${this.t("excPatternOn")}</span><div class="chips bare">${on}</div><small class="factnote">${this.t("excPatternOnHint")}</small></div>
+    return `<div class="mfield"><span>${this.t("excPatternOn")}</span><div class="chips bare" role="group" aria-label="${this.esc(this.t("excPatternOn"))}">${on}</div><small class="factnote">${this.t("excPatternOnHint")}</small></div>
       <label class="mfield"><span>${this.t("excPatterns")}${f.targets.length ? ` (${this.t("excChosen", { n: f.targets.length })})` : ""}</span><textarea data-exc-pattern rows="3" spellcheck="false" autocomplete="off" placeholder="browser_mod_*">${this.esc(f.patternText || "")}</textarea><small class="factnote">${this.t("excPatternHint")}</small></label>`;
   }
 
@@ -465,7 +465,7 @@ class ExceptionsMixin {
       const icon = { objects: "mdi:checkbox-multiple-marked-outline", devices: "mdi:devices", areas: "mdi:floor-plan", integrations: "mdi:puzzle-outline" }[s.id];
       return `<label class="statusopt green${f.scopeSel === s.id ? " on" : ""}"><input type="radio" name="exc-for" value="${s.id}" data-exc-for-pick ${f.scopeSel === s.id ? "checked" : ""}><i class="stico"><ha-icon icon="${icon}"></ha-icon></i><span><b>${this.esc(title)}</b><small>${this.esc(sub)}</small></span></label>`;
     };
-    return `<div class="mfield"><span>${this.t("excForLabel")}</span><div class="statusopts">${f.scopes.map(card).join("")}</div></div>`;
+    return `<div class="mfield"><span>${this.t("excForLabel")}</span><div class="statusopts" role="radiogroup" aria-label="${this.esc(this.t("excForLabel"))}">${f.scopes.map(card).join("")}</div></div>`;
   }
 
   async excPreview() {
