@@ -2,6 +2,33 @@
 
 > English version: [CHANGELOG.md](CHANGELOG.md)
 
+## Unreleased
+
+### Neu
+
+- **Ausnahmeregeln:**
+  - Die neue Art „Muster“ trifft Gerätenamen oder Entitäts-IDs mit `*` und `?` (zum Beispiel `browser_mod_*`). Ein Befund bietet „Alle Geräte mit ähnlichem Namen“ als Geltungsbereich an.
+  - Das Zeilenmenü einer Regel hat „Treffer ansehen“: es listet die Objekte, die die Regel gerade ausblendet, und ihre Namen öffnen ihre Seiten.
+
+### Geändert
+
+- **Ausnahmeregeln:**
+  - Die Auswahl der Integrationen nennt auch Integrationen ohne Entität.
+  - Texte und Begriffe sind klarer; die Seite weist darauf hin, dass ausgenommene Objekte auch in Bereinigungsplänen fehlen.
+- **Oberfläche allgemein:**
+  - Suchfelder im Regelformular haben ein ✕ zum Leeren.
+  - Screenreader lesen die Auswahlgruppen im Regelformular vor und nennen, zu welcher Regel ein Schalter oder Menü gehört.
+  - Die Kachel „Urlaubsmodus“ ist nur noch hervorgehoben, wenn etwas zu prüfen ist (Urlaubsregeln ohne Schalter oder ein Schalter ohne Zustand).
+
+### Behoben
+
+- **Ausnahmeregeln:**
+  - Mehrere Regeln gleichzeitig ein- oder ausschalten, verlängern und löschen funktioniert wieder, und das offene Formular bleibt dabei offen.
+  - Ein Konfigurationseintrag bietet seine Integration an statt einer Regel „nur dieser Eintrag“, die die ganze Integration traf.
+  - Vorschau und Wirkungsspalte zeigen keine veralteten Zahlen mehr; die Spalte sagt, wenn eine Regel ausgeschaltet ist oder nur im Urlaub gilt.
+  - Notiz- und Tagefeld behalten den Cursor, während die Vorschau aktualisiert wird.
+  - Regeln einer Art, die diese Version nicht kennt, bleiben beim Speichern der Regeln erhalten.
+
 ## 2.3.0 - 2026-11-24
 
 ### Neu

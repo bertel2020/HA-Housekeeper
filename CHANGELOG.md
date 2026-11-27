@@ -2,6 +2,33 @@
 
 > Deutsche Version: [CHANGELOG.de.md](CHANGELOG.de.md)
 
+## Unreleased
+
+### New
+
+- **Exception rules:**
+  - The new kind “Pattern” matches device names or entity IDs with `*` and `?` (for example `browser_mod_*`). A finding offers “All devices with a similar name” as a scope.
+  - The row menu of a rule has “Show hits”: it lists the objects the rule hides now, and their names open their pages.
+
+### Changed
+
+- **Exception rules:**
+  - The choice of integrations also lists integrations that have no entity.
+  - Texts and terms are clearer; the page notes that excluded objects are also left out of cleanup plans.
+- **Interface in general:**
+  - Search fields in the rule form have a ✕ to empty them.
+  - Screen readers hear the groups of choices in the rule form and which rule a switch or menu belongs to.
+  - The tile “Vacation mode” is only highlighted when something needs a look (vacation rules without a switch, or a switch that reports nothing).
+
+### Fixed
+
+- **Exception rules:**
+  - Switching on or off, extending and deleting several rules at once work again, and the open form stays open meanwhile.
+  - An integration entry offers its integration instead of a rule for “only this entry” that hit the whole integration.
+  - The preview and the effect column no longer show outdated numbers; the column says when a rule is switched off or only applies in the vacation.
+  - The note and days fields keep the cursor while the preview is updated.
+  - Rules of a kind this version does not know are kept when the rules are saved.
+
 ## 2.3.0 - 2026-11-24
 
 ### New
